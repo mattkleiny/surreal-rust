@@ -1,0 +1,111 @@
+//! A set of utilities for timing and synchronization.
+
+/// A representation of the time difference between frames.
+pub type DeltaTime = f64;
+
+pub struct Clock {
+  last_time: u64,
+  current_time: u64,
+}
+
+impl Clock {
+  pub fn new() -> Self {
+    Self {
+      last_time: 0,
+      current_time: 0,
+    }
+  }
+
+  /// Ticks the clock by a single frame, returning a time delta.
+  pub fn tick(&mut self, current_time: u64, frequency: u64) -> DeltaTime {
+    self.last_time = self.current_time;
+    self.current_time = current_time;
+
+    // compute delta time since the last update
+    ((self.current_time - self.last_time) * 1000 / frequency) as f64 / 1000.
+  }
+}
+
+/// A simple time which ticks on a given basis and returns true if an interval has elapsed.
+pub struct IntervalTimer {
+  time_elapsed: f64,
+  interval_in_secs: f64,
+}
+
+impl IntervalTimer {
+  pub fn new(interval_in_secs: f64) -> Self {
+    Self {
+      time_elapsed: 0.,
+      interval_in_secs,
+    }
+  }
+
+  pub fn tick(&mut self, delta_time: DeltaTime) -> bool {
+    self.time_elapsed += delta_time;
+    self.time_elapsed >= self.interval_in_secs
+  }
+
+  pub fn reset(&mut self) {
+    self.time_elapsed = 0.;
+  }
+}
+
+/// A simple time which ticks on a given basis and returns true if the given number of frames have elapsed.
+pub struct FrameTimer {
+  frames_elapsed: u64,
+  interval_in_frames: u64,
+}
+
+impl FrameTimer {
+  pub fn new(interval_in_frames: u64) -> Self {
+    Self {
+      frames_elapsed: 0,
+      interval_in_frames,
+    }
+  }
+
+  pub fn tick(&mut self) -> bool {
+    self.frames_elapsed += 1;
+    self.frames_elapsed >= self.interval_in_frames
+  }
+
+  pub fn reset(&mut self) {
+    self.frames_elapsed = 0;
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn clock_should_compute_delta_with_previous_frame() {
+    let mut clock = Clock::new();
+
+    let delta1 = clock.tick(10000, 60);
+    let delta2 = clock.tick(12000, 60);
+
+    assert_ne!(delta1, delta2);
+  }
+
+  #[test]
+  fn interval_timer_should_tick_on_a_fixed_basis() {
+    let mut timer = IntervalTimer::new(1.);
+
+    assert_eq!(false, timer.tick(0.5));
+    assert_eq!(true, timer.tick(0.5));
+
+    timer.reset();
+
+    assert_eq!(false, timer.tick(0.5));
+  }
+
+  #[test]
+  fn frame_timer_should_tick_correctly() {
+    let mut timer = FrameTimer::new(3);
+
+    assert_eq!(false, timer.tick());
+    assert_eq!(false, timer.tick());
+    assert_eq!(true, timer.tick());
+  }
+}

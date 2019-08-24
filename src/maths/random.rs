@@ -1,0 +1,53 @@
+//! Random number generation
+
+use rand::prelude::*;
+
+/// A seed for random generation.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub struct Seed(u64);
+
+impl Seed {
+  pub fn random() -> Self {
+    let mut rng = rand::thread_rng();
+    Self(rng.gen())
+  }
+
+  /// Converts the seed into an RNG.
+  #[inline]
+  pub fn to_rng(&self) -> RNG {
+    RNG::new(self.0)
+  }
+}
+
+/// A random number generator.
+#[derive(Clone, Debug)]
+pub struct RNG {
+  rng: StdRng,
+}
+
+impl RNG {
+  pub fn new(seed: u64) -> Self {
+    Self {
+      rng: StdRng::seed_from_u64(seed)
+    }
+  }
+
+  pub fn next_u32(&mut self) -> u32 { self.rng.next_u32() }
+  pub fn next_u64(&mut self) -> u64 { self.rng.next_u64() }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn seed_should_generate_a_valid_rng() {
+    let seed = Seed::random();
+    let mut rng = seed.to_rng();
+
+    let first = rng.next_u32();
+    let second = rng.next_u32();
+
+    assert_ne!(first, second);
+  }
+}
