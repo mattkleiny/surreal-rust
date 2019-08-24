@@ -6,49 +6,49 @@ use super::*;
 
 /// Represents a grid of T elements in 2-space.
 pub trait Grid<T> {
-  fn width(&self) -> usize;
-  fn height(&self) -> usize;
-  fn get(&self, x: usize, y: usize) -> &T;
-  fn set(&mut self, x: usize, y: usize, element: T);
+  fn width(&self) -> u32;
+  fn height(&self) -> u32;
+  fn get(&self, x: u32, y: u32) -> &T;
+  fn set(&mut self, x: u32, y: u32, element: T);
 }
 
 /// A densely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct DenseGrid<T> {
-  width: usize,
-  height: usize,
+  width: u32,
+  height: u32,
   elements: Vec<T>,
 }
 
 impl<T: Clone> DenseGrid<T> {
-  pub fn new(width: usize, height: usize, default: T) -> Self {
+  pub fn new(width: u32, height: u32, default: T) -> Self {
     Self {
       width,
       height,
-      elements: vec![default; width * height],
+      elements: vec![default; (width * height) as usize],
     }
   }
 }
 
 impl<T> Grid<T> for DenseGrid<T> {
-  fn width(&self) -> usize { self.width }
-  fn height(&self) -> usize { self.height }
+  fn width(&self) -> u32 { self.width }
+  fn height(&self) -> u32 { self.height }
 
   #[inline]
-  fn get(&self, x: usize, y: usize) -> &T {
-    &self.elements[x + y * self.width]
+  fn get(&self, x: u32, y: u32) -> &T {
+    &self.elements[(x + y * self.width) as usize]
   }
 
   #[inline]
-  fn set(&mut self, x: usize, y: usize, element: T) {
-    self.elements[x + y * self.width] = element;
+  fn set(&mut self, x: u32, y: u32, element: T) {
+    self.elements[(x + y * self.width) as usize] = element;
   }
 }
 
 /// A sparsely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct SparseGrid<T> {
-  elements: HashMap<Point2d, T>,
+  elements: HashMap<Point2, T>,
 }
 
 impl<T> SparseGrid<T> {
@@ -61,18 +61,18 @@ impl<T> SparseGrid<T> {
 
 impl<T> Grid<T> for SparseGrid<T> {
   // TODO: compute width/height
-  fn width(&self) -> usize { 0 }
-  fn height(&self) -> usize { 0 }
+  fn width(&self) -> u32 { 0 }
+  fn height(&self) -> u32 { 0 }
 
   #[inline]
-  fn get(&self, x: usize, y: usize) -> &T {
-    let point = Point2d::new(x, y);
+  fn get(&self, x: u32, y: u32) -> &T {
+    let point = Point2::new(x, y);
     self.elements.get(&point).unwrap()
   }
 
   #[inline]
-  fn set(&mut self, x: usize, y: usize, element: T) {
-    let point = Point2d::new(x, y);
+  fn set(&mut self, x: u32, y: u32, element: T) {
+    let point = Point2::new(x, y);
     self.elements.insert(point, element);
   }
 }

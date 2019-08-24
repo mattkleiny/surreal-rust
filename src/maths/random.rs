@@ -32,8 +32,10 @@ impl RNG {
     }
   }
 
-  pub fn next_u32(&mut self) -> u32 { self.rng.next_u32() }
-  pub fn next_u64(&mut self) -> u64 { self.rng.next_u64() }
+  #[inline] pub fn next_u32(&mut self) -> u32 { self.rng.gen() }
+  #[inline] pub fn next_u64(&mut self) -> u64 { self.rng.gen() }
+  #[inline] pub fn next_f32(&mut self) -> f32 { self.rng.gen() }
+  #[inline] pub fn next_f64(&mut self) -> f64 { self.rng.gen() }
 }
 
 #[cfg(test)]
@@ -45,8 +47,8 @@ mod tests {
     let seed = Seed::random();
     let mut rng = seed.to_rng();
 
-    let first = rng.next_u32();
-    let second = rng.next_u32();
+    let first = rng.next_f64();
+    let second = rng.next_f64();
 
     assert_ne!(first, second);
   }

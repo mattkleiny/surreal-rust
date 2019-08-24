@@ -3,35 +3,48 @@
 /// A ring buffer of elements of type T.
 #[derive(Debug)]
 pub struct RingBuffer<T> {
-  capacity: usize,
   occupied: usize,
+  write_pos: usize,
   elements: Vec<Option<T>>,
 }
 
 impl<T: Copy> RingBuffer<T> {
   pub fn new(capacity: usize) -> Self {
     Self {
-      capacity,
       occupied: 0,
+      write_pos: 0,
       elements: vec![None; capacity],
     }
   }
 
-  pub fn capacity(&self) -> usize { self.capacity }
+  pub fn capacity(&self) -> usize { self.elements.len() }
   pub fn occupied(&self) -> usize { self.occupied }
 
   /// Appends an element to the buffer.
-  pub fn append(&mut self, _element: T) {
-    unimplemented!()
+  pub fn append(&mut self, element: T) {
+    self.elements[self.write_pos] = Some(element);
+    self.write_pos += 1;
+
+    if self.write_pos >= self.capacity() {
+      self.write_pos = 0;
+    }
+    if self.occupied < self.capacity() {
+      self.occupied += 1;
+    }
   }
 
   /// Clears the buffer of all elements.
   pub fn clear(&mut self) {
-    unimplemented!()
+    self.occupied = 0;
+    self.write_pos = 0;
+
+    for element in self.elements.iter_mut() {
+      *element = None;
+    }
   }
 }
 
-impl<'a, T> IntoIterator for &'a RingBuffer<T> {
+impl<'a, T: Copy> IntoIterator for &'a RingBuffer<T> {
   type Item = T;
   type IntoIter = RingBufferIterator<'a, T>;
 
@@ -39,6 +52,7 @@ impl<'a, T> IntoIterator for &'a RingBuffer<T> {
     RingBufferIterator {
       buffer: self,
       index: 0,
+      touched: 0,
     }
   }
 }
@@ -47,13 +61,27 @@ impl<'a, T> IntoIterator for &'a RingBuffer<T> {
 pub struct RingBufferIterator<'a, T> {
   buffer: &'a RingBuffer<T>,
   index: usize,
+  touched: usize,
 }
 
-impl<'a, T> Iterator for RingBufferIterator<'a, T> {
+impl<'a, T: Copy> Iterator for RingBufferIterator<'a, T> {
   type Item = T;
 
   fn next(&mut self) -> Option<Self::Item> {
-    unimplemented!()
+    // iterate backwards, wrapping around the list
+    if self.index <= 1 {
+      self.index = self.buffer.capacity() - 1;
+    } else {
+      self.index -= 1;
+    }
+
+    // count the number of touched elements
+    self.touched += 1;
+    if self.touched < self.buffer.occupied() {
+      Some(self.buffer.elements[self.index].unwrap())
+    } else {
+      None
+    }
   }
 }
 
