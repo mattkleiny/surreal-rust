@@ -31,7 +31,10 @@ impl<T: Clone> DenseGrid<T> {
 }
 
 impl<T> Grid<T> for DenseGrid<T> {
+  #[inline]
   fn width(&self) -> u32 { self.width }
+
+  #[inline]
   fn height(&self) -> u32 { self.height }
 
   #[inline]
@@ -61,7 +64,10 @@ impl<T> SparseGrid<T> {
 
 impl<T> Grid<T> for SparseGrid<T> {
   // TODO: compute width/height
+  #[inline]
   fn width(&self) -> u32 { 0 }
+
+  #[inline]
   fn height(&self) -> u32 { 0 }
 
   #[inline]

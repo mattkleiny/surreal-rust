@@ -6,6 +6,7 @@ use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::mouse::MouseState;
 use sdl2::render::WindowCanvas;
 
+use crate::audio::AudioClip;
 use crate::graphics::Color;
 use crate::input::Keycode;
 use crate::timing::Clock;
@@ -29,6 +30,8 @@ pub struct DesktopPlatform {
 
 impl Platform for DesktopPlatform {
   type Host = DesktopHost;
+  type Allocator = PortableAllocator;
+  type FileSystem = PortableFileSystem;
 
   fn build(&self) -> Result<Self::Host> {
     Ok(DesktopHost::new(self.configuration, self.max_fps)?)
@@ -163,7 +166,7 @@ impl Host for DesktopHost {
 }
 
 impl AudioDevice for DesktopHost {
-  fn play<A>(&mut self, _audio_clip: A) {
+  fn play<A>(&mut self, _audio_clip: &AudioClip) {
     unimplemented!()
   }
 }

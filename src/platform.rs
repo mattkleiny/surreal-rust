@@ -19,6 +19,8 @@ mod memory;
 /// An abstraction over the selected backend for the system.
 pub trait Platform {
   type Host: Host;
+  type Allocator: Allocator;
+  type FileSystem: FileSystem;
 
   /// Builds the host for the platform.
   fn build(&self) -> Result<Self::Host>;
@@ -37,7 +39,7 @@ pub trait Platform {
 }
 
 /// An abstraction over a 'host' in a particular platform.
-pub trait Host {
+pub trait Host: AudioDevice + GraphicsDevice + InputDevice {
   fn width(&self) -> u32;
   fn height(&self) -> u32;
   fn is_closing(&self) -> bool;

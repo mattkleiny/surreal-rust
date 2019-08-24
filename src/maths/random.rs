@@ -32,10 +32,17 @@ impl RNG {
     }
   }
 
-  #[inline] pub fn next_u32(&mut self) -> u32 { self.rng.gen() }
-  #[inline] pub fn next_u64(&mut self) -> u64 { self.rng.gen() }
-  #[inline] pub fn next_f32(&mut self) -> f32 { self.rng.gen() }
-  #[inline] pub fn next_f64(&mut self) -> f64 { self.rng.gen() }
+  #[inline]
+  pub fn next_u32(&mut self) -> u32 { self.rng.gen() }
+
+  #[inline]
+  pub fn next_u64(&mut self) -> u64 { self.rng.gen() }
+
+  #[inline]
+  pub fn next_f32(&mut self) -> f32 { self.rng.gen() }
+
+  #[inline]
+  pub fn next_f64(&mut self) -> f64 { self.rng.gen() }
 }
 
 #[cfg(test)]

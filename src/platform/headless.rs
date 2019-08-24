@@ -1,5 +1,6 @@
 //! A headless platform for Surreal.
 
+use crate::audio::AudioClip;
 use crate::graphics::Color;
 use crate::input::Keycode;
 
@@ -10,6 +11,8 @@ pub struct HeadlessPlatform;
 
 impl Platform for HeadlessPlatform {
   type Host = HeadlessHost;
+  type Allocator = PortableAllocator;
+  type FileSystem = PortableFileSystem;
 
   fn build(&self) -> Result<Self::Host> {
     Ok(HeadlessHost)
@@ -33,7 +36,7 @@ impl Host for HeadlessHost {
 }
 
 impl AudioDevice for HeadlessHost {
-  fn play<A>(&mut self, _audio_clip: A) {}
+  fn play<A>(&mut self, _audio_clip: &AudioClip) {}
 }
 
 impl GraphicsDevice for HeadlessHost {

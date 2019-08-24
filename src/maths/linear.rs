@@ -28,15 +28,3 @@ impl Point3 {
     Self { x, y, z }
   }
 }
-
-#[inline]
-pub fn vec2(x: f32, y: f32) -> Vec2 { Vec2::new(x, y) }
-
-#[inline]
-pub fn vec3(x: f32, y: f32, z: f32) -> Vec3 { Vec3::new(x, y, z) }
-
-#[inline]
-pub fn point2(x: u32, y: u32) -> Point2 { Point2::new(x, y) }
-
-#[inline]
-pub fn point3(x: u32, y: u32, z: u32) -> Point3 { Point3::new(x, y, z) }

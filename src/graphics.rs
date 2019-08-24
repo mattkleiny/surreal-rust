@@ -54,12 +54,6 @@ pub trait RenderPass {
 /// A queue used for issuing render commands to a pipeline.
 pub trait RenderQueue {}
 
-/// Permits rendering of a type by submitting it to a render queue.
-pub trait Renderer {
-  /// Renders the given element on the given pipeline.
-  fn submit(&self, queue: &mut impl RenderQueue);
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;

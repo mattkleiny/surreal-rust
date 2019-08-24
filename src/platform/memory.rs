@@ -53,7 +53,10 @@ impl<A: Allocator> MemoryHeap<A> {
     // make sure we're not yet at capacity
     let capacity = self.capacity();
     if capacity < size {
-      return Err(format!("Unable to acquire {} bytes from the memory heap, there is only {} remaining.", size, capacity));
+      return Err(format!(
+        "Unable to acquire {} bytes from the memory heap, \
+        there is only {} remaining.", size, capacity
+      ));
     }
 
     // find the first available block
@@ -101,7 +104,10 @@ impl<A: Allocator> MemoryBlock<A> {
   pub fn allocate(&mut self, size: usize) -> Result<Memory> {
     let capacity = self.capacity();
     if capacity < size {
-      return Err(format!("Unable to acquire {} bytes from the memory block, there is only {} remaining.", size, capacity));
+      return Err(format!(
+        "Unable to acquire {} bytes from the memory block, \
+        there is only {} remaining.", size, capacity
+      ));
     }
 
     let result = unsafe {

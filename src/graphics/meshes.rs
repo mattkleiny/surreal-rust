@@ -77,13 +77,6 @@ impl<V: Vertex> Mesh<V> {
   }
 }
 
-/// Permit rendering of standard mesh formats.
-impl<V: Vertex> Renderer for Mesh<V> {
-  fn submit(&self, _queue: &mut impl RenderQueue) {
-    unimplemented!()
-  }
-}
-
 /// A standard vertex format for mesh rendering.
 #[derive(Copy, Clone, Debug)]
 pub struct StandardVertex {
