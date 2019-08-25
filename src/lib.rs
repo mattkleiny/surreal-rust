@@ -9,6 +9,7 @@ extern crate rand;
 extern crate rlua;
 extern crate sdl2;
 extern crate specs;
+extern crate winapi;
 
 pub mod audio;
 pub mod diagnostics;

@@ -9,16 +9,14 @@ default = []
 editor = []
 
 [dependencies]
+glam = "0.7.1"
 rlua = "0.16.3"
 specs = "0.15.0"
 rand = "0.7.0"
 log = "0.4.8"
 chrono = "0.4.7"
+winapi = "0.3.7"
 
 [dependencies.sdl2]
 version = "0.32.2"
 features = ["bundled"]
-
-[dependencies.glam]
-version = "0.7.1"
-default-features = false
