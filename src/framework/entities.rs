@@ -12,7 +12,7 @@ mod systems;
 
 /// Resource wrapper for system delta time.
 #[derive(Default, Debug)]
-pub struct DeltaTime(f64);
+pub struct DeltaTime(f32);
 
 /// An entity in an entity manager.
 #[derive(Clone, Copy, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
@@ -54,7 +54,7 @@ impl EntityManager {
   }
 
   /// Advances the entity manager by a single frame.
-  pub fn tick(&mut self, delta_time: f64) {
+  pub fn tick(&mut self, delta_time: f32) {
     self.world.insert(DeltaTime(delta_time));
     self.dispatcher.dispatch(&mut self.world);
   }

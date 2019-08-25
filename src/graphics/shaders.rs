@@ -1,4 +1,8 @@
 //! GPU shader abstractions.
 
+struct ShaderId(usize);
+struct ShaderProgramId(usize);
+
 struct Shader;
-struct ShaderProgram;
+
+pub struct ShaderProgram;

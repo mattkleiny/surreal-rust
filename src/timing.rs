@@ -3,7 +3,7 @@
 use crate::collections::RingBuffer;
 
 /// A representation of the time difference between frames.
-pub type DeltaTime = f64;
+pub type DeltaTime = f32;
 
 pub struct Clock {
   last_time: u64,
@@ -24,13 +24,13 @@ impl Clock {
     self.current_time = current_time;
 
     // compute delta time since the last update
-    ((self.current_time - self.last_time) * 1000 / frequency) as f64 / 1000.
+    ((self.current_time - self.last_time) * 1000 / frequency) as f32 / 1000.
   }
 }
 
 /// Counts frames per second using a smoothed average.
 pub struct FpsCounter {
-  samples: RingBuffer<f64>,
+  samples: RingBuffer<f32>,
 }
 
 impl FpsCounter {
@@ -41,19 +41,19 @@ impl FpsCounter {
   }
 
   /// Advances the counter by the given delta amount.
-  pub fn tick(&mut self, delta_time: f64) {
+  pub fn tick(&mut self, delta_time: f32) {
     self.samples.append(delta_time);
   }
 
   /// Returns the current measurement of FPS.
-  pub fn fps(&self) -> f64 {
+  pub fn fps(&self) -> f32 {
     // compute the average time over the ring buffer period
     let average_frame_time = {
       let mut total_frame_time = 0.;
       for sample in &self.samples {
         total_frame_time += sample;
       }
-      total_frame_time / self.samples.occupied() as f64
+      total_frame_time / self.samples.occupied() as f32
     };
 
     // convert back into per-second average
@@ -63,12 +63,12 @@ impl FpsCounter {
 
 /// A simple time which ticks on a given basis and returns true if an interval has elapsed.
 pub struct IntervalTimer {
-  time_elapsed: f64,
-  interval_in_secs: f64,
+  time_elapsed: f32,
+  interval_in_secs: f32,
 }
 
 impl IntervalTimer {
-  pub fn new(interval_in_secs: f64) -> Self {
+  pub fn new(interval_in_secs: f32) -> Self {
     Self {
       time_elapsed: 0.,
       interval_in_secs,

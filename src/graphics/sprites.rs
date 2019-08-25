@@ -7,7 +7,6 @@ use glam::Vec2;
 use super::*;
 
 /// Represents a sprite that may be rendered using a batch.
-#[derive(Debug)]
 pub struct Sprite {
   texture: TextureRegion,
   offset: Vec2,
@@ -38,6 +37,7 @@ type SpriteMesh = Mesh<SpriteVertex>;
 /// A batch of sprites for efficient rendering.
 pub struct SpriteBatch {
   mesh: SpriteMesh,
+
 }
 
 impl SpriteBatch {

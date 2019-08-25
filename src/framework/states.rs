@@ -2,9 +2,9 @@
 
 /// Abstracts over a state in the state manager.
 pub trait State {
-  fn input(&mut self, delta_time: f64);
-  fn update(&mut self, delta_time: f64);
-  fn draw(&mut self, delta_time: f64);
+  fn input(&mut self, delta_time: f32);
+  fn update(&mut self, delta_time: f32);
+  fn draw(&mut self, delta_time: f32);
 }
 
 /// Manages a set of states.
@@ -28,7 +28,7 @@ impl StateManager {
   }
 
   /// Invokes 'input' on the top-most state in the manager.
-  pub fn input(&mut self, delta_time: f64) {
+  pub fn input(&mut self, delta_time: f32) {
     match self.states.last_mut() {
       Some(state) => state.input(delta_time),
       None => {}
@@ -36,7 +36,7 @@ impl StateManager {
   }
 
   /// Invokes 'update' on the top-most state in the manager.
-  pub fn update(&mut self, delta_time: f64) {
+  pub fn update(&mut self, delta_time: f32) {
     match self.states.last_mut() {
       Some(state) => state.update(delta_time),
       None => {}
@@ -44,7 +44,7 @@ impl StateManager {
   }
 
   /// Invokes 'draw' on the top-most state in the manager.
-  pub fn draw(&mut self, delta_time: f64) {
+  pub fn draw(&mut self, delta_time: f32) {
     match self.states.last_mut() {
       Some(state) => state.draw(delta_time),
       None => {}
@@ -59,9 +59,9 @@ mod tests {
   struct TestState;
 
   impl State for TestState {
-    fn input(&mut self, _delta_time: f64) {}
-    fn update(&mut self, _delta_time: f64) {}
-    fn draw(&mut self, _delta_time: f64) {}
+    fn input(&mut self, _delta_time: f32) {}
+    fn update(&mut self, _delta_time: f32) {}
+    fn draw(&mut self, _delta_time: f32) {}
   }
 
   #[test]

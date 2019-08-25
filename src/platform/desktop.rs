@@ -7,10 +7,10 @@ use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::mouse::MouseState;
 use sdl2::video::{GLContext, Window};
 
-use crate::audio::{AudioClip, AudioClipId, AudioClipStatus};
+use crate::audio::SoundClip;
 use crate::graphics::Color;
 use crate::input::Keycode;
-use crate::timing::{Clock, FpsCounter};
+use crate::timing::{Clock, FpsCounter, DeltaTime};
 
 use super::*;
 
@@ -149,7 +149,7 @@ impl Host for DesktopHost {
   fn is_closing(&self) -> bool { self.is_closing }
 
   fn tick<C>(&mut self, mut callback: C)
-    where C: FnMut(&mut Self, f64) -> () {
+    where C: FnMut(&mut Self, DeltaTime) -> () {
     // pump window events for the SDL2 window
     for event in self.event_pump.poll_iter() {
       use sdl2::event::Event;
@@ -234,11 +234,7 @@ impl Host for DesktopHost {
 }
 
 impl AudioDevice for DesktopHost {
-  fn get_status(&self, _id: AudioClipId) -> AudioClipStatus {
-    unimplemented!()
-  }
-
-  fn play(&mut self, _audio_clip: &AudioClip) {
+  fn play(&mut self, _clip: &SoundClip) {
     unimplemented!()
   }
 }

@@ -171,7 +171,7 @@ mod tests {
 
   /// A point in 3-space for testing.
   #[derive(Default)]
-  struct Point(f64, f64, f64);
+  struct Point(f32, f32, f32);
 
   #[test]
   fn it_should_allocate_a_memory_heap_without_fault() {
