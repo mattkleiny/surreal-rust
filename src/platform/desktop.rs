@@ -10,7 +10,7 @@ use sdl2::video::{GLContext, Window};
 use crate::audio::SoundClip;
 use crate::graphics::Color;
 use crate::input::Keycode;
-use crate::timing::{Clock, FpsCounter, DeltaTime};
+use crate::timing::{Clock, DeltaTime, FpsCounter};
 
 use super::*;
 
@@ -256,26 +256,5 @@ impl GraphicsDevice for DesktopHost {
 impl InputDevice for DesktopHost {
   fn is_pressed(&self, binding: impl Into<Keycode>) -> bool {
     self.keyboard_state.contains(&binding.into())
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn it_should_create_a_desktop_platform() {
-    let platform = DesktopPlatform {
-      configuration: WindowConfiguration {
-        title: "Platform Test",
-        width: 1920,
-        height: 1080,
-        show_cursor: true,
-      },
-      max_fps: 30,
-    };
-    let mut host = platform.build().unwrap();
-
-    host.tick(|_host, _delta_time| {});
   }
 }

@@ -8,12 +8,12 @@ extern crate enumflags2;
 extern crate enumflags2_derive;
 extern crate gl;
 extern crate glam;
+extern crate hlua;
 extern crate imgui;
 extern crate imgui_opengl_renderer;
 extern crate imgui_sdl2;
 extern crate log;
 extern crate rand;
-extern crate rlua;
 extern crate sdl2;
 extern crate specs;
 

@@ -1,42 +1,27 @@
 //! Scripting support for Surreal.
 
-use rlua::prelude::*;
-
-use crate::diagnostics::*;
+use hlua::*;
 
 use super::*;
 
-/// An engine for script execution.
-pub trait ScriptEngine {
-  /// Executes the given code on in the engine.
-  fn execute(&mut self, code: &String);
-}
-
 /// A scripting engine for Lua.
-pub struct LuaScriptEngine {
-  interpreter: Lua,
+pub struct ScriptEngine<'lua> {
+  lua: Lua<'lua>,
 }
 
-impl LuaScriptEngine {
+impl<'lua> ScriptEngine<'lua> {
   pub fn new() -> Self {
     Self {
-      interpreter: Lua::new(),
+      lua: Lua::new(),
     }
   }
-}
 
-impl ScriptEngine for LuaScriptEngine {
-  fn execute(&mut self, code: &String) {
-    // execute the block of code in-context on the lua interpreter
-    self.interpreter.context(|context| {
-      let result = context.load(code.as_str()).exec();
-
-      // try not to panic, if possible
-      match result {
-        Err(error) => warn!("Script failed: {}", error),
-        _ => {}
-      }
-    });
+  /// Executes the given code on the engine.
+  pub fn execute(&mut self, code: &String) -> Result<()> {
+    match self.lua.execute(code.as_str()) {
+      Ok(()) => Ok(()),
+      Err(error) => Err(format!("Script error: {}", error))
+    }
   }
 }
 
@@ -46,15 +31,15 @@ mod tests {
 
   #[test]
   fn it_should_execute_basic_lua_instructions() {
-    let mut engine = LuaScriptEngine::new();
+    let mut engine = ScriptEngine::new();
 
-    engine.execute(&"print 'Hello, World!'".to_string());
+    assert!(engine.execute(&"print 'Hello, World!'".to_string()).is_ok())
   }
 
   #[test]
   fn it_should_not_panic_for_bad_expression() {
-    let mut engine = LuaScriptEngine::new();
+    let mut engine = ScriptEngine::new();
 
-    engine.execute(&"print Hello, World!".to_string());
+    assert!(engine.execute(&"print Hello, World!".to_string()).is_err());
   }
 }

@@ -40,6 +40,16 @@ pub trait FileSystem {
 
   fn open_read(path: Path) -> Result<Self::ReadStream>;
   fn open_write(path: Path) -> Result<Self::WriteStream>;
+
+  fn read_as_string(path: Path) -> Result<String> {
+    let mut buffer = String::new();
+    let mut file = Self::open_read(path)?;
+
+    match file.read_to_string(&mut buffer) {
+      Ok(_) => Ok(buffer),
+      Err(_error) => Err(format!("Failed to read stream: {}", path.address))
+    }
+  }
 }
 
 /// A portable file system implementation from Rust itself.
@@ -49,12 +59,18 @@ impl FileSystem for PortableFileSystem {
   type ReadStream = std::fs::File;
   type WriteStream = std::fs::File;
 
-  fn open_read(_path: Path) -> Result<Self::ReadStream> {
-    unimplemented!()
+  fn open_read(path: Path) -> Result<Self::ReadStream> {
+    match std::fs::File::open(path.address) {
+      Ok(file) => Ok(file),
+      Err(_error) => Err(format!("Failed to open file reading: {}", path.address))
+    }
   }
 
-  fn open_write(_path: Path) -> Result<Self::WriteStream> {
-    unimplemented!()
+  fn open_write(path: Path) -> Result<Self::WriteStream> {
+    match std::fs::File::create(path.address) {
+      Ok(file) => Ok(file),
+      Err(_error) => Err(format!("Failed to open file for writing: {}", path.address))
+    }
   }
 }
 
