@@ -39,7 +39,7 @@ impl<T> Grid<T> for DenseGrid<T> {
 
   #[inline]
   fn get(&self, x: u32, y: u32) -> &T {
-    &self.elements[(x + y * self.width) as usize]
+    &self.elements.get((x + y * self.width) as usize).unwrap()
   }
 
   #[inline]
@@ -51,7 +51,7 @@ impl<T> Grid<T> for DenseGrid<T> {
 /// A sparsely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct SparseGrid<T> {
-  elements: HashMap<Point2, T>,
+  elements: HashMap<Vec2i, T>,
 }
 
 impl<T> SparseGrid<T> {
@@ -72,13 +72,13 @@ impl<T> Grid<T> for SparseGrid<T> {
 
   #[inline]
   fn get(&self, x: u32, y: u32) -> &T {
-    let point = Point2::new(x, y);
+    let point = Vec2i::new(x, y);
     self.elements.get(&point).unwrap()
   }
 
   #[inline]
   fn set(&mut self, x: u32, y: u32, element: T) {
-    let point = Point2::new(x, y);
+    let point = Vec2i::new(x, y);
     self.elements.insert(point, element);
   }
 }

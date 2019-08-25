@@ -6,7 +6,7 @@ use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::mouse::MouseState;
 use sdl2::render::WindowCanvas;
 
-use crate::audio::AudioClip;
+use crate::audio::{AudioClip, AudioClipID, AudioClipStatus};
 use crate::graphics::Color;
 use crate::input::Keycode;
 use crate::timing::Clock;
@@ -166,7 +166,11 @@ impl Host for DesktopHost {
 }
 
 impl AudioDevice for DesktopHost {
-  fn play<A>(&mut self, _audio_clip: &AudioClip) {
+  fn get_status(&self, _id: AudioClipID) -> AudioClipStatus {
+    unimplemented!()
+  }
+
+  fn play(&mut self, _audio_clip: &AudioClip) {
     unimplemented!()
   }
 }

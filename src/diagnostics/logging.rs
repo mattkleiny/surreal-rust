@@ -1,50 +1,49 @@
 //! Logging utilities.
 
-/// A level for a logger.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-pub enum LogLevel {
-  Trace = 0,
-  Debug = 1,
-  Warn = 2,
-  Error = 3,
-}
+use chrono::Timelike;
+use log::{LevelFilter, Log, Metadata, Record};
+pub use log::{debug, error, info, trace, warn};
 
-/// A logger for some component.
-pub struct Logger {
-  name: &'static str,
-  level: LogLevel,
-}
+/// The static logger for Surreal.
+pub static LOGGER: Logger = Logger;
+
+/// The standard logger for Surreal.
+pub struct Logger;
 
 impl Logger {
-  pub fn new(name: &'static str, level: LogLevel) -> Self {
-    Self { name, level }
+  pub fn install() {
+    log::set_logger(&LOGGER)
+        .map(|()| log::set_max_level(LevelFilter::Trace))
+        .expect("Failed to set system logger!");
   }
+}
 
-  #[inline]
-  pub fn trace(&mut self, message: &String) {
-    self.write(message, LogLevel::Trace)
-  }
+impl Log for Logger {
+  fn enabled(&self, _metadata: &Metadata) -> bool { true }
 
-  #[inline]
-  pub fn debug(&mut self, message: &String) {
-    self.write(message, LogLevel::Debug)
-  }
+  fn log(&self, record: &Record) {
+    if self.enabled(record.metadata()) {
+      // TODO: better formatting for thread id
+      let thread_id = std::thread::current().id();
 
-  #[inline]
-  pub fn warn(&mut self, message: &String) {
-    self.write(message, LogLevel::Warn)
-  }
+      let now = chrono::Local::now();
+      let (is_pm, hour) = now.hour12();
 
-  #[inline]
-  pub fn error(&mut self, message: &String) {
-    self.write(message, LogLevel::Error)
-  }
-
-  pub fn write(&mut self, _message: &String, level: LogLevel) {
-    if level >= self.level {
-      unimplemented!()
+      println!(
+        "{:02}:{:02}:{:02} {} - <{:?}> {} [{}]: {}",
+        hour,
+        now.minute(),
+        now.second(),
+        if is_pm { "PM" } else { "AM" },
+        thread_id,
+        record.target(),
+        record.level(),
+        record.args()
+      );
     }
   }
+
+  fn flush(&self) {}
 }
 
 #[cfg(test)]
@@ -53,8 +52,8 @@ mod tests {
 
   #[test]
   fn it_should_write_messages() {
-    let mut logger = Logger::new("Some Component", LogLevel::Trace);
+    Logger::install();
 
-    logger.trace(&"It's working!".to_string());
+    trace!("It's working!");
   }
 }

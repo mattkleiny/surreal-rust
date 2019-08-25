@@ -12,6 +12,8 @@ editor = []
 rlua = "0.16.3"
 specs = "0.15.0"
 rand = "0.7.0"
+log = "0.4.8"
+chrono = "0.4.7"
 
 [dependencies.sdl2]
 version = "0.32.2"

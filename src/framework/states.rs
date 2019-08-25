@@ -1,24 +1,24 @@
 //! State management and abstractions.
 
 /// Abstracts over a state in the state manager.
-pub trait State<C> {
-  fn input(&mut self, context: C);
-  fn update(&mut self, context: C);
-  fn draw(&mut self, context: C);
+pub trait State {
+  fn input(&mut self, delta_time: f64);
+  fn update(&mut self, delta_time: f64);
+  fn draw(&mut self, delta_time: f64);
 }
 
 /// Manages a set of states.
-pub struct StateManager<C> {
-  states: Vec<Box<dyn State<C>>>
+pub struct StateManager {
+  states: Vec<Box<dyn State>>
 }
 
-impl<C> StateManager<C> {
+impl StateManager {
   pub fn new() -> Self {
     Self { states: Vec::new() }
   }
 
   /// Pushes a new state onto the manager.
-  pub fn push<S: 'static + State<C>>(&mut self, state: S) {
+  pub fn push<S: 'static + State>(&mut self, state: S) {
     self.states.push(Box::new(state));
   }
 
@@ -28,25 +28,25 @@ impl<C> StateManager<C> {
   }
 
   /// Invokes 'input' on the top-most state in the manager.
-  pub fn input(&mut self, context: C) {
+  pub fn input(&mut self, delta_time: f64) {
     match self.states.last_mut() {
-      Some(state) => state.input(context),
+      Some(state) => state.input(delta_time),
       None => {}
     }
   }
 
   /// Invokes 'update' on the top-most state in the manager.
-  pub fn update(&mut self, context: C) {
+  pub fn update(&mut self, delta_time: f64) {
     match self.states.last_mut() {
-      Some(state) => state.update(context),
+      Some(state) => state.update(delta_time),
       None => {}
     }
   }
 
   /// Invokes 'draw' on the top-most state in the manager.
-  pub fn draw(&mut self, context: C) {
+  pub fn draw(&mut self, delta_time: f64) {
     match self.states.last_mut() {
-      Some(state) => state.draw(context),
+      Some(state) => state.draw(delta_time),
       None => {}
     }
   }
@@ -58,7 +58,7 @@ mod tests {
 
   struct TestState;
 
-  impl State<f64> for TestState {
+  impl State for TestState {
     fn input(&mut self, _delta_time: f64) {}
     fn update(&mut self, _delta_time: f64) {}
     fn draw(&mut self, _delta_time: f64) {}

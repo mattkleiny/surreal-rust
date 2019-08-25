@@ -1,6 +1,6 @@
 //! A headless platform for Surreal.
 
-use crate::audio::AudioClip;
+use crate::audio::{AudioClip, AudioClipID, AudioClipStatus};
 use crate::graphics::Color;
 use crate::input::Keycode;
 
@@ -36,7 +36,11 @@ impl Host for HeadlessHost {
 }
 
 impl AudioDevice for HeadlessHost {
-  fn play<A>(&mut self, _audio_clip: &AudioClip) {}
+  fn get_status(&self, _id: AudioClipID) -> AudioClipStatus {
+    AudioClipStatus::Unknown
+  }
+
+  fn play(&mut self, _audio_clip: &AudioClip) {}
 }
 
 impl GraphicsDevice for HeadlessHost {

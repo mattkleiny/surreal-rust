@@ -2,7 +2,9 @@
 
 #![allow(dead_code)]
 
+extern crate chrono;
 extern crate glam;
+extern crate log;
 extern crate rand;
 extern crate rlua;
 extern crate sdl2;
@@ -27,6 +29,8 @@ pub mod prelude {
   pub use crate::audio::*;
   pub use crate::collections::*;
   pub use crate::diagnostics::*;
+  #[cfg(feature = "editor")]
+  pub use crate::editor::*;
   pub use crate::framework::*;
   pub use crate::graphics::*;
   pub use crate::input::*;
@@ -34,9 +38,6 @@ pub mod prelude {
   pub use crate::platform::*;
   pub use crate::scripting::*;
   pub use crate::timing::*;
-
-  #[cfg(feature = "editor")]
-  pub use crate::editor::*;
 }
 
 /// A common result type for the entire module.
