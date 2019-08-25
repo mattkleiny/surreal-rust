@@ -10,7 +10,7 @@ use sdl2::video::{GLContext, Window};
 use crate::audio::{AudioClip, AudioClipId, AudioClipStatus};
 use crate::graphics::Color;
 use crate::input::Keycode;
-use crate::timing::{Clock, FPSCounter};
+use crate::timing::{Clock, FpsCounter};
 
 use super::*;
 
@@ -57,7 +57,7 @@ pub struct DesktopHost {
   is_closing: bool,
   render_debug_overlay: bool,
   delta_clock: Clock,
-  fps_counter: FPSCounter,
+  fps_counter: FpsCounter,
 }
 
 impl DesktopHost {
@@ -131,7 +131,7 @@ impl DesktopHost {
       is_closing: false,
       render_debug_overlay: true,
       delta_clock: Clock::new(),
-      fps_counter: FPSCounter::new(100),
+      fps_counter: FpsCounter::new(100),
     })
   }
 }

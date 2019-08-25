@@ -33,7 +33,7 @@ impl ScriptEngine for LuaScriptEngine {
 
       // try not to panic, if possible
       match result {
-        Err(error) => warn!("Script failed with error: {}", error),
+        Err(error) => warn!("Script failed: {}", error),
         _ => {}
       }
     });
