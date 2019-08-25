@@ -1,1 +1,0 @@
-//! A lightweight sprite system.

@@ -3,14 +3,16 @@
 pub use buffers::*;
 pub use materials::*;
 pub use meshes::*;
-pub use shaders::*;
-pub use textures::*;
 pub use primitives::*;
+pub use shaders::*;
+pub use sprites::*;
+pub use textures::*;
 
 mod buffers;
 mod materials;
 mod meshes;
 mod shaders;
+mod sprites;
 mod textures;
 mod primitives;
 
