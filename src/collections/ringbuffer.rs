@@ -78,7 +78,7 @@ impl<'a, T: Copy> Iterator for RingBufferIterator<'a, T> {
     // count the number of touched elements
     self.touched += 1;
     if self.touched < self.buffer.occupied() {
-      Some(self.buffer.elements[self.index].unwrap())
+      self.buffer.elements[self.index]
     } else {
       None
     }

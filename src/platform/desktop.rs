@@ -10,7 +10,7 @@ use sdl2::video::{GLContext, Window};
 use crate::audio::{AudioClip, AudioClipID, AudioClipStatus};
 use crate::graphics::Color;
 use crate::input::Keycode;
-use crate::timing::Clock;
+use crate::timing::{Clock, FPSCounter};
 
 use super::*;
 
@@ -57,6 +57,7 @@ pub struct DesktopHost {
   is_closing: bool,
   render_debug_overlay: bool,
   delta_clock: Clock,
+  fps_counter: FPSCounter,
 }
 
 impl DesktopHost {
@@ -130,6 +131,7 @@ impl DesktopHost {
       is_closing: false,
       render_debug_overlay: true,
       delta_clock: Clock::new(),
+      fps_counter: FPSCounter::new(100),
     })
   }
 }
@@ -193,6 +195,7 @@ impl Host for DesktopHost {
       self.imgui_context.io_mut().delta_time = delta_time as f32;
 
       let ui = self.imgui_context.frame();
+      let frames_per_second = self.fps_counter.fps();
 
       // build the debug overlay
       ui.window(im_str!("Debug Overlay"))
@@ -203,12 +206,9 @@ impl Host for DesktopHost {
           .save_settings(false)
           .position([16., 16.], Condition::Always)
           .build(|| {
-            ui.text("Surreal");
+            ui.text("Performance statistics");
             ui.separator();
-
-            let mouse_pos = ui.io().mouse_pos;
-
-            ui.text(format!("Mouse Position: ({:.1},{:.1})", mouse_pos[0], mouse_pos[1]));
+            ui.text(format!("Frames per second: {:.2}", frames_per_second));
           });
 
       // render the frame
@@ -226,6 +226,8 @@ impl Host for DesktopHost {
     if frame_time < self.max_frame_time {
       self.timer_subsystem.delay(self.max_frame_time - frame_time);
     }
+
+    self.fps_counter.tick(delta_time);
   }
 
   fn exit(&mut self) {

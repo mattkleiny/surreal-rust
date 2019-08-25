@@ -5,6 +5,8 @@ use specs::prelude::*;
 pub use components::*;
 pub use systems::*;
 
+use crate::diagnostics::*;
+
 mod components;
 mod systems;
 
@@ -15,7 +17,7 @@ pub struct DeltaTime(f64);
 /// An entity in an entity manager.
 #[derive(Clone, Copy, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Entity {
-  _entity: specs::Entity,
+  inner_entity: specs::Entity,
 }
 
 /// Manages the set of all entities in a scene.
@@ -39,13 +41,16 @@ impl EntityManager {
   /// Creates a new entity.
   pub fn create_entity(&mut self) -> Entity {
     Entity {
-      _entity: self.world.create_entity().build(),
+      inner_entity: self.world.create_entity().build(),
     }
   }
 
   /// Deletes an existing entity.
   pub fn delete_entity(&mut self, entity: Entity) {
-    self.world.delete_entity(entity._entity).unwrap();
+    match self.world.delete_entity(entity.inner_entity) {
+      Err(error) => error!("An error occurred whilst deleting an entity: {}", error),
+      _ => {}
+    }
   }
 
   /// Advances the entity manager by a single frame.

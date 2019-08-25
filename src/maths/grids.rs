@@ -39,7 +39,9 @@ impl<T> Grid<T> for DenseGrid<T> {
 
   #[inline]
   fn get(&self, x: u32, y: u32) -> &T {
-    &self.elements.get((x + y * self.width) as usize).unwrap()
+    &self.elements.get((x + y * self.width) as usize)
+        // TODO: find a way to do this without panicking
+        .expect(&format!("Out of bounds grid access at ({}, {})", x, y))
   }
 
   #[inline]
@@ -73,7 +75,9 @@ impl<T> Grid<T> for SparseGrid<T> {
   #[inline]
   fn get(&self, x: u32, y: u32) -> &T {
     let point = Vec2i::new(x, y);
-    self.elements.get(&point).unwrap()
+    self.elements.get(&point)
+        // TODO: find a way to do this without panicking
+        .expect(&format!("Out of bounds grid access at ({}, {})", x, y))
   }
 
   #[inline]

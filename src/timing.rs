@@ -47,7 +47,17 @@ impl FPSCounter {
 
   /// Returns the current measurement of FPS.
   pub fn fps(&self) -> f64 {
-    60. // TODO: implement me
+    // compute the average time over the ring buffer period
+    let average_frame_time = {
+      let mut total_frame_time = 0.;
+      for sample in &self.samples {
+        total_frame_time += sample;
+      }
+      total_frame_time / self.samples.occupied() as f64
+    };
+
+    // convert back into per-second average
+    1. / average_frame_time
   }
 }
 
@@ -111,6 +121,17 @@ mod tests {
     let delta2 = clock.tick(12000, 60);
 
     assert_ne!(delta1, delta2);
+  }
+
+  #[test]
+  fn fps_counter_should_accumulate_over_time() {
+    let mut counter = FPSCounter::new(100);
+
+    counter.tick(0.016);
+    counter.tick(0.016);
+    counter.tick(0.016);
+    counter.tick(0.016);
+    counter.tick(0.016);
   }
 
   #[test]
