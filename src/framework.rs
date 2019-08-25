@@ -4,7 +4,6 @@ pub use animation::*;
 pub use entities::*;
 pub use sprites::*;
 pub use states::*;
-pub use tiles::*;
 
 use super::*;
 
@@ -13,4 +12,3 @@ mod assets;
 mod sprites;
 mod states;
 mod entities;
-mod tiles;
