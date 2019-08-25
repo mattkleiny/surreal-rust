@@ -3,6 +3,9 @@
 #![allow(dead_code)]
 
 extern crate chrono;
+extern crate enumflags2;
+#[macro_use]
+extern crate enumflags2_derive;
 extern crate gl;
 extern crate glam;
 extern crate imgui;

@@ -39,14 +39,17 @@ impl<T> Grid<T> for DenseGrid<T> {
 
   #[inline]
   fn get(&self, x: u32, y: u32) -> &T {
-    &self.elements.get((x + y * self.width) as usize)
-        // TODO: find a way to do this without panicking
-        .expect(&format!("Out of bounds grid access at ({}, {})", x, y))
+    let index = (x + y * self.width) as usize;
+
+    // TODO: find a way to do this without panicking
+    &self.elements.get(index).expect(&format!("Out of bounds grid access at ({}, {})", x, y))
   }
 
   #[inline]
   fn set(&mut self, x: u32, y: u32, element: T) {
-    self.elements[(x + y * self.width) as usize] = element;
+    let index = (x + y * self.width) as usize;
+
+    self.elements[index] = element;
   }
 }
 
@@ -74,15 +77,16 @@ impl<T> Grid<T> for SparseGrid<T> {
 
   #[inline]
   fn get(&self, x: u32, y: u32) -> &T {
-    let point = Vec2i::new(x, y);
-    self.elements.get(&point)
-        // TODO: find a way to do this without panicking
-        .expect(&format!("Out of bounds grid access at ({}, {})", x, y))
+    let point = Vec2i::new(x as i32, y as i32);
+
+    // TODO: find a way to do this without panicking
+    self.elements.get(&point).expect(&format!("Out of bounds grid access at ({}, {})", x, y))
   }
 
   #[inline]
   fn set(&mut self, x: u32, y: u32, element: T) {
-    let point = Vec2i::new(x, y);
+    let point = Vec2i::new(x as i32, y as i32);
+
     self.elements.insert(point, element);
   }
 }
