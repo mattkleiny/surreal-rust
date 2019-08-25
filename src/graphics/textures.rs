@@ -3,7 +3,7 @@
 use glam::Vec2;
 
 #[derive(Debug)]
-pub struct TextureId(usize);
+struct TextureId(usize);
 
 #[derive(Debug)]
 pub struct Texture {
