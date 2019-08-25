@@ -1,15 +1,15 @@
 //! Scripting support for Surreal.
 
-use hlua::*;
+use rlua::Lua;
 
 use super::*;
 
 /// A scripting engine for Lua.
-pub struct ScriptEngine<'lua> {
-  lua: Lua<'lua>,
+pub struct ScriptEngine {
+  lua: Lua,
 }
 
-impl<'lua> ScriptEngine<'lua> {
+impl ScriptEngine {
   pub fn new() -> Self {
     Self {
       lua: Lua::new(),
@@ -18,10 +18,12 @@ impl<'lua> ScriptEngine<'lua> {
 
   /// Executes the given code on the engine.
   pub fn execute(&mut self, code: &String) -> Result<()> {
-    match self.lua.execute(code.as_str()) {
-      Ok(()) => Ok(()),
-      Err(error) => Err(format!("Script error: {}", error))
-    }
+    self.lua.context(|context| {
+      match context.load(code.as_str()).exec() {
+        Ok(()) => Ok(()),
+        Err(error) => Err(format!("Script error: {}", error))
+      }
+    })
   }
 }
 
