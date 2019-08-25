@@ -17,7 +17,6 @@ mod primitives;
 /// An abstraction over the graphics device for the system.
 pub trait GraphicsDevice {
   fn clear(&mut self, color: Color);
-  fn present(&mut self);
 }
 
 /// A pipeline of render passes for use in graphics rendering.

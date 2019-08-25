@@ -45,7 +45,6 @@ impl AudioDevice for HeadlessHost {
 
 impl GraphicsDevice for HeadlessHost {
   fn clear(&mut self, _color: Color) {}
-  fn present(&mut self) {}
 }
 
 impl InputDevice for HeadlessHost {

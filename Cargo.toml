@@ -9,13 +9,16 @@ default = []
 editor = []
 
 [dependencies]
+chrono = "0.4.7"
+gl = "0.10.0"
 glam = "0.7.1"
+imgui = "0.1.0"
+imgui-opengl-renderer = "0.5"
+imgui-sdl2 = "0.6.0"
+log = "0.4.8"
+rand = "0.7.0"
 rlua = "0.16.3"
 specs = "0.15.0"
-rand = "0.7.0"
-log = "0.4.8"
-chrono = "0.4.7"
-winapi = "0.3.7"
 
 [dependencies.sdl2]
 version = "0.32.2"

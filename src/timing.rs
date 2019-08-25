@@ -1,5 +1,7 @@
 //! A set of utilities for timing and synchronization.
 
+use crate::collections::RingBuffer;
+
 /// A representation of the time difference between frames.
 pub type DeltaTime = f64;
 
@@ -23,6 +25,29 @@ impl Clock {
 
     // compute delta time since the last update
     ((self.current_time - self.last_time) * 1000 / frequency) as f64 / 1000.
+  }
+}
+
+/// Counts frames per second using a smoothed average.
+pub struct FPSCounter {
+  samples: RingBuffer<f64>,
+}
+
+impl FPSCounter {
+  pub fn new(samples: usize) -> Self {
+    Self {
+      samples: RingBuffer::new(samples)
+    }
+  }
+
+  /// Advances the counter by the given delta amount.
+  pub fn tick(&mut self, delta_time: f64) {
+    self.samples.append(delta_time);
+  }
+
+  /// Returns the current measurement of FPS.
+  pub fn fps(&self) -> f64 {
+    60. // TODO: implement me
   }
 }
 

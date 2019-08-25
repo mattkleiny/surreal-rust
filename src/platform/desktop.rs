@@ -2,9 +2,10 @@
 
 use std::collections::HashSet;
 
+use imgui::{Condition, im_str};
 use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::mouse::MouseState;
-use sdl2::render::WindowCanvas;
+use sdl2::video::{GLContext, Window};
 
 use crate::audio::{AudioClip, AudioClipID, AudioClipStatus};
 use crate::graphics::Color;
@@ -41,15 +42,20 @@ impl Platform for DesktopPlatform {
 /// A host for the desktop platform.
 pub struct DesktopHost {
   sdl_context: Sdl,
+  gl_context: GLContext,
   audio_subsystem: AudioSubsystem,
   video_subsystem: VideoSubsystem,
   timer_subsystem: TimerSubsystem,
-  window_canvas: WindowCanvas,
+  window: Window,
+  imgui_context: imgui::Context,
+  imgui_renderer: imgui_opengl_renderer::Renderer,
+  imgui_sdl2: imgui_sdl2::ImguiSdl2,
   event_pump: EventPump,
   mouse_state: MouseState,
   keyboard_state: HashSet<Keycode>,
   max_frame_time: u32,
   is_closing: bool,
+  render_debug_overlay: bool,
   delta_clock: Clock,
 }
 
@@ -61,16 +67,38 @@ impl DesktopHost {
     let video_subsystem = sdl_context.video()?;
     let timer_subsystem = sdl_context.timer()?;
 
+    // set the desired gl version before creating the window
+    {
+      let attr = video_subsystem.gl_attr();
+
+      attr.set_context_profile(sdl2::video::GLProfile::Core);
+      attr.set_context_version(3, 1);
+    }
+
+    // prepare the main window and event pump
     let window = video_subsystem
         .window(configuration.title, configuration.width, configuration.height)
         .position_centered()
         .resizable()
+        .opengl()
         .allow_highdpi()
         .build()
         .unwrap();
 
-    let window_canvas = window.into_canvas().build().unwrap();
     let event_pump = sdl_context.event_pump().unwrap();
+
+    // prepare the opengl bindings and context
+    let gl_context = window.gl_create_context().unwrap();
+    gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as _);
+
+    // prepare dear imgui for debug overlays
+    let mut imgui_context = imgui::Context::create();
+    let imgui_sdl2 = imgui_sdl2::ImguiSdl2::new(&mut imgui_context, &window);
+
+    let imgui_renderer = imgui_opengl_renderer::Renderer::new(
+      &mut imgui_context,
+      |s| video_subsystem.gl_get_proc_address(s) as _,
+    );
 
     // capture the initial input device state
     let mouse_state = event_pump.mouse_state();
@@ -87,15 +115,20 @@ impl DesktopHost {
 
     Ok(Self {
       sdl_context,
+      gl_context,
       audio_subsystem,
       video_subsystem,
       timer_subsystem,
-      window_canvas,
+      window,
+      imgui_context,
+      imgui_renderer,
+      imgui_sdl2,
       event_pump,
       keyboard_state,
       mouse_state,
       max_frame_time: 1000 / max_fps,
       is_closing: false,
+      render_debug_overlay: true,
       delta_clock: Clock::new(),
     })
   }
@@ -104,13 +137,13 @@ impl DesktopHost {
 impl DesktopHost {
   /// Sets the title of the window.
   pub fn set_title(&mut self, title: &String) {
-    self.window_canvas.window_mut().set_title(title.as_str()).unwrap();
+    self.window.set_title(title.as_str()).unwrap();
   }
 }
 
 impl Host for DesktopHost {
-  fn width(&self) -> u32 { self.window_canvas.window().size().0 }
-  fn height(&self) -> u32 { self.window_canvas.window().size().1 }
+  fn width(&self) -> u32 { self.window.size().0 }
+  fn height(&self) -> u32 { self.window.size().1 }
   fn is_closing(&self) -> bool { self.is_closing }
 
   fn tick<C>(&mut self, mut callback: C)
@@ -149,7 +182,42 @@ impl Host for DesktopHost {
       self.timer_subsystem.performance_frequency(),
     );
 
+    self.clear(Color::BLACK);
+
     callback(self, delta_time);
+
+    // prepare the imgui frame and render the debug overlay
+    if self.render_debug_overlay {
+      // prepare frame, transfer delta time to the ui
+      self.imgui_sdl2.prepare_frame(self.imgui_context.io_mut(), &self.window, &self.mouse_state);
+      self.imgui_context.io_mut().delta_time = delta_time as f32;
+
+      let ui = self.imgui_context.frame();
+
+      // build the debug overlay
+      ui.window(im_str!("Debug Overlay"))
+          .title_bar(false)
+          .resizable(false)
+          .always_auto_resize(true)
+          .movable(false)
+          .save_settings(false)
+          .position([16., 16.], Condition::Always)
+          .build(|| {
+            ui.text("Surreal");
+            ui.separator();
+
+            let mouse_pos = ui.io().mouse_pos;
+
+            ui.text(format!("Mouse Position: ({:.1},{:.1})", mouse_pos[0], mouse_pos[1]));
+          });
+
+      // render the frame
+      self.imgui_sdl2.prepare_render(&ui, &self.window);
+      self.imgui_renderer.render(ui);
+    }
+
+    // present to the window
+    self.window.gl_swap_window();
 
     // don't eat the CPU; cap the FPS
     let frame_end = self.timer_subsystem.ticks();
@@ -177,12 +245,15 @@ impl AudioDevice for DesktopHost {
 
 impl GraphicsDevice for DesktopHost {
   fn clear(&mut self, color: Color) {
-    self.window_canvas.set_draw_color((color.r, color.g, color.b));
-    self.window_canvas.clear()
-  }
-
-  fn present(&mut self) {
-    self.window_canvas.present();
+    unsafe {
+      gl::ClearColor(
+        (color.r / 255) as f32,
+        (color.g / 255) as f32,
+        (color.b / 255) as f32,
+        (color.a / 255) as f32,
+      );
+      gl::Clear(gl::COLOR_BUFFER_BIT);
+    }
   }
 }
 
