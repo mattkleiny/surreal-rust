@@ -23,6 +23,7 @@ pub struct VertexElement {
 }
 
 /// Encapsulates a mesh of vertices that can be submitted for rendering.
+#[derive(Debug)]
 pub struct Mesh<V> {
   vertices: Vec<V>,
   indices: Vec<u16>,
@@ -74,6 +75,12 @@ impl<V: Vertex> Mesh<V> {
   /// Adds a quad of vertices to the mesh.
   pub fn add_quad(&mut self, _vertices: &[V; 4]) {
     unimplemented!()
+  }
+
+  /// Clears the contents of the mesh.
+  pub fn clear(&mut self) {
+    self.vertices.clear();
+    self.indices.clear();
   }
 }
 

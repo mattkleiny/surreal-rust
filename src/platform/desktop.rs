@@ -184,8 +184,6 @@ impl Host for DesktopHost {
       self.timer_subsystem.performance_frequency(),
     );
 
-    self.clear(Color::BLACK);
-
     callback(self, delta_time);
 
     // prepare the imgui frame and render the debug overlay

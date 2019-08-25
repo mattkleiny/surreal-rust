@@ -1,6 +1,7 @@
 //! A simple framework for game development.
 
 pub use animation::*;
+pub use assets::*;
 pub use entities::*;
 pub use states::*;
 
