@@ -19,10 +19,11 @@ impl ScriptEngine {
   /// Executes the given code on the engine.
   pub fn execute(&mut self, code: &String) -> Result<()> {
     self.lua.context(|context| {
-      match context.load(code.as_str()).exec() {
-        Ok(()) => Ok(()),
-        Err(error) => Err(format!("Script error: {}", error))
+      if let Err(error) = context.load(code.as_str()).exec() {
+        return Err(format!("Script error: {}", error));
       }
+
+      Ok(())
     })
   }
 }

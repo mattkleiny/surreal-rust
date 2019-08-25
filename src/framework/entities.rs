@@ -47,9 +47,8 @@ impl EntityManager {
 
   /// Deletes an existing entity.
   pub fn delete_entity(&mut self, entity: Entity) {
-    match self.world.delete_entity(entity.inner_entity) {
-      Err(error) => error!("An error occurred whilst deleting an entity: {}", error),
-      _ => {}
+    if let Err(error) = self.world.delete_entity(entity.inner_entity) {
+      error!("An error occurred whilst deleting an entity: {}", error);
     }
   }
 

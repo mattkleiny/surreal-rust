@@ -40,7 +40,9 @@ mod tests {
   #[test]
   fn it_should_load_new_assets() {
     let mut manager = AssetManager::new();
-    let asset = manager.load::<String>(&Path::new("res://test.json")).unwrap();
+
+    let path = Path::new("res://tests/simple.json");
+    let asset = manager.load::<String>(&path).unwrap();
 
     if let AssetRef::Ready(text) = asset {
       println!("{}", text)
