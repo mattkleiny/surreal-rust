@@ -3,11 +3,11 @@
 use std::sync::Arc;
 
 /// Identifies an audio clip uniquely.
-pub struct AudioClipID(usize);
+pub struct AudioClipId(usize);
 
 /// Represents an audio clip that can be played.
 pub struct AudioClip {
-  pub id: Arc<AudioClipID>,
+  pub id: Arc<AudioClipId>,
   pub volume: f32,
 }
 
@@ -24,7 +24,7 @@ pub enum AudioClipStatus {
 /// An abstraction over the audio device for the system.
 pub trait AudioDevice {
   /// Gets the status of the given audio clip.
-  fn get_status(&self, id: AudioClipID) -> AudioClipStatus;
+  fn get_status(&self, id: AudioClipId) -> AudioClipStatus;
 
   /// Plays the given clip on the device.
   fn play(&mut self, audio_clip: &AudioClip);

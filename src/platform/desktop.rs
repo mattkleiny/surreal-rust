@@ -7,7 +7,7 @@ use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::mouse::MouseState;
 use sdl2::video::{GLContext, Window};
 
-use crate::audio::{AudioClip, AudioClipID, AudioClipStatus};
+use crate::audio::{AudioClip, AudioClipId, AudioClipStatus};
 use crate::graphics::Color;
 use crate::input::Keycode;
 use crate::timing::{Clock, FPSCounter};
@@ -206,7 +206,7 @@ impl Host for DesktopHost {
           .save_settings(false)
           .position([16., 16.], Condition::Always)
           .build(|| {
-            ui.text("Performance statistics");
+            ui.text("Performance");
             ui.separator();
             ui.text(format!("Frames per second: {:.2}", frames_per_second));
           });
@@ -236,7 +236,7 @@ impl Host for DesktopHost {
 }
 
 impl AudioDevice for DesktopHost {
-  fn get_status(&self, _id: AudioClipID) -> AudioClipStatus {
+  fn get_status(&self, _id: AudioClipId) -> AudioClipStatus {
     unimplemented!()
   }
 
