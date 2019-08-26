@@ -23,6 +23,7 @@ pub mod collections;
 pub mod framework;
 pub mod graphics;
 pub mod input;
+pub mod jobs;
 pub mod maths;
 pub mod platform;
 pub mod scripting;
