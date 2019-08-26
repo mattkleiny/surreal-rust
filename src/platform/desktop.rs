@@ -71,7 +71,6 @@ impl DesktopHost {
     // set the desired gl version before creating the window
     {
       let attr = video_subsystem.gl_attr();
-
       attr.set_context_profile(sdl2::video::GLProfile::Core);
       attr.set_context_version(3, 1);
     }
@@ -208,6 +207,8 @@ impl Host for DesktopHost {
             ui.separator();
             ui.text(format!("Frames per second: {:.2}", frames_per_second));
           });
+
+      ui.show_demo_window(&mut true);
 
       // render the frame
       self.imgui_sdl2.prepare_render(&ui, &self.window);

@@ -1,11 +1,12 @@
 //! Scripting support for Surreal.
 
-use rlua::{Lua, UserData, UserDataMethods};
+use rlua::{Context, Lua, MetaMethod, UserData, UserDataMethods};
 
-use crate::diagnostics::*;
+use crate::maths::Vec2i;
 
 use super::*;
-use crate::maths::Vec2i;
+
+pub use rlua::Function;
 
 /// A scripting engine for Lua.
 pub struct ScriptEngine {
@@ -15,7 +16,7 @@ pub struct ScriptEngine {
 impl ScriptEngine {
   pub fn new() -> Self {
     Self {
-      lua: Self::create_interpreter()
+      lua: Self::create_interpreter(),
     }
   }
 
@@ -25,9 +26,8 @@ impl ScriptEngine {
 
     // initialize the global table
     lua.context(|context| {
-      let _globals = context.globals();
-
-      // TODO: include path/etc.
+      let globals = context.globals();
+      globals.set("vec2", context.create_function(|_, (x, y): (i32, i32)| Ok(Vec2i::new(x, y))).unwrap()).unwrap()
     });
 
     lua
@@ -38,34 +38,19 @@ impl ScriptEngine {
     self.lua.set_memory_limit(limit);
   }
 
-  /// Advances the interpreter by a single frame.
-  pub fn tick(&mut self, delta_time: f64) {
-    self.lua.context(|context| {
-      let globals = context.globals();
-
-      match globals.set("delta_time", delta_time) {
-        Err(error) => warn!("Script error: {}", error),
-        _ => {}
-      };
-    })
-  }
-
-  /// Executes the given code on the engine.
-  pub fn execute(&mut self, code: &String) -> Result<()> {
-    self.lua.context(|context| {
-      match context.load(code.as_str()).exec() {
-        Err(error) => Err(format!("Script error: {}", error)),
-        Ok(_) => Ok(())
-      }
-    })
+  /// Evaluates the given code in the script runtime and returns the result.
+  pub fn evaluate<F, R>(&mut self, body: F) -> R
+    where F: FnOnce(Context) -> R {
+    self.lua.context(body)
   }
 }
 
 impl UserData for Vec2i {
   fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
-    methods.add_method("magnitude", |_, vec, ()| { Ok(vec.x + vec.y) });
-    methods.add_method("length", |_, vec, ()| { Ok(vec.x + vec.y) });
-    methods.add_method("distance", |_, vec, ()| { Ok(vec.x + vec.y) });
+    methods.add_method("normal", |_, vec: &Vec2i, ()| { Ok(vec.x + vec.y) });
+    methods.add_meta_function(MetaMethod::Add, |_, (vec1, vec2): (Vec2i, Vec2i)| {
+      Ok(Vec2i::new(vec1.x + vec2.y, vec1.y + vec2.y))
+    });
   }
 }
 
@@ -74,16 +59,9 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_execute_basic_lua_instructions() {
+  fn it_should_evaluate_basic_instructions_without_fault() {
     let mut engine = ScriptEngine::new();
 
-    assert!(engine.execute(&"print 'Hello, World!'".to_string()).is_ok())
-  }
-
-  #[test]
-  fn it_should_not_panic_for_bad_expression() {
-    let mut engine = ScriptEngine::new();
-
-    assert!(engine.execute(&"print Hello, World!".to_string()).is_err());
+    engine.execute("print 'Hello, World!'").unwrap();
   }
 }

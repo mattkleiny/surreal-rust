@@ -4,6 +4,8 @@ use std::io::{Read, Seek, Write};
 
 use super::*;
 
+// TODO: rethink implicit references/etc.
+
 /// A path to a file in some file system.
 #[derive(Copy, Clone, Debug)]
 pub struct Path<'a> {
