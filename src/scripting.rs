@@ -1,12 +1,11 @@
 //! Scripting support for Surreal.
 
-use rlua::{Context, Lua, MetaMethod, UserData, UserDataMethods};
-
-use crate::maths::Vec2i;
+use rlua::{Context, Lua};
+pub use rlua::Function;
 
 use super::*;
 
-pub use rlua::Function;
+mod bindings;
 
 /// A scripting engine for Lua.
 pub struct ScriptEngine {
@@ -25,10 +24,22 @@ impl ScriptEngine {
     let lua = Lua::new();
 
     // initialize the global table
-    lua.context(|context| {
+    let result: rlua::Result<()> = lua.context(|context| {
       let globals = context.globals();
-      globals.set("vec2", context.create_function(|_, (x, y): (i32, i32)| Ok(Vec2i::new(x, y))).unwrap()).unwrap()
+
+      let vec2_factory = context.create_function(|_, (x, y): (i32, i32)| {
+        Ok(maths::Vec2i::new(x, y))
+      })?;
+
+      globals.set("Vec2", vec2_factory)?;
+
+      Ok(())
     });
+
+    match result {
+      Err(error) => panic!("{}", error),
+      _ => {}
+    }
 
     lua
   }
@@ -45,14 +56,6 @@ impl ScriptEngine {
   }
 }
 
-impl UserData for Vec2i {
-  fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
-    methods.add_method("normal", |_, vec: &Vec2i, ()| { Ok(vec.x + vec.y) });
-    methods.add_meta_function(MetaMethod::Add, |_, (vec1, vec2): (Vec2i, Vec2i)| {
-      Ok(Vec2i::new(vec1.x + vec2.y, vec1.y + vec2.y))
-    });
-  }
-}
 
 #[cfg(test)]
 mod tests {
@@ -62,6 +65,8 @@ mod tests {
   fn it_should_evaluate_basic_instructions_without_fault() {
     let mut engine = ScriptEngine::new();
 
-    engine.execute("print 'Hello, World!'").unwrap();
+    engine.evaluate(|context| {
+      context.load("print 'Hello, World!'").exec().unwrap();
+    });
   }
 }
