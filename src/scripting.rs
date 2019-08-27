@@ -1,11 +1,9 @@
 //! Scripting support for Surreal.
 
-use rlua::{Context, Lua};
-pub use rlua::Function;
+use rlua::prelude::*;
+pub use rlua::prelude::LuaFunction;
 
-use super::*;
-
-mod bindings;
+use crate::diagnostics::*;
 
 // TODO: implement an in-game console based on the script engine (lua).
 // TODO: support 'interactive debugging' using an in-game console.
@@ -31,11 +29,15 @@ impl ScriptEngine {
     let result: rlua::Result<()> = lua.context(|context| {
       let globals = context.globals();
 
-      let vec2_factory = context.create_function(|_, (x, y): (i32, i32)| {
-        Ok(maths::Vec2i::new(x, y))
-      })?;
+      let trace = context.create_function(|_, message: LuaString| { trace!("{}", message.to_str()?); Ok(()) })?;
+      let debug = context.create_function(|_, message: LuaString| { debug!("{}", message.to_str()?); Ok(()) })?;
+      let warn = context.create_function(|_, message: LuaString| { warn!("{}", message.to_str()?); Ok(()) })?;
+      let error = context.create_function(|_, message: LuaString| { error!("{}", message.to_str()?); Ok(()) })?;
 
-      globals.set("Vec2", vec2_factory)?;
+      globals.set("trace", trace)?;
+      globals.set("debug", debug)?;
+      globals.set("warn", warn)?;
+      globals.set("error", error)?;
 
       Ok(())
     });
@@ -55,11 +57,10 @@ impl ScriptEngine {
 
   /// Evaluates the given code in the script runtime and returns the result.
   pub fn evaluate<F, R>(&mut self, body: F) -> R
-    where F: FnOnce(Context) -> R {
+    where F: FnOnce(LuaContext) -> R {
     self.lua.context(body)
   }
 }
-
 
 #[cfg(test)]
 mod tests {
