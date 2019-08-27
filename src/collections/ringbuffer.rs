@@ -8,7 +8,7 @@ pub struct RingBuffer<T> {
   elements: Vec<Option<T>>,
 }
 
-impl<T: Copy> RingBuffer<T> {
+impl<T: Clone> RingBuffer<T> {
   pub fn new(capacity: usize) -> Self {
     Self {
       occupied: 0,
@@ -44,8 +44,8 @@ impl<T: Copy> RingBuffer<T> {
   }
 }
 
-impl<'a, T: Copy> IntoIterator for &'a RingBuffer<T> {
-  type Item = T;
+impl<'a, T: Clone> IntoIterator for &'a RingBuffer<T> {
+  type Item = &'a T;
   type IntoIter = RingBufferIterator<'a, T>;
 
   fn into_iter(self) -> Self::IntoIter {
@@ -64,8 +64,8 @@ pub struct RingBufferIterator<'a, T> {
   touched: usize,
 }
 
-impl<'a, T: Copy> Iterator for RingBufferIterator<'a, T> {
-  type Item = T;
+impl<'a, T: Clone> Iterator for RingBufferIterator<'a, T> {
+  type Item = &'a T;
 
   fn next(&mut self) -> Option<Self::Item> {
     // iterate backwards, wrapping around the list
@@ -78,7 +78,7 @@ impl<'a, T: Copy> Iterator for RingBufferIterator<'a, T> {
     // count the number of touched elements
     self.touched += 1;
     if self.touched < self.buffer.occupied() {
-      self.buffer.elements[self.index]
+      self.buffer.elements[self.index].as_ref()
     } else {
       None
     }

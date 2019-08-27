@@ -7,6 +7,10 @@ use super::*;
 
 mod bindings;
 
+// TODO: implement an in-game console based on the script engine (lua).
+// TODO: support 'interactive debugging' using an in-game console.
+// TODO: build a console utility using imgui that will allow execution of arbitrary commands/display log output.
+
 /// A scripting engine for Lua.
 pub struct ScriptEngine {
   lua: Lua,
