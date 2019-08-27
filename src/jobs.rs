@@ -18,7 +18,7 @@ impl JobManager {
   }
 
   /// Schedules the given job for execution, taking ownership of it.
-  pub fn schedule<J : Job>(&mut self, mut job: J) -> JobHandle {
+  pub fn schedule<J: Job>(&mut self, mut job: J) -> JobHandle {
     // TODO: implement me
     job.execute();
     JobHandle(1024)

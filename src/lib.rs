@@ -12,6 +12,7 @@ extern crate imgui;
 extern crate imgui_opengl_renderer;
 extern crate imgui_sdl2;
 extern crate log;
+extern crate may;
 extern crate rand;
 extern crate rlua;
 extern crate sdl2;
