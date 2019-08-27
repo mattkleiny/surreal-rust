@@ -9,18 +9,18 @@ use super::*;
 
 /// Represents a reference to some asset in the asset manager.
 #[derive(Clone, Debug)]
-pub enum AssetRef<'a, T> {
-  Ready(Arc<&'a T>),
+pub enum AssetRef<T> {
+  Ready(Arc<T>),
   Loading,
   NotFound,
 }
 
 /// A system for managing asset resources.
-pub struct AssetManager<'a> {
-  assets: Vec<&'a dyn Any>
+pub struct AssetManager {
+  assets: Vec<&'static dyn Any>
 }
 
-impl<'a> AssetManager<'a> {
+impl AssetManager {
   pub fn new() -> Self {
     Self {
       assets: Vec::new()
@@ -28,7 +28,7 @@ impl<'a> AssetManager<'a> {
   }
 
   /// Loads an asset from the given path.
-  pub fn load<T>(&mut self, _path: &Path) -> Result<AssetRef<'a, T>> {
+  pub fn load<T>(&mut self, _path: &Path) -> Result<AssetRef<T>> {
     unimplemented!()
   }
 }

@@ -30,9 +30,13 @@ pub struct EntityManager {
 impl EntityManager {
   pub fn new() -> Self {
     let mut world = World::new();
-    let mut dispatcher = DispatcherBuilder::new().build();
 
-    world.register::<Transform2d>();
+    let mut dispatcher = DispatcherBuilder::new()
+        .with(PhysicsSystem, "physics", &[])
+        .with(SpriteSystem, "sprites", &[])
+        .build();
+
+    world.register::<Transform>();
     dispatcher.setup(&mut world);
 
     Self { world, dispatcher }
