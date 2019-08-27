@@ -1,2 +1,0 @@
-//! Animation support and utilities.
-

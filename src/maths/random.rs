@@ -7,9 +7,9 @@ use rand::prelude::*;
 pub struct Seed(u64);
 
 impl Seed {
+  /// Generates a new seed using a new random value.
   pub fn random() -> Self {
-    let mut rng = rand::thread_rng();
-    Self(rng.gen())
+    Self(rand::thread_rng().gen())
   }
 
   /// Converts the seed into an RNG.

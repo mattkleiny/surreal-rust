@@ -1,60 +1,25 @@
 //! Interpolation and easing.
 
 use crate::graphics::Color;
+use num_traits::{AsPrimitive, FromPrimitive};
 
 /// Allows interpolation of arbitrary values.
-pub trait Lerp<T> {
-  fn lerp(from: T, to: T, amount: f32) -> Self;
+pub trait Lerp {
+  fn lerp(from: Self, to: Self, amount: f32) -> Self;
 }
 
-impl Lerp<u8> for u8 {
+/// Generic implementation of interpolation for all the primitive types.
+impl<T> Lerp for T where T: AsPrimitive<f32> + FromPrimitive {
   #[inline]
   fn lerp(a: Self, b: Self, t: f32) -> Self {
-    let a = a as f32;
-    let b = b as f32;
+    let a: f32 = a.as_();
+    let b: f32 = b.as_();
 
-    (a + t * (b - a)) as Self
+    Self::from_f32(a + t * (b - a)).unwrap()
   }
 }
 
-impl Lerp<u32> for u32 {
-  #[inline]
-  fn lerp(a: Self, b: Self, t: f32) -> Self {
-    let a = a as f32;
-    let b = b as f32;
-
-    (a + t * (b - a)) as Self
-  }
-}
-
-impl Lerp<u64> for u64 {
-  #[inline]
-  fn lerp(a: Self, b: Self, t: f32) -> Self {
-    let a = a as f32;
-    let b = b as f32;
-
-    (a + t * (b - a)) as Self
-  }
-}
-
-impl Lerp<f32> for f32 {
-  #[inline]
-  fn lerp(a: Self, b: Self, t: f32) -> Self {
-    a + t * (b - a)
-  }
-}
-
-impl Lerp<f64> for f64 {
-  #[inline]
-  fn lerp(a: Self, b: Self, t: f32) -> Self {
-    let a = a as f32;
-    let b = b as f32;
-
-    (a + t * (b - a)) as Self
-  }
-}
-
-impl Lerp<Color> for Color {
+impl Lerp for Color {
   #[inline]
   fn lerp(a: Color, b: Color, t: f32) -> Self {
     Color::RGBA(
