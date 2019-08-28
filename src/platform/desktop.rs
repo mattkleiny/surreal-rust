@@ -2,10 +2,10 @@
 
 use std::collections::HashSet;
 
-use imgui::{Condition, im_str};
-use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
+use imgui::{im_str, Condition};
 use sdl2::mouse::MouseState;
 use sdl2::video::{GLContext, Window};
+use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 
 use crate::audio::SoundClip;
 use crate::graphics::Color;
@@ -33,6 +33,9 @@ impl Platform for DesktopPlatform {
   type Host = DesktopHost;
   type Allocator = PortableAllocator;
   type FileSystem = PortableFileSystem;
+  type AudioDevice = DesktopHost;
+  type GraphicsDevice = DesktopHost;
+  type InputDevice = DesktopHost;
 
   fn build(&self) -> Result<Self::Host> {
     Ok(DesktopHost::new(self.configuration, self.max_fps)?)
@@ -77,13 +80,17 @@ impl DesktopHost {
 
     // prepare the main window and event pump
     let window = video_subsystem
-        .window(configuration.title, configuration.width, configuration.height)
-        .position_centered()
-        .resizable()
-        .opengl()
-        .allow_highdpi()
-        .build()
-        .unwrap();
+      .window(
+        configuration.title,
+        configuration.width,
+        configuration.height,
+      )
+      .position_centered()
+      .resizable()
+      .opengl()
+      .allow_highdpi()
+      .build()
+      .unwrap();
 
     let event_pump = sdl_context.event_pump().unwrap();
 
@@ -95,18 +102,17 @@ impl DesktopHost {
     let mut imgui_context = imgui::Context::create();
     let imgui_sdl2 = imgui_sdl2::ImguiSdl2::new(&mut imgui_context, &window);
 
-    let imgui_renderer = imgui_opengl_renderer::Renderer::new(
-      &mut imgui_context,
-      |s| video_subsystem.gl_get_proc_address(s) as _,
-    );
+    let imgui_renderer = imgui_opengl_renderer::Renderer::new(&mut imgui_context, |s| {
+      video_subsystem.gl_get_proc_address(s) as _
+    });
 
     // capture the initial input device state
     let mouse_state = event_pump.mouse_state();
     let keyboard_state = event_pump
-        .keyboard_state()
-        .pressed_scancodes()
-        .filter_map(Keycode::from_scancode)
-        .collect();
+      .keyboard_state()
+      .pressed_scancodes()
+      .filter_map(Keycode::from_scancode)
+      .collect();
 
     // toggle mouse cursor visibility
     if !configuration.show_cursor {
@@ -129,7 +135,7 @@ impl DesktopHost {
       max_frame_time: 1000 / max_fps,
       is_closing: false,
       render_debug_overlay: true,
-      delta_clock: Clock::new(),
+      delta_clock: Clock::new(32.),
       fps_counter: FpsCounter::new(100),
     })
   }
@@ -143,25 +149,34 @@ impl DesktopHost {
 }
 
 impl Host for DesktopHost {
-  fn width(&self) -> u32 { self.window.size().0 }
-  fn height(&self) -> u32 { self.window.size().1 }
-  fn is_closing(&self) -> bool { self.is_closing }
+  fn width(&self) -> u32 {
+    self.window.size().0
+  }
+  fn height(&self) -> u32 {
+    self.window.size().1
+  }
+
+  fn is_closing(&self) -> bool {
+    self.is_closing
+  }
 
   fn tick<C>(&mut self, mut callback: C)
-    where C: FnMut(&mut Self, DeltaTime) -> () {
+  where
+    C: FnMut(&mut Self, DeltaTime) -> (),
+  {
     // pump window events for the SDL2 window
     for event in self.event_pump.poll_iter() {
       use sdl2::event::Event;
 
       match event {
-        Event::KeyDown { keycode: Some(key), .. } => {
-          match key {
-            Keycode::Escape => {
-              self.is_closing = true;
-            }
-            _ => {}
+        Event::KeyDown {
+          keycode: Some(key), ..
+        } => match key {
+          Keycode::Escape => {
+            self.is_closing = true;
           }
-        }
+          _ => {}
+        },
         Event::Quit { .. } => {
           self.is_closing = true;
         }
@@ -171,10 +186,12 @@ impl Host for DesktopHost {
 
     // update the input device state
     self.mouse_state = self.event_pump.mouse_state();
-    self.keyboard_state = self.event_pump.keyboard_state()
-        .pressed_scancodes()
-        .filter_map(Keycode::from_scancode)
-        .collect();
+    self.keyboard_state = self
+      .event_pump
+      .keyboard_state()
+      .pressed_scancodes()
+      .filter_map(Keycode::from_scancode)
+      .collect();
 
     // compute the delta time using the timer subsystem
     let frame_start = self.timer_subsystem.ticks();
@@ -188,7 +205,9 @@ impl Host for DesktopHost {
     // prepare the imgui frame and render the debug overlay
     if self.render_debug_overlay {
       // prepare frame, transfer delta time to the ui
-      self.imgui_sdl2.prepare_frame(self.imgui_context.io_mut(), &self.window, &self.mouse_state);
+      self
+        .imgui_sdl2
+        .prepare_frame(self.imgui_context.io_mut(), &self.window, &self.mouse_state);
       self.imgui_context.io_mut().delta_time = delta_time as f32;
 
       let ui = self.imgui_context.frame();
@@ -196,17 +215,17 @@ impl Host for DesktopHost {
 
       // build the debug overlay
       ui.window(im_str!("Debug Overlay"))
-          .title_bar(false)
-          .resizable(false)
-          .always_auto_resize(true)
-          .movable(false)
-          .save_settings(false)
-          .position([16., 16.], Condition::Always)
-          .build(|| {
-            ui.text("Performance");
-            ui.separator();
-            ui.text(format!("Frames per second: {:.2}", frames_per_second));
-          });
+        .title_bar(false)
+        .resizable(false)
+        .always_auto_resize(true)
+        .movable(false)
+        .save_settings(false)
+        .position([16., 16.], Condition::Always)
+        .build(|| {
+          ui.text("Performance");
+          ui.separator();
+          ui.text(format!("Frames per second: {:.2}", frames_per_second));
+        });
 
       ui.show_demo_window(&mut true);
 

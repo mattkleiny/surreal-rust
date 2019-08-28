@@ -8,7 +8,7 @@ pub use random::*;
 
 mod directions;
 mod easing;
-mod linear;
 mod grids;
+mod linear;
 mod random;
 

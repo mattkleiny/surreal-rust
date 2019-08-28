@@ -13,6 +13,9 @@ impl Platform for HeadlessPlatform {
   type Host = HeadlessHost;
   type Allocator = PortableAllocator;
   type FileSystem = PortableFileSystem;
+  type AudioDevice = HeadlessHost;
+  type GraphicsDevice = HeadlessHost;
+  type InputDevice = HeadlessHost;
 
   fn build(&self) -> Result<Self::Host> {
     Ok(HeadlessHost)
@@ -23,12 +26,22 @@ impl Platform for HeadlessPlatform {
 pub struct HeadlessHost;
 
 impl Host for HeadlessHost {
-  fn width(&self) -> u32 { 1920 }
-  fn height(&self) -> u32 { 1080 }
-  fn is_closing(&self) -> bool { false }
+  fn width(&self) -> u32 {
+    1920
+  }
+
+  fn height(&self) -> u32 {
+    1080
+  }
+
+  fn is_closing(&self) -> bool {
+    false
+  }
 
   fn tick<C>(&mut self, mut callback: C)
-    where C: FnMut(&mut Self, DeltaTime) -> () {
+  where
+    C: FnMut(&mut Self, DeltaTime) -> (),
+  {
     callback(self, 1.); // just invoke the callback as quickly as possible
   }
 
@@ -44,7 +57,9 @@ impl GraphicsDevice for HeadlessHost {
 }
 
 impl InputDevice for HeadlessHost {
-  fn is_pressed(&self, _binding: impl Into<Keycode>) -> bool { false }
+  fn is_pressed(&self, _binding: impl Into<Keycode>) -> bool {
+    false
+  }
 }
 
 #[cfg(test)]

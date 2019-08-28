@@ -1,7 +1,19 @@
+use glam::Vec2;
+
 use super::*;
 
 /// A system for 2d physics.
-pub struct PhysicsSystem;
+pub struct PhysicsSystem {
+  gravity: Vec2,
+}
+
+impl PhysicsSystem {
+  pub fn new(gravity: Vec2) -> Self {
+    Self {
+      gravity
+    }
+  }
+}
 
 impl<'a> System<'a> for PhysicsSystem {
   type SystemData = (

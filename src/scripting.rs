@@ -29,10 +29,22 @@ impl ScriptEngine {
     let result: rlua::Result<()> = lua.context(|context| {
       let globals = context.globals();
 
-      let trace = context.create_function(|_, message: LuaString| { trace!("{}", message.to_str()?); Ok(()) })?;
-      let debug = context.create_function(|_, message: LuaString| { debug!("{}", message.to_str()?); Ok(()) })?;
-      let warn = context.create_function(|_, message: LuaString| { warn!("{}", message.to_str()?); Ok(()) })?;
-      let error = context.create_function(|_, message: LuaString| { error!("{}", message.to_str()?); Ok(()) })?;
+      let trace = context.create_function(|_, message: LuaString| {
+        trace!("{}", message.to_str()?);
+        Ok(())
+      })?;
+      let debug = context.create_function(|_, message: LuaString| {
+        debug!("{}", message.to_str()?);
+        Ok(())
+      })?;
+      let warn = context.create_function(|_, message: LuaString| {
+        warn!("{}", message.to_str()?);
+        Ok(())
+      })?;
+      let error = context.create_function(|_, message: LuaString| {
+        error!("{}", message.to_str()?);
+        Ok(())
+      })?;
 
       globals.set("trace", trace)?;
       globals.set("debug", debug)?;
@@ -72,6 +84,18 @@ mod tests {
 
     engine.evaluate(|context| {
       context.load("print 'Hello, World!'").exec().unwrap();
+    });
+  }
+
+  #[test]
+  fn it_should_execute_native_log_methods() {
+    let mut engine = ScriptEngine::new();
+
+    engine.evaluate(|context| {
+      context.load("trace 'Hello, World!'").exec().unwrap();
+      context.load("debug 'Hello, World!'").exec().unwrap();
+      context.load("warn 'Hello, World!'").exec().unwrap();
+      context.load("error 'Hello, World!'").exec().unwrap();
     });
   }
 }

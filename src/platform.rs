@@ -22,6 +22,9 @@ pub trait Platform {
   type Host: Host;
   type Allocator: Allocator;
   type FileSystem: FileSystem;
+  type AudioDevice: AudioDevice;
+  type GraphicsDevice: GraphicsDevice;
+  type InputDevice: InputDevice;
 
   /// Builds the host for the platform.
   fn build(&self) -> Result<Self::Host>;

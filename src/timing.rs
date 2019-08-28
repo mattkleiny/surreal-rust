@@ -8,13 +8,15 @@ pub type DeltaTime = f32;
 pub struct Clock {
   last_time: u64,
   current_time: u64,
+  max_time: f32,
 }
 
 impl Clock {
-  pub fn new() -> Self {
+  pub fn new(max_time: f32) -> Self {
     Self {
       last_time: 0,
       current_time: 0,
+      max_time,
     }
   }
 
@@ -24,7 +26,13 @@ impl Clock {
     self.current_time = current_time;
 
     // compute delta time since the last update
-    ((self.current_time - self.last_time) * 1000 / frequency) as f32 / 1000.
+    let delta_time = ((self.current_time - self.last_time) * 1000 / frequency) as f32 / 1000.;
+
+    if delta_time > self.max_time {
+      self.max_time
+    } else {
+      delta_time
+    }
   }
 }
 
@@ -36,7 +44,7 @@ pub struct FpsCounter {
 impl FpsCounter {
   pub fn new(samples: usize) -> Self {
     Self {
-      samples: RingBuffer::new(samples)
+      samples: RingBuffer::new(samples),
     }
   }
 

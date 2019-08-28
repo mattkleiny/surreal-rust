@@ -1,5 +1,7 @@
 //! Common graphics primitives.
 
+use crate::maths::{Random, RNG};
+
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[derive(Copy, Clone, Default, Eq, PartialEq, Debug)]
 pub struct Color {
@@ -24,5 +26,11 @@ impl Color {
   #[allow(non_snake_case)]
   pub const fn RGBA(r: u8, g: u8, b: u8, a: u8) -> Self {
     Self { r, g, b, a }
+  }
+}
+
+impl Random for Color {
+  fn random(rng: &mut RNG) -> Self {
+    Color::RGBA(rng.next_u8(), rng.next_u8(), rng.next_u8(), rng.next_u8())
   }
 }

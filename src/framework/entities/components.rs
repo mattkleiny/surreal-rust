@@ -19,13 +19,13 @@ impl Component for Transform {
 }
 
 #[derive(Debug)]
-pub struct Render {
+pub struct SpriteRender {
   pub pivot: Vec2,
   pub offset: Vec2,
   pub color: Color,
   pub sprite: AssetRef<Sprite>,
 }
 
-impl Component for Render {
+impl Component for SpriteRender {
   type Storage = DenseVecStorage<Self>;
 }

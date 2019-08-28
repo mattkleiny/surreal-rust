@@ -6,7 +6,7 @@ pub struct SpriteSystem;
 impl<'a> System<'a> for SpriteSystem {
   type SystemData = (
     Read<'a, DeltaTime>,
-    ReadStorage<'a, Render>
+    ReadStorage<'a, SpriteRender>
   );
 
   fn run(&mut self, data: Self::SystemData) {

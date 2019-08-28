@@ -31,12 +31,17 @@ impl EntityManager {
   pub fn new() -> Self {
     let mut world = World::new();
 
+    let physics = PhysicsSystem::new(glam::Vec2::new(0., -9.8));
+    let sprites = SpriteSystem;
+
     let mut dispatcher = DispatcherBuilder::new()
-        .with(PhysicsSystem, "physics", &[])
-        .with(SpriteSystem, "sprites", &[])
+        .with(physics, "physics", &[])
+        .with(sprites, "sprites", &["physics"])
         .build();
 
     world.register::<Transform>();
+    world.register::<SpriteRender>();
+
     dispatcher.setup(&mut world);
 
     Self { world, dispatcher }

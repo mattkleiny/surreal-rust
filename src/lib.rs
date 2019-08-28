@@ -11,8 +11,8 @@ extern crate glam;
 extern crate imgui;
 extern crate imgui_opengl_renderer;
 extern crate imgui_sdl2;
+extern crate hotwatch;
 extern crate log;
-extern crate may;
 extern crate rand;
 extern crate rlua;
 extern crate sdl2;
@@ -24,7 +24,6 @@ pub mod collections;
 pub mod framework;
 pub mod graphics;
 pub mod input;
-pub mod jobs;
 pub mod maths;
 pub mod platform;
 pub mod scripting;
@@ -35,7 +34,6 @@ pub mod editor;
 
 /// Re-export most public modules for easier consumption.
 pub mod prelude {
-  pub use crate::audio::*;
   pub use crate::collections::*;
   pub use crate::diagnostics::*;
   #[cfg(feature = "editor")]
