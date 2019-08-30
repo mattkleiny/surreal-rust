@@ -37,7 +37,7 @@ impl Platform for DesktopPlatform {
   type GraphicsDevice = DesktopHost;
   type InputDevice = DesktopHost;
 
-  fn build(&self) -> Result<Self::Host> {
+  fn build(&self) -> Result<Self::Host, PlatformError> {
     Ok(DesktopHost::new(self.configuration, self.max_fps)?)
   }
 }
@@ -65,11 +65,11 @@ pub struct DesktopHost {
 
 impl DesktopHost {
   // TODO: properly implement the Result<T> types here
-  pub fn new(configuration: WindowConfiguration, max_fps: u32) -> Result<Self> {
-    let sdl_context = sdl2::init()?;
-    let audio_subsystem = sdl_context.audio()?;
-    let video_subsystem = sdl_context.video()?;
-    let timer_subsystem = sdl_context.timer()?;
+  pub fn new(configuration: WindowConfiguration, max_fps: u32) -> Result<Self, PlatformError> {
+    let sdl_context = sdl2::init().map_err(|err| PlatformError::Initialization(err))?;
+    let audio_subsystem = sdl_context.audio().map_err(|err| PlatformError::Initialization(err))?;
+    let video_subsystem = sdl_context.video().map_err(|err| PlatformError::Initialization(err))?;
+    let timer_subsystem = sdl_context.timer().map_err(|err| PlatformError::Initialization(err))?;
 
     // set the desired gl version before creating the window
     {

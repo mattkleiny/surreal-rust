@@ -79,7 +79,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_evaluate_basic_instructions_without_fault() {
+  fn engine_should_evaluate_basic_instructions_without_fault() {
     let mut engine = ScriptEngine::new();
 
     engine.evaluate(|context| {
@@ -88,7 +88,7 @@ mod tests {
   }
 
   #[test]
-  fn it_should_execute_native_log_methods() {
+  fn engine_should_execute_native_log_methods() {
     let mut engine = ScriptEngine::new();
 
     engine.evaluate(|context| {

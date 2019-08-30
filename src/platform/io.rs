@@ -2,35 +2,41 @@
 
 use std::io::{Read, Seek, Write};
 
-use super::*;
-
 // TODO: rethink implicit references/etc.
 
-/// A path to a file in some file system.
-#[derive(Copy, Clone, Debug)]
-pub struct Path<'a> {
-  scheme: &'a str,
-  address: &'a str,
+/// Possible types of I/O error.
+#[derive(Debug)]
+pub enum Error {
+  NotFound(String),
+  FailedToRead(String),
+  FailedToWrite(String),
+  Unknown,
 }
 
-impl<'a> Path<'a> {
-  pub fn new(path: impl Into<&'a str>) -> Self {
-    let (scheme, address) = Self::parse(path);
+/// A path to a file in some file system.
+#[derive(Clone, Debug)]
+pub struct Path {
+  scheme: String,
+  address: String,
+}
+
+impl Path {
+  pub fn new<P: AsRef<str>>(path: P) -> Self {
+    let (scheme, address) = Self::parse(path.as_ref());
     Self { scheme, address }
   }
 
   /// Parses a path into scheme and address.
-  fn parse(raw: impl Into<&'a str>) -> (&'a str, &'a str) {
-    let string = raw.into();
-    let parts: Vec<&str> = string.split("://").collect();
+  fn parse(raw: &str) -> (String, String) {
+    let parts: Vec<&str> = raw.split("://").collect();
 
     if parts.len() > 1 {
       let scheme = parts[0];
       let address = parts[1];
 
-      (scheme, address)
+      (scheme.to_string(), address.to_string())
     } else {
-      ("", string)
+      ("".to_string(), raw.to_string())
     }
   }
 }
@@ -40,16 +46,16 @@ pub trait FileSystem {
   type ReadStream: Read + Seek;
   type WriteStream: Write + Seek;
 
-  fn open_read(path: Path) -> Result<Self::ReadStream>;
-  fn open_write(path: Path) -> Result<Self::WriteStream>;
+  fn open_read<P : AsRef<Path>>(path: P) -> Result<Self::ReadStream, Error>;
+  fn open_write<P : AsRef<Path>>(path: P) -> Result<Self::WriteStream, Error>;
 
-  fn read_as_string(path: Path) -> Result<String> {
+  fn read_as_string<P : AsRef<Path>>(path: P) -> Result<String, Error> {
     let mut buffer = String::new();
     let mut file = Self::open_read(path)?;
 
     match file.read_to_string(&mut buffer) {
       Ok(_) => Ok(buffer),
-      Err(_error) => Err(format!("Failed to read stream: {}", path.address))
+      Err(_error) => Err(Error::NotFound(path.address.clone()))
     }
   }
 }
@@ -61,17 +67,19 @@ impl FileSystem for PortableFileSystem {
   type ReadStream = std::fs::File;
   type WriteStream = std::fs::File;
 
-  fn open_read(path: Path) -> Result<Self::ReadStream> {
+  fn open_read<P : AsRef<Path>>(path: P) -> Result<Self::ReadStream, Error> {
+    let path = path.as_ref();
     match std::fs::File::open(path.address) {
       Ok(file) => Ok(file),
-      Err(_error) => Err(format!("Failed to open file reading: {}", path.address))
+      Err(_error) => Err(Error::FailedToRead(path.address.clone()))
     }
   }
 
-  fn open_write(path: Path) -> Result<Self::WriteStream> {
+  fn open_write<P : AsRef<Path>>(path: P) -> Result<Self::WriteStream, Error> {
+    let path = path.as_ref();
     match std::fs::File::create(path.address) {
       Ok(file) => Ok(file),
-      Err(_error) => Err(format!("Failed to open file for writing: {}", path.address))
+      Err(_error) => Err(Error::FailedToWrite(path.address.clone()))
     }
   }
 }
@@ -81,7 +89,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_parse_a_basic_path() {
+  fn path_should_a_basic_path() {
     let (scheme, address) = Path::parse("local://resources/test.png");
 
     assert_eq!(scheme, "local");
@@ -89,7 +97,7 @@ mod tests {
   }
 
   #[test]
-  fn it_should_parse_an_ambiguous_path() {
+  fn path_should_an_ambiguous_path() {
     let (scheme, address) = Path::parse("resources/test.png");
 
     assert_eq!(scheme, "");

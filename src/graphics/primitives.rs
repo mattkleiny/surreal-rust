@@ -34,3 +34,25 @@ impl Random for Color {
     Color::RGBA(rng.next_u8(), rng.next_u8(), rng.next_u8(), rng.next_u8())
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use crate::maths::Seed;
+
+  use super::*;
+
+  #[test]
+  fn color_should_generate_random_values() {
+    let seed = Seed::random();
+    let mut rng = seed.to_rng();
+
+    let color1 = Color::random(&mut rng);
+    let color2 = Color::random(&mut rng);
+    let color3 = Color::random(&mut rng);
+    let color4 = Color::random(&mut rng);
+
+    assert_ne!(color1, color2);
+    assert_ne!(color2, color3);
+    assert_ne!(color3, color4);
+  }
+}

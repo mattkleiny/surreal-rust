@@ -5,14 +5,19 @@ use std::collections::LinkedList;
 use std::marker::PhantomData;
 use std::mem::size_of;
 
-use super::*;
-
 /// A raw pointer type; be careful as this is inherently unsafe.
 type Memory = *mut u8;
 
 /// The default alignment for allocated memory blocks.
 /// This needs to be a power of 2.
 const DEFAULT_ALIGNMENT: usize = 2;
+
+/// Possible error types for this module.
+#[derive(Debug)]
+pub enum Error {
+  OutOfMemory,
+  SegmentationFault,
+}
 
 // Helpers for computing size and memory.
 pub const fn bytes(value: usize) -> usize { value }
@@ -49,14 +54,11 @@ impl<A: Allocator> MemoryHeap<A> {
     self.maximum_size - self.used_size
   }
 
-  pub fn allocate(&mut self, size: usize) -> Result<Memory> {
+  pub fn allocate(&mut self, size: usize) -> Result<Memory, Error> {
     // make sure we're not yet at capacity
     let capacity = self.capacity();
     if capacity < size {
-      return Err(format!(
-        "Unable to acquire {} bytes from the memory heap, \
-        there is only {} remaining.", size, capacity
-      ));
+      return Err(Error::OutOfMemory);
     }
 
     // find the first available block
@@ -101,13 +103,10 @@ impl<A: Allocator> MemoryBlock<A> {
     self.size - self.used
   }
 
-  pub fn allocate(&mut self, size: usize) -> Result<Memory> {
+  pub fn allocate(&mut self, size: usize) -> Result<Memory, Error> {
     let capacity = self.capacity();
     if capacity < size {
-      return Err(format!(
-        "Unable to acquire {} bytes from the memory block, \
-        there is only {} remaining.", size, capacity
-      ));
+      return Err(Error::OutOfMemory);
     }
 
     let result = unsafe {
@@ -174,7 +173,7 @@ mod tests {
   struct Point(f32, f32, f32);
 
   #[test]
-  fn it_should_allocate_a_memory_heap_without_fault() {
+  fn heap_should_allocate_without_fault() {
     let mut heap = MemoryHeap::<PortableAllocator>::new(kilobytes(1), kilobytes(4));
 
     heap.allocate(kilobytes(1)).unwrap();
@@ -186,7 +185,7 @@ mod tests {
   }
 
   #[test]
-  fn it_should_allocate_and_free_a_basic_memory_block() {
+  fn block_allocate_without_fault() {
     let mut block = MemoryBlock::<PortableAllocator>::new(kilobytes(4));
 
     block.allocate(kilobytes(2)).unwrap();
@@ -194,7 +193,7 @@ mod tests {
   }
 
   #[test]
-  fn it_should_allocate_a_struct_in_place() {
+  fn heap_should_allow_in_place_allocations() {
     let mut heap = MemoryHeap::<PortableAllocator>::new(kilobytes(1), kilobytes(4));
     let point = Point::allocate(&mut heap);
 

@@ -17,7 +17,7 @@ impl Platform for HeadlessPlatform {
   type GraphicsDevice = HeadlessHost;
   type InputDevice = HeadlessHost;
 
-  fn build(&self) -> Result<Self::Host> {
+  fn build(&self) -> Result<Self::Host, super::PlatformError> {
     Ok(HeadlessHost)
   }
 }

@@ -92,7 +92,6 @@ impl RNG {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::graphics::Color;
 
   #[test]
   fn seed_should_generate_a_valid_rng() {
@@ -103,20 +102,5 @@ mod tests {
     let second = rng.next_f64();
 
     assert_ne!(first, second);
-  }
-
-  #[test]
-  fn it_should_generate_random_values_via_triat() {
-    let seed = Seed::random();
-    let mut rng = seed.to_rng();
-
-    let color1 = Color::random(&mut rng);
-    let color2 = Color::random(&mut rng);
-    let color3 = Color::random(&mut rng);
-    let color4 = Color::random(&mut rng);
-
-    assert_ne!(color1, color2);
-    assert_ne!(color2, color3);
-    assert_ne!(color3, color4);
   }
 }

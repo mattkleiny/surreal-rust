@@ -10,12 +10,17 @@ use crate::graphics::GraphicsDevice;
 use crate::input::InputDevice;
 use crate::timing::DeltaTime;
 
-use super::*;
-
 mod desktop;
 mod headless;
 mod io;
 mod memory;
+
+/// Possible error types for platform construction.
+#[derive(Debug)]
+pub enum PlatformError {
+  Initialization(String),
+  Unknown,
+}
 
 /// An abstraction over the selected backend for the system.
 pub trait Platform {
@@ -27,7 +32,7 @@ pub trait Platform {
   type InputDevice: InputDevice;
 
   /// Builds the host for the platform.
-  fn build(&self) -> Result<Self::Host>;
+  fn build(&self) -> Result<Self::Host, PlatformError>;
 
   /// Runs a main loop, executing the given callback inside of the given platform.
   fn execute<C>(&self, mut callback: C)

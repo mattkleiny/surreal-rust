@@ -8,10 +8,10 @@ extern crate enumflags2;
 extern crate enumflags2_derive;
 extern crate gl;
 extern crate glam;
+extern crate hotwatch;
 extern crate imgui;
 extern crate imgui_opengl_renderer;
 extern crate imgui_sdl2;
-extern crate hotwatch;
 extern crate log;
 extern crate rand;
 extern crate rlua;
@@ -46,9 +46,3 @@ pub mod prelude {
   pub use crate::scripting::*;
   pub use crate::timing::*;
 }
-
-/// A common result type for the entire module.
-pub type Result<T> = std::result::Result<T, Error>;
-
-/// A common error type for the entire module.
-pub type Error = String;

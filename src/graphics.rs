@@ -16,6 +16,8 @@ mod sprites;
 mod textures;
 mod primitives;
 
+// TODO: consider using gfx-hal or rendy, here
+
 /// An abstraction over the graphics device for the system.
 pub trait GraphicsDevice {
   fn clear(&mut self, color: Color);
@@ -66,7 +68,7 @@ mod tests {
   }
 
   #[test]
-  fn it_should_execute_basic_render_passes() {
+  fn pipeline_should_execute_basic_render_passes() {
     let mut pipeline = GraphicsPipeline::new();
     pipeline.add(TestPass);
     pipeline.execute();

@@ -123,10 +123,10 @@ mod tests {
 
   #[test]
   fn clock_should_compute_delta_with_previous_frame() {
-    let mut clock = Clock::new();
+    let mut clock = Clock::new(32.);
 
     let delta1 = clock.tick(10000, 60);
-    let delta2 = clock.tick(12000, 60);
+    let delta2 = clock.tick(10010, 60);
 
     assert_ne!(delta1, delta2);
   }
