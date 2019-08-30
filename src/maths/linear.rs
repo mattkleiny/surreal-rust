@@ -4,7 +4,7 @@ use std::ops::Neg;
 
 pub use glam::*;
 
-use crate::maths::Lerp;
+use crate::maths::{Lerp, Random, RandomGenerator};
 
 /// An integral point in 2-space.
 #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -23,6 +23,12 @@ impl Vec2i {
 
   pub const fn unit_x() -> Self { Self::new(1, 0) }
   pub const fn unit_y() -> Self { Self::new(0, 1) }
+}
+
+impl RandomGenerator for Vec2i {
+  fn random(random: &mut Random) -> Self {
+    Self::new(random.next_i32(), random.next_i32())
+  }
 }
 
 impl Neg for Vec2i {
@@ -85,5 +91,11 @@ impl Lerp for Vec3i {
       i32::lerp(from.y, to.y, amount),
       i32::lerp(from.z, to.z, amount),
     )
+  }
+}
+
+impl RandomGenerator for Vec3i {
+  fn random(random: &mut Random) -> Self {
+    Self::new(random.next_i32(), random.next_i32(), random.next_i32())
   }
 }

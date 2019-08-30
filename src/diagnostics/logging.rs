@@ -51,9 +51,12 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_write_messages() {
+  fn logger_should_write_messages() {
     Logger::install();
 
     trace!("It's working!");
+    debug!("It's working!");
+    warn!("It's working!");
+    error!("It's working!");
   }
 }

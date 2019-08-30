@@ -7,7 +7,7 @@ use sdl2::mouse::MouseState;
 use sdl2::video::{GLContext, Window};
 use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 
-use crate::audio::SoundClip;
+use crate::audio::AudioClip;
 use crate::graphics::Color;
 use crate::input::Keycode;
 use crate::timing::{Clock, DeltaTime, FpsCounter};
@@ -66,10 +66,10 @@ pub struct DesktopHost {
 impl DesktopHost {
   // TODO: properly implement the Result<T> types here
   pub fn new(configuration: WindowConfiguration, max_fps: u32) -> Result<Self, PlatformError> {
-    let sdl_context = sdl2::init().map_err(|err| PlatformError::Initialization(err))?;
-    let audio_subsystem = sdl_context.audio().map_err(|err| PlatformError::Initialization(err))?;
-    let video_subsystem = sdl_context.video().map_err(|err| PlatformError::Initialization(err))?;
-    let timer_subsystem = sdl_context.timer().map_err(|err| PlatformError::Initialization(err))?;
+    let sdl_context = sdl2::init().map_err(|err| PlatformError::Creation(err))?;
+    let audio_subsystem = sdl_context.audio().map_err(|err| PlatformError::Creation(err))?;
+    let video_subsystem = sdl_context.video().map_err(|err| PlatformError::Creation(err))?;
+    let timer_subsystem = sdl_context.timer().map_err(|err| PlatformError::Creation(err))?;
 
     // set the desired gl version before creating the window
     {
@@ -254,7 +254,7 @@ impl Host for DesktopHost {
 }
 
 impl AudioDevice for DesktopHost {
-  fn play(&mut self, _clip: &SoundClip) {
+  fn play(&mut self, _clip: &AudioClip) {
     unimplemented!()
   }
 }

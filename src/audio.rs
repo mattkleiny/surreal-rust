@@ -1,17 +1,14 @@
 //! A lightweight audio system.
 
-pub use mixing::*;
-pub use music::*;
-pub use sound::*;
-
-mod mixing;
-mod music;
-mod sound;
-
 /// An abstraction over the audio device for the system.
 pub trait AudioDevice {
   /// Plays the given clip on the device.
-  fn play(&mut self, clip: &SoundClip);
+  fn play(&mut self, clip: &AudioClip);
+}
+
+/// An audio clip that can be played on an audio device.
+pub struct AudioClip {
+  id: AudioClipId,
 }
 
 /// Represents uniquely some audio clip in the system.

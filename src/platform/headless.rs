@@ -1,6 +1,6 @@
 //! A headless platform for Surreal.
 
-use crate::audio::SoundClip;
+use crate::audio::AudioClip;
 use crate::graphics::Color;
 use crate::input::Keycode;
 
@@ -49,7 +49,7 @@ impl Host for HeadlessHost {
 }
 
 impl AudioDevice for HeadlessHost {
-  fn play(&mut self, _clip: &SoundClip) {}
+  fn play(&mut self, _clip: &AudioClip) {}
 }
 
 impl GraphicsDevice for HeadlessHost {

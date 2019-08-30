@@ -18,7 +18,7 @@ mod memory;
 /// Possible error types for platform construction.
 #[derive(Debug)]
 pub enum PlatformError {
-  Initialization(String),
+  Creation(String),
   Unknown,
 }
 
@@ -35,15 +35,15 @@ pub trait Platform {
   fn build(&self) -> Result<Self::Host, PlatformError>;
 
   /// Runs a main loop, executing the given callback inside of the given platform.
-  fn execute<C>(&self, mut callback: C)
-    where Self: Sized, C: FnMut(&mut Self::Host, DeltaTime) -> () {
-    let mut host = self
-        .build()
-        .expect("Failed to build the platform host!");
+  fn execute<C>(&self, mut callback: C) -> Result<(), PlatformError>
+    where Self: Sized, C: FnMut(&mut Self::Host, DeltaTime) {
+    let mut host = self.build()?;
 
     while !host.is_closing() {
       host.tick(&mut callback);
     }
+
+    Ok(())
   }
 }
 

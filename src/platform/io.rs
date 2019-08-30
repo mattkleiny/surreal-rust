@@ -2,14 +2,11 @@
 
 use std::io::{Read, Seek, Write};
 
-// TODO: rethink implicit references/etc.
-
 /// Possible types of I/O error.
 #[derive(Debug)]
-pub enum Error {
+pub enum IOError {
   NotFound(String),
-  FailedToRead(String),
-  FailedToWrite(String),
+  IO(String),
   Unknown,
 }
 
@@ -46,17 +43,11 @@ pub trait FileSystem {
   type ReadStream: Read + Seek;
   type WriteStream: Write + Seek;
 
-  fn open_read<P : AsRef<Path>>(path: P) -> Result<Self::ReadStream, Error>;
-  fn open_write<P : AsRef<Path>>(path: P) -> Result<Self::WriteStream, Error>;
+  fn open_read<P: AsRef<Path>>(path: P) -> Result<Self::ReadStream, IOError>;
+  fn open_write<P: AsRef<Path>>(path: P) -> Result<Self::WriteStream, IOError>;
 
-  fn read_as_string<P : AsRef<Path>>(path: P) -> Result<String, Error> {
-    let mut buffer = String::new();
-    let mut file = Self::open_read(path)?;
-
-    match file.read_to_string(&mut buffer) {
-      Ok(_) => Ok(buffer),
-      Err(_error) => Err(Error::NotFound(path.address.clone()))
-    }
+  fn read_as_string<P: AsRef<Path>>(_path: P) -> Result<String, IOError> {
+    unimplemented!()
   }
 }
 
@@ -67,20 +58,12 @@ impl FileSystem for PortableFileSystem {
   type ReadStream = std::fs::File;
   type WriteStream = std::fs::File;
 
-  fn open_read<P : AsRef<Path>>(path: P) -> Result<Self::ReadStream, Error> {
-    let path = path.as_ref();
-    match std::fs::File::open(path.address) {
-      Ok(file) => Ok(file),
-      Err(_error) => Err(Error::FailedToRead(path.address.clone()))
-    }
+  fn open_read<P: AsRef<Path>>(_path: P) -> Result<Self::ReadStream, IOError> {
+    unimplemented!()
   }
 
-  fn open_write<P : AsRef<Path>>(path: P) -> Result<Self::WriteStream, Error> {
-    let path = path.as_ref();
-    match std::fs::File::create(path.address) {
-      Ok(file) => Ok(file),
-      Err(_error) => Err(Error::FailedToWrite(path.address.clone()))
-    }
+  fn open_write<P: AsRef<Path>>(_path: P) -> Result<Self::WriteStream, IOError> {
+    unimplemented!()
   }
 }
 

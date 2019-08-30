@@ -1,6 +1,6 @@
 //! Common graphics primitives.
 
-use crate::maths::{Random, RNG};
+use crate::maths::{Random, RandomGenerator};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[derive(Copy, Clone, Default, Eq, PartialEq, Debug)]
@@ -29,8 +29,8 @@ impl Color {
   }
 }
 
-impl Random for Color {
-  fn random(rng: &mut RNG) -> Self {
+impl RandomGenerator for Color {
+  fn random(rng: &mut Random) -> Self {
     Color::RGBA(rng.next_u8(), rng.next_u8(), rng.next_u8(), rng.next_u8())
   }
 }

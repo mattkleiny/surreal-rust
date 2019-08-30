@@ -3,9 +3,9 @@
 use rand::prelude::*;
 
 /// A type that can be randomly generated.
-pub trait Random {
+pub trait RandomGenerator {
   /// Generates a new random value of this type.
-  fn random(rng: &mut RNG) -> Self;
+  fn random(random: &mut Random) -> Self;
 }
 
 /// A seed for random generation.
@@ -20,18 +20,18 @@ impl Seed {
 
   /// Converts the seed into an RNG.
   #[inline]
-  pub fn to_rng(&self) -> RNG {
-    RNG::new(self.0)
+  pub fn to_rng(&self) -> Random {
+    Random::new(self.0)
   }
 }
 
 /// A random number generator.
 #[derive(Clone, Debug)]
-pub struct RNG {
+pub struct Random {
   rng: StdRng,
 }
 
-impl RNG {
+impl Random {
   pub fn new(seed: u64) -> Self {
     Self {
       rng: StdRng::seed_from_u64(seed),
