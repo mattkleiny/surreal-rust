@@ -1,4 +1,8 @@
 //! The OpenGL SPI for the Surreal graphics engine.
+//!
+//! This implementation is based directly on the unsafe 'gl' crate and is not meant
+//! to achieve Rust-grade 'safety', but is instead designed to be fast and robust for the purpose
+//! of building small games.
 
 use gl::types::{GLboolean, GLchar, GLenum, GLfloat, GLint, GLsizei, GLsizeiptr, GLuint, GLvoid};
 use glam::Mat4;
@@ -17,7 +21,13 @@ macro_rules! checked (
   });
 );
 
-/// An OpenGL graphics device that can be used directly inside the engine.
+/// The OpenGL graphics device implementation.
+///
+/// This require a valid context object on the active window, which is usually provided via SDL2.
+///
+/// No lifetime guarantees are made across instances fabricated by this device; this means it's
+/// possible for a shader/texture/etc resource to outlive the lifecycle of this device, causing
+/// an error after it's dropped.
 pub struct OpenGLGraphicsDevice {
   context: GLContext,
   default_framebuffer: GLuint,
@@ -54,8 +64,8 @@ impl OpenGLGraphicsDevice {
 
     gl::Viewport(origin.x, origin.y, size.x, size.y);
 
-    if render_state.options.clear_ops.has_ops() {
-      self.clear(&render_state.options.clear_ops);
+    if render_state.rasterizer.clear_ops.has_ops() {
+      self.clear(&render_state.rasterizer.clear_ops);
     }
 
     self.use_program(render_state.program);
@@ -69,10 +79,10 @@ impl OpenGLGraphicsDevice {
         self.set_uniform(uniform, data)
     );
 
-    self.set_render_options(&render_state.options);
+    self.set_render_options(&render_state.rasterizer);
   }
 
-  pub unsafe fn set_render_options(&self, render_options: &RenderOptions) {
+  pub unsafe fn set_render_options(&self, render_options: &RasterizerState) {
     match render_options.blend {
       BlendState::Off => {
         checked!(gl::Disable(gl::BLEND));
@@ -156,7 +166,7 @@ impl OpenGLGraphicsDevice {
   }
 
   pub unsafe fn reset_render_state(&self, render_state: &RenderState<Self>) {
-    self.reset_render_options(&render_state.options);
+    self.reset_render_options(&render_state.rasterizer);
 
     for texture_unit in 0..(render_state.textures.len() as u32) {
       self.unbind_texture(texture_unit);
@@ -166,7 +176,7 @@ impl OpenGLGraphicsDevice {
     self.unbind_vertex_array();
   }
 
-  pub unsafe fn reset_render_options(&self, render_options: &RenderOptions) {
+  pub unsafe fn reset_render_options(&self, render_options: &RasterizerState) {
     match render_options.blend {
       BlendState::Off => {}
       BlendState::RGBOneAlphaOneMinusSrcAlpha |

@@ -1,30 +1,24 @@
 //! A lightweight and fast cross-platform graphics engine.
 //!
 //! This implementation is designed to be portable across platforms through consumption of a standard graphics API
-//! across all of those platforms, as opposed to offering different engines for different platforms (ala gfx-hal).
+//! across all of those platforms, as opposed to offering different APIs for different platforms (ala gfx-hal).
 //!
 //! Whilst more directly coupled than other providers, this implementation is simple, direct and fast. It is designed
-//! to account for the majority use case as opposed to all possibilities and to do it well.
+//! to account for the majority use case as opposed to all possibilities and to do it well, as opposed to solving
+//! the general case and doing it poorly.
 
-pub use buffers::*;
+use glam::{Mat4, Vec2};
+use glam::f32::Vec4;
+
 pub use colors::*;
-pub use commands::*;
-pub use mesh::*;
-pub use shaders::*;
+pub use meshes::*;
 pub use sprites::*;
-pub use states::*;
-pub use textures::*;
 
 use crate::maths::{RectI, Vec2i};
 
-mod buffers;
 mod colors;
-mod commands;
-mod mesh;
-mod shaders;
+mod meshes;
 mod sprites;
-mod states;
-mod textures;
 
 #[cfg(feature = "opengl")]
 pub mod opengl;
@@ -79,4 +73,237 @@ pub trait GraphicsDevice: Sized {
   unsafe fn draw_arrays(&self, index_count: u32, render_state: &RenderState<Self>);
   unsafe fn draw_elements(&self, index_count: u32, render_state: &RenderState<Self>);
   unsafe fn draw_elements_instanced(&self, index_count: u32, instance_count: u32, render_state: &RenderState<Self>);
+}
+
+/// Encapsulates the rendering state of a particular device, allowing flexible state changes.
+///
+/// The state contains information, such as the active shader program, viewport, uniforms, etc.
+#[derive(Clone)]
+pub struct RenderState<'a, D> where D: GraphicsDevice {
+  pub target: &'a RenderTarget<'a, D>,
+  pub program: &'a D::Program,
+  pub vertex_array: &'a D::VertexArray,
+  pub primitive: PrimitiveType,
+  pub uniforms: &'a [(&'a D::Uniform, UniformData)],
+  pub textures: &'a [&'a D::Texture],
+  pub viewport: RectI,
+  pub rasterizer: RasterizerState,
+}
+
+/// Possible types of primitives that can be rendered by the device.
+#[derive(Clone, Copy)]
+pub enum PrimitiveType {
+  Triangles,
+  Lines,
+}
+
+/// Encapsulates the state of the device's rasterizer, such as blending/stencil/color ops, etc.
+#[derive(Clone, Debug)]
+pub struct RasterizerState {
+  pub blend: BlendState,
+  pub depth: Option<DepthState>,
+  pub stencil: Option<StencilState>,
+  pub clear_ops: ClearOps,
+  pub color_mask: bool,
+}
+
+impl Default for RasterizerState {
+  #[inline]
+  fn default() -> RasterizerState {
+    RasterizerState {
+      blend: BlendState::default(),
+      depth: None,
+      stencil: None,
+      clear_ops: ClearOps::default(),
+      color_mask: true,
+    }
+  }
+}
+
+/// A possible target for rendering.
+#[derive(Clone, Copy, Debug)]
+pub enum RenderTarget<'a, D> where D: GraphicsDevice {
+  /// The default window target; whatever the OpenGL context points to by default.
+  Default,
+  /// A specific and allocated frame-buffer.
+  Framebuffer(&'a D::Framebuffer),
+}
+
+/// Defines the possible blending states for the rasterizer.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum BlendState {
+  Off,
+  RGBOneAlphaOne,
+  RGBOneAlphaOneMinusSrcAlpha,
+  RGBSrcAlphaAlphaOneMinusSrcAlpha,
+}
+
+impl Default for BlendState {
+  #[inline]
+  fn default() -> BlendState {
+    BlendState::Off
+  }
+}
+
+/// Defines the possible depth testing states for the rasterizer.
+#[derive(Clone, Copy, Default, Debug)]
+pub struct DepthState {
+  pub func: DepthFunc,
+  pub write: bool,
+}
+
+/// Different fixed-function depth tests for the rasterizer.
+#[derive(Clone, Copy, Debug)]
+pub enum DepthFunc {
+  Less,
+  Always,
+}
+
+impl Default for DepthFunc {
+  #[inline]
+  fn default() -> DepthFunc {
+    DepthFunc::Less
+  }
+}
+
+/// Defines the possible stencil buffer states for the rasterizer.
+#[derive(Clone, Copy, Debug)]
+pub struct StencilState {
+  pub func: StencilFunc,
+  pub reference: u32,
+  pub mask: u32,
+  pub write: bool,
+}
+
+impl Default for StencilState {
+  #[inline]
+  fn default() -> StencilState {
+    StencilState {
+      func: StencilFunc::default(),
+      reference: 0,
+      mask: !0,
+      write: false,
+    }
+  }
+}
+
+/// Different fixed-function stencil tests for the rasterizer.
+#[derive(Clone, Copy, Debug)]
+pub enum StencilFunc {
+  Always,
+  Equal,
+}
+
+impl Default for StencilFunc {
+  #[inline]
+  fn default() -> StencilFunc {
+    StencilFunc::Always
+  }
+}
+
+/// Defines the possible clear operations for the rasterizer against the frame-buffer.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct ClearOps {
+  pub color: Option<Color>,
+  pub depth: Option<f32>,
+  pub stencil: Option<u8>,
+}
+
+impl ClearOps {
+  #[inline]
+  pub fn has_ops(&self) -> bool {
+    self.color.is_some() || self.depth.is_some() || self.stencil.is_some()
+  }
+}
+
+/// Defines possible data types used in a graphics buffer.
+#[derive(Clone, Copy, Debug)]
+pub enum BufferData<'a, T> {
+  Memory(&'a [T]),
+  Uninitialized(usize),
+}
+
+/// Different targets for buffer uploads and creation.
+#[derive(Clone, Copy, Debug)]
+pub enum BufferTarget {
+  Vertex,
+  Index,
+}
+
+/// Different buffer upload methods for optimized memory accesses.
+#[derive(Clone, Copy, Debug)]
+pub enum BufferUploadMode {
+  Static,
+  Dynamic,
+}
+
+/// Different types of vertex attributes supported by the graphics device.
+#[derive(Clone, Copy, Debug)]
+pub enum VertexAttrType {
+  F32,
+  I16,
+  I8,
+  U16,
+  U8,
+}
+
+/// A description of a vertex attribute to be used when constructing mesh resources.
+#[derive(Clone, Copy, Debug)]
+pub struct VertexAttrDescriptor {
+  pub size: usize,
+  pub class: VertexAttrClass,
+  pub attr_type: VertexAttrType,
+  pub stride: usize,
+  pub offset: usize,
+  pub divisor: u32,
+  pub buffer_index: u32,
+}
+
+/// Different types of vertex attribute classes.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum VertexAttrClass {
+  Float,
+  FloatNorm,
+  Int,
+}
+
+/// Different types of shader resources.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ShaderKind {
+  Vertex,
+  Fragment,
+}
+
+/// Encapsulates the possible data that can be uploaded to a shader's uniform variable.
+#[derive(Clone, Copy)]
+pub enum UniformData {
+  Int(i32),
+  Mat4([Mat4; 4]),
+  Vec2(Vec2),
+  Vec4(Vec4),
+  TextureUnit(u32),
+}
+
+/// Describes the different representations of texture data supported by the graphics device.
+#[derive(Clone, Debug)]
+pub enum TextureData {
+  U8(Vec<u8>),
+  U16(Vec<u16>),
+}
+
+/// Different supported texture formats by the graphics device.
+#[derive(Copy, Clone, Debug)]
+pub enum TextureFormat {
+  RGB8,
+  RGBA8,
+}
+
+impl TextureFormat {
+  #[inline]
+  pub fn channels(self) -> usize {
+    match self {
+      TextureFormat::RGB8 => 3,
+      TextureFormat::RGBA8 => 4,
+    }
+  }
 }

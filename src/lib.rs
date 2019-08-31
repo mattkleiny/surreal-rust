@@ -1,4 +1,9 @@
 //! A lightweight game engine for Rust.
+//!
+//! Surreal is designed to be a pluggable and simple engine, not unlike libGDX or MonoGame.
+//! 
+//! It's opinionated, but small in scope and purpose and is intended to form a solid 'library'-like
+//! platform for constructing small, but highly performant 2d and 3d games.
 
 #![allow(dead_code)]
 #![allow(unused_variables)]
