@@ -5,9 +5,6 @@ pub use headless::*;
 pub use io::*;
 pub use memory::*;
 
-use crate::audio::AudioDevice;
-use crate::graphics::GraphicsDevice;
-use crate::input::InputDevice;
 use crate::timing::DeltaTime;
 
 mod desktop;
@@ -25,11 +22,6 @@ pub enum PlatformError {
 /// An abstraction over the selected backend for the system.
 pub trait Platform {
   type Host: Host;
-  type Allocator: Allocator;
-  type FileSystem: FileSystem;
-  type AudioDevice: AudioDevice;
-  type GraphicsDevice: GraphicsDevice;
-  type InputDevice: InputDevice;
 
   /// Builds the host for the platform.
   fn build(&self) -> Result<Self::Host, PlatformError>;

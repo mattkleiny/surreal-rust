@@ -1,7 +1,6 @@
 //! Commonly used ECS components.
 
-use crate::framework::AssetRef;
-use crate::graphics::{Color, Sprite};
+use crate::graphics::Color;
 use crate::maths::{Quat, Vec2};
 
 use super::*;
@@ -23,7 +22,6 @@ pub struct SpriteRender {
   pub pivot: Vec2,
   pub offset: Vec2,
   pub color: Color,
-  pub sprite: AssetRef<Sprite>,
 }
 
 impl Component for SpriteRender {

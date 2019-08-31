@@ -3,7 +3,7 @@
 use rand::prelude::*;
 
 /// A type that can be randomly generated.
-pub trait RandomGenerator {
+pub trait RNG {
   /// Generates a new random value of this type.
   fn random(random: &mut Random) -> Self;
 }

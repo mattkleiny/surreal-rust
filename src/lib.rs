@@ -1,6 +1,7 @@
 //! A lightweight game engine for Rust.
 
 #![allow(dead_code)]
+#![allow(unused_variables)]
 
 extern crate chrono;
 extern crate enumflags2;

@@ -97,6 +97,8 @@ mod tests {
       buffer.append(i);
     }
 
+    assert_eq!(buffer.elements.len(), 16);
+
     buffer.clear();
   }
 }

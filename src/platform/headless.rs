@@ -1,9 +1,5 @@
 //! A headless platform for Surreal.
 
-use crate::audio::AudioClip;
-use crate::graphics::Color;
-use crate::input::Keycode;
-
 use super::*;
 
 /// A platform without visible output.
@@ -11,11 +7,6 @@ pub struct HeadlessPlatform;
 
 impl Platform for HeadlessPlatform {
   type Host = HeadlessHost;
-  type Allocator = PortableAllocator;
-  type FileSystem = PortableFileSystem;
-  type AudioDevice = HeadlessHost;
-  type GraphicsDevice = HeadlessHost;
-  type InputDevice = HeadlessHost;
 
   fn build(&self) -> Result<Self::Host, super::PlatformError> {
     Ok(HeadlessHost)
@@ -46,20 +37,6 @@ impl Host for HeadlessHost {
   }
 
   fn exit(&mut self) {}
-}
-
-impl AudioDevice for HeadlessHost {
-  fn play(&mut self, _clip: &AudioClip) {}
-}
-
-impl GraphicsDevice for HeadlessHost {
-  fn clear(&mut self, _color: Color) {}
-}
-
-impl InputDevice for HeadlessHost {
-  fn is_pressed(&self, _binding: impl Into<Keycode>) -> bool {
-    false
-  }
 }
 
 #[cfg(test)]

@@ -2,14 +2,13 @@
 
 use std::collections::HashSet;
 
-use imgui::{im_str, Condition};
+use imgui::{Condition, im_str};
+use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::mouse::MouseState;
 use sdl2::video::{GLContext, Window};
-use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 
-use crate::audio::AudioClip;
-use crate::graphics::Color;
-use crate::input::Keycode;
+use crate::audio::*;
+use crate::input::*;
 use crate::timing::{Clock, DeltaTime, FpsCounter};
 
 use super::*;
@@ -31,11 +30,6 @@ pub struct DesktopPlatform {
 
 impl Platform for DesktopPlatform {
   type Host = DesktopHost;
-  type Allocator = PortableAllocator;
-  type FileSystem = PortableFileSystem;
-  type AudioDevice = DesktopHost;
-  type GraphicsDevice = DesktopHost;
-  type InputDevice = DesktopHost;
 
   fn build(&self) -> Result<Self::Host, PlatformError> {
     Ok(DesktopHost::new(self.configuration, self.max_fps)?)
@@ -80,17 +74,17 @@ impl DesktopHost {
 
     // prepare the main window and event pump
     let window = video_subsystem
-      .window(
-        configuration.title,
-        configuration.width,
-        configuration.height,
-      )
-      .position_centered()
-      .resizable()
-      .opengl()
-      .allow_highdpi()
-      .build()
-      .unwrap();
+        .window(
+          configuration.title,
+          configuration.width,
+          configuration.height,
+        )
+        .position_centered()
+        .resizable()
+        .opengl()
+        .allow_highdpi()
+        .build()
+        .unwrap();
 
     let event_pump = sdl_context.event_pump().unwrap();
 
@@ -109,10 +103,10 @@ impl DesktopHost {
     // capture the initial input device state
     let mouse_state = event_pump.mouse_state();
     let keyboard_state = event_pump
-      .keyboard_state()
-      .pressed_scancodes()
-      .filter_map(Keycode::from_scancode)
-      .collect();
+        .keyboard_state()
+        .pressed_scancodes()
+        .filter_map(Keycode::from_scancode)
+        .collect();
 
     // toggle mouse cursor visibility
     if !configuration.show_cursor {
@@ -161,8 +155,8 @@ impl Host for DesktopHost {
   }
 
   fn tick<C>(&mut self, mut callback: C)
-  where
-    C: FnMut(&mut Self, DeltaTime) -> (),
+    where
+        C: FnMut(&mut Self, DeltaTime) -> (),
   {
     // pump window events for the SDL2 window
     for event in self.event_pump.poll_iter() {
@@ -187,11 +181,11 @@ impl Host for DesktopHost {
     // update the input device state
     self.mouse_state = self.event_pump.mouse_state();
     self.keyboard_state = self
-      .event_pump
-      .keyboard_state()
-      .pressed_scancodes()
-      .filter_map(Keycode::from_scancode)
-      .collect();
+        .event_pump
+        .keyboard_state()
+        .pressed_scancodes()
+        .filter_map(Keycode::from_scancode)
+        .collect();
 
     // compute the delta time using the timer subsystem
     let frame_start = self.timer_subsystem.ticks();
@@ -200,14 +194,19 @@ impl Host for DesktopHost {
       self.timer_subsystem.performance_frequency(),
     );
 
+    unsafe {
+      gl::ClearColor(0., 0., 0., 1.);
+      gl::Clear(gl::COLOR_BUFFER_BIT);
+    }
+
     callback(self, delta_time);
 
     // prepare the imgui frame and render the debug overlay
     if self.render_debug_overlay {
       // prepare frame, transfer delta time to the ui
       self
-        .imgui_sdl2
-        .prepare_frame(self.imgui_context.io_mut(), &self.window, &self.mouse_state);
+          .imgui_sdl2
+          .prepare_frame(self.imgui_context.io_mut(), &self.window, &self.mouse_state);
       self.imgui_context.io_mut().delta_time = delta_time as f32;
 
       let ui = self.imgui_context.frame();
@@ -215,17 +214,17 @@ impl Host for DesktopHost {
 
       // build the debug overlay
       ui.window(im_str!("Debug Overlay"))
-        .title_bar(false)
-        .resizable(false)
-        .always_auto_resize(true)
-        .movable(false)
-        .save_settings(false)
-        .position([16., 16.], Condition::Always)
-        .build(|| {
-          ui.text("Performance");
-          ui.separator();
-          ui.text(format!("Frames per second: {:.2}", frames_per_second));
-        });
+          .title_bar(false)
+          .resizable(false)
+          .always_auto_resize(true)
+          .movable(false)
+          .save_settings(false)
+          .position([16., 16.], Condition::Always)
+          .build(|| {
+            ui.text("Performance");
+            ui.separator();
+            ui.text(format!("Frames per second: {:.2}", frames_per_second));
+          });
 
       ui.show_demo_window(&mut true);
 
@@ -256,20 +255,6 @@ impl Host for DesktopHost {
 impl AudioDevice for DesktopHost {
   fn play(&mut self, _clip: &AudioClip) {
     unimplemented!()
-  }
-}
-
-impl GraphicsDevice for DesktopHost {
-  fn clear(&mut self, color: Color) {
-    unsafe {
-      gl::ClearColor(
-        (color.r / 255) as f32,
-        (color.g / 255) as f32,
-        (color.b / 255) as f32,
-        (color.a / 255) as f32,
-      );
-      gl::Clear(gl::COLOR_BUFFER_BIT);
-    }
   }
 }
 
