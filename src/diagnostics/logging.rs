@@ -4,19 +4,10 @@ use chrono::Timelike;
 use log::{LevelFilter, Log, Metadata, Record};
 pub use log::{debug, error, info, trace, warn};
 
-/// The static logger for Surreal.
-pub static LOGGER: Logger = Logger;
+static LOGGER: Logger = Logger;
 
 /// The standard logger for Surreal.
-pub struct Logger;
-
-impl Logger {
-  pub fn install() {
-    log::set_logger(&LOGGER)
-        .map(|()| log::set_max_level(LevelFilter::Trace))
-        .expect("Failed to set system logger!");
-  }
-}
+struct Logger;
 
 impl Log for Logger {
   fn enabled(&self, _metadata: &Metadata) -> bool { true }
@@ -46,17 +37,9 @@ impl Log for Logger {
   fn flush(&self) {}
 }
 
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn logger_should_write_messages() {
-    Logger::install();
-
-    trace!("It's working!");
-    debug!("It's working!");
-    warn!("It's working!");
-    error!("It's working!");
-  }
+/// Installs the default system logger.
+pub fn install_default_logger() {
+  log::set_logger(&LOGGER)
+      .map(|()| log::set_max_level(LevelFilter::Trace))
+      .expect("Failed to set system logger!");
 }

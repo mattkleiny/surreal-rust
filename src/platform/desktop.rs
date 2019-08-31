@@ -5,8 +5,10 @@ use std::collections::HashSet;
 use imgui::{Condition, im_str};
 use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::mouse::MouseState;
-use sdl2::video::{GLContext, Window};
+use sdl2::video::Window;
 
+use crate::graphics::{GraphicsDevice, ClearOps, Color};
+use crate::graphics::opengl::OpenGLGraphicsDevice;
 use crate::input::Keycode;
 use crate::timing::{Clock, DeltaTime, FpsCounter};
 
@@ -29,6 +31,7 @@ pub struct DesktopPlatform {
 
 impl Platform for DesktopPlatform {
   type Host = DesktopHost;
+  type GraphicsDevice = OpenGLGraphicsDevice;
 
   fn build(&self) -> Result<Self::Host, PlatformError> {
     Ok(DesktopHost::new(self.configuration, self.max_fps)?)
@@ -38,11 +41,11 @@ impl Platform for DesktopPlatform {
 /// A host for the desktop platform.
 pub struct DesktopHost {
   sdl_context: Sdl,
-  gl_context: GLContext,
   audio_subsystem: AudioSubsystem,
   video_subsystem: VideoSubsystem,
   timer_subsystem: TimerSubsystem,
   window: Window,
+  graphics_device: OpenGLGraphicsDevice,
   imgui_context: imgui::Context,
   imgui_renderer: imgui_opengl_renderer::Renderer,
   imgui_sdl2: imgui_sdl2::ImguiSdl2,
@@ -91,6 +94,9 @@ impl DesktopHost {
     let gl_context = window.gl_create_context().unwrap();
     gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as _);
 
+    // build the graphics device
+    let graphics_device = OpenGLGraphicsDevice::new(gl_context, 0);
+
     // prepare dear imgui for debug overlays
     let mut imgui_context = imgui::Context::create();
     let imgui_sdl2 = imgui_sdl2::ImguiSdl2::new(&mut imgui_context, &window);
@@ -114,11 +120,11 @@ impl DesktopHost {
 
     Ok(Self {
       sdl_context,
-      gl_context,
       audio_subsystem,
       video_subsystem,
       timer_subsystem,
       window,
+      graphics_device,
       imgui_context,
       imgui_renderer,
       imgui_sdl2,
@@ -141,12 +147,9 @@ impl DesktopHost {
   }
 }
 
-impl Host for DesktopHost {
-  fn width(&self) -> u32 {
-    self.window.size().0
-  }
-  fn height(&self) -> u32 {
-    self.window.size().1
+impl Host<DesktopPlatform> for DesktopHost {
+  fn graphics(&self) -> &OpenGLGraphicsDevice {
+    &self.graphics_device
   }
 
   fn is_closing(&self) -> bool {
@@ -154,9 +157,7 @@ impl Host for DesktopHost {
   }
 
   fn tick<C>(&mut self, mut callback: C)
-    where
-        C: FnMut(&mut Self, DeltaTime) -> (),
-  {
+    where C: FnMut(&mut Self, DeltaTime) -> () {
     // pump window events for the SDL2 window
     for event in self.event_pump.poll_iter() {
       use sdl2::event::Event;
@@ -193,19 +194,23 @@ impl Host for DesktopHost {
       self.timer_subsystem.performance_frequency(),
     );
 
+    // prepare the next frame for rendering
     unsafe {
-      gl::ClearColor(0., 0., 0., 1.);
-      gl::Clear(gl::COLOR_BUFFER_BIT);
+      self.graphics_device.begin_commands();
+      self.graphics_device.clear(&ClearOps {
+        color: Some(Color::BLACK),
+        depth: None,
+        stencil: None,
+      });
     }
 
+    // tick the game simulation
     callback(self, delta_time);
 
     // prepare the imgui frame and render the debug overlay
     if self.render_debug_overlay {
       // prepare frame, transfer delta time to the ui
-      self
-          .imgui_sdl2
-          .prepare_frame(self.imgui_context.io_mut(), &self.window, &self.mouse_state);
+      self.imgui_sdl2.prepare_frame(self.imgui_context.io_mut(), &self.window, &self.mouse_state);
       self.imgui_context.io_mut().delta_time = delta_time as f32;
 
       let ui = self.imgui_context.frame();
@@ -230,6 +235,11 @@ impl Host for DesktopHost {
       // render the frame
       self.imgui_sdl2.prepare_render(&ui, &self.window);
       self.imgui_renderer.render(ui);
+    }
+
+    // finish rendering
+    unsafe {
+      self.graphics_device.end_commands();
     }
 
     // present to the window

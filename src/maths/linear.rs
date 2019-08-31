@@ -125,4 +125,14 @@ impl RectI {
   pub fn new(left: i32, top: i32, right: i32, bottom: i32) -> Self {
     Self { left, top, right, bottom }
   }
+
+  #[inline]
+  pub fn origin(&self) -> Vec2i {
+    Vec2i::new(self.left, self.top)
+  }
+
+  #[inline]
+  pub fn size(&self) -> Vec2i {
+    Vec2i::new(self.right - self.left, self.bottom - self.top)
+  }
 }

@@ -1,14 +1,13 @@
 //! Platform abstractions and utilities.
 
 pub use desktop::*;
-pub use headless::*;
 pub use io::*;
 pub use memory::*;
 
 use crate::timing::DeltaTime;
+use crate::graphics::GraphicsDevice;
 
 mod desktop;
-mod headless;
 mod io;
 mod memory;
 
@@ -20,15 +19,16 @@ pub enum PlatformError {
 }
 
 /// An abstraction over the selected backend for the system.
-pub trait Platform {
-  type Host: Host;
+pub trait Platform: Sized {
+  type Host: Host<Self>;
+  type GraphicsDevice: GraphicsDevice;
 
   /// Builds the host for the platform.
   fn build(&self) -> Result<Self::Host, PlatformError>;
 
   /// Runs a main loop, executing the given callback inside of the given platform.
   fn execute<C>(&self, mut callback: C) -> Result<(), PlatformError>
-    where Self: Sized, C: FnMut(&mut Self::Host, DeltaTime) {
+    where C: FnMut(&mut Self::Host, DeltaTime) {
     let mut host = self.build()?;
 
     while !host.is_closing() {
@@ -40,9 +40,8 @@ pub trait Platform {
 }
 
 /// An abstraction over a 'host' in a particular platform.
-pub trait Host {
-  fn width(&self) -> u32;
-  fn height(&self) -> u32;
+pub trait Host<P: Platform>: Sized {
+  fn graphics(&self) -> &P::GraphicsDevice;
   fn is_closing(&self) -> bool;
 
   /// Ticks the host by a single frame, updating any platform systems and

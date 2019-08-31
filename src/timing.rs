@@ -58,9 +58,11 @@ impl FpsCounter {
     // compute the average time over the ring buffer period
     let average_frame_time = {
       let mut total_frame_time = 0.;
+
       for sample in &self.samples {
         total_frame_time += sample;
       }
+
       total_frame_time / self.samples.occupied() as f32
     };
 
