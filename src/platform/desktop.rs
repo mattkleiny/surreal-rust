@@ -26,15 +26,22 @@ pub struct WindowConfiguration {
 /// An abstraction over the desktop platform.
 pub struct DesktopPlatform {
   pub configuration: WindowConfiguration,
-  pub max_fps: u32,
+  pub max_fps: Option<u32>,
+  pub use_vsync: bool,
 }
 
 impl Platform for DesktopPlatform {
   type Host = DesktopHost;
   type GraphicsDevice = OpenGLGraphicsDevice;
 
-  fn build(&self) -> Result<Self::Host, PlatformError> {
-    Ok(DesktopHost::new(self.configuration, self.max_fps)?)
+  fn build(&self) -> Result<Self::Host, Error> {
+    let host = DesktopHost::new(
+      self.configuration,
+      self.max_fps,
+      self.use_vsync,
+    );
+
+    Ok(host?)
   }
 }
 
@@ -52,7 +59,7 @@ pub struct DesktopHost {
   event_pump: EventPump,
   mouse_state: MouseState,
   keyboard_state: HashSet<Keycode>,
-  max_frame_time: u32,
+  max_frame_time: Option<u32>,
   is_closing: bool,
   render_debug_overlay: bool,
   delta_clock: Clock,
@@ -60,12 +67,11 @@ pub struct DesktopHost {
 }
 
 impl DesktopHost {
-  // TODO: properly implement the Result<T> types here
-  pub fn new(configuration: WindowConfiguration, max_fps: u32) -> Result<Self, PlatformError> {
-    let sdl_context = sdl2::init().map_err(|err| PlatformError::Creation(err))?;
-    let audio_subsystem = sdl_context.audio().map_err(|err| PlatformError::Creation(err))?;
-    let video_subsystem = sdl_context.video().map_err(|err| PlatformError::Creation(err))?;
-    let timer_subsystem = sdl_context.timer().map_err(|err| PlatformError::Creation(err))?;
+  pub fn new(configuration: WindowConfiguration, max_fps: Option<u32>, use_vsync: bool) -> Result<Self, Error> {
+    let sdl_context = sdl2::init().map_err(|err| Error::FailedToCreate(err))?;
+    let audio_subsystem = sdl_context.audio().map_err(|err| Error::FailedToCreate(err))?;
+    let video_subsystem = sdl_context.video().map_err(|err| Error::FailedToCreate(err))?;
+    let timer_subsystem = sdl_context.timer().map_err(|err| Error::FailedToCreate(err))?;
 
     // set the desired gl version before creating the window
     {
@@ -86,16 +92,20 @@ impl DesktopHost {
         .opengl()
         .allow_highdpi()
         .build()
-        .unwrap();
+        .map_err(|err| Error::FailedToCreate(err.to_string()))?;
 
-    let event_pump = sdl_context.event_pump().unwrap();
+    let event_pump = sdl_context.event_pump().map_err(|err| Error::FailedToCreate(err))?;
 
     // prepare the opengl bindings and context
-    let gl_context = window.gl_create_context().unwrap();
+    let gl_context = window.gl_create_context().map_err(|err| Error::FailedToCreate(err))?;
     gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as _);
 
     // build the graphics device
     let graphics_device = OpenGLGraphicsDevice::new(gl_context, 0);
+
+    // toggle vsync based on setting
+    let vsync_enabled = if use_vsync { 1 } else { 0 };
+    video_subsystem.gl_set_swap_interval(vsync_enabled).map_err(|err| Error::FailedToCreate(err))?;
 
     // prepare dear imgui for debug overlays
     let mut imgui_context = imgui::Context::create();
@@ -131,19 +141,12 @@ impl DesktopHost {
       event_pump,
       keyboard_state,
       mouse_state,
-      max_frame_time: 1000 / max_fps,
+      max_frame_time: max_fps.map(|max_fps| 1000 / max_fps),
       is_closing: false,
       render_debug_overlay: true,
       delta_clock: Clock::new(32.),
       fps_counter: FpsCounter::new(100),
     })
-  }
-}
-
-impl DesktopHost {
-  /// Sets the title of the window.
-  pub fn set_title(&mut self, title: &String) {
-    self.window.set_title(title.as_str()).unwrap();
   }
 }
 
@@ -214,6 +217,8 @@ impl Host<DesktopPlatform> for DesktopHost {
       self.imgui_context.io_mut().delta_time = delta_time as f32;
 
       let ui = self.imgui_context.frame();
+
+      let average_frame_time = self.fps_counter.average_frame_time();
       let frames_per_second = self.fps_counter.fps();
 
       // build the debug overlay
@@ -225,12 +230,11 @@ impl Host<DesktopPlatform> for DesktopHost {
           .save_settings(false)
           .position([16., 16.], Condition::Always)
           .build(|| {
-            ui.text("Performance");
+            ui.text("Statistics");
             ui.separator();
+            ui.text(format!("Average frame time: {:.2}", average_frame_time));
             ui.text(format!("Frames per second: {:.2}", frames_per_second));
           });
-
-      ui.show_demo_window(&mut true);
 
       // render the frame
       self.imgui_sdl2.prepare_render(&ui, &self.window);
@@ -238,19 +242,21 @@ impl Host<DesktopPlatform> for DesktopHost {
     }
 
     // finish rendering
-    unsafe {
+    /*unsafe {
       self.graphics_device.end_commands();
-    }
+    }*/
 
     // present to the window
     self.window.gl_swap_window();
 
     // don't eat the CPU; cap the FPS
-    let frame_end = self.timer_subsystem.ticks();
-    let frame_time = frame_end - frame_start;
+    if let Some(max_frame_time) = self.max_frame_time {
+      let frame_end = self.timer_subsystem.ticks();
+      let frame_time = frame_end - frame_start;
 
-    if frame_time < self.max_frame_time {
-      self.timer_subsystem.delay(self.max_frame_time - frame_time);
+      if frame_time < max_frame_time {
+        self.timer_subsystem.delay(max_frame_time - frame_time);
+      }
     }
 
     self.fps_counter.tick(delta_time);

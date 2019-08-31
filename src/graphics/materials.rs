@@ -1,1 +1,0 @@
-//! GPU material abstractions.

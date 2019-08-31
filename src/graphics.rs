@@ -8,10 +8,7 @@
 
 pub use buffers::*;
 pub use colors::*;
-pub use materials::*;
-pub use meshes::*;
 pub use shaders::*;
-pub use sprites::*;
 pub use states::*;
 pub use textures::*;
 
@@ -19,10 +16,7 @@ use crate::maths::{RectI, Vec2i};
 
 mod buffers;
 mod colors;
-mod materials;
-mod meshes;
 mod shaders;
-mod sprites;
 mod states;
 mod textures;
 

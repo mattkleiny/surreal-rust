@@ -1,21 +1,16 @@
 //! Platform abstractions and utilities.
 
-pub use desktop::*;
-pub use io::*;
-pub use memory::*;
-
 use crate::timing::DeltaTime;
 use crate::graphics::GraphicsDevice;
 
-mod desktop;
-mod io;
-mod memory;
+pub mod desktop;
+pub mod io;
+pub mod memory;
 
 /// Possible error types for platform construction.
 #[derive(Debug)]
-pub enum PlatformError {
-  Creation(String),
-  Unknown,
+pub enum Error {
+  FailedToCreate(String)
 }
 
 /// An abstraction over the selected backend for the system.
@@ -24,10 +19,10 @@ pub trait Platform: Sized {
   type GraphicsDevice: GraphicsDevice;
 
   /// Builds the host for the platform.
-  fn build(&self) -> Result<Self::Host, PlatformError>;
+  fn build(&self) -> Result<Self::Host, Error>;
 
   /// Runs a main loop, executing the given callback inside of the given platform.
-  fn execute<C>(&self, mut callback: C) -> Result<(), PlatformError>
+  fn execute<C>(&self, mut callback: C) -> Result<(), Error>
     where C: FnMut(&mut Self::Host, DeltaTime) {
     let mut host = self.build()?;
 

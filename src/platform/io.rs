@@ -4,10 +4,9 @@ use std::io::{Read, Seek, Write};
 
 /// Possible types of I/O error.
 #[derive(Debug)]
-pub enum IOError {
+pub enum Error {
   NotFound(String),
   IO(String),
-  Unknown,
 }
 
 /// A path to a file in some file system.
@@ -43,10 +42,10 @@ pub trait FileSystem {
   type ReadStream: Read + Seek;
   type WriteStream: Write + Seek;
 
-  fn open_read<P: AsRef<Path>>(path: P) -> Result<Self::ReadStream, IOError>;
-  fn open_write<P: AsRef<Path>>(path: P) -> Result<Self::WriteStream, IOError>;
+  fn open_read<P: AsRef<Path>>(path: P) -> Result<Self::ReadStream, Error>;
+  fn open_write<P: AsRef<Path>>(path: P) -> Result<Self::WriteStream, Error>;
 
-  fn read_as_string<P: AsRef<Path>>(_path: P) -> Result<String, IOError> {
+  fn read_as_string<P: AsRef<Path>>(_path: P) -> Result<String, Error> {
     unimplemented!()
   }
 }
@@ -58,11 +57,11 @@ impl FileSystem for PortableFileSystem {
   type ReadStream = std::fs::File;
   type WriteStream = std::fs::File;
 
-  fn open_read<P: AsRef<Path>>(_path: P) -> Result<Self::ReadStream, IOError> {
+  fn open_read<P: AsRef<Path>>(_path: P) -> Result<Self::ReadStream, Error> {
     unimplemented!()
   }
 
-  fn open_write<P: AsRef<Path>>(_path: P) -> Result<Self::WriteStream, IOError> {
+  fn open_write<P: AsRef<Path>>(_path: P) -> Result<Self::WriteStream, Error> {
     unimplemented!()
   }
 }
