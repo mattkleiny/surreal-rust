@@ -9,6 +9,7 @@
 pub use buffers::*;
 pub use colors::*;
 pub use commands::*;
+pub use mesh::*;
 pub use shaders::*;
 pub use sprites::*;
 pub use states::*;
@@ -19,6 +20,7 @@ use crate::maths::{RectI, Vec2i};
 mod buffers;
 mod colors;
 mod commands;
+mod mesh;
 mod shaders;
 mod sprites;
 mod states;
@@ -52,7 +54,7 @@ pub trait GraphicsDevice: Sized {
   unsafe fn configure_vertex_attr(&self, vertex_array: &Self::VertexArray, attr: &Self::VertexAttr, descriptor: &VertexAttrDescriptor);
   unsafe fn create_framebuffer(&self, texture: Self::Texture) -> Self::Framebuffer;
   unsafe fn create_buffer(&self) -> Self::Buffer;
-  unsafe fn allocate_buffer<T>(&self, buffer: &Self::Buffer, data: BufferData<T>, target: BufferTarget, mode: BufferUploadMode);
+  unsafe fn upload_to_buffer<T>(&self, buffer: &Self::Buffer, data: BufferData<T>, target: BufferTarget, mode: BufferUploadMode);
 
   // shaders
   unsafe fn create_shader_from_source(&self, source: &[u8], kind: ShaderKind) -> Self::Shader;

@@ -7,7 +7,7 @@ pub struct RenderState<'a, D> where D: GraphicsDevice {
   pub target: &'a RenderTarget<'a, D>,
   pub program: &'a D::Program,
   pub vertex_array: &'a D::VertexArray,
-  pub primitive: Primitive,
+  pub primitive: PrimitiveType,
   pub uniforms: &'a [(&'a D::Uniform, UniformData)],
   pub textures: &'a [&'a D::Texture],
   pub viewport: RectI,
@@ -15,7 +15,7 @@ pub struct RenderState<'a, D> where D: GraphicsDevice {
 }
 
 #[derive(Clone, Copy)]
-pub enum Primitive {
+pub enum PrimitiveType {
   Triangles,
   Lines,
 }

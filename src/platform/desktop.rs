@@ -151,7 +151,7 @@ impl DesktopHost {
 }
 
 impl Host<DesktopPlatform> for DesktopHost {
-  fn graphics(&self) -> &OpenGLGraphicsDevice {
+  fn graphics_device(&self) -> &OpenGLGraphicsDevice {
     &self.graphics_device
   }
 

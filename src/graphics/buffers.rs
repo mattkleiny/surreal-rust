@@ -2,8 +2,8 @@
 
 #[derive(Clone, Copy, Debug)]
 pub enum BufferData<'a, T> {
-  Uninitialized(usize),
   Memory(&'a [T]),
+  Uninitialized(usize),
 }
 
 #[derive(Clone, Copy, Debug)]

@@ -371,7 +371,7 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
     Self::Buffer { id }
   }
 
-  unsafe fn allocate_buffer<T>(&self, buffer: &Self::Buffer, data: BufferData<T>, target: BufferTarget, mode: BufferUploadMode) {
+  unsafe fn upload_to_buffer<T>(&self, buffer: &Self::Buffer, data: BufferData<T>, target: BufferTarget, mode: BufferUploadMode) {
     let target = match target {
       BufferTarget::Vertex => gl::ARRAY_BUFFER,
       BufferTarget::Index => gl::ELEMENT_ARRAY_BUFFER,
@@ -735,11 +735,11 @@ impl DepthFunc {
   }
 }
 
-impl Primitive {
+impl PrimitiveType {
   fn to_gl_primitive(&self) -> GLuint {
     match self {
-      Primitive::Triangles => gl::TRIANGLES,
-      Primitive::Lines => gl::LINES,
+      PrimitiveType::Triangles => gl::TRIANGLES,
+      PrimitiveType::Lines => gl::LINES,
     }
   }
 }
