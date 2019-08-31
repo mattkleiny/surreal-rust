@@ -16,7 +16,6 @@ const DEFAULT_ALIGNMENT: usize = 2;
 #[derive(Debug)]
 pub enum Error {
   OutOfMemory,
-  SegmentationFault,
 }
 
 // Helpers for computing size and memory.

@@ -1,10 +1,8 @@
 //! Platform abstractions and utilities.
 
-use crate::timing::DeltaTime;
 use crate::graphics::GraphicsDevice;
 
 pub mod desktop;
-pub mod io;
 pub mod memory;
 
 /// Possible error types for platform construction.
@@ -30,11 +28,11 @@ pub trait Host<P: Platform>: Sized {
   /// Ticks the host by a single frame, updating any platform systems and
   /// advancing the game simulation via the given callback.
   fn tick<C>(&mut self, callback: C)
-    where C: FnMut(&mut Self, DeltaTime) -> ();
+    where C: FnMut(&mut Self, f32) -> ();
 
   /// Runs a main loop, executing the given callback inside of the given platform.
   fn execute<C>(&mut self, mut callback: C)
-    where C: FnMut(&mut Self, DeltaTime) {
+    where C: FnMut(&mut Self, f32) {
     while !self.is_closing() {
       self.tick(&mut callback);
     }

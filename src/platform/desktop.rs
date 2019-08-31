@@ -10,7 +10,7 @@ use sdl2::video::Window;
 
 use crate::graphics::{ClearOps, Color, GraphicsDevice};
 use crate::graphics::opengl::OpenGLGraphicsDevice;
-use crate::timing::{Clock, DeltaTime, FpsCounter};
+use crate::utilities::{Clock, FpsCounter};
 
 use super::*;
 
@@ -160,7 +160,7 @@ impl Host<DesktopPlatform> for DesktopHost {
   }
 
   fn tick<C>(&mut self, mut callback: C)
-    where C: FnMut(&mut Self, DeltaTime) -> () {
+    where C: FnMut(&mut Self, f32) -> () {
     // pump window events for the SDL2 window
     for event in self.event_pump.poll_iter() {
       use sdl2::event::Event;

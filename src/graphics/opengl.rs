@@ -604,25 +604,6 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
   }
 }
 
-/// The version/dialect of OpenGL we should render with.
-#[derive(Clone, Copy)]
-#[repr(u32)]
-pub enum OpenGLVersion {
-  /// OpenGL 3.0+, core profile.
-  GL3 = 0,
-  /// OpenGL ES 3.0+.
-  GLES3 = 1,
-}
-
-impl OpenGLVersion {
-  fn to_glsl_version_spec(&self) -> &'static str {
-    match *self {
-      OpenGLVersion::GL3 => "330",
-      OpenGLVersion::GLES3 => "300 es",
-    }
-  }
-}
-
 pub struct OpenGLVertexArray {
   pub id: GLuint,
 }

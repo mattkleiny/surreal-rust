@@ -2,9 +2,6 @@
 
 use crate::collections::RingBuffer;
 
-/// A representation of the time difference between frames.
-pub type DeltaTime = f32;
-
 #[derive(Clone, Debug)]
 pub struct Clock {
   last_time: u64,
@@ -22,7 +19,7 @@ impl Clock {
   }
 
   /// Ticks the clock by a single frame, returning a time delta.
-  pub fn tick(&mut self, current_time: u64, frequency: u64) -> DeltaTime {
+  pub fn tick(&mut self, current_time: u64, frequency: u64) -> f32 {
     self.last_time = self.current_time;
     self.current_time = current_time;
 
@@ -87,7 +84,7 @@ impl IntervalTimer {
     }
   }
 
-  pub fn tick(&mut self, delta_time: DeltaTime) -> bool {
+  pub fn tick(&mut self, delta_time: f32) -> bool {
     self.time_elapsed += delta_time;
     self.time_elapsed >= self.interval_in_secs
   }
