@@ -13,6 +13,9 @@ use crate::diagnostics::*;
 // TODO: build a console utility using imgui that will allow execution of arbitrary commands/display log output.
 
 /// A scripting engine for Lua.
+///
+/// This engine wraps the rlua interpreter with some default behaviour, and provides
+/// a simple API for extension and usability.
 pub struct ScriptEngine {
   lua: Lua,
 }

@@ -16,6 +16,7 @@ extern crate enumflags2_derive;
 extern crate gl;
 extern crate glam;
 extern crate hotwatch;
+pub extern crate image;
 extern crate imgui;
 extern crate imgui_opengl_renderer;
 extern crate imgui_sdl2;
@@ -34,9 +35,9 @@ pub mod scripting;
 pub mod timing;
 
 pub mod prelude {
+  pub use crate::collections::*;
   pub use crate::diagnostics::*;
   pub use crate::framework::*;
-  pub use crate::collections::*;
   pub use crate::graphics::*;
   pub use crate::maths::*;
   pub use crate::platform::*;

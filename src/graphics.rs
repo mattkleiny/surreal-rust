@@ -80,10 +80,10 @@ pub trait GraphicsDevice: Sized {
 /// The state contains information, such as the active shader program, viewport, uniforms, etc.
 #[derive(Clone)]
 pub struct RenderState<'a, D> where D: GraphicsDevice {
-  pub target: &'a RenderTarget<'a, D>,
-  pub program: &'a D::Program,
+  pub render_target: &'a RenderTarget<'a, D>,
+  pub shader_program: &'a D::Program,
   pub vertex_array: &'a D::VertexArray,
-  pub primitive: PrimitiveType,
+  pub primitive_type: PrimitiveType,
   pub uniforms: &'a [(&'a D::Uniform, UniformData)],
   pub textures: &'a [&'a D::Texture],
   pub viewport: RectI,
@@ -219,7 +219,9 @@ impl ClearOps {
 /// Defines possible data types used in a graphics buffer.
 #[derive(Clone, Copy, Debug)]
 pub enum BufferData<'a, T> {
+  /// The buffer is initialized, upload the given slice directly.
   Memory(&'a [T]),
+  /// The buffer is uninitialized, prepare the given number of bytes.
   Uninitialized(usize),
 }
 
@@ -278,7 +280,7 @@ pub enum ShaderKind {
 #[derive(Clone, Copy)]
 pub enum UniformData {
   Int(i32),
-  Mat4([Mat4; 4]),
+  Mat4(Mat4),
   Vec2(Vec2),
   Vec4(Vec4),
   TextureUnit(u32),

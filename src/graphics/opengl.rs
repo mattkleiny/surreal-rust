@@ -45,7 +45,7 @@ impl OpenGLGraphicsDevice {
     self.default_framebuffer = framebuffer;
   }
 
-  pub unsafe fn set_texture_parameters(&self, texture: &OpenGLTexture) {
+  unsafe fn set_texture_parameters(&self, texture: &OpenGLTexture) {
     self.bind_texture(texture, 0);
 
     checked!(gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint));
@@ -54,8 +54,8 @@ impl OpenGLGraphicsDevice {
     checked!(gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as GLint));
   }
 
-  pub unsafe fn set_render_state(&self, render_state: &RenderState<Self>) {
-    self.bind_render_target(render_state.target);
+  unsafe fn set_render_state(&self, render_state: &RenderState<Self>) {
+    self.bind_render_target(render_state.render_target);
 
     let (origin, size) = (
       render_state.viewport.origin(),
@@ -68,7 +68,7 @@ impl OpenGLGraphicsDevice {
       self.clear(&render_state.rasterizer.clear_ops);
     }
 
-    self.use_program(render_state.program);
+    self.use_program(render_state.shader_program);
     self.bind_vertex_array(render_state.vertex_array);
 
     for (texture_unit, texture) in render_state.textures.iter().enumerate() {
@@ -82,7 +82,7 @@ impl OpenGLGraphicsDevice {
     self.set_render_options(&render_state.rasterizer);
   }
 
-  pub unsafe fn set_render_options(&self, render_options: &RasterizerState) {
+  unsafe fn set_render_options(&self, render_options: &RasterizerState) {
     match render_options.blend {
       BlendState::Off => {
         checked!(gl::Disable(gl::BLEND));
@@ -143,14 +143,14 @@ impl OpenGLGraphicsDevice {
     checked!(gl::ColorMask(color_mask, color_mask, color_mask, color_mask));
   }
 
-  pub unsafe fn set_uniform(&self, uniform: &OpenGLUniform, data: &UniformData) {
+  unsafe fn set_uniform(&self, uniform: &OpenGLUniform, data: &UniformData) {
     match *data {
       UniformData::Int(value) => {
         checked!(gl::Uniform1i(uniform.location, value));
       }
       UniformData::Mat4(data) => {
-        assert_eq!(std::mem::size_of::<[Mat4; 4]>(), 4 * 4 * 4);
-        let data_ptr: *const Mat4 = data.as_ptr();
+        assert_eq!(std::mem::size_of::<Mat4>(), 4 * 4 * 4);
+        let data_ptr: *const f32 = data.as_ref().as_ptr();
         checked!(gl::UniformMatrix4fv(uniform.location, 1, gl::FALSE, data_ptr as *const GLfloat));
       }
       UniformData::Vec2(data) => {
@@ -165,7 +165,7 @@ impl OpenGLGraphicsDevice {
     }
   }
 
-  pub unsafe fn reset_render_state(&self, render_state: &RenderState<Self>) {
+  unsafe fn reset_render_state(&self, render_state: &RenderState<Self>) {
     self.reset_render_options(&render_state.rasterizer);
 
     for texture_unit in 0..(render_state.textures.len() as u32) {
@@ -176,7 +176,7 @@ impl OpenGLGraphicsDevice {
     self.unbind_vertex_array();
   }
 
-  pub unsafe fn reset_render_options(&self, render_options: &RasterizerState) {
+  unsafe fn reset_render_options(&self, render_options: &RasterizerState) {
     match render_options.blend {
       BlendState::Off => {}
       BlendState::RGBOneAlphaOneMinusSrcAlpha |
@@ -198,44 +198,44 @@ impl OpenGLGraphicsDevice {
     checked!(gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE));
   }
 
-  pub unsafe fn bind_render_target(&self, attachment: &RenderTarget<Self>) {
+  unsafe fn bind_render_target(&self, attachment: &RenderTarget<Self>) {
     match *attachment {
       RenderTarget::Default => self.bind_default_framebuffer(),
       RenderTarget::Framebuffer(framebuffer) => self.bind_framebuffer(framebuffer),
     }
   }
 
-  pub unsafe fn bind_vertex_array(&self, vertex_array: &OpenGLVertexArray) {
+  unsafe fn bind_vertex_array(&self, vertex_array: &OpenGLVertexArray) {
     checked!(gl::BindVertexArray(vertex_array.id));
   }
 
-  pub unsafe fn unbind_vertex_array(&self) {
+  unsafe fn unbind_vertex_array(&self) {
     checked!(gl::BindVertexArray(0));
   }
 
-  pub unsafe fn bind_texture(&self, texture: &OpenGLTexture, unit: u32) {
+  unsafe fn bind_texture(&self, texture: &OpenGLTexture, unit: u32) {
     checked!(gl::ActiveTexture(gl::TEXTURE0 + unit));
     checked!(gl::BindTexture(gl::TEXTURE_2D, texture.id));
   }
 
-  pub unsafe fn unbind_texture(&self, unit: u32) {
+  unsafe fn unbind_texture(&self, unit: u32) {
     checked!(gl::ActiveTexture(gl::TEXTURE0 + unit));
     checked!(gl::BindTexture(gl::TEXTURE_2D, 0));
   }
 
-  pub unsafe fn use_program(&self, program: &OpenGLProgram) {
+  unsafe fn use_program(&self, program: &OpenGLProgram) {
     checked!(gl::UseProgram(program.id));
   }
 
-  pub unsafe fn unuse_program(&self) {
+  unsafe fn unuse_program(&self) {
     checked!(gl::UseProgram(0));
   }
 
-  pub unsafe fn bind_default_framebuffer(&self) {
+  unsafe fn bind_default_framebuffer(&self) {
     checked!(gl::BindFramebuffer(gl::FRAMEBUFFER, self.default_framebuffer));
   }
 
-  pub unsafe fn bind_framebuffer(&self, framebuffer: &OpenGLFramebuffer) {
+  unsafe fn bind_framebuffer(&self, framebuffer: &OpenGLFramebuffer) {
     checked!(gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer.id));
   }
 
@@ -568,7 +568,7 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
     self.set_render_state(render_state);
 
     checked!(gl::DrawArrays(
-      render_state.primitive.to_gl_primitive(),
+      render_state.primitive_type.to_gl_primitive(),
       0,
       index_count as GLsizei,
     ));
@@ -580,7 +580,7 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
     self.set_render_state(render_state);
 
     checked!(gl::DrawElements(
-      render_state.primitive.to_gl_primitive(),
+      render_state.primitive_type.to_gl_primitive(),
       index_count as GLsizei,
       gl::UNSIGNED_INT,
       std::ptr::null(),
@@ -593,7 +593,7 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
     self.set_render_state(render_state);
 
     checked!(gl::DrawElementsInstanced(
-      render_state.primitive.to_gl_primitive(),
+      render_state.primitive_type.to_gl_primitive(),
       index_count as GLsizei,
       gl::UNSIGNED_INT,
       std::ptr::null(),

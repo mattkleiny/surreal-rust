@@ -77,7 +77,7 @@ impl DesktopHost {
     {
       let attr = video_subsystem.gl_attr();
       attr.set_context_profile(sdl2::video::GLProfile::Core);
-      attr.set_context_version(3, 1);
+      attr.set_context_version(3, 2);
     }
 
     // prepare the main window and event pump

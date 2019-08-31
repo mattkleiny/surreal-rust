@@ -9,8 +9,33 @@ const FRAGMENT_SHADER: &'static [u8] = include_bytes!("../../assets/shaders/spri
 
 /// A single vertex used in the optimized mesh representation of our sprite batch.
 struct SpriteVertex {
-  position: Vec2,
+  pos: Vec2,
   uv: Vec2,
+}
+
+impl SpriteVertex {
+  #[inline]
+  pub fn new(pos: Vec2, uv: Vec2) -> Self {
+    Self { pos, uv }
+  }
+}
+
+/// Sub-divides a texture with a region for sub-sampling.
+///
+/// This is useful for implementing sprite-sheets and the like.
+pub struct TextureRegion<D: GraphicsDevice> {
+  pub texture: D::Texture,
+  pub offset: Vec2,
+  pub size: Vec2i,
+}
+
+/// Represents a sprite that can be drawn to a sprite batch.
+///
+/// A sprite references a texture and denotes an offset/pivot within that texture to use for rendering.
+pub struct Sprite<D: GraphicsDevice> {
+  pub region: TextureRegion<D>,
+  pub pivot: Vec2,
+  pub offset: Vec2,
 }
 
 /// A simple sprite batch using a single, non-modifiable shader program.
@@ -19,7 +44,10 @@ struct SpriteVertex {
 /// the last draw call will be the top-most in the scene.
 pub struct SpriteBatch<D: GraphicsDevice> {
   shader_program: D::Program,
-  mesh: Mesh<D, SpriteVertex>,
+  mesh: Mesh<D>,
+  vertices: Vec<SpriteVertex>,
+  indices: Vec<u16>,
+  vertex_index: usize,
 }
 
 impl<D: GraphicsDevice> SpriteBatch<D> {
@@ -40,11 +68,88 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
     Self {
       shader_program,
       mesh: Mesh::new(device),
+      vertices: Vec::new(),
+      indices: Self::prepare_indices(max_sprites * 6), // 6 indices per sprite
+      vertex_index: 0,
+    }
+  }
+
+  /// Prepares the buffer of indices used for sprite rendering.
+  fn prepare_indices(index_count: usize) -> Vec<u16> {
+    let mut result = Vec::with_capacity(index_count);
+    let mut index = 0;
+
+    for i in (0..index_count).step_by(6) {
+      result.push(index);
+      result.push(index + 1);
+      result.push(index + 2);
+      result.push(index + 2);
+      result.push(index + 3);
+      result.push(index);
+
+      index += 4;
+    }
+
+    result
+  }
+
+  /// Draws the given sprite into the batch.
+  pub fn draw_sprite(&mut self, sprite: &Sprite<D>, position: Vec2) {
+    let region = &sprite.region;
+
+    let x = position.x();
+    let y = position.y();
+
+    let width = region.size.x as f32;
+    let height = region.size.y as f32;
+
+    let extent_x = x + width;
+    let extent_y = y + height;
+
+    let u1 = region.offset.x() / width;
+    let v1 = (region.offset.y() + height) / height;
+    let u2 = (region.offset.x() + width) / width;
+    let v2 = region.offset.y() / height;
+
+    self.vertices.push(vertex(x, y, u1, v1));
+    self.vertices.push(vertex(x, extent_x, u1, v2));
+    self.vertices.push(vertex(extent_x, extent_y, u2, v2));
+    self.vertices.push(vertex(extent_x, y, u2, v1));
+
+    self.vertex_index += 4;
+
+    /// Builds a new vertex
+    #[inline]
+    fn vertex(x: f32, y: f32, u: f32, v: f32) -> SpriteVertex {
+      SpriteVertex::new(Vec2::new(x, y), Vec2::new(u, v))
     }
   }
 
   /// Flushes the batch to the given graphics device.
-  pub fn flush(&mut self, device: &D) {
-    self.mesh.draw(device, &self.shader_program, PrimitiveType::Triangles);
+  pub fn flush(&mut self, device: &D, textures: &[&D::Texture]) {
+    if self.vertex_index > 0 {
+      // upload the vertices/indices to the GPU
+      self.mesh.upload_to_gpu(
+        device,
+        &self.vertices,
+        &self.indices,
+      );
+
+      // render the batch as a single mesh
+      self.mesh.render(
+        device,
+        self.indices.len(),
+        &self.shader_program,
+        textures,
+        PrimitiveType::Triangles,
+        Mat4::identity(),
+      );
+
+      // reset the batch for the next lot of vertices/indices
+      self.vertices.clear();
+      self.indices.clear();
+
+      self.vertex_index = 0;
+    }
   }
 }
