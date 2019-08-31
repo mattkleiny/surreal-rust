@@ -26,6 +26,7 @@ extern crate rand;
 extern crate rlua;
 extern crate sdl2;
 
+pub mod assets;
 pub mod diagnostics;
 pub mod collections;
 pub mod graphics;
@@ -35,6 +36,7 @@ pub mod scripting;
 pub mod utilities;
 
 pub mod prelude {
+  pub use crate::assets::*;
   pub use crate::collections::*;
   pub use crate::diagnostics::*;
   pub use crate::graphics::*;
