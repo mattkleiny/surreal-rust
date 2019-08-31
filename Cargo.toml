@@ -5,7 +5,10 @@ authors = ["Matt Kleinschafer <matt.kleinschafer@xero.com>"]
 edition = "2018"
 
 [features]
-default = []
+default = ["opengl", "framework", "scripting"]
+opengl = []
+framework = []
+scripting = []
 editor = []
 
 [dependencies]

@@ -7,8 +7,7 @@ use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::mouse::MouseState;
 use sdl2::video::{GLContext, Window};
 
-use crate::audio::*;
-use crate::input::*;
+use crate::input::Keycode;
 use crate::timing::{Clock, DeltaTime, FpsCounter};
 
 use super::*;
@@ -249,17 +248,5 @@ impl Host for DesktopHost {
 
   fn exit(&mut self) {
     self.is_closing = true;
-  }
-}
-
-impl AudioDevice for DesktopHost {
-  fn play(&mut self, _clip: &AudioClip) {
-    unimplemented!()
-  }
-}
-
-impl InputDevice for DesktopHost {
-  fn is_pressed(&self, binding: impl Into<Keycode>) -> bool {
-    self.keyboard_state.contains(&binding.into())
   }
 }

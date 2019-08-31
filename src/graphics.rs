@@ -1,27 +1,29 @@
 //! A lightweight graphics system.
 
-use glam::{Mat4, Vec2};
-use glam::f32::Vec4;
-
 pub use buffers::*;
+pub use colors::*;
 pub use materials::*;
 pub use meshes::*;
-pub use primitives::*;
 pub use shaders::*;
 pub use sprites::*;
+pub use states::*;
 pub use textures::*;
 
-use crate::maths::{Vec2i, RectI};
+use crate::maths::{RectI, Vec2i};
 
 mod buffers;
+mod colors;
 mod materials;
 mod meshes;
 mod shaders;
 mod sprites;
+mod states;
 mod textures;
-mod primitives;
 
-pub unsafe trait GraphicsDevice: Sized {
+#[cfg(feature = "opengl")]
+pub mod opengl;
+
+pub trait GraphicsDevice: Sized {
   type Buffer;
   type Framebuffer;
   type Program;
@@ -63,213 +65,4 @@ pub unsafe trait GraphicsDevice: Sized {
   fn draw_arrays(&self, index_count: u32, render_state: &RenderState<Self>);
   fn draw_elements(&self, index_count: u32, render_state: &RenderState<Self>);
   fn draw_elements_instanced(&self, index_count: u32, instance_count: u32, render_state: &RenderState<Self>);
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum VertexAttrType {
-  F32,
-  I16,
-  I8,
-  U16,
-  U8,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum BufferData<'a, T> {
-  Uninitialized(usize),
-  Memory(&'a [T]),
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum BufferTarget {
-  Vertex,
-  Index,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum BufferUploadMode {
-  Static,
-  Dynamic,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum ShaderKind {
-  Vertex,
-  Fragment,
-}
-
-#[derive(Clone, Copy)]
-pub enum UniformData {
-  Int(i32),
-  Mat4([Mat4; 4]),
-  Vec2(Vec2),
-  Vec4(Vec4),
-  TextureUnit(u32),
-}
-
-#[derive(Clone, Copy)]
-pub enum Primitive {
-  Triangles,
-  Lines,
-}
-
-#[derive(Clone)]
-pub struct RenderState<'a, D> where D: GraphicsDevice {
-  pub target: &'a RenderTarget<'a, D>,
-  pub program: &'a D::Program,
-  pub vertex_array: &'a D::VertexArray,
-  pub primitive: Primitive,
-  pub uniforms: &'a [(&'a D::Uniform, UniformData)],
-  pub textures: &'a [&'a D::Texture],
-  pub viewport: RectI,
-  pub options: RenderOptions,
-}
-
-#[derive(Clone, Debug)]
-pub struct RenderOptions {
-  pub blend: BlendState,
-  pub depth: Option<DepthState>,
-  pub stencil: Option<StencilState>,
-  pub clear_ops: ClearOps,
-  pub color_mask: bool,
-}
-
-#[derive(Clone, Copy, Debug, Default)]
-pub struct ClearOps {
-  pub color: Option<Color>,
-  pub depth: Option<f32>,
-  pub stencil: Option<u8>,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum RenderTarget<'a, D> where D: GraphicsDevice {
-  Default,
-  Framebuffer(&'a D::Framebuffer),
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum BlendState {
-  Off,
-  RGBOneAlphaOne,
-  RGBOneAlphaOneMinusSrcAlpha,
-  RGBSrcAlphaAlphaOneMinusSrcAlpha,
-}
-
-#[derive(Clone, Copy, Default, Debug)]
-pub struct DepthState {
-  pub func: DepthFunc,
-  pub write: bool,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum DepthFunc {
-  Less,
-  Always,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct StencilState {
-  pub func: StencilFunc,
-  pub reference: u32,
-  pub mask: u32,
-  pub write: bool,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum StencilFunc {
-  Always,
-  Equal,
-}
-
-impl Default for RenderOptions {
-  #[inline]
-  fn default() -> RenderOptions {
-    RenderOptions {
-      blend: BlendState::default(),
-      depth: None,
-      stencil: None,
-      clear_ops: ClearOps::default(),
-      color_mask: true,
-    }
-  }
-}
-
-impl Default for BlendState {
-  #[inline]
-  fn default() -> BlendState {
-    BlendState::Off
-  }
-}
-
-impl Default for StencilState {
-  #[inline]
-  fn default() -> StencilState {
-    StencilState {
-      func: StencilFunc::default(),
-      reference: 0,
-      mask: !0,
-      write: false,
-    }
-  }
-}
-
-impl Default for DepthFunc {
-  #[inline]
-  fn default() -> DepthFunc {
-    DepthFunc::Less
-  }
-}
-
-impl Default for StencilFunc {
-  #[inline]
-  fn default() -> StencilFunc {
-    StencilFunc::Always
-  }
-}
-
-#[derive(Clone, Debug)]
-pub enum TextureData {
-  U8(Vec<u8>),
-  U16(Vec<u16>),
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct VertexAttrDescriptor {
-  pub size: usize,
-  pub class: VertexAttrClass,
-  pub attr_type: VertexAttrType,
-  pub stride: usize,
-  pub offset: usize,
-  pub divisor: u32,
-  pub buffer_index: u32,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum VertexAttrClass {
-  Float,
-  FloatNorm,
-  Int,
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum TextureFormat {
-  RGB8,
-  RGBA8,
-}
-
-impl TextureFormat {
-  #[inline]
-  pub fn channels(self) -> usize {
-    match self {
-      TextureFormat::RGB8 => 3,
-      TextureFormat::RGBA8 => 4,
-    }
-  }
-}
-
-impl ClearOps {
-  #[inline]
-  pub fn has_ops(&self) -> bool {
-    self.color.is_some() || self.depth.is_some() || self.stencil.is_some()
-  }
 }
