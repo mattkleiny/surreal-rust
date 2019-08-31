@@ -18,26 +18,21 @@ extern crate log;
 extern crate rand;
 extern crate rlua;
 extern crate sdl2;
-extern crate specs;
 
-pub mod audio;
 pub mod diagnostics;
 pub mod framework;
 pub mod collections;
 pub mod graphics;
-pub mod input;
 pub mod maths;
 pub mod platform;
 pub mod scripting;
 pub mod timing;
 
 pub mod prelude {
-  pub use crate::audio::*;
   pub use crate::diagnostics::*;
   pub use crate::framework::*;
   pub use crate::collections::*;
   pub use crate::graphics::*;
-  pub use crate::input::*;
   pub use crate::maths::*;
   pub use crate::platform::*;
   pub use crate::scripting::*;

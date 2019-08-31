@@ -8,7 +8,9 @@
 
 pub use buffers::*;
 pub use colors::*;
+pub use commands::*;
 pub use shaders::*;
+pub use sprites::*;
 pub use states::*;
 pub use textures::*;
 
@@ -16,7 +18,9 @@ use crate::maths::{RectI, Vec2i};
 
 mod buffers;
 mod colors;
+mod commands;
 mod shaders;
+mod sprites;
 mod states;
 mod textures;
 

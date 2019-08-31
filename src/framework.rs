@@ -2,6 +2,5 @@
 
 pub mod assets;
 pub mod states;
-pub mod entities;
 
 // TODO: support animation utilities.

@@ -4,12 +4,12 @@ use std::collections::HashSet;
 
 use imgui::{Condition, im_str};
 use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
+use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseState;
 use sdl2::video::Window;
 
-use crate::graphics::{GraphicsDevice, ClearOps, Color};
+use crate::graphics::{ClearOps, Color, GraphicsDevice};
 use crate::graphics::opengl::OpenGLGraphicsDevice;
-use crate::input::Keycode;
 use crate::timing::{Clock, DeltaTime, FpsCounter};
 
 use super::*;
@@ -234,6 +234,8 @@ impl Host<DesktopPlatform> for DesktopHost {
             ui.separator();
             ui.text(format!("Average frame time: {:.2}", average_frame_time));
             ui.text(format!("Frames per second: {:.2}", frames_per_second));
+
+            // TODO: plot frame times here
           });
 
       // render the frame
@@ -242,9 +244,9 @@ impl Host<DesktopPlatform> for DesktopHost {
     }
 
     // finish rendering
-    /*unsafe {
+    unsafe {
       self.graphics_device.end_commands();
-    }*/
+    }
 
     // present to the window
     self.window.gl_swap_window();

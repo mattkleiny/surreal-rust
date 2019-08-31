@@ -5,6 +5,7 @@ use crate::collections::RingBuffer;
 /// A representation of the time difference between frames.
 pub type DeltaTime = f32;
 
+#[derive(Clone, Debug)]
 pub struct Clock {
   last_time: u64,
   current_time: u64,
@@ -37,6 +38,7 @@ impl Clock {
 }
 
 /// Counts frames per second using a smoothed average.
+#[derive(Clone, Debug)]
 pub struct FpsCounter {
   samples: RingBuffer<f32>,
 }
@@ -71,6 +73,7 @@ impl FpsCounter {
 }
 
 /// A simple time which ticks on a given basis and returns true if an interval has elapsed.
+#[derive(Clone, Debug)]
 pub struct IntervalTimer {
   time_elapsed: f32,
   interval_in_secs: f32,
@@ -95,6 +98,7 @@ impl IntervalTimer {
 }
 
 /// A simple time which ticks on a given basis and returns true if the given number of frames have elapsed.
+#[derive(Clone, Debug)]
 pub struct FrameTimer {
   frames_elapsed: u64,
   interval_in_frames: u64,

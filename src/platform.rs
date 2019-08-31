@@ -20,18 +20,6 @@ pub trait Platform: Sized {
 
   /// Builds the host for the platform.
   fn build(&self) -> Result<Self::Host, Error>;
-
-  /// Runs a main loop, executing the given callback inside of the given platform.
-  fn execute<C>(&self, mut callback: C) -> Result<(), Error>
-    where C: FnMut(&mut Self::Host, DeltaTime) {
-    let mut host = self.build()?;
-
-    while !host.is_closing() {
-      host.tick(&mut callback);
-    }
-
-    Ok(())
-  }
 }
 
 /// An abstraction over a 'host' in a particular platform.
@@ -43,6 +31,14 @@ pub trait Host<P: Platform>: Sized {
   /// advancing the game simulation via the given callback.
   fn tick<C>(&mut self, callback: C)
     where C: FnMut(&mut Self, DeltaTime) -> ();
+
+  /// Runs a main loop, executing the given callback inside of the given platform.
+  fn execute<C>(&mut self, mut callback: C)
+    where C: FnMut(&mut Self, DeltaTime) {
+    while !self.is_closing() {
+      self.tick(&mut callback);
+    }
+  }
 
   /// Exits the host, terminating the core loop.
   fn exit(&mut self);

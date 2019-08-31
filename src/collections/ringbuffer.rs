@@ -1,7 +1,7 @@
 //! A ring buffer of elements.
 
 /// A ring buffer of elements of type T.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct RingBuffer<T> {
   occupied: usize,
   write_pos: usize,
