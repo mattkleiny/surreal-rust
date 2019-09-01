@@ -28,6 +28,7 @@ pub struct DesktopPlatform {
   pub configuration: WindowConfiguration,
   pub max_fps: Option<u32>,
   pub use_vsync: bool,
+  pub background_color: Color,
 }
 
 impl Platform for DesktopPlatform {
@@ -39,6 +40,7 @@ impl Platform for DesktopPlatform {
       self.configuration,
       self.max_fps,
       self.use_vsync,
+      self.background_color,
     );
 
     Ok(host?)
@@ -64,10 +66,11 @@ pub struct DesktopHost {
   render_debug_overlay: bool,
   delta_clock: Clock,
   fps_counter: FpsCounter,
+  background_color: Color,
 }
 
 impl DesktopHost {
-  pub fn new(configuration: WindowConfiguration, max_fps: Option<u32>, use_vsync: bool) -> Result<Self, Error> {
+  pub fn new(configuration: WindowConfiguration, max_fps: Option<u32>, use_vsync: bool, background_color: Color) -> Result<Self, Error> {
     let sdl_context = sdl2::init().map_err(|err| Error::FailedToCreate(err))?;
     let audio_subsystem = sdl_context.audio().map_err(|err| Error::FailedToCreate(err))?;
     let video_subsystem = sdl_context.video().map_err(|err| Error::FailedToCreate(err))?;
@@ -146,6 +149,7 @@ impl DesktopHost {
       render_debug_overlay: true,
       delta_clock: Clock::new(32.),
       fps_counter: FpsCounter::new(100),
+      background_color,
     })
   }
 }
@@ -201,7 +205,7 @@ impl Host<DesktopPlatform> for DesktopHost {
     unsafe {
       self.graphics_device.begin_commands();
       self.graphics_device.clear(&ClearOps {
-        color: Some(Color::BLACK),
+        color: Some(self.background_color),
         depth: None,
         stencil: None,
       });

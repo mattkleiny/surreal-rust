@@ -5,26 +5,39 @@ authors = ["Matt Kleinschafer <matt.kleinschafer@xero.com>"]
 edition = "2018"
 
 [features]
-default = ["opengl"]
+default = []
 opengl = []
 editor = []
 
 [dependencies]
-chrono = "0.4.7"
 enumflags2 = "^0.5"
 enumflags2_derive = "^0.5"
 gl = "0.10.0"
-glam = "0.7.1"
-hotwatch = "0.4.2"
-image = "0.22.1"
 imgui = "0.1.0"
 imgui-opengl-renderer = "0.5"
 imgui-sdl2 = "0.6.0"
 log = "0.4.8"
 num-traits = "0.2.4"
-rand = "0.6.5"
 rlua = "0.16.3"
+
+[dependencies.glam]
+version = "0.7.1"
+default-features = false
 
 [dependencies.sdl2]
 version = "0.32.2"
 features = ["bundled"]
+
+[dependencies.rand]
+version = "0.6.5"
+default-features = false
+
+[dependencies.chrono]
+version = "0.4.7"
+features = ["clock"]
+default-features = false
+
+[dependencies.image]
+version = "0.22.1"
+features = ["png_codec", "jpeg"]
+default-features = false

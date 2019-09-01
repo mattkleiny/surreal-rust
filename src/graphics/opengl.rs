@@ -1,8 +1,8 @@
 //! The OpenGL SPI for the Surreal graphics engine.
 //!
-//! This implementation is based directly on the unsafe 'gl' crate and is not meant
-//! to achieve Rust-grade 'safety', but is instead designed to be fast and robust for the purpose
-//! of building small games.
+//! This implementation is based directly on the unsafe 'gl' crate and is not meant to achieve
+//! Rust-grade 'safety', but is instead designed to be fast and robust for the purpose of building
+//! small games and applications.
 
 use gl::types::{GLboolean, GLchar, GLenum, GLfloat, GLint, GLsizei, GLsizeiptr, GLuint, GLvoid};
 use glam::Mat4;
@@ -494,6 +494,7 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
 
     checked!(gl::GenTextures(1, &mut texture.id));
     self.bind_texture(&texture, 0);
+
 
     checked!(gl::TexImage2D(
       gl::TEXTURE_2D,

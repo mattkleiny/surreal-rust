@@ -38,6 +38,6 @@ pub trait Host<P: Platform>: Sized {
     }
   }
 
-  /// Exits the host, terminating the core loop.
+  /// Exits the host, terminating the entities loop.
   fn exit(&mut self);
 }
