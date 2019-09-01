@@ -7,6 +7,8 @@
 //! to account for the majority use case as opposed to all possibilities and to do it well, as opposed to solving
 //! the general case and doing it poorly.
 
+use std::sync::Mutex;
+
 use glam::{Mat4, Vec2};
 use glam::f32::Vec4;
 
@@ -32,14 +34,14 @@ pub mod opengl;
 /// It should be possible to extend this implementation to support other platforms, like a web-based GL implementation,
 /// or DirectX; however more sophisticated/low level APIs such as Metal and Vulkan will not fit this paradigm well.
 pub trait GraphicsDevice: Sized {
-  type Buffer;
-  type Framebuffer;
-  type Program;
-  type Shader;
-  type Texture;
-  type Uniform;
-  type VertexArray;
-  type VertexAttr;
+  type Buffer: Send + Sync;
+  type Framebuffer: Send + Sync;
+  type Program: Send + Sync;
+  type Shader: Send + Sync;
+  type Texture: Send + Sync;
+  type Uniform: Send + Sync;
+  type VertexArray: Send + Sync;
+  type VertexAttr: Send + Sync;
 
   // buffers
   unsafe fn get_vertex_attr(&self, program: &Self::Program, name: &str) -> Option<Self::VertexAttr>;
@@ -66,13 +68,87 @@ pub trait GraphicsDevice: Sized {
   unsafe fn upload_to_texture(&self, texture: &Self::Texture, size: Vec2i, data: &[u8]);
 
   // commands
-  unsafe fn begin_commands(&self);
-  unsafe fn end_commands(&self);
+  unsafe fn clear_framebuffer(&self, ops: &ClearOps);
+  unsafe fn flush_commands(&self);
 
   // rendering
   unsafe fn draw_arrays(&self, index_count: u32, render_state: &RenderState<Self>);
   unsafe fn draw_elements(&self, index_count: u32, render_state: &RenderState<Self>);
   unsafe fn draw_elements_instanced(&self, index_count: u32, instance_count: u32, render_state: &RenderState<Self>);
+
+  /// Creates a new command queue for this device; a command queue is share-able between threads, and allows
+  /// the deferred execution of work on the graphics device through a common channel.
+  fn create_command_queue(&self) -> CommandQueue<Self> { CommandQueue::new() }
+}
+
+/// A queue of commands to be executed against a graphics device.
+///
+/// Synchronized and thread-safe; this is designed to be passed to worker threads and then
+/// flushed on the main thread prior to completing the frame.
+pub struct CommandQueue<'a, D> where D: GraphicsDevice {
+  queue: Mutex<Vec<Command<'a, D>>>,
+}
+
+impl<'a, D> CommandQueue<'a, D> where D: GraphicsDevice {
+  pub fn new() -> Self {
+    Self {
+      queue: Mutex::new(Vec::new()),
+    }
+  }
+
+  /// Enqueues the given command to be executed on the device.
+  pub fn enqueue(&mut self, command: Command<'a, D>) {
+    let mut queue = self.queue.lock().unwrap();
+
+    queue.push(command);
+  }
+
+  /// Flushes enqueued commands, replaying them on the given device.
+  pub unsafe fn flush(&mut self, device: &D) {
+    let mut queue = self.queue.lock().unwrap();
+
+    while let Some(command) = queue.pop() {
+      match command {
+        Command::ClearFramebuffer(color) => {
+          device.clear_framebuffer(&ClearOps {
+            color: Some(color),
+            depth: None,
+            stencil: None,
+          });
+        }
+        Command::DrawArrays { index_count, render_state} => {
+          device.draw_arrays(index_count, render_state);
+        }
+        Command::DrawElements { index_count, render_state } => {
+          device.draw_elements(index_count, render_state);
+        }
+        Command::DrawElementsInstanced { index_count, instance_count, render_state } => {
+          device.draw_elements_instanced(index_count, instance_count, render_state);
+        }
+      }
+    }
+
+    device.flush_commands();
+  }
+}
+
+/// A command that can be placed into a queue for later execution by the graphics device.
+#[derive(Copy, Clone)]
+pub enum Command<'a, D> where D: GraphicsDevice {
+  ClearFramebuffer(Color),
+  DrawArrays {
+    index_count: u32,
+    render_state: &'a RenderState<'a, D>,
+  },
+  DrawElements {
+    index_count: u32,
+    render_state: &'a RenderState<'a, D>,
+  },
+  DrawElementsInstanced {
+    index_count: u32,
+    instance_count: u32,
+    render_state: &'a RenderState<'a, D>,
+  },
 }
 
 /// Encapsulates the rendering state of a particular device, allowing flexible state changes.

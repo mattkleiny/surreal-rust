@@ -13,18 +13,11 @@ struct SpriteVertex {
   uv: Vec2,
 }
 
-impl SpriteVertex {
-  #[inline]
-  pub fn new(pos: Vec2, uv: Vec2) -> Self {
-    Self { pos, uv }
-  }
-}
-
 /// Sub-divides a texture with a region for sub-sampling.
 ///
 /// This is useful for implementing sprite-sheets and the like.
-pub struct TextureRegion<D: GraphicsDevice> {
-  pub texture: D::Texture,
+pub struct TextureRegion<'a, D: GraphicsDevice> {
+  pub texture: &'a D::Texture,
   pub offset: Vec2,
   pub size: Vec2i,
 }
@@ -32,8 +25,8 @@ pub struct TextureRegion<D: GraphicsDevice> {
 /// Represents a sprite that can be drawn to a sprite batch.
 ///
 /// A sprite references a texture and denotes an offset/pivot within that texture to use for rendering.
-pub struct Sprite<D: GraphicsDevice> {
-  pub region: TextureRegion<D>,
+pub struct Sprite<'a, D: GraphicsDevice> {
+  pub region: TextureRegion<'a, D>,
   pub pivot: Vec2,
   pub offset: Vec2,
 }
@@ -118,10 +111,10 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
 
     self.vertex_index += 4;
 
-    /// Builds a new vertex
-    #[inline]
+    /// Builds a new vertex for direct insertion into the sprite batch.
+    #[inline(always)]
     fn vertex(x: f32, y: f32, u: f32, v: f32) -> SpriteVertex {
-      SpriteVertex::new(Vec2::new(x, y), Vec2::new(u, v))
+      SpriteVertex { pos: Vec2::new(x, y), uv: Vec2::new(u, v) }
     }
   }
 

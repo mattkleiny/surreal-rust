@@ -65,7 +65,7 @@ impl OpenGLGraphicsDevice {
     gl::Viewport(origin.x, origin.y, size.x, size.y);
 
     if render_state.rasterizer.clear_ops.has_ops() {
-      self.clear(&render_state.rasterizer.clear_ops);
+      self.clear_framebuffer(&render_state.rasterizer.clear_ops);
     }
 
     self.use_program(render_state.shader_program);
@@ -237,40 +237,6 @@ impl OpenGLGraphicsDevice {
 
   unsafe fn bind_framebuffer(&self, framebuffer: &OpenGLFramebuffer) {
     checked!(gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer.id));
-  }
-
-  pub unsafe fn clear(&self, ops: &ClearOps) {
-    let mut flags = 0;
-
-    if let Some(color) = ops.color {
-      checked!(gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE));
-      checked!(gl::ClearColor(
-        color.r as f32 / 255.,
-        color.g as f32 / 255.,
-        color.b as f32 / 255.,
-        color.a as f32 / 255.,
-      ));
-
-      flags |= gl::COLOR_BUFFER_BIT;
-    }
-
-    if let Some(depth) = ops.depth {
-      checked!(gl::DepthMask(gl::TRUE));
-      checked!(gl::ClearDepthf(depth as _));
-
-      flags |= gl::DEPTH_BUFFER_BIT;
-    }
-
-    if let Some(stencil) = ops.stencil {
-      checked!(gl::StencilMask(!0));
-      checked!(gl::ClearStencil(stencil as GLint));
-
-      flags |= gl::STENCIL_BUFFER_BIT;
-    }
-
-    if flags != 0 {
-      checked!(gl::Clear(flags));
-    }
   }
 
   unsafe fn render_target_format(&self, render_target: &RenderTarget<Self>) -> TextureFormat {
@@ -559,9 +525,41 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
     self.set_texture_parameters(texture);
   }
 
-  unsafe fn begin_commands(&self) {}
+  unsafe fn clear_framebuffer(&self, ops: &ClearOps) {
+    let mut flags = 0;
 
-  unsafe fn end_commands(&self) {
+    if let Some(color) = ops.color {
+      checked!(gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE));
+      checked!(gl::ClearColor(
+        color.r as f32 / 255.,
+        color.g as f32 / 255.,
+        color.b as f32 / 255.,
+        color.a as f32 / 255.,
+      ));
+
+      flags |= gl::COLOR_BUFFER_BIT;
+    }
+
+    if let Some(depth) = ops.depth {
+      checked!(gl::DepthMask(gl::TRUE));
+      checked!(gl::ClearDepthf(depth as _));
+
+      flags |= gl::DEPTH_BUFFER_BIT;
+    }
+
+    if let Some(stencil) = ops.stencil {
+      checked!(gl::StencilMask(!0));
+      checked!(gl::ClearStencil(stencil as GLint));
+
+      flags |= gl::STENCIL_BUFFER_BIT;
+    }
+
+    if flags != 0 {
+      checked!(gl::Clear(flags));
+    }
+  }
+
+  unsafe fn flush_commands(&self) {
     gl::Flush();
   }
 
