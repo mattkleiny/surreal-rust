@@ -107,30 +107,18 @@ impl<'a, D> CommandQueue<'a, D> where D: GraphicsDevice {
   pub fn flush(&self, device: &D) {
     unsafe {
       let mut queue = self.queue.lock().unwrap();
-
       while let Some(command) = queue.pop() {
         match command {
-          Command::SetRenderState(render_state) => {
-            unimplemented!()
-          }
-          Command::ClearRenderTarget(ops) => {
-            device.clear_render_target(&ops);
-          }
-          Command::BindBuffer { vertex_array, buffer, target } => {
-            device.bind_buffer(vertex_array, buffer, target);
-          }
-          Command::DrawArrays { index_count, render_state } => {
-            device.draw_arrays(index_count, render_state);
-          }
-          Command::DrawElements { index_count, render_state } => {
-            device.draw_elements(index_count, render_state);
-          }
+          Command::SetRenderState(render_state) => unimplemented!(),
+          Command::ClearRenderTarget(ops) => device.clear_render_target(&ops),
+          Command::BindBuffer { vertex_array, buffer, target } => device.bind_buffer(vertex_array, buffer, target),
+          Command::DrawArrays { index_count, render_state } => device.draw_arrays(index_count, render_state),
+          Command::DrawElements { index_count, render_state } => device.draw_elements(index_count, render_state),
           Command::DrawElementsInstanced { index_count, instance_count, render_state } => {
             device.draw_elements_instanced(index_count, instance_count, render_state);
           }
         }
       }
-
       device.flush_commands();
     }
   }

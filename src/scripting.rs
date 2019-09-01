@@ -68,15 +68,15 @@ impl ScriptEngine {
     lua
   }
 
-  /// Sets the memory limit on the interpreter.
-  pub fn set_memory_limit(&mut self, limit: Option<usize>) {
-    self.lua.set_memory_limit(limit);
-  }
-
   /// Evaluates the given code in the script runtime and returns the result.
-  pub fn evaluate<F, R>(&mut self, body: F) -> R
+  pub fn evaluate<F, R>(&self, body: F) -> R
     where F: FnOnce(LuaContext) -> R {
     self.lua.context(body)
+  }
+
+  /// Sets the memory limit on the interpreter.
+  pub fn set_memory_limit(&self, limit: Option<usize>) {
+    self.lua.set_memory_limit(limit);
   }
 }
 

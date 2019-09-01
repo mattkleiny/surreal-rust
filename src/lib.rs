@@ -16,6 +16,7 @@ extern crate enumflags2_derive;
 #[cfg(feature = "opengl")]
 extern crate gl;
 extern crate glam;
+pub extern crate hotwatch;
 pub extern crate image;
 extern crate imgui;
 extern crate imgui_opengl_renderer;
