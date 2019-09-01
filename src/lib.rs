@@ -24,7 +24,7 @@ extern crate imgui_sdl2;
 extern crate log;
 extern crate rand;
 extern crate rayon;
-extern crate rlua;
+pub extern crate rlua;
 extern crate sdl2;
 
 pub mod assets;

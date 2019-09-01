@@ -1,7 +1,6 @@
 //! Scripting support for Surreal.
 
 use rlua::prelude::*;
-pub use rlua::prelude::LuaFunction;
 
 use crate::diagnostics::*;
 
@@ -86,7 +85,7 @@ mod tests {
 
   #[test]
   fn engine_should_evaluate_basic_instructions_without_fault() {
-    let mut engine = ScriptEngine::new();
+    let engine = ScriptEngine::new();
 
     engine.evaluate(|context| {
       context.load("print 'Hello, World!'").exec().unwrap();
@@ -95,7 +94,7 @@ mod tests {
 
   #[test]
   fn engine_should_execute_native_log_methods() {
-    let mut engine = ScriptEngine::new();
+    let engine = ScriptEngine::new();
 
     engine.evaluate(|context| {
       context.load("trace 'Hello, World!'").exec().unwrap();

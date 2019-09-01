@@ -104,6 +104,7 @@ impl<A: Allocator> MemoryBlock<A> {
 
   pub fn allocate(&mut self, size: usize) -> Result<Memory, Error> {
     let capacity = self.capacity();
+
     if capacity < size {
       return Err(Error::OutOfMemory);
     }
@@ -111,6 +112,7 @@ impl<A: Allocator> MemoryBlock<A> {
     let result = unsafe {
       self.address.offset(self.used as isize)
     };
+
     self.used += size;
 
     Ok(result)

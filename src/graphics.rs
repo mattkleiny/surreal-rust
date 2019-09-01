@@ -91,9 +91,7 @@ pub struct CommandQueue<'a, D> where D: GraphicsDevice {
 
 impl<'a, D> CommandQueue<'a, D> where D: GraphicsDevice {
   pub fn new() -> Self {
-    Self {
-      queue: Mutex::new(Vec::new()),
-    }
+    Self { queue: Mutex::new(Vec::new()) }
   }
 
   /// Enqueues the given command to be executed on the device.

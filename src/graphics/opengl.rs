@@ -279,7 +279,9 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
 
   unsafe fn bind_buffer(&self, vertex_array: &Self::VertexArray, buffer: &Self::Buffer, target: BufferTarget) {
     self.bind_vertex_array(vertex_array);
+
     checked!(gl::BindBuffer(target.to_gl_target(), buffer.id));
+
     self.unbind_vertex_array();
   }
 
