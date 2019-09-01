@@ -65,7 +65,7 @@ impl OpenGLGraphicsDevice {
     gl::Viewport(origin.x, origin.y, size.x, size.y);
 
     if render_state.rasterizer.clear_ops.has_ops() {
-      self.clear_framebuffer(&render_state.rasterizer.clear_ops);
+      self.clear_render_target(&render_state.rasterizer.clear_ops);
     }
 
     self.use_program(render_state.shader_program);
@@ -525,7 +525,7 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
     self.set_texture_parameters(texture);
   }
 
-  unsafe fn clear_framebuffer(&self, ops: &ClearOps) {
+  unsafe fn clear_render_target(&self, ops: &ClearOps) {
     let mut flags = 0;
 
     if let Some(color) = ops.color {

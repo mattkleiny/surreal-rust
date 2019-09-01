@@ -203,7 +203,7 @@ impl Host<DesktopPlatform> for DesktopHost {
 
     // prepare the next frame for rendering
     unsafe {
-      self.graphics_device.clear_framebuffer(&ClearOps {
+      self.graphics_device.clear_render_target(&ClearOps {
         color: Some(self.background_color),
         depth: None,
         stencil: None,

@@ -36,6 +36,8 @@ pub mod scripting;
 pub mod utilities;
 
 pub mod prelude {
+  //! Import this module to simplify access to Surreal's components.
+
   pub use crate::assets::*;
   pub use crate::collections::*;
   pub use crate::diagnostics::*;

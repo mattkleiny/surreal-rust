@@ -68,7 +68,7 @@ pub trait GraphicsDevice: Sized {
   unsafe fn upload_to_texture(&self, texture: &Self::Texture, size: Vec2i, data: &[u8]);
 
   // commands
-  unsafe fn clear_framebuffer(&self, ops: &ClearOps);
+  unsafe fn clear_render_target(&self, ops: &ClearOps);
   unsafe fn flush_commands(&self);
 
   // rendering
@@ -113,8 +113,11 @@ impl<'a, D> CommandQueue<'a, D> where D: GraphicsDevice {
           Command::SetRenderState(render_state) => {
             unimplemented!()
           }
-          Command::ClearTarget(ops) => {
-            device.clear_framebuffer(&ops);
+          Command::ClearRenderTarget(ops) => {
+            device.clear_render_target(&ops);
+          }
+          Command::BindBuffer { vertex_array, buffer, target } => {
+            device.bind_buffer(vertex_array, buffer, target);
           }
           Command::DrawArrays { index_count, render_state } => {
             device.draw_arrays(index_count, render_state);
@@ -136,16 +139,27 @@ impl<'a, D> CommandQueue<'a, D> where D: GraphicsDevice {
 /// A command that can be placed into a queue for later execution by the graphics device.
 #[derive(Copy, Clone)]
 pub enum Command<'a, D> where D: GraphicsDevice {
+  /// Sets the render state on the graphics device.
   SetRenderState(&'a RenderState<'a, D>),
-  ClearTarget(ClearOps),
+  /// Clears the active render target.
+  ClearRenderTarget(ClearOps),
+  /// Binds the given buffer for rendering on the device.
+  BindBuffer {
+    vertex_array: &'a D::VertexArray,
+    buffer: &'a D::Buffer,
+    target: BufferTarget,
+  },
+  /// Draws the bounds arrays on the device.
   DrawArrays {
     index_count: u32,
     render_state: &'a RenderState<'a, D>,
   },
+  /// Draws the bounds elements on the device.
   DrawElements {
     index_count: u32,
     render_state: &'a RenderState<'a, D>,
   },
+  /// Draws the bound elements in an instanced mode on the device.
   DrawElementsInstanced {
     index_count: u32,
     instance_count: u32,
