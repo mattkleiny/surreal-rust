@@ -18,6 +18,7 @@ imgui-opengl-renderer = "0.5"
 imgui-sdl2 = "0.6.0"
 log = "0.4.8"
 num-traits = "0.2.4"
+rayon = "1.2.0"
 rlua = "0.16.3"
 
 [dependencies.glam]

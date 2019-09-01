@@ -97,45 +97,47 @@ impl<'a, D> CommandQueue<'a, D> where D: GraphicsDevice {
   }
 
   /// Enqueues the given command to be executed on the device.
-  pub fn enqueue(&mut self, command: Command<'a, D>) {
+  pub fn enqueue(&self, command: Command<'a, D>) {
     let mut queue = self.queue.lock().unwrap();
 
     queue.push(command);
   }
 
   /// Flushes enqueued commands, replaying them on the given device.
-  pub unsafe fn flush(&mut self, device: &D) {
-    let mut queue = self.queue.lock().unwrap();
+  pub fn flush(&self, device: &D) {
+    unsafe {
+      let mut queue = self.queue.lock().unwrap();
 
-    while let Some(command) = queue.pop() {
-      match command {
-        Command::ClearFramebuffer(color) => {
-          device.clear_framebuffer(&ClearOps {
-            color: Some(color),
-            depth: None,
-            stencil: None,
-          });
-        }
-        Command::DrawArrays { index_count, render_state} => {
-          device.draw_arrays(index_count, render_state);
-        }
-        Command::DrawElements { index_count, render_state } => {
-          device.draw_elements(index_count, render_state);
-        }
-        Command::DrawElementsInstanced { index_count, instance_count, render_state } => {
-          device.draw_elements_instanced(index_count, instance_count, render_state);
+      while let Some(command) = queue.pop() {
+        match command {
+          Command::SetRenderState(render_state) => {
+            unimplemented!()
+          }
+          Command::ClearTarget(ops) => {
+            device.clear_framebuffer(&ops);
+          }
+          Command::DrawArrays { index_count, render_state } => {
+            device.draw_arrays(index_count, render_state);
+          }
+          Command::DrawElements { index_count, render_state } => {
+            device.draw_elements(index_count, render_state);
+          }
+          Command::DrawElementsInstanced { index_count, instance_count, render_state } => {
+            device.draw_elements_instanced(index_count, instance_count, render_state);
+          }
         }
       }
-    }
 
-    device.flush_commands();
+      device.flush_commands();
+    }
   }
 }
 
 /// A command that can be placed into a queue for later execution by the graphics device.
 #[derive(Copy, Clone)]
 pub enum Command<'a, D> where D: GraphicsDevice {
-  ClearFramebuffer(Color),
+  SetRenderState(&'a RenderState<'a, D>),
+  ClearTarget(ClearOps),
   DrawArrays {
     index_count: u32,
     render_state: &'a RenderState<'a, D>,
