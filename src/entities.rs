@@ -200,6 +200,13 @@ impl World {
   pub fn register_system<S: 'static + System>(&mut self, system: S) {
     self.systems.push(Box::new(system));
   }
+
+  /// Ticks all of the attached systems.
+  pub fn tick(&mut self, delta_time: f64) {
+    for system in self.systems.iter_mut() {
+      system.tick(delta_time);
+    }
+  }
 }
 
 #[cfg(test)]
@@ -216,7 +223,7 @@ mod tests {
 
   impl System for TestSystem {
     fn tick(&mut self, delta_time: f64) {
-      unimplemented!()
+      println!("Delta time is {}", delta_time);
     }
   }
 
@@ -243,9 +250,17 @@ mod tests {
   fn world_should_register_systems() {
     let mut world = World::new();
 
-    world.register_component::<TestComponent1>();
-    world.register_component::<TestComponent2>();
+    world.register_system(TestSystem);
+  }
+
+  #[test]
+  fn world_should_tick_attached_systems() {
+    let mut world = World::new();
 
     world.register_system(TestSystem);
+
+    for i in 0..100 {
+      world.tick(0.16);
+    }
   }
 }
