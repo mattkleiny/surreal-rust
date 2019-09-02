@@ -10,7 +10,8 @@
 use std::any::Any;
 use std::collections::{BTreeMap, HashMap};
 
-// TODO: rethink the lifetime parameters used here
+// TODO: rethink the lifetime parameters used here.
+// TODO: allow arbitrary context parameters for systems.
 
 /// The type we use for entity and component indexes.
 type Index = u32;
