@@ -7,10 +7,13 @@
 // TODO: implement broadcast groups (ala godot) to allow simple event-like system.
 // TODO: build a console utility using imgui that will allow execution of arbitrary commands/display log output.
 
-pub struct ScriptEngine {}
+pub use lua::*;
 
-impl ScriptEngine {
-  pub fn new() -> Self {
-    Self {}
-  }
-}
+mod lua;
+
+/// An abstraction over a scripting engine for use in scripted applications.
+///
+/// This is a low-level abstraction that allows us to decouple specific scripting back-ends from interaction with those
+/// backends. This interface assumes a very simple scripting provider, and is designed to be simple to consume and
+/// work with from a high level.
+pub trait ScriptEngine {}

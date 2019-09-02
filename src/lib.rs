@@ -20,6 +20,7 @@ extern crate enumflags2_derive;
 extern crate gl;
 extern crate glam;
 extern crate image;
+extern crate libc;
 extern crate log;
 extern crate rand;
 extern crate sdl2;
