@@ -174,8 +174,10 @@ impl<C: Component> ComponentStorage<C> for HashStorage<C> {
   }
 }
 
-/// A bag of component storage.
-struct ComponentBag {
+// TODO: wrap this type for easier consumption by entity systems
+
+/// A bag of component storages.
+pub struct ComponentBag {
   storages: HashMap<ComponentMask, Box<dyn Any>>,
 }
 
@@ -199,11 +201,6 @@ impl ComponentBag {
 
     result.unwrap().downcast_mut().unwrap()
   }
-}
-
-/// Provides the ability to look-up entities by aspect.
-pub trait AspectProvider {
-  fn get_entities<'a>(&self, aspect: Aspect) -> &'a [EntityId];
 }
 
 /// The precision we require for representing components on entities.
@@ -248,7 +245,7 @@ impl Aspect {
 /// Represents a system that operates on entities and processes their components.
 pub trait System {
   /// Updates this system by a single frame.
-  fn tick(&mut self, delta_time: f64);
+  fn tick(&mut self, delta_time: f32, components: &mut ComponentBag);
 }
 
 /// The entity world.
@@ -281,9 +278,9 @@ impl World {
   }
 
   /// Ticks all of the attached systems.
-  pub fn tick(&mut self, delta_time: f64) {
+  pub fn tick(&mut self, delta_time: f32) {
     for system in self.systems.iter_mut() {
-      system.tick(delta_time);
+      system.tick(delta_time, &mut self.components);
     }
   }
 }
@@ -293,10 +290,12 @@ mod tests {
   use glam::Vec2;
 
   use super::*;
+  use crate::maths::Lerp;
 
   #[derive(Default, Debug)]
   struct TestComponent1 {
     position: Vec2,
+    velocity: Vec2,
     rotation: f32,
   }
 
@@ -314,8 +313,15 @@ mod tests {
   struct TestSystem;
 
   impl System for TestSystem {
-    fn tick(&mut self, delta_time: f64) {
-      println!("Delta time is {}", delta_time);
+    fn tick(&mut self, delta_time: f32, components: &mut ComponentBag) {
+      let storage = components.get::<TestComponent1>();
+
+      for index in 0..1000 {
+        let component = storage.get_mut(index);
+
+        component.position += component.velocity * delta_time;
+        component.rotation = f32::lerp(component.rotation, 0., 0.3);
+      }
     }
   }
 
@@ -396,7 +402,16 @@ mod tests {
   fn world_should_tick_attached_systems() {
     let mut world = World::new();
 
+    world.register_component::<TestComponent1>();
+    world.register_component::<TestComponent2>();
+
     world.register_system(TestSystem);
+
+    let storage = world.components.get::<TestComponent1>();
+
+    for i in 0..1000 {
+      storage.create(i);
+    }
 
     for i in 0..100 {
       world.tick(0.16);
