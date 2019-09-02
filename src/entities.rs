@@ -36,6 +36,14 @@ pub trait Component: Sized {
   type Storage: ComponentStorage<Self> = DenseStorage<Self>;
 }
 
+/// Provide generic component support to all sized structs, by default.
+///
+/// Pack components densely by default, as we're more concerned about CPU frame time than a little bit of
+/// extra memory usage.
+impl<T: Sized> Component for T {
+  type Storage = DenseStorage<Self>;
+}
+
 /// Retrieves the mask for the given component type.
 #[inline(always)]
 fn get_component_mask<C: 'static + Component>() -> ComponentMask {
@@ -215,9 +223,6 @@ mod tests {
 
   struct TestComponent1;
   struct TestComponent2;
-
-  impl Component for TestComponent1 { type Storage = DenseStorage<Self>; }
-  impl Component for TestComponent2 { type Storage = DenseStorage<Self>; }
 
   struct TestSystem;
 
