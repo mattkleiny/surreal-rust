@@ -56,6 +56,12 @@ fn get_component_mask<C: 'static + Component>() -> ComponentMask {
   unsafe { std::intrinsics::type_id::<C>() }
 }
 
+/// Retrieves the mask for the given component type.
+#[inline(always)]
+fn get_component_name<C: 'static + Component>() -> &'static str {
+  std::intrinsics::type_name::<C>()
+}
+
 /// Defines possible storage types for entity components.
 pub trait ComponentStorage<C: Component>: Sized {
   /// Creates a new instance of this storage, ready to accept instances.
@@ -92,11 +98,11 @@ impl<C: Component> ComponentStorage<C> for BTreeStorage<C> {
   }
 
   fn get(&self, index: Index) -> &C {
-    self.components.get(&index).unwrap()
+    self.components.get(&index).expect(&format!("Unable to find entity {}", index))
   }
 
   fn get_mut(&mut self, index: Index) -> &mut C {
-    self.components.get_mut(&index).unwrap()
+    self.components.get_mut(&index).expect(&format!("Unable to find entity {}", index))
   }
 
   fn remove(&mut self, index: Index) {
@@ -132,11 +138,11 @@ impl<C: Component> ComponentStorage<C> for VecStorage<C> {
   }
 
   fn get(&self, index: Index) -> &C {
-    self.components.get(index as usize).unwrap()
+    self.components.get(index as usize).expect(&format!("Unable to find entity {}", index))
   }
 
   fn get_mut(&mut self, index: Index) -> &mut C {
-    self.components.get_mut(index as usize).unwrap()
+    self.components.get_mut(index as usize).expect(&format!("Unable to find entity {}", index))
   }
 
   fn remove(&mut self, index: Index) {
@@ -162,11 +168,11 @@ impl<C: Component> ComponentStorage<C> for HashMapStorage<C> {
   }
 
   fn get(&self, index: Index) -> &C {
-    self.components.get(&index).unwrap()
+    self.components.get(&index).expect(&format!("Unable to find entity {}", index))
   }
 
   fn get_mut(&mut self, index: Index) -> &mut C {
-    self.components.get_mut(&index).unwrap()
+    self.components.get_mut(&index).expect(&format!("Unable to find entity {}", index))
   }
 
   fn remove(&mut self, index: Index) {
@@ -197,9 +203,12 @@ impl ComponentBag {
   /// Gets or creates the storage for the given component.
   pub fn get<C: 'static + Component>(&mut self) -> &mut C::Storage {
     let mask = get_component_mask::<C>();
-    let result = self.storages.get_mut(&mask);
+    let name = get_component_name::<C>();
 
-    result.unwrap().downcast_mut().unwrap()
+    let result = self.storages.get_mut(&mask)
+        .expect(&format!("Attempted to access component storage for unregistered type {}", name));
+
+    result.downcast_mut().unwrap() // this should never fault; otherwise we've screwed up good
   }
 }
 
