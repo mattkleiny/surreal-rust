@@ -287,11 +287,45 @@ impl World {
     self.systems.push(Box::new(system));
   }
 
+  /// Creates a new entity.
+  pub fn create_entity(&mut self) -> EntityId {
+    unimplemented!()
+  }
+
+  /// Deletes an existing entity from the world
+  pub fn delete_entity(&mut self, entity_id: EntityId) {
+    unimplemented!()
+  }
+
   /// Ticks all of the attached systems.
   pub fn tick(&mut self, delta_time: f32) {
     for system in self.systems.iter_mut() {
       system.tick(delta_time, &mut self.components);
     }
+  }
+}
+
+/// A utility for fluently building entities.
+pub struct EntityBuilder<'a> {
+  world: &'a World,
+  entity_id: EntityId,
+}
+
+impl<'a> EntityBuilder<'a> {
+  pub fn new(world: &'a mut World) -> Self {
+    let entity_id = world.create_entity();
+    Self { world, entity_id }
+  }
+
+  /// Attaches a component to the entity.
+  pub fn with<C: 'static + Component>(self, component: C) -> Self {
+    // TODO: attach the components
+    self
+  }
+
+  /// Builds the resultant entity.
+  pub fn build(self) -> EntityId {
+    self.entity_id
   }
 }
 
@@ -407,6 +441,31 @@ mod tests {
     let mut world = World::new();
 
     world.register_system(TestSystem);
+  }
+
+  #[test]
+  fn world_should_create_and_delete_entities() {
+    let mut world = World::new();
+
+    let entity1 = world.create_entity();
+    let entity2 = world.create_entity();
+    let entity3 = world.create_entity();
+
+    world.delete_entity(entity1);
+    world.delete_entity(entity2);
+    world.delete_entity(entity3);
+  }
+
+  #[test]
+  fn world_should_build_entities() {
+    let mut world = World::new();
+
+    let entity = EntityBuilder::new(&mut world)
+        .with(TestComponent1::default())
+        .with(TestComponent2::default())
+        .build();
+
+    world.delete_entity(entity);
   }
 
   #[test]
