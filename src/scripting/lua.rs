@@ -6,7 +6,18 @@
 
 use super::*;
 
-/// The lua scripting engine backend.
+/// The Lua scripting engine backend.
+///
+/// Internally, we build and manage our own Lua FFI layer, and compile a custom version of Lua
+/// for consumption by users of the library.
+///
+/// Lua itself is very small and extendable; using a pre-packaged build doesn't make much sense
+/// as it prevents us from extending and optimizing where appropriate.
+///
+/// This interface is quite unsafe, as Lua itself is native C and we're a thin veneer on top.
+/// Instead of trying to convert Lua into some safe beast from Rust's perspective, we're instead
+/// just making it simple to work with and extend. Get the thing working first and something built
+/// with it before we polish it up and make it 'clean'.
 pub struct LuaScriptEngine {
   handle: LuaHandle,
 }
@@ -29,7 +40,20 @@ impl LuaScriptEngine {
   pub fn open_table(&mut self) { unsafe { ffi::luaopen_table(self.handle.0) } }
 }
 
-impl ScriptEngine for LuaScriptEngine {}
+/// The default script engine implementation for Lua.
+impl ScriptEngine for LuaScriptEngine {
+  type Error = LuaError;
+  type Code = LuaCode<'static>;
+
+  fn execute<C: AsRef<str>>(&mut self, code: C) -> Result<(), Self::Error> {
+    // TODO: implement me
+    Ok(())
+  }
+}
+
+/// Encapsulates code that can be directly executed as Lua code.
+#[derive(Debug)]
+pub struct LuaCode<'a>(&'a str);
 
 /// Error that can happen when executing Lua code.
 #[derive(Debug)]
@@ -91,6 +115,33 @@ extern "C" fn panic(lua: *mut ffi::lua_State) -> std::os::raw::c_int {
   let err = String::from_utf8(err.to_bytes().to_vec()).unwrap();
 
   panic!("PANIC: unprotected error in call to Lua API ({})\n", err);
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn engine_should_open_base_library() {
+    let mut engine = LuaScriptEngine::new();
+
+    engine.open_base();
+  }
+
+  #[test]
+  fn engine_should_open_all_libraries() {
+    let mut engine = LuaScriptEngine::new();
+
+    engine.open_libs();
+  }
+
+  #[test]
+  fn engine_should_execute_basic_lua_code() {
+    let mut engine = LuaScriptEngine::new();
+
+    engine.open_base();
+    engine.execute("print 'Hello, World!'").unwrap();
+  }
 }
 
 mod ffi {

@@ -16,4 +16,10 @@ mod lua;
 /// This is a low-level abstraction that allows us to decouple specific scripting back-ends from interaction with those
 /// backends. This interface assumes a very simple scripting provider, and is designed to be simple to consume and
 /// work with from a high level.
-pub trait ScriptEngine {}
+pub trait ScriptEngine {
+  type Error;
+  type Code;
+
+  /// Attempts to execute the given raw code string on the engine.
+  fn execute<C: AsRef<str>>(&mut self, code: C) -> Result<(), Self::Error>;
+}
