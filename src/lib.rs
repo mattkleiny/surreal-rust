@@ -29,8 +29,9 @@ extern crate sdl2;
 
 pub mod assets;
 pub mod culling;
-pub mod diagnostics;
 pub mod collections;
+pub mod diagnostics;
+pub mod entities;
 pub mod graphics;
 pub mod maths;
 pub mod platform;
@@ -42,6 +43,7 @@ pub mod prelude {
 
   pub use crate::assets::*;
   pub use crate::collections::*;
+  pub use crate::culling::*;
   pub use crate::diagnostics::*;
   pub use crate::graphics::*;
   pub use crate::maths::*;
