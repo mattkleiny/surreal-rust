@@ -19,14 +19,12 @@ extern crate enumflags2_derive;
 #[cfg(feature = "opengl")]
 extern crate gl;
 extern crate glam;
-pub extern crate hotwatch;
 pub extern crate image;
 extern crate imgui;
 extern crate imgui_opengl_renderer;
 extern crate imgui_sdl2;
 extern crate log;
 extern crate rand;
-extern crate rayon;
 pub extern crate rlua;
 extern crate sdl2;
 
@@ -48,6 +46,7 @@ pub mod prelude {
   pub use crate::collections::*;
   pub use crate::culling::*;
   pub use crate::diagnostics::*;
+  pub use crate::entities::*;
   pub use crate::graphics::*;
   pub use crate::maths::*;
   pub use crate::platform::*;

@@ -18,7 +18,7 @@ type Index = u32;
 /// Uniquely identifies an entity in the entity system.
 ///
 /// We use a style of indexing commonly known as generational indices.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct EntityId {
   index: Index,
   generation: u16,
@@ -46,7 +46,7 @@ impl EntityArena {
 ///
 /// Each component type defines the way in which it is stored, as well as a unique mask value for use in aspect
 /// calculations.
-pub trait Component: Sized + Default {
+pub trait Component: Sized {
   type Storage: ComponentStorage<Self> = BTreeStorage<Self>;
 }
 
@@ -62,7 +62,7 @@ pub trait ComponentStorage<C: Component>: Sized {
   fn new() -> Self;
 
   /// Creates a new component; either inserting a new component or resetting an existing one.
-  fn create(&mut self, index: Index);
+  fn create(&mut self, index: Index, value: C);
 
   /// Gets immutable access to a component in storage.
   fn get(&self, index: Index) -> &C;
@@ -87,8 +87,8 @@ impl<C: Component> ComponentStorage<C> for BTreeStorage<C> {
     Self { components: BTreeMap::new() }
   }
 
-  fn create(&mut self, index: Index) {
-    self.components.insert(index, C::default());
+  fn create(&mut self, index: Index, value: C) {
+    self.components.insert(index, value);
   }
 
   fn get(&self, index: Index) -> &C {
@@ -117,7 +117,7 @@ impl<C: Component> ComponentStorage<C> for VecStorage<C> {
     Self { components: Vec::new() }
   }
 
-  fn create(&mut self, index: Index) {
+  fn create(&mut self, index: Index, value: C) {
     let index = index as usize;
     let length = self.components.len();
 
@@ -128,7 +128,7 @@ impl<C: Component> ComponentStorage<C> for VecStorage<C> {
       unsafe { self.components.set_len(index + 1); }
     }
 
-    self.components.insert(index, C::default());
+    self.components.insert(index, value);
   }
 
   fn get(&self, index: Index) -> &C {
@@ -148,17 +148,17 @@ impl<C: Component> ComponentStorage<C> for VecStorage<C> {
 ///
 /// Does not waste space for entities that don't possess the associated components, but is much less efficient to loop
 /// over due to the components being retained in a hash-table with variable offsets.
-pub struct HashStorage<C: Component> {
+pub struct HashMapStorage<C: Component> {
   components: HashMap<Index, C>,
 }
 
-impl<C: Component> ComponentStorage<C> for HashStorage<C> {
+impl<C: Component> ComponentStorage<C> for HashMapStorage<C> {
   fn new() -> Self {
     Self { components: HashMap::new() }
   }
 
-  fn create(&mut self, index: Index) {
-    self.components.insert(index, C::default());
+  fn create(&mut self, index: Index, value: C) {
+    self.components.insert(index, value);
   }
 
   fn get(&self, index: Index) -> &C {
@@ -289,8 +289,9 @@ impl World {
 mod tests {
   use glam::Vec2;
 
-  use super::*;
   use crate::maths::Lerp;
+
+  use super::*;
 
   #[derive(Default, Debug)]
   struct TestComponent1 {
@@ -300,7 +301,7 @@ mod tests {
   }
 
   impl Component for TestComponent1 {
-    type Storage = HashStorage<Self>;
+    type Storage = HashMapStorage<Self>;
   }
 
   #[derive(Default, Debug)]
@@ -344,7 +345,7 @@ mod tests {
     components.create::<TestComponent1>();
     let storage = components.get::<TestComponent1>();
 
-    storage.create(index);
+    storage.create(index, TestComponent1::default());
     storage.get(index);
     storage.get_mut(index);
     storage.remove(index);
@@ -355,7 +356,7 @@ mod tests {
     let index = 42;
     let mut storage = BTreeStorage::<TestComponent1>::new();
 
-    storage.create(index);
+    storage.create(index, TestComponent1::default());
     storage.get(index);
     storage.get_mut(index);
     storage.remove(index);
@@ -366,7 +367,7 @@ mod tests {
     let index = 42;
     let mut storage = VecStorage::<TestComponent1>::new();
 
-    storage.create(index);
+    storage.create(index, TestComponent1::default());
     storage.get(index);
     storage.get_mut(index);
     storage.remove(index);
@@ -375,9 +376,9 @@ mod tests {
   #[test]
   fn hash_storage_should_read_and_write() {
     let index = 42;
-    let mut storage = HashStorage::<TestComponent1>::new();
+    let mut storage = HashMapStorage::<TestComponent1>::new();
 
-    storage.create(index);
+    storage.create(index, TestComponent1::default());
     storage.get(index);
     storage.get_mut(index);
     storage.remove(index);
@@ -410,7 +411,11 @@ mod tests {
     let storage = world.components.get::<TestComponent1>();
 
     for i in 0..1000 {
-      storage.create(i);
+      storage.create(i, TestComponent1 {
+        position: Vec2::zero(),
+        velocity: Vec2::zero(),
+        rotation: 90.,
+      });
     }
 
     for i in 0..100 {
