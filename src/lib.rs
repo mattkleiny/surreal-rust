@@ -9,6 +9,9 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+#![feature(core_intrinsics)]
+#![feature(associated_type_defaults)]
+
 extern crate chrono;
 extern crate enumflags2;
 #[macro_use]

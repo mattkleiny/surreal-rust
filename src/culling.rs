@@ -11,7 +11,7 @@ use glam::Vec2;
 use crate::maths::Rect;
 
 /// A camera that can be used for culling.
-pub trait CullingCamera {
+pub trait OrthographicCulling {
   /// Gets the visible area of the camera, relative to it's screen space.
   fn get_visible_rect(&self) -> Rect;
 }
@@ -56,7 +56,7 @@ impl<'a, T> CullingGroup<'a, T> {
   }
 
   /// Culls objects are visible/not visible to the given camera.
-  pub fn recalculate_visible_objects(&mut self, camera: &impl CullingCamera) {
+  pub fn recalculate_visible_objects(&mut self, camera: &impl OrthographicCulling) {
     let _visible_rect = camera.get_visible_rect();
 
     unimplemented!()
