@@ -8,23 +8,26 @@
 //! because it's clean and simple for the most part.
 
 use std::any::Any;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 // TODO: rethink the lifetime parameters used here
+
+/// The type we use for entity and component indexes.
+type Index = u32;
 
 /// Uniquely identifies an entity in the entity system.
 ///
 /// We use a style of indexing commonly known as generational indices.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EntityId {
-  sequence: u16,
+  index: Index,
   generation: u16,
 }
 
 impl EntityId {
-  pub fn new(sequence: u16, generation: u16) -> Self {
+  pub fn new(index: Index, generation: u16) -> Self {
     Self {
-      sequence,
+      index,
       generation,
     }
   }
@@ -44,7 +47,7 @@ impl EntityArena {
 /// Each component type defines the way in which it is stored, as well as a unique mask value for use in aspect
 /// calculations.
 pub trait Component: Sized + Default {
-  type Storage: ComponentStorage<Self> = DenseStorage<Self>;
+  type Storage: ComponentStorage<Self> = BTreeStorage<Self>;
 }
 
 /// Retrieves the mask for the given component type.
@@ -59,76 +62,115 @@ pub trait ComponentStorage<C: Component>: Sized {
   fn new() -> Self;
 
   /// Creates a new component; either inserting a new component or resetting an existing one.
-  fn create(&mut self, entity_id: EntityId);
+  fn create(&mut self, index: Index);
 
   /// Gets immutable access to a component in storage.
-  fn get(&self, entity_id: EntityId) -> &C;
+  fn get(&self, index: Index) -> &C;
 
   /// Gets mutable access to a component in storage.
-  fn get_mut(&mut self, entity_id: EntityId) -> &mut C;
+  fn get_mut(&mut self, index: Index) -> &mut C;
 
   /// Removes an existing component from storage.
-  fn remove(&mut self, entity_id: EntityId);
+  fn remove(&mut self, index: Index);
 }
 
-/// Densely-packed component storage.
+/// B-tree based sparse component storage.
+///
+/// B-tree based storage is good enough for most use cases, with average memory usage and average loop
+/// cost. It's the default choice for components.
+pub struct BTreeStorage<C: Component> {
+  components: BTreeMap<Index, C>,
+}
+
+impl<C: Component> ComponentStorage<C> for BTreeStorage<C> {
+  fn new() -> Self {
+    Self { components: BTreeMap::new() }
+  }
+
+  fn create(&mut self, index: Index) {
+    self.components.insert(index, C::default());
+  }
+
+  fn get(&self, index: Index) -> &C {
+    self.components.get(&index).unwrap()
+  }
+
+  fn get_mut(&mut self, index: Index) -> &mut C {
+    self.components.get_mut(&index).unwrap()
+  }
+
+  fn remove(&mut self, index: Index) {
+    self.components.remove(&index);
+  }
+}
+
+/// Vec-based dense component storage.
 ///
 /// Wastes space for entities that don't possess the associated components, but is very efficient to iterate over for
 /// data that is frequently accessed on a frame-by-frame basis.
-pub struct DenseStorage<C: Component> {
-  // TODO: use an arena or something, here, instead
+pub struct VecStorage<C: Component> {
   components: Vec<C>,
 }
 
-impl<C: Component> ComponentStorage<C> for DenseStorage<C> {
+impl<C: Component> ComponentStorage<C> for VecStorage<C> {
   fn new() -> Self {
     Self { components: Vec::new() }
   }
 
-  fn create(&mut self, entity_id: EntityId) {
-    unimplemented!()
+  fn create(&mut self, index: Index) {
+    let index = index as usize;
+    let length = self.components.len();
+
+    if length <= index {
+      let delta = index + 1 - length;
+
+      self.components.reserve(delta);
+      unsafe { self.components.set_len(index + 1); }
+    }
+
+    self.components.insert(index, C::default());
   }
 
-  fn get(&self, entity_id: EntityId) -> &C {
-    unimplemented!()
+  fn get(&self, index: Index) -> &C {
+    self.components.get(index as usize).unwrap()
   }
 
-  fn get_mut(&mut self, entity_id: EntityId) -> &mut C {
-    unimplemented!()
+  fn get_mut(&mut self, index: Index) -> &mut C {
+    self.components.get_mut(index as usize).unwrap()
   }
 
-  fn remove(&mut self, entity_id: EntityId) {
-    unimplemented!()
+  fn remove(&mut self, index: Index) {
+    self.components.remove(index as usize);
   }
 }
 
-/// Sparse-packed component storage.
+/// Hash-based sparse component storage.
 ///
 /// Does not waste space for entities that don't possess the associated components, but is much less efficient to loop
 /// over due to the components being retained in a hash-table with variable offsets.
-pub struct SparseStorage<C: Component> {
-  components: HashMap<EntityId, C>,
+pub struct HashStorage<C: Component> {
+  components: HashMap<Index, C>,
 }
 
-impl<C: Component> ComponentStorage<C> for SparseStorage<C> {
+impl<C: Component> ComponentStorage<C> for HashStorage<C> {
   fn new() -> Self {
     Self { components: HashMap::new() }
   }
 
-  fn create(&mut self, entity_id: EntityId) {
-    self.components.insert(entity_id, C::default());
+  fn create(&mut self, index: Index) {
+    self.components.insert(index, C::default());
   }
 
-  fn get(&self, entity_id: EntityId) -> &C {
-    self.components.get(&entity_id).unwrap()
+  fn get(&self, index: Index) -> &C {
+    self.components.get(&index).unwrap()
   }
 
-  fn get_mut(&mut self, entity_id: EntityId) -> &mut C {
-    self.components.get_mut(&entity_id).unwrap()
+  fn get_mut(&mut self, index: Index) -> &mut C {
+    self.components.get_mut(&index).unwrap()
   }
 
-  fn remove(&mut self, entity_id: EntityId) {
-    self.components.remove(&entity_id);
+  fn remove(&mut self, index: Index) {
+    self.components.remove(&index);
   }
 }
 
@@ -259,14 +301,14 @@ mod tests {
   }
 
   impl Component for TestComponent1 {
-    type Storage = SparseStorage<Self>;
+    type Storage = HashStorage<Self>;
   }
 
   #[derive(Default, Debug)]
   struct TestComponent2;
 
   impl Component for TestComponent2 {
-    type Storage = DenseStorage<Self>;
+    type Storage = VecStorage<Self>;
   }
 
   struct TestSystem;
@@ -290,43 +332,49 @@ mod tests {
 
   #[test]
   fn component_bag_should_read_and_write_components() {
+    let index = 42;
     let mut components = ComponentBag::new();
-    let entity_id = EntityId::new(1, 0);
 
     components.create::<TestComponent1>();
-
     let storage = components.get::<TestComponent1>();
 
-    storage.create(entity_id);
-
-    let component = storage.get_mut(entity_id);
-
-    component.position = Vec2::zero();
-    component.rotation = 90.;
-
-    storage.remove(entity_id);
+    storage.create(index);
+    storage.get(index);
+    storage.get_mut(index);
+    storage.remove(index);
   }
 
   #[test]
-  fn dense_storage_should_read_and_write() {
-    let entity_id = EntityId::new(1, 0);
-    let mut storage = DenseStorage::<TestComponent1>::new();
+  fn btree_storage_should_read_and_write() {
+    let index = 42;
+    let mut storage = BTreeStorage::<TestComponent1>::new();
 
-    storage.create(entity_id);
-    storage.get(entity_id);
-    storage.get_mut(entity_id);
-    storage.remove(entity_id);
+    storage.create(index);
+    storage.get(index);
+    storage.get_mut(index);
+    storage.remove(index);
   }
 
   #[test]
-  fn sparse_storage_should_read_and_write() {
-    let entity_id = EntityId::new(1, 0);
-    let mut storage = SparseStorage::<TestComponent1>::new();
+  fn vec_storage_should_read_and_write() {
+    let index = 42;
+    let mut storage = VecStorage::<TestComponent1>::new();
 
-    storage.create(entity_id);
-    storage.get(entity_id);
-    storage.get_mut(entity_id);
-    storage.remove(entity_id);
+    storage.create(index);
+    storage.get(index);
+    storage.get_mut(index);
+    storage.remove(index);
+  }
+
+  #[test]
+  fn hash_storage_should_read_and_write() {
+    let index = 42;
+    let mut storage = HashStorage::<TestComponent1>::new();
+
+    storage.create(index);
+    storage.get(index);
+    storage.get_mut(index);
+    storage.remove(index);
   }
 
   #[test]

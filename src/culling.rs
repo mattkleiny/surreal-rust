@@ -8,19 +8,32 @@
 use std::collections::LinkedList;
 
 use glam::Vec2;
-use crate::maths::Rect;
 
-/// A camera that can be used for culling.
-pub trait OrthographicCulling {
-  /// Gets the visible area of the camera, relative to it's screen space.
-  fn get_visible_rect(&self) -> Rect;
-}
+use crate::maths::Rect;
 
 /// Describes a level of detail level.
 ///
 /// Different levels of detail can exhibit different qualities based on distance to and visibility towards the camera.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct LOD(u8);
+
+/// A shape that can be culled relative to the camera.
+#[derive(Clone, Debug)]
+pub enum CullingShape {
+  /// A simple circular shape in 2-space.
+  Circle {
+    radius: f32,
+    center: Vec2,
+  },
+  /// An axially aligned bounding box.
+  AABB(Rect),
+}
+
+/// An orthographic projection that can be used for culling.
+pub trait OrthographicProjection {
+  /// Gets the visible region of the projection in screen space.
+  fn get_visible_region(&self) -> Rect;
+}
 
 /// A group of objects that may be culled relative to the game's camera.
 ///
@@ -31,42 +44,29 @@ pub struct LOD(u8);
 /// recommended.
 #[derive(Clone, Debug)]
 pub struct CullingGroup<'a, T> {
-  elements: LinkedList<Cullable<T>>,
-  first_visible: Option<&'a Cullable<T>>,
-  last_visible: Option<&'a Cullable<T>>,
+  previous_snapshot: Option<CullingSnapshot<'a, T>>,
+  current_snapshot: Option<CullingSnapshot<'a, T>>,
 }
 
 impl<'a, T> CullingGroup<'a, T> {
   pub fn new() -> Self {
     Self {
-      elements: LinkedList::new(),
-      first_visible: None,
-      last_visible: None,
+      previous_snapshot: None,
+      current_snapshot: None,
     }
   }
 
-  /// Adds a new element to the group.
-  pub fn add(&mut self, element: T, shape: CullingShape) {
-    self.elements.push_back(Cullable {
-      element,
-      is_visible: false,
-      current_lod: LOD(0),
-      shape,
-    })
-  }
-
-  /// Culls objects are visible/not visible to the given camera.
-  pub fn recalculate_visible_objects(&mut self, camera: &impl OrthographicCulling) {
-    let _visible_rect = camera.get_visible_rect();
+  /// Culls objects are visible/not visible to the given projection.
+  pub fn cull_scene(&mut self, projection: &impl OrthographicProjection) {
+    let _visible_region = projection.get_visible_region();
 
     unimplemented!()
   }
 
-  /// Clears all elements from teh group.
-  pub fn clear(&mut self) {
-    self.elements.clear();
-    self.first_visible = None;
-    self.last_visible = None;
+  /// Resets the group's state.
+  pub fn reset(&mut self) {
+    self.previous_snapshot = None;
+    self.current_snapshot = None;
   }
 }
 
@@ -83,29 +83,22 @@ struct Cullable<T> {
   shape: CullingShape,
 }
 
-/// A shape that can be culled relative to the camera.
+/// A snapshot of the results of culling a particular culling group.
+///
+/// This snapshot is used to derive frame-by-frame culling deltas, and is core to the algorithm that we use.
 #[derive(Clone, Debug)]
-pub enum CullingShape {
-  /// A simple circular shape in 2-space.
-  Circle {
-    radius: f32,
-    center: Vec2,
-  },
-  /// An axially aligned bounding box.
-  AABB(Rect),
+struct CullingSnapshot<'a, T> {
+  elements: LinkedList<Cullable<T>>,
+  first_visible: Option<&'a Cullable<T>>,
+  last_visible: Option<&'a Cullable<T>>,
 }
 
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn culling_api_should_be_easy_to_work_with() {
-    let mut group = CullingGroup::new();
-
-    group.add("Sprite 1", CullingShape::Circle {
-      radius: 3.0,
-      center: Vec2::new(0.5, 0.5),
-    });
+impl<'a, T> CullingSnapshot<'a, T> {
+  pub fn new() -> Self {
+    Self {
+      elements: LinkedList::new(),
+      first_visible: None,
+      last_visible: None,
+    }
   }
 }
