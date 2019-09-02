@@ -19,13 +19,9 @@ extern crate enumflags2_derive;
 #[cfg(feature = "opengl")]
 extern crate gl;
 extern crate glam;
-pub extern crate image;
-extern crate imgui;
-extern crate imgui_opengl_renderer;
-extern crate imgui_sdl2;
+extern crate image;
 extern crate log;
 extern crate rand;
-pub extern crate rlua;
 extern crate sdl2;
 
 pub mod assets;
@@ -41,7 +37,6 @@ pub mod utilities;
 
 pub mod prelude {
   //! Import this module to simplify access to Surreal's components.
-
   pub use crate::assets::*;
   pub use crate::collections::*;
   pub use crate::culling::*;

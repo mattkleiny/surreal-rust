@@ -2,7 +2,6 @@
 
 use std::collections::HashSet;
 
-use imgui::{Condition, im_str};
 use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseState;
@@ -55,15 +54,11 @@ pub struct DesktopHost {
   timer_subsystem: TimerSubsystem,
   window: Window,
   graphics_device: OpenGLGraphicsDevice,
-  imgui_context: imgui::Context,
-  imgui_renderer: imgui_opengl_renderer::Renderer,
-  imgui_sdl2: imgui_sdl2::ImguiSdl2,
   event_pump: EventPump,
   mouse_state: MouseState,
   keyboard_state: HashSet<Keycode>,
   max_frame_time: Option<u32>,
   is_closing: bool,
-  render_debug_overlay: bool,
   delta_clock: Clock,
   fps_counter: FpsCounter,
   background_color: Color,
@@ -110,14 +105,6 @@ impl DesktopHost {
     let vsync_enabled = if use_vsync { 1 } else { 0 };
     video_subsystem.gl_set_swap_interval(vsync_enabled).map_err(|err| Error::FailedToCreate(err))?;
 
-    // prepare dear imgui for debug overlays
-    let mut imgui_context = imgui::Context::create();
-    let imgui_sdl2 = imgui_sdl2::ImguiSdl2::new(&mut imgui_context, &window);
-
-    let imgui_renderer = imgui_opengl_renderer::Renderer::new(&mut imgui_context, |s| {
-      video_subsystem.gl_get_proc_address(s) as _
-    });
-
     // capture the initial input device state
     let mouse_state = event_pump.mouse_state();
     let keyboard_state = event_pump
@@ -138,15 +125,11 @@ impl DesktopHost {
       timer_subsystem,
       window,
       graphics_device,
-      imgui_context,
-      imgui_renderer,
-      imgui_sdl2,
       event_pump,
       keyboard_state,
       mouse_state,
       max_frame_time: max_fps.map(|max_fps| 1000 / max_fps),
       is_closing: false,
-      render_debug_overlay: true,
       delta_clock: Clock::new(32.),
       fps_counter: FpsCounter::new(100),
       background_color,
@@ -212,39 +195,6 @@ impl Host<DesktopPlatform> for DesktopHost {
 
     // tick the game simulation
     callback(self, delta_time);
-
-    // prepare the imgui frame and render the debug overlay
-    if self.render_debug_overlay {
-      // prepare frame, transfer delta time to the ui
-      self.imgui_sdl2.prepare_frame(self.imgui_context.io_mut(), &self.window, &self.mouse_state);
-      self.imgui_context.io_mut().delta_time = delta_time as f32;
-
-      let ui = self.imgui_context.frame();
-
-      let average_frame_time = self.fps_counter.average_frame_time();
-      let frames_per_second = self.fps_counter.fps();
-
-      // build the debug overlay
-      ui.window(im_str!("Debug Overlay"))
-          .title_bar(false)
-          .resizable(false)
-          .always_auto_resize(true)
-          .movable(false)
-          .save_settings(false)
-          .position([16., 16.], Condition::Always)
-          .build(|| {
-            ui.text("Statistics");
-            ui.separator();
-            ui.text(format!("Average frame time: {:.2}", average_frame_time));
-            ui.text(format!("Frames per second: {:.2}", frames_per_second));
-
-            // TODO: plot frame times here
-          });
-
-      // render the frame
-      self.imgui_sdl2.prepare_render(&ui, &self.window);
-      self.imgui_renderer.render(ui);
-    }
 
     // finish rendering
     unsafe {
