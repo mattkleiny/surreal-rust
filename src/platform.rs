@@ -5,19 +5,14 @@ use crate::graphics::GraphicsDevice;
 pub mod desktop;
 pub mod memory;
 
-/// Possible error types for platform construction.
-#[derive(Debug)]
-pub enum Error {
-  FailedToCreate(String)
-}
-
 /// An abstraction over the selected backend for the system.
 pub trait Platform: Sized {
   type Host: Host<Self>;
   type GraphicsDevice: GraphicsDevice;
+  type Error;
 
   /// Builds the host for the platform.
-  fn build(&self) -> Result<Self::Host, Error>;
+  fn build(&self) -> Result<Self::Host, Self::Error>;
 }
 
 /// An abstraction over a 'host' in a particular platform.

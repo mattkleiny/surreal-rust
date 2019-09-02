@@ -13,6 +13,12 @@ use crate::utilities::{Clock, FpsCounter};
 
 use super::*;
 
+/// Possible error types for the desktop platform.
+#[derive(Debug)]
+pub enum DesktopError {
+  FailedToCreate(String)
+}
+
 /// The configuration for a window.
 #[derive(Copy, Clone, Debug)]
 pub struct WindowConfiguration {
@@ -33,8 +39,9 @@ pub struct DesktopPlatform {
 impl Platform for DesktopPlatform {
   type Host = DesktopHost;
   type GraphicsDevice = OpenGLGraphicsDevice;
+  type Error = DesktopError;
 
-  fn build(&self) -> Result<Self::Host, Error> {
+  fn build(&self) -> Result<Self::Host, Self::Error> {
     let host = DesktopHost::new(
       self.configuration,
       self.max_fps,
@@ -65,11 +72,11 @@ pub struct DesktopHost {
 }
 
 impl DesktopHost {
-  pub fn new(configuration: WindowConfiguration, max_fps: Option<u32>, use_vsync: bool, background_color: Color) -> Result<Self, Error> {
-    let sdl_context = sdl2::init().map_err(|err| Error::FailedToCreate(err))?;
-    let audio_subsystem = sdl_context.audio().map_err(|err| Error::FailedToCreate(err))?;
-    let video_subsystem = sdl_context.video().map_err(|err| Error::FailedToCreate(err))?;
-    let timer_subsystem = sdl_context.timer().map_err(|err| Error::FailedToCreate(err))?;
+  pub fn new(configuration: WindowConfiguration, max_fps: Option<u32>, use_vsync: bool, background_color: Color) -> Result<Self, DesktopError> {
+    let sdl_context = sdl2::init().map_err(|err| DesktopError::FailedToCreate(err))?;
+    let audio_subsystem = sdl_context.audio().map_err(|err| DesktopError::FailedToCreate(err))?;
+    let video_subsystem = sdl_context.video().map_err(|err| DesktopError::FailedToCreate(err))?;
+    let timer_subsystem = sdl_context.timer().map_err(|err| DesktopError::FailedToCreate(err))?;
 
     // set the desired gl version before creating the window
     {
@@ -90,12 +97,12 @@ impl DesktopHost {
         .opengl()
         .allow_highdpi()
         .build()
-        .map_err(|err| Error::FailedToCreate(err.to_string()))?;
+        .map_err(|err| DesktopError::FailedToCreate(err.to_string()))?;
 
-    let event_pump = sdl_context.event_pump().map_err(|err| Error::FailedToCreate(err))?;
+    let event_pump = sdl_context.event_pump().map_err(|err| DesktopError::FailedToCreate(err))?;
 
     // prepare the opengl bindings and context
-    let gl_context = window.gl_create_context().map_err(|err| Error::FailedToCreate(err))?;
+    let gl_context = window.gl_create_context().map_err(|err| DesktopError::FailedToCreate(err))?;
     gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as _);
 
     // build the graphics device
@@ -103,7 +110,7 @@ impl DesktopHost {
 
     // toggle vsync based on setting
     let vsync_enabled = if use_vsync { 1 } else { 0 };
-    video_subsystem.gl_set_swap_interval(vsync_enabled).map_err(|err| Error::FailedToCreate(err))?;
+    video_subsystem.gl_set_swap_interval(vsync_enabled).map_err(|err| DesktopError::FailedToCreate(err))?;
 
     // capture the initial input device state
     let mouse_state = event_pump.mouse_state();
