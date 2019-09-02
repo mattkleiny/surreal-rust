@@ -136,3 +136,28 @@ impl RectI {
     Vec2i::new(self.right - self.left, self.bottom - self.top)
   }
 }
+
+/// A floating point rectangular shape in 2-space.
+#[derive(Default, Copy, Clone, Debug, PartialEq)]
+pub struct Rect {
+  left: f32,
+  top: f32,
+  right: f32,
+  bottom: f32,
+}
+
+impl Rect {
+  pub fn new(left: f32, top: f32, right: f32, bottom: f32) -> Self {
+    Self { left, top, right, bottom }
+  }
+
+  #[inline]
+  pub fn origin(&self) -> Vec2 {
+    Vec2::new(self.left, self.top)
+  }
+
+  #[inline]
+  pub fn size(&self) -> Vec2 {
+    Vec2::new(self.right - self.left, self.bottom - self.top)
+  }
+}

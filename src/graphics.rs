@@ -6,6 +6,9 @@
 //! Whilst more directly coupled than other providers, this implementation is simple, direct and fast. It is designed
 //! to account for the majority use case as opposed to all possibilities and to do it well, as opposed to solving
 //! the general case and doing it poorly.
+//!
+//! This device, whilst not strictly precluding 3d development, is primarily focused towards 2d development, and a lot
+//! of the auxiliary libraries and utilities are designed to be fast in 2-space.
 
 use std::sync::Mutex;
 
