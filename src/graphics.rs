@@ -123,13 +123,19 @@ impl<'a, D> CommandQueue<'a, D> where D: GraphicsDevice {
       device.flush_commands();
     }
   }
+
+  /// Clears the contents of the queue.
+  pub fn clear(&self) {
+    let mut queue = self.queue.lock().unwrap();
+
+    queue.clear();
+  }
 }
 
 /// A command that can be placed into a queue for later execution by the graphics device.
-#[derive(Copy, Clone)]
 pub enum Command<'a, D> where D: GraphicsDevice {
   /// Sets the render state on the graphics device.
-  SetRenderState(&'a RenderState<'a, D>),
+  SetRenderState(RenderState<'a, D>),
   /// Clears the active render target.
   ClearRenderTarget(ClearOps),
   /// Binds the given buffer for rendering on the device.
