@@ -10,6 +10,8 @@
 use std::any::Any;
 use std::collections::HashMap;
 
+// TODO: rethink the lifetime parameters used here
+
 /// Uniquely identifies an entity in the entity system.
 ///
 /// We use a style of indexing commonly known as generational indices.
@@ -17,6 +19,15 @@ use std::collections::HashMap;
 pub struct EntityId {
   sequence: u16,
   generation: u16,
+}
+
+impl EntityId {
+  pub fn new(sequence: u16, generation: u16) -> Self {
+    Self {
+      sequence,
+      generation,
+    }
+  }
 }
 
 /// An arena of entities managed using generational indices.
@@ -32,16 +43,8 @@ impl EntityArena {
 ///
 /// Each component type defines the way in which it is stored, as well as a unique mask value for use in aspect
 /// calculations.
-pub trait Component: Sized {
+pub trait Component: Sized + Default {
   type Storage: ComponentStorage<Self> = DenseStorage<Self>;
-}
-
-/// Provide generic component support to all sized structs, by default.
-///
-/// Pack components densely by default, as we're more concerned about CPU frame time than a little bit of
-/// extra memory usage.
-impl<T: Sized> Component for T {
-  type Storage = DenseStorage<Self>;
 }
 
 /// Retrieves the mask for the given component type.
@@ -51,15 +54,21 @@ fn get_component_mask<C: 'static + Component>() -> ComponentMask {
 }
 
 /// Defines possible storage types for entity components.
-pub trait ComponentStorage<C: Component> {
+pub trait ComponentStorage<C: Component>: Sized {
   /// Creates a new instance of this storage, ready to accept instances.
   fn new() -> Self;
 
+  /// Creates a new component; either inserting a new component or resetting an existing one.
+  fn create(&mut self, entity_id: EntityId);
+
   /// Gets immutable access to a component in storage.
-  fn get(&self, entity_id: &EntityId) -> &C;
+  fn get(&self, entity_id: EntityId) -> &C;
 
   /// Gets mutable access to a component in storage.
-  fn get_mut(&mut self, entity_id: &EntityId) -> &mut C;
+  fn get_mut(&mut self, entity_id: EntityId) -> &mut C;
+
+  /// Removes an existing component from storage.
+  fn remove(&mut self, entity_id: EntityId);
 }
 
 /// Densely-packed component storage.
@@ -67,6 +76,7 @@ pub trait ComponentStorage<C: Component> {
 /// Wastes space for entities that don't possess the associated components, but is very efficient to iterate over for
 /// data that is frequently accessed on a frame-by-frame basis.
 pub struct DenseStorage<C: Component> {
+  // TODO: use an arena or something, here, instead
   components: Vec<C>,
 }
 
@@ -75,11 +85,19 @@ impl<C: Component> ComponentStorage<C> for DenseStorage<C> {
     Self { components: Vec::new() }
   }
 
-  fn get(&self, entity_id: &EntityId) -> &C {
+  fn create(&mut self, entity_id: EntityId) {
     unimplemented!()
   }
 
-  fn get_mut(&mut self, entity_id: &EntityId) -> &mut C {
+  fn get(&self, entity_id: EntityId) -> &C {
+    unimplemented!()
+  }
+
+  fn get_mut(&mut self, entity_id: EntityId) -> &mut C {
+    unimplemented!()
+  }
+
+  fn remove(&mut self, entity_id: EntityId) {
     unimplemented!()
   }
 }
@@ -97,12 +115,20 @@ impl<C: Component> ComponentStorage<C> for SparseStorage<C> {
     Self { components: HashMap::new() }
   }
 
-  fn get(&self, entity_id: &EntityId) -> &C {
-    unimplemented!()
+  fn create(&mut self, entity_id: EntityId) {
+    self.components.insert(entity_id, C::default());
   }
 
-  fn get_mut(&mut self, entity_id: &EntityId) -> &mut C {
-    unimplemented!()
+  fn get(&self, entity_id: EntityId) -> &C {
+    self.components.get(&entity_id).unwrap()
+  }
+
+  fn get_mut(&mut self, entity_id: EntityId) -> &mut C {
+    self.components.get_mut(&entity_id).unwrap()
+  }
+
+  fn remove(&mut self, entity_id: EntityId) {
+    self.components.remove(&entity_id);
   }
 }
 
@@ -125,8 +151,11 @@ impl ComponentBag {
   }
 
   /// Gets or creates the storage for the given component.
-  pub fn get<C: 'static + Component>(&mut self) -> &C::Storage {
-    unimplemented!()
+  pub fn get<C: 'static + Component>(&mut self) -> &mut C::Storage {
+    let mask = get_component_mask::<C>();
+    let result = self.storages.get_mut(&mask);
+
+    result.unwrap().downcast_mut().unwrap()
   }
 }
 
@@ -219,10 +248,26 @@ impl World {
 
 #[cfg(test)]
 mod tests {
+  use glam::Vec2;
+
   use super::*;
 
-  struct TestComponent1;
+  #[derive(Default, Debug)]
+  struct TestComponent1 {
+    position: Vec2,
+    rotation: f32,
+  }
+
+  impl Component for TestComponent1 {
+    type Storage = SparseStorage<Self>;
+  }
+
+  #[derive(Default, Debug)]
   struct TestComponent2;
+
+  impl Component for TestComponent2 {
+    type Storage = DenseStorage<Self>;
+  }
 
   struct TestSystem;
 
@@ -241,6 +286,47 @@ mod tests {
     assert!(aspect.mask > 0);
     assert!(aspect.has::<TestComponent1>());
     assert!(!aspect.has::<TestComponent2>());
+  }
+
+  #[test]
+  fn component_bag_should_read_and_write_components() {
+    let mut components = ComponentBag::new();
+    let entity_id = EntityId::new(1, 0);
+
+    components.create::<TestComponent1>();
+
+    let storage = components.get::<TestComponent1>();
+
+    storage.create(entity_id);
+
+    let component = storage.get_mut(entity_id);
+
+    component.position = Vec2::zero();
+    component.rotation = 90.;
+
+    storage.remove(entity_id);
+  }
+
+  #[test]
+  fn dense_storage_should_read_and_write() {
+    let entity_id = EntityId::new(1, 0);
+    let mut storage = DenseStorage::<TestComponent1>::new();
+
+    storage.create(entity_id);
+    storage.get(entity_id);
+    storage.get_mut(entity_id);
+    storage.remove(entity_id);
+  }
+
+  #[test]
+  fn sparse_storage_should_read_and_write() {
+    let entity_id = EntityId::new(1, 0);
+    let mut storage = SparseStorage::<TestComponent1>::new();
+
+    storage.create(entity_id);
+    storage.get(entity_id);
+    storage.get_mut(entity_id);
+    storage.remove(entity_id);
   }
 
   #[test]
