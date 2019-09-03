@@ -27,7 +27,6 @@ impl<D: GraphicsDevice> Mesh<D> {
         BufferTarget::Vertex,
         BufferUploadMode::Dynamic,
       );
-
       device.upload_to_buffer(
         &self.index_buffer,
         BufferData::Memory(indices),

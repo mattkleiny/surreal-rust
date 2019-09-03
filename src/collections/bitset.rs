@@ -14,14 +14,19 @@ pub struct BitSet {
 
 impl BitSet {
   pub fn new() -> Self {
-    Default::default()
+    Self {
+      layer3: 0,
+      layer2: Vec::new(),
+      layer1: Vec::new(),
+      layer0: Vec::new(),
+    }
   }
 
-  pub fn add(&mut self, id: Index) -> bool {
+  pub fn add(&mut self, id: Index) -> &mut Self {
     unimplemented!()
   }
 
-  pub fn remove(&mut self, id: Index) -> bool {
+  pub fn remove(&mut self, id: Index) -> &mut Self {
     unimplemented!()
   }
 

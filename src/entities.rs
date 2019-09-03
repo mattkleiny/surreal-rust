@@ -175,7 +175,7 @@ impl<C: Component> ComponentStorage<C> for HashMapStorage<C> {
 }
 
 /// A bag of component storage.
-pub struct ComponentBag {
+struct ComponentBag {
   storages: HashMap<ComponentMask, Box<dyn Any>>,
 }
 
@@ -230,18 +230,24 @@ impl Aspect {
   }
 
   /// Includes the given type in the aspect.
-  pub fn include<C: 'static + Component>(&mut self) {
+  pub fn include<C: 'static + Component>(&mut self) -> &mut Self {
     self.bitset.add(get_component_mask::<C>());
+    self
   }
 
   /// Excludes the given type from the aspect.
-  pub fn exclude<C: 'static + Component>(&mut self) {
+  pub fn exclude<C: 'static + Component>(&mut self) -> &mut Self {
     self.bitset.remove(get_component_mask::<C>());
+    self
   }
 
   /// Determines if the aspect contains the given component.
   pub fn contains<C: 'static + Component>(&mut self) -> bool {
     self.bitset.contains(get_component_mask::<C>())
+  }
+
+  pub fn build(&self) -> Aspect {
+    self.clone()
   }
 }
 
@@ -308,10 +314,16 @@ impl<S> World<S> {
     storage.get_mut(entity_id.into())
   }
 
+  /// Removes the given component type from the given entity.
   pub fn remove_component<C: 'static + Component>(&mut self, entity_id: EntityId) {
     let storage = self.components.get_mut::<C>();
 
     storage.remove(entity_id.into());
+  }
+
+  /// Collects the entities that possess the given aspect.
+  pub fn collect_entities(&mut self, aspect: &Aspect) -> Vec<EntityId> {
+    unimplemented!()
   }
 
   /// Executes the given instruction on all of the attached systems.
@@ -320,29 +332,6 @@ impl<S> World<S> {
     for system in self.systems.iter_mut() {
       body(system);
     }
-  }
-}
-
-/// A utility for fluently building entities.
-pub struct EntityBuilder<'a, S> {
-  world: &'a World<S>,
-  entity_id: EntityId,
-}
-
-impl<'a, S> EntityBuilder<'a, S> {
-  pub fn new(world: &'a mut World<S>) -> Self {
-    let entity_id = world.create_entity();
-    Self { world, entity_id }
-  }
-
-  /// Attaches a component to the entity.
-  pub fn with<C: 'static + Component>(self, component: C) -> Self {
-    unimplemented!()
-  }
-
-  /// Builds the resultant entity.
-  pub fn build(self) -> EntityId {
-    self.entity_id
   }
 }
 
@@ -463,18 +452,6 @@ mod tests {
     world.delete_entity(entity1);
     world.delete_entity(entity2);
     world.delete_entity(entity3);
-  }
-
-  #[test]
-  fn world_should_build_entities() {
-    let mut world = World::<Box<dyn System>>::new();
-
-    let entity = EntityBuilder::new(&mut world)
-        .with(TestComponent1::default())
-        .with(TestComponent2::default())
-        .build();
-
-    world.delete_entity(entity);
   }
 
   #[test]

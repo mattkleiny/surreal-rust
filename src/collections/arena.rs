@@ -91,8 +91,8 @@ impl<T> Arena<T> {
   /// This is safe, and retains the generation so that old indices won't access new elements.
   pub fn clear(&mut self) {
     self.items.clear();
-    self.next_free = None;
     self.length = 0;
+    self.next_free = None;
   }
 }
 
