@@ -107,9 +107,9 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
   }
 
   /// Flushes the batch to the given graphics device.
-  pub fn flush(&mut self, device: &D, textures: &[&D::Texture]) {
+  pub fn flush(&mut self, command_queue: &CommandQueue<D>) {
     if self.vertex_index > 0 {
-      // upload the vertices/indices to the GPU
+      /*// upload the vertices/indices to the GPU
       self.mesh.upload_to_gpu(
         device,
         &self.vertices,
@@ -130,7 +130,7 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
       self.vertices.clear();
       self.indices.clear();
 
-      self.vertex_index = 0;
+      self.vertex_index = 0;*/
     }
   }
 }

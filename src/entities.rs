@@ -10,7 +10,7 @@
 use std::any::Any;
 use std::collections::{BTreeMap, HashMap};
 
-use crate::collections::{Arena, ArenaIndex};
+use crate::collections::{Arena, ArenaIndex, BitSet};
 
 // TODO: rethink the lifetime parameters used here.
 // TODO: wrap the component bag to allow simpler access from systems.
@@ -21,6 +21,9 @@ use crate::collections::{Arena, ArenaIndex};
 /// The data for an entity is represented through the conjunction of it's
 /// components.
 type EntityArena = Arena<()>;
+
+type ComponentIndex = usize;
+type ComponentMask = u64;
 
 /// Uniquely identifies an entity in the entity system.
 /// We use a style of indexing commonly known as generational indices.
@@ -34,9 +37,6 @@ pub struct EntityId(ArenaIndex);
 pub trait Component: Sized {
   type Storage: ComponentStorage<Self> = BTreeStorage<Self>;
 }
-
-type ComponentIndex = usize;
-type ComponentMask = u64;
 
 /// Retrieves the mask for the given component type.
 #[inline(always)]
@@ -70,7 +70,7 @@ pub trait ComponentStorage<C: Component>: Sized {
 
 /// B-tree based sparse component storage.
 ///
-/// B-tree based storage is good enough for most use cases, with average memory usage and average loop
+/// This storage is good enough for most use cases, with average memory usage and average loop
 /// cost. It's the default choice for components.
 pub struct BTreeStorage<C: Component> {
   components: BTreeMap<ComponentIndex, C>,
@@ -202,35 +202,29 @@ impl ComponentBag {
 ///
 /// An aspect is a bit-mask of a set of component types, and allows efficient storage and access to those components
 /// when requesting them from component storage.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Aspect {
-  mask: ComponentMask,
+  bitset: BitSet,
 }
 
 impl Aspect {
   pub fn new() -> Self {
-    Self { mask: 0 }
+    Self { bitset: BitSet::new() }
   }
 
   /// Includes the given type in the aspect.
-  #[inline]
-  pub fn include<C: 'static + Component>(self) -> Aspect {
-    let component_mask = get_component_mask::<C>();
-    Self { mask: self.mask | component_mask }
+  pub fn include<C: 'static + Component>(&mut self) {
+    self.bitset.add(get_component_mask::<C>());
   }
 
   /// Excludes the given type from the aspect.
-  #[inline]
-  pub fn exclude<C: 'static + Component>(self) -> Aspect {
-    let component_mask = get_component_mask::<C>();
-    Self { mask: self.mask & !component_mask }
+  pub fn exclude<C: 'static + Component>(&mut self) {
+    self.bitset.remove(get_component_mask::<C>());
   }
 
-  /// Determines if the aspect includes the given component.
-  #[inline]
-  pub fn has<C: 'static + Component>(&self) -> bool {
-    let component_mask = get_component_mask::<C>();
-    self.mask | component_mask == component_mask
+  /// Determines if the aspect contains the given component.
+  pub fn contains<C: 'static + Component>(&mut self) -> bool {
+    self.bitset.contains(get_component_mask::<C>())
   }
 }
 
@@ -343,13 +337,12 @@ mod tests {
 
   #[test]
   fn aspect_should_build_a_valid_component_mask() {
-    let aspect = Aspect::new()
-        .include::<TestComponent1>()
-        .exclude::<TestComponent2>();
+    let mut aspect = Aspect::new();
+    aspect.include::<TestComponent1>();
+    aspect.exclude::<TestComponent2>();
 
-    assert!(aspect.mask > 0);
-    assert!(aspect.has::<TestComponent1>());
-    assert!(!aspect.has::<TestComponent2>());
+    assert!(aspect.contains::<TestComponent1>());
+    assert!(!aspect.contains::<TestComponent2>());
   }
 
   #[test]
