@@ -451,7 +451,9 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
           pixels.as_mut_ptr() as *mut GLvoid,
         ));
 
+        // flip them bits upside down; because opengl samples bottom to top
         flip_y(&mut pixels, size, channels);
+
         TextureData::U8(pixels)
       }
     }

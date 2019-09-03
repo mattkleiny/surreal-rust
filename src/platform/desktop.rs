@@ -20,7 +20,7 @@ pub enum DesktopError {
 }
 
 /// The configuration for a window.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct WindowConfiguration {
   pub title: &'static str,
   pub width: u32,
@@ -43,7 +43,7 @@ impl Platform for DesktopPlatform {
 
   fn build(&self) -> Result<Self::Host, Self::Error> {
     let host = DesktopHost::new(
-      self.configuration,
+      self.configuration.clone(),
       self.max_fps,
       self.use_vsync,
       self.background_color,

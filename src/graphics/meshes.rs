@@ -1,5 +1,3 @@
-//! Mesh management abstractions.
-
 use super::*;
 
 /// Represents a mesh of vertices and indices that can be rendered on the graphics device.

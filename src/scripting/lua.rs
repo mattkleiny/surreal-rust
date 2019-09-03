@@ -4,6 +4,8 @@
 //! We throw away a lot of unnecessary pandering and 'safety' in order to provide a competent
 //! API for getting shit done.
 
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+
 use super::*;
 
 /// The Lua scripting engine backend.
@@ -24,20 +26,20 @@ pub struct LuaScriptEngine {
 
 impl LuaScriptEngine {
   pub fn new() -> Self {
-    Self { handle: unsafe { LuaHandle::new() } }
+    Self { handle: LuaHandle::new() }
   }
 
-  pub fn open_libs(&mut self) { unsafe { ffi::luaL_openlibs(self.handle.0) } }
-  pub fn open_base(&mut self) { unsafe { ffi::luaopen_base(self.handle.0) } }
-  pub fn open_bit32(&mut self) { unsafe { ffi::luaopen_bit32(self.handle.0) } }
-  pub fn open_coroutine(&mut self) { unsafe { ffi::luaopen_coroutine(self.handle.0) } }
-  pub fn open_debug(&mut self) { unsafe { ffi::luaopen_debug(self.handle.0) } }
-  pub fn open_io(&mut self) { unsafe { ffi::luaopen_io(self.handle.0) } }
-  pub fn open_math(&mut self) { unsafe { ffi::luaopen_math(self.handle.0) } }
-  pub fn open_os(&mut self) { unsafe { ffi::luaopen_os(self.handle.0) } }
-  pub fn open_package(&mut self) { unsafe { ffi::luaopen_package(self.handle.0) } }
-  pub fn open_string(&mut self) { unsafe { ffi::luaopen_string(self.handle.0) } }
-  pub fn open_table(&mut self) { unsafe { ffi::luaopen_table(self.handle.0) } }
+  pub fn open_libs(&mut self) { unsafe { ffi::luaL_openlibs(*self.handle.write_lock()) } }
+  pub fn open_base(&mut self) { unsafe { ffi::luaopen_base(*self.handle.write_lock()) } }
+  pub fn open_bit32(&mut self) { unsafe { ffi::luaopen_bit32(*self.handle.write_lock()) } }
+  pub fn open_coroutine(&mut self) { unsafe { ffi::luaopen_coroutine(*self.handle.write_lock()) } }
+  pub fn open_debug(&mut self) { unsafe { ffi::luaopen_debug(*self.handle.write_lock()) } }
+  pub fn open_io(&mut self) { unsafe { ffi::luaopen_io(*self.handle.write_lock()) } }
+  pub fn open_math(&mut self) { unsafe { ffi::luaopen_math(*self.handle.write_lock()) } }
+  pub fn open_os(&mut self) { unsafe { ffi::luaopen_os(*self.handle.write_lock()) } }
+  pub fn open_package(&mut self) { unsafe { ffi::luaopen_package(*self.handle.write_lock()) } }
+  pub fn open_string(&mut self) { unsafe { ffi::luaopen_string(*self.handle.write_lock()) } }
+  pub fn open_table(&mut self) { unsafe { ffi::luaopen_table(*self.handle.write_lock()) } }
 }
 
 /// The default script engine implementation for Lua.
@@ -68,30 +70,39 @@ pub enum LuaError {
 }
 
 /// The internal Lua handle, which is just a pointer back to the native Lua state.
+///
+/// We synchronize on access to lua state using a reader/writer lock.
 #[derive(Debug)]
-struct LuaHandle(*mut ffi::lua_State);
+struct LuaHandle(RwLock<*mut ffi::lua_State>);
 
 impl LuaHandle {
-  pub unsafe fn new() -> Self {
-    // allocate the lua state, allow it to reach into the rust allocator
-    let state = ffi::lua_newstate(alloc, std::ptr::null_mut());
+  pub fn new() -> Self {
+    unsafe {
+      // allocate the lua state, allow it to reach into the rust allocator
+      let state = ffi::lua_newstate(alloc, std::ptr::null_mut());
+      // wire up the panic callback; reach back into rust and unwind exceptions
+      ffi::lua_atpanic(state, panic);
 
-    // wire up the panic callback; reach back into rust and unwind exceptions
-    ffi::lua_atpanic(state, panic);
+      Self(RwLock::new(state))
+    }
+  }
 
-    Self(state)
+  /// Acquires a mutual read lock on the lua state.
+  pub fn read_lock(&self) -> RwLockReadGuard<*mut ffi::lua_State> {
+    self.0.read().unwrap()
+  }
+
+  /// Acquires an exclusive write lock on the lua state.
+  pub fn write_lock(&mut self) -> RwLockWriteGuard<*mut ffi::lua_State> {
+    self.0.write().unwrap()
   }
 }
 
 impl Drop for LuaHandle {
   fn drop(&mut self) {
-    unsafe { ffi::lua_close(self.0); }
+    unsafe { ffi::lua_close(*self.write_lock()); }
   }
 }
-
-unsafe impl Send for LuaHandle {}
-unsafe impl Sync for LuaHandle {}
-
 /// Allows external lua code to allocate state via the Rust allocator.
 extern "C" fn alloc(_ud: *mut libc::c_void,
                     ptr: *mut libc::c_void,

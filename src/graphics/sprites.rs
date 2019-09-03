@@ -1,5 +1,3 @@
-//! Sprite rendering and management.
-
 use glam::Vec2;
 
 use super::*;
@@ -13,22 +11,14 @@ struct SpriteVertex {
   uv: Vec2,
 }
 
-/// Sub-divides a texture with a region for sub-sampling.
-///
-/// This is useful for implementing sprite-sheets and the like.
-pub struct TextureRegion<'a, D: GraphicsDevice> {
-  pub texture: &'a D::Texture,
-  pub offset: Vec2,
-  pub size: Vec2i,
-}
-
 /// Represents a sprite that can be drawn to a sprite batch.
 ///
 /// A sprite references a texture and denotes an offset/pivot within that texture to use for rendering.
 pub struct Sprite<'a, D: GraphicsDevice> {
-  pub region: TextureRegion<'a, D>,
-  pub pivot: Vec2,
+  pub texture: &'a D::Texture,
   pub offset: Vec2,
+  pub size: Vec2i,
+  pub pivot: Vec2,
 }
 
 /// A simple sprite batch using a single, non-modifiable shader program.
@@ -88,21 +78,19 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
 
   /// Draws the given sprite into the batch.
   pub fn draw_sprite(&mut self, sprite: &Sprite<D>, position: Vec2) {
-    let region = &sprite.region;
-
     let x = position.x();
     let y = position.y();
 
-    let width = region.size.x as f32;
-    let height = region.size.y as f32;
+    let width = sprite.size.x as f32;
+    let height = sprite.size.y as f32;
 
     let extent_x = x + width;
     let extent_y = y + height;
 
-    let u1 = region.offset.x() / width;
-    let v1 = (region.offset.y() + height) / height;
-    let u2 = (region.offset.x() + width) / width;
-    let v2 = region.offset.y() / height;
+    let u1 = sprite.offset.x() / width;
+    let v1 = (sprite.offset.y() + height) / height;
+    let u2 = (sprite.offset.x() + width) / width;
+    let v2 = sprite.offset.y() / height;
 
     self.vertices.push(vertex(x, y, u1, v1));
     self.vertices.push(vertex(x, extent_x, u1, v2));

@@ -10,38 +10,22 @@
 use std::any::Any;
 use std::collections::{BTreeMap, HashMap};
 
-// TODO: rethink the lifetime parameters used here.
-// TODO: allow arbitrary context parameters for systems.
+use crate::collections::{Arena, ArenaIndex};
 
-/// The type we use for entity and component indexes.
-type Index = u32;
+// TODO: rethink the lifetime parameters used here.
+// TODO: wrap the component bag to allow simpler access from systems.
+
+/// We store entities in a generational arena, but we only use the indices
+/// to represent the presence or absence of an entity.
+///
+/// The data for an entity is represented through the conjunction of it's
+/// components.
+type EntityArena = Arena<()>;
 
 /// Uniquely identifies an entity in the entity system.
-///
 /// We use a style of indexing commonly known as generational indices.
 #[derive(Clone, Copy, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
-pub struct EntityId {
-  index: Index,
-  generation: u16,
-}
-
-impl EntityId {
-  pub fn new(index: Index, generation: u16) -> Self {
-    Self {
-      index,
-      generation,
-    }
-  }
-}
-
-/// An arena of entities managed using generational indices.
-struct EntityArena {}
-
-impl EntityArena {
-  pub fn new() -> Self {
-    Self {}
-  }
-}
+pub struct EntityId(ArenaIndex);
 
 /// Describes a component that may be attached to an entity.
 ///
@@ -50,6 +34,9 @@ impl EntityArena {
 pub trait Component: Sized {
   type Storage: ComponentStorage<Self> = BTreeStorage<Self>;
 }
+
+type ComponentIndex = usize;
+type ComponentMask = u64;
 
 /// Retrieves the mask for the given component type.
 #[inline(always)]
@@ -69,16 +56,16 @@ pub trait ComponentStorage<C: Component>: Sized {
   fn new() -> Self;
 
   /// Creates a new component; either inserting a new component or resetting an existing one.
-  fn create(&mut self, index: Index, value: C);
+  fn create(&mut self, index: ComponentIndex, value: C);
 
   /// Gets immutable access to a component in storage.
-  fn get(&self, index: Index) -> &C;
+  fn get(&self, index: ComponentIndex) -> &C;
 
   /// Gets mutable access to a component in storage.
-  fn get_mut(&mut self, index: Index) -> &mut C;
+  fn get_mut(&mut self, index: ComponentIndex) -> &mut C;
 
   /// Removes an existing component from storage.
-  fn remove(&mut self, index: Index);
+  fn remove(&mut self, index: ComponentIndex);
 }
 
 /// B-tree based sparse component storage.
@@ -86,7 +73,7 @@ pub trait ComponentStorage<C: Component>: Sized {
 /// B-tree based storage is good enough for most use cases, with average memory usage and average loop
 /// cost. It's the default choice for components.
 pub struct BTreeStorage<C: Component> {
-  components: BTreeMap<Index, C>,
+  components: BTreeMap<ComponentIndex, C>,
 }
 
 impl<C: Component> ComponentStorage<C> for BTreeStorage<C> {
@@ -94,19 +81,19 @@ impl<C: Component> ComponentStorage<C> for BTreeStorage<C> {
     Self { components: BTreeMap::new() }
   }
 
-  fn create(&mut self, index: Index, value: C) {
+  fn create(&mut self, index: ComponentIndex, value: C) {
     self.components.insert(index, value);
   }
 
-  fn get(&self, index: Index) -> &C {
+  fn get(&self, index: ComponentIndex) -> &C {
     self.components.get(&index).expect(&format!("Unable to find entity {}", index))
   }
 
-  fn get_mut(&mut self, index: Index) -> &mut C {
+  fn get_mut(&mut self, index: ComponentIndex) -> &mut C {
     self.components.get_mut(&index).expect(&format!("Unable to find entity {}", index))
   }
 
-  fn remove(&mut self, index: Index) {
+  fn remove(&mut self, index: ComponentIndex) {
     self.components.remove(&index);
   }
 }
@@ -124,7 +111,7 @@ impl<C: Component> ComponentStorage<C> for VecStorage<C> {
     Self { components: Vec::new() }
   }
 
-  fn create(&mut self, index: Index, value: C) {
+  fn create(&mut self, index: ComponentIndex, value: C) {
     let index = index as usize;
     let length = self.components.len();
 
@@ -138,15 +125,15 @@ impl<C: Component> ComponentStorage<C> for VecStorage<C> {
     self.components.insert(index, value);
   }
 
-  fn get(&self, index: Index) -> &C {
+  fn get(&self, index: ComponentIndex) -> &C {
     self.components.get(index as usize).expect(&format!("Unable to find entity {}", index))
   }
 
-  fn get_mut(&mut self, index: Index) -> &mut C {
+  fn get_mut(&mut self, index: ComponentIndex) -> &mut C {
     self.components.get_mut(index as usize).expect(&format!("Unable to find entity {}", index))
   }
 
-  fn remove(&mut self, index: Index) {
+  fn remove(&mut self, index: ComponentIndex) {
     self.components.remove(index as usize);
   }
 }
@@ -156,7 +143,7 @@ impl<C: Component> ComponentStorage<C> for VecStorage<C> {
 /// Does not waste space for entities that don't possess the associated components, but is much less efficient to loop
 /// over due to the components being retained in a hash-table with variable offsets.
 pub struct HashMapStorage<C: Component> {
-  components: HashMap<Index, C>,
+  components: HashMap<ComponentIndex, C>,
 }
 
 impl<C: Component> ComponentStorage<C> for HashMapStorage<C> {
@@ -164,26 +151,24 @@ impl<C: Component> ComponentStorage<C> for HashMapStorage<C> {
     Self { components: HashMap::new() }
   }
 
-  fn create(&mut self, index: Index, value: C) {
+  fn create(&mut self, index: ComponentIndex, value: C) {
     self.components.insert(index, value);
   }
 
-  fn get(&self, index: Index) -> &C {
+  fn get(&self, index: ComponentIndex) -> &C {
     self.components.get(&index).expect(&format!("Unable to find entity {}", index))
   }
 
-  fn get_mut(&mut self, index: Index) -> &mut C {
+  fn get_mut(&mut self, index: ComponentIndex) -> &mut C {
     self.components.get_mut(&index).expect(&format!("Unable to find entity {}", index))
   }
 
-  fn remove(&mut self, index: Index) {
+  fn remove(&mut self, index: ComponentIndex) {
     self.components.remove(&index);
   }
 }
 
-// TODO: wrap this type for easier consumption by entity systems
-
-/// A bag of component storages.
+/// A bag of component storage.
 pub struct ComponentBag {
   storages: HashMap<ComponentMask, Box<dyn Any>>,
 }
@@ -212,9 +197,6 @@ impl ComponentBag {
     result.downcast_mut().unwrap() // this should never fault; otherwise we've screwed up good
   }
 }
-
-/// The precision we require for representing components on entities.
-type ComponentMask = u64;
 
 /// Describes the component types that a entity system wishes to operate upon.
 ///
@@ -252,23 +234,19 @@ impl Aspect {
   }
 }
 
-/// Represents a system that operates on entities and processes their components.
-pub trait System {
-  /// Updates this system by a single frame.
-  fn tick(&mut self, delta_time: f32, components: &mut ComponentBag);
-}
-
 /// The entity world.
 ///
-/// This is the entry point to the ECS system, and provides storage for all entities, systems and components in the
-/// game world.
-pub struct World {
+/// This is the entry point to the ECS system, and provides storage for all entities, systems and
+/// components in the game world.
+///
+/// The type of system we retain, S, is generalizable on a world-by-world basis.
+pub struct World<S: Sized> {
   entities: EntityArena,
   components: ComponentBag,
-  systems: Vec<Box<dyn System>>,
+  systems: Vec<S>,
 }
 
-impl World {
+impl<S> World<S> {
   pub fn new() -> Self {
     Self {
       entities: EntityArena::new(),
@@ -283,44 +261,44 @@ impl World {
   }
 
   /// Registers the given system.
-  pub fn register_system<S: 'static + System>(&mut self, system: S) {
-    self.systems.push(Box::new(system));
+  pub fn register_system(&mut self, system: S) {
+    self.systems.push(system);
   }
 
   /// Creates a new entity.
   pub fn create_entity(&mut self) -> EntityId {
-    unimplemented!()
+    EntityId(self.entities.insert(()))
   }
 
   /// Deletes an existing entity from the world
   pub fn delete_entity(&mut self, entity_id: EntityId) {
-    unimplemented!()
+    self.entities.remove(entity_id.0);
   }
 
-  /// Ticks all of the attached systems.
-  pub fn tick(&mut self, delta_time: f32) {
+  /// Executes the given instruction on all of the attached systems.
+  pub fn execute<B>(&mut self, mut body: B)
+    where B: FnMut(&mut S) -> () {
     for system in self.systems.iter_mut() {
-      system.tick(delta_time, &mut self.components);
+      body(system);
     }
   }
 }
 
 /// A utility for fluently building entities.
-pub struct EntityBuilder<'a> {
-  world: &'a World,
+pub struct EntityBuilder<'a, S> {
+  world: &'a World<S>,
   entity_id: EntityId,
 }
 
-impl<'a> EntityBuilder<'a> {
-  pub fn new(world: &'a mut World) -> Self {
+impl<'a, S> EntityBuilder<'a, S> {
+  pub fn new(world: &'a mut World<S>) -> Self {
     let entity_id = world.create_entity();
     Self { world, entity_id }
   }
 
   /// Attaches a component to the entity.
   pub fn with<C: 'static + Component>(self, component: C) -> Self {
-    // TODO: attach the components
-    self
+    unimplemented!()
   }
 
   /// Builds the resultant entity.
@@ -332,8 +310,6 @@ impl<'a> EntityBuilder<'a> {
 #[cfg(test)]
 mod tests {
   use glam::Vec2;
-
-  use crate::maths::Lerp;
 
   use super::*;
 
@@ -357,17 +333,12 @@ mod tests {
 
   struct TestSystem;
 
+  trait System {
+    fn tick(&mut self, delta_time: f64);
+  }
+
   impl System for TestSystem {
-    fn tick(&mut self, delta_time: f32, components: &mut ComponentBag) {
-      let storage = components.get::<TestComponent1>();
-
-      for index in 0..1000 {
-        let component = storage.get_mut(index);
-
-        component.position += component.velocity * delta_time;
-        component.rotation = f32::lerp(component.rotation, 0., 0.3);
-      }
-    }
+    fn tick(&mut self, delta_time: f64) {}
   }
 
   #[test]
@@ -430,7 +401,7 @@ mod tests {
 
   #[test]
   fn world_should_register_components() {
-    let mut world = World::new();
+    let mut world = World::<Box<dyn System>>::new();
 
     world.register_component::<TestComponent1>();
     world.register_component::<TestComponent2>();
@@ -438,14 +409,14 @@ mod tests {
 
   #[test]
   fn world_should_register_systems() {
-    let mut world = World::new();
+    let mut world = World::<Box<dyn System>>::new();
 
-    world.register_system(TestSystem);
+    world.register_system(Box::new(TestSystem));
   }
 
   #[test]
   fn world_should_create_and_delete_entities() {
-    let mut world = World::new();
+    let mut world = World::<Box<dyn System>>::new();
 
     let entity1 = world.create_entity();
     let entity2 = world.create_entity();
@@ -458,7 +429,7 @@ mod tests {
 
   #[test]
   fn world_should_build_entities() {
-    let mut world = World::new();
+    let mut world = World::<Box<dyn System>>::new();
 
     let entity = EntityBuilder::new(&mut world)
         .with(TestComponent1::default())
@@ -470,12 +441,12 @@ mod tests {
 
   #[test]
   fn world_should_tick_attached_systems() {
-    let mut world = World::new();
+    let mut world = World::<Box<dyn System>>::new();
 
     world.register_component::<TestComponent1>();
     world.register_component::<TestComponent2>();
 
-    world.register_system(TestSystem);
+    world.register_system(Box::new(TestSystem));
 
     let storage = world.components.get::<TestComponent1>();
 
@@ -488,7 +459,9 @@ mod tests {
     }
 
     for i in 0..100 {
-      world.tick(0.16);
+      world.execute(|system| {
+        system.tick(0.16);
+      });
     }
   }
 }

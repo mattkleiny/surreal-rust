@@ -1,9 +1,8 @@
 //! A fast, 2d-only culling system for Surreal.
 //!
-//! This culling system is originally adapted from the following white-paper, but has since been adjusted to make more
-//! sense within the context of Rust, and to honor different culling shapes, types and level of detail:
-//!
-//! See https://pdfs.semanticscholar.org/5622/a317d5a3696c8aade5d500e24120566cd300.pdf
+//! This culling system is originally adapted from the following white-paper, but has since been adjusted
+//! to make more sense within the context of Rust, and to honor different culling shapes, types and level
+//! of detail: https://pdfs.semanticscholar.org/5622/a317d5a3696c8aade5d500e24120566cd300.pdf
 
 use std::collections::LinkedList;
 
@@ -13,7 +12,8 @@ use crate::maths::Rect;
 
 /// Describes a level of detail level.
 ///
-/// Different levels of detail can exhibit different qualities based on distance to and visibility towards the camera.
+/// Each LOD can exhibit different qualities based on distance to and visibility towards the camera,
+/// and it's up to the consumer of the module to define said behaviours.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct LOD(u8);
 

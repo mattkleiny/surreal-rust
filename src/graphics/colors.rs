@@ -1,5 +1,3 @@
-//! Common graphics primitives.
-
 use crate::maths::{Random, RNG};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
