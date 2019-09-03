@@ -48,8 +48,7 @@ impl ScriptEngine for LuaScriptEngine {
   type Code = LuaCode<'static>;
 
   fn execute<C: AsRef<str>>(&mut self, code: C) -> Result<(), Self::Error> {
-    // TODO: implement me
-    Ok(())
+    unimplemented!()
   }
 }
 

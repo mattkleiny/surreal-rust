@@ -30,6 +30,12 @@ type ComponentMask = u64;
 #[derive(Clone, Copy, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
 pub struct EntityId(ArenaIndex);
 
+impl Into<usize> for EntityId {
+  fn into(self) -> usize {
+    self.0.into()
+  }
+}
+
 /// Describes a component that may be attached to an entity.
 ///
 /// Each component type defines the way in which it is stored, as well as a unique mask value for use in aspect
@@ -186,8 +192,19 @@ impl ComponentBag {
     self.storages.insert(mask, storage);
   }
 
-  /// Gets or creates the storage for the given component.
-  pub fn get<C: 'static + Component>(&mut self) -> &mut C::Storage {
+  /// Gets the storage for the given component.
+  pub fn get<C: 'static + Component>(&self) -> &C::Storage {
+    let mask = get_component_mask::<C>();
+    let name = get_component_name::<C>();
+
+    let result = self.storages.get(&mask)
+        .expect(&format!("Attempted to access component storage for unregistered type {}", name));
+
+    result.downcast_ref().unwrap() // this should never fault; otherwise we've screwed up good
+  }
+
+  /// Mutably gets the storage for the given component.
+  pub fn get_mut<C: 'static + Component>(&mut self) -> &mut C::Storage {
     let mask = get_component_mask::<C>();
     let name = get_component_name::<C>();
 
@@ -267,6 +284,34 @@ impl<S> World<S> {
   /// Deletes an existing entity from the world
   pub fn delete_entity(&mut self, entity_id: EntityId) {
     self.entities.remove(entity_id.0);
+  }
+
+  /// Creates a component on the given entity.
+  pub fn create_component<C: 'static + Component>(&mut self, entity_id: EntityId, component: C) -> &mut C {
+    let storage = self.components.get_mut::<C>();
+
+    storage.create(entity_id.into(), component);
+    storage.get_mut(entity_id.into())
+  }
+
+  /// Retrieves a component on the given entity.
+  pub fn get_component<C: 'static + Component>(&self, entity_id: EntityId) -> &C {
+    let storage = self.components.get::<C>();
+
+    storage.get(entity_id.into())
+  }
+
+  /// Mutably retrieves a component on the given entity.
+  pub fn get_component_mut<C: 'static + Component>(&mut self, entity_id: EntityId) -> &mut C {
+    let storage = self.components.get_mut::<C>();
+
+    storage.get_mut(entity_id.into())
+  }
+
+  pub fn remove_component<C: 'static + Component>(&mut self, entity_id: EntityId) {
+    let storage = self.components.get_mut::<C>();
+
+    storage.remove(entity_id.into());
   }
 
   /// Executes the given instruction on all of the attached systems.
@@ -349,9 +394,9 @@ mod tests {
   fn component_bag_should_read_and_write_components() {
     let index = 42;
     let mut components = ComponentBag::new();
-
     components.create::<TestComponent1>();
-    let storage = components.get::<TestComponent1>();
+
+    let storage = components.get_mut::<TestComponent1>();
 
     storage.create(index, TestComponent1::default());
     storage.get(index);
@@ -441,7 +486,7 @@ mod tests {
 
     world.register_system(Box::new(TestSystem));
 
-    let storage = world.components.get::<TestComponent1>();
+    let storage = world.components.get_mut::<TestComponent1>();
 
     for i in 0..1000 {
       storage.create(i, TestComponent1 {

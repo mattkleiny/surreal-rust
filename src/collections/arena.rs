@@ -9,7 +9,16 @@
 
 /// Represents an index into a generational arena.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ArenaIndex(usize, u64);
+pub struct ArenaIndex {
+  index: usize,
+  generation: u64,
+}
+
+impl Into<usize> for ArenaIndex {
+  fn into(self) -> usize {
+    self.index
+  }
+}
 
 /// Represents an entry into an arena.
 #[derive(Clone, Debug)]
