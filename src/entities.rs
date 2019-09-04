@@ -337,7 +337,7 @@ impl<S> World<S> {
 
 #[cfg(test)]
 mod tests {
-  use glam::Vec2;
+  use crate::maths::Vec2;
 
   use super::*;
 
@@ -467,8 +467,8 @@ mod tests {
 
     for i in 0..1000 {
       storage.create(i, TestComponent1 {
-        position: Vec2::zero(),
-        velocity: Vec2::zero(),
+        position: Vec2::ZERO,
+        velocity: Vec2::ZERO,
         rotation: 90.,
       });
     }

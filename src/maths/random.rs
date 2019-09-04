@@ -1,5 +1,3 @@
-//! Random number generation
-
 use rand::prelude::*;
 
 /// A type that can be randomly generated.
@@ -20,7 +18,7 @@ impl Seed {
 
   /// Converts the seed into an RNG.
   #[inline]
-  pub fn to_rng(&self) -> Random {
+  pub fn to_random(&self) -> Random {
     Random::new(self.0)
   }
 }
@@ -87,6 +85,11 @@ impl Random {
   pub fn next_f64(&mut self) -> f64 {
     self.rng.gen()
   }
+
+  #[inline]
+  pub fn next<T: RNG>(&mut self) -> T {
+    T::random(self)
+  }
 }
 
 #[cfg(test)]
@@ -96,7 +99,7 @@ mod tests {
   #[test]
   fn seed_should_generate_a_valid_rng() {
     let seed = Seed::random();
-    let mut rng = seed.to_rng();
+    let mut rng = seed.to_random();
 
     let first = rng.next_f64();
     let second = rng.next_f64();

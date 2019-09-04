@@ -12,14 +12,11 @@
 
 use std::sync::Mutex;
 
-use glam::{Mat4, Vec2};
-use glam::f32::Vec4;
-
 pub use colors::*;
 pub use meshes::*;
 pub use sprites::*;
 
-use crate::maths::{RectI, Vec2i};
+use crate::maths::{Mat4, RectI, Vec2, Vec2i, Vec4};
 
 mod colors;
 mod meshes;

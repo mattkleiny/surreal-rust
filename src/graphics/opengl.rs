@@ -5,7 +5,6 @@
 //! small games and applications.
 
 use gl::types::{GLboolean, GLchar, GLenum, GLfloat, GLint, GLsizei, GLsizeiptr, GLuint, GLvoid};
-use glam::Mat4;
 use sdl2::video::GLContext;
 
 use crate::diagnostics::*;
@@ -154,10 +153,10 @@ impl OpenGLGraphicsDevice {
         checked!(gl::UniformMatrix4fv(uniform.location, 1, gl::FALSE, data_ptr as *const GLfloat));
       }
       UniformData::Vec2(data) => {
-        checked!(gl::Uniform2f(uniform.location, data.x(), data.y()));
+        checked!(gl::Uniform2f(uniform.location, data.x, data.y));
       }
       UniformData::Vec4(data) => {
-        checked!(gl::Uniform4f(uniform.location, data.x(), data.y(), data.z(), data.w()));
+        checked!(gl::Uniform4f(uniform.location, data.x, data.y, data.z, data.w));
       }
       UniformData::TextureUnit(unit) => {
         checked!(gl::Uniform1i(uniform.location, unit as GLint));

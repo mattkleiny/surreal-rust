@@ -1,5 +1,3 @@
-//! Directions in 2-space.
-
 use enumflags2::BitFlags;
 
 use super::*;
@@ -66,10 +64,10 @@ impl Conversions for Vec2i {
 
   fn from_direction(direction: Direction) -> Self {
     match direction {
-      Direction::North => Vec2i::unit_y(),
-      Direction::East => Vec2i::unit_x(),
-      Direction::South => -Vec2i::unit_y(),
-      Direction::West => -Vec2i::unit_x(),
+      Direction::North => Vec2i::new(0, 1),
+      Direction::East => Vec2i::new(1, 0),
+      Direction::South => Vec2i::new(0, -1),
+      Direction::West => Vec2i::new(-1, 0),
     }
   }
 
@@ -89,15 +87,15 @@ impl Conversions for Vec2i {
 /// Direction conversion for standard vectors.
 impl Conversions for Vec2 {
   fn to_direction(&self) -> Direction {
-    let horizontal = self.x().abs();
-    let vertical = self.y().abs();
+    let horizontal = self.x.abs();
+    let vertical = self.y.abs();
 
     if horizontal > vertical {
-      if self.x() > 0. { return Direction::East; }
-      if self.x() < 0. { return Direction::West; }
+      if self.x > 0. { return Direction::East; }
+      if self.x < 0. { return Direction::West; }
     } else {
-      if self.y() > 0. { return Direction::North; }
-      if self.y() < 0. { return Direction::South; }
+      if self.y > 0. { return Direction::North; }
+      if self.y < 0. { return Direction::South; }
     }
 
     Direction::North
@@ -106,20 +104,20 @@ impl Conversions for Vec2 {
   fn to_directions(&self) -> BitFlags<Direction> {
     let mut result = Directions::empty();
 
-    if self.x() > 0. { result |= Direction::East; }
-    if self.x() < 0. { result |= Direction::West; }
-    if self.y() > 0. { result |= Direction::North; }
-    if self.y() < 0. { result |= Direction::South; }
+    if self.x > 0. { result |= Direction::East; }
+    if self.x < 0. { result |= Direction::West; }
+    if self.y > 0. { result |= Direction::North; }
+    if self.y < 0. { result |= Direction::South; }
 
     result
   }
 
   fn from_direction(direction: Direction) -> Self {
     match direction {
-      Direction::North => Vec2::unit_y(),
-      Direction::East => Vec2::unit_x(),
-      Direction::South => -Vec2::unit_y(),
-      Direction::West => -Vec2::unit_x(),
+      Direction::North => Vec2::new(0., 1.),
+      Direction::East => Vec2::new(-1., 0.),
+      Direction::South => Vec2::new(0., -1.),
+      Direction::West => Vec2::new(1., 0.),
     }
   }
 

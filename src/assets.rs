@@ -1,9 +1,11 @@
 //! Asset management system.
 
+use std::sync::Arc;
+
 /// Represents a loaded asset in the system.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Asset<T> {
-  Ready(T),
+  Ready(Arc<T>),
   Loading,
   NotFound,
 }

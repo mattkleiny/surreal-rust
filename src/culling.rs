@@ -6,9 +6,7 @@
 
 use std::collections::LinkedList;
 
-use glam::Vec2;
-
-use crate::maths::Rect;
+use crate::maths::{Rect, Vec2};
 
 /// Describes a level of detail level.
 ///

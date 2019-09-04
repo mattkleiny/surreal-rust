@@ -1,4 +1,4 @@
-use glam::Vec2;
+use crate::assets::Asset;
 
 use super::*;
 
@@ -15,7 +15,7 @@ struct SpriteVertex {
 ///
 /// A sprite references a texture and denotes an offset/pivot within that texture to use for rendering.
 pub struct Sprite<'a, D: GraphicsDevice> {
-  pub texture: &'a D::Texture,
+  pub texture: Asset<&'a D::Texture>,
   pub offset: Vec2,
   pub size: Vec2i,
   pub pivot: Vec2,
@@ -78,8 +78,8 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
 
   /// Draws the given sprite into the batch.
   pub fn draw_sprite(&mut self, sprite: &Sprite<D>, position: Vec2) {
-    let x = position.x();
-    let y = position.y();
+    let x = position.x;
+    let y = position.y;
 
     let width = sprite.size.x as f32;
     let height = sprite.size.y as f32;
@@ -87,10 +87,10 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
     let extent_x = x + width;
     let extent_y = y + height;
 
-    let u1 = sprite.offset.x() / width;
-    let v1 = (sprite.offset.y() + height) / height;
-    let u2 = (sprite.offset.x() + width) / width;
-    let v2 = sprite.offset.y() / height;
+    let u1 = sprite.offset.x / width;
+    let v1 = (sprite.offset.y + height) / height;
+    let u2 = (sprite.offset.x + width) / width;
+    let v2 = sprite.offset.y / height;
 
     self.vertices.push(vertex(x, y, u1, v1));
     self.vertices.push(vertex(x, extent_x, u1, v2));
@@ -107,7 +107,7 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
   }
 
   /// Flushes the batch to the given graphics device.
-  pub fn flush(&mut self, command_queue: &CommandQueue<D>) {
+  pub fn flush(&mut self, command_queue: &CommandQueue<D>, model_view_projection: &Mat4) {
     if self.vertex_index > 0 {
       /*// upload the vertices/indices to the GPU
       self.mesh.upload_to_gpu(

@@ -21,10 +21,6 @@ libc = "0.2"
 log = "0.4.8"
 num-traits = "0.2.4"
 
-[dependencies.glam]
-version = "0.7.1"
-default-features = false
-
 [dependencies.sdl2]
 version = "0.32.2"
 features = ["bundled"]

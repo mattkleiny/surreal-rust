@@ -1,6 +1,3 @@
-//! Interpolation and easing.
-
-use crate::graphics::Color;
 use num_traits::{AsPrimitive, FromPrimitive};
 
 /// Allows interpolation of arbitrary values.
@@ -16,17 +13,5 @@ impl<T> Lerp for T where T: AsPrimitive<f32> + FromPrimitive {
     let b: f32 = b.as_();
 
     Self::from_f32(a + t * (b - a)).unwrap()
-  }
-}
-
-impl Lerp for Color {
-  #[inline]
-  fn lerp(a: Color, b: Color, t: f32) -> Self {
-    Color::RGBA(
-      u8::lerp(a.r, b.r, t),
-      u8::lerp(a.g, b.g, t),
-      u8::lerp(a.b, b.b, t),
-      u8::lerp(a.a, b.a, t),
-    )
   }
 }

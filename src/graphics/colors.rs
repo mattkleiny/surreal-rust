@@ -1,4 +1,4 @@
-use crate::maths::{Random, RNG};
+use crate::maths::{Lerp, Random, RNG};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[derive(Copy, Clone, Default, Eq, PartialEq, Debug)]
@@ -33,7 +33,19 @@ impl RNG for Color {
       random.next_u8(),
       random.next_u8(),
       random.next_u8(),
-      random.next_u8()
+      random.next_u8(),
+    )
+  }
+}
+
+impl Lerp for Color {
+  #[inline]
+  fn lerp(a: Color, b: Color, t: f32) -> Self {
+    Color::RGBA(
+      u8::lerp(a.r, b.r, t),
+      u8::lerp(a.g, b.g, t),
+      u8::lerp(a.b, b.b, t),
+      u8::lerp(a.a, b.a, t),
     )
   }
 }
@@ -47,7 +59,7 @@ mod tests {
   #[test]
   fn color_should_generate_random_values() {
     let seed = Seed::random();
-    let mut rng = seed.to_rng();
+    let mut rng = seed.to_random();
 
     let color1 = Color::random(&mut rng);
     let color2 = Color::random(&mut rng);
@@ -57,5 +69,15 @@ mod tests {
     assert_ne!(color1, color2);
     assert_ne!(color2, color3);
     assert_ne!(color3, color4);
+  }
+
+  #[test]
+  fn color_should_interpolate_between_values() {
+    let color = Color::lerp(Color::BLACK, Color::WHITE, 0.5);
+
+    assert_eq!(color.r, 127);
+    assert_eq!(color.g, 127);
+    assert_eq!(color.b, 127);
+    assert_eq!(color.a, 255);
   }
 }

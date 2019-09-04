@@ -1,5 +1,3 @@
-//! Grid abstractions.
-
 use std::collections::HashMap;
 
 use super::*;
