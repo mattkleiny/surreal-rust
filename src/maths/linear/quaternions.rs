@@ -1,3 +1,4 @@
+/// A quaternion.
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Quat {
   pub x: f32,

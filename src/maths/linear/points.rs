@@ -1,6 +1,6 @@
 use std::ops::Neg;
 
-use crate::maths::Lerp;
+use crate::maths::{Lerp, Random, RNG};
 
 use super::*;
 
@@ -20,12 +20,6 @@ impl Vec2i {
   }
 }
 
-impl RNG for Vec2i {
-  fn random(random: &mut Random) -> Self {
-    Self::new(random.next_i32(), random.next_i32())
-  }
-}
-
 impl Neg for Vec2i {
   type Output = Self;
 
@@ -37,18 +31,24 @@ impl Neg for Vec2i {
   }
 }
 
+impl From<(i32, i32)> for Vec2i {
+  fn from((x, y): (i32, i32)) -> Self {
+    Self::new(x, y)
+  }
+}
+
+impl RNG for Vec2i {
+  fn random(random: &mut Random) -> Self {
+    Self::new(random.next_i32(), random.next_i32())
+  }
+}
+
 impl Lerp for Vec2i {
   fn lerp(from: Self, to: Self, amount: f32) -> Self {
     Vec2i::new(
       i32::lerp(from.x, to.x, amount),
       i32::lerp(from.y, to.y, amount),
     )
-  }
-}
-
-impl From<(i32, i32)> for Vec2i {
-  fn from((x, y): (i32, i32)) -> Self {
-    Self::new(x, y)
   }
 }
 
@@ -69,12 +69,6 @@ impl Vec3i {
   }
 }
 
-impl RNG for Vec3i {
-  fn random(random: &mut Random) -> Self {
-    Self::new(random.next_i32(), random.next_i32(), random.next_i32())
-  }
-}
-
 impl Neg for Vec3i {
   type Output = Self;
 
@@ -87,6 +81,18 @@ impl Neg for Vec3i {
   }
 }
 
+impl From<(i32, i32, i32)> for Vec3i {
+  fn from((x, y, z): (i32, i32, i32)) -> Self {
+    Self::new(x, y, z)
+  }
+}
+
+impl RNG for Vec3i {
+  fn random(random: &mut Random) -> Self {
+    Self::new(random.next_i32(), random.next_i32(), random.next_i32())
+  }
+}
+
 impl Lerp for Vec3i {
   fn lerp(from: Self, to: Self, amount: f32) -> Self {
     Vec3i::new(
@@ -94,12 +100,6 @@ impl Lerp for Vec3i {
       i32::lerp(from.y, to.y, amount),
       i32::lerp(from.z, to.z, amount),
     )
-  }
-}
-
-impl From<(i32, i32, i32)> for Vec3i {
-  fn from((x, y, z): (i32, i32, i32)) -> Self {
-    Self::new(x, y, z)
   }
 }
 

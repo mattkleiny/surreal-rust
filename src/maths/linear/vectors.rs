@@ -1,3 +1,10 @@
+/// Abstract defines behaviour common to all vectors.
+pub trait Vector: Sized {
+  fn magitude(&self) -> f32;
+  fn normalized(&self) -> Self;
+}
+
+/// A vector in 2-space.
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Vec2 {
   pub x: f32,
@@ -12,6 +19,17 @@ impl Vec2 {
   }
 }
 
+impl Vector for Vec2 {
+  fn magitude(&self) -> f32 {
+    unimplemented!()
+  }
+
+  fn normalized(&self) -> Self {
+    unimplemented!()
+  }
+}
+
+/// A vector in 3-space.
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Vec3 {
   pub x: f32,
@@ -27,6 +45,17 @@ impl Vec3 {
   }
 }
 
+impl Vector for Vec3 {
+  fn magitude(&self) -> f32 {
+    unimplemented!()
+  }
+
+  fn normalized(&self) -> Self {
+    unimplemented!()
+  }
+}
+
+/// A vector in 4-space.
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Vec4 {
   pub x: f32,
@@ -43,3 +72,12 @@ impl Vec4 {
   }
 }
 
+impl Vector for Vec4 {
+  fn magitude(&self) -> f32 {
+    unimplemented!()
+  }
+
+  fn normalized(&self) -> Self {
+    unimplemented!()
+  }
+}
