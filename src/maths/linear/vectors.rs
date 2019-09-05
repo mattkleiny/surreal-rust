@@ -1,3 +1,5 @@
+use std::ops::Neg;
+
 /// Abstract defines behaviour common to all vectors.
 pub trait Vector: Sized {
   fn magitude(&self) -> f32;
@@ -29,6 +31,15 @@ impl Vector for Vec2 {
   }
 }
 
+impl Neg for Vec2 {
+  type Output = Self;
+
+  #[inline]
+  fn neg(self) -> Self::Output {
+    Self::new(-self.x, -self.y)
+  }
+}
+
 /// A vector in 3-space.
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -52,6 +63,15 @@ impl Vector for Vec3 {
 
   fn normalized(&self) -> Self {
     unimplemented!()
+  }
+}
+
+impl Neg for Vec3 {
+  type Output = Self;
+
+  #[inline]
+  fn neg(self) -> Self::Output {
+    Self::new(-self.x, -self.y, -self.z)
   }
 }
 
@@ -79,5 +99,14 @@ impl Vector for Vec4 {
 
   fn normalized(&self) -> Self {
     unimplemented!()
+  }
+}
+
+impl Neg for Vec4 {
+  type Output = Self;
+
+  #[inline]
+  fn neg(self) -> Self::Output {
+    Self::new(-self.x, -self.y, -self.z, -self.w)
   }
 }
