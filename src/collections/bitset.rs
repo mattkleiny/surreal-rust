@@ -1,5 +1,19 @@
 //! A simple hierarchical bit-set implementation for use in masks and type filtering.
 
+#[cfg(target_pointer_width = "32")]
+const BITS: usize = 5;
+
+#[cfg(target_pointer_width = "64")]
+const BITS: usize = 6;
+
+pub const SHIFT0: usize = 0;
+pub const SHIFT1: usize = SHIFT0 + BITS;
+pub const SHIFT2: usize = SHIFT1 + BITS;
+pub const SHIFT3: usize = SHIFT2 + BITS;
+
+/// The type we're using internally for bit-set indexing.
+type Index = u64;
+
 /// A `BitSet` is a simple set designed to track which indices are placed into it.
 ///
 /// Note, a `BitSet` is limited by design to only `usize**4` indices. Adding
@@ -34,16 +48,6 @@ impl BitSet {
     unimplemented!()
   }
 }
-
-// The number of bits in the world size of the current architecture.
-#[cfg(target_pointer_width = "32")]
-const BITS: usize = 5;
-
-#[cfg(target_pointer_width = "64")]
-const BITS: usize = 6;
-
-/// The type we're using internally for bit-set indexing.
-type Index = u64;
 
 /// Allows accessing row properties for a particular index.
 trait Row: Sized + Copy {

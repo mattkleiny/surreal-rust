@@ -5,8 +5,6 @@ pub use points::*;
 pub use quaternions::*;
 pub use vectors::*;
 
-use super::*;
-
 mod matrices;
 mod points;
 mod quaternions;
