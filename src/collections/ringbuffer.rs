@@ -1,6 +1,7 @@
-//! A ring buffer of elements.
-
-/// A ring buffer of elements of type T.
+/// A lightweight, fast and append-only ring buffer of elements of type T.
+///
+/// Synchronization should occur outside of the buffer itself, with a mutex or some
+/// other locking primitive depending on the use case.
 #[derive(Clone, Debug)]
 pub struct RingBuffer<T> {
   occupied: usize,
@@ -17,8 +18,15 @@ impl<T: Clone> RingBuffer<T> {
     }
   }
 
-  pub fn capacity(&self) -> usize { self.elements.len() }
-  pub fn occupied(&self) -> usize { self.occupied }
+  /// The total capacity of the buffer.
+  pub fn capacity(&self) -> usize { 
+    self.elements.len() 
+  }
+
+  /// The number of elements currently occupying the buffer.
+  pub fn occupied(&self) -> usize { 
+    self.occupied 
+  }
 
   /// Appends an element to the buffer.
   pub fn append(&mut self, element: T) {
@@ -57,7 +65,8 @@ impl<'a, T: Clone> IntoIterator for &'a RingBuffer<T> {
   }
 }
 
-/// An iterator for ring buffers.
+/// An iterator for the ring buffer. This is a forward-only iterator,
+/// and does not support in-place mutation.
 pub struct RingBufferIterator<'a, T> {
   buffer: &'a RingBuffer<T>,
   index: usize,
@@ -75,7 +84,7 @@ impl<'a, T: Clone> Iterator for RingBufferIterator<'a, T> {
       self.index -= 1;
     }
 
-    // count the number of touched elements
+    // count the number of elements skipped
     self.touched += 1;
     if self.touched < self.buffer.occupied() {
       self.buffer.elements[self.index].as_ref()
@@ -98,7 +107,18 @@ mod tests {
     }
 
     assert_eq!(buffer.elements.len(), 16);
+  }
 
-    buffer.clear();
+  #[test]
+  fn it_should_clear_elements() {
+    let mut buffer = RingBuffer::<u32>::new(16);
+
+    for i in 0..1000 {
+      buffer.append(i);
+    }
+
+    buffer.clear();;
+
+    assert_eq!(buffer.elements.len(), 0);
   }
 }

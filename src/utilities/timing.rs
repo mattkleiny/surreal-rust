@@ -1,12 +1,12 @@
-//! A set of utilities for timing and synchronization.
-
 use crate::collections::RingBuffer;
 
+/// A simple clock for measuring the time between frames.
 #[derive(Clone, Debug)]
 pub struct Clock {
   last_time: u64,
   current_time: u64,
   max_time: f32,
+  time_scale: f32,
 }
 
 impl Clock {
@@ -15,7 +15,12 @@ impl Clock {
       last_time: 0,
       current_time: 0,
       max_time,
+      time_scale: 1.,
     }
+  }
+
+  pub fn set_time_scale(&mut self, time_scale: f32) {
+    self.time_scale = time_scale;
   }
 
   /// Ticks the clock by a single frame, returning a time delta.
@@ -25,12 +30,9 @@ impl Clock {
 
     // compute delta time since the last update
     let delta_time = ((self.current_time - self.last_time) * 1000 / frequency) as f32 / 1000.;
+    let clamped_time = if delta_time > self.max_time { self.max_time } else { delta_time };
 
-    if delta_time > self.max_time {
-      self.max_time
-    } else {
-      delta_time
-    }
+    clamped_time * self.time_scale
   }
 }
 

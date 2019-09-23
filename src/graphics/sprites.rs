@@ -2,8 +2,8 @@ use crate::assets::Asset;
 
 use super::*;
 
-const VERTEX_SHADER: &'static [u8] = include_bytes!("../../assets/shaders/spritebatch.vert.glsl");
-const FRAGMENT_SHADER: &'static [u8] = include_bytes!("../../assets/shaders/spritebatch.frag.glsl");
+const DEFAULT_VERTEX_SHADER: &'static [u8] = include_bytes!("../../assets/shaders/spritebatch.vert.glsl");
+const DEFAULT_FRAGMENT_SHADER: &'static [u8] = include_bytes!("../../assets/shaders/spritebatch.frag.glsl");
 
 /// A single vertex used in the optimized mesh representation of our sprite batch.
 struct SpriteVertex {
@@ -38,8 +38,8 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
   pub fn new(device: &D, max_sprites: usize) -> Self {
     unsafe {
       // prepare our shaders and shader program
-      let vertex_shader = device.create_shader_from_source(VERTEX_SHADER, ShaderKind::Vertex);
-      let fragment_shader = device.create_shader_from_source(FRAGMENT_SHADER, ShaderKind::Fragment);
+      let vertex_shader = device.create_shader_from_source(DEFAULT_VERTEX_SHADER, ShaderKind::Vertex);
+      let fragment_shader = device.create_shader_from_source(DEFAULT_FRAGMENT_SHADER, ShaderKind::Fragment);
       let shader_program = device.create_program_from_shaders(vertex_shader, fragment_shader);
 
       Self::with_shader_program(device, shader_program, max_sprites)
@@ -109,7 +109,7 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
   /// Flushes the batch to the given graphics device.
   pub fn flush(&mut self, command_queue: &CommandQueue<D>, model_view_projection: &Mat4) {
     if self.vertex_index > 0 {
-      /*// upload the vertices/indices to the GPU
+      // upload the vertices/indices to the GPU
       self.mesh.upload_to_gpu(
         device,
         &self.vertices,
@@ -130,7 +130,7 @@ impl<D: GraphicsDevice> SpriteBatch<D> {
       self.vertices.clear();
       self.indices.clear();
 
-      self.vertex_index = 0;*/
+      self.vertex_index = 0;
     }
   }
 }

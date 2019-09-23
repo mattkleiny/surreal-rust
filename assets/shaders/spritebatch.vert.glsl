@@ -13,5 +13,10 @@ void main() {
   v_color = a_color;
   v_texCoords = a_texCoords;
 
+  // TODO: sprite instancing?
+  // TODO: shared transforms?
+  // TODO: shared colors (instead of per-vertex)?
+  // TODO: normal mapping and projections?
+
   gl_Position = u_projView * a_position;
 }
