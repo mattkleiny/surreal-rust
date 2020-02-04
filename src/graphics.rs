@@ -35,7 +35,7 @@ pub mod opengl;
 /// or DirectX; however more sophisticated/low level APIs such as Metal and Vulkan will not fit this paradigm well.
 pub trait GraphicsDevice: Sized {
   type Buffer: Send + Sync;
-  type Framebuffer: Send + Sync;
+  type FrameBuffer: Send + Sync;
   type Program: Send + Sync;
   type Shader: Send + Sync;
   type Texture: Send + Sync;
@@ -48,7 +48,7 @@ pub trait GraphicsDevice: Sized {
   unsafe fn get_uniform(&self, program: &Self::Program, name: &str) -> Self::Uniform;
   unsafe fn bind_buffer(&self, vertex_array: &Self::VertexArray, buffer: &Self::Buffer, target: BufferTarget);
   unsafe fn configure_vertex_attr(&self, vertex_array: &Self::VertexArray, attr: &Self::VertexAttr, descriptor: &VertexAttrDescriptor);
-  unsafe fn create_framebuffer(&self, texture: Self::Texture) -> Self::Framebuffer;
+  unsafe fn create_framebuffer(&self, texture: Self::Texture) -> Self::FrameBuffer;
   unsafe fn create_buffer(&self) -> Self::Buffer;
   unsafe fn upload_to_buffer<T>(&self, buffer: &Self::Buffer, data: BufferData<T>, target: BufferTarget, mode: BufferUploadMode);
 
@@ -58,7 +58,7 @@ pub trait GraphicsDevice: Sized {
   unsafe fn create_program_from_shaders(&self, vertex_shader: Self::Shader, fragment_shader: Self::Shader) -> Self::Program;
 
   // frame buffers
-  unsafe fn get_framebuffer_texture<'f>(&self, framebuffer: &'f Self::Framebuffer) -> &'f Self::Texture;
+  unsafe fn get_framebuffer_texture<'f>(&self, framebuffer: &'f Self::FrameBuffer) -> &'f Self::Texture;
   unsafe fn read_pixels(&self, target: &RenderTarget<Self>, viewport: RectI) -> TextureData;
 
   // textures
@@ -210,7 +210,7 @@ pub enum RenderTarget<'a, D> where D: GraphicsDevice {
   /// The default window target; whatever the OpenGL context points to by default.
   Default,
   /// A specific and allocated frame-buffer.
-  Framebuffer(&'a D::Framebuffer),
+  Framebuffer(&'a D::FrameBuffer),
 }
 
 /// Defines the possible blending states for the rasterizer.

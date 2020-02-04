@@ -53,7 +53,7 @@ fn get_component_mask<C: 'static + Component>() -> ComponentMask {
 /// Retrieves the mask for the given component type.
 #[inline(always)]
 fn get_component_name<C: 'static + Component>() -> &'static str {
-  std::intrinsics::type_name::<C>()
+  unsafe { std::intrinsics::type_name::<C>() }
 }
 
 /// Defines possible storage types for entity components.
@@ -257,29 +257,22 @@ impl Aspect {
 /// components in the game world.
 ///
 /// The type of system we retain, S, is generalizable on a world-by-world basis.
-pub struct World<S: Sized> {
+pub struct World {
   entities: EntityArena,
   components: ComponentBag,
-  systems: Vec<S>,
 }
 
-impl<S> World<S> {
+impl World {
   pub fn new() -> Self {
     Self {
       entities: EntityArena::new(),
       components: ComponentBag::new(),
-      systems: Vec::new(),
     }
   }
 
   /// Registers the given component with the system.
   pub fn register_component<C: 'static + Component>(&mut self) {
     self.components.create::<C>();
-  }
-
-  /// Registers the given system.
-  pub fn register_system(&mut self, system: S) {
-    self.systems.push(system);
   }
 
   /// Creates a new entity.
@@ -324,14 +317,6 @@ impl<S> World<S> {
   /// Collects the entities that possess the given aspect.
   pub fn collect_entities(&mut self, aspect: &Aspect) -> Vec<EntityId> {
     unimplemented!()
-  }
-
-  /// Executes the given instruction on all of the attached systems.
-  pub fn execute<B>(&mut self, mut body: B)
-    where B: FnMut(&mut S) -> () {
-    for system in self.systems.iter_mut() {
-      body(system);
-    }
   }
 }
 

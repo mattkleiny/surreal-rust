@@ -47,10 +47,10 @@ impl OpenGLGraphicsDevice {
   unsafe fn set_texture_parameters(&self, texture: &OpenGLTexture) {
     self.bind_texture(texture, 0);
 
-    checked!(gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint));
-    checked!(gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint));
-    checked!(gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as GLint));
-    checked!(gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as GLint));
+    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
+    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as GLint);
+    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as GLint);
   }
 
   unsafe fn set_render_state(&self, render_state: &RenderState<Self>) {
@@ -84,46 +84,46 @@ impl OpenGLGraphicsDevice {
   unsafe fn set_render_options(&self, render_options: &RasterizerState) {
     match render_options.blend {
       BlendState::Off => {
-        checked!(gl::Disable(gl::BLEND));
+        gl::Disable(gl::BLEND);
       }
       BlendState::RGBOneAlphaOne => {
-        checked!(gl::BlendEquation(gl::FUNC_ADD));
-        checked!(gl::BlendFunc(gl::ONE, gl::ONE));
-        checked!(gl::Enable(gl::BLEND));
+        gl::BlendEquation(gl::FUNC_ADD);
+        gl::BlendFunc(gl::ONE, gl::ONE);
+        gl::Enable(gl::BLEND);
       }
       BlendState::RGBOneAlphaOneMinusSrcAlpha => {
-        checked!(gl::BlendEquation(gl::FUNC_ADD));
-        checked!(gl::BlendFuncSeparate(gl::ONE, gl::ONE_MINUS_SRC_ALPHA, gl::ONE, gl::ONE));
-        checked!(gl::Enable(gl::BLEND));
+        gl::BlendEquation(gl::FUNC_ADD);
+        gl::BlendFuncSeparate(gl::ONE, gl::ONE_MINUS_SRC_ALPHA, gl::ONE, gl::ONE);
+        gl::Enable(gl::BLEND);
       }
       BlendState::RGBSrcAlphaAlphaOneMinusSrcAlpha => {
-        checked!(gl::BlendEquation(gl::FUNC_ADD));
-        checked!(gl::BlendFuncSeparate(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA, gl::ONE, gl::ONE));
-        checked!(gl::Enable(gl::BLEND));
+        gl::BlendEquation(gl::FUNC_ADD);
+        gl::BlendFuncSeparate(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA, gl::ONE, gl::ONE);
+        gl::Enable(gl::BLEND);
       }
     }
 
     match render_options.depth {
       None => {
-        checked!(gl::Disable(gl::DEPTH_TEST));
+        gl::Disable(gl::DEPTH_TEST);
       }
       Some(ref state) => {
-        checked!(gl::DepthFunc(state.func.to_gl_depth_func()));
-        checked!(gl::DepthMask(state.write as GLboolean));
-        checked!(gl::Enable(gl::DEPTH_TEST));
+        gl::DepthFunc(state.func.to_gl_depth_func());
+        gl::DepthMask(state.write as GLboolean);
+        gl::Enable(gl::DEPTH_TEST);
       }
     }
 
     match render_options.stencil {
       None => {
-        checked!(gl::Disable(gl::STENCIL_TEST));
+        gl::Disable(gl::STENCIL_TEST);
       }
       Some(ref state) => {
-        checked!(gl::StencilFunc(
+        gl::StencilFunc(
           state.func.to_gl_stencil_func(),
           state.reference as GLint,
           state.mask,
-        ));
+        );
 
         let (pass_action, write_mask) = if state.write {
           (gl::REPLACE, state.mask)
@@ -131,15 +131,15 @@ impl OpenGLGraphicsDevice {
           (gl::KEEP, 0)
         };
 
-        checked!(gl::StencilOp(gl::KEEP, gl::KEEP, pass_action));
-        checked!(gl::StencilMask(write_mask));
-        checked!(gl::Enable(gl::STENCIL_TEST));
+        gl::StencilOp(gl::KEEP, gl::KEEP, pass_action);
+        gl::StencilMask(write_mask);
+        gl::Enable(gl::STENCIL_TEST);
       }
     }
 
     let color_mask = render_options.color_mask as GLboolean;
 
-    checked!(gl::ColorMask(color_mask, color_mask, color_mask, color_mask));
+    gl::ColorMask(color_mask, color_mask, color_mask, color_mask);
   }
 
   unsafe fn set_uniform(&self, uniform: &OpenGLUniform, data: &UniformData) {
@@ -181,20 +181,20 @@ impl OpenGLGraphicsDevice {
       BlendState::RGBOneAlphaOneMinusSrcAlpha |
       BlendState::RGBOneAlphaOne |
       BlendState::RGBSrcAlphaAlphaOneMinusSrcAlpha => {
-        checked!(gl::Disable(gl::BLEND));
+        gl::Disable(gl::BLEND);
       }
     }
 
     if render_options.depth.is_some() {
-      checked!(gl::Disable(gl::DEPTH_TEST));
+      gl::Disable(gl::DEPTH_TEST);
     }
 
     if render_options.stencil.is_some() {
-      checked!(gl::StencilMask(!0));
-      checked!(gl::Disable(gl::STENCIL_TEST));
+      gl::StencilMask(!0);
+      gl::Disable(gl::STENCIL_TEST);
     }
 
-    checked!(gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE));
+    gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE);
   }
 
   unsafe fn bind_render_target(&self, attachment: &RenderTarget<Self>) {
@@ -234,7 +234,7 @@ impl OpenGLGraphicsDevice {
     checked!(gl::BindFramebuffer(gl::FRAMEBUFFER, self.default_framebuffer));
   }
 
-  unsafe fn bind_framebuffer(&self, framebuffer: &OpenGLFramebuffer) {
+  unsafe fn bind_framebuffer(&self, framebuffer: &OpenGLFrameBuffer) {
     checked!(gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer.id));
   }
 
@@ -250,7 +250,7 @@ impl OpenGLGraphicsDevice {
 
 impl GraphicsDevice for OpenGLGraphicsDevice {
   type Buffer = OpenGLBuffer;
-  type Framebuffer = OpenGLFramebuffer;
+  type FrameBuffer = OpenGLFrameBuffer;
   type Program = OpenGLProgram;
   type Shader = OpenGLShader;
   type Texture = OpenGLTexture;
@@ -319,7 +319,7 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
     self.unbind_vertex_array();
   }
 
-  unsafe fn create_framebuffer(&self, texture: Self::Texture) -> Self::Framebuffer {
+  unsafe fn create_framebuffer(&self, texture: Self::Texture) -> Self::FrameBuffer {
     let mut id = 0;
 
     checked!(gl::GenFramebuffers(1, &mut id));
@@ -337,7 +337,7 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
 
     assert_eq!(gl::CheckFramebufferStatus(gl::FRAMEBUFFER), gl::FRAMEBUFFER_COMPLETE);
 
-    Self::Framebuffer { id, texture }
+    Self::FrameBuffer { id, texture }
   }
 
   unsafe fn create_buffer(&self) -> Self::Buffer {
@@ -425,7 +425,7 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
     Self::Program { id, vertex_shader, fragment_shader }
   }
 
-  unsafe fn get_framebuffer_texture<'f>(&self, framebuffer: &'f Self::Framebuffer) -> &'f Self::Texture {
+  unsafe fn get_framebuffer_texture<'f>(&self, framebuffer: &'f Self::FrameBuffer) -> &'f Self::Texture {
     &framebuffer.texture
   }
 
@@ -463,7 +463,6 @@ impl GraphicsDevice for OpenGLGraphicsDevice {
 
     checked!(gl::GenTextures(1, &mut texture.id));
     self.bind_texture(&texture, 0);
-
 
     checked!(gl::TexImage2D(
       gl::TEXTURE_2D,
@@ -639,12 +638,12 @@ impl OpenGLVertexAttr {
   }
 }
 
-pub struct OpenGLFramebuffer {
+pub struct OpenGLFrameBuffer {
   pub id: GLuint,
   pub texture: OpenGLTexture,
 }
 
-impl Drop for OpenGLFramebuffer {
+impl Drop for OpenGLFrameBuffer {
   fn drop(&mut self) {
     unsafe {
       checked!(gl::DeleteFramebuffers(1, &mut self.id));
