@@ -1,4 +1,5 @@
 use rand::prelude::*;
+use crate::maths::{Vec2, Vec3};
 
 /// A type that can be randomly generated.
 pub trait RNG {
@@ -31,65 +32,20 @@ pub struct Random {
 
 impl Random {
   pub fn new(seed: u64) -> Self {
-    Self {
-      rng: StdRng::seed_from_u64(seed),
-    }
+    Self { rng: StdRng::seed_from_u64(seed) }
   }
 
-  #[inline]
-  pub fn next_u8(&mut self) -> u8 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next_u16(&mut self) -> u16 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next_u32(&mut self) -> u32 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next_u64(&mut self) -> u64 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next_i8(&mut self) -> i8 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next_i16(&mut self) -> i16 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next_i32(&mut self) -> i32 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next_i64(&mut self) -> i64 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next_f32(&mut self) -> f32 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next_f64(&mut self) -> f64 {
-    self.rng.gen()
-  }
-
-  #[inline]
-  pub fn next<T: RNG>(&mut self) -> T {
-    T::random(self)
-  }
+  #[inline] pub fn next_u8(&mut self)  -> u8 { self.rng.gen() }
+  #[inline] pub fn next_u16(&mut self) -> u16 { self.rng.gen() }
+  #[inline] pub fn next_u32(&mut self) -> u32 { self.rng.gen() }
+  #[inline] pub fn next_u64(&mut self) -> u64 { self.rng.gen() }
+  #[inline] pub fn next_i8(&mut self)  -> i8 { self.rng.gen() }
+  #[inline] pub fn next_i16(&mut self) -> i16 { self.rng.gen() }
+  #[inline] pub fn next_i32(&mut self) -> i32 { self.rng.gen() }
+  #[inline] pub fn next_i64(&mut self) -> i64 { self.rng.gen() }
+  #[inline] pub fn next_f32(&mut self) -> f32 { self.rng.gen() }
+  #[inline] pub fn next_f64(&mut self) -> f64 {self.rng.gen()}
+  #[inline] pub fn next<T: RNG>(&mut self) -> T { T::random(self) }
 }
 
 #[cfg(test)]

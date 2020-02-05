@@ -45,7 +45,7 @@ impl RNG for Vec2i {
 
 impl Lerp for Vec2i {
   fn lerp(from: Self, to: Self, amount: f32) -> Self {
-    Vec2i::new(
+    Self::new(
       i32::lerp(from.x, to.x, amount),
       i32::lerp(from.y, to.y, amount),
     )
@@ -95,7 +95,7 @@ impl RNG for Vec3i {
 
 impl Lerp for Vec3i {
   fn lerp(from: Self, to: Self, amount: f32) -> Self {
-    Vec3i::new(
+    Self::new(
       i32::lerp(from.x, to.x, amount),
       i32::lerp(from.y, to.y, amount),
       i32::lerp(from.z, to.z, amount),
