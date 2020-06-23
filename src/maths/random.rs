@@ -59,7 +59,7 @@ impl Default for Random {
 
 #[inline]
 fn random_u64() -> u64 {
-  rand::thread_rng().gen()
+  rand::thread_rng().next_u64()
 }
 
 #[cfg(test)]
