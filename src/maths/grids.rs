@@ -93,8 +93,8 @@ impl<T> SparseGrid<T> {
 
 #[derive(Copy, Clone, Debug)]
 pub enum Neighbourhood {
-  Moore,
   VonNeumann,
+  Moore,
 }
 
 impl Neighbourhood {
