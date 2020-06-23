@@ -16,11 +16,13 @@ impl Color {
   pub const GREEN: Color = Color::RGB(0, 255, 0);
   pub const BLUE: Color = Color::RGB(0, 0, 255);
 
+  #[inline]
   #[allow(non_snake_case)]
   pub const fn RGB(r: u8, g: u8, b: u8) -> Self {
     Self { r, g, b, a: 255 }
   }
 
+  #[inline]
   #[allow(non_snake_case)]
   pub const fn RGBA(r: u8, g: u8, b: u8, a: u8) -> Self {
     Self { r, g, b, a }

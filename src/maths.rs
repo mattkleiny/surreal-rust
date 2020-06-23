@@ -5,12 +5,12 @@
 pub use cgmath::*;
 
 pub use directions::*;
-pub use interpolation::*;
+pub use interp::*;
 pub use grids::*;
 pub use random::*;
 
 mod directions;
-mod interpolation;
+mod interp;
 mod grids;
 mod random;
 

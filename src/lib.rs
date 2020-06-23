@@ -11,8 +11,9 @@
 
 #[macro_use]
 extern crate smallvec;
+#[macro_use]
+extern crate enumflags2;
 
-pub mod assets;
 pub mod collections;
 pub mod diagnostics;
 pub mod graphics;
@@ -24,7 +25,6 @@ pub mod utilities;
 pub mod prelude {
   //! Import this module to simplify access to Surreal's components.
 
-  pub use crate::assets::*;
   pub use crate::collections::*;
   pub use crate::diagnostics::*;
   pub use crate::graphics::*;

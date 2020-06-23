@@ -102,7 +102,7 @@ mod tests {
       buffer.append(i);
     }
 
-    assert_eq!(buffer.elements.len(), 16);
+    assert_eq!(buffer.occupied(), 16);
   }
 
   #[test]
@@ -115,6 +115,6 @@ mod tests {
 
     buffer.clear();
 
-    assert_eq!(buffer.elements.len(), 0);
+    assert_eq!(buffer.occupied(), 0);
   }
 }
