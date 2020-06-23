@@ -4,6 +4,12 @@ version = "0.1.0"
 authors = ["Matt Kleinschafer <matt.kleinschafer@xero.com>"]
 edition = "2018"
 
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release.build-override]
+opt-level = 0
+
 [features]
 default = []
 
