@@ -58,8 +58,8 @@ impl FpsCounter {
   pub fn average_frame_time(&self) -> f32 {
     let mut total_frame_time = 0.;
 
-    for sample in &self.samples {
-      total_frame_time += sample;
+    for sample in self.samples.iter() {
+      total_frame_time += *sample;
     }
 
     total_frame_time / self.samples.occupied() as f32

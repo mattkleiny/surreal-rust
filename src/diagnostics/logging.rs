@@ -1,6 +1,5 @@
 //! Logging utilities.
 
-use chrono::Timelike;
 use log::{LevelFilter, Log, Metadata, Record};
 pub use log::{debug, error, info, trace, warn};
 
@@ -14,18 +13,10 @@ impl Log for Logger {
 
   fn log(&self, record: &Record) {
     if self.enabled(record.metadata()) {
-      // TODO: better formatting for thread id
       let thread_id = std::thread::current().id();
 
-      let now = chrono::Local::now();
-      let (is_pm, hour) = now.hour12();
-
       println!(
-        "{:02}:{:02}:{:02} {} - <{:?}> {} [{}]: {}",
-        hour,
-        now.minute(),
-        now.second(),
-        if is_pm { "PM" } else { "AM" },
+        "<thread {:?}> {} [{}]: {}",
         thread_id,
         record.target(),
         record.level(),

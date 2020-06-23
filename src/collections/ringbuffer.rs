@@ -50,13 +50,9 @@ impl<T: Clone> RingBuffer<T> {
       *element = None;
     }
   }
-}
 
-impl<'a, T: Clone> IntoIterator for &'a RingBuffer<T> {
-  type Item = &'a T;
-  type IntoIter = RingBufferIterator<'a, T>;
-
-  fn into_iter(self) -> Self::IntoIter {
+  /// Permits iterating over the ring buffer.
+  pub fn iter(&self) -> RingBufferIterator<T> {
     RingBufferIterator {
       buffer: self,
       index: 0,
@@ -117,7 +113,7 @@ mod tests {
       buffer.append(i);
     }
 
-    buffer.clear();;
+    buffer.clear();
 
     assert_eq!(buffer.elements.len(), 0);
   }

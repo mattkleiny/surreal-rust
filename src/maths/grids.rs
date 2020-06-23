@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use super::*;
+use smallvec::SmallVec;
 
-// TODO: abstract over grid position?
+use crate::maths::{vec2, Vector2};
 
 /// A densely packed grid of T.
 #[derive(Clone, Debug)]
@@ -55,7 +55,7 @@ impl<T: Clone> DenseGrid<T> {
 /// A sparsely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct SparseGrid<T> {
-  elements: HashMap<Vec2i, T>,
+  elements: HashMap<Vector2<i32>, T>,
 }
 
 impl<T> SparseGrid<T> {
@@ -73,14 +73,14 @@ impl<T> SparseGrid<T> {
 
   #[inline]
   pub fn get(&self, x: u32, y: u32) -> Option<&T> {
-    let point = Vec2i::new(x as i32, y as i32);
+    let point = vec2(x as i32, y as i32);
 
     self.elements.get(&point)
   }
 
   #[inline]
   pub fn set(&mut self, x: u32, y: u32, element: T) {
-    let point = Vec2i::new(x as i32, y as i32);
+    let point = vec2(x as i32, y as i32);
 
     self.elements.insert(point, element);
   }
@@ -98,41 +98,37 @@ pub enum Neighbourhood {
 }
 
 impl Neighbourhood {
-  pub fn get_adjacents(&self, point: Vec2i) -> Vec<Vec2i> {
-    let results = match self {
+  pub fn get_adjacents(&self, point: Vector2<i32>) -> SmallVec<[Vector2<i32>; 8]> {
+    match self {
       Neighbourhood::VonNeumann => {
-        let mut results = Vec::with_capacity(4);
-
-        results.push(Vec2i::new(point.x - 1, point.y));
-        results.push(Vec2i::new(point.x + 1, point.y));
-        results.push(Vec2i::new(point.x, point.y - 1));
-        results.push(Vec2i::new(point.x, point.y + 1));
-
-        results
+        smallvec![
+          vec2(point.x - 1, point.y),
+          vec2(point.x + 1, point.y),
+          vec2(point.x, point.y - 1),
+          vec2(point.x, point.y + 1),
+        ]
       }
       Neighbourhood::Moore => {
-        let mut results = Vec::with_capacity(8);
+        smallvec![
+          vec2(point.x - 1, point.y),
+          vec2(point.x + 1, point.y),
+          vec2(point.x, point.y - 1),
+          vec2(point.x, point.y + 1),
 
-        results.push(Vec2i::new(point.x - 1, point.y));
-        results.push(Vec2i::new(point.x + 1, point.y));
-        results.push(Vec2i::new(point.x, point.y - 1));
-        results.push(Vec2i::new(point.x, point.y + 1));
-
-        results.push(Vec2i::new(point.x - 1, point.y - 1));
-        results.push(Vec2i::new(point.x - 1, point.y + 1));
-        results.push(Vec2i::new(point.x + 1, point.y - 1));
-        results.push(Vec2i::new(point.x + 1, point.y + 1));
-
-        results
+          vec2(point.x - 1, point.y - 1),
+          vec2(point.x - 1, point.y + 1),
+          vec2(point.x + 1, point.y - 1),
+          vec2(point.x + 1, point.y + 1)
+        ]
       }
-    };
-
-    results
+    }
   }
 }
 
 #[cfg(test)]
 mod tests {
+  use cgmath::vec2;
+
   use super::*;
 
   #[test]
@@ -175,8 +171,8 @@ mod tests {
   }
 
   #[test]
-  fn neighbourood_should_produce_valid_adjacent_points() {
-    assert_eq!(Neighbourhood::VonNeumann.get_adjacents(Vec2i::ZERO).len(), 4);
-    assert_eq!(Neighbourhood::Moore.get_adjacents(Vec2i::ZERO).len(), 8);
+  fn neighbourhood_should_produce_valid_adjacent_points() {
+    assert_eq!(Neighbourhood::VonNeumann.get_adjacents(vec2(0, 0)).len(), 4);
+    assert_eq!(Neighbourhood::Moore.get_adjacents(vec2(0, 0)).len(), 8);
   }
 }

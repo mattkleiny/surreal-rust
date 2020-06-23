@@ -6,35 +6,11 @@ edition = "2018"
 
 [features]
 default = []
-opengl = []
-editor = []
-
-[build-dependencies]
-pkg-config = "0.3"
-cc = "1.0"
 
 [dependencies]
-enumflags2 = "^0.5"
-enumflags2_derive = "^0.5"
-gl = "0.10.0"
-libc = "0.2"
 log = "0.4.8"
-num-traits = "0.2.4"
-
-[dependencies.sdl2]
-version = "0.32.2"
-features = ["bundled"]
-
-[dependencies.rand]
-version = "0.6.5"
-default-features = false
-
-[dependencies.chrono]
-version = "0.4.7"
-features = ["clock"]
-default-features = false
-
-[dependencies.image]
-version = "0.22.1"
-features = ["png_codec", "jpeg"]
-default-features = false
+num-traits = "0.2.12"
+smallvec = "1.4.0"
+cgmath = "0.17.0"
+rand = { version = "0.6.5", default-features=false }
+image = { version="0.22.1", default-features=false, features=["png_codec", "jpeg"] }

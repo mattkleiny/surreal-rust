@@ -9,26 +9,12 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-#![feature(core_intrinsics)]
-#![feature(associated_type_defaults)]
-
-extern crate chrono;
-extern crate enumflags2;
 #[macro_use]
-extern crate enumflags2_derive;
-#[cfg(feature = "opengl")]
-extern crate gl;
-extern crate image;
-extern crate libc;
-extern crate log;
-extern crate rand;
-extern crate sdl2;
+extern crate smallvec;
 
 pub mod assets;
-pub mod culling;
 pub mod collections;
 pub mod diagnostics;
-pub mod entities;
 pub mod graphics;
 pub mod maths;
 pub mod platform;
@@ -37,11 +23,10 @@ pub mod utilities;
 
 pub mod prelude {
   //! Import this module to simplify access to Surreal's components.
+
   pub use crate::assets::*;
   pub use crate::collections::*;
-  pub use crate::culling::*;
   pub use crate::diagnostics::*;
-  pub use crate::entities::*;
   pub use crate::graphics::*;
   pub use crate::maths::*;
   pub use crate::platform::*;

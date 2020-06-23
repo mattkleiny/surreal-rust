@@ -1,5 +1,4 @@
 use rand::prelude::*;
-use crate::maths::{Vec2, Vec3};
 
 /// A type that can be randomly generated.
 pub trait RNG {
@@ -8,19 +7,23 @@ pub trait RNG {
 }
 
 /// A seed for random generation.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
 pub struct Seed(u64);
 
 impl Seed {
   /// Generates a new seed using a new random value.
   pub fn random() -> Self {
-    Self(rand::thread_rng().gen())
+    Self(random_u64())
   }
 
   /// Converts the seed into an RNG.
   #[inline]
   pub fn to_random(&self) -> Random {
-    Random::new(self.0)
+    if self.0 == 0 {
+      Random::new(random_u64())
+    } else {
+      Random::new(self.0)
+    }
   }
 }
 
@@ -44,8 +47,19 @@ impl Random {
   #[inline] pub fn next_i32(&mut self) -> i32 { self.rng.gen() }
   #[inline] pub fn next_i64(&mut self) -> i64 { self.rng.gen() }
   #[inline] pub fn next_f32(&mut self) -> f32 { self.rng.gen() }
-  #[inline] pub fn next_f64(&mut self) -> f64 {self.rng.gen()}
+  #[inline] pub fn next_f64(&mut self) -> f64 { self.rng.gen() }
   #[inline] pub fn next<T: RNG>(&mut self) -> T { T::random(self) }
+}
+
+impl Default for Random {
+  fn default() -> Self {
+    Random::new(random_u64())
+  }
+}
+
+#[inline]
+fn random_u64() -> u64 {
+  rand::thread_rng().gen()
 }
 
 #[cfg(test)]

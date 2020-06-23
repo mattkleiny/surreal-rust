@@ -5,10 +5,6 @@
 // TODO: implement broadcast groups (ala godot) to allow simple event-like system.
 // TODO: support 'interactive debugging' using an in-game console.
 
-pub use lua::*;
-
-mod lua;
-
 /// An abstraction over a scripting engine for use in scripted applications.
 ///
 /// This is a low-level abstraction that allows us to decouple specific scripting back-ends from interaction with those
