@@ -8,6 +8,8 @@ use luminance::context::*;
 use luminance::pipeline::*;
 use luminance_glfw::*;
 
+pub use luminance_glfw::Key;
+
 use crate::utilities::Clock;
 
 /// Represents an error in the platform player.
@@ -37,6 +39,13 @@ pub struct Frame<'a> {
   shading: ShadingGate<'a, GlfwSurface>
 }
 
+/// Contains information on the game's timing state.
+#[derive(Copy, Clone, Debug)]
+pub struct GameTime {
+  pub delta_time: f32,
+  pub frame: usize,
+}
+
 /// Configuration for the core game loop.
 pub struct Config<S> {
   pub title: &'static str,
@@ -47,9 +56,10 @@ pub struct Config<S> {
 }
 
 /// Runs the game with the given configuration.
-pub fn run<S, T, D>(mut config: Config<S>, mut tick: T, mut draw: D) -> Result<(), Error>
-  where T: FnMut(&mut S, f32) -> (),
-        D: FnMut(&mut S, f32, Frame) -> () {
+pub fn run<S, I, T, D>(mut config: Config<S>, mut input: I, mut tick: T, mut draw: D) -> Result<(), Error>
+  where I: FnMut(&mut S, GameTime) -> (),
+        T: FnMut(&mut S, GameTime) -> (),
+        D: FnMut(&mut S, GameTime, Frame) -> () {
   // build our window, this thing also handles our window events
   let mut surface = GlfwSurface::new(
     WindowDim::Windowed(config.size.0, config.size.1),
@@ -57,32 +67,38 @@ pub fn run<S, T, D>(mut config: Config<S>, mut tick: T, mut draw: D) -> Result<(
     WindowOpt::default(),
   )?;
 
+  let state = &mut config.state;
   let mut clock = Clock::new(config.max_delta);
+  let mut frame = 0;
 
   let back_buffer = surface.back_buffer()?;
 
   // core game loop
   'app: loop {
+    // update the clock
+    let now = Instant::now().elapsed().as_secs();
+    let time = GameTime { delta_time: clock.tick(now, 60u64), frame };
+
+    frame += 1;
+
+    // update the core event loop
     for event in surface.poll_events() {
       match event {
-        WindowEvent::Close | WindowEvent::Key(Key::Escape, _, Action::Release, _) => break 'app,
+        WindowEvent::Close => break 'app,
+        WindowEvent::Key(_, _, _, _) => input(state, time),
         _ => (),
       }
     }
 
-    // update the clock
-    let now = Instant::now().elapsed().as_secs();
-    let delta = clock.tick(now, 60u64);
-
     // update this frame
-    tick(&mut config.state, delta);
+    tick(state, time);
 
     // render this frame
     surface.pipeline_builder().pipeline(
       &back_buffer,
       &PipelineState::default().set_clear_color(config.clear_color),
-      |_, mut shading| {
-        draw(&mut config.state, delta, Frame { shading });
+      |_, shading| {
+        draw(state, time, Frame { shading });
       },
     );
 
