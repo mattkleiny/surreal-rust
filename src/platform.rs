@@ -8,9 +8,10 @@ use luminance::context::*;
 use luminance::pipeline::*;
 use luminance_glfw::*;
 
-pub use luminance_glfw::Key;
-
+use crate::diagnostics::install_default_logger;
 use crate::utilities::Clock;
+
+// TODO: think about how to implement hot-reloading and other niceties
 
 /// Configuration for the core game loop and the platform initialization.
 pub struct Config<S> {
@@ -64,6 +65,9 @@ pub fn run<S, I, U, D>(
   where I: FnMut(&mut S, GameTime) -> (),
         U: FnMut(&mut S, GameTime) -> (),
         D: FnMut(&mut S, GameTime, Frame) -> () {
+  // configure logging, first of all
+  install_default_logger();
+
   // build our window, this thing also handles our window events
   let mut surface = GlfwSurface::new(
     WindowDim::Windowed(config.size.0, config.size.1),

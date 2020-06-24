@@ -1,9 +1,10 @@
 //! A lightweight diagnostics system.
 
+pub use console::*;
 pub use logging::*;
 
-pub use super::*;
-
+#[cfg(feature = "ui")]
+mod console;
 mod logging;
 
 // TODO: get an in-game console working

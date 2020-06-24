@@ -11,7 +11,11 @@ opt-level = 2
 opt-level = 0
 
 [features]
-default = []
+default = ["editor", "graphics", "scripting", "ui"]
+editor = ["ui"]
+graphics = []
+scripting = []
+ui = []
 
 [dependencies]
 enumflags2 = "0.6.4"

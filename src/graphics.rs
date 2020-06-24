@@ -11,7 +11,7 @@
 //! of the auxiliary libraries and utilities are designed to be fast in 2-space.
 
 pub use colors::*;
+pub use sprites::*;
 
 mod colors;
 mod sprites;
-mod ui;
