@@ -13,4 +13,5 @@
 pub use colors::*;
 
 mod colors;
+mod sprites;
 mod ui;

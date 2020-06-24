@@ -100,27 +100,23 @@ pub enum Neighbourhood {
 impl Neighbourhood {
   pub fn get_adjacents(&self, point: WorldPoint<i32>) -> SmallVec<[WorldPoint<i32>; 8]> {
     match self {
-      Neighbourhood::VonNeumann => {
-        smallvec![
-          vec2(point.x - 1, point.y),
-          vec2(point.x + 1, point.y),
-          vec2(point.x, point.y - 1),
-          vec2(point.x, point.y + 1),
-        ]
-      }
-      Neighbourhood::Moore => {
-        smallvec![
-          vec2(point.x - 1, point.y),
-          vec2(point.x + 1, point.y),
-          vec2(point.x, point.y - 1),
-          vec2(point.x, point.y + 1),
+      Neighbourhood::VonNeumann => smallvec![
+        vec2(point.x - 1, point.y),
+        vec2(point.x + 1, point.y),
+        vec2(point.x, point.y - 1),
+        vec2(point.x, point.y + 1),
+      ],
+      Neighbourhood::Moore => smallvec![
+        vec2(point.x - 1, point.y),
+        vec2(point.x + 1, point.y),
+        vec2(point.x, point.y - 1),
+        vec2(point.x, point.y + 1),
 
-          vec2(point.x - 1, point.y - 1),
-          vec2(point.x - 1, point.y + 1),
-          vec2(point.x + 1, point.y - 1),
-          vec2(point.x + 1, point.y + 1)
-        ]
-      }
+        vec2(point.x - 1, point.y - 1),
+        vec2(point.x - 1, point.y + 1),
+        vec2(point.x + 1, point.y - 1),
+        vec2(point.x + 1, point.y + 1)
+      ]
     }
   }
 }

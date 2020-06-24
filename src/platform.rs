@@ -1,28 +1,37 @@
 //! Platform abstractions and utilities.
+//!
+//! We export a minimum of our platform layer (Luminance) in order to make it simpler to use.
 
-use luminance::context::GraphicsContext;
-use luminance::pipeline::PipelineState;
-use luminance_glfw::{Action, GlfwSurface, Key, Surface, WindowDim, WindowEvent, WindowOpt};
+use luminance::context::*;
+pub use luminance::pipeline::*;
+use luminance_glfw::*;
+pub use luminance_glfw::{GlfwSurface, GlfwSurfaceError};
+use crate::utilities::Clock;
 
-/// Configuration for the platform.
-#[derive(Clone)]
+/// Configuration for the core game loop.
 pub struct Config<S> {
   pub title: &'static str,
   pub size: (u32, u32),
-  pub callback: fn(f32, &mut S),
+  pub clear_color: [f32; 4],
   pub state: S,
 }
 
-/// Executes the engine with the given configuration.
-pub fn run<S>(mut config: Config<S>) {
+/// Runs the game with the given configuration.
+pub fn run<S, T, D>(mut config: Config<S>, mut tick: T, mut draw: D) -> Result<(), GlfwSurfaceError>
+  where T: FnMut(&mut S, f32) -> (),
+        D: FnMut(&mut S, f32, &mut ShadingGate<GlfwSurface>) -> () {
+  // build our window, this thing also handles our window events
   let mut surface = GlfwSurface::new(
     WindowDim::Windowed(config.size.0, config.size.1),
     config.title,
     WindowOpt::default(),
-  ).unwrap_or_else(|error| panic!("Failed to create surface: {:?}", error));
+  )?;
 
-  let back_buffer = surface.back_buffer().unwrap();
+  let mut clock = Clock::new(0.32);
+  let mut state = &mut config.state;
+  let back_buffer = surface.back_buffer()?;
 
+  // core game loop
   'app: loop {
     for event in surface.poll_events() {
       match event {
@@ -31,14 +40,22 @@ pub fn run<S>(mut config: Config<S>) {
       }
     }
 
-    (config.callback)(0.16, &mut config.state);
+    // update this frame
+    let delta = 0.16; // TODO: use the clock for this instead
+    tick(state, delta);
 
+    // render this frame
     surface.pipeline_builder().pipeline(
       &back_buffer,
-      &PipelineState::default().set_clear_color([0.7, 0.1, 0.5, 1.]),
-      |_, _| (),
+      &PipelineState::default().set_clear_color(config.clear_color),
+      |_, mut shading| {
+        draw(state, delta, &mut shading);
+      },
     );
 
     surface.swap_buffers();
   }
+
+  Ok(())
 }
+
