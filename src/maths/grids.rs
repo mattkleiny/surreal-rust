@@ -22,12 +22,6 @@ impl<T: Clone> DenseGrid<T> {
   }
 
   #[inline]
-  pub fn width(&self) -> u32 { self.width }
-
-  #[inline]
-  pub fn height(&self) -> u32 { self.height }
-
-  #[inline]
   pub fn get(&self, x: u32, y: u32) -> &T {
     let index = (x + y * self.width) as usize;
 
@@ -64,12 +58,6 @@ impl<T> SparseGrid<T> {
       elements: HashMap::new(),
     }
   }
-
-  #[inline]
-  pub fn width(&self) -> u32 { 0 }
-
-  #[inline]
-  pub fn height(&self) -> u32 { 0 }
 
   #[inline]
   pub fn get(&self, x: u32, y: u32) -> Option<&T> {
