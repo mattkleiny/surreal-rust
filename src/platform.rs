@@ -7,12 +7,14 @@ pub use luminance::pipeline::*;
 use luminance_glfw::*;
 pub use luminance_glfw::{GlfwSurface, GlfwSurfaceError};
 use crate::utilities::Clock;
+use std::time::Instant;
 
 /// Configuration for the core game loop.
 pub struct Config<S> {
   pub title: &'static str,
   pub size: (u32, u32),
   pub clear_color: [f32; 4],
+  pub max_delta: f32,
   pub state: S,
 }
 
@@ -27,8 +29,7 @@ pub fn run<S, T, D>(mut config: Config<S>, mut tick: T, mut draw: D) -> Result<(
     WindowOpt::default(),
   )?;
 
-  let mut clock = Clock::new(0.32);
-  let mut state = &mut config.state;
+  let mut clock = Clock::new(config.max_delta);
   let back_buffer = surface.back_buffer()?;
 
   // core game loop
@@ -40,16 +41,19 @@ pub fn run<S, T, D>(mut config: Config<S>, mut tick: T, mut draw: D) -> Result<(
       }
     }
 
+    // update the clock
+    let now = Instant::now().elapsed().as_secs();
+    let delta = clock.tick(now, 60u64);
+
     // update this frame
-    let delta = 0.16; // TODO: use the clock for this instead
-    tick(state, delta);
+    tick(&mut config.state, delta);
 
     // render this frame
     surface.pipeline_builder().pipeline(
       &back_buffer,
       &PipelineState::default().set_clear_color(config.clear_color),
       |_, mut shading| {
-        draw(state, delta, &mut shading);
+        draw(&mut config.state, delta, &mut shading);
       },
     );
 
