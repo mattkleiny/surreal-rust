@@ -56,9 +56,9 @@ pub struct Config<S> {
 }
 
 /// Runs the game with the given configuration.
-pub fn run<S, I, T, D>(mut config: Config<S>, mut input: I, mut tick: T, mut draw: D) -> Result<(), Error>
+pub fn run<S, I, U, D>(mut config: Config<S>, mut input: I, mut update: U, mut draw: D) -> Result<(), Error>
   where I: FnMut(&mut S, GameTime) -> (),
-        T: FnMut(&mut S, GameTime) -> (),
+        U: FnMut(&mut S, GameTime) -> (),
         D: FnMut(&mut S, GameTime, Frame) -> () {
   // build our window, this thing also handles our window events
   let mut surface = GlfwSurface::new(
@@ -68,32 +68,30 @@ pub fn run<S, I, T, D>(mut config: Config<S>, mut input: I, mut tick: T, mut dra
   )?;
 
   let state = &mut config.state;
+  let back_buffer = surface.back_buffer()?;
   let mut clock = Clock::new(config.max_delta);
   let mut frame = 0;
 
-  let back_buffer = surface.back_buffer()?;
-
-  // core game loop
-  'app: loop {
+  'game: loop {
     // update the clock
     let now = Instant::now().elapsed().as_secs();
     let time = GameTime { delta_time: clock.tick(now, 60u64), frame };
 
     frame += 1;
 
-    // update the core event loop
+    // update the underlying window
     for event in surface.poll_events() {
       match event {
-        WindowEvent::Close => break 'app,
+        WindowEvent::Close => break 'game,
         WindowEvent::Key(_, _, _, _) => input(state, time),
         _ => (),
       }
     }
 
-    // update this frame
-    tick(state, time);
+    // update the game simulation
+    update(state, time);
 
-    // render this frame
+    // draw this frame
     surface.pipeline_builder().pipeline(
       &back_buffer,
       &PipelineState::default().set_clear_color(config.clear_color),
