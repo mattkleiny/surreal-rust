@@ -38,11 +38,11 @@ impl Clock {
 
 /// Counts frames per second using a smoothed average.
 #[derive(Clone, Debug)]
-pub struct FpsCounter {
+pub struct FrameCounter {
   samples: RingBuffer<f32>,
 }
 
-impl FpsCounter {
+impl FrameCounter {
   pub fn new(samples: usize) -> Self {
     Self {
       samples: RingBuffer::new(samples),
@@ -137,7 +137,7 @@ mod tests {
 
   #[test]
   fn fps_counter_should_accumulate_over_time() {
-    let mut counter = FpsCounter::new(100);
+    let mut counter = FrameCounter::new(100);
 
     counter.tick(0.016);
     counter.tick(0.016);

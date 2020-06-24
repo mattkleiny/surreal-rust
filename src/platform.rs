@@ -12,23 +12,13 @@ pub use luminance_glfw::Key;
 
 use crate::utilities::Clock;
 
-/// Represents an error in the platform player.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum Error {
-  FailedToCreate,
-  Unknown,
-}
-
-impl From<GlfwSurfaceError> for Error {
-  fn from(error: GlfwSurfaceError) -> Self {
-    match error {
-      GlfwSurfaceError::InitError(_) => Error::FailedToCreate,
-      GlfwSurfaceError::WindowCreationFailed => Error::FailedToCreate,
-      GlfwSurfaceError::NoPrimaryMonitor => Error::FailedToCreate,
-      GlfwSurfaceError::NoVideoMode => Error::FailedToCreate,
-      GlfwSurfaceError::GraphicsStateError(_) => Error::FailedToCreate,
-    }
-  }
+/// Configuration for the core game loop and the platform initialization.
+pub struct Config<S> {
+  pub title: &'static str,
+  pub size: (u32, u32),
+  pub clear_color: [f32; 4],
+  pub max_delta: f32,
+  pub state: S,
 }
 
 /// A renderer abstraction for our platform.
@@ -46,17 +36,31 @@ pub struct GameTime {
   pub frame: usize,
 }
 
-/// Configuration for the core game loop.
-pub struct Config<S> {
-  pub title: &'static str,
-  pub size: (u32, u32),
-  pub clear_color: [f32; 4],
-  pub max_delta: f32,
-  pub state: S,
+/// Represents an error in the platform layer.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Error {
+  GraphicsError,
+}
+
+impl From<GlfwSurfaceError> for Error {
+  fn from(error: GlfwSurfaceError) -> Self {
+    match error {
+      GlfwSurfaceError::InitError(_) => Error::GraphicsError,
+      GlfwSurfaceError::WindowCreationFailed => Error::GraphicsError,
+      GlfwSurfaceError::NoPrimaryMonitor => Error::GraphicsError,
+      GlfwSurfaceError::NoVideoMode => Error::GraphicsError,
+      GlfwSurfaceError::GraphicsStateError(_) => Error::GraphicsError,
+    }
+  }
 }
 
 /// Runs the game with the given configuration.
-pub fn run<S, I, U, D>(mut config: Config<S>, mut input: I, mut update: U, mut draw: D) -> Result<(), Error>
+pub fn run<S, I, U, D>(
+  mut config: Config<S>,
+  mut input: I,
+  mut update: U,
+  mut draw: D,
+) -> Result<(), Error>
   where I: FnMut(&mut S, GameTime) -> (),
         U: FnMut(&mut S, GameTime) -> (),
         D: FnMut(&mut S, GameTime, Frame) -> () {
