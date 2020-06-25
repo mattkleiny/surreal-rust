@@ -2,7 +2,7 @@
 
 use std::ops::{Add, Sub};
 
-use crate::maths::{Lerp, RandomGenerator, Random};
+use crate::maths::{Lerp, Random, RandomGenerator};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[derive(Copy, Clone, Default, Eq, PartialEq, Debug)]
@@ -72,17 +72,6 @@ impl Sub for Color {
   }
 }
 
-impl Random for Color {
-  fn random(generator: &mut RandomGenerator) -> Self {
-    Color::RGBA(
-      generator.next_u8(),
-      generator.next_u8(),
-      generator.next_u8(),
-      generator.next_u8(),
-    )
-  }
-}
-
 impl Lerp for Color {
   #[inline]
   fn lerp(a: Color, b: Color, t: f32) -> Self {
@@ -91,6 +80,17 @@ impl Lerp for Color {
       u8::lerp(a.g, b.g, t),
       u8::lerp(a.b, b.b, t),
       u8::lerp(a.a, b.a, t),
+    )
+  }
+}
+
+impl Random for Color {
+  fn random(generator: &mut RandomGenerator) -> Self {
+    Color::RGBA(
+      generator.next_u8(),
+      generator.next_u8(),
+      generator.next_u8(),
+      generator.next_u8(),
     )
   }
 }

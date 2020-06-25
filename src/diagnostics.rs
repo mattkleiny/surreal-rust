@@ -1,4 +1,4 @@
-//! A lightweight diagnostics system.
+//! Diagnostic utilities.
 
 // TODO: get an in-game console working
 // TODO: support low-level cpu profiling

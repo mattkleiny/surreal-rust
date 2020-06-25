@@ -1,5 +1,5 @@
 /// Encodes the given string with a simple run-length encoding scheme.
-pub fn run_length_encode(raw: &str) -> String {
+pub fn run_length_encode(raw: impl AsRef<str>) -> String {
   fn convert(n: u32) -> String {
     match n {
       1 => "".into(),
@@ -7,15 +7,15 @@ pub fn run_length_encode(raw: &str) -> String {
     }
   }
 
-  if raw.is_empty() {
-    return raw.into();
+  if raw.as_ref().is_empty() {
+    return raw.as_ref().into();
   }
 
   let mut encoded = String::new();
   let mut count = 1;
-  let mut current = raw.chars().nth(0).unwrap();
+  let mut current = raw.as_ref().chars().nth(0).unwrap();
 
-  for character in raw.chars().skip(1) {
+  for character in raw.as_ref().chars().skip(1) {
     if character == current {
       count += 1;
     } else {
@@ -33,11 +33,11 @@ pub fn run_length_encode(raw: &str) -> String {
 }
 
 /// Decodes the given string with a simple run-length encoding scheme.
-fn run_length_decode(raw: &str) -> String {
+fn run_length_decode(raw: impl AsRef<str>) -> String {
   let mut numerals = String::new();
   let mut decoded = String::new();
 
-  for character in raw.chars() {
+  for character in raw.as_ref().chars() {
     if character.is_numeric() {
       numerals.push(character);
     } else {

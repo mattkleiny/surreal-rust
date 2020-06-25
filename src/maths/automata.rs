@@ -2,7 +2,7 @@ use smallvec::SmallVec;
 
 use crate::maths::{vec2, Vector2};
 
-/// A classification of automata neighbourhoods for grid traversal and simulation.
+/// A classification of neighbourhoods for grid traversal and simulation.
 #[derive(Copy, Clone, Debug)]
 pub enum Neighbourhood {
   VonNeumann,

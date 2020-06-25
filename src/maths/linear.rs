@@ -1,6 +1,3 @@
-//! Linear algebra abstractions, mainly using `euclid`.
-
-/// A representation of screen space.
 pub type Vector2<T> = cgmath::Vector2<T>;
 pub type Vector3<T> = cgmath::Vector3<T>;
 pub type Vector4<T> = cgmath::Vector4<T>;

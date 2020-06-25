@@ -1,6 +1,4 @@
 //! Platform abstractions and utilities.
-//!
-//! We export a minimum of our platform layer.
 
 use std::time::Instant;
 
@@ -76,11 +74,13 @@ pub fn run<S, I, U, D>(
       }
     }
 
+    let frame = Frame {
+      canvas: &mut canvas
+    };
+
     let time = GameTime {
       delta_time: clock.tick(Instant::now().elapsed().as_secs(), 60),
     };
-
-    let frame = Frame { canvas: &mut canvas };
 
     input(&mut config.state, time);
     update(&mut config.state, time);

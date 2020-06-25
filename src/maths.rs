@@ -1,6 +1,4 @@
 //! Mathematical utilities.
-//!
-//! This is a set of common utilities for scalar and linear 2d and 3d mathematics.
 
 pub use automata::*;
 pub use directions::*;

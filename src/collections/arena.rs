@@ -1,12 +1,3 @@
-//! A generational arena that allows flat list-like structures with safe externalised indices.
-//!
-//! The core element of the arena is an index. The index is composed of two parts, a raw array
-//! index and a generation. We use the generation to determine whether or not a space in the array
-//! had previously been occupied by a different element, side-stepping the ABA problem.
-//!
-//! This allows us to retain efficient storage in a flat array, good iteration performance, and a
-//! safe way to circulate the index throughout the application.
-
 /// Represents an index into a generational arena.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ArenaIndex {
@@ -34,9 +25,14 @@ enum ArenaEntry<T> {
   },
 }
 
-/// A generational arena backed by a vec of elements.
+/// A generational arena that allows flat list-like structures with safe externalised indices.
 ///
-/// The arena will grow as required to accommodate new elements.
+/// The core element of the arena is an index. The index is composed of two parts, a raw array
+/// index and a generation. We use the generation to determine whether or not a space in the array
+/// had previously been occupied by a different element, side-stepping the ABA problem.
+///
+/// This allows us to retain efficient storage in a flat array, good iteration performance, and a
+/// safe way to circulate the index throughout the application.
 #[derive(Clone, Debug)]
 pub struct Arena<T> {
   items: Vec<ArenaEntry<T>>,

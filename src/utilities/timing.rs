@@ -49,12 +49,10 @@ impl FrameCounter {
     }
   }
 
-  /// Advances the counter by the given delta amount.
   pub fn tick(&mut self, delta_time: f32) {
     self.samples.append(delta_time);
   }
 
-  /// Returns the average frame time.
   pub fn average_frame_time(&self) -> f32 {
     let mut total_frame_time = 0.;
 
@@ -65,7 +63,6 @@ impl FrameCounter {
     total_frame_time / self.samples.occupied() as f32
   }
 
-  /// Returns the current measurement of FPS.
   pub fn fps(&self) -> f32 {
     1. / self.average_frame_time()
   }

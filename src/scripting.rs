@@ -1,4 +1,4 @@
-//! Scripting support for Surreal.
+//! Scripting utilities.
 
 // TODO: implement an in-game console based on the script engine (lua).
 // TODO: implement implicit entity/component binding access (entity1.health or entity1.sprite.pivot = 50) to allow easy mutation from scripts

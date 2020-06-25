@@ -1,4 +1,4 @@
-//! Common collections.
+//! Collections and data structures.
 
 pub use arena::*;
 pub use ringbuffer::*;

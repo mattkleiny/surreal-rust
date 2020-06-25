@@ -1,4 +1,4 @@
-//! General purpose utilities.
+//! General utilities.
 
 pub use rle::*;
 pub use timing::*;
