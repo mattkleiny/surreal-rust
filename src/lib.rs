@@ -16,28 +16,20 @@ extern crate smallvec;
 
 pub mod collections;
 pub mod diagnostics;
-#[cfg(feature = "editor")]
 pub mod editor;
-#[cfg(feature = "graphics")]
 pub mod graphics;
 pub mod maths;
-#[cfg(feature = "platform")]
 pub mod platform;
-#[cfg(feature = "scripting")]
 pub mod scripting;
 pub mod utilities;
 
 pub mod prelude {
   pub use crate::collections::*;
   pub use crate::diagnostics::*;
-  #[cfg(feature = "editor")]
   pub use crate::editor::*;
-  #[cfg(feature = "graphics")]
   pub use crate::graphics::*;
   pub use crate::maths::*;
-  #[cfg(feature = "platform")]
   pub use crate::platform::*;
-  #[cfg(feature = "scripting")]
   pub use crate::scripting::*;
   pub use crate::utilities::*;
 }

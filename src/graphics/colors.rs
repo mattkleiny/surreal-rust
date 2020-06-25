@@ -33,15 +33,20 @@ impl Color {
   }
 }
 
-impl From<[u8; 4]> for Color {
-  fn from(source: [u8; 4]) -> Self {
-    Self::RGBA(source[0], source[1], source[2], source[3])
+impl Into<[f32; 4]> for Color {
+  fn into(self) -> [f32; 4] {
+    [
+      self.r as f32 / 255.0,
+      self.g as f32 / 255.0,
+      self.b as f32 / 255.0,
+      self.a as f32 / 255.0
+    ]
   }
 }
 
-impl From<(u8, u8, u8, u8)> for Color {
-  fn from(source: (u8, u8, u8, u8)) -> Self {
-    Self::RGBA(source.0, source.1, source.2, source.3)
+impl From<[u8; 4]> for Color {
+  fn from(source: [u8; 4]) -> Self {
+    Self::RGBA(source[0], source[1], source[2], source[3])
   }
 }
 

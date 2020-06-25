@@ -10,6 +10,7 @@ use luminance::pixel::*;
 use luminance::texture::*;
 use luminance_glfw::*;
 
+use crate::graphics::Color;
 use crate::utilities::Clock;
 
 // TODO: think about how to implement hot-reloading and other niceties
@@ -18,7 +19,7 @@ use crate::utilities::Clock;
 pub struct Config<S> {
   pub title: &'static str,
   pub size: (u32, u32),
-  pub clear_color: [f32; 4],
+  pub clear_color: Color,
   pub max_delta: f32,
   pub state: S,
 }
@@ -122,7 +123,7 @@ pub fn run<S, I, U, D>(
     // draw this frame
     surface.pipeline_builder().pipeline(
       &back_buffer,
-      &PipelineState::default().set_clear_color(config.clear_color),
+      &PipelineState::default().set_clear_color(config.clear_color.into()),
       |_, shading| {
         draw(state, time, Frame { shading });
       },
