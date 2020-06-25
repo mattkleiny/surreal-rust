@@ -4,6 +4,11 @@
 //! game state. Implementing the `Interface` trait on your game state will allow the internal
 //! mechanics enough information about the game state to provide editor functionality.
 
+// TODO: think about how to render a basic editor interface (maybe using a widget framework like Conrod)?
+// TODO: think about editor state, how to get the editor access to the GameState structure.
+// TODO: think about how the editor can fetch and access entity information and emit changes
+//       to components
+
 /// Primary interface for the editor to access game state.
 pub trait Editor {
   /// Requests information about the game's `Actor`s.
