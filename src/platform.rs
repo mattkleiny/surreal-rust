@@ -5,8 +5,8 @@ use std::time::Instant;
 use sdl2::event::Event;
 use sdl2::render::WindowCanvas;
 
-use crate::graphics::{Color, GraphicsDevice};
 use crate::utilities::Clock;
+use crate::graphics::Color;
 
 // TODO: think about how to implement hot-reloading and other niceties
 
@@ -26,8 +26,8 @@ pub struct Frame<'a> {
   canvas: &'a mut WindowCanvas,
 }
 
-impl<'a> GraphicsDevice for Frame<'a> {
-  fn clear(&mut self, color: Color) {
+impl<'a> Frame<'a> {
+  pub fn clear(&mut self, color: Color) {
     let color: (u8, u8, u8, u8) = color.into();
     self.canvas.set_draw_color(color);
     self.canvas.clear();

@@ -12,16 +12,10 @@
 //! 2d development, and a lot of the auxiliary libraries and utilities are designed to be fast in 2d.
 
 pub use colors::*;
+pub use images::*;
 pub use sprites::*;
 
 mod colors;
+mod images;
 mod sprites;
 
-/// Permits interacting with the graphics sub-system.
-pub trait GraphicsDevice {
-  fn clear(&mut self, color: Color);
-}
-
-pub trait Renderable {
-  fn render(&self, device: &mut impl GraphicsDevice);
-}

@@ -1,5 +1,3 @@
-//! Color space representations
-
 use std::ops::{Add, Sub};
 
 use crate::maths::{Lerp, Random, RandomGenerator};

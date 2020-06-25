@@ -21,6 +21,7 @@ pub mod graphics;
 pub mod maths;
 pub mod platform;
 pub mod scripting;
+pub mod servers;
 pub mod utilities;
 
 pub mod prelude {
