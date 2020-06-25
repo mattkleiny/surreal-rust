@@ -1,123 +1,35 @@
 //! Platform abstractions and utilities.
 
-use std::time::Instant;
+pub use desktop::*;
 
-use sdl2::event::Event;
-use sdl2::render::WindowCanvas;
+use crate::audio::AudioServer;
+use crate::graphics::GraphicsServer;
+use crate::input::InputServer;
 
-use crate::utilities::Clock;
-use crate::graphics::Color;
+pub mod desktop;
 
-// TODO: think about how to implement hot-reloading and other niceties
-
-/// Configuration for the core game loop and the platform initialization.
-pub struct Config<S> {
-  pub title: &'static str,
-  pub size: (u32, u32),
-  pub max_delta: f32,
-  pub state: S,
-}
-
-/// A renderer abstraction for our platform.
+/// Represents a platform for game development.
 ///
-/// This hides the inner implementation details of Luminance and makes
-/// it simpler to get sprites on the screen.
-pub struct Frame<'a> {
-  canvas: &'a mut WindowCanvas,
+/// Implementation of this trait provide servers for the various sub-systems that a game needs.
+pub trait Platform {
+  type Audio: AudioServer;
+  type Graphics: GraphicsServer;
+  type Input: InputServer;
+
+  fn run(&mut self, callback: impl FnMut(&mut Self) -> ());
+  fn audio(&mut self) -> &mut Self::Audio;
+  fn graphics(&mut self) -> &mut Self::Graphics;
+  fn input(&mut self) -> &mut Self::Input;
 }
 
-impl<'a> Frame<'a> {
-  pub fn clear(&mut self, color: Color) {
-    let color: (u8, u8, u8, u8) = color.into();
-    self.canvas.set_draw_color(color);
-    self.canvas.clear();
-  }
-}
-
-/// Contains information on the game's timing state.
-#[derive(Copy, Clone, Debug)]
-pub struct GameTime {
-  pub delta_time: f32,
-}
-
-/// Runs the game with the given configuration.
-pub fn run<S, I, U, D>(
-  mut config: Config<S>,
-  mut input: I,
-  mut update: U,
-  mut draw: D,
-) -> Result<(), Error>
-  where I: FnMut(&mut S, GameTime) -> (),
-        U: FnMut(&mut S, GameTime) -> (),
-        D: FnMut(&mut S, GameTime, Frame) -> () {
-  let context = sdl2::init()?;
-  let video = context.video()?;
-
-  let window = video.window(config.title, config.size.0, config.size.1)
-      .position_centered()
-      .resizable()
-      .build()?;
-
-  let mut canvas = window.into_canvas()
-      .present_vsync()
-      .accelerated()
-      .build()?;
-
-  let mut pump = context.event_pump()?;
-  let mut clock = Clock::new(config.max_delta);
-
-  'running: loop {
-    for event in pump.poll_iter() {
-      match event {
-        Event::Quit { .. } => break 'running,
-        _ => {}
-      }
-    }
-
-    let frame = Frame {
-      canvas: &mut canvas
-    };
-
-    let time = GameTime {
-      delta_time: clock.tick(Instant::now().elapsed().as_secs(), 60),
-    };
-
-    input(&mut config.state, time);
-    update(&mut config.state, time);
-    draw(&mut config.state, time, frame);
-
-    canvas.present();
-  }
-
-  Ok(())
-}
-
-/// Represents an error in the platform layer.
+/// Represents a general error in the underlying platform.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum Error {
-  GenericFailure
+pub enum PlatformError {
+  FailedToCreate
 }
 
-impl From<String> for Error {
-  fn from(_: String) -> Self {
-    Error::GenericFailure
-  }
-}
-
-impl From<sdl2::Error> for Error {
-  fn from(_: sdl2::Error) -> Self {
-    Error::GenericFailure
-  }
-}
-
-impl From<sdl2::video::WindowBuildError> for Error {
-  fn from(_: sdl2::video::WindowBuildError) -> Self {
-    Error::GenericFailure
-  }
-}
-
-impl From<sdl2::IntegerOrSdlError> for Error {
-  fn from(_: sdl2::IntegerOrSdlError) -> Self {
-    Error::GenericFailure
+impl From<PlatformError> for crate::Error {
+  fn from(_: PlatformError) -> Self {
+    crate::Error::PlatformFailure
   }
 }

@@ -8,41 +8,53 @@
 // TODO: think about editor state, how to get the editor access to the GameState structure.
 // TODO: think about how the editor can fetch and access entity information and emit changes
 //       to components
+// TODO: think about how to implement hot-reloading and other niceties
+
+use std::rc::Rc;
+
+use crate::graphics::Color;
+use crate::maths::{Vector2, Vector3};
 
 /// Primary interface for the editor to access game state.
 pub trait Editor {
-  /// Requests information about the game's `Actor`s.
-  fn get_scene_actors(&self, results: &mut Vec<Actor>);
+  type ID;
 
-  // Read/write access to actor properties
-  fn read_property<T>(&self, actor: Actor, property: Property) -> Option<T>;
-  fn write_property<T>(&mut self, actor: Actor, property: Property, value: T);
+  fn query_scene_objects(&self) -> Vec<Object<Self::ID>>;
 }
 
-/// Contains information about a single actor in the game's world.
+/// Contains information about a single object in the game's world.
 ///
-/// This information permits the editor to read/write property information through a shim on `Interface`.
+/// This information permits the editor to read/write property information directly into the game.
 #[derive(Clone, Debug)]
-pub struct Actor {
-  pub properties: Vec<Property>
+pub struct Object<ID> {
+  pub id: ID,
+  pub prop: Vec<Property>,
 }
 
-/// Describes a single property of a single actor.
 #[derive(Clone, Debug)]
 pub struct Property {
-  /// The unique name for this property.
   pub name: String,
-  /// A category for this property, for display purposes.
   pub category: String,
-  /// The archetype of this property.
-  pub archetype: PropertyArchetype,
+  pub hint: PropertyHint,
 }
 
-/// The possible types of property that an actor might possess.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum PropertyArchetype {
-  /// A primitive type, natively supported by the engine.
-  Primitive,
-  /// A complex type that was created through user-land code.
-  Complex,
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum PropertyHint {}
+
+#[repr(u8)]
+#[derive(BitFlags, Copy, Clone, Debug, Eq, PartialEq)]
+pub enum PropertyUsage {
+  Normal = 1 << 0,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Variant {
+  Nil,
+  Bool(bool),
+  Int(i64),
+  Float(f64),
+  String(Rc<String>),
+  Vector2(Vector2<f32>),
+  Vector3(Vector3<f32>),
+  Color(Color),
 }

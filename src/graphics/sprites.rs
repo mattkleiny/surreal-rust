@@ -1,9 +1,16 @@
+use crate::core::RID;
+use crate::graphics::{GraphicsServer, TextureError};
+
 /// An efficient batch of sprites for rendering by some provider.
-pub struct SpriteBatch {}
+pub struct SpriteBatch {
+  texture: RID
+}
 
 impl SpriteBatch {
-  pub fn new() -> Self {
-    SpriteBatch {}
+  pub fn new(graphics: &mut impl GraphicsServer) -> Result<Self, TextureError> {
+    Ok(SpriteBatch {
+      texture: graphics.create_texture()?
+    })
   }
 
   /// Pushes sprite geometry into the batch.

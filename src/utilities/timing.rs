@@ -1,4 +1,16 @@
+use std::time::Instant;
+
 use crate::collections::RingBuffer;
+
+/// Returns the current time, in seconds since the epoch.
+#[inline]
+pub fn now() -> u64 { Instant::now().elapsed().as_secs() }
+
+/// Contains information on the game's timing state.
+#[derive(Copy, Clone, Debug)]
+pub struct GameTime {
+  pub delta_time: f32,
+}
 
 /// A simple clock for measuring the time between frames.
 #[derive(Clone, Debug)]

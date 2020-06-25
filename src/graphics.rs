@@ -15,7 +15,37 @@ pub use colors::*;
 pub use images::*;
 pub use sprites::*;
 
+use crate::core::RID;
+
 mod colors;
 mod images;
 mod sprites;
 
+// TODO: implement a visual server like Godot?
+// TODO: support resources (that can be serialized to disk)?
+// TODO: take inspiration from other engines, perhaps
+
+pub trait GraphicsServer {
+  fn clear(&mut self, color: Color);
+  fn create_texture(&mut self) -> Result<RID, TextureError>;
+  fn create_texture_from_image<P>(&mut self, image: &Image<P>) -> Result<RID, TextureError>;
+  fn upload_texture_data<P>(&mut self, id: RID, image: &Image<P>) -> Result<(), TextureError>;
+}
+
+#[repr(u8)]
+#[derive(BitFlags, Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum TextureFlags {
+  Clamp = 1 << 0,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum TextureError {
+  NotEnoughMemory,
+  NotEnoughTextureUnits,
+}
+
+impl From<TextureError> for crate::Error {
+  fn from(_: TextureError) -> Self {
+    crate::Error::GraphicsFailure
+  }
+}

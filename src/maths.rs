@@ -2,9 +2,9 @@
 
 pub use automata::*;
 pub use directions::*;
+pub use grids::*;
 pub use interp::*;
 pub use linear::*;
-pub use grids::*;
 pub use random::*;
 
 mod automata;

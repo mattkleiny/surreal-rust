@@ -14,23 +14,40 @@ extern crate enumflags2;
 #[macro_use]
 extern crate smallvec;
 
+pub mod audio;
 pub mod collections;
+pub mod core;
 pub mod diagnostics;
 pub mod editor;
 pub mod graphics;
+pub mod input;
 pub mod maths;
 pub mod platform;
 pub mod scripting;
-pub mod servers;
 pub mod utilities;
 
+/// A generic catch-all error class.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Error {
+  GeneralFailure,
+  AudioFailure,
+  GraphicsFailure,
+  PlatformFailure,
+  InputFailure,
+}
+
 pub mod prelude {
+  pub use crate::audio::*;
   pub use crate::collections::*;
+  pub use crate::core::*;
   pub use crate::diagnostics::*;
   pub use crate::editor::*;
   pub use crate::graphics::*;
+  pub use crate::input::*;
   pub use crate::maths::*;
   pub use crate::platform::*;
   pub use crate::scripting::*;
   pub use crate::utilities::*;
+
+  pub use super::Error as SurrealError;
 }
