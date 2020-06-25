@@ -6,6 +6,8 @@ use std::time::Instant;
 
 use luminance::context::*;
 use luminance::pipeline::*;
+use luminance::pixel::*;
+use luminance::texture::*;
 use luminance_glfw::*;
 
 use crate::diagnostics::install_default_logger;
@@ -41,6 +43,7 @@ pub struct GameTime {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Error {
   GraphicsError,
+  TextureError,
 }
 
 impl From<GlfwSurfaceError> for Error {
@@ -51,6 +54,16 @@ impl From<GlfwSurfaceError> for Error {
       GlfwSurfaceError::NoPrimaryMonitor => Error::GraphicsError,
       GlfwSurfaceError::NoVideoMode => Error::GraphicsError,
       GlfwSurfaceError::GraphicsStateError(_) => Error::GraphicsError,
+    }
+  }
+}
+
+impl From<TextureError> for Error {
+  fn from(error: TextureError) -> Self {
+    match error {
+      TextureError::TextureStorageCreationFailed(_) => Error::TextureError,
+      TextureError::NotEnoughPixels(_, _) => Error::TextureError,
+      TextureError::UnsupportedPixelFormat(_) => Error::TextureError,
     }
   }
 }
@@ -79,6 +92,17 @@ pub fn run<S, I, U, D>(
   let back_buffer = surface.back_buffer()?;
   let mut clock = Clock::new(config.max_delta);
   let mut frame = 0;
+
+  let texture = Texture::<Dim2, RGB8UI>::new(&mut surface, [256, 144], 0, Sampler {
+    wrap_r: Wrap::ClampToEdge,
+    wrap_s: Wrap::ClampToEdge,
+    wrap_t: Wrap::ClampToEdge,
+    min_filter: MinFilter::Nearest,
+    mag_filter: MagFilter::Nearest,
+    depth_comparison: None,
+  })?;
+
+  texture.clear(GenMipmaps::No, (255, 255, 255))?;
 
   'game: loop {
     // update the clock

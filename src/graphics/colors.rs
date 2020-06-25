@@ -1,3 +1,5 @@
+use std::ops::{Add, Sub};
+
 use crate::maths::{Lerp, Random, RNG};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
@@ -26,6 +28,34 @@ impl Color {
   #[allow(non_snake_case)]
   pub const fn RGBA(r: u8, g: u8, b: u8, a: u8) -> Self {
     Self { r, g, b, a }
+  }
+}
+
+impl From<[u8; 4]> for Color {
+  fn from(source: [u8; 4]) -> Self {
+    Self::RGBA(source[0], source[1], source[2], source[3])
+  }
+}
+
+impl From<(u8, u8, u8, u8)> for Color {
+  fn from(source: (u8, u8, u8, u8)) -> Self {
+    Self::RGBA(source.0, source.1, source.2, source.3)
+  }
+}
+
+impl Add for Color {
+  type Output = Color;
+
+  fn add(self, rhs: Self) -> Self::Output {
+    Color::RGBA(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
+  }
+}
+
+impl Sub for Color {
+  type Output = Color;
+
+  fn sub(self, rhs: Self) -> Self::Output {
+    Color::RGBA(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
   }
 }
 
@@ -63,10 +93,10 @@ mod tests {
     let seed = Seed::random();
     let mut rng = seed.to_random();
 
-    let color1 = Color::random(&mut rng);
-    let color2 = Color::random(&mut rng);
-    let color3 = Color::random(&mut rng);
-    let color4 = Color::random(&mut rng);
+    let color1: Color = rng.next();
+    let color2: Color = rng.next();
+    let color3: Color = rng.next();
+    let color4: Color = rng.next();
 
     assert_ne!(color1, color2);
     assert_ne!(color2, color3);
