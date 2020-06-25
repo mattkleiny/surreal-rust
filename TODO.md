@@ -13,3 +13,4 @@
 * Script abstractions and hot reloading
 
 Consider API designs from libgdx/monogame and friends.
+Consider API design from Godot.
