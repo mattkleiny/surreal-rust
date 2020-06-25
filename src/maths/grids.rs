@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use smallvec::SmallVec;
 
-use crate::maths::{vec2, WorldPoint};
+use crate::maths::{vec2, Vector2};
 
 /// A densely packed grid of T.
 #[derive(Clone, Debug)]
@@ -49,7 +49,7 @@ impl<T: Clone> DenseGrid<T> {
 /// A sparsely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct SparseGrid<T> {
-  elements: HashMap<WorldPoint<i32>, T>,
+  elements: HashMap<Vector2<i32>, T>,
 }
 
 impl<T> SparseGrid<T> {
@@ -86,7 +86,7 @@ pub enum Neighbourhood {
 }
 
 impl Neighbourhood {
-  pub fn get_adjacents(&self, point: WorldPoint<i32>) -> SmallVec<[WorldPoint<i32>; 8]> {
+  pub fn get_adjacents(&self, point: Vector2<i32>) -> SmallVec<[Vector2<i32>; 8]> {
     match self {
       Neighbourhood::VonNeumann => smallvec![
         vec2(point.x - 1, point.y),

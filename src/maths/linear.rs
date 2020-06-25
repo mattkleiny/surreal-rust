@@ -1,23 +1,21 @@
 //! Linear algebra abstractions, mainly using `euclid`.
 
-use euclid::*;
-
 /// A representation of screen space.
-pub struct ScreenSpace;
+pub type Vector2<T> = cgmath::Vector2<T>;
+pub type Vector3<T> = cgmath::Vector3<T>;
+pub type Vector4<T> = cgmath::Vector4<T>;
+pub type Matrix2<T> = cgmath::Matrix2<T>;
+pub type Matrix3<T> = cgmath::Matrix3<T>;
+pub type Matrix4<T> = cgmath::Matrix4<T>;
+pub type Euler<T> = cgmath::Euler<T>;
+pub type Quaternion<T> = cgmath::Quaternion<T>;
 
-pub type ScreenPoint<T> = Point2D<T, ScreenSpace>;
-pub type ScreenSize<T> = Size2D<T, ScreenSpace>;
-pub type ScreenRect<T> = Rect<T, ScreenSpace>;
+#[inline]
+pub fn vec2<T>(x: T, y: T) -> Vector2<T> {
+  Vector2::new(x, y)
+}
 
-/// A representation of world space.
-pub struct WorldSpace;
-
-pub type WorldPoint<T> = Point3D<T, WorldSpace>;
-pub type WorldSize<T> = Size3D<T, WorldSpace>;
-pub type WorldRect<T> = Rect<T, WorldSpace>;
-
-pub type ProjectionMatrix = Transform3D<f32, WorldSpace, ScreenSpace>;
-
-// Convenience factories
-#[inline] pub fn vec2<T : Default>(x: T, y: T) -> WorldPoint<T> { WorldPoint::new(x, y, T::default()) }
-#[inline] pub fn vec3<T : Default>(x: T, y: T, z: T) -> WorldPoint<T> { WorldPoint::new(x, y, z) }
+#[inline]
+pub fn vec3<T>(x: T, y: T, z: T) -> Vector3<T> {
+  Vector3::new(x, y, z)
+}
