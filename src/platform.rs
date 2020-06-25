@@ -5,8 +5,9 @@
 use std::time::Instant;
 
 use sdl2::event::Event;
+use sdl2::render::WindowCanvas;
 
-use crate::graphics::Color;
+use crate::graphics::{Color, GraphicsDevice};
 use crate::utilities::Clock;
 
 // TODO: think about how to implement hot-reloading and other niceties
@@ -15,7 +16,6 @@ use crate::utilities::Clock;
 pub struct Config<S> {
   pub title: &'static str,
   pub size: (u32, u32),
-  pub clear_color: Color,
   pub max_delta: f32,
   pub state: S,
 }
@@ -24,7 +24,17 @@ pub struct Config<S> {
 ///
 /// This hides the inner implementation details of Luminance and makes
 /// it simpler to get sprites on the screen.
-pub struct Frame {}
+pub struct Frame<'a> {
+  canvas: &'a mut WindowCanvas,
+}
+
+impl<'a> GraphicsDevice for Frame<'a> {
+  fn clear(&mut self, color: Color) {
+    let color: (u8, u8, u8, u8) = color.into();
+    self.canvas.set_draw_color(color);
+    self.canvas.clear();
+  }
+}
 
 /// Contains information on the game's timing state.
 #[derive(Copy, Clone, Debug)]
@@ -70,12 +80,11 @@ pub fn run<S, I, U, D>(
       delta_time: clock.tick(Instant::now().elapsed().as_secs(), 60),
     };
 
-    canvas.clear();
-    canvas.set_draw_color((255, 255, 255));
+    let frame = Frame { canvas: &mut canvas };
 
     input(&mut config.state, time);
     update(&mut config.state, time);
-    draw(&mut config.state, time, Frame {});
+    draw(&mut config.state, time, frame);
 
     canvas.present();
   }

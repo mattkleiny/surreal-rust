@@ -33,6 +33,12 @@ impl Color {
   }
 }
 
+impl Into<(u8, u8, u8, u8)> for Color {
+  fn into(self) -> (u8, u8, u8, u8) {
+    (self.r, self.g, self.b, self.a)
+  }
+}
+
 impl Into<[f32; 4]> for Color {
   fn into(self) -> [f32; 4] {
     [
