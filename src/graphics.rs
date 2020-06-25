@@ -15,7 +15,7 @@ pub use colors::*;
 pub use images::*;
 pub use sprites::*;
 
-use crate::core::RID;
+use crate::RID;
 
 mod colors;
 mod images;

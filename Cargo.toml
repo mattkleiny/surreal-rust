@@ -10,13 +10,6 @@ opt-level = 2
 [profile.release.build-override]
 opt-level = 0
 
-[features]
-default = ["editor", "graphics", "scripting", "ui"]
-editor = ["ui"]
-graphics = []
-scripting = []
-ui = []
-
 [dependencies]
 cgmath = "0.17.0"
 enumflags2 = "0.6.4"

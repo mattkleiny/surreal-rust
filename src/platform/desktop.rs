@@ -5,13 +5,12 @@ use sdl2::event::Event;
 use sdl2::render::WindowCanvas;
 
 use crate::audio::*;
-use crate::core::RID;
 use crate::graphics::*;
 use crate::input::*;
+use crate::RID;
 
 use super::*;
 
-/// Configuration for the desktop platform.
 pub struct Configuration {
   pub title: &'static str,
   pub size: (u32, u32),

@@ -1,5 +1,5 @@
-use crate::core::RID;
 use crate::graphics::{GraphicsServer, TextureError};
+use crate::RID;
 
 /// An efficient batch of sprites for rendering by some provider.
 pub struct SpriteBatch {
