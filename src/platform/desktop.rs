@@ -6,12 +6,11 @@ use sdl2::{EventPump, Sdl, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::render::WindowCanvas;
 
-use crate::audio::*;
-use crate::graphics::*;
-use crate::input::*;
+use crate::audio::{AudioServer, AudioSourceError};
+use crate::graphics::{Color, GraphicsServer, Image, TextureError};
+use crate::input::{InputServer, Key};
+use crate::platform::{Platform, PlatformError};
 use crate::RID;
-
-use super::*;
 
 pub struct Configuration {
   pub title: &'static str,
@@ -100,7 +99,7 @@ impl AudioServer for DesktopPlatform {
 }
 
 impl GraphicsServer for DesktopPlatform {
-  fn clear(&mut self, color: Color) {
+  fn clear_active_framebuffer(&mut self, color: Color) {
     let color: (u8, u8, u8, u8) = color.into();
 
     self.canvas.set_draw_color(color);

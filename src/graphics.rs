@@ -26,7 +26,8 @@ mod sprites;
 // TODO: take inspiration from other engines, perhaps
 
 pub trait GraphicsServer {
-  fn clear(&mut self, color: Color);
+  fn clear_active_framebuffer(&mut self, color: Color);
+
   fn create_texture(&mut self) -> Result<RID, TextureError>;
   fn create_texture_from_image<P>(&mut self, image: &Image<P>) -> Result<RID, TextureError>;
   fn upload_texture_data<P>(&mut self, id: RID, image: &Image<P>) -> Result<(), TextureError>;

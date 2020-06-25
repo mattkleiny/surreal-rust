@@ -1,6 +1,6 @@
 //! Editor support for the engine.
 //!
-//! Editor support is non-intrusive and instead works through a single interface into the core
+//! This module is non-intrusive and instead works through a single interface into the core
 //! game state. Implementing the `Interface` trait on your game state will allow the internal
 //! mechanics enough information about the game state to provide editor functionality.
 
