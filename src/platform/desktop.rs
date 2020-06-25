@@ -1,5 +1,7 @@
 //! A platform implementation for desktop PCs.
 
+use std::collections::HashSet;
+
 use sdl2::{EventPump, Sdl, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::render::WindowCanvas;
@@ -17,10 +19,16 @@ pub struct Configuration {
 }
 
 pub struct DesktopPlatform {
+  // core state
   context: Sdl,
+  event_pump: EventPump,
+
+  // graphics and rendering
   video: VideoSubsystem,
   canvas: WindowCanvas,
-  event_pump: EventPump,
+
+  // input management
+  pressed_keys: HashSet<sdl2::keyboard::Keycode>,
 }
 
 impl DesktopPlatform {
@@ -42,9 +50,10 @@ impl DesktopPlatform {
 
     Ok(DesktopPlatform {
       context,
+      event_pump,
       video,
       canvas,
-      event_pump,
+      pressed_keys: HashSet::new(),
     })
   }
 }
@@ -54,17 +63,27 @@ impl Platform for DesktopPlatform {
   type Graphics = DesktopPlatform;
   type Input = DesktopPlatform;
 
-  fn run(&mut self, mut callback: impl FnMut(&mut Self)) {
+  fn run(&mut self, mut callback: impl FnMut(&mut Self) -> bool) {
     'running: loop {
       for event in self.event_pump.poll_iter() {
         match event {
           Event::Quit { .. } => break 'running,
+          Event::KeyDown { keycode: Some(keycode), .. } => {
+            self.pressed_keys.insert(keycode);
+          }
+          Event::KeyUp { keycode: Some(keycode), .. } => {
+            self.pressed_keys.remove(&keycode);
+          }
           _ => {}
         }
       };
 
       self.canvas.clear();
-      callback(self);
+
+      if !callback(self) {
+        break 'running;
+      }
+
       self.canvas.present();
     }
   }
@@ -101,7 +120,11 @@ impl GraphicsServer for DesktopPlatform {
   }
 }
 
-impl InputServer for DesktopPlatform {}
+impl InputServer for DesktopPlatform {
+  fn is_key_pressed(&self, key: Key) -> bool {
+    self.pressed_keys.contains(&key)
+  }
+}
 
 impl From<String> for PlatformError {
   fn from(_: String) -> Self {

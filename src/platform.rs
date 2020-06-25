@@ -16,7 +16,7 @@ pub trait Platform {
   type Graphics: GraphicsServer;
   type Input: InputServer;
 
-  fn run(&mut self, callback: impl FnMut(&mut Self) -> ());
+  fn run(&mut self, callback: impl FnMut(&mut Self) -> bool);
   fn audio(&mut self) -> &mut Self::Audio;
   fn graphics(&mut self) -> &mut Self::Graphics;
   fn input(&mut self) -> &mut Self::Input;
