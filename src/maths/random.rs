@@ -1,11 +1,5 @@
 use rand::prelude::*;
 
-/// A type that can be randomly generated.
-pub trait RNG {
-  /// Generates a new random value of this type.
-  fn random(random: &mut Random) -> Self;
-}
-
 /// A seed for random generation.
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
 pub struct Seed(u64);
@@ -16,24 +10,30 @@ impl Seed {
     Self(random_u64())
   }
 
-  /// Converts the seed into an RNG.
+  /// Converts the seed into an `RandomGenerator`.
   #[inline]
-  pub fn to_random(&self) -> Random {
+  pub fn to_random(&self) -> RandomGenerator {
     if self.0 == 0 {
-      Random::new(random_u64())
+      RandomGenerator::new(random_u64())
     } else {
-      Random::new(self.0)
+      RandomGenerator::new(self.0)
     }
   }
 }
 
-/// A random number generator.
+/// A type that can be randomly generated.
+pub trait Random {
+  /// Generates a new random value of this type using the given generator.
+  fn random(generator: &mut RandomGenerator) -> Self;
+}
+
+/// A pseudo-random number generator.
 #[derive(Clone, Debug)]
-pub struct Random {
+pub struct RandomGenerator {
   rng: StdRng,
 }
 
-impl Random {
+impl RandomGenerator {
   pub fn new(seed: u64) -> Self {
     Self { rng: StdRng::seed_from_u64(seed) }
   }
@@ -48,12 +48,12 @@ impl Random {
   #[inline] pub fn next_i64(&mut self) -> i64 { self.rng.gen() }
   #[inline] pub fn next_f32(&mut self) -> f32 { self.rng.gen() }
   #[inline] pub fn next_f64(&mut self) -> f64 { self.rng.gen() }
-  #[inline] pub fn next<T: RNG>(&mut self) -> T { T::random(self) }
+  #[inline] pub fn next<T: Random>(&mut self) -> T { T::random(self) }
 }
 
-impl Default for Random {
+impl Default for RandomGenerator {
   fn default() -> Self {
-    Random::new(random_u64())
+    RandomGenerator::new(random_u64())
   }
 }
 

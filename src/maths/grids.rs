@@ -1,39 +1,40 @@
 use std::collections::HashMap;
 
-use smallvec::SmallVec;
-
 use crate::maths::{vec2, Vector2};
 
 /// A densely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct DenseGrid<T> {
-  width: u32,
-  height: u32,
+  width: usize,
+  height: usize,
   elements: Vec<T>,
 }
 
 impl<T: Clone> DenseGrid<T> {
-  pub fn new(width: u32, height: u32, default: T) -> Self {
-    Self {
-      width,
-      height,
-      elements: vec![default; (width * height) as usize],
-    }
+  pub fn new(width: usize, height: usize, default: T) -> Self {
+    Self { width, height, elements: vec![default; width * height] }
   }
 
   #[inline]
-  pub fn get(&self, x: u32, y: u32) -> &T {
-    let index = (x + y * self.width) as usize;
+  pub fn width(&self) -> usize { self.width }
 
-    // TODO: find a way to do this without panicking
-    &self.elements.get(index).expect(&format!("Out of bounds grid access at ({}, {})", x, y))
+  #[inline]
+  pub fn height(&self) -> usize { self.height }
+
+  #[inline]
+  pub fn get(&self, x: usize, y: usize) -> &T {
+    assert!(x < self.width);
+    assert!(y < self.height);
+
+    &self.elements[x + y * self.width]
   }
 
   #[inline]
-  pub fn set(&mut self, x: u32, y: u32, element: T) {
-    let index = (x + y * self.width) as usize;
+  pub fn set(&mut self, x: usize, y: usize, value: T) {
+    assert!(x < self.width);
+    assert!(y < self.height);
 
-    self.elements[index] = element;
+    self.elements[x + y * self.width] = value;
   }
 
   /// Fills the grid with the given value
@@ -54,58 +55,22 @@ pub struct SparseGrid<T> {
 
 impl<T> SparseGrid<T> {
   pub fn new() -> Self {
-    Self {
-      elements: HashMap::new(),
-    }
+    Self { elements: HashMap::new() }
   }
 
   #[inline]
-  pub fn get(&self, x: u32, y: u32) -> Option<&T> {
-    let point = vec2(x as i32, y as i32);
-
-    self.elements.get(&point)
+  pub fn get(&self, x: i32, y: i32) -> Option<&T> {
+    self.elements.get(&vec2(x, y))
   }
 
   #[inline]
-  pub fn set(&mut self, x: u32, y: u32, element: T) {
-    let point = vec2(x as i32, y as i32);
-
-    self.elements.insert(point, element);
+  pub fn set(&mut self, x: i32, y: i32, value: T) {
+    self.elements.insert(vec2(x, y), value);
   }
 
-  /// Clears the contents from the grid.
+  /// Clears the contents of the grid.
   pub fn clear(&mut self) {
     self.elements.clear();
-  }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum Neighbourhood {
-  VonNeumann,
-  Moore,
-}
-
-impl Neighbourhood {
-  pub fn get_adjacents(&self, point: Vector2<i32>) -> SmallVec<[Vector2<i32>; 8]> {
-    match self {
-      Neighbourhood::VonNeumann => smallvec![
-        vec2(point.x - 1, point.y),
-        vec2(point.x + 1, point.y),
-        vec2(point.x, point.y - 1),
-        vec2(point.x, point.y + 1),
-      ],
-      Neighbourhood::Moore => smallvec![
-        vec2(point.x - 1, point.y),
-        vec2(point.x + 1, point.y),
-        vec2(point.x, point.y - 1),
-        vec2(point.x, point.y + 1),
-
-        vec2(point.x - 1, point.y - 1),
-        vec2(point.x - 1, point.y + 1),
-        vec2(point.x + 1, point.y - 1),
-        vec2(point.x + 1, point.y + 1)
-      ]
-    }
   }
 }
 
@@ -150,11 +115,5 @@ mod tests {
     grid.clear();
 
     assert_eq!(grid.get(0, 0), None);
-  }
-
-  #[test]
-  fn neighbourhood_should_produce_valid_adjacent_points() {
-    assert_eq!(Neighbourhood::VonNeumann.get_adjacents(vec2(0, 0)).len(), 4);
-    assert_eq!(Neighbourhood::Moore.get_adjacents(vec2(0, 0)).len(), 8);
   }
 }

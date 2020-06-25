@@ -27,7 +27,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_produce_a_valid_mask() {
+  fn it_should_produce_a_valid_set() {
     let ns = Direction::North | Direction::South;
     let ew = Direction::East | Direction::West;
 

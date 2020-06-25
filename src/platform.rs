@@ -10,7 +10,6 @@ use luminance::pixel::*;
 use luminance::texture::*;
 use luminance_glfw::*;
 
-use crate::diagnostics::install_default_logger;
 use crate::utilities::Clock;
 
 // TODO: think about how to implement hot-reloading and other niceties
@@ -78,9 +77,6 @@ pub fn run<S, I, U, D>(
   where I: FnMut(&mut S, GameTime) -> (),
         U: FnMut(&mut S, GameTime) -> (),
         D: FnMut(&mut S, GameTime, Frame) -> () {
-  // configure logging, first of all
-  install_default_logger();
-
   // build our window, this thing also handles our window events
   let mut surface = GlfwSurface::new(
     WindowDim::Windowed(config.size.0, config.size.1),

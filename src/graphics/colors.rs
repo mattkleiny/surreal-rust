@@ -1,6 +1,8 @@
+//! Color space representations
+
 use std::ops::{Add, Sub};
 
-use crate::maths::{Lerp, Random, RNG};
+use crate::maths::{Lerp, RandomGenerator, Random};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[derive(Copy, Clone, Default, Eq, PartialEq, Debug)]
@@ -59,13 +61,13 @@ impl Sub for Color {
   }
 }
 
-impl RNG for Color {
-  fn random(random: &mut Random) -> Self {
+impl Random for Color {
+  fn random(generator: &mut RandomGenerator) -> Self {
     Color::RGBA(
-      random.next_u8(),
-      random.next_u8(),
-      random.next_u8(),
-      random.next_u8(),
+      generator.next_u8(),
+      generator.next_u8(),
+      generator.next_u8(),
+      generator.next_u8(),
     )
   }
 }
