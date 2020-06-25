@@ -25,8 +25,6 @@ pub mod platform;
 #[cfg(feature = "scripting")]
 pub mod scripting;
 pub mod utilities;
-#[cfg(feature = "ui")]
-pub mod ui;
 
 pub mod prelude {
   pub use crate::collections::*;
@@ -40,6 +38,4 @@ pub mod prelude {
   #[cfg(feature = "scripting")]
   pub use crate::scripting::*;
   pub use crate::utilities::*;
-  #[cfg(feature = "ui")]
-  pub use crate::ui::*;
 }
