@@ -6,12 +6,14 @@ use sdl2::{EventPump, Sdl, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::render::WindowCanvas;
 
-use crate::audio::{AudioServer, AudioSourceError};
-use crate::graphics::{Color, GraphicsServer, Image, TextureError};
-use crate::input::{InputServer, Key};
-use crate::platform::{Platform, PlatformError};
-use crate::RID;
+use super::*;
 
+mod audio;
+mod graphics;
+mod input;
+mod window;
+
+#[derive(Copy, Clone, Debug)]
 pub struct Configuration {
   pub title: &'static str,
   pub size: (u32, u32),
@@ -36,14 +38,14 @@ impl DesktopPlatform {
     let video = context.video()?;
 
     let window = video.window(config.title, config.size.0, config.size.1)
-        .position_centered()
-        .resizable()
-        .build()?;
+      .position_centered()
+      .resizable()
+      .build()?;
 
     let canvas = window.into_canvas()
-        .present_vsync()
-        .accelerated()
-        .build()?;
+      .present_vsync()
+      .accelerated()
+      .build()?;
 
     let event_pump = context.event_pump()?;
 
@@ -61,17 +63,23 @@ impl Platform for DesktopPlatform {
   type Audio = DesktopPlatform;
   type Graphics = DesktopPlatform;
   type Input = DesktopPlatform;
+  type Window = DesktopPlatform;
+
+  fn audio(&mut self) -> &mut Self::Audio { self }
+  fn graphics(&mut self) -> &mut Self::Graphics { self }
+  fn input(&mut self) -> &mut Self::Input { self }
+  fn window(&mut self) -> &mut Self::Window { self }
 
   fn run(&mut self, mut callback: impl FnMut(&mut Self) -> bool) {
     'running: loop {
       for event in self.event_pump.poll_iter() {
         match event {
           Event::Quit { .. } => break 'running,
-          Event::KeyDown { keycode: Some(keycode), .. } => {
-            self.pressed_keys.insert(keycode);
+          Event::KeyDown { keycode: Some(key), .. } => {
+            self.pressed_keys.insert(key);
           }
-          Event::KeyUp { keycode: Some(keycode), .. } => {
-            self.pressed_keys.remove(&keycode);
+          Event::KeyUp { keycode: Some(key), .. } => {
+            self.pressed_keys.remove(&key);
           }
           _ => {}
         }
@@ -86,59 +94,22 @@ impl Platform for DesktopPlatform {
       self.canvas.present();
     }
   }
-
-  fn audio(&mut self) -> &mut Self::Audio { self }
-  fn graphics(&mut self) -> &mut Self::Graphics { self }
-  fn input(&mut self) -> &mut Self::Input { self }
-}
-
-impl AudioServer for DesktopPlatform {
-  fn create_audio_source(&mut self) -> Result<RID, AudioSourceError> {
-    unimplemented!()
-  }
-}
-
-impl GraphicsServer for DesktopPlatform {
-  fn clear_active_framebuffer(&mut self, color: Color) {
-    let color: (u8, u8, u8, u8) = color.into();
-
-    self.canvas.set_draw_color(color);
-    self.canvas.clear();
-  }
-
-  fn create_texture(&mut self) -> Result<RID, TextureError> {
-    Ok(RID(0)) // TODO: implement me
-  }
-
-  fn create_texture_from_image<P>(&mut self, image: &Image<P>) -> Result<RID, TextureError> {
-    unimplemented!()
-  }
-
-  fn upload_texture_data<P>(&mut self, id: RID, image: &Image<P>) -> Result<(), TextureError> {
-    unimplemented!()
-  }
-}
-
-impl InputServer for DesktopPlatform {
-  fn is_key_pressed(&self, key: Key) -> bool {
-    self.pressed_keys.contains(&key)
-  }
 }
 
 impl From<String> for PlatformError {
   fn from(_: String) -> Self {
-    Self::FailedToCreate
+    PlatformError::GeneralFailure
   }
 }
 
 impl From<sdl2::video::WindowBuildError> for PlatformError {
   fn from(_: sdl2::video::WindowBuildError) -> Self {
-    Self::FailedToCreate
+    PlatformError::FailedToCreate
   }
 }
 
 impl From<sdl2::IntegerOrSdlError> for PlatformError {
   fn from(_: sdl2::IntegerOrSdlError) -> Self {
-    Self::FailedToCreate
+    PlatformError::GeneralFailure
   }
 }

@@ -56,9 +56,7 @@ pub struct FrameCounter {
 
 impl FrameCounter {
   pub fn new(samples: usize) -> Self {
-    Self {
-      samples: RingBuffer::new(samples),
-    }
+    Self { samples: RingBuffer::new(samples) }
   }
 
   pub fn tick(&mut self, delta_time: f32) {

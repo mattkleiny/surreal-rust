@@ -3,27 +3,30 @@
 use crate::audio::AudioServer;
 use crate::graphics::GraphicsServer;
 use crate::input::InputServer;
+use crate::window::WindowServer;
 
 pub mod desktop;
 
-/// Represents a platform for game development.
-///
-/// Implementation of this trait provide servers for the various sub-systems that a game needs.
 pub trait Platform {
   type Audio: AudioServer;
   type Graphics: GraphicsServer;
   type Input: InputServer;
+  type Window: WindowServer;
 
-  fn run(&mut self, callback: impl FnMut(&mut Self) -> bool);
   fn audio(&mut self) -> &mut Self::Audio;
   fn graphics(&mut self) -> &mut Self::Graphics;
   fn input(&mut self) -> &mut Self::Input;
+  fn window(&mut self) -> &mut Self::Window;
+
+  /// Runs platform, invoking the given callback when available to process the
+  /// next frame.
+  fn run(&mut self, callback: impl FnMut(&mut Self) -> bool);
 }
 
-/// Represents a general error in the underlying platform.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PlatformError {
-  FailedToCreate
+  GeneralFailure,
+  FailedToCreate,
 }
 
 impl From<PlatformError> for crate::Error {

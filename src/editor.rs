@@ -6,9 +6,9 @@
 
 // TODO: think about how to render a basic editor interface (maybe using a widget framework like Conrod)?
 // TODO: think about editor state, how to get the editor access to the GameState structure.
-// TODO: think about how the editor can fetch and access entity information and emit changes
-//       to components
+// TODO: think about how the editor can fetch and access entity information and emit changes to components
 // TODO: think about how to implement hot-reloading and other niceties
+// TODO: think about
 
 use std::rc::Rc;
 
@@ -16,18 +16,19 @@ use crate::graphics::Color;
 use crate::maths::{Vector2, Vector3};
 
 /// Primary interface for the editor to access game state.
-pub trait Editor {
-  type ID;
-
-  fn query_scene_objects(&self) -> Vec<Object<Self::ID>>;
+pub trait EditorAccess {
+  fn query_scene_objects(&self) -> Vec<Object>;
 }
 
+/// Identifies this game object uniquely amongst it's peers.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct ObjectID(usize);
+
 /// Contains information about a single object in the game's world.
-///
-/// This information permits the editor to read/write property information directly into the game.
+/// This permits the editor to read/write properties directly in the game.
 #[derive(Clone, Debug)]
-pub struct Object<ID> {
-  pub id: ID,
+pub struct Object {
+  pub id: ObjectID,
   pub prop: Vec<Property>,
 }
 

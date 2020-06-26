@@ -5,33 +5,14 @@
 // TODO: implement broadcast groups (ala Godot) to allow simple event-like system.
 // TODO: support 'interactive debugging' using an in-game console.
 
-use rlua::prelude::*;
+#[cfg(feature = "lua")]
+pub use lua::*;
 
-/// A simple script engine built with Lua.
-pub struct ScriptEngine {
-  lua: Lua
-}
+#[cfg(feature = "kismet")]
+pub use kismet::*;
 
-impl ScriptEngine {
-  pub fn new() -> Self {
-    Self { lua: Lua::new() }
-  }
+#[cfg(feature = "lua")]
+mod lua;
 
-  pub fn execute<S: AsRef<str>>(&self, code: S) {
-    self.lua.context(|lua| {
-      lua.load(code.as_ref()).eval().unwrap_or_else(|_| panic!("Failed to execute!"));
-    })
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn it_should_execute_simple_scripts() {
-    let engine = ScriptEngine::new();
-
-    engine.execute("print 'Hello, World!'");
-  }
-}
+#[cfg(feature = "kismet")]
+mod kismet;
