@@ -12,17 +12,21 @@
 
 use std::rc::Rc;
 
-use crate::graphics::Color;
+use crate::graphics::{Canvas, Color};
 use crate::maths::{Vector2, Vector3};
 
 /// Provides editor functionality to a game.
 pub struct Editor {
+  canvas: Canvas,
   plugins: Vec<Box<dyn EditorPlugin>>,
 }
 
 impl Editor {
   pub fn new() -> Self {
-    Self { plugins: Vec::new() }
+    Self {
+      canvas: Canvas::new(),
+      plugins: Vec::new(),
+    }
   }
 }
 
@@ -37,7 +41,7 @@ pub trait EditorPlugin {}
 pub trait Object {
   fn get(&self, name: impl AsRef<str>) -> Result<Variant, ObjectError>;
   fn set(&mut self, name: impl AsRef<str>, value: Variant) -> Result<(), ObjectError>;
-  fn properties(&self) -> &[Property];
+  fn props(&self) -> &[Property];
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -71,25 +75,5 @@ pub enum Variant {
   Vector2(Vector2<f32>),
   Vector3(Vector3<f32>),
   Color(Color),
-  PooledArrayBool(PooledArray<bool>),
-  PooledArrayByte(PooledArray<u8>),
-  PooledArrayInt(PooledArray<i64>),
-  PooledArrayFloat(PooledArray<f64>),
 }
 
-#[derive(Clone, Debug)]
-pub struct PooledArray<T: 'static> {
-  data: &'static [T]
-}
-
-impl<T: 'static> PooledArray<T> {
-  pub fn allocate(capacity: usize) -> Self {
-    unimplemented!()
-  }
-}
-
-impl<T> Drop for PooledArray<T> {
-  fn drop(&mut self) {
-    unimplemented!()
-  }
-}
