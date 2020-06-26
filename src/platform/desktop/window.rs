@@ -6,7 +6,7 @@ use super::DesktopPlatform;
 
 impl WindowServer for DesktopPlatform {
   fn set_title(&mut self, title: impl AsRef<str>) -> Result<(), WindowError> {
-    Ok(self.canvas.window_mut().set_title(title.as_ref())?)
+    Ok(self.window.set_title(title.as_ref())?)
   }
 }
 

@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use sdl2::{EventPump, Sdl, VideoSubsystem};
 use sdl2::event::Event;
-use sdl2::render::WindowCanvas;
+use sdl2::video::{GLContext, Window};
 
 use super::*;
 
@@ -22,11 +22,17 @@ pub struct Configuration {
 pub struct DesktopPlatform {
   // core state
   context: Sdl,
+  gl_context: GLContext,
   event_pump: EventPump,
 
   // graphics and rendering
   video: VideoSubsystem,
-  canvas: WindowCanvas,
+  window: Window,
+
+  // imgui
+  imgui: imgui::Context,
+  imgui_sdl2: imgui_sdl2::ImguiSdl2,
+  imgui_renderer: imgui_opengl_renderer::Renderer,
 
   // input management
   pressed_keys: HashSet<sdl2::keyboard::Keycode>,
@@ -40,20 +46,34 @@ impl DesktopPlatform {
     let window = video.window(config.title, config.size.0, config.size.1)
       .position_centered()
       .resizable()
+      .opengl()
+      .allow_highdpi()
       .build()?;
 
-    let canvas = window.into_canvas()
-      .present_vsync()
-      .accelerated()
-      .build()?;
+    let gl_context = window.gl_create_context()?;
+    gl::load_with(|s| video.gl_get_proc_address(s) as _);
+
+    let mut imgui = imgui::Context::create();
+
+    imgui.set_ini_filename(None);
+
+    let imgui_sdl2 = imgui_sdl2::ImguiSdl2::new(&mut imgui, &window);
+    let imgui_renderer = imgui_opengl_renderer::Renderer::new(&mut imgui, |s| video.gl_get_proc_address(s) as _);
 
     let event_pump = context.event_pump()?;
 
     Ok(DesktopPlatform {
       context,
+      gl_context,
       event_pump,
+
       video,
-      canvas,
+      window,
+
+      imgui,
+      imgui_sdl2,
+      imgui_renderer,
+
       pressed_keys: HashSet::new(),
     })
   }
@@ -73,6 +93,9 @@ impl Platform for DesktopPlatform {
   fn run(&mut self, mut callback: impl FnMut(&mut Self) -> bool) {
     'running: loop {
       for event in self.event_pump.poll_iter() {
+        self.imgui_sdl2.handle_event(&mut self.imgui, &event);
+        if self.imgui_sdl2.ignore_event(&event) { continue; }
+
         match event {
           Event::Quit { .. } => break 'running,
           Event::KeyDown { keycode: Some(key), .. } => {
@@ -85,13 +108,23 @@ impl Platform for DesktopPlatform {
         }
       };
 
-      self.canvas.clear();
+      self.imgui_sdl2.prepare_frame(
+        self.imgui.io_mut(),
+        &self.window,
+        &self.event_pump.mouse_state(),
+      );
 
       if !callback(self) {
         break 'running;
       }
 
-      self.canvas.present();
+      let frame = self.imgui.frame();
+      frame.show_demo_window(&mut true);
+
+      self.imgui_sdl2.prepare_render(&frame, &self.window);
+      self.imgui_renderer.render(frame);
+
+      self.window.gl_swap_window();
     }
   }
 }
