@@ -26,12 +26,14 @@ impl GraphicsServer for DesktopPlatform {
 
 #[cfg(feature = "shady")]
 mod shady {
+  use crate::graphics::shady::AST;
+
   use super::*;
 
   impl crate::graphics::shady::Compiler for DesktopPlatform {
     type Error = GraphicsError;
 
-    fn compile(&mut self) -> Result<ShaderProgram, Self::Error> {
+    fn compile(&mut self, ast: &AST) -> Result<Shader, Self::Error> {
       unimplemented!()
     }
   }

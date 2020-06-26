@@ -1,16 +1,9 @@
 # TODO
 
-* Asset packing
-* Asset management
-* Animation graphs
-* Sprite batching
-* Mesh rendering
-* Shader management
-* Shader reloading
-* Texture management
-* Texture reloading
-* Texture atlases
-* Script abstractions and hot reloading
+* Animation graphs?
+* Scripting graphs?
+* Texture loading and hot reloading?
+* Shader language abstractions and hot reloading?
+* Script abstractions and hot reloading?
+* Virtual file system? streaming and packed representations? memory mapping?
 
-Consider API designs from libgdx/monogame and friends.
-Consider API design from Godot.
