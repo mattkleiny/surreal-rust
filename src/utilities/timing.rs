@@ -67,7 +67,7 @@ impl FrameCounter {
     let mut total_frame_time = 0.;
 
     for sample in self.samples.iter() {
-      total_frame_time += *sample;
+      total_frame_time += sample;
     }
 
     total_frame_time / self.samples.occupied() as f32

@@ -34,7 +34,7 @@ pub struct DesktopPlatform {
   imgui_sdl2: imgui_sdl2::ImguiSdl2,
   imgui_renderer: imgui_opengl_renderer::Renderer,
 
-  // input management
+  // state management
   pressed_keys: HashSet<sdl2::keyboard::Keycode>,
 }
 

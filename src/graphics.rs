@@ -14,6 +14,7 @@ mod sprites;
 
 // TODO: support resources (that can be serialized to disk)?
 // TODO: take inspiration from other engines, perhaps
+// TODO: build this on top of WGPU?
 
 pub trait GraphicsServer {
   // frame buffers

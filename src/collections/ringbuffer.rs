@@ -21,7 +21,7 @@ impl<T: Clone> RingBuffer<T> {
   /// The total capacity of the buffer.
   #[inline]
   pub fn capacity(&self) -> usize {
-    self.elements.len() 
+    self.elements.len()
   }
 
   /// The number of elements currently occupying the buffer.
@@ -57,7 +57,7 @@ impl<T: Clone> RingBuffer<T> {
   pub fn iter(&self) -> RingBufferIterator<T> {
     RingBufferIterator {
       buffer: self,
-      index: 0,
+      index: self.write_pos,
       touched: 0,
     }
   }
@@ -72,20 +72,22 @@ pub struct RingBufferIterator<'a, T> {
 }
 
 impl<'a, T: Clone> Iterator for RingBufferIterator<'a, T> {
-  type Item = &'a T;
+  type Item = T;
 
   fn next(&mut self) -> Option<Self::Item> {
-    // iterate backwards, wrapping around the list
-    if self.index <= 1 {
-      self.index = self.buffer.capacity() - 1;
+    if self.index == 0 {
+      self.index = self.buffer.occupied() - 1;
     } else {
       self.index -= 1;
     }
 
-    // count the number of elements skipped
-    self.touched += 1;
     if self.touched < self.buffer.occupied() {
-      self.buffer.elements[self.index].as_ref()
+      self.touched += 1;
+
+      match &self.buffer.elements[self.index] {
+        Some(item) => Some(item.clone()),
+        None => None
+      }
     } else {
       None
     }
@@ -98,7 +100,7 @@ mod tests {
 
   #[test]
   fn it_should_append_elements() {
-    let mut buffer = RingBuffer::<u32>::new(16);
+    let mut buffer = RingBuffer::new(16);
 
     for i in 0..1000 {
       buffer.append(i);
@@ -109,7 +111,7 @@ mod tests {
 
   #[test]
   fn it_should_clear_elements() {
-    let mut buffer = RingBuffer::<u32>::new(16);
+    let mut buffer = RingBuffer::new(16);
 
     for i in 0..1000 {
       buffer.append(i);
@@ -118,5 +120,22 @@ mod tests {
     buffer.clear();
 
     assert_eq!(buffer.occupied(), 0);
+  }
+
+  #[test]
+  fn it_should_iterate_backwards() {
+    let mut buffer: RingBuffer<u32> = RingBuffer::new(16);
+
+    buffer.append(1);
+    buffer.append(2);
+    buffer.append(3);
+    buffer.append(4);
+
+    let results: Vec<u32> = buffer.iter().collect();
+
+    assert_eq!(results[0], 4);
+    assert_eq!(results[1], 3);
+    assert_eq!(results[2], 2);
+    assert_eq!(results[3], 1);
   }
 }
