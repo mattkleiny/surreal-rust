@@ -8,28 +8,41 @@
 // TODO: think about editor state, how to get the editor access to the GameState structure.
 // TODO: think about how the editor can fetch and access entity information and emit changes to components
 // TODO: think about how to implement hot-reloading and other niceties
-// TODO: think about
+// TODO: pooled arrays of primitive types and pooled allocator?
 
 use std::rc::Rc;
 
 use crate::graphics::Color;
 use crate::maths::{Vector2, Vector3};
 
-/// Primary interface for the editor to access game state.
-pub trait EditorAccess {
-  fn query_scene_objects(&self) -> Vec<Object>;
+/// Provides editor functionality to a game.
+pub struct Editor {
+  plugins: Vec<Box<dyn EditorPlugin>>,
 }
 
-/// Identifies this game object uniquely amongst it's peers.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct ObjectID(usize);
+impl Editor {
+  pub fn new() -> Self {
+    Self { plugins: Vec::new() }
+  }
+}
+
+/// Primary interface for the editor to access game state.
+pub trait EditorAccess {}
+
+/// A plugin for the editor that can extend it's functionality holistically.
+pub trait EditorPlugin {}
 
 /// Contains information about a single object in the game's world.
 /// This permits the editor to read/write properties directly in the game.
-#[derive(Clone, Debug)]
-pub struct Object {
-  pub id: ObjectID,
-  pub prop: Vec<Property>,
+pub trait Object {
+  fn get(&self, name: impl AsRef<str>) -> Result<Variant, ObjectError>;
+  fn set(&mut self, name: impl AsRef<str>, value: Variant) -> Result<(), ObjectError>;
+  fn properties(&self) -> &[Property];
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum ObjectError {
+  PropertyNotFound
 }
 
 #[derive(Clone, Debug)]
@@ -48,7 +61,7 @@ pub enum PropertyUsage {
   Normal = 1 << 0,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum Variant {
   Nil,
   Bool(bool),
@@ -58,4 +71,25 @@ pub enum Variant {
   Vector2(Vector2<f32>),
   Vector3(Vector3<f32>),
   Color(Color),
+  PooledArrayBool(PooledArray<bool>),
+  PooledArrayByte(PooledArray<u8>),
+  PooledArrayInt(PooledArray<i64>),
+  PooledArrayFloat(PooledArray<f64>),
+}
+
+#[derive(Clone, Debug)]
+pub struct PooledArray<T: 'static> {
+  data: &'static [T]
+}
+
+impl<T: 'static> PooledArray<T> {
+  pub fn allocate(capacity: usize) -> Self {
+    unimplemented!()
+  }
+}
+
+impl<T> Drop for PooledArray<T> {
+  fn drop(&mut self) {
+    unimplemented!()
+  }
 }

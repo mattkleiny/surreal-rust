@@ -44,11 +44,11 @@ impl DesktopPlatform {
     let video = context.video()?;
 
     let window = video.window(config.title, config.size.0, config.size.1)
-      .position_centered()
-      .resizable()
-      .opengl()
-      .allow_highdpi()
-      .build()?;
+        .position_centered()
+        .resizable()
+        .opengl()
+        .allow_highdpi()
+        .build()?;
 
     let gl_context = window.gl_create_context()?;
     gl::load_with(|s| video.gl_get_proc_address(s) as _);
@@ -80,10 +80,10 @@ impl DesktopPlatform {
 }
 
 impl Platform for DesktopPlatform {
-  type Audio = DesktopPlatform;
-  type Graphics = DesktopPlatform;
-  type Input = DesktopPlatform;
-  type Window = DesktopPlatform;
+  type Audio = Self;
+  type Graphics = Self;
+  type Input = Self;
+  type Window = Self;
 
   fn audio(&mut self) -> &mut Self::Audio { self }
   fn graphics(&mut self) -> &mut Self::Graphics { self }
@@ -119,7 +119,12 @@ impl Platform for DesktopPlatform {
       }
 
       let frame = self.imgui.frame();
-      frame.show_demo_window(&mut true);
+
+      frame.plot_histogram(im_str!("FPS"), &[0.25; 32])
+          .scale_min(0.)
+          .scale_max(100.)
+          .graph_size([100., 100.])
+          .build();
 
       self.imgui_sdl2.prepare_render(&frame, &self.window);
       self.imgui_renderer.render(frame);

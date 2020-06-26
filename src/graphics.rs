@@ -1,5 +1,6 @@
 //! A lightweight and fast cross-platform graphics engine.
 
+pub use canvas::*;
 pub use colors::*;
 pub use images::*;
 pub use shaders::*;
@@ -7,6 +8,7 @@ pub use sprites::*;
 
 use crate::RID;
 
+mod canvas;
 mod colors;
 mod images;
 mod shaders;
