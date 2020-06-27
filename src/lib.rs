@@ -1,8 +1,7 @@
 //! A lightweight game engine for Rust.
 //!
 //! Surreal is designed to be a simple and flexible game engine, not unlike
-//! libGDX or MonoGame. We also take some inspiration from Godot (learning from
-//! the best :D).
+//! libGDX or MonoGame.
 //! 
 //! It's opinionated, but small in scope and is intended to form a solid
 //! 'library'-like toolkit for constructing small, but fast 2d games (and maybe
@@ -17,9 +16,9 @@ extern crate enumflags2;
 #[macro_use]
 extern crate smallvec;
 
+pub mod assets;
 pub mod audio;
 pub mod collections;
-pub mod core;
 pub mod diagnostics;
 pub mod editor;
 pub mod graphics;
@@ -29,11 +28,12 @@ pub mod platform;
 pub mod scripting;
 pub mod utilities;
 pub mod window;
+pub mod vfs;
 
 /// A handle for a resource created by one of the platform servers.
 ///
-/// Resource IDs can be passed around the application to represent shared platform components,
-/// without having to have a pointer back to the original provider.
+/// Resource IDs can be passed around the application to represent shared
+/// platform components without having to have a pointer back to the original provider.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct RID(pub(crate) u32);
 
@@ -49,6 +49,7 @@ pub enum Error {
 }
 
 pub mod prelude {
+  pub use crate::assets::*;
   pub use crate::audio::*;
   pub use crate::collections::*;
   pub use crate::diagnostics::*;
@@ -60,6 +61,7 @@ pub mod prelude {
   pub use crate::scripting::*;
   pub use crate::utilities::*;
   pub use crate::window::*;
+  pub use crate::vfs::*;
 
   pub use super::Error as SurrealError;
 }

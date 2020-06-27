@@ -2,6 +2,29 @@ use smallvec::SmallVec;
 
 use crate::maths::{vec2, Vector2};
 
+pub fn von_neumann_neighbourhood(center: Vector2<i32>) -> SmallVec<[Vector2<i32>; 4]> {
+  smallvec![
+    vec2(center.x - 1, center.y), // left
+    vec2(center.x + 1, center.y), // right
+    vec2(center.x, center.y - 1), // bottom
+    vec2(center.x, center.y + 1), // top
+  ]
+}
+
+pub fn moore_neighbourhood(center: Vector2<i32>) -> SmallVec<[Vector2<i32>; 8]> {
+  smallvec![
+    vec2(center.x - 1, center.y), // left
+    vec2(center.x + 1, center.y), // right
+    vec2(center.x, center.y - 1), // bottom
+    vec2(center.x, center.y + 1), // top
+
+    vec2(center.x - 1, center.y - 1), // bottom left
+    vec2(center.x - 1, center.y + 1), // top left
+    vec2(center.x + 1, center.y - 1), // bottom right
+    vec2(center.x + 1, center.y + 1) // top right
+  ]
+}
+
 /// A classification of neighbourhoods for grid traversal and simulation.
 #[derive(Copy, Clone, Debug)]
 pub enum Neighbourhood {
@@ -12,41 +35,41 @@ pub enum Neighbourhood {
 }
 
 impl Neighbourhood {
-  pub fn get_neighbours(&self, point: Vector2<i32>) -> SmallVec<[Vector2<i32>; 9]> {
+  pub fn get_neighbours(&self, center: Vector2<i32>) -> SmallVec<[Vector2<i32>; 9]> {
     match self {
       Neighbourhood::VonNeumann => smallvec![
-        vec2(point.x - 1, point.y), // left
-        vec2(point.x + 1, point.y), // right
-        vec2(point.x, point.y - 1), // bottom
-        vec2(point.x, point.y + 1), // top
+        vec2(center.x - 1, center.y), // left
+        vec2(center.x + 1, center.y), // right
+        vec2(center.x, center.y - 1), // bottom
+        vec2(center.x, center.y + 1), // top
       ],
       Neighbourhood::VonNeumannInclusive => smallvec![
-        vec2(point.x - 1, point.y), // left
-        vec2(point.x + 1, point.y), // right
-        vec2(point.x, point.y), // center
-        vec2(point.x, point.y - 1), // bottom
-        vec2(point.x, point.y + 1), // top
+        vec2(center.x - 1, center.y), // left
+        vec2(center.x + 1, center.y), // right
+        vec2(center.x, center.y), // center
+        vec2(center.x, center.y - 1), // bottom
+        vec2(center.x, center.y + 1), // top
       ],
       Neighbourhood::Moore => smallvec![
-        vec2(point.x - 1, point.y), // left
-        vec2(point.x + 1, point.y), // right
-        vec2(point.x, point.y - 1), // bottom
-        vec2(point.x, point.y + 1), // top
-        vec2(point.x - 1, point.y - 1), // bottom left
-        vec2(point.x - 1, point.y + 1), // top left
-        vec2(point.x + 1, point.y - 1), // bottom right
-        vec2(point.x + 1, point.y + 1) // top right
+        vec2(center.x - 1, center.y), // left
+        vec2(center.x + 1, center.y), // right
+        vec2(center.x, center.y - 1), // bottom
+        vec2(center.x, center.y + 1), // top
+        vec2(center.x - 1, center.y - 1), // bottom left
+        vec2(center.x - 1, center.y + 1), // top left
+        vec2(center.x + 1, center.y - 1), // bottom right
+        vec2(center.x + 1, center.y + 1) // top right
       ],
       Neighbourhood::MooreInclusive => smallvec![
-        vec2(point.x - 1, point.y), // left
-        vec2(point.x + 1, point.y), // right
-        vec2(point.x, point.y - 1), // bottom
-        vec2(point.x, point.y + 1), // top
-        vec2(point.x, point.y), // center
-        vec2(point.x - 1, point.y - 1), // bottom left
-        vec2(point.x - 1, point.y + 1), // top left
-        vec2(point.x + 1, point.y - 1), // bottom right
-        vec2(point.x + 1, point.y + 1) // top right
+        vec2(center.x - 1, center.y), // left
+        vec2(center.x + 1, center.y), // right
+        vec2(center.x, center.y - 1), // bottom
+        vec2(center.x, center.y + 1), // top
+        vec2(center.x, center.y), // center
+        vec2(center.x - 1, center.y - 1), // bottom left
+        vec2(center.x - 1, center.y + 1), // top left
+        vec2(center.x + 1, center.y - 1), // bottom right
+        vec2(center.x + 1, center.y + 1) // top right
       ],
     }
   }

@@ -1,3 +1,13 @@
+pub type AxisSet = enumflags2::BitFlags<Axis>;
+
+/// Represents an axis.
+#[repr(u8)]
+#[derive(BitFlags, Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum Axis {
+  Horizontal = 1 << 0,
+  Vertical = 1 << 1,
+}
+
 /// A set of directions.
 pub type DirectionSet = enumflags2::BitFlags<Direction>;
 

@@ -1,11 +1,11 @@
-use crate::maths::{vec2, Vector2};
+use crate::maths::Vector2;
 
-pub const LINEAR: Line = Line::new(vec2(0., 0.), vec2(1., 1.));
-
-pub trait Curve {
-  fn evaluate(&self, t: f32) -> f32;
+/// Represents a curve on a plane in 2-space.
+pub trait PlanarCurve {
+  fn sample(&self, t: f32) -> Vector2<f32>;
 }
 
+/// A linear curve in 2-space.
 #[derive(Copy, Clone, Debug)]
 pub struct Line {
   from: Vector2<f32>,
@@ -18,23 +18,35 @@ impl Line {
   }
 }
 
-impl Curve for Line {
+impl PlanarCurve for Line {
   #[inline]
-  fn evaluate(&self, t: f32) -> f32 {
+  fn sample(&self, t: f32) -> Vector2<f32> {
     unimplemented!()
   }
 }
 
+/// A simple representation of bezier curves in 2-space.
 #[derive(Copy, Clone, Debug)]
-pub struct Bezier {
-  pub point1: Vector2<f32>,
-  pub point2: Vector2<f32>,
-  pub control: Vector2<f32>,
+pub enum Bezier {
+  Quadratic {
+    start: Vector2<f32>,
+    control: Vector2<f32>,
+    end: Vector2<f32>,
+  },
+  Cubic {
+    start: Vector2<f32>,
+    control: Vector2<f32>,
+    control2: Vector2<f32>,
+    end: Vector2<f32>,
+  },
 }
 
-impl Curve for Bezier {
+impl PlanarCurve for Bezier {
   #[inline]
-  fn evaluate(&self, t: f32) -> f32 {
-    unimplemented!()
+  fn sample(&self, t: f32) -> Vector2<f32> {
+    match self {
+      Bezier::Quadratic { .. } => unimplemented!(),
+      Bezier::Cubic { .. } => unimplemented!(),
+    }
   }
 }

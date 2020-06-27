@@ -1,20 +1,24 @@
 //! A lightweight and fast cross-platform graphics engine.
 
+pub use buffers::*;
 pub use canvas::*;
 pub use colors::*;
 pub use images::*;
 pub use rendering::*;
 pub use shaders::*;
 pub use sprites::*;
+pub use textures::*;
 
 use crate::RID;
 
+mod buffers;
 mod canvas;
 mod colors;
 mod images;
 mod rendering;
 mod shaders;
 mod sprites;
+mod textures;
 
 // TODO: support hot-reloading for textures and shaders?
 // TODO: make this strongly typed, instead of using RIDs?
@@ -43,12 +47,20 @@ pub trait GraphicsServer {
   fn delete_texture(&mut self, texture_id: RID) -> Result<(), GraphicsError>;
 
   // shader management
-  fn create_shader(&mut self, source: &impl ShaderSource) -> Result<RID, GraphicsError>;
+  fn create_shader(&mut self) -> Result<RID, GraphicsError>;
   fn delete_shader(&mut self, shader_id: RID) -> Result<(), GraphicsError>;
 }
 
-pub trait ShaderSource {
-  fn get_spirv_binary(&self) -> &[(ShaderKind, &[u8])];
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct Viewport {
+  pub width: usize,
+  pub height: usize,
+}
+
+impl Viewport {
+  pub fn new(width: usize, height: usize) -> Self {
+    Self { width, height }
+  }
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -57,18 +69,6 @@ pub enum PrimitiveTopology {
   Lines,
   Triangles,
   Quads,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub enum ShaderKind {
-  Vertex,
-  Fragment,
-}
-
-#[repr(u8)]
-#[derive(BitFlags, Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub enum TextureFlags {
-  Clamp = 1 << 0,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

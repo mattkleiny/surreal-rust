@@ -71,9 +71,7 @@ impl GraphicsServer for DesktopPlatform {
     unimplemented!()
   }
 
-  fn create_shader(&mut self, source: &impl ShaderSource) -> Result<RID, GraphicsError> {
-    for (kind, raw) in source.get_spirv_binary() {}
-
+  fn create_shader(&mut self) -> Result<RID, GraphicsError> {
     unimplemented!()
   }
 
