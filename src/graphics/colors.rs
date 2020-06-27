@@ -85,10 +85,10 @@ impl Lerp for Color {
 impl Random for Color {
   fn random(generator: &mut RandomGenerator) -> Self {
     Color::RGBA(
-      generator.next_u8(),
-      generator.next_u8(),
-      generator.next_u8(),
-      generator.next_u8(),
+      generator.next(),
+      generator.next(),
+      generator.next(),
+      generator.next(),
     )
   }
 }

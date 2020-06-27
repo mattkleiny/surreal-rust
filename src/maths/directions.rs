@@ -1,3 +1,6 @@
+/// A set of directions.
+pub type DirectionSet = enumflags2::BitFlags<Direction>;
+
 /// Represents a cardinal direction in 2-space.
 #[repr(u8)]
 #[derive(BitFlags, Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -8,10 +11,17 @@ pub enum Direction {
   West = 1 << 3,
 }
 
-/// A set of directions.
-pub type DirectionSet = enumflags2::BitFlags<Direction>;
-
 impl Direction {
+  #[inline]
+  pub fn all() -> DirectionSet {
+    Direction::North | Direction::South | Direction::East | Direction::West
+  }
+
+  #[inline]
+  pub fn none() -> DirectionSet {
+    DirectionSet::empty()
+  }
+
   pub fn opposite(&self) -> Direction {
     match self {
       Direction::North => Direction::South,

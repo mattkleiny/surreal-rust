@@ -11,6 +11,6 @@ pub enum WindowError {
 
 impl From<WindowError> for crate::Error {
   fn from(_: WindowError) -> Self {
-    crate::Error::PlatformFailure
+    crate::Error::Platform
   }
 }

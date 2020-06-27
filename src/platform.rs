@@ -31,6 +31,6 @@ pub enum PlatformError {
 
 impl From<PlatformError> for crate::Error {
   fn from(_: PlatformError) -> Self {
-    crate::Error::PlatformFailure
+    crate::Error::Platform
   }
 }

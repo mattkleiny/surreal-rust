@@ -16,7 +16,7 @@ mod sprites;
 
 // TODO: support resources (that can be serialized to disk)?
 // TODO: take inspiration from other engines, perhaps
-// TODO: build this on top of WGPU?
+// TODO: build this on top of WGPU, instead?
 
 pub trait GraphicsServer {
   // frame buffers
@@ -43,6 +43,6 @@ pub enum GraphicsError {
 
 impl From<GraphicsError> for crate::Error {
   fn from(_: GraphicsError) -> Self {
-    crate::Error::GraphicsFailure
+    crate::Error::Graphics
   }
 }

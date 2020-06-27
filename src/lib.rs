@@ -41,11 +41,11 @@ pub struct RID(pub(crate) u32);
 /// A generic catch-all error class.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Error {
-  GeneralFailure,
-  AudioFailure,
-  GraphicsFailure,
-  PlatformFailure,
-  InputFailure,
+  General,
+  Audio,
+  Graphics,
+  Input,
+  Platform,
 }
 
 pub mod prelude {

@@ -22,9 +22,19 @@ impl Seed {
 }
 
 /// A type that can be randomly generated.
-pub trait Random {
+pub trait Random: Sized {
+  /// Generates a new value of this type with a global random seed.
+  fn random_global() -> Self { Self::random(&mut Seed::random().to_random()) }
+
   /// Generates a new random value of this type using the given generator.
   fn random(generator: &mut RandomGenerator) -> Self;
+}
+
+/// Adapt all standard distribution types to our custom Random interface.
+impl<T> Random for T where rand::distributions::Standard: Distribution<T> {
+  fn random(generator: &mut RandomGenerator) -> Self {
+    generator.next()
+  }
 }
 
 /// A pseudo-random number generator.
@@ -38,17 +48,10 @@ impl RandomGenerator {
     Self { rng: StdRng::seed_from_u64(seed) }
   }
 
-  #[inline] pub fn next_u8(&mut self)  -> u8 { self.rng.gen() }
-  #[inline] pub fn next_u16(&mut self) -> u16 { self.rng.gen() }
-  #[inline] pub fn next_u32(&mut self) -> u32 { self.rng.gen() }
-  #[inline] pub fn next_u64(&mut self) -> u64 { self.rng.gen() }
-  #[inline] pub fn next_i8(&mut self)  -> i8 { self.rng.gen() }
-  #[inline] pub fn next_i16(&mut self) -> i16 { self.rng.gen() }
-  #[inline] pub fn next_i32(&mut self) -> i32 { self.rng.gen() }
-  #[inline] pub fn next_i64(&mut self) -> i64 { self.rng.gen() }
-  #[inline] pub fn next_f32(&mut self) -> f32 { self.rng.gen() }
-  #[inline] pub fn next_f64(&mut self) -> f64 { self.rng.gen() }
-  #[inline] pub fn next<T: Random>(&mut self) -> T { T::random(self) }
+  #[inline]
+  pub fn next<T: Random>(&mut self) -> T {
+    T::random(self)
+  }
 }
 
 impl Default for RandomGenerator {
@@ -71,8 +74,8 @@ mod tests {
     let seed = Seed::random();
     let mut rng = seed.to_random();
 
-    let first = rng.next_f64();
-    let second = rng.next_f64();
+    let first: f64 = rng.next();
+    let second: f64 = rng.next();
 
     assert_ne!(first, second);
   }
