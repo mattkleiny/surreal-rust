@@ -19,6 +19,7 @@ extern crate smallvec;
 
 pub mod audio;
 pub mod collections;
+pub mod core;
 pub mod diagnostics;
 pub mod editor;
 pub mod graphics;
