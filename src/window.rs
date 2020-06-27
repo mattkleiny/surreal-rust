@@ -1,7 +1,7 @@
 //! Abstractions over the windowing service for the platform.
 
 pub trait WindowServer {
-  fn set_title(&mut self, title: impl AsRef<str>) -> Result<(), WindowError>;
+  fn set_title(&mut self, title: impl AsRef<str>);
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

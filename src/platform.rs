@@ -18,15 +18,13 @@ pub trait Platform {
   fn input(&mut self) -> &mut Self::Input;
   fn window(&mut self) -> &mut Self::Window;
 
-  /// Runs platform, invoking the given callback when available to process the
-  /// next frame.
-  fn run(&mut self, callback: impl FnMut(&mut Self) -> bool);
+  /// Runs platform, invoking the given callback when available to process the next frame.
+  fn run(self, callback: impl FnMut(&mut Self) -> bool);
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PlatformError {
-  GeneralFailure,
-  FailedToCreate,
+  General,
 }
 
 impl From<PlatformError> for crate::Error {

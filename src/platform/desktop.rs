@@ -6,7 +6,7 @@ use sdl2::{EventPump, Sdl, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::video::{GLContext, Window};
 
-use super::*;
+use crate::platform::{Platform, PlatformError};
 
 mod audio;
 mod graphics;
@@ -29,11 +29,6 @@ pub struct DesktopPlatform {
   video: VideoSubsystem,
   window: Window,
 
-  // imgui
-  imgui: imgui::Context,
-  imgui_sdl2: imgui_sdl2::ImguiSdl2,
-  imgui_renderer: imgui_opengl_renderer::Renderer,
-
   // state management
   pressed_keys: HashSet<sdl2::keyboard::Keycode>,
 }
@@ -53,13 +48,6 @@ impl DesktopPlatform {
     let gl_context = window.gl_create_context()?;
     gl::load_with(|s| video.gl_get_proc_address(s) as _);
 
-    let mut imgui = imgui::Context::create();
-
-    imgui.set_ini_filename(None);
-
-    let imgui_sdl2 = imgui_sdl2::ImguiSdl2::new(&mut imgui, &window);
-    let imgui_renderer = imgui_opengl_renderer::Renderer::new(&mut imgui, |s| video.gl_get_proc_address(s) as _);
-
     let event_pump = context.event_pump()?;
 
     Ok(DesktopPlatform {
@@ -69,10 +57,6 @@ impl DesktopPlatform {
 
       video,
       window,
-
-      imgui,
-      imgui_sdl2,
-      imgui_renderer,
 
       pressed_keys: HashSet::new(),
     })
@@ -90,12 +74,9 @@ impl Platform for DesktopPlatform {
   fn input(&mut self) -> &mut Self::Input { self }
   fn window(&mut self) -> &mut Self::Window { self }
 
-  fn run(&mut self, mut callback: impl FnMut(&mut Self) -> bool) {
+  fn run(mut self, mut callback: impl FnMut(&mut Self) -> bool) {
     'running: loop {
       for event in self.event_pump.poll_iter() {
-        self.imgui_sdl2.handle_event(&mut self.imgui, &event);
-        if self.imgui_sdl2.ignore_event(&event) { continue; }
-
         match event {
           Event::Quit { .. } => break 'running,
           Event::KeyDown { keycode: Some(key), .. } => {
@@ -108,26 +89,9 @@ impl Platform for DesktopPlatform {
         }
       };
 
-      self.imgui_sdl2.prepare_frame(
-        self.imgui.io_mut(),
-        &self.window,
-        &self.event_pump.mouse_state(),
-      );
-
-      if !callback(self) {
+      if !callback(&mut self) {
         break 'running;
       }
-
-      let frame = self.imgui.frame();
-
-      frame.plot_histogram(im_str!("FPS"), &[0.25; 32])
-          .scale_min(0.)
-          .scale_max(100.)
-          .graph_size([100., 100.])
-          .build();
-
-      self.imgui_sdl2.prepare_render(&frame, &self.window);
-      self.imgui_renderer.render(frame);
 
       self.window.gl_swap_window();
     }
@@ -136,18 +100,18 @@ impl Platform for DesktopPlatform {
 
 impl From<String> for PlatformError {
   fn from(_: String) -> Self {
-    PlatformError::GeneralFailure
+    PlatformError::General
   }
 }
 
 impl From<sdl2::video::WindowBuildError> for PlatformError {
   fn from(_: sdl2::video::WindowBuildError) -> Self {
-    PlatformError::FailedToCreate
+    PlatformError::General
   }
 }
 
 impl From<sdl2::IntegerOrSdlError> for PlatformError {
   fn from(_: sdl2::IntegerOrSdlError) -> Self {
-    PlatformError::GeneralFailure
+    PlatformError::General
   }
 }

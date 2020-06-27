@@ -15,8 +15,6 @@
 #[macro_use]
 extern crate enumflags2;
 #[macro_use]
-extern crate imgui;
-#[macro_use]
 extern crate smallvec;
 
 pub mod audio;
