@@ -12,21 +12,19 @@ pub struct Color {
 }
 
 impl Color {
-  pub const WHITE: Color = Color::RGB(255, 255, 255);
-  pub const BLACK: Color = Color::RGB(0, 0, 0);
-  pub const RED: Color = Color::RGB(255, 0, 0);
-  pub const GREEN: Color = Color::RGB(0, 255, 0);
-  pub const BLUE: Color = Color::RGB(0, 0, 255);
+  pub const WHITE: Color = Color::rgb(255, 255, 255);
+  pub const BLACK: Color = Color::rgb(0, 0, 0);
+  pub const RED: Color = Color::rgb(255, 0, 0);
+  pub const GREEN: Color = Color::rgb(0, 255, 0);
+  pub const BLUE: Color = Color::rgb(0, 0, 255);
 
   #[inline]
-  #[allow(non_snake_case)]
-  pub const fn RGB(r: u8, g: u8, b: u8) -> Self {
+  pub const fn rgb(r: u8, g: u8, b: u8) -> Self {
     Self { r, g, b, a: 255 }
   }
 
   #[inline]
-  #[allow(non_snake_case)]
-  pub const fn RGBA(r: u8, g: u8, b: u8, a: u8) -> Self {
+  pub const fn rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
     Self { r, g, b, a }
   }
 }
@@ -50,7 +48,7 @@ impl Into<[f32; 4]> for Color {
 
 impl From<[u8; 4]> for Color {
   fn from(source: [u8; 4]) -> Self {
-    Self::RGBA(source[0], source[1], source[2], source[3])
+    Self::rgba(source[0], source[1], source[2], source[3])
   }
 }
 
@@ -62,7 +60,7 @@ impl Into<u32> for Color {
 
 impl From<u32> for Color {
   fn from(packed: u32) -> Self {
-    Self::RGBA(
+    Self::rgba(
       (packed >> 24 & 0xFF) as u8,
       (packed >> 16 & 0xFF) as u8,
       (packed >> 8 & 0xFF) as u8,
@@ -75,7 +73,7 @@ impl Add for Color {
   type Output = Color;
 
   fn add(self, rhs: Self) -> Self::Output {
-    Color::RGBA(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
+    Color::rgba(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
   }
 }
 
@@ -83,14 +81,14 @@ impl Sub for Color {
   type Output = Color;
 
   fn sub(self, rhs: Self) -> Self::Output {
-    Color::RGBA(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
+    Color::rgba(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
   }
 }
 
 impl Lerp for Color {
   #[inline]
   fn lerp(a: Color, b: Color, t: f32) -> Self {
-    Color::RGBA(
+    Color::rgba(
       u8::lerp(a.r, b.r, t),
       u8::lerp(a.g, b.g, t),
       u8::lerp(a.b, b.b, t),
@@ -101,7 +99,7 @@ impl Lerp for Color {
 
 impl Random for Color {
   fn random(generator: &mut RandomGenerator) -> Self {
-    Color::RGBA(
+    Color::rgba(
       generator.next(),
       generator.next(),
       generator.next(),

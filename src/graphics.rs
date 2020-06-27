@@ -4,7 +4,7 @@ pub use buffers::*;
 pub use canvas::*;
 pub use colors::*;
 pub use images::*;
-pub use rendering::*;
+pub use meshes::*;
 pub use shaders::*;
 pub use sprites::*;
 pub use textures::*;
@@ -15,13 +15,12 @@ mod buffers;
 mod canvas;
 mod colors;
 mod images;
-mod rendering;
+mod meshes;
 mod shaders;
 mod sprites;
 mod textures;
 
 // TODO: support hot-reloading for textures and shaders?
-// TODO: make this strongly typed, instead of using RIDs?
 
 pub trait GraphicsServer {
   type Buffer;
@@ -51,6 +50,7 @@ pub trait GraphicsServer {
   fn delete_shader(&mut self, shader_id: RID) -> Result<(), GraphicsError>;
 }
 
+/// A viewport fo scissoring operations.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Viewport {
   pub width: usize,
@@ -63,6 +63,7 @@ impl Viewport {
   }
 }
 
+/// A represents the topology of a mesh for draw calls.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PrimitiveTopology {
   Points,
@@ -71,11 +72,12 @@ pub enum PrimitiveTopology {
   Quads,
 }
 
+/// Represents any of the errors that might be exhibited by the graphics components.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum GraphicsError {
+  InvalidBuffer,
   InvalidTexture,
   InvalidShaderProgram,
-  InvalidFrameBuffer,
 }
 
 impl From<GraphicsError> for crate::Error {

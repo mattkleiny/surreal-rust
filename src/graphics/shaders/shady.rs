@@ -118,7 +118,9 @@ impl Parser {
 ///
 /// The result is the root AST that can later be compiled on-device.
 #[allow(unused_macros)]
-macro_rules! shady { ($raw:tt) => { Parser::parse_const(stringify!(raw)) } }
+macro_rules! shady {
+  ($raw:tt) => { Parser::parse_const(stringify!(raw)) }
+}
 
 #[derive(Clone, Debug)]
 pub struct ShadyProgram {
@@ -139,16 +141,12 @@ mod tests {
   const TEST_PROGRAM: ShadyProgram = shady!(r"
     #shader_type sprite
 
-    #include 'core.shady'
+    #include 'palettes.shady'
 
     uniform sampler2D _ColorPalette;
 
-    void vertex() {
-      VERTEX += vec2(1.0, 2.0);
-    }
-
     void fragment() {
-      COLOR = sample(TEXTURE, UV);
+      COLOR = sample_palette(_ColorPalette, sample(TEXTURE, UV));
     }
   ");
 }
