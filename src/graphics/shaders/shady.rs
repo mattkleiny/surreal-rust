@@ -7,14 +7,7 @@
 //!
 //! An extension of this might also allow constructions of shaders via a shader graph.
 
-use crate::graphics::ShaderProgram;
-
-/// Represents a back-end compiler for Shady programs.
-pub trait Compiler {
-  type Error;
-
-  fn compile(&mut self, ast: &ShadyProgram) -> Result<ShaderProgram, Self::Error>;
-}
+use crate::graphics::{ShaderKind, ShaderSource};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum TokenType {
@@ -121,17 +114,23 @@ impl Parser {
   }
 }
 
+/// Compile-time compilation of Shady programs.
+///
+/// The result is the root AST that can later be compiled on-device.
+#[allow(unused_macros)]
+macro_rules! shady { ($raw:tt) => { Parser::parse_const(stringify!(raw)) } }
+
 #[derive(Clone, Debug)]
 pub struct ShadyProgram {
   kind: ProgramKind,
   statements: Vec<Statement>,
 }
 
-/// Compile-time compilation of Shady programs.
-///
-/// The result is the root AST that can later be compiled on-device.
-#[allow(unused_macros)]
-macro_rules! shady { ($raw:tt) => { Parser::parse_const(stringify!(raw)) } }
+impl ShaderSource for ShadyProgram {
+  fn get_spirv_binary(&self) -> &[(ShaderKind, &[u8])] {
+    unimplemented!()
+  }
+}
 
 #[cfg(test)]
 mod tests {

@@ -5,8 +5,8 @@ use crate::window::*;
 use super::DesktopPlatform;
 
 impl WindowServer for DesktopPlatform {
-  fn set_title(&mut self, title: impl AsRef<str>) {
-    self.window.set_title(title.as_ref()).unwrap();
+  fn set_title(&mut self, title: impl AsRef<str>) -> Result<(), WindowError> {
+    unimplemented!()
   }
 }
 

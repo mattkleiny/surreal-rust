@@ -5,7 +5,14 @@ use crate::graphics::GraphicsServer;
 use crate::input::InputServer;
 use crate::window::WindowServer;
 
+#[cfg(feature = "platform-console")]
+pub mod console;
+#[cfg(feature = "platform-desktop")]
 pub mod desktop;
+#[cfg(feature = "platform-mobile")]
+pub mod mobile;
+#[cfg(feature = "platform-web")]
+pub mod web;
 
 pub trait Platform {
   type Audio: AudioServer;

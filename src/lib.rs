@@ -39,8 +39,9 @@ pub struct RID(pub(crate) u32);
 /// A generic catch-all error class.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Error {
-  General,
   Audio,
+  Editor,
+  General,
   Graphics,
   Input,
   Platform,

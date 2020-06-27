@@ -1,6 +1,7 @@
 //! An embedded LUA scripting runtime.
 
 use rlua::prelude::*;
+use crate::scripting::ScriptEngine;
 
 /// A simple script engine built with Lua.
 pub struct LuaScriptEngine {
@@ -18,6 +19,8 @@ impl LuaScriptEngine {
     })
   }
 }
+
+impl ScriptEngine for LuaScriptEngine {}
 
 #[cfg(test)]
 mod tests {

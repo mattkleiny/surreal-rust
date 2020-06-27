@@ -12,6 +12,10 @@ impl InputServer for DesktopPlatform {
   }
 
   fn is_key_pressed(&self, key: Key) -> bool {
-    self.pressed_keys.contains(&key)
+    unimplemented!()
+  }
+
+  fn get_active_touches(&self) -> &[Touch] {
+    unimplemented!()
   }
 }

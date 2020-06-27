@@ -3,6 +3,7 @@
 pub use canvas::*;
 pub use colors::*;
 pub use images::*;
+pub use rendering::*;
 pub use shaders::*;
 pub use sprites::*;
 
@@ -11,21 +12,57 @@ use crate::RID;
 mod canvas;
 mod colors;
 mod images;
+mod rendering;
 mod shaders;
 mod sprites;
 
-// TODO: support resources (that can be serialized to disk)?
-// TODO: take inspiration from other engines, perhaps
-// TODO: build this on top of WGPU, instead?
+// TODO: support hot-reloading for textures and shaders?
+// TODO: make this strongly typed, instead of using RIDs?
 
 pub trait GraphicsServer {
+  type Buffer;
+  type Texture;
+  type Shader;
+
   // frame buffers
+  fn create_framebuffer(&mut self) -> Result<RID, GraphicsError>;
+  fn delete_framebuffer(&mut self, buffer_id: RID) -> Result<RID, GraphicsError>;
+  fn set_active_framebuffer(&mut self, buffer_id: RID) -> Result<(), GraphicsError>;
   fn clear_active_framebuffer(&mut self, color: Color);
+
+  // mesh management
+  fn create_vertex_buffer(&mut self) -> Result<RID, GraphicsError>;
+  fn create_index_buffer(&mut self) -> Result<RID, GraphicsError>;
+  fn draw_mesh(&mut self, count: usize, topology: PrimitiveTopology) -> Result<(), GraphicsError>;
+  fn draw_mesh_indexed(&mut self, count: usize, topology: PrimitiveTopology) -> Result<(), GraphicsError>;
 
   // texture management
   fn create_texture(&mut self) -> Result<RID, GraphicsError>;
-  fn create_texture_from_image<P>(&mut self, image: &Image<P>) -> Result<RID, GraphicsError>;
-  fn upload_texture_data<P>(&mut self, id: RID, image: &Image<P>) -> Result<(), GraphicsError>;
+  fn create_texture_from_image(&mut self, image: &Image) -> Result<RID, GraphicsError>;
+  fn upload_texture_data(&mut self, texture_id: RID, image: &Image) -> Result<(), GraphicsError>;
+  fn delete_texture(&mut self, texture_id: RID) -> Result<(), GraphicsError>;
+
+  // shader management
+  fn create_shader(&mut self, source: &impl ShaderSource) -> Result<RID, GraphicsError>;
+  fn delete_shader(&mut self, shader_id: RID) -> Result<(), GraphicsError>;
+}
+
+pub trait ShaderSource {
+  fn get_spirv_binary(&self) -> &[(ShaderKind, &[u8])];
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum PrimitiveTopology {
+  Points,
+  Lines,
+  Triangles,
+  Quads,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum ShaderKind {
+  Vertex,
+  Fragment,
 }
 
 #[repr(u8)]
@@ -36,9 +73,9 @@ pub enum TextureFlags {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum GraphicsError {
-  NotEnoughMemory,
-  InvalidTextureFormat,
+  InvalidTexture,
   InvalidShaderProgram,
+  InvalidFrameBuffer,
 }
 
 impl From<GraphicsError> for crate::Error {

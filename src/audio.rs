@@ -3,10 +3,10 @@
 use crate::RID;
 
 pub trait AudioServer {
-  fn create_audio_source(&mut self) -> Result<RID, AudioSourceError>;
+  fn create_audio_source(&mut self) -> Result<RID, AudioError>;
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum AudioSourceError {
+pub enum AudioError {
   NotEnoughMemory,
 }

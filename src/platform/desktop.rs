@@ -1,10 +1,11 @@
 //! A platform implementation for desktop PCs.
 
-use std::collections::HashSet;
-
-use sdl2::{EventPump, Sdl, VideoSubsystem};
-use sdl2::event::Event;
-use sdl2::video::{GLContext, Window};
+use winit::{
+  dpi::LogicalSize,
+  event::{Event, WindowEvent},
+  event_loop::{ControlFlow, EventLoop},
+  window::{Window, WindowBuilder},
+};
 
 use crate::platform::{Platform, PlatformError};
 
@@ -20,45 +21,21 @@ pub struct Configuration {
 }
 
 pub struct DesktopPlatform {
-  // core state
-  context: Sdl,
-  gl_context: GLContext,
-  event_pump: EventPump,
-
-  // graphics and rendering
-  video: VideoSubsystem,
+  event_loop: Option<EventLoop<()>>,
   window: Window,
-
-  // state management
-  pressed_keys: HashSet<sdl2::keyboard::Keycode>,
 }
 
 impl DesktopPlatform {
   pub fn new(config: Configuration) -> Result<Self, PlatformError> {
-    let context = sdl2::init()?;
-    let video = context.video()?;
+    let event_loop = EventLoop::new();
+    let window = WindowBuilder::new()
+        .with_title(config.title)
+        .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
+        .build(&event_loop)?;
 
-    let window = video.window(config.title, config.size.0, config.size.1)
-        .position_centered()
-        .resizable()
-        .opengl()
-        .allow_highdpi()
-        .build()?;
-
-    let gl_context = window.gl_create_context()?;
-    gl::load_with(|s| video.gl_get_proc_address(s) as _);
-
-    let event_pump = context.event_pump()?;
-
-    Ok(DesktopPlatform {
-      context,
-      gl_context,
-      event_pump,
-
-      video,
+    Ok(Self {
+      event_loop: Some(event_loop),
       window,
-
-      pressed_keys: HashSet::new(),
     })
   }
 }
@@ -74,44 +51,32 @@ impl Platform for DesktopPlatform {
   fn input(&mut self) -> &mut Self::Input { self }
   fn window(&mut self) -> &mut Self::Window { self }
 
-  fn run(mut self, mut callback: impl FnMut(&mut Self) -> bool) {
-    'running: loop {
-      for event in self.event_pump.poll_iter() {
-        match event {
-          Event::Quit { .. } => break 'running,
-          Event::KeyDown { keycode: Some(key), .. } => {
-            self.pressed_keys.insert(key);
+  fn run(mut self, callback: impl FnMut(&mut Self) -> bool) {
+    let event_loop = self.event_loop.take().unwrap();
+
+    event_loop.run(move |event, _, control_flow| {
+      *control_flow = ControlFlow::Wait;
+
+      match event {
+        Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
+          match event {
+            WindowEvent::CloseRequested => {
+              *control_flow = ControlFlow::Exit;
+            }
+            _ => {}
           }
-          Event::KeyUp { keycode: Some(key), .. } => {
-            self.pressed_keys.remove(&key);
-          }
-          _ => {}
         }
-      };
-
-      if !callback(&mut self) {
-        break 'running;
+        Event::RedrawRequested(window_id) if window_id == self.window.id() => {
+          // callback(&mut self);
+        }
+        _ => {}
       }
-
-      self.window.gl_swap_window();
-    }
+    });
   }
 }
 
-impl From<String> for PlatformError {
-  fn from(_: String) -> Self {
-    PlatformError::General
-  }
-}
-
-impl From<sdl2::video::WindowBuildError> for PlatformError {
-  fn from(_: sdl2::video::WindowBuildError) -> Self {
-    PlatformError::General
-  }
-}
-
-impl From<sdl2::IntegerOrSdlError> for PlatformError {
-  fn from(_: sdl2::IntegerOrSdlError) -> Self {
+impl From<winit::error::OsError> for PlatformError {
+  fn from(_: winit::error::OsError) -> Self {
     PlatformError::General
   }
 }

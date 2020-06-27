@@ -9,6 +9,7 @@
 // TODO: think about how the editor can fetch and access entity information and emit changes to components
 // TODO: think about how to implement hot-reloading and other niceties
 // TODO: pooled arrays of primitive types and pooled allocator?
+// TODO: support resources (that can be serialized to disk)?
 
 use std::rc::Rc;
 
@@ -18,14 +19,12 @@ use crate::maths::{Vector2, Vector3};
 /// Provides editor functionality to a game.
 pub struct Editor {
   canvas: Canvas,
-  plugins: Vec<Box<dyn EditorPlugin>>,
 }
 
 impl Editor {
   pub fn new() -> Self {
     Self {
       canvas: Canvas::new(),
-      plugins: Vec::new(),
     }
   }
 }
@@ -77,3 +76,8 @@ pub enum Variant {
   Color(Color),
 }
 
+impl From<ObjectError> for crate::Error {
+  fn from(_: ObjectError) -> Self {
+    crate::Error::Editor
+  }
+}

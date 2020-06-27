@@ -7,14 +7,11 @@
 // TODO: abstract over scripting language, add debugging and profiling/etc.
 // TODO: strongly emphasise duck-typing for game
 
-#[cfg(feature = "lua")]
-pub use lua::*;
+#[cfg(feature = "scripting-lua")]
+pub mod lua;
 
-#[cfg(feature = "kismet")]
-pub use kismet::*;
+#[cfg(feature = "scripting-kismet")]
+pub mod kismet;
 
-#[cfg(feature = "lua")]
-mod lua;
-
-#[cfg(feature = "kismet")]
-mod kismet;
+/// An engine for scripting support.
+pub trait ScriptEngine {}

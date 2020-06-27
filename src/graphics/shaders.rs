@@ -3,7 +3,7 @@
 
 use crate::RID;
 
-#[cfg(feature = "shady")]
+#[cfg(feature = "scripting-shady")]
 pub mod shady;
 
 pub struct ShaderProgram {
