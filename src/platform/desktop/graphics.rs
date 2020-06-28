@@ -3,30 +3,9 @@ use crate::RID;
 
 use super::DesktopPlatform;
 
-macro_rules! checked {
-  ($e:expr) => {
-    // TODO: check for OpenGL errors/etc
-    unsafe { ($e) }
-  };
-}
+// TODO: add helper macro for OpenGL errors.
 
 impl GraphicsServer for DesktopPlatform {
-  type Buffer = ();
-  type Texture = ();
-  type Shader = ();
-
-  fn create_framebuffer(&mut self) -> Result<RID, GraphicsError> {
-    unimplemented!()
-  }
-
-  fn delete_framebuffer(&mut self, buffer_id: RID) -> Result<RID, GraphicsError> {
-    unimplemented!()
-  }
-
-  fn set_active_framebuffer(&mut self, buffer_id: RID) -> Result<(), GraphicsError> {
-    unimplemented!()
-  }
-
   fn clear_active_framebuffer(&mut self, color: Color) {
     unsafe {
       gl::ClearColor(
@@ -35,47 +14,55 @@ impl GraphicsServer for DesktopPlatform {
         color.b as f32 / 255.0,
         color.a as f32 / 255.0,
       );
+      gl::Clear(gl::COLOR_BUFFER_BIT);
     }
-    checked!(gl::Clear(gl::COLOR_BUFFER_BIT));
   }
 
-  fn create_vertex_buffer(&mut self) -> Result<RID, GraphicsError> {
-    unimplemented!()
+  fn create_buffer(&mut self) -> GraphicsResult<RID> {
+    let mut id = RID(0);
+
+    unsafe {
+      gl::GenBuffers(1, &mut id.0);
+    }
+
+    Ok(id)
   }
 
-  fn create_index_buffer(&mut self) -> Result<RID, GraphicsError> {
-    unimplemented!()
+  fn upload_buffer_data(&mut self, buffer_id: RID, data: &[u8]) -> GraphicsResult<()> {
+    unsafe {
+      gl::BufferData(
+        gl::ARRAY_BUFFER,
+        data.len() as isize,
+        data.as_ptr() as *mut std::ffi::c_void,
+        gl::STATIC_DRAW,
+      );
+    }
+
+    Ok(())
   }
 
-  fn draw_mesh(&mut self, count: usize, topology: PrimitiveTopology) -> Result<(), GraphicsError> {
-    unimplemented!()
+  fn delete_buffer(&mut self, buffer_id: RID) -> GraphicsResult<()> {
+    unsafe { gl::DeleteBuffers(1, &buffer_id.0) }
+
+    Ok(())
   }
 
-  fn draw_mesh_indexed(&mut self, count: usize, topology: PrimitiveTopology) -> Result<(), GraphicsError> {
-    unimplemented!()
+  fn create_shader(&mut self, source: impl ShaderSource) -> GraphicsResult<RID> {
+    let rid = RID(0);
+
+    for (kind, raw) in source.get_source() {
+      match kind {
+        ShaderKind::Vertex => unimplemented!(),
+        ShaderKind::Fragment => unimplemented!(),
+      }
+    }
+
+    Ok(rid)
   }
 
-  fn create_texture(&mut self) -> Result<RID, GraphicsError> {
-    unimplemented!()
-  }
+  fn delete_shader(&mut self, shader_id: RID) -> GraphicsResult<()> {
+    unsafe { gl::DeleteShader(shader_id.0) }
 
-  fn create_texture_from_image(&mut self, image: &Image) -> Result<RID, GraphicsError> {
-    unimplemented!()
-  }
-
-  fn upload_texture_data(&mut self, id: RID, image: &Image) -> Result<(), GraphicsError> {
-    unimplemented!()
-  }
-
-  fn delete_texture(&mut self, texture_id: RID) -> Result<(), GraphicsError> {
-    unimplemented!()
-  }
-
-  fn create_shader(&mut self) -> Result<RID, GraphicsError> {
-    unimplemented!()
-  }
-
-  fn delete_shader(&mut self, shader_id: RID) -> Result<(), GraphicsError> {
-    Ok(checked!(gl::DeleteShader(shader_id.0)))
+    Ok(())
   }
 }
