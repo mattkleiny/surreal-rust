@@ -9,6 +9,12 @@
 
 use crate::graphics::{ShaderKind, ShaderSource};
 
+#[derive(Clone, Debug)]
+pub struct ShadyProgram {
+  kind: ProgramKind,
+  statements: Vec<Statement>,
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum TokenType {
   Empty,
@@ -120,18 +126,6 @@ impl Parser {
 #[allow(unused_macros)]
 macro_rules! shady {
   ($raw:tt) => { Parser::parse_const(stringify!(raw)) }
-}
-
-#[derive(Clone, Debug)]
-pub struct ShadyProgram {
-  kind: ProgramKind,
-  statements: Vec<Statement>,
-}
-
-impl ShaderSource for ShadyProgram {
-  fn get_spirv_binary(&self) -> &[(ShaderKind, &[u8])] {
-    unimplemented!()
-  }
 }
 
 #[cfg(test)]

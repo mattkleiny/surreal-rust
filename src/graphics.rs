@@ -21,6 +21,7 @@ mod sprites;
 mod textures;
 
 // TODO: support hot-reloading for textures and shaders?
+// TODO: add a singleton graphics server reference?
 
 pub type GraphicsResult<T> = std::result::Result<T, GraphicsError>;
 
@@ -34,7 +35,7 @@ pub trait GraphicsServer {
   fn delete_buffer(&mut self, buffer_id: RID) -> GraphicsResult<()>;
 
   // shader management
-  fn create_shader(&mut self, source: impl ShaderSource) -> GraphicsResult<RID>;
+  fn create_shader(&mut self, source: &impl ShaderSource) -> GraphicsResult<RID>;
   fn delete_shader(&mut self, shader_id: RID) -> GraphicsResult<()>;
 }
 

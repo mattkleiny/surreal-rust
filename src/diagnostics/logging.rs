@@ -10,6 +10,6 @@ mod tests {
 
   #[test]
   fn it_should_log_a_message() {
-    log!("test", "I guess it works!");
+    unimplemented!()
   }
 }

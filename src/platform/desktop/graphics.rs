@@ -47,7 +47,7 @@ impl GraphicsServer for DesktopPlatform {
     Ok(())
   }
 
-  fn create_shader(&mut self, source: impl ShaderSource) -> GraphicsResult<RID> {
+  fn create_shader(&mut self, source: &impl ShaderSource) -> GraphicsResult<RID> {
     let rid = RID(0);
 
     for (kind, raw) in source.get_source() {

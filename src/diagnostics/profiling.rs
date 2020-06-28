@@ -10,8 +10,6 @@ mod tests {
 
   #[test]
   fn it_should_profile_an_operation() {
-    profile! {
-
-    }
+    unimplemented!()
   }
 }

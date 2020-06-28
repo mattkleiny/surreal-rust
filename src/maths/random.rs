@@ -33,7 +33,7 @@ pub trait Random: Sized {
 /// Adapt all standard distribution types to our custom Random interface.
 impl<T> Random for T where rand::distributions::Standard: Distribution<T> {
   fn random(generator: &mut RandomGenerator) -> Self {
-    generator.next()
+    generator.rng.sample(rand::distributions::Standard)
   }
 }
 

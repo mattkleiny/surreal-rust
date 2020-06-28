@@ -1,5 +1,10 @@
-use crate::graphics::{GraphicsError, GraphicsServer};
+use crate::assets::Asset;
+use crate::graphics::{GraphicsError, GraphicsServer, Image};
 use crate::maths::Vector2;
+
+struct Sprite {
+  image: Asset<Image>
+}
 
 /// An efficient batch of sprites for rendering by some provider.
 pub struct SpriteBatch {}
