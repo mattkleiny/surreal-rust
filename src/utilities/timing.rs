@@ -9,7 +9,7 @@ pub fn now() -> u64 { Instant::now().elapsed().as_secs() }
 /// Contains information on the game's timing state.
 #[derive(Copy, Clone, Debug)]
 pub struct GameTime {
-  pub delta_time: f32,
+  pub delta_time: f64,
 }
 
 /// A simple clock for measuring the time between frames.
@@ -17,12 +17,12 @@ pub struct GameTime {
 pub struct Clock {
   last_time: u64,
   current_time: u64,
-  max_time: f32,
-  time_scale: f32,
+  max_time: f64,
+  time_scale: f64,
 }
 
 impl Clock {
-  pub fn new(max_time: f32) -> Self {
+  pub fn new(max_time: f64) -> Self {
     Self {
       last_time: 0,
       current_time: 0,
@@ -31,17 +31,17 @@ impl Clock {
     }
   }
 
-  pub fn set_time_scale(&mut self, time_scale: f32) {
+  pub fn set_time_scale(&mut self, time_scale: f64) {
     self.time_scale = time_scale;
   }
 
   /// Ticks the clock by a single frame, returning a time delta.
-  pub fn tick(&mut self, current_time: u64, frequency: u64) -> f32 {
+  pub fn tick(&mut self, current_time: u64, frequency: u64) -> f64 {
     self.last_time = self.current_time;
     self.current_time = current_time;
 
     // compute delta time since the last update
-    let delta_time = ((self.current_time - self.last_time) * 1000 / frequency) as f32 / 1000.;
+    let delta_time = ((self.current_time - self.last_time) * 1000 / frequency) as f64 / 1000.;
     let clamped_time = if delta_time > self.max_time { self.max_time } else { delta_time };
 
     clamped_time * self.time_scale
@@ -51,7 +51,7 @@ impl Clock {
 /// Counts frames per second using a smoothed average.
 #[derive(Clone, Debug)]
 pub struct FrameCounter {
-  samples: RingBuffer<f32>,
+  samples: RingBuffer<f64>,
 }
 
 impl FrameCounter {
@@ -59,21 +59,21 @@ impl FrameCounter {
     Self { samples: RingBuffer::new(samples) }
   }
 
-  pub fn tick(&mut self, delta_time: f32) {
+  pub fn tick(&mut self, delta_time: f64) {
     self.samples.append(delta_time);
   }
 
-  pub fn average_frame_time(&self) -> f32 {
+  pub fn average_frame_time(&self) -> f64 {
     let mut total_frame_time = 0.;
 
     for sample in self.samples.iter() {
       total_frame_time += sample;
     }
 
-    total_frame_time / self.samples.occupied() as f32
+    total_frame_time / self.samples.occupied() as f64
   }
 
-  pub fn fps(&self) -> f32 {
+  pub fn fps(&self) -> f64 {
     1. / self.average_frame_time()
   }
 }
@@ -81,19 +81,19 @@ impl FrameCounter {
 /// A simple time which ticks on a given basis and returns true if an interval has elapsed.
 #[derive(Clone, Debug)]
 pub struct IntervalTimer {
-  time_elapsed: f32,
-  interval_in_secs: f32,
+  time_elapsed: f64,
+  interval_in_secs: f64,
 }
 
 impl IntervalTimer {
-  pub fn new(interval_in_secs: f32) -> Self {
+  pub fn new(interval_in_secs: f64) -> Self {
     Self {
       time_elapsed: 0.,
       interval_in_secs,
     }
   }
 
-  pub fn tick(&mut self, delta_time: f32) -> bool {
+  pub fn tick(&mut self, delta_time: f64) -> bool {
     self.time_elapsed += delta_time;
     self.time_elapsed >= self.interval_in_secs
   }

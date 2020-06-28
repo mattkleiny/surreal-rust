@@ -23,9 +23,19 @@ pub struct Editor {
 
 impl Editor {
   pub fn new() -> Self {
-    Self {
-      canvas: Canvas::new(),
-    }
+    Self { canvas: Canvas::new() }
+  }
+
+  pub fn input(&mut self, delta_time: f64) {
+    self.canvas.input(delta_time);
+  }
+
+  pub fn update(&mut self, delta_time: f64) {
+    self.canvas.update(delta_time);
+  }
+
+  pub fn draw(&mut self, delta_time: f64) {
+    self.canvas.draw(delta_time);
   }
 }
 

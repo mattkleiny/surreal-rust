@@ -2,25 +2,33 @@
 
 use std::sync::Arc;
 
+/// A manager for assets.
 pub struct AssetManager {}
 
 /// A reference to an asset.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Asset<T> {
   asset: Arc<AssetBox<T>>,
+}
+
+struct AssetBox<T> {
+  asset: T,
+  is_ready: bool,
 }
 
 impl<T> Asset<T> {
   pub fn new(asset: T) -> Self {
     Self {
-      asset: Arc::new(AssetBox { asset }),
+      asset: Arc::new(AssetBox {
+        asset,
+        is_ready: true,
+      })
     }
   }
-}
 
-#[derive(Debug)]
-struct AssetBox<T> {
-  asset: T,
+  pub fn is_ready(&self) -> bool {
+    self.asset.is_ready
+  }
 }
 
 #[cfg(test)]
@@ -32,10 +40,5 @@ mod tests {
   #[test]
   fn it_should_allocate_an_asset_box() {
     let image = Asset::new(Image {});
-    let _ = image.clone();
-    let _ = image.clone();
-    let _ = image.clone();
-    let _ = image.clone();
-    let _ = image.clone();
   }
 }
