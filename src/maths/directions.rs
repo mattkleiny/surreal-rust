@@ -11,7 +11,7 @@ impl Axis {
   pub fn none() -> AxisSet { AxisSet::empty() }
 }
 
-/// A set of  Axis`.
+/// A set of `Axis`.
 pub type AxisSet = enumflags2::BitFlags<Axis>;
 
 /// Represents a cardinal direction in 2-space.

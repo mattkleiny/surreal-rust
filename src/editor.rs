@@ -1,7 +1,7 @@
 //! Editor support for the engine.
 //!
 //! This module is non-intrusive and instead works through a single interface into the core
-//! game state. Implementing the `Interface` trait on your game state will allow the internal
+//! game state. Implementing the `EditorAccess` trait on your game state will allow the internal
 //! mechanics enough information about the game state to provide editor functionality.
 
 // TODO: think about how to render a basic editor interface (maybe using a widget framework like Conrod)?

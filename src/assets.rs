@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 pub use crate::vfs::Path;
+use std::ops::Deref;
 
 /// Context for asset operations.
 pub trait AssetContext {
@@ -53,9 +54,17 @@ enum AssetState<T> {
   NotReady,
 }
 
+impl<T> Deref for Asset<T> {
+  type Target = T;
+
+  fn deref(&self) -> &Self::Target {
+    unimplemented!()
+  }
+}
+
 /// Permits loading an object from disk.
 pub trait LoadableAsset {
-  fn load(path: impl AsRef<Path>, context: &mut impl AssetContext) -> Self;
+  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self;
 }
 
 impl<T> Asset<T> {

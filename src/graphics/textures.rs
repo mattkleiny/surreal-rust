@@ -1,10 +1,12 @@
 use crate::assets::{Asset, AssetContext, LoadableAsset, Path};
 use crate::graphics::{Color, Image};
-use crate::maths::Vector2;
+use crate::maths::{Vector2, Sliceable};
 
 /// Represents a 2d texture.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Texture {
+  width: usize,
+  height: usize,
   flags: TextureFlags,
 }
 
@@ -38,12 +40,24 @@ pub enum TextureFlags {
 }
 
 impl LoadableAsset for Texture {
-  fn load(path: impl AsRef<Path>, context: &mut impl AssetContext) -> Self {
-    // TODO: actually implement me
+  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self {
     let image = Image::load(path, context);
 
     Texture {
-      flags: TextureFlags::Clamp
+      width: image.width(),
+      height: image.height(),
+      flags: TextureFlags::Clamp,
     }
+  }
+}
+
+impl Sliceable for Asset<Texture> {
+  type Output = TextureRegion;
+
+  fn subdivide(&self, (width, height): (usize, usize)) -> &[Self::Output] {
+    let count_x = self.width() / width;
+    let count_y = self.height() / height;
+
+    unimplemented!()
   }
 }

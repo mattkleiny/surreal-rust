@@ -1,5 +1,7 @@
-use crate::graphics::{Color, GraphicsDevice, GraphicsError, TextureRegion};
+use crate::assets::{Asset, AssetContext, LoadableAsset};
+use crate::graphics::{Color, GraphicsDevice, GraphicsError, Texture, TextureRegion};
 use crate::maths::Vector2;
+use crate::vfs::Path;
 
 /// Represents a sprite that may be batched via a `SpriteBatch`.
 pub trait Sprite {
@@ -35,4 +37,22 @@ struct SpriteVertex {
   pub pos: Vector2<f32>,
   pub uv: Vector2<f32>,
   pub color: Color,
+}
+
+/// A sheet of multiple sprites from a single source.
+pub struct SpriteSheet {
+  texture: Asset<Texture>,
+}
+
+impl SpriteSheet {
+  /// Gets a single sprite `TextureRegion` from the sprite sheet.
+  pub fn get_sprite(&self, x: u32, y: u32) -> TextureRegion {
+    unimplemented!()
+  }
+}
+
+impl LoadableAsset for SpriteSheet {
+  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self {
+    SpriteSheet { texture: Asset::load(path, context) }
+  }
 }

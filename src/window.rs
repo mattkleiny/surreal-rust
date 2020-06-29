@@ -1,3 +1,5 @@
+//! A lightweight and fast windowing system.
+
 /// Abstracts over the window provider of a device.
 ///
 /// Permits interaction with the underlying window API through a higher-level abstraction.

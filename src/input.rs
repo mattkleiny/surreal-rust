@@ -1,3 +1,5 @@
+//! A lightweight and fast cross-platform input engine.
+
 use crate::maths::Vector2;
 
 /// Abstracts over the input system of a device.

@@ -23,7 +23,7 @@ impl Image {
 }
 
 impl LoadableAsset for Image {
-  fn load(path: impl AsRef<Path>, context: &mut impl AssetContext) -> Self {
+  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self {
     // TODO: actually implement me
     Self { pixels: DenseGrid::new(16, 16, Color::BLACK) }
   }

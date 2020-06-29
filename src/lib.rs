@@ -49,6 +49,8 @@ pub enum Error {
 }
 
 pub mod prelude {
+  //! Import this module to enable simple access to the engine.
+
   pub use crate::assets::*;
   pub use crate::audio::*;
   pub use crate::collections::*;
