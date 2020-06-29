@@ -1,30 +1,3 @@
-/// Represents an index into a generational arena.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ArenaIndex {
-  index: usize,
-  generation: u64,
-}
-
-impl Into<usize> for ArenaIndex {
-  fn into(self) -> usize {
-    self.index
-  }
-}
-
-/// Represents an entry into an arena.
-#[derive(Clone, Debug)]
-enum ArenaEntry<T> {
-  /// This slot in the list is free and can contain a new element.
-  Free {
-    next_free: Option<usize>
-  },
-  /// This slot is occupied and already contains an element.
-  Occupied {
-    generation: u64,
-    value: T,
-  },
-}
-
 /// A generational arena that allows flat list-like structures with safe externalised indices.
 ///
 /// The core element of the arena is an index. The index is composed of two parts, a raw array
@@ -39,6 +12,27 @@ pub struct Arena<T> {
   generation: u64,
   length: usize,
   next_free: Option<usize>,
+}
+
+/// Represents an index into a generational arena.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ArenaIndex {
+  index: usize,
+  generation: u64,
+}
+
+/// Represents an entry into an arena.
+#[derive(Clone, Debug)]
+enum ArenaEntry<T> {
+  /// This slot in the list is free and can contain a new element.
+  Free {
+    next_free: Option<usize>
+  },
+  /// This slot is occupied and already contains an element.
+  Occupied {
+    generation: u64,
+    value: T,
+  },
 }
 
 impl<T> Arena<T> {

@@ -1,4 +1,4 @@
-//! A lightweight and fast cross-platform graphics engine.
+//! A lightweight and fast cross-platform graphics engine using OpenGL.
 
 pub use buffers::*;
 pub use canvas::*;
@@ -25,7 +25,10 @@ mod textures;
 
 pub type GraphicsResult<T> = std::result::Result<T, GraphicsError>;
 
-pub trait GraphicsServer {
+/// Abstracts over a graphics device or GPU.
+///
+/// Permits interaction with the underlying graphics API through a higher-level abstraction.
+pub trait GraphicsDevice {
   // frame buffers
   fn clear_active_framebuffer(&mut self, color: Color);
 
@@ -39,7 +42,7 @@ pub trait GraphicsServer {
   fn delete_shader(&mut self, shader_id: RID) -> GraphicsResult<()>;
 }
 
-/// A viewport for scissoring operations.
+/// A viewport for scissoring operations on a `GraphicsDevice`.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Viewport {
   pub width: usize,
@@ -61,7 +64,7 @@ pub enum PrimitiveTopology {
   Quads,
 }
 
-/// Represents any of the errors that might be exhibited by the graphics components.
+/// Represents an error with graphics.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum GraphicsError {
   InvalidBuffer,

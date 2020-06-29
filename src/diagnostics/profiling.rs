@@ -6,8 +6,6 @@ macro_rules! profile {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-
   #[test]
   fn it_should_profile_an_operation() {
     unimplemented!()

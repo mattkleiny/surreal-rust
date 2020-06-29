@@ -60,8 +60,8 @@ pub mod prelude {
   pub use crate::platform::*;
   pub use crate::scripting::*;
   pub use crate::utilities::*;
-  pub use crate::window::*;
   pub use crate::vfs::*;
+  pub use crate::window::*;
 
   pub use super::Error as SurrealError;
 }

@@ -1,6 +1,4 @@
-pub type AxisSet = enumflags2::BitFlags<Axis>;
-
-/// Represents an axis.
+/// Represents an axis (horizontal or vertical).
 #[repr(u8)]
 #[derive(BitFlags, Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Axis {
@@ -8,8 +6,13 @@ pub enum Axis {
   Vertical = 1 << 1,
 }
 
-/// A set of directions.
-pub type DirectionSet = enumflags2::BitFlags<Direction>;
+impl Axis {
+  pub fn all() -> AxisSet { Axis::Horizontal | Axis::Vertical }
+  pub fn none() -> AxisSet { AxisSet::empty() }
+}
+
+/// A set of  Axis`.
+pub type AxisSet = enumflags2::BitFlags<Axis>;
 
 /// Represents a cardinal direction in 2-space.
 #[repr(u8)]
@@ -21,15 +24,14 @@ pub enum Direction {
   West = 1 << 3,
 }
 
+/// A set of `Direction`s.
+pub type DirectionSet = enumflags2::BitFlags<Direction>;
+
 impl Direction {
-  pub fn all() -> DirectionSet {
-    Direction::North | Direction::South | Direction::East | Direction::West
-  }
+  pub fn all() -> DirectionSet { Direction::North | Direction::South | Direction::East | Direction::West }
+  pub fn none() -> DirectionSet { DirectionSet::empty() }
 
-  pub fn none() -> DirectionSet {
-    DirectionSet::empty()
-  }
-
+  /// Returns the opposite direction.
   pub fn opposite(&self) -> Direction {
     match self {
       Direction::North => Direction::South,

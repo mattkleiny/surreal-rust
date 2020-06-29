@@ -1,24 +1,30 @@
 //! Platform abstractions and utilities.
 
-use crate::audio::AudioServer;
-use crate::graphics::GraphicsServer;
-use crate::input::InputServer;
-use crate::window::WindowServer;
+use crate::audio::AudioDevice;
+use crate::graphics::GraphicsDevice;
+use crate::input::InputManager;
+use crate::window::WindowManager;
 
-#[cfg(feature = "platform-console")]
+#[cfg(feature = "console")]
 pub mod console;
-#[cfg(feature = "platform-desktop")]
+#[cfg(feature = "desktop")]
 pub mod desktop;
-#[cfg(feature = "platform-mobile")]
+#[cfg(feature = "mobile")]
 pub mod mobile;
-#[cfg(feature = "platform-web")]
+#[cfg(feature = "web")]
 pub mod web;
 
+/// Represents a platform capable of executing the application.
+///
+/// Platforms implement the core engine servers and provide access to them.
+///
+/// The platform is also responsible for the core loop, and should callback into user code
+/// in order to process application logic.
 pub trait Platform {
-  type Audio: AudioServer;
-  type Graphics: GraphicsServer;
-  type Input: InputServer;
-  type Window: WindowServer;
+  type Audio: AudioDevice;
+  type Graphics: GraphicsDevice;
+  type Input: InputManager;
+  type Window: WindowManager;
 
   fn audio(&mut self) -> &mut Self::Audio;
   fn graphics(&mut self) -> &mut Self::Graphics;

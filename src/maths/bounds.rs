@@ -1,5 +1,3 @@
-// TODO: implement an AABB?
-
 use std::ops::Sub;
 
 use crate::maths::{vec2, vec3, Vector2, Vector3};
@@ -7,7 +5,7 @@ use crate::maths::{vec2, vec3, Vector2, Vector3};
 pub type Volume<T> = Bounds3<T>;
 pub type Rect<T> = Bounds2<T>;
 
-/// A bounded space in 2 dimensions.
+/// A bounded space in 2 dimensions formed from the two corner points.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Bounds2<T> {
   min: Vector2<T>,
@@ -34,7 +32,7 @@ impl<T> Bounds2<T> {
   }
 }
 
-/// A bounded space in 3 dimensions.
+/// A bounded space in 3 dimensions formed from the two corner points.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Bounds3<T> {
   min: Vector3<T>,

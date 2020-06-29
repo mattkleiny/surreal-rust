@@ -6,8 +6,6 @@ macro_rules! log {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-
   #[test]
   fn it_should_log_a_message() {
     unimplemented!()

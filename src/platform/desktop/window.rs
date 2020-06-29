@@ -4,7 +4,7 @@ use crate::window::*;
 
 use super::DesktopPlatform;
 
-impl WindowServer for DesktopPlatform {
+impl WindowManager for DesktopPlatform {
   fn set_title(&mut self, title: impl AsRef<str>) -> Result<(), WindowError> {
     unimplemented!()
   }

@@ -1,55 +1,85 @@
-//! An asset management system.
+//! A simple asset management system with support for hot file reloading.
 
-use std::sync::Arc;
-use std::ops::Deref;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+
+pub use crate::vfs::Path;
+
+/// Context for asset operations.
+pub trait AssetContext {}
 
 /// A manager for assets.
-pub struct AssetManager {}
-
-/// A reference to an asset.
-#[derive(Clone)]
-pub struct Asset<T> {
-  asset: Arc<AssetBox<T>>,
+///
+/// Assets are cached centrally by the manager, so accessing the same path
+/// twice will always result in the same asset being returned.
+pub struct AssetManager {
+  asset_cache: HashMap<Path, u16>,
 }
 
-impl<T> Deref for Asset<T> {
-  type Target = T;
+impl AssetManager {
+  pub fn new() -> Self {
+    Self { asset_cache: HashMap::new() }
+  }
 
-  fn deref(&self) -> &Self::Target {
-    &self.asset.asset
+  /// Loads an asset from the given path, caching the results in the manager.
+  ///
+  /// If the asset has already been loaded, it will be returned instead of loading again.
+  pub fn load<T: LoadableAsset>(&mut self, path: &impl AsRef<Path>) -> Asset<T> {
+    Asset::load(path, self)
   }
 }
 
-struct AssetBox<T> {
-  asset: T,
-  is_ready: bool,
+impl AssetContext for AssetManager {}
+
+/// A shared pointer to an asset, with support for interior hot-reloading.
+///
+/// Asset loading might also be deferred via an async mechanism.
+///
+/// This asset can have it's contents asset updated at any time, permitting hot reload.
+/// Each time the asset is borrowed, the most up-to-date content is returned.
+pub struct Asset<T> {
+  cell: Arc<Mutex<AssetState<T>>>,
+}
+
+/// The internal state of an asset.
+enum AssetState<T> {
+  Ready(T),
+  NotReady,
+}
+
+/// Permits loading an object from disk.
+pub trait LoadableAsset {
+  fn load(path: impl AsRef<Path>, context: &mut impl AssetContext) -> Self;
 }
 
 impl<T> Asset<T> {
   pub fn new(asset: T) -> Self {
-    Self {
-      asset: Arc::new(AssetBox {
-        asset,
-        is_ready: true,
-      })
-    }
+    Self { cell: Arc::new(Mutex::new(AssetState::Ready(asset))) }
   }
 
   pub fn is_ready(&self) -> bool {
-    self.asset.is_ready
+    unimplemented!()
+  }
+
+  pub fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self
+    where T: LoadableAsset {
+    Self::new(T::load(path, context))
+  }
+
+  pub fn swap(&mut self, other: T) {
+    unimplemented!()
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::graphics::Image;
-
-  use super::*;
+  #[test]
+  fn it_should_allocate_an_asset() {
+    unimplemented!()
+  }
 
   #[test]
-  fn it_should_allocate_an_asset_box() {
-    let image = Asset::new(Image {});
-
-    let pixels = image.get_pixels();
+  fn it_should_re_use_old_cache_entries() {
+    unimplemented!()
   }
 }

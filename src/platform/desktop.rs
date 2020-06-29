@@ -14,12 +14,14 @@ mod graphics;
 mod input;
 mod window;
 
+/// Configuration for the `DesktopPlatform`.
 #[derive(Copy, Clone, Debug)]
 pub struct Configuration {
   pub title: &'static str,
   pub size: (u32, u32),
 }
 
+/// A `Platform` implementation for desktop PCs.
 pub struct DesktopPlatform {
   event_loop: Option<EventLoop<()>>,
   window: Window,

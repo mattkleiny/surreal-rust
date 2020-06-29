@@ -1,6 +1,7 @@
 //! An embedded LUA scripting runtime.
 
 use rlua::prelude::*;
+
 use crate::scripting::ScriptEngine;
 
 /// A simple script engine built with Lua.

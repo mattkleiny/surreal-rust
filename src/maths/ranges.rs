@@ -1,5 +1,8 @@
 use std::ops::Sub;
 
+/// Builds a range between the given values.
+pub fn range<T>(min: T, max: T) -> Range<T> { Range::new(min, max) }
+
 /// An inclusive range that spans the given (min, max) values.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Range<T> {
@@ -16,8 +19,4 @@ impl<T> Range<T> {
     where T: Copy + Sub<Output=T> {
     self.max - self.min
   }
-}
-
-pub fn range<T>(min: T, max: T) -> Range<T> {
-  Range::new(min, max)
 }

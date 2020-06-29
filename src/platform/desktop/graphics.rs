@@ -5,7 +5,7 @@ use super::DesktopPlatform;
 
 // TODO: add helper macro for OpenGL errors.
 
-impl GraphicsServer for DesktopPlatform {
+impl GraphicsDevice for DesktopPlatform {
   fn clear_active_framebuffer(&mut self, color: Color) {
     unsafe {
       gl::ClearColor(

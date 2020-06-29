@@ -9,7 +9,6 @@ pub use interp::*;
 pub use linear::*;
 pub use random::*;
 pub use ranges::*;
-use std::ops::Div;
 
 mod automata;
 mod bounds;
@@ -20,24 +19,6 @@ mod linear;
 mod grids;
 mod random;
 mod ranges;
-
-/// Represents a quantised amount that can be normalized across it's range.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-pub struct Quantised<T> {
-  pub current: T,
-  pub total: T,
-}
-
-impl<T> Quantised<T> {
-  pub fn new(current: T, total: T) -> Self {
-    Self { current, total }
-  }
-
-  pub fn normalise(&self) -> T
-    where T: Copy + Div<Output=T> {
-    self.current / self.total
-  }
-}
 
 /// Clamps the given value between the given lower and upper bounds.
 pub fn clamp<T: PartialOrd>(value: T, lower: T, upper: T) -> T {

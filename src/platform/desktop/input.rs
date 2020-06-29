@@ -2,7 +2,7 @@ use crate::input::*;
 
 use super::DesktopPlatform;
 
-impl InputServer for DesktopPlatform {
+impl InputManager for DesktopPlatform {
   fn is_key_up(&self, key: Key) -> bool {
     unimplemented!()
   }

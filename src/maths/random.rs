@@ -1,6 +1,8 @@
 use rand::prelude::*;
 
 /// A seed for random generation.
+///
+/// Seeds can be passed around efficiently and turned into `RandomGenerator` easily.
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
 pub struct Seed(u64);
 
@@ -23,7 +25,9 @@ impl Seed {
 /// A type that can be randomly generated.
 pub trait Random: Sized {
   /// Generates a new value of this type with a global random seed.
-  fn random_global() -> Self { Self::random(&mut Seed::random().to_random()) }
+  fn random_global() -> Self {
+    Self::random(&mut Seed::random().to_random())
+  }
 
   /// Generates a new random value of this type using the given generator.
   fn random(generator: &mut RandomGenerator) -> Self;
