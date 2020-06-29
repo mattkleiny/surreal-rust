@@ -33,6 +33,12 @@ pub trait Random: Sized {
   fn random(generator: &mut RandomGenerator) -> Self;
 }
 
+impl Random for Seed {
+  fn random(generator: &mut RandomGenerator) -> Self {
+    Self(generator.next())
+  }
+}
+
 /// Adapt all standard distribution types to our custom Random interface.
 impl<T> Random for T where rand::distributions::Standard: Distribution<T> {
   fn random(generator: &mut RandomGenerator) -> Self {

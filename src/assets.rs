@@ -6,7 +6,9 @@ use std::sync::{Arc, Mutex};
 pub use crate::vfs::Path;
 
 /// Context for asset operations.
-pub trait AssetContext {}
+pub trait AssetContext {
+  fn try_get<T>(&self, path: impl AsRef<Path>) -> Option<Asset<T>>;
+}
 
 /// A manager for assets.
 ///
@@ -29,7 +31,11 @@ impl AssetManager {
   }
 }
 
-impl AssetContext for AssetManager {}
+impl AssetContext for AssetManager {
+  fn try_get<T>(&self, path: impl AsRef<Path>) -> Option<Asset<T>> {
+    None // TODO: implement me
+  }
+}
 
 /// A shared pointer to an asset, with support for interior hot-reloading.
 ///
@@ -57,13 +63,17 @@ impl<T> Asset<T> {
     Self { cell: Arc::new(Mutex::new(AssetState::Ready(asset))) }
   }
 
-  pub fn is_ready(&self) -> bool {
-    unimplemented!()
-  }
-
   pub fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self
     where T: LoadableAsset {
-    Self::new(T::load(path, context))
+    if let Some(asset) = context.try_get(path) {
+      asset
+    } else {
+      Self::new(T::load(path, context))
+    }
+  }
+
+  pub fn is_ready(&self) -> bool {
+    unimplemented!()
   }
 
   pub fn swap(&mut self, other: T) {
