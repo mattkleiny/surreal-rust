@@ -18,12 +18,10 @@ impl Color {
   pub const GREEN: Color = Color::rgb(0, 255, 0);
   pub const BLUE: Color = Color::rgb(0, 0, 255);
 
-  #[inline]
   pub const fn rgb(r: u8, g: u8, b: u8) -> Self {
     Self { r, g, b, a: 255 }
   }
 
-  #[inline]
   pub const fn rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
     Self { r, g, b, a }
   }
@@ -86,7 +84,6 @@ impl Sub for Color {
 }
 
 impl Lerp for Color {
-  #[inline]
   fn lerp(a: Color, b: Color, t: f32) -> Self {
     Color::rgba(
       u8::lerp(a.r, b.r, t),

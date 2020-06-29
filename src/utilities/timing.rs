@@ -3,7 +3,6 @@ use std::time::Instant;
 use crate::collections::RingBuffer;
 
 /// Returns the current time, in seconds since the epoch.
-#[inline]
 pub fn now() -> u64 { Instant::now().elapsed().as_secs() }
 
 /// Contains information on the game's timing state.

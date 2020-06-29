@@ -15,13 +15,9 @@ impl<T: Clone> DenseGrid<T> {
     Self { width, height, elements: vec![default; width * height] }
   }
 
-  #[inline]
   pub fn width(&self) -> usize { self.width }
-
-  #[inline]
   pub fn height(&self) -> usize { self.height }
 
-  #[inline]
   pub fn get(&self, x: usize, y: usize) -> &T {
     assert!(x < self.width);
     assert!(y < self.height);
@@ -29,7 +25,6 @@ impl<T: Clone> DenseGrid<T> {
     &self.elements[x + y * self.width]
   }
 
-  #[inline]
   pub fn set(&mut self, x: usize, y: usize, value: T) {
     assert!(x < self.width);
     assert!(y < self.height);
@@ -58,12 +53,10 @@ impl<T> SparseGrid<T> {
     Self { elements: HashMap::new() }
   }
 
-  #[inline]
   pub fn get(&self, x: i32, y: i32) -> Option<&T> {
     self.elements.get(&vec2(x, y))
   }
 
-  #[inline]
   pub fn set(&mut self, x: i32, y: i32, value: T) {
     self.elements.insert(vec2(x, y), value);
   }

@@ -22,12 +22,10 @@ pub enum Direction {
 }
 
 impl Direction {
-  #[inline]
   pub fn all() -> DirectionSet {
     Direction::North | Direction::South | Direction::East | Direction::West
   }
 
-  #[inline]
   pub fn none() -> DirectionSet {
     DirectionSet::empty()
   }

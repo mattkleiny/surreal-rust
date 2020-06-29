@@ -11,7 +11,6 @@ impl Seed {
   }
 
   /// Converts the seed into an `RandomGenerator`.
-  #[inline]
   pub fn to_random(&self) -> RandomGenerator {
     if self.0 == 0 {
       RandomGenerator::new(random_u64())
@@ -48,7 +47,6 @@ impl RandomGenerator {
     Self { rng: StdRng::seed_from_u64(seed) }
   }
 
-  #[inline]
   pub fn next<T: Random>(&mut self) -> T {
     T::random(self)
   }
@@ -60,7 +58,6 @@ impl Default for RandomGenerator {
   }
 }
 
-#[inline]
 fn random_u64() -> u64 {
   rand::thread_rng().next_u64()
 }

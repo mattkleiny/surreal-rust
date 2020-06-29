@@ -12,14 +12,12 @@ impl<T> Range<T> {
     Self { min, max }
   }
 
-  #[inline]
   pub fn delta(&self) -> T
     where T: Copy + Sub<Output=T> {
     self.max - self.min
   }
 }
 
-#[inline]
 pub fn range<T>(min: T, max: T) -> Range<T> {
   Range::new(min, max)
 }

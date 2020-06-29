@@ -1,6 +1,7 @@
 //! An asset management system.
 
 use std::sync::Arc;
+use std::ops::Deref;
 
 /// A manager for assets.
 pub struct AssetManager {}
@@ -9,6 +10,14 @@ pub struct AssetManager {}
 #[derive(Clone)]
 pub struct Asset<T> {
   asset: Arc<AssetBox<T>>,
+}
+
+impl<T> Deref for Asset<T> {
+  type Target = T;
+
+  fn deref(&self) -> &Self::Target {
+    &self.asset.asset
+  }
 }
 
 struct AssetBox<T> {
@@ -40,5 +49,7 @@ mod tests {
   #[test]
   fn it_should_allocate_an_asset_box() {
     let image = Asset::new(Image {});
+
+    let pixels = image.get_pixels();
   }
 }

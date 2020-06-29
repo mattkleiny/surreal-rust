@@ -21,12 +21,10 @@ impl<V> Mesh<V> {
     unimplemented!()
   }
 
-  #[inline]
   pub fn add_vertex(&mut self, vertex: V) {
     self.vertices.push(vertex);
   }
 
-  #[inline]
   pub fn add_index(&mut self, index: u16) {
     self.indices.push(index);
   }

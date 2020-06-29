@@ -19,7 +19,6 @@ impl Line {
 }
 
 impl PlanarCurve for Line {
-  #[inline]
   fn sample(&self, t: f32) -> Vector2<f32> {
     unimplemented!()
   }
@@ -42,7 +41,6 @@ pub enum Bezier {
 }
 
 impl PlanarCurve for Bezier {
-  #[inline]
   fn sample(&self, t: f32) -> Vector2<f32> {
     match self {
       Bezier::Quadratic { .. } => unimplemented!(),

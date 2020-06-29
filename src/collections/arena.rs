@@ -55,7 +55,6 @@ impl<T> Arena<T> {
   }
 
   /// Returns the length of the arena.
-  #[inline]
   pub fn len(&self) -> usize {
     self.length
   }

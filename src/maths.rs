@@ -40,7 +40,6 @@ impl<T> Quantised<T> {
 }
 
 /// Clamps the given value between the given lower and upper bounds.
-#[inline]
 pub fn clamp<T: PartialOrd>(value: T, lower: T, upper: T) -> T {
   match () {
     _ if value > upper => upper,
