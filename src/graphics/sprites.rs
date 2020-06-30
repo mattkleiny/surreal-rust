@@ -1,6 +1,6 @@
 use crate::assets::{Asset, AssetContext, LoadableAsset};
 use crate::graphics::{Color, GraphicsDevice, GraphicsError, Texture, TextureRegion};
-use crate::maths::Vector2;
+use crate::maths::{Sliceable, Vector2};
 use crate::vfs::Path;
 
 /// Represents a sprite that may be batched via a `SpriteBatch`.
@@ -47,6 +47,8 @@ pub struct SpriteSheet {
 impl SpriteSheet {
   /// Gets a single sprite `TextureRegion` from the sprite sheet.
   pub fn get_sprite(&self, x: u32, y: u32) -> TextureRegion {
+    let regions = self.texture.subdivide((16, 16));
+
     unimplemented!()
   }
 }

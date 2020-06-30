@@ -16,6 +16,7 @@ extern crate enumflags2;
 #[macro_use]
 extern crate smallvec;
 
+pub mod animation;
 pub mod assets;
 pub mod audio;
 pub mod collections;
@@ -46,11 +47,13 @@ pub enum Error {
   Graphics,
   Input,
   Platform,
+  VFS,
 }
 
 pub mod prelude {
   //! Import this module to enable simple access to the engine.
 
+  pub use crate::animation::*;
   pub use crate::assets::*;
   pub use crate::audio::*;
   pub use crate::collections::*;
