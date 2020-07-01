@@ -1,7 +1,8 @@
+use std::path::Path;
+
 use crate::assets::{Asset, AssetContext, LoadableAsset};
 use crate::graphics::{Color, Graphics, GraphicsError, Texture, TextureRegion};
 use crate::maths::{Sliceable, Vector2};
-use crate::vfs::Path;
 
 /// Represents a sprite that may be batched via a `SpriteBatch`.
 pub trait Sprite {

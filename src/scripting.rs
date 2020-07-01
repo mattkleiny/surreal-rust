@@ -10,8 +10,5 @@
 #[cfg(feature = "lua")]
 pub mod lua;
 
-#[cfg(feature = "kismet")]
-pub mod kismet;
-
 /// Represents an engine for scripting support.
 pub trait ScriptEngine {}

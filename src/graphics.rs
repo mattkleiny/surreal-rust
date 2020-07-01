@@ -1,7 +1,6 @@
 //! A lightweight and fast cross-platform graphics engine using OpenGL.
 
 pub use buffers::*;
-pub use canvas::*;
 pub use colors::*;
 pub use images::*;
 pub use meshes::*;
@@ -9,10 +8,7 @@ pub use shaders::*;
 pub use sprites::*;
 pub use textures::*;
 
-use crate::RID;
-
 mod buffers;
-mod canvas;
 mod colors;
 mod images;
 mod meshes;
@@ -21,7 +17,6 @@ mod sprites;
 mod textures;
 
 // TODO: support hot-reloading for textures and shaders?
-// TODO: add a singleton graphics server reference?
 
 pub type GraphicsResult<T> = std::result::Result<T, GraphicsError>;
 
@@ -32,15 +27,6 @@ pub trait Graphics {
   // frame buffers
   fn clear_active_framebuffer(&mut self, color: Color);
   fn set_viewport(&mut self, viewport: Viewport);
-
-  // mesh management
-  fn create_buffer(&mut self) -> GraphicsResult<RID>;
-  fn upload_buffer_data(&mut self, buffer_id: RID, data: &[u8]) -> GraphicsResult<()>;
-  fn delete_buffer(&mut self, buffer_id: RID) -> GraphicsResult<()>;
-
-  // shader management
-  fn create_and_link_shader(&mut self, source: &impl ShaderSource) -> GraphicsResult<RID>;
-  fn delete_shader(&mut self, shader_id: RID) -> GraphicsResult<()>;
 }
 
 /// A viewport for scissoring operations on a `GraphicsDevice`.

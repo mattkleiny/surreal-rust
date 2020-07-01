@@ -3,16 +3,9 @@
 use crate::audio::Audio;
 use crate::graphics::Graphics;
 use crate::input::Input;
-use crate::window::Window;
 
-#[cfg(feature = "console")]
-pub mod console;
 #[cfg(feature = "desktop")]
 pub mod desktop;
-#[cfg(feature = "mobile")]
-pub mod mobile;
-#[cfg(feature = "web")]
-pub mod web;
 
 /// Represents a platform capable of executing the application.
 ///
@@ -33,6 +26,13 @@ pub trait Platform {
 
   /// Runs platform, invoking the given callback when available to process the next frame.
   fn run(self, callback: impl FnMut(&mut Self) -> bool);
+}
+
+/// Abstracts over the window provider of a device.
+///
+/// Permits interaction with the underlying window API through a higher-level abstraction.
+pub trait Window {
+  fn set_title(&mut self, title: impl AsRef<str>);
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

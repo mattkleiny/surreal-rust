@@ -1,6 +1,8 @@
-use crate::assets::{Asset, AssetContext, LoadableAsset, Path};
+use std::path::Path;
+
+use crate::assets::{Asset, AssetContext, LoadableAsset};
 use crate::graphics::{Color, Image};
-use crate::maths::{Vector2, Sliceable};
+use crate::maths::{Sliceable, Vector2};
 
 /// Represents a 2d texture.
 #[derive(Debug, Eq, PartialEq)]

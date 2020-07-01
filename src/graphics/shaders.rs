@@ -2,8 +2,6 @@
 
 use std::collections::HashMap;
 
-use crate::RID;
-
 /// Provides source code for shader compilation.
 pub trait ShaderSource {
   fn get_source(&self) -> &[(ShaderKind, &[u8])];
@@ -31,9 +29,7 @@ pub struct ShaderSet {
 
 /// Represents a single compiled shader program.
 #[derive(Debug, Eq, PartialEq)]
-pub struct ShaderProgram {
-  id: RID
-}
+pub struct ShaderProgram {}
 
 #[cfg(feature = "shady")]
 pub mod shady {

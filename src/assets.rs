@@ -1,11 +1,9 @@
 //! A simple asset management system with support for hot file reloading.
 
 use std::cell::UnsafeCell;
-use std::collections::HashMap;
 use std::ops::Deref;
+use std::path::Path;
 use std::sync::Arc;
-
-pub use crate::vfs::Path;
 
 /// Context for asset operations.
 pub trait AssetContext {
@@ -16,13 +14,11 @@ pub trait AssetContext {
 ///
 /// Assets are cached centrally by the manager, so accessing the same path
 /// twice will always result in the same asset being returned.
-pub struct AssetManager {
-  asset_cache: HashMap<Path, u16>,
-}
+pub struct AssetManager {}
 
 impl AssetManager {
   pub fn new() -> Self {
-    Self { asset_cache: HashMap::new() }
+    Self {}
   }
 
   /// Loads an asset from the given path, caching the results in the manager.

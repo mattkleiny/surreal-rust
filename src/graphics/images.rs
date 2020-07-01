@@ -1,4 +1,6 @@
-use crate::assets::{AssetContext, LoadableAsset, Path};
+use std::path::Path;
+
+use crate::assets::{AssetContext, LoadableAsset};
 use crate::graphics::Color;
 use crate::maths::DenseGrid;
 

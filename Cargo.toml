@@ -19,12 +19,7 @@ smallvec = "1.4.0"
 
 [features]
 default = []
-
-console = []
 desktop = ["winit"]
-mobile = []
-web = []
-
 shady = ["rspirv"]
 kismet = []
 lua = ["rlua"]
