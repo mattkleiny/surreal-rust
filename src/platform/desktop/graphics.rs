@@ -5,7 +5,7 @@ use super::DesktopPlatform;
 
 // TODO: add helper macro for OpenGL errors.
 
-impl GraphicsDevice for DesktopPlatform {
+impl Graphics for DesktopPlatform {
   fn clear_active_framebuffer(&mut self, color: Color) {
     unsafe {
       gl::ClearColor(
@@ -15,6 +15,12 @@ impl GraphicsDevice for DesktopPlatform {
         color.a as f32 / 255.0,
       );
       gl::Clear(gl::COLOR_BUFFER_BIT);
+    }
+  }
+
+  fn set_viewport(&mut self, viewport: Viewport) {
+    unsafe {
+      gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
     }
   }
 
@@ -47,8 +53,8 @@ impl GraphicsDevice for DesktopPlatform {
     Ok(())
   }
 
-  fn create_shader(&mut self, source: &impl ShaderSource) -> GraphicsResult<RID> {
-    let rid = RID(0);
+  fn create_and_link_shader(&mut self, source: &impl ShaderSource) -> GraphicsResult<RID> {
+    let id = RID(0);
 
     for (kind, raw) in source.get_source() {
       match kind {
@@ -57,7 +63,7 @@ impl GraphicsDevice for DesktopPlatform {
       }
     }
 
-    Ok(rid)
+    Ok(id)
   }
 
   fn delete_shader(&mut self, shader_id: RID) -> GraphicsResult<()> {

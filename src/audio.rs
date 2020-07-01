@@ -2,11 +2,13 @@
 
 use crate::RID;
 
+pub type AudioResult<T> = std::result::Result<T, AudioError>;
+
 /// Abstracts over an audio device.
 ///
 /// Permits interaction with the underlying audio API through a higher-level abstraction.
-pub trait AudioDevice {
-  fn create_audio_source(&mut self) -> Result<RID, AudioError>;
+pub trait Audio {
+  fn create_audio_source(&mut self) -> AudioResult<RID>;
 }
 
 /// Represents an error with audio.

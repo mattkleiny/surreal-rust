@@ -3,7 +3,7 @@
 /// Abstracts over the window provider of a device.
 ///
 /// Permits interaction with the underlying window API through a higher-level abstraction.
-pub trait WindowManager {
+pub trait Window {
   fn set_title(&mut self, title: impl AsRef<str>) -> Result<(), WindowError>;
 }
 

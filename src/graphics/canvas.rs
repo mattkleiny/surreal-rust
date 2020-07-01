@@ -32,17 +32,11 @@ impl Canvas {
     })
   }
 
-  pub fn input(&mut self, delta_time: f64) {
-    unimplemented!()
-  }
+  // TODO: implement me
 
-  pub fn update(&mut self, delta_time: f64) {
-    unimplemented!()
-  }
-
-  pub fn draw(&mut self, delta_time: f64) {
-    unimplemented!()
-  }
+  pub fn input(&mut self, delta_time: f64) {}
+  pub fn update(&mut self, delta_time: f64) {}
+  pub fn draw(&mut self, delta_time: f64) {}
 }
 
 /// Size of a widget.

@@ -4,9 +4,9 @@ use crate::window::*;
 
 use super::DesktopPlatform;
 
-impl WindowManager for DesktopPlatform {
+impl Window for DesktopPlatform {
   fn set_title(&mut self, title: impl AsRef<str>) -> Result<(), WindowError> {
-    unimplemented!()
+    Ok(self.window_context.window().set_title(title.as_ref()))
   }
 }
 

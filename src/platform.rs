@@ -1,9 +1,9 @@
 //! Platform abstractions and utilities.
 
-use crate::audio::AudioDevice;
-use crate::graphics::GraphicsDevice;
-use crate::input::InputManager;
-use crate::window::WindowManager;
+use crate::audio::Audio;
+use crate::graphics::Graphics;
+use crate::input::Input;
+use crate::window::Window;
 
 #[cfg(feature = "console")]
 pub mod console;
@@ -21,10 +21,10 @@ pub mod web;
 /// The platform is also responsible for the core loop, and should callback into user code
 /// in order to process application logic.
 pub trait Platform {
-  type Audio: AudioDevice;
-  type Graphics: GraphicsDevice;
-  type Input: InputManager;
-  type Window: WindowManager;
+  type Audio: Audio;
+  type Graphics: Graphics;
+  type Input: Input;
+  type Window: Window;
 
   fn audio(&mut self) -> &mut Self::Audio;
   fn graphics(&mut self) -> &mut Self::Graphics;

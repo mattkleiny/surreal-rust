@@ -28,9 +28,10 @@ pub type GraphicsResult<T> = std::result::Result<T, GraphicsError>;
 /// Abstracts over a graphics device or GPU.
 ///
 /// Permits interaction with the underlying graphics API through a higher-level abstraction.
-pub trait GraphicsDevice {
+pub trait Graphics {
   // frame buffers
   fn clear_active_framebuffer(&mut self, color: Color);
+  fn set_viewport(&mut self, viewport: Viewport);
 
   // mesh management
   fn create_buffer(&mut self) -> GraphicsResult<RID>;
@@ -38,7 +39,7 @@ pub trait GraphicsDevice {
   fn delete_buffer(&mut self, buffer_id: RID) -> GraphicsResult<()>;
 
   // shader management
-  fn create_shader(&mut self, source: &impl ShaderSource) -> GraphicsResult<RID>;
+  fn create_and_link_shader(&mut self, source: &impl ShaderSource) -> GraphicsResult<RID>;
   fn delete_shader(&mut self, shader_id: RID) -> GraphicsResult<()>;
 }
 

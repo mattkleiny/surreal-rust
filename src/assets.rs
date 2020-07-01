@@ -1,10 +1,11 @@
 //! A simple asset management system with support for hot file reloading.
 
+use std::cell::UnsafeCell;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::ops::Deref;
+use std::sync::Arc;
 
 pub use crate::vfs::Path;
-use std::ops::Deref;
 
 /// Context for asset operations.
 pub trait AssetContext {
@@ -45,7 +46,7 @@ impl AssetContext for AssetManager {
 /// This asset can have it's contents asset updated at any time, permitting hot reload.
 /// Each time the asset is borrowed, the most up-to-date content is returned.
 pub struct Asset<T> {
-  cell: Arc<Mutex<AssetState<T>>>,
+  cell: Arc<UnsafeCell<AssetState<T>>>,
 }
 
 /// The internal state of an asset.
@@ -54,22 +55,12 @@ enum AssetState<T> {
   NotReady,
 }
 
-impl<T> Deref for Asset<T> {
-  type Target = T;
-
-  fn deref(&self) -> &Self::Target {
-    unimplemented!()
-  }
-}
-
-/// Permits loading an object from disk.
-pub trait LoadableAsset {
-  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self;
-}
+unsafe impl<T> Send for Asset<T> {}
+unsafe impl<T> Sync for Asset<T> {}
 
 impl<T> Asset<T> {
   pub fn new(asset: T) -> Self {
-    Self { cell: Arc::new(Mutex::new(AssetState::Ready(asset))) }
+    Self { cell: Arc::new(UnsafeCell::new(AssetState::Ready(asset))) }
   }
 
   pub fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self
@@ -82,19 +73,53 @@ impl<T> Asset<T> {
   }
 
   pub fn is_ready(&self) -> bool {
-    unimplemented!()
+    match unsafe { self.cell.get().as_ref() } {
+      Some(state) => match state {
+        AssetState::Ready(_) => true,
+        AssetState::NotReady => false,
+      },
+      _ => false
+    }
   }
 
   pub fn swap(&mut self, other: T) {
-    unimplemented!()
+    unsafe {
+      *self.cell.get().as_mut().unwrap() = AssetState::Ready(other);
+    }
   }
+}
+
+impl<T> Deref for Asset<T> {
+  type Target = T;
+
+  fn deref(&self) -> &Self::Target {
+    match unsafe { self.cell.get().as_mut().unwrap() } {
+      AssetState::Ready(asset) => asset,
+      AssetState::NotReady => panic!("This asset is not yet ready!")
+    }
+  }
+}
+
+/// Permits loading an object from disk.
+pub trait LoadableAsset {
+  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self;
 }
 
 #[cfg(test)]
 mod tests {
+  use crate::assets::Asset;
+
   #[test]
   fn it_should_allocate_an_asset() {
-    unimplemented!()
+    let mut asset = Asset::new("Test");
+
+    let reference1 = &asset;
+    let reference2 = &asset;
+
+    asset.swap("Test 2");
+
+    assert_eq!(reference1, "Test 2");
+    assert_eq!(reference2, "Test 2");
   }
 
   #[test]

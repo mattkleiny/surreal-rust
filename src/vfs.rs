@@ -1,19 +1,7 @@
 //! A virtual file system.
 
-use std::borrow::Borrow;
-
-use once_cell::sync::Lazy;
-
 mod local;
 mod resource;
-
-/// The statically registered file systems for the application.
-static FILE_SYSTEMS: Lazy<Vec<Box<dyn FileSystem>>> = Lazy::new(|| {
-  vec![
-    Box::new(local::LocalFileSystem::new()),
-    Box::new(resource::ResourceFileSystem::new()),
-  ]
-});
 
 /// Represents a result in the VFS system.
 pub type VFSResult<T> = std::result::Result<T, Error>;
@@ -68,15 +56,7 @@ impl Path {
 
   /// Accesses the file system represented by the path.
   pub fn filesystem(&self) -> VFSResult<&dyn FileSystem> {
-    for filesystem in FILE_SYSTEMS.iter() {
-      for scheme in filesystem.schemes() {
-        if scheme.eq(&self.scheme) {
-          return Ok(filesystem.borrow());
-        }
-      }
-    }
-
-    Err(Error::UnknownFileSystem)
+    unimplemented!()
   }
 }
 

@@ -3,7 +3,7 @@ use crate::RID;
 
 use super::DesktopPlatform;
 
-impl AudioDevice for DesktopPlatform {
+impl Audio for DesktopPlatform {
   fn create_audio_source(&mut self) -> Result<RID, AudioError> {
     unimplemented!()
   }
