@@ -2,8 +2,6 @@ use crate::graphics::*;
 
 use super::DesktopPlatform;
 
-// TODO: add helper macro for OpenGL errors.
-
 impl Graphics for DesktopPlatform {
   fn clear_active_framebuffer(&mut self, color: Color) {
     unsafe {

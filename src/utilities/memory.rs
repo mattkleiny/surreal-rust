@@ -1,29 +1,3 @@
-/// A bump allocator allows allocating of arbitrary data inside of a single fixed-size block.
-#[derive(Clone, Debug)]
-pub struct BumpAllocator {
-  buffer: Vec<u8>,
-  position: usize,
-}
-
-impl BumpAllocator {
-  pub fn new(capacity: usize) -> Self {
-    Self {
-      buffer: vec![0; capacity],
-      position: 0,
-    }
-  }
-
-  pub fn capacity(&self) -> Size { Size::bytes(self.buffer.len()) }
-  pub fn remaining(&self) -> Size { Size::bytes(self.buffer.len() - self.position) }
-
-  pub fn allocate<T>(&mut self) -> T {
-    let size = std::mem::size_of::<T>();
-    let address = &mut self.buffer[self.position];
-
-    unimplemented!()
-  }
-}
-
 /// A canonical representation of size, with simple conversions between units.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Size(usize);
@@ -42,18 +16,7 @@ impl Size {
 
 #[cfg(test)]
 mod tests {
-  use crate::maths::Vector2;
-
   use super::*;
-
-  #[test]
-  fn bump_allocator_should_allocate_in_place() {
-    let mut allocator = BumpAllocator::new(1024);
-
-    let vector1: Vector2<f32> = allocator.allocate();
-    let vector2: Vector2<f32> = allocator.allocate();
-    let vector3: Vector2<f32> = allocator.allocate();
-  }
 
   #[test]
   fn size_should_convert_between_scales() {

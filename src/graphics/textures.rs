@@ -2,19 +2,51 @@ use std::path::Path;
 
 use crate::assets::{Asset, AssetContext, LoadableAsset};
 use crate::graphics::{Color, Image};
-use crate::maths::{Sliceable, Vector2};
+use crate::maths::Vector2;
+
+/// A managed ID for OpenGL textures.
+#[derive(Debug, Eq, PartialEq)]
+struct TextureHandle(u32);
+
+impl TextureHandle {
+  pub fn new() -> Self {
+    let mut id = 0;
+    unsafe {
+      gl::GenTextures(1, &mut id)
+    }
+    Self(id)
+  }
+}
+
+impl Drop for TextureHandle {
+  fn drop(&mut self) {
+    unsafe {
+      gl::DeleteTextures(1, &self.0);
+    }
+  }
+}
 
 /// Represents a 2d texture.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Texture {
+  handle: TextureHandle,
   width: usize,
   height: usize,
   flags: TextureFlags,
 }
 
 impl Texture {
-  pub fn width(&self) -> usize { unimplemented!() }
-  pub fn height(&self) -> usize { unimplemented!() }
+  pub fn new(width: usize, height: usize, flags: TextureFlags) -> Self {
+    Self {
+      handle: TextureHandle::new(),
+      width,
+      height,
+      flags,
+    }
+  }
+
+  pub fn width(&self) -> usize { self.width }
+  pub fn height(&self) -> usize { self.height }
 
   /// Accesses the pixels of the `Texture`.
   pub fn pixels(&self) -> &[Color] {
@@ -46,20 +78,10 @@ impl LoadableAsset for Texture {
     let image = Image::load(path, context);
 
     Texture {
+      handle: TextureHandle::new(),
       width: image.width(),
       height: image.height(),
       flags: TextureFlags::Clamp,
     }
-  }
-}
-
-impl Sliceable for Asset<Texture> {
-  type Output = TextureRegion;
-
-  fn subdivide(&self, (width, height): (usize, usize)) -> &[Self::Output] {
-    let count_x = self.width() / width;
-    let count_y = self.height() / height;
-
-    unimplemented!()
   }
 }

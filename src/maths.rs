@@ -40,10 +40,3 @@ pub fn to_radians(degrees: f64) -> f64 {
 pub fn to_degrees(radians: f64) -> f64 {
   (radians * 180.0) / std::f64::consts::PI
 }
-
-/// Permits slicing the object into pieces.
-pub trait Sliceable {
-  type Output;
-
-  fn subdivide(&self, size: (usize, usize)) -> &[Self::Output];
-}

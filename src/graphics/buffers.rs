@@ -2,16 +2,15 @@ use std::marker::PhantomData;
 use std::os::raw::c_void;
 
 /// A managed ID for OpenGL buffers.
-#[derive(Debug, Eq, PartialEq)]
 struct BufferHandle(u32);
 
 impl BufferHandle {
   pub fn new() -> Self {
-    let mut buffer_id = 0;
+    let mut id = 0;
     unsafe {
-      gl::GenBuffers(1, &mut buffer_id)
+      gl::GenBuffers(1, &mut id)
     }
-    Self(buffer_id)
+    Self(id)
   }
 }
 

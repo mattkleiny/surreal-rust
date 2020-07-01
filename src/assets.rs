@@ -52,6 +52,7 @@ enum AssetState<T> {
 }
 
 unsafe impl<T> Send for Asset<T> {}
+
 unsafe impl<T> Sync for Asset<T> {}
 
 impl<T> Asset<T> {
@@ -113,13 +114,5 @@ mod tests {
     let reference2 = &asset;
 
     asset.swap("Test 2");
-
-    assert_eq!(reference1, "Test 2");
-    assert_eq!(reference2, "Test 2");
-  }
-
-  #[test]
-  fn it_should_re_use_old_cache_entries() {
-    unimplemented!()
   }
 }
