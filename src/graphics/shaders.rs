@@ -102,23 +102,13 @@ pub mod shady {
   }
 
   #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-  enum TokenType {
-    Empty,
-    Identifier,
-    True,
-    False,
-    Constant(Constant),
-    Type(Type),
-  }
-
-  #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-  enum Constant {
+  enum ConstantType {
     Int,
     Float,
   }
 
   #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-  enum Type {
+  enum RuntimeType {
     Void,
     Bool,
     Vec2,
@@ -161,11 +151,29 @@ pub mod shady {
     Compute,
   }
 
+  #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+  enum MethodBinding {
+    VertexBody,
+    FragmentBody,
+  }
+
+  #[derive(Clone, Debug)]
+  enum Token {
+    Unknown,
+    Identifier,
+    True,
+    False,
+    Constant(ConstantType),
+    Type(RuntimeType),
+  }
+
   #[derive(Clone, Debug)]
   enum Expression {
+    Unknown,
+    Empty,
     Operator {
       name: String,
-      return_type: Type,
+      return_type: RuntimeType,
       precision: Precision,
       operator: Operator,
       arguments: Vec<Expression>,
@@ -177,13 +185,29 @@ pub mod shady {
   }
 
   #[derive(Clone, Debug)]
-  enum Statement {}
+  enum Statement {
+    Unknown,
+    Empty,
+    KindSpecification {
+      kind: ProgramKind,
+      version: u16,
+    },
+    MethodDefinition {
+      name: String,
+      binding: MethodBinding,
+      return_type: RuntimeType,
+      arguments: Vec<Expression>,
+    },
+  }
 
   /// A parser for Shady programs.
   ///
   /// Turns raw text into the shady AST.
   #[derive(Clone, Debug)]
-  pub struct Parser {}
+  pub struct Parser {
+    position: usize,
+    last_token: Token,
+  }
 
   /// Possible errors when parsing.
   #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -192,7 +216,12 @@ pub mod shady {
   impl Parser {
     /// Parses a Shady program from the given string representation.
     pub fn parse(raw: impl AsRef<str>) -> Result<ShadyProgram, ParseError> {
-      unimplemented!()
+      let mut parser = Self {
+        position: 0,
+        last_token: Token::Unknown,
+      };
+
+      parser.parse_string(raw.as_ref())
     }
 
     /// Parses the given raw shady program into it's AST representation.
@@ -204,6 +233,10 @@ pub mod shady {
         statements: Vec::new(),
       }
     }
+
+    fn parse_string(&mut self, input: &str) -> Result<ShadyProgram, ParseError> {
+      unimplemented!()
+    }
   }
 
   /// Compile-time compilation of Shady programs.
@@ -211,23 +244,22 @@ pub mod shady {
   /// The result is the root AST that can later be compiled on-device.
   #[allow(unused_macros)]
   macro_rules! shady {
-  ($raw:tt) => { Parser::parse_const(stringify!(raw)) }
-}
+    ($raw:tt) => { Parser::parse_const(stringify!(raw)) }
+  }
 
   #[cfg(test)]
   mod tests {
     use super::*;
 
     const TEST_PROGRAM: ShadyProgram = shady!(r"
-    #shader_type sprite
+      #shader_type sprite
+      #include 'palettes.shady'
 
-    #include 'palettes.shady'
+      uniform sampler2D _ColorPalette;
 
-    uniform sampler2D _ColorPalette;
-
-    void fragment() {
-      COLOR = sample_palette(_ColorPalette, sample(TEXTURE, UV));
-    }
-  ");
+      void fragment() {
+        COLOR = sample_palette(_ColorPalette, sample(TEXTURE, UV));
+      }
+    ");
   }
 }
