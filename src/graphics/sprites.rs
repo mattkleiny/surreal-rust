@@ -1,8 +1,7 @@
-use std::path::Path;
-
 use crate::assets::{Asset, AssetContext, LoadableAsset};
-use crate::graphics::{Color, Graphics, GraphicsError, Texture, TextureRegion};
+use crate::graphics::{Color, Graphics, Error, Texture, TextureRegion};
 use crate::maths::Vector2;
+use crate::io::Path;
 
 /// Represents a sprite that may be batched via a `SpriteBatch`.
 pub trait Sprite {
@@ -18,7 +17,7 @@ pub struct SpriteBatch {
 }
 
 impl SpriteBatch {
-  pub fn new(graphics: &mut impl Graphics) -> Result<Self, GraphicsError> {
+  pub fn new(graphics: &mut impl Graphics) -> Result<Self, Error> {
     Ok(SpriteBatch {
       vertices: Vec::new(),
       indices: Vec::new(),
@@ -53,7 +52,7 @@ impl SpriteSheet {
 }
 
 impl LoadableAsset for SpriteSheet {
-  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self {
+  fn load(path: Path, context: &mut impl AssetContext) -> Self {
     SpriteSheet {
       texture: Asset::load(path, context),
     }

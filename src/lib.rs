@@ -23,6 +23,7 @@ pub mod diagnostics;
 pub mod editor;
 pub mod graphics;
 pub mod input;
+pub mod io;
 pub mod maths;
 pub mod platform;
 pub mod scripting;
@@ -32,11 +33,13 @@ pub mod utilities;
 /// Represents a general error with the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Error {
-  Audio,
   General,
-  Graphics,
-  Input,
-  Platform,
+
+  Audio(audio::Error),
+  Graphics(graphics::Error),
+  Input(input::Error),
+  IO(io::Error),
+  Platform(platform::Error),
 }
 
 pub mod prelude {
@@ -46,11 +49,14 @@ pub mod prelude {
   pub use crate::audio::*;
   pub use crate::collections::*;
   pub use crate::diagnostics::*;
+  pub use crate::editor::*;
   pub use crate::graphics::*;
   pub use crate::input::*;
+  pub use crate::io::*;
   pub use crate::maths::*;
   pub use crate::platform::*;
   pub use crate::scripting::*;
+  pub use crate::ui::*;
   pub use crate::utilities::*;
 
   pub use super::Error as SurrealError;

@@ -1,12 +1,11 @@
 //! A simple asset management system with support for hot file reloading.
 
 use enumflags2::_internal::core::ops::Deref;
-use std::path::Path;
+
+use crate::io::Path;
 
 /// Context for asset operations.
-pub trait AssetContext {
-  fn try_get<T>(&self, path: impl AsRef<Path>) -> Option<Asset<T>>;
-}
+pub trait AssetContext {}
 
 /// A manager for assets.
 ///
@@ -15,23 +14,12 @@ pub trait AssetContext {
 pub struct AssetManager {}
 
 impl AssetManager {
-  pub fn new() -> Self {
-    Self {}
-  }
-
-  /// Loads an asset from the given path, caching the results in the manager.
-  ///
-  /// If the asset has already been loaded, it will be returned instead of loading again.
-  pub fn load<T: LoadableAsset>(&mut self, path: &impl AsRef<Path>) -> Asset<T> {
+  pub fn load<T: LoadableAsset>(&mut self, path: Path) -> Asset<T> {
     Asset::load(path, self)
   }
 }
 
-impl AssetContext for AssetManager {
-  fn try_get<T>(&self, path: impl AsRef<Path>) -> Option<Asset<T>> {
-    None // TODO: implement me
-  }
-}
+impl AssetContext for AssetManager {}
 
 /// A shared pointer to an asset, with support for interior hot-reloading.
 ///
@@ -50,7 +38,7 @@ enum AssetState<T> {
 }
 
 impl<T> Asset<T> {
-  pub fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Asset<T>
+  pub fn load(path: Path, context: &mut impl AssetContext) -> Asset<T>
   where
     T: LoadableAsset,
   {
@@ -74,5 +62,5 @@ impl<T> Deref for Asset<T> {
 
 /// Permits loading an object from disk.
 pub trait LoadableAsset {
-  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self;
+  fn load(path: Path, context: &mut impl AssetContext) -> Self;
 }

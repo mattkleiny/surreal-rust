@@ -1,7 +1,6 @@
-use std::path::Path;
-
 use crate::assets::{AssetContext, LoadableAsset};
 use crate::graphics::Color;
+use crate::io::Path;
 use crate::maths::DenseGrid;
 
 /// An image is essentially a 2d-grid of `Color`s, uncompressed.
@@ -13,6 +12,7 @@ impl Image {
   pub fn width(&self) -> usize {
     self.pixels.width()
   }
+
   pub fn height(&self) -> usize {
     self.pixels.height()
   }
@@ -28,10 +28,9 @@ impl Image {
   }
 }
 
-// TODO: actually implement me
-
 impl LoadableAsset for Image {
-  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self {
+  fn load(path: Path, context: &mut impl AssetContext) -> Self {
+    // TODO: actually implement me
     Self {
       pixels: DenseGrid::new(16, 16, Color::BLACK),
     }

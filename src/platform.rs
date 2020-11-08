@@ -36,12 +36,12 @@ pub trait Window {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum PlatformError {
+pub enum Error {
   General,
 }
 
-impl From<PlatformError> for crate::Error {
-  fn from(_: PlatformError) -> Self {
-    crate::Error::Platform
+impl From<Error> for crate::Error {
+  fn from(error: Error) -> Self {
+    Self::Platform(error)
   }
 }

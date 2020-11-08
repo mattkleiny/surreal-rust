@@ -1,8 +1,7 @@
-use std::path::Path;
-
 use crate::assets::{Asset, AssetContext, LoadableAsset};
-use crate::graphics::{Color, Image};
+use crate::graphics::Image;
 use crate::maths::{vec2, Vector2};
+use crate::io::Path;
 
 /// Represents a 2d texture.
 #[derive(Debug, Eq, PartialEq)]
@@ -26,17 +25,12 @@ impl Texture {
   pub fn width(&self) -> usize {
     self.width
   }
+
   pub fn height(&self) -> usize {
     self.height
   }
 
-  /// Accesses the pixels of the `Texture`.
-  pub fn pixels(&self) -> &[Color] {
-    unimplemented!()
-  }
-
-  /// Mutably accesses the pixels of the `Texture`.
-  pub fn pixels_mut(&mut self) -> &mut [Color] {
+  pub fn upload(&mut self, image: &Image) {
     unimplemented!()
   }
 }
@@ -86,14 +80,16 @@ impl Drop for TextureHandle {
 }
 
 impl LoadableAsset for Texture {
-  fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self {
+  fn load(path: Path, context: &mut impl AssetContext) -> Self {
     let image = Image::load(path, context);
-
-    Texture {
+    let mut texture = Texture {
       handle: TextureHandle::new(),
       width: image.width(),
       height: image.height(),
       flags: TextureFlags::Clamp,
-    }
+    };
+
+    texture.upload(&image);
+    texture
   }
 }

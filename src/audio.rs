@@ -1,6 +1,6 @@
 //! A lightweight and fast cross-platform audio engine.
 
-pub type AudioResult<T> = std::result::Result<T, AudioError>;
+pub type AudioResult<T> = std::result::Result<T, Error>;
 
 /// Abstracts over an audio device.
 ///
@@ -9,6 +9,12 @@ pub trait Audio {}
 
 /// Represents an error with audio.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum AudioError {
+pub enum Error {
   NotEnoughMemory,
+}
+
+impl From<Error> for crate::Error {
+  fn from(error: Error) -> Self {
+    Self::Audio(error)
+  }
 }

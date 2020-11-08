@@ -13,7 +13,7 @@ use winit::{
 
 use crate::input::{Key, MouseButton};
 use crate::maths::{vec2, Vector2};
-use crate::platform::{Platform, PlatformError};
+use crate::platform::{Platform, Error};
 
 mod audio;
 mod graphics;
@@ -44,7 +44,7 @@ pub struct DesktopPlatform {
 }
 
 impl DesktopPlatform {
-  pub fn new(config: Configuration) -> Result<Self, PlatformError> {
+  pub fn new(config: Configuration) -> Result<Self, Error> {
     let event_loop = EventLoop::new();
     let window_builder = WindowBuilder::new()
       .with_title(config.title)
@@ -176,14 +176,14 @@ impl Platform for DesktopPlatform {
   }
 }
 
-impl From<winit::error::OsError> for PlatformError {
+impl From<winit::error::OsError> for Error {
   fn from(_: winit::error::OsError) -> Self {
-    PlatformError::General
+    Error::General
   }
 }
 
-impl From<glutin::CreationError> for PlatformError {
+impl From<glutin::CreationError> for Error {
   fn from(_: glutin::CreationError) -> Self {
-    PlatformError::General
+    Error::General
   }
 }

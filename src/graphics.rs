@@ -18,7 +18,7 @@ mod textures;
 
 // TODO: support hot-reloading for textures and shaders?
 
-pub type GraphicsResult<T> = std::result::Result<T, GraphicsError>;
+pub type GraphicsResult<T> = std::result::Result<T, Error>;
 
 /// Abstracts over a graphics device or GPU.
 ///
@@ -52,15 +52,15 @@ pub enum PrimitiveTopology {
 }
 
 /// Represents an error with graphics.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum GraphicsError {
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Error {
   InvalidBuffer,
   InvalidTexture,
   InvalidShaderProgram,
 }
 
-impl From<GraphicsError> for crate::Error {
-  fn from(_: GraphicsError) -> Self {
-    crate::Error::Graphics
+impl From<Error> for crate::Error {
+  fn from(error: Error) -> Self {
+    Self::Graphics(error)
   }
 }

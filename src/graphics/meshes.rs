@@ -1,4 +1,6 @@
+use crate::assets::{AssetContext, LoadableAsset};
 use crate::graphics::{Buffer, BufferKind, BufferUsage};
+use crate::io::Path;
 
 /// Represents a mesh of vertices that can be rendered to a graphics device.
 pub struct Mesh<V> {
@@ -12,5 +14,11 @@ impl<V> Mesh<V> {
       vertices: Buffer::new(BufferKind::Element, BufferUsage::Static),
       indices: Buffer::new(BufferKind::Index, BufferUsage::Static),
     }
+  }
+}
+
+impl<V> LoadableAsset for Mesh<V> {
+  fn load(path: Path, context: &mut impl AssetContext) -> Self {
+    unimplemented!()
   }
 }

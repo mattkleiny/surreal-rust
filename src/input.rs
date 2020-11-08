@@ -40,10 +40,10 @@ pub struct Touch {
 
 /// Represents an error with input.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum InputError {}
+pub enum Error {}
 
-impl From<InputError> for crate::Error {
-  fn from(_: InputError) -> Self {
-    crate::Error::Input
+impl From<Error> for crate::Error {
+  fn from(error: Error) -> Self {
+    Self::Input(error)
   }
 }
