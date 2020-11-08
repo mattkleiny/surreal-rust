@@ -18,17 +18,17 @@ impl<T> Bounds2<T> {
   }
 
   pub fn size(&self) -> Vector2<T>
-    where T: Copy + Sub<Output=T> {
-    vec2(self.max.x - self.min.x,
-         self.max.y - self.min.y)
+  where
+    T: Copy + Sub<Output = T>,
+  {
+    vec2(self.max.x - self.min.x, self.max.y - self.min.y)
   }
 
   pub fn contains_point(&self, point: Vector2<T>) -> bool
-    where T: PartialOrd {
-    point.x >= self.min.x &&
-        point.y >= self.min.y &&
-        point.y <= self.max.y &&
-        point.y <= self.max.y
+  where
+    T: PartialOrd,
+  {
+    point.x >= self.min.x && point.y >= self.min.y && point.y <= self.max.y && point.y <= self.max.y
   }
 }
 
@@ -45,19 +45,25 @@ impl<T> Bounds3<T> {
   }
 
   pub fn size(&self) -> Vector3<T>
-    where T: Copy + Sub<Output=T> {
-    vec3(self.max.x - self.min.x,
-         self.max.y - self.min.y,
-         self.max.z - self.min.z)
+  where
+    T: Copy + Sub<Output = T>,
+  {
+    vec3(
+      self.max.x - self.min.x,
+      self.max.y - self.min.y,
+      self.max.z - self.min.z,
+    )
   }
 
   pub fn contains_point(&self, point: Vector3<T>) -> bool
-    where T: PartialOrd {
-    point.x >= self.min.x &&
-        point.y >= self.min.y &&
-        point.y <= self.max.y &&
-        point.y <= self.max.y &&
-        point.z >= self.min.z &&
-        point.z <= self.max.z
+  where
+    T: PartialOrd,
+  {
+    point.x >= self.min.x
+      && point.y >= self.min.y
+      && point.y <= self.max.y
+      && point.y <= self.max.y
+      && point.z >= self.min.z
+      && point.z <= self.max.z
   }
 }

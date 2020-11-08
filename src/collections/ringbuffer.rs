@@ -84,7 +84,7 @@ impl<'a, T: Clone> Iterator for RingBufferIterator<'a, T> {
 
       match &self.buffer.elements[self.index] {
         Some(item) => Some(item.clone()),
-        None => None
+        None => None,
       }
     } else {
       None

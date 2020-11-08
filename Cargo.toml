@@ -4,22 +4,20 @@ version = "0.1.0"
 authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
 edition = "2018"
 
+[workspace]
+members = ["examples/hello-world"]
+
 [dependencies]
 cgmath = "0.17.0"
 enumflags2 = "0.6.4"
 enumflags2_derive = "0.6.4"
 gl = "0.14.0"
-glutin = { version = "0.24.1", default-features = false }
-image = { version = "0.22.1", default-features = false, features = ["png_codec"] }
-rand = { version = "0.6.5", default-features = false, features = ["std"] }
-rlua = { version = "0.17.0", optional = true }
-rspirv = { version = "0.6.0", optional = true }
-winit = { version = "0.22.2", optional = true }
-smallvec = "1.4.0"
+glutin = { version = "0.25.1", default-features = false }
+image = { version = "0.23.11", default-features = false, features = ["png"] }
+rand = { version = "0.7.3", default-features = false, features = ["std"] }
+winit = { version = "0.23", optional = true }
+smallvec = "1.4.2"
 
 [features]
 default = []
 desktop = ["winit"]
-shady = ["rspirv"]
-kismet = []
-lua = ["rlua"]

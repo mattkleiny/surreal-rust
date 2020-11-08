@@ -2,6 +2,31 @@ use std::collections::HashMap;
 
 use crate::maths::{vec2, Vector2};
 
+/// Permits iterating over the cells in a grid.
+#[derive(Copy, Clone, Debug)]
+pub struct GridCellIterator {
+  size: usize,
+  stride: usize,
+  index: usize,
+}
+
+impl Iterator for GridCellIterator {
+  type Item = Vector2<usize>;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    if self.index < self.size {
+      let x = self.index % self.stride;
+      let y = self.index / self.stride;
+
+      self.index += 1;
+
+      Some(vec2(x, y))
+    } else {
+      None
+    }
+  }
+}
+
 /// A densely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct DenseGrid<T> {
@@ -12,11 +37,20 @@ pub struct DenseGrid<T> {
 
 impl<T: Clone> DenseGrid<T> {
   pub fn new(width: usize, height: usize, default: T) -> Self {
-    Self { width, height, elements: vec![default; width * height] }
+    Self {
+      width,
+      height,
+      elements: vec![default; width * height],
+    }
   }
 
-  pub fn width(&self) -> usize { self.width }
-  pub fn height(&self) -> usize { self.height }
+  pub fn width(&self) -> usize {
+    self.width
+  }
+
+  pub fn height(&self) -> usize {
+    self.height
+  }
 
   pub fn get(&self, x: usize, y: usize) -> &T {
     assert!(x < self.width);
@@ -30,6 +64,15 @@ impl<T: Clone> DenseGrid<T> {
     assert!(y < self.height);
 
     self.elements[x + y * self.width] = value;
+  }
+
+  #[inline]
+  pub fn cells(&self) -> GridCellIterator {
+    GridCellIterator {
+      size: self.width() * self.height(),
+      stride: self.width(),
+      index: 0,
+    }
   }
 
   /// Fills the grid with the given value
@@ -50,7 +93,9 @@ pub struct SparseGrid<T> {
 
 impl<T> SparseGrid<T> {
   pub fn new() -> Self {
-    Self { elements: HashMap::new() }
+    Self {
+      elements: HashMap::new(),
+    }
   }
 
   pub fn get(&self, x: i32, y: i32) -> Option<&T> {

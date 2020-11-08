@@ -40,7 +40,10 @@ impl Random for Seed {
 }
 
 /// Adapt all standard distribution types to our custom Random interface.
-impl<T> Random for T where rand::distributions::Standard: Distribution<T> {
+impl<T> Random for T
+where
+  rand::distributions::Standard: Distribution<T>,
+{
   fn random(generator: &mut RandomGenerator) -> Self {
     generator.rng.sample(rand::distributions::Standard)
   }
@@ -54,7 +57,9 @@ pub struct RandomGenerator {
 
 impl RandomGenerator {
   pub fn new(seed: u64) -> Self {
-    Self { rng: StdRng::seed_from_u64(seed) }
+    Self {
+      rng: StdRng::seed_from_u64(seed),
+    }
   }
 
   pub fn next<T: Random>(&mut self) -> T {

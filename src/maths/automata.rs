@@ -2,76 +2,47 @@ use smallvec::SmallVec;
 
 use crate::maths::{vec2, Vector2};
 
-pub fn von_neumann_neighbourhood(center: Vector2<i32>) -> SmallVec<[Vector2<i32>; 4]> {
-  smallvec![
-    vec2(center.x - 1, center.y), // left
-    vec2(center.x + 1, center.y), // right
-    vec2(center.x, center.y - 1), // bottom
-    vec2(center.x, center.y + 1), // top
-  ]
+/// Provides a von neumann neighbour expansion for points.
+pub trait VonNeumannNeighbourhood<T> {
+  type Output;
+
+  fn get_von_neumann_neighbours(&self) -> Self::Output;
 }
 
-pub fn moore_neighbourhood(center: Vector2<i32>) -> SmallVec<[Vector2<i32>; 8]> {
-  smallvec![
-    vec2(center.x - 1, center.y), // left
-    vec2(center.x + 1, center.y), // right
-    vec2(center.x, center.y - 1), // bottom
-    vec2(center.x, center.y + 1), // top
+impl VonNeumannNeighbourhood<i32> for Vector2<i32> {
+  type Output = SmallVec<[Vector2<i32>; 4]>;
 
-    vec2(center.x - 1, center.y - 1), // bottom left
-    vec2(center.x - 1, center.y + 1), // top left
-    vec2(center.x + 1, center.y - 1), // bottom right
-    vec2(center.x + 1, center.y + 1) // top right
-  ]
+  fn get_von_neumann_neighbours(&self) -> Self::Output {
+    smallvec![
+      vec2(self.x - 1, self.y), // left
+      vec2(self.x + 1, self.y), // right
+      vec2(self.x, self.y - 1), // bottom
+      vec2(self.x, self.y + 1), // top
+    ]
+  }
 }
 
-/// A classification of neighbourhoods for grid traversal and simulation.
-#[derive(Copy, Clone, Debug)]
-pub enum Neighbourhood {
-  VonNeumann,
-  VonNeumannInclusive,
-  Moore,
-  MooreInclusive,
+/// Provides a moore neighbour expansion for points.
+pub trait MooreNeighbourhood<T> {
+  type Output;
+
+  fn get_moore_neighbours(&self) -> Self::Output;
 }
 
-impl Neighbourhood {
-  pub fn get_neighbours(&self, center: Vector2<i32>) -> SmallVec<[Vector2<i32>; 9]> {
-    match self {
-      Neighbourhood::VonNeumann => smallvec![
-        vec2(center.x - 1, center.y), // left
-        vec2(center.x + 1, center.y), // right
-        vec2(center.x, center.y - 1), // bottom
-        vec2(center.x, center.y + 1), // top
-      ],
-      Neighbourhood::VonNeumannInclusive => smallvec![
-        vec2(center.x - 1, center.y), // left
-        vec2(center.x + 1, center.y), // right
-        vec2(center.x, center.y), // center
-        vec2(center.x, center.y - 1), // bottom
-        vec2(center.x, center.y + 1), // top
-      ],
-      Neighbourhood::Moore => smallvec![
-        vec2(center.x - 1, center.y), // left
-        vec2(center.x + 1, center.y), // right
-        vec2(center.x, center.y - 1), // bottom
-        vec2(center.x, center.y + 1), // top
-        vec2(center.x - 1, center.y - 1), // bottom left
-        vec2(center.x - 1, center.y + 1), // top left
-        vec2(center.x + 1, center.y - 1), // bottom right
-        vec2(center.x + 1, center.y + 1) // top right
-      ],
-      Neighbourhood::MooreInclusive => smallvec![
-        vec2(center.x - 1, center.y), // left
-        vec2(center.x + 1, center.y), // right
-        vec2(center.x, center.y - 1), // bottom
-        vec2(center.x, center.y + 1), // top
-        vec2(center.x, center.y), // center
-        vec2(center.x - 1, center.y - 1), // bottom left
-        vec2(center.x - 1, center.y + 1), // top left
-        vec2(center.x + 1, center.y - 1), // bottom right
-        vec2(center.x + 1, center.y + 1) // top right
-      ],
-    }
+impl MooreNeighbourhood<i32> for Vector2<i32> {
+  type Output = SmallVec<[Vector2<i32>; 8]>;
+
+  fn get_moore_neighbours(&self) -> Self::Output {
+    smallvec![
+      vec2(self.x - 1, self.y),     // left
+      vec2(self.x + 1, self.y),     // right
+      vec2(self.x, self.y - 1),     // bottom
+      vec2(self.x, self.y + 1),     // top
+      vec2(self.x - 1, self.y - 1), // bottom left
+      vec2(self.x - 1, self.y + 1), // top left
+      vec2(self.x + 1, self.y - 1), // bottom right
+      vec2(self.x + 1, self.y + 1)  // top right
+    ]
   }
 }
 
@@ -80,8 +51,12 @@ mod tests {
   use super::*;
 
   #[test]
-  fn neighbourhood_should_produce_valid_adjacent_points() {
-    assert_eq!(Neighbourhood::VonNeumann.get_neighbours(vec2(0, 0)).len(), 4);
-    assert_eq!(Neighbourhood::Moore.get_neighbours(vec2(0, 0)).len(), 8);
+  fn get_von_neumann_neighbourhood_should_produce_valid_adjacent_points() {
+    assert_eq!(vec2(0, 0).get_von_neumann_neighbours().len(), 4);
+  }
+
+  #[test]
+  fn get_moore_neighbourhood_should_produce_valid_adjacent_points() {
+    assert_eq!(vec2(0, 0).get_moore_neighbours().len(), 8);
   }
 }

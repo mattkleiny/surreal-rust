@@ -54,6 +54,8 @@ impl SpriteSheet {
 
 impl LoadableAsset for SpriteSheet {
   fn load(path: &impl AsRef<Path>, context: &mut impl AssetContext) -> Self {
-    SpriteSheet { texture: Asset::load(path, context) }
+    SpriteSheet {
+      texture: Asset::load(path, context),
+    }
   }
 }

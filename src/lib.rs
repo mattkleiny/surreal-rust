@@ -2,7 +2,7 @@
 //!
 //! Surreal is designed to be a simple and flexible game engine, not unlike
 //! libGDX or MonoGame.
-//! 
+//!
 //! It's opinionated, but small in scope and is intended to form a solid
 //! 'library'-like toolkit for constructing small, but fast 2d games (and maybe
 //! 3d someday). A lot of the work is left to the author as to how they'd like
@@ -20,11 +20,13 @@ pub mod assets;
 pub mod audio;
 pub mod collections;
 pub mod diagnostics;
+pub mod editor;
 pub mod graphics;
 pub mod input;
 pub mod maths;
 pub mod platform;
 pub mod scripting;
+pub mod ui;
 pub mod utilities;
 
 /// Represents a general error with the engine.

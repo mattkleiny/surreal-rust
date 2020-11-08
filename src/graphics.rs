@@ -25,7 +25,7 @@ pub type GraphicsResult<T> = std::result::Result<T, GraphicsError>;
 /// Permits interaction with the underlying graphics API through a higher-level abstraction.
 pub trait Graphics {
   // frame buffers
-  fn clear_active_framebuffer(&mut self, color: Color);
+  fn clear_active_frame_buffer(&mut self, color: Color);
   fn set_viewport(&mut self, viewport: Viewport);
 }
 

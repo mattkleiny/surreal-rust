@@ -25,14 +25,9 @@ pub struct ArenaIndex {
 #[derive(Clone, Debug)]
 enum ArenaEntry<T> {
   /// This slot in the list is free and can contain a new element.
-  Free {
-    next_free: Option<usize>
-  },
+  Free { next_free: Option<usize> },
   /// This slot is occupied and already contains an element.
-  Occupied {
-    generation: u64,
-    value: T,
-  },
+  Occupied { generation: u64, value: T },
 }
 
 impl<T> Arena<T> {
@@ -60,7 +55,10 @@ impl<T> Arena<T> {
       Err(element) => {
         // double the size of the list and try again
         self.reserve(self.items.len());
-        self.try_insert(element).map_err(|_| ()).expect("Failed to insert item!")
+        self
+          .try_insert(element)
+          .map_err(|_| ())
+          .expect("Failed to insert item!")
       }
     }
   }
@@ -97,7 +95,7 @@ impl<T> Arena<T> {
     let entry = std::mem::replace(
       &mut self.items[index.index],
       ArenaEntry::Free {
-        next_free: self.next_free
+        next_free: self.next_free,
       },
     );
 
@@ -110,10 +108,7 @@ impl<T> Arena<T> {
 
           Some(value)
         } else {
-          self.items[index.index] = ArenaEntry::Occupied {
-            generation,
-            value,
-          };
+          self.items[index.index] = ArenaEntry::Occupied { generation, value };
 
           None
         }
@@ -133,16 +128,22 @@ impl<T> Arena<T> {
   /// Retrieves an existing element from the arena.
   pub fn get(&self, index: ArenaIndex) -> Option<&T> {
     match self.items.get(index.index) {
-      Some(ArenaEntry::Occupied { generation, ref value, }) if *generation == index.generation => Some(value),
-      _ => None
+      Some(ArenaEntry::Occupied {
+        generation,
+        ref value,
+      }) if *generation == index.generation => Some(value),
+      _ => None,
     }
   }
 
   /// Retrieves mutably an existing element from the arena.
   pub fn get_mut(&mut self, index: ArenaIndex) -> Option<&mut T> {
     match self.items.get_mut(index.index) {
-      Some(ArenaEntry::Occupied { generation, ref mut value, }) if *generation == index.generation => Some(value),
-      _ => None
+      Some(ArenaEntry::Occupied {
+        generation,
+        ref mut value,
+      }) if *generation == index.generation => Some(value),
+      _ => None,
     }
   }
 
@@ -181,9 +182,7 @@ impl<T> Arena<T> {
     // reset the entries
     for (index, item) in self.items.iter_mut().enumerate() {
       if index == capacity - 1 {
-        *item = ArenaEntry::Free {
-          next_free: None
-        };
+        *item = ArenaEntry::Free { next_free: None };
       } else {
         *item = ArenaEntry::Free {
           next_free: Some(index + 1),

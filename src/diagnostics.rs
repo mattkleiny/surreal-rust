@@ -7,5 +7,5 @@
 pub use logging::*;
 pub use profiling::*;
 
-mod profiling;
 mod logging;
+mod profiling;

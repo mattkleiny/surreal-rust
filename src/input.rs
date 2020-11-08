@@ -35,7 +35,7 @@ pub enum Key {
 /// Represents a touch on a touch screen.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Touch {
-  pos: Vector2<u32>
+  pos: Vector2<u32>,
 }
 
 /// Represents an error with input.

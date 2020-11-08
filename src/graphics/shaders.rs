@@ -244,14 +244,17 @@ pub mod shady {
   /// The result is the root AST that can later be compiled on-device.
   #[allow(unused_macros)]
   macro_rules! shady {
-    ($raw:tt) => { Parser::parse_const(stringify!(raw)) }
+    ($raw:tt) => {
+      Parser::parse_const(stringify!(raw))
+    };
   }
 
   #[cfg(test)]
   mod tests {
     use super::*;
 
-    const TEST_PROGRAM: ShadyProgram = shady!(r"
+    const TEST_PROGRAM: ShadyProgram = shady!(
+      r"
       #shader_type sprite
       #include 'palettes.shady'
 
@@ -260,6 +263,7 @@ pub mod shady {
       void fragment() {
         COLOR = sample_palette(_ColorPalette, sample(TEXTURE, UV));
       }
-    ");
+    "
+    );
   }
 }

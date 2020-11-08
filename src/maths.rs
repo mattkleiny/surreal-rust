@@ -14,9 +14,9 @@ mod automata;
 mod bounds;
 mod curves;
 mod directions;
+mod grids;
 mod interp;
 mod linear;
-mod grids;
 mod random;
 mod ranges;
 
@@ -25,7 +25,7 @@ pub fn clamp<T: PartialOrd>(value: T, lower: T, upper: T) -> T {
   match () {
     _ if value > upper => upper,
     _ if value < lower => lower,
-    _ => value
+    _ => value,
   }
 }
 

@@ -25,7 +25,7 @@ pub trait Platform {
   fn window(&mut self) -> &mut Self::Window;
 
   /// Runs platform, invoking the given callback when available to process the next frame.
-  fn run(self, callback: impl FnMut(&mut Self) -> bool);
+  fn run(self, callback: impl FnMut(&mut Self));
 }
 
 /// Abstracts over the window provider of a device.

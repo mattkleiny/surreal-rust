@@ -1,27 +1,6 @@
 use std::marker::PhantomData;
 use std::os::raw::c_void;
 
-/// A managed ID for OpenGL buffers.
-struct BufferHandle(u32);
-
-impl BufferHandle {
-  pub fn new() -> Self {
-    let mut id = 0;
-    unsafe {
-      gl::GenBuffers(1, &mut id)
-    }
-    Self(id)
-  }
-}
-
-impl Drop for BufferHandle {
-  fn drop(&mut self) {
-    unsafe {
-      gl::DeleteBuffers(1, &self.0);
-    }
-  }
-}
-
 /// A buffer implementation based on OpenGL.
 pub struct Buffer<T> {
   handle: BufferHandle,
@@ -41,10 +20,17 @@ impl<T> Buffer<T> {
     }
   }
 
-  fn kind(&self) -> BufferKind { self.kind }
-  fn usage(&self) -> BufferUsage { self.usage }
+  fn kind(&self) -> BufferKind {
+    self.kind
+  }
+  fn usage(&self) -> BufferUsage {
+    self.usage
+  }
 
-  fn attributes(&self) -> &[VertexAttribute] where T: Vertex {
+  fn attributes(&self) -> &[VertexAttribute]
+  where
+    T: Vertex,
+  {
     T::attributes()
   }
 
@@ -60,7 +46,12 @@ impl<T> Buffer<T> {
         BufferUsage::Dynamic => gl::DYNAMIC_DRAW,
       };
       gl::BindBuffer(kind, self.handle.0);
-      gl::BufferData(kind, data.len() as isize, data.as_ptr() as *const c_void, usage)
+      gl::BufferData(
+        kind,
+        data.len() as isize,
+        data.as_ptr() as *const c_void,
+        usage,
+      )
     }
   }
 }
@@ -92,4 +83,23 @@ pub struct VertexAttribute {
   pub binding: String,
   pub offset: usize,
   pub stride: usize,
+}
+
+/// A managed ID for OpenGL buffers.
+struct BufferHandle(u32);
+
+impl BufferHandle {
+  pub fn new() -> Self {
+    let mut id = 0;
+    unsafe { gl::GenBuffers(1, &mut id) }
+    Self(id)
+  }
+}
+
+impl Drop for BufferHandle {
+  fn drop(&mut self) {
+    unsafe {
+      gl::DeleteBuffers(1, &self.0);
+    }
+  }
 }

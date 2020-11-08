@@ -3,7 +3,7 @@ use crate::graphics::*;
 use super::DesktopPlatform;
 
 impl Graphics for DesktopPlatform {
-  fn clear_active_framebuffer(&mut self, color: Color) {
+  fn clear_active_frame_buffer(&mut self, color: Color) {
     unsafe {
       gl::ClearColor(
         color.r as f32 / 255.0,

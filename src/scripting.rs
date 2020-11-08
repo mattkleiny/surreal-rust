@@ -7,8 +7,5 @@
 // TODO: abstract over scripting language, add debugging and profiling/etc.
 // TODO: strongly emphasise duck-typing for game
 
-#[cfg(feature = "lua")]
-pub mod lua;
-
 /// Represents an engine for scripting support.
 pub trait ScriptEngine {}

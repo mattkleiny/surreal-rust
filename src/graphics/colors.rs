@@ -17,42 +17,30 @@ impl Color {
   pub const RED: Color = Color::rgb(255, 0, 0);
   pub const GREEN: Color = Color::rgb(0, 255, 0);
   pub const BLUE: Color = Color::rgb(0, 0, 255);
+  pub const PINK: Color = Color::rgb(255, 0, 255);
 
+  #[inline]
   pub const fn rgb(r: u8, g: u8, b: u8) -> Self {
     Self { r, g, b, a: 255 }
   }
 
+  #[inline]
   pub const fn rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
     Self { r, g, b, a }
   }
 }
 
-impl Into<(u8, u8, u8, u8)> for Color {
-  fn into(self) -> (u8, u8, u8, u8) {
-    (self.r, self.g, self.b, self.a)
+impl From<(u8, u8, u8)> for Color {
+  #[inline]
+  fn from(source: (u8, u8, u8)) -> Self {
+    Self::rgb(source.0, source.1, source.2)
   }
 }
 
-impl Into<[f32; 4]> for Color {
-  fn into(self) -> [f32; 4] {
-    [
-      self.r as f32 / 255.0,
-      self.g as f32 / 255.0,
-      self.b as f32 / 255.0,
-      self.a as f32 / 255.0
-    ]
-  }
-}
-
-impl From<[u8; 4]> for Color {
-  fn from(source: [u8; 4]) -> Self {
-    Self::rgba(source[0], source[1], source[2], source[3])
-  }
-}
-
-impl Into<u32> for Color {
-  fn into(self) -> u32 {
-    ((self.r as u32) << 24) | ((self.g as u32) << 16) | ((self.b as u32) << 8) | (self.a as u32) as u32
+impl From<(u8, u8, u8, u8)> for Color {
+  #[inline]
+  fn from(source: (u8, u8, u8, u8)) -> Self {
+    Self::rgba(source.0, source.1, source.2, source.3)
   }
 }
 
@@ -67,29 +55,51 @@ impl From<u32> for Color {
   }
 }
 
+impl From<Color> for u32 {
+  #[inline]
+  fn from(color: Color) -> Self {
+    ((color.r as u32) << 24)
+      | ((color.g as u32) << 16)
+      | ((color.b as u32) << 8)
+      | (color.a as u32) as u32
+  }
+}
+
 impl Add for Color {
   type Output = Color;
 
+  #[inline]
   fn add(self, rhs: Self) -> Self::Output {
-    Color::rgba(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
+    Color::rgba(
+      self.r + rhs.r,
+      self.g + rhs.g,
+      self.b + rhs.b,
+      self.a + rhs.a,
+    )
   }
 }
 
 impl Sub for Color {
   type Output = Color;
 
+  #[inline]
   fn sub(self, rhs: Self) -> Self::Output {
-    Color::rgba(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
+    Color::rgba(
+      self.r - rhs.r,
+      self.g - rhs.g,
+      self.b - rhs.b,
+      self.a - rhs.a,
+    )
   }
 }
 
 impl Lerp for Color {
-  fn lerp(a: Color, b: Color, t: f32) -> Self {
+  fn lerp(a: &Color, b: &Color, t: f32) -> Self {
     Color::rgba(
-      u8::lerp(a.r, b.r, t),
-      u8::lerp(a.g, b.g, t),
-      u8::lerp(a.b, b.b, t),
-      u8::lerp(a.a, b.a, t),
+      u8::lerp(&a.r, &b.r, t),
+      u8::lerp(&a.g, &b.g, t),
+      u8::lerp(&a.b, &b.b, t),
+      u8::lerp(&a.a, &b.a, t),
     )
   }
 }
@@ -128,7 +138,7 @@ mod tests {
 
   #[test]
   fn color_should_interpolate_between_values() {
-    let color = Color::lerp(Color::BLACK, Color::WHITE, 0.5);
+    let color = Color::lerp(&Color::BLACK, &Color::WHITE, 0.5);
 
     assert_eq!(color.r, 127);
     assert_eq!(color.g, 127);

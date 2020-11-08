@@ -3,7 +3,9 @@ use std::time::Instant;
 use crate::collections::RingBuffer;
 
 /// Returns the current time, in seconds since the epoch.
-pub fn now() -> u64 { Instant::now().elapsed().as_secs() }
+pub fn now() -> u64 {
+  Instant::now().elapsed().as_secs()
+}
 
 /// Contains information on the game's timing state.
 #[derive(Copy, Clone, Debug)]
@@ -41,7 +43,11 @@ impl Clock {
 
     // compute delta time since the last update
     let delta_time = ((self.current_time - self.last_time) * 1000 / frequency) as f64 / 1000.;
-    let clamped_time = if delta_time > self.max_time { self.max_time } else { delta_time };
+    let clamped_time = if delta_time > self.max_time {
+      self.max_time
+    } else {
+      delta_time
+    };
 
     clamped_time * self.time_scale
   }
@@ -55,7 +61,9 @@ pub struct FrameCounter {
 
 impl FrameCounter {
   pub fn new(samples: usize) -> Self {
-    Self { samples: RingBuffer::new(samples) }
+    Self {
+      samples: RingBuffer::new(samples),
+    }
   }
 
   pub fn tick(&mut self, delta_time: f64) {

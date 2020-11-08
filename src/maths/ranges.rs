@@ -1,25 +1,37 @@
 use std::ops::Sub;
 
 /// Builds a range between the given values.
-pub fn range<T>(min: T, max: T) -> Range<T> { Range::new(min, max) }
+#[inline]
+pub const fn range<T>(min: T, max: T) -> Range<T> {
+  Range::new(min, max)
+}
 
 /// An inclusive range that spans the given (min, max) values.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Range<T> {
-  min: T,
-  max: T,
+  pub min: T,
+  pub max: T,
 }
 
 impl<T> Range<T> {
-  pub fn new(min: T, max: T) -> Self {
+  #[inline]
+  pub const fn new(min: T, max: T) -> Self {
     Self { min, max }
   }
 
-  pub fn delta(&self) -> T where T: Copy + Sub<Output=T> {
+  #[inline]
+  pub fn delta(&self) -> T
+  where
+    T: Copy + Sub<Output = T>,
+  {
     self.max - self.min
   }
 
-  pub fn contains(&self, other: T) -> bool where T: PartialOrd {
+  #[inline]
+  pub fn contains(&self, other: T) -> bool
+  where
+    T: PartialOrd,
+  {
     other >= self.min && other <= self.max
   }
 }
