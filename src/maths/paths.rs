@@ -19,27 +19,6 @@ pub trait PathFindingGrid {
 
   /// Locate a path from the given start point to the given goal via a heuristic.
   fn find_path(&self, start: Point, goal: Point, heuristic: impl Fn(Point, Point) -> Cost) -> Option<Path> {
-    /// Rebuilds the path taken to get to the destination.
-    fn rebuild_path(start: Point, goal: Point, came_from: HashMap<Point, Point>) -> Path {
-      let mut result = Vec::new();
-      let mut current = goal;
-
-      while current != start {
-        result.push(current);
-
-        if current == start {
-          break;
-        }
-
-        current = *came_from.get(&current).unwrap();
-      }
-
-      result.push(start);
-      result.reverse();
-
-      Path(result)
-    }
-
     let mut visited = HashSet::new();
 
     let mut came_from = HashMap::new();
@@ -85,6 +64,27 @@ pub trait PathFindingGrid {
   }
 }
 
+/// Rebuilds the path taken to get to the destination.
+fn rebuild_path(start: Point, goal: Point, came_from: HashMap<Point, Point>) -> Path {
+  let mut result = Vec::new();
+  let mut current = goal;
+
+  while current != start {
+    result.push(current);
+
+    if current == start {
+      break;
+    }
+
+    current = *came_from.get(&current).unwrap();
+  }
+
+  result.push(start);
+  result.reverse();
+
+  Path(result)
+}
+
 // Generic implementation for any grid space.
 impl<T> PathFindingGrid for super::DenseGrid<T> {
   #[inline(always)]
@@ -97,7 +97,9 @@ impl<T> PathFindingGrid for super::DenseGrid<T> {
   }
 }
 
-mod heuristics {
+pub mod heuristics {
+  //! Path-finding heuristic functions.
+
   use super::*;
 
   #[inline]

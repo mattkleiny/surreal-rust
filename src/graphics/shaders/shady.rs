@@ -18,6 +18,12 @@ impl ShadyProgram {
   pub fn parse(raw: impl AsRef<str>) -> ParseResult<ShadyProgram> {
     Parser::parse(raw.as_ref())
   }
+
+  pub fn accept(&self, visitor: &mut impl Visitor) {
+    for statement in &self.statements {
+      visitor.visit_statement(statement);
+    }
+  }
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -71,6 +77,12 @@ pub enum ProgramKind {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum IntrinsicKind {
+  VertexOutput,
+  FragmentOutput,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum MethodBinding {
   VertexBody,
   FragmentBody,
@@ -101,6 +113,14 @@ pub enum Expression {
     name: String,
     is_const: bool,
   },
+  FunctionCall {
+    name: String,
+    parameters: Vec<Expression>,
+  },
+  Intrinsic {
+    kind: IntrinsicKind,
+    parameters: Vec<Expression>,
+  },
 }
 
 #[derive(Clone, Debug)]
@@ -120,9 +140,9 @@ pub enum Statement {
 }
 
 /// Visitation pattern for the shady AST.
-pub trait Visitor<T> {
-  fn visit_statement(&mut self, statement: &Statement) -> T;
-  fn visit_expression(&mut self, expression: &Expression) -> T;
+pub trait Visitor {
+  fn visit_statement(&mut self, statement: &Statement);
+  fn visit_expression(&mut self, expression: &Expression);
 }
 
 /// A tokenizer for Shady programs.
@@ -198,7 +218,7 @@ type ParseResult<T> = std::result::Result<T, ParseError>;
 mod tests {
   use super::*;
 
-  # [test]
+  #[test]
   fn it_should_parse_a_simple_program() {
     ShadyProgram::parse("#kind sprite").expect("Failed to parse simple program!");
   }

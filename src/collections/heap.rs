@@ -6,13 +6,13 @@ pub struct MinHeap<T, TCost> {
   entries: Vec<Entry<T, TCost>>,
 }
 
-impl<T, TCost> MinHeap<T, TCost> {
+impl<T, TCost: PartialOrd> MinHeap<T, TCost> {
   pub fn new() -> Self {
     Self { entries: Vec::new() }
   }
 
   pub fn push(&mut self, value: T, cost: TCost) {
-    unimplemented!()
+    self.entries.push(Entry::new(value, cost));
   }
 
   pub fn pop(&mut self) -> Option<T> {
@@ -24,8 +24,21 @@ impl<T, TCost> MinHeap<T, TCost> {
   }
 }
 
+#[inline]
+fn swap<T: Copy>(a: &mut T, b: &mut T) {
+  let temp = *b;
+  *a = *b;
+  *b = temp;
+}
+
+const fn parent(key: usize) -> usize { (key - 1) / 2 }
+
+const fn left(key: usize) -> usize { 2 * key + 1 }
+
+const fn right(key: usize) -> usize { 2 * key + 2 }
+
 /// An entry in a min or max heap.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 struct Entry<T, TCost> {
   value: T,
   cost: TCost,

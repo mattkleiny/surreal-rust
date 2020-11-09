@@ -1,4 +1,6 @@
 use super::shady::*;
+use rspirv::binary::Assemble;
+use enumflags2::_internal::core::ops::Deref;
 
 type CompileResult<T> = std::result::Result<T, CompileError>;
 
@@ -21,8 +23,8 @@ impl SpirvCompiler {
   }
 }
 
-impl super::shady::Visitor<()> for SpirvCompiler {
-  fn visit_statement(&mut self, statement: &Statement) -> () {
+impl super::shady::Visitor for SpirvCompiler {
+  fn visit_statement(&mut self, statement: &Statement) {
     match statement {
       Statement::Unknown => {}
       Statement::Empty => {}
@@ -33,27 +35,44 @@ impl super::shady::Visitor<()> for SpirvCompiler {
     unimplemented!()
   }
 
-  fn visit_expression(&mut self, expression: &Expression) -> () {
+  fn visit_expression(&mut self, expression: &Expression) {
+    match expression {
+      Expression::Unknown => {}
+      Expression::Empty => {}
+      Expression::Operator { .. } => {}
+      Expression::Variable { .. } => {}
+      Expression::FunctionCall { .. } => {}
+      Expression::Intrinsic { .. } => {}
+    }
+
     unimplemented!()
   }
 }
 
 
 /// A SPIR-V compiled shader program.
-pub struct SpirvProgram(Vec<u8>);
+pub struct SpirvProgram(Vec<u32>);
 
 /// A procedural builder for SPIR-V programs.
 struct SpirvBuilder {
-  raw: Vec<u8>,
+  builder: rspirv::dr::Builder,
 }
 
 impl SpirvBuilder {
   pub fn new() -> Self {
-    Self { raw: Vec::new() }
+    Self { builder: rspirv::dr::Builder::new() }
   }
 
   pub fn build(self) -> SpirvProgram {
-    SpirvProgram(self.raw)
+    SpirvProgram(self.builder.module().assemble())
+  }
+}
+
+impl Deref for SpirvBuilder {
+  type Target = rspirv::dr::Builder;
+
+  fn deref(&self) -> &Self::Target {
+    &self.builder
   }
 }
 
