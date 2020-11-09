@@ -1,5 +1,7 @@
 // TODO: implement a frustum?
 
+pub use cgmath::{MetricSpace, VectorSpace};
+
 pub type Point2<T> = cgmath::Point2<T>;
 pub type Point3<T> = cgmath::Point3<T>;
 
@@ -17,12 +19,15 @@ pub type Quaternion<T> = cgmath::Quaternion<T>;
 pub const fn vec2<T>(x: T, y: T) -> Vector2<T> {
   Vector2 { x, y }
 }
+
 pub const fn vec3<T>(x: T, y: T, z: T) -> Vector3<T> {
   Vector3 { x, y, z }
 }
+
 pub const fn point2<T>(x: T, y: T) -> Point2<T> {
   Point2 { x, y }
 }
+
 pub const fn point3<T>(x: T, y: T, z: T) -> Point3<T> {
   Point3 { x, y, z }
 }

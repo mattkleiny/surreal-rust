@@ -7,6 +7,7 @@ pub use directions::*;
 pub use grids::*;
 pub use interp::*;
 pub use linear::*;
+pub use paths::*;
 pub use random::*;
 pub use ranges::*;
 
@@ -17,6 +18,7 @@ mod directions;
 mod grids;
 mod interp;
 mod linear;
+mod paths;
 mod random;
 mod ranges;
 
