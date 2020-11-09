@@ -10,6 +10,8 @@ pub type StreamResult<T> = std::result::Result<T, Error>;
 
 /// Abstracts over a source of bytes for reading/writing.
 pub trait Stream {
+  fn is_eof(&self) -> bool;
+
   /// Attempts to read a sequence of bytes from the stream.
   fn read_bytes(&mut self, buffer: &mut [u8]) -> StreamResult<usize>;
 
@@ -73,6 +75,10 @@ impl FileStream {
 }
 
 impl Stream for FileStream {
+  fn is_eof(&self) -> bool {
+    unimplemented!()
+  }
+
   fn read_bytes(&mut self, buffer: &mut [u8]) -> StreamResult<usize> {
     Ok(self.file.read(buffer)?)
   }

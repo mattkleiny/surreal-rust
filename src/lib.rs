@@ -34,6 +34,7 @@ pub mod utilities;
 #[derive(Debug)]
 pub enum Error {
   General,
+  Asset(assets::Error),
   Audio(audio::Error),
   Graphics(graphics::Error),
   Input(input::Error),

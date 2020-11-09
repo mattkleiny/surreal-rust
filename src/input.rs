@@ -32,6 +32,12 @@ pub enum Key {
   Escape,
 }
 
+impl Key {
+  pub fn from_scan_code(scancode: u32) -> Self {
+    unimplemented!()
+  }
+}
+
 /// Represents a touch on a touch screen.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Touch {

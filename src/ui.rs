@@ -6,6 +6,18 @@ use crate::maths::Rect;
 
 pub type Bounds = Rect<f32>;
 
+/// Renderable UI content (with optional icon).
+pub enum Content {
+  Label(&'static str),
+  Icon(Option<Asset<Texture>>),
+}
+
+impl From<&'static str> for Content {
+  fn from(text: &'static str) -> Self {
+    Self::Label(text)
+  }
+}
+
 /// A canvas for immediate-mode rendering.
 pub trait Canvas: Sized {
   fn label(&mut self, position: &Bounds, content: &Content) -> f32 {
@@ -35,17 +47,6 @@ pub trait Canvas: Sized {
   fn min_max_slider(&mut self, position: &Bounds) -> (f64, f64) {
     unimplemented!()
   }
-
-  fn property(
-    &mut self,
-    layout: &mut impl Layout,
-    property: &mut impl crate::editor::Property,
-    label: &Content,
-  ) {
-    let position = layout.next_bounds();
-
-    property.on_property_gui(self, &position, label);
-  }
 }
 
 /// Permit immediate-mode layouts on some canvas.
@@ -72,14 +73,3 @@ impl Layout for HorizontalLayout {
   }
 }
 
-/// Renderable content (with optional icon).
-pub enum Content {
-  Label(&'static str),
-  Icon(Option<Asset<Texture>>),
-}
-
-impl From<&'static str> for Content {
-  fn from(text: &'static str) -> Self {
-    Self::Label(text)
-  }
-}

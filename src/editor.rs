@@ -11,6 +11,17 @@ pub trait Inspector {
   fn on_inspector_gui(&mut self, canvas: &mut impl Canvas, layout: &mut impl Layout);
 }
 
+/// Generic editor canvas extensions.
+pub trait EditorCanvas: Canvas {
+  fn property(&mut self, layout: &mut impl Layout, property: &mut impl Property, label: &Content) {
+    let position = layout.next_bounds();
+
+    property.on_property_gui(self, &position, label);
+  }
+}
+
+impl<C: Canvas> EditorCanvas for C {}
+
 #[cfg(test)]
 mod tests {
   use crate::maths::Range;

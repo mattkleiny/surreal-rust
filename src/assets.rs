@@ -1,25 +1,8 @@
 //! A simple asset management system with support for hot file reloading.
 
-use enumflags2::_internal::core::ops::Deref;
-
 use crate::io::Path;
 
-/// Context for asset operations.
-pub trait AssetContext {}
-
-/// A manager for assets.
-///
-/// Assets are cached centrally by the manager, so accessing the same path
-/// twice will always result in the same asset being returned.
-pub struct AssetManager {}
-
-impl AssetManager {
-  pub fn load<T: LoadableAsset>(&mut self, path: Path) -> Asset<T> {
-    Asset::load(path, self)
-  }
-}
-
-impl AssetContext for AssetManager {}
+pub type AssetResult<T> = std::result::Result<T, Error>;
 
 /// A shared pointer to an asset, with support for interior hot-reloading.
 ///
@@ -38,21 +21,25 @@ enum AssetState<T> {
 }
 
 impl<T> Asset<T> {
-  pub fn load(path: Path, context: &mut impl AssetContext) -> Asset<T>
-  where
-    T: LoadableAsset,
-  {
-    Asset {
-      state: AssetState::Ready(T::load(path, context)),
-    }
+  pub fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Asset<T>>
+    where T: LoadableAsset {
+    let asset = T::load(path, context)?;
+
+    Ok(Asset {
+      state: AssetState::Ready(asset),
+    })
   }
 
   pub fn get(&self) -> Option<&T> {
     unimplemented!()
   }
+
+  pub fn get_mut(&mut self) -> Option<&mut T> {
+    unimplemented!()
+  }
 }
 
-impl<T> Deref for Asset<T> {
+impl<T> std::ops::Deref for Asset<T> {
   type Target = T;
 
   fn deref(&self) -> &Self::Target {
@@ -60,7 +47,46 @@ impl<T> Deref for Asset<T> {
   }
 }
 
+impl<T> std::ops::DerefMut for Asset<T> {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    self.get_mut().expect("This asset has not finished loading!")
+  }
+}
+
 /// Permits loading an object from disk.
-pub trait LoadableAsset {
-  fn load(path: Path, context: &mut impl AssetContext) -> Self;
+pub trait LoadableAsset: Sized {
+  fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Self>;
+}
+
+/// Permits hot-loading an asset as it changes on disk.
+pub trait ReloadableAsset: LoadableAsset {
+  fn on_asset_reload(&mut self, updated_asset: &mut Self);
+}
+
+/// A manager for assets.
+///
+/// Assets are cached centrally by the manager, so accessing the same path
+/// twice will always result in the same asset being returned.
+pub struct AssetManager {}
+
+/// Context for asset operations.
+pub trait AssetContext {
+  fn load<T: LoadableAsset>(&mut self, path: Path) -> AssetResult<Asset<T>>;
+}
+
+impl AssetContext for AssetManager {
+  fn load<T: LoadableAsset>(&mut self, path: Path) -> AssetResult<Asset<T>> {
+    unimplemented!()
+  }
+}
+
+#[derive(Debug)]
+pub enum Error {
+  UnableToLoadAsset
+}
+
+impl From<Error> for crate::Error {
+  fn from(error: Error) -> Self {
+    Self::Asset(error)
+  }
 }

@@ -1,4 +1,4 @@
-use crate::assets::{Asset, AssetContext, LoadableAsset};
+use crate::assets::{Asset, AssetContext, LoadableAsset, AssetResult};
 use crate::graphics::{Color, GraphicsDevice, Error, Texture, TextureRegion};
 use crate::maths::Vector2;
 use crate::io::Path;
@@ -52,9 +52,11 @@ impl SpriteSheet {
 }
 
 impl LoadableAsset for SpriteSheet {
-  fn load(path: Path, context: &mut impl AssetContext) -> Self {
-    SpriteSheet {
-      texture: Asset::load(path, context),
-    }
+  fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Self> {
+    let sheet = SpriteSheet {
+      texture: Asset::load(path, context)?,
+    };
+
+    Ok(sheet)
   }
 }

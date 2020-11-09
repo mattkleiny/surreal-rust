@@ -9,6 +9,13 @@ pub trait VonNeumannNeighbourhood<T> {
   fn get_von_neumann_neighbours(&self) -> Self::Output;
 }
 
+/// Provides a moore neighbour expansion for points.
+pub trait MooreNeighbourhood<T> {
+  type Output;
+
+  fn get_moore_neighbours(&self) -> Self::Output;
+}
+
 impl VonNeumannNeighbourhood<i32> for Vector2<i32> {
   type Output = SmallVec<[Vector2<i32>; 4]>;
 
@@ -20,13 +27,6 @@ impl VonNeumannNeighbourhood<i32> for Vector2<i32> {
       vec2(self.x, self.y + 1), // top
     ]
   }
-}
-
-/// Provides a moore neighbour expansion for points.
-pub trait MooreNeighbourhood<T> {
-  type Output;
-
-  fn get_moore_neighbours(&self) -> Self::Output;
 }
 
 impl MooreNeighbourhood<i32> for Vector2<i32> {

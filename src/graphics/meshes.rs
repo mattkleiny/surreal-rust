@@ -1,4 +1,4 @@
-use crate::assets::{AssetContext, LoadableAsset};
+use crate::assets::{AssetContext, AssetResult, LoadableAsset};
 use crate::graphics::{Buffer, BufferKind, BufferUsage};
 use crate::io::Path;
 
@@ -18,7 +18,7 @@ impl Mesh {
 }
 
 impl LoadableAsset for Mesh {
-  fn load(path: Path, context: &mut impl AssetContext) -> Self {
+  fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Self> {
     unimplemented!()
   }
 }

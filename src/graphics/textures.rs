@@ -1,4 +1,4 @@
-use crate::assets::{Asset, AssetContext, LoadableAsset};
+use crate::assets::{Asset, AssetContext, LoadableAsset, AssetResult};
 use crate::graphics::Image;
 use crate::maths::{vec2, Vector2};
 use crate::io::Path;
@@ -80,8 +80,8 @@ impl Drop for TextureHandle {
 }
 
 impl LoadableAsset for Texture {
-  fn load(path: Path, context: &mut impl AssetContext) -> Self {
-    let image = Image::load(path, context);
+  fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Self> {
+    let image = Image::load(path, context)?;
     let mut texture = Texture {
       handle: TextureHandle::new(),
       width: image.width(),
@@ -90,6 +90,7 @@ impl LoadableAsset for Texture {
     };
 
     texture.upload(&image);
-    texture
+
+    Ok(texture)
   }
 }

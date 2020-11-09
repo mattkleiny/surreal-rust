@@ -1,4 +1,4 @@
-use crate::assets::{AssetContext, LoadableAsset};
+use crate::assets::{AssetContext, AssetResult, LoadableAsset};
 use crate::graphics::Color;
 use crate::io::Path;
 use crate::maths::DenseGrid;
@@ -37,7 +37,7 @@ impl Image {
 }
 
 impl LoadableAsset for Image {
-  fn load(path: Path, context: &mut impl AssetContext) -> Self {
+  fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Self> {
     unimplemented!()
   }
 }

@@ -33,15 +33,18 @@ impl InputDevice for DesktopPlatform {
 }
 
 impl From<winit::event::MouseButton> for MouseButton {
-  fn from(_: winit::event::MouseButton) -> Self {
-    // TODO: implement me
-    MouseButton::Left
+  fn from(button: winit::event::MouseButton) -> Self {
+    match button {
+      winit::event::MouseButton::Left => Self::Left,
+      winit::event::MouseButton::Right => Self::Right,
+      winit::event::MouseButton::Middle => Self::Middle,
+      winit::event::MouseButton::Other(_) => Self::Middle,
+    }
   }
 }
 
 impl From<winit::event::ScanCode> for Key {
-  fn from(_: u32) -> Self {
-    // TODO: implement me
-    Key::Escape
+  fn from(code: u32) -> Self {
+    Self::from_scan_code(code)
   }
 }

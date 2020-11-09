@@ -5,7 +5,9 @@ authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
 edition = "2018"
 
 [workspace]
-members = ["examples/hello-world"]
+members = [
+    "examples/hello-world",
+]
 
 [dependencies]
 cgmath = "0.17.0"
@@ -18,7 +20,9 @@ image = { version = "0.23.11", default-features = false, features = ["png"] }
 rand = { version = "0.7.3", default-features = false, features = ["std"] }
 winit = { version = "0.23", optional = true }
 smallvec = "1.4.2"
+rspirv = { version = "0.7", optional = true }
 
 [features]
 default = []
 desktop = ["winit"]
+shady = ["rspirv"]
