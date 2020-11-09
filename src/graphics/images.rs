@@ -9,30 +9,35 @@ pub struct Image {
 }
 
 impl Image {
+  pub fn new(width: usize, height: usize, default_color: Color) -> Self {
+    Self {
+      pixels: DenseGrid::new(width, height, default_color)
+    }
+  }
+
+  #[inline]
   pub fn width(&self) -> usize {
     self.pixels.width()
   }
 
+  #[inline]
   pub fn height(&self) -> usize {
     self.pixels.height()
   }
 
-  /// Accesses the pixels of the `Image`.
-  pub fn pixels(&self) -> &[Color] {
-    unimplemented!()
+  #[inline]
+  pub fn as_slice(&self) -> &[Color] {
+    self.pixels.as_slice()
   }
 
-  /// Mutably accesses the pixels of the `Image`.
-  pub fn pixels_mut(&mut self) -> &mut [Color] {
-    unimplemented!()
+  #[inline]
+  pub fn as_mut_slice(&mut self) -> &mut [Color] {
+    self.pixels.as_mut_slice()
   }
 }
 
 impl LoadableAsset for Image {
   fn load(path: Path, context: &mut impl AssetContext) -> Self {
-    // TODO: actually implement me
-    Self {
-      pixels: DenseGrid::new(16, 16, Color::BLACK),
-    }
+    unimplemented!()
   }
 }

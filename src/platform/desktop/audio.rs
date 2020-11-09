@@ -2,4 +2,4 @@ use crate::audio::*;
 
 use super::DesktopPlatform;
 
-impl Audio for DesktopPlatform {}
+impl AudioDevice for DesktopPlatform {}

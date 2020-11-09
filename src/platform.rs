@@ -1,8 +1,8 @@
 //! Platform abstractions and utilities.
 
-use crate::audio::Audio;
-use crate::graphics::Graphics;
-use crate::input::Input;
+use crate::audio::AudioDevice;
+use crate::graphics::GraphicsDevice;
+use crate::input::InputDevice;
 
 #[cfg(feature = "desktop")]
 pub mod desktop;
@@ -14,15 +14,15 @@ pub mod desktop;
 /// The platform is also responsible for the core loop, and should callback into user code
 /// in order to process application logic.
 pub trait Platform {
-  type Audio: Audio;
-  type Graphics: Graphics;
-  type Input: Input;
-  type Window: Window;
+  type AudioDevice: AudioDevice;
+  type GraphicsDevice: GraphicsDevice;
+  type InputDevice: InputDevice;
+  type PlatformWindow: PlatformWindow;
 
-  fn audio(&mut self) -> &mut Self::Audio;
-  fn graphics(&mut self) -> &mut Self::Graphics;
-  fn input(&mut self) -> &mut Self::Input;
-  fn window(&mut self) -> &mut Self::Window;
+  fn audio(&mut self) -> &mut Self::AudioDevice;
+  fn graphics(&mut self) -> &mut Self::GraphicsDevice;
+  fn input(&mut self) -> &mut Self::InputDevice;
+  fn window(&mut self) -> &mut Self::PlatformWindow;
 
   /// Runs platform, invoking the given callback when available to process the next frame.
   fn run(self, callback: impl FnMut(&mut Self));
@@ -31,7 +31,7 @@ pub trait Platform {
 /// Abstracts over the window provider of a device.
 ///
 /// Permits interaction with the underlying window API through a higher-level abstraction.
-pub trait Window {
+pub trait PlatformWindow {
   fn set_title(&mut self, title: impl AsRef<str>);
 }
 

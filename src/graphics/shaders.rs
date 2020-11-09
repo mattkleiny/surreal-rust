@@ -5,6 +5,21 @@ pub enum ShaderKind {
   Fragment,
 }
 
+/// Represents a single raw shader program.
+pub struct Shader {
+  handle: ShaderHandle,
+  kind: ShaderKind,
+}
+
+impl Shader {
+  pub fn new(kind: ShaderKind, source: &impl AsRef<str>) -> Self {
+    Self {
+      handle: ShaderHandle::new(kind),
+      kind,
+    }
+  }
+}
+
 /// A managed ID for OpenGL shaders.
 struct ShaderHandle(u32);
 
@@ -23,39 +38,6 @@ impl Drop for ShaderHandle {
   fn drop(&mut self) {
     unsafe {
       gl::DeleteShader(self.0);
-    }
-  }
-}
-
-/// Represents a single raw shader program.
-pub struct Shader {
-  handle: ShaderHandle,
-  kind: ShaderKind,
-}
-
-impl Shader {
-  pub fn new(kind: ShaderKind, source: &impl ToString) -> Self {
-    Self {
-      handle: ShaderHandle::new(kind),
-      kind,
-    }
-  }
-}
-
-/// A managed ID for OpenGL shader programs.
-#[derive(Debug, Eq, PartialEq)]
-struct ProgramHandle(u32);
-
-impl ProgramHandle {
-  pub fn new() -> Self {
-    Self(unsafe { gl::CreateProgram() })
-  }
-}
-
-impl Drop for ProgramHandle {
-  fn drop(&mut self) {
-    unsafe {
-      gl::DeleteProgram(self.0);
     }
   }
 }
@@ -80,6 +62,24 @@ impl Program {
       }
 
       gl::LinkProgram(self.handle.0);
+    }
+  }
+}
+
+/// A managed ID for OpenGL shader programs.
+#[derive(Debug, Eq, PartialEq)]
+struct ProgramHandle(u32);
+
+impl ProgramHandle {
+  pub fn new() -> Self {
+    Self(unsafe { gl::CreateProgram() })
+  }
+}
+
+impl Drop for ProgramHandle {
+  fn drop(&mut self) {
+    unsafe {
+      gl::DeleteProgram(self.0);
     }
   }
 }
@@ -209,13 +209,15 @@ pub mod shady {
     last_token: Token,
   }
 
+  pub type ParseResult<T> = Result<T, ParseError>;
+
   /// Possible errors when parsing.
   #[derive(Copy, Clone, Debug, Eq, PartialEq)]
   pub enum ParseError {}
 
   impl Parser {
     /// Parses a Shady program from the given string representation.
-    pub fn parse(raw: impl AsRef<str>) -> Result<ShadyProgram, ParseError> {
+    pub fn parse(raw: impl AsRef<str>) -> ParseResult<ShadyProgram> {
       let mut parser = Self {
         position: 0,
         last_token: Token::Unknown,
@@ -228,13 +230,10 @@ pub mod shady {
     ///
     /// Failures are emitted as compilation errors.
     pub const fn parse_const(raw: &'static str) -> ShadyProgram {
-      ShadyProgram {
-        kind: ProgramKind::Sprite,
-        statements: Vec::new(),
-      }
+      unimplemented!()
     }
 
-    fn parse_string(&mut self, input: &str) -> Result<ShadyProgram, ParseError> {
+    fn parse_string(&mut self, input: &str) -> ParseResult<ShadyProgram> {
       unimplemented!()
     }
   }
@@ -254,7 +253,7 @@ pub mod shady {
     use super::*;
 
     const TEST_PROGRAM: ShadyProgram = shady!(
-      r"
+    r"
       #shader_type sprite
       #include 'palettes.shady'
 

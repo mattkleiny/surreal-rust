@@ -2,7 +2,7 @@ use crate::input::*;
 
 use super::DesktopPlatform;
 
-impl Input for DesktopPlatform {
+impl InputDevice for DesktopPlatform {
   fn is_button_up(&self, button: MouseButton) -> bool {
     !self.pressed_buttons.contains(&button)
   }

@@ -5,7 +5,7 @@ use crate::maths::Vector2;
 /// Abstracts over the input system of a device.
 ///
 /// Permits interaction with the underlying input API through a higher-level abstraction.
-pub trait Input {
+pub trait InputDevice {
   fn is_button_up(&self, button: MouseButton) -> bool;
   fn is_button_down(&self, button: MouseButton) -> bool;
   fn is_button_pressed(&self, button: MouseButton) -> bool;

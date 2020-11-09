@@ -44,12 +44,24 @@ impl<T: Clone> DenseGrid<T> {
     }
   }
 
+  #[inline]
   pub fn width(&self) -> usize {
     self.width
   }
 
+  #[inline]
   pub fn height(&self) -> usize {
     self.height
+  }
+
+  #[inline]
+  pub fn as_slice(&self) -> &[T] {
+    self.elements.as_slice()
+  }
+
+  #[inline]
+  pub fn as_mut_slice(&mut self) -> &mut [T] {
+    self.elements.as_mut_slice()
   }
 
   pub fn get(&self, x: usize, y: usize) -> &T {

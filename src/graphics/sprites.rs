@@ -1,5 +1,5 @@
 use crate::assets::{Asset, AssetContext, LoadableAsset};
-use crate::graphics::{Color, Graphics, Error, Texture, TextureRegion};
+use crate::graphics::{Color, GraphicsDevice, Error, Texture, TextureRegion};
 use crate::maths::Vector2;
 use crate::io::Path;
 
@@ -17,7 +17,7 @@ pub struct SpriteBatch {
 }
 
 impl SpriteBatch {
-  pub fn new(graphics: &mut impl Graphics) -> Result<Self, Error> {
+  pub fn new(graphics: &mut impl GraphicsDevice) -> Result<Self, Error> {
     Ok(SpriteBatch {
       vertices: Vec::new(),
       indices: Vec::new(),
@@ -28,7 +28,7 @@ impl SpriteBatch {
   pub fn push(&mut self, position: Vector2<f32>, rotation: f32, sprite: &impl Sprite) {}
 
   /// Flushes the sprite batch to the given batch target.
-  pub fn flush(&mut self, graphics: &mut impl Graphics) {}
+  pub fn flush(&mut self, graphics: &mut impl GraphicsDevice) {}
 }
 
 /// Vertex definition for our sprite.

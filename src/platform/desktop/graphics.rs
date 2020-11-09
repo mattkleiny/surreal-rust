@@ -2,7 +2,7 @@ use crate::graphics::*;
 
 use super::DesktopPlatform;
 
-impl Graphics for DesktopPlatform {
+impl GraphicsDevice for DesktopPlatform {
   fn clear_active_frame_buffer(&mut self, color: Color) {
     unsafe {
       gl::ClearColor(

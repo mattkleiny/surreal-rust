@@ -47,15 +47,15 @@ impl DesktopPlatform {
   pub fn new(config: Configuration) -> Result<Self, Error> {
     let event_loop = EventLoop::new();
     let window_builder = WindowBuilder::new()
-      .with_title(config.title)
-      .with_inner_size(LogicalSize::new(config.size.0, config.size.1));
+        .with_title(config.title)
+        .with_inner_size(LogicalSize::new(config.size.0, config.size.1));
 
     // prepare the OpenGL window context
     let window_context = unsafe {
       glutin::ContextBuilder::new()
-        .build_windowed(window_builder, &event_loop)?
-        .make_current()
-        .unwrap()
+          .build_windowed(window_builder, &event_loop)?
+          .make_current()
+          .unwrap()
     };
 
     // load OpenGL functions from the associated binary
@@ -79,26 +79,15 @@ impl DesktopPlatform {
 }
 
 impl Platform for DesktopPlatform {
-  type Audio = Self;
-  type Graphics = Self;
-  type Input = Self;
-  type Window = Self;
+  type AudioDevice = Self;
+  type GraphicsDevice = Self;
+  type InputDevice = Self;
+  type PlatformWindow = Self;
 
-  fn audio(&mut self) -> &mut Self::Audio {
-    self
-  }
-
-  fn graphics(&mut self) -> &mut Self::Graphics {
-    self
-  }
-
-  fn input(&mut self) -> &mut Self::Input {
-    self
-  }
-
-  fn window(&mut self) -> &mut Self::Window {
-    self
-  }
+  fn audio(&mut self) -> &mut Self::AudioDevice { self }
+  fn graphics(&mut self) -> &mut Self::GraphicsDevice { self }
+  fn input(&mut self) -> &mut Self::InputDevice { self }
+  fn window(&mut self) -> &mut Self::PlatformWindow { self }
 
   fn run(mut self, mut callback: impl FnMut(&mut Self)) {
     let mut event_loop = self.event_loop.take().unwrap();
@@ -123,53 +112,53 @@ impl Platform for DesktopPlatform {
 
         // generic window events
         Event::WindowEvent { window_id, event }
-          if window_id == self.window_context.window().id() =>
-        {
-          match event {
-            WindowEvent::Resized(new_size) => {
-              self.window_context.resize(new_size);
-            }
-            WindowEvent::CloseRequested => {
-              *control_flow = ControlFlow::Exit;
-            }
-            WindowEvent::CursorMoved { position, .. } => {
-              self.mouse_delta = vec2(
-                position.x - self.mouse_position.x,
-                position.y - self.mouse_position.y,
-              );
-              self.mouse_position = vec2(position.x, position.y);
-            }
-            WindowEvent::MouseInput { button, state, .. } => {
-              let button = button.into();
-
-              if state == ElementState::Pressed {
-                self.released_buttons.remove(&button);
-                self.pressed_buttons.insert(button);
-              } else {
-                self.pressed_buttons.remove(&button);
-                self.released_buttons.insert(button);
+        if window_id == self.window_context.window().id() =>
+          {
+            match event {
+              WindowEvent::Resized(new_size) => {
+                self.window_context.resize(new_size);
               }
-            }
-            WindowEvent::KeyboardInput {
-              input: KeyboardInput {
-                scancode, state, ..
-              },
-              ..
-            } => {
-              let key = scancode.into();
-
-              if state == ElementState::Pressed {
-                self.released_keys.remove(&key);
-                self.pressed_keys.insert(key);
-              } else {
-                self.pressed_keys.remove(&key);
-                self.released_keys.insert(key);
+              WindowEvent::CloseRequested => {
+                *control_flow = ControlFlow::Exit;
               }
+              WindowEvent::CursorMoved { position, .. } => {
+                self.mouse_delta = vec2(
+                  position.x - self.mouse_position.x,
+                  position.y - self.mouse_position.y,
+                );
+                self.mouse_position = vec2(position.x, position.y);
+              }
+              WindowEvent::MouseInput { button, state, .. } => {
+                let button = button.into();
+
+                if state == ElementState::Pressed {
+                  self.released_buttons.remove(&button);
+                  self.pressed_buttons.insert(button);
+                } else {
+                  self.pressed_buttons.remove(&button);
+                  self.released_buttons.insert(button);
+                }
+              }
+              WindowEvent::KeyboardInput {
+                input: KeyboardInput {
+                  scancode, state, ..
+                },
+                ..
+              } => {
+                let key = scancode.into();
+
+                if state == ElementState::Pressed {
+                  self.released_keys.remove(&key);
+                  self.pressed_keys.insert(key);
+                } else {
+                  self.pressed_keys.remove(&key);
+                  self.released_keys.insert(key);
+                }
+              }
+              WindowEvent::Focused(is_focused) => {}
+              _ => {}
             }
-            WindowEvent::Focused(is_focused) => {}
-            _ => {}
           }
-        }
         _ => {}
       }
     });

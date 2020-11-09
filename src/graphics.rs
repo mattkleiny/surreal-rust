@@ -23,7 +23,7 @@ pub type GraphicsResult<T> = std::result::Result<T, Error>;
 /// Abstracts over a graphics device or GPU.
 ///
 /// Permits interaction with the underlying graphics API through a higher-level abstraction.
-pub trait Graphics {
+pub trait GraphicsDevice {
   // frame buffers
   fn clear_active_frame_buffer(&mut self, color: Color);
   fn set_viewport(&mut self, viewport: Viewport);
@@ -37,7 +37,8 @@ pub struct Viewport {
 }
 
 impl Viewport {
-  pub fn new(width: usize, height: usize) -> Self {
+  #[inline]
+  pub const fn new(width: usize, height: usize) -> Self {
     Self { width, height }
   }
 }

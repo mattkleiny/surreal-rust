@@ -1,41 +1,27 @@
-use std::marker::PhantomData;
 use std::os::raw::c_void;
 
 /// A buffer implementation based on OpenGL.
-pub struct Buffer<T> {
+pub struct Buffer {
   handle: BufferHandle,
   kind: BufferKind,
   usage: BufferUsage,
-  phantom: PhantomData<T>,
 }
 
 /// Represents abstractly some buffer of data on the GPU.
-impl<T> Buffer<T> {
+impl Buffer {
   pub fn new(kind: BufferKind, usage: BufferUsage) -> Self {
     Self {
       handle: BufferHandle::new(),
       kind,
       usage,
-      phantom: PhantomData,
     }
   }
 
-  fn kind(&self) -> BufferKind {
-    self.kind
-  }
-  fn usage(&self) -> BufferUsage {
-    self.usage
-  }
-
-  fn attributes(&self) -> &[VertexAttribute]
-  where
-    T: Vertex,
-  {
-    T::attributes()
-  }
+  fn kind(&self) -> BufferKind { self.kind }
+  fn usage(&self) -> BufferUsage { self.usage }
 
   /// Uploads the given data to the buffer.
-  fn upload(&mut self, data: &[T]) {
+  fn upload<T>(&mut self, data: &[T]) {
     unsafe {
       let kind = match self.kind {
         BufferKind::Element => gl::ARRAY_BUFFER,

@@ -31,10 +31,9 @@ pub mod ui;
 pub mod utilities;
 
 /// Represents a general error with the engine.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Error {
   General,
-
   Audio(audio::Error),
   Graphics(graphics::Error),
   Input(input::Error),
