@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub};
 
-use crate::maths::{Lerp, Random, RandomGenerator};
+use crate::maths::{Lerp, Random, RNG};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[derive(Copy, Clone, Default, Eq, PartialEq, PartialOrd, Debug)]
@@ -21,31 +21,22 @@ impl Color {
 
   #[inline]
   pub const fn rgb(r: u8, g: u8, b: u8) -> Self {
-    Self { r, g, b, a: 255 }
+    Self::rgba(r, g, b, 255)
   }
 
   #[inline]
   pub const fn rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
     Self { r, g, b, a }
   }
-}
 
-impl From<(u8, u8, u8)> for Color {
-  #[inline]
-  fn from(source: (u8, u8, u8)) -> Self {
-    Self::rgb(source.0, source.1, source.2)
+  pub fn to_packed_rgba(&self) -> u32 {
+    ((self.r as u32) << 24)
+        | ((self.g as u32) << 16)
+        | ((self.b as u32) << 8)
+        | (self.a as u32) as u32
   }
-}
 
-impl From<(u8, u8, u8, u8)> for Color {
-  #[inline]
-  fn from(source: (u8, u8, u8, u8)) -> Self {
-    Self::rgba(source.0, source.1, source.2, source.3)
-  }
-}
-
-impl From<u32> for Color {
-  fn from(packed: u32) -> Self {
+  pub fn from_packed_rgba(packed: u32) -> Self {
     Self::rgba(
       (packed >> 24 & 0xFF) as u8,
       (packed >> 16 & 0xFF) as u8,
@@ -55,27 +46,12 @@ impl From<u32> for Color {
   }
 }
 
-impl From<Color> for u32 {
-  #[inline]
-  fn from(color: Color) -> Self {
-    ((color.r as u32) << 24)
-      | ((color.g as u32) << 16)
-      | ((color.b as u32) << 8)
-      | (color.a as u32) as u32
-  }
-}
-
 impl Add for Color {
   type Output = Color;
 
   #[inline]
   fn add(self, rhs: Self) -> Self::Output {
-    Color::rgba(
-      self.r + rhs.r,
-      self.g + rhs.g,
-      self.b + rhs.b,
-      self.a + rhs.a,
-    )
+    Color::rgba(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
   }
 }
 
@@ -84,12 +60,7 @@ impl Sub for Color {
 
   #[inline]
   fn sub(self, rhs: Self) -> Self::Output {
-    Color::rgba(
-      self.r - rhs.r,
-      self.g - rhs.g,
-      self.b - rhs.b,
-      self.a - rhs.a,
-    )
+    Color::rgba(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
   }
 }
 
@@ -105,13 +76,8 @@ impl Lerp for Color {
 }
 
 impl Random for Color {
-  fn random(generator: &mut RandomGenerator) -> Self {
-    Color::rgba(
-      generator.next(),
-      generator.next(),
-      generator.next(),
-      generator.next(),
-    )
+  fn random(gen: &mut RNG) -> Self {
+    Color::rgba(gen.next(), gen.next(), gen.next(), gen.next())
   }
 }
 

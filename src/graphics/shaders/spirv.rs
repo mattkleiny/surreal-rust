@@ -1,6 +1,11 @@
+//! A backend for compiling SPIR-V shaders from source.
+//!
+//! This implementation provides support for Shady-based programs but also allows procedurally
+//! creating SPIR-V shaders (for other language variants, for example).
+//!
+//! The resultant `SpirvProgram` should then be linkable directly on the underlying graphics API.
+
 use super::shady::*;
-use rspirv::binary::Assemble;
-use enumflags2::_internal::core::ops::Deref;
 
 type CompileResult<T> = std::result::Result<T, CompileError>;
 
@@ -15,36 +20,22 @@ impl SpirvCompiler {
       builder: SpirvBuilder::new()
     };
 
-    for statement in &program.statements {
-      compiler.visit_statement(statement);
-    }
+    program.accept(&mut compiler);
 
     Ok(compiler.builder.build())
   }
 }
 
 impl super::shady::Visitor for SpirvCompiler {
-  fn visit_statement(&mut self, statement: &Statement) {
-    match statement {
-      Statement::Unknown => {}
-      Statement::Empty => {}
-      Statement::KindSpecification { .. } => {}
-      Statement::MethodDefinition { .. } => {}
-    }
+  fn visit_module(&mut self, module: &Module) {
+    unimplemented!()
+  }
 
+  fn visit_statement(&mut self, statement: &Statement) {
     unimplemented!()
   }
 
   fn visit_expression(&mut self, expression: &Expression) {
-    match expression {
-      Expression::Unknown => {}
-      Expression::Empty => {}
-      Expression::Operator { .. } => {}
-      Expression::Variable { .. } => {}
-      Expression::FunctionCall { .. } => {}
-      Expression::Intrinsic { .. } => {}
-    }
-
     unimplemented!()
   }
 }
@@ -64,15 +55,9 @@ impl SpirvBuilder {
   }
 
   pub fn build(self) -> SpirvProgram {
+    use rspirv::binary::Assemble;
+
     SpirvProgram(self.builder.module().assemble())
-  }
-}
-
-impl Deref for SpirvBuilder {
-  type Target = rspirv::dr::Builder;
-
-  fn deref(&self) -> &Self::Target {
-    &self.builder
   }
 }
 
@@ -89,9 +74,9 @@ mod tests {
   #[test]
   fn it_should_compile_a_simple_program() {
     let program = ShadyProgram::parse("TEST PROGRAM")
-      .expect("Failed to parse program!");
+        .expect("Failed to parse program!");
 
     let program = SpirvCompiler::compile(&program)
-      .expect("Failed to compile program!");
+        .expect("Failed to compile program!");
   }
 }

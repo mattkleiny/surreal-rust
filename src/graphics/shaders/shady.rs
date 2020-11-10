@@ -8,10 +8,10 @@
 //! An extension of this might also allow constructions of shaders via a shader graph.
 
 /// A high-level shady program.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct ShadyProgram {
   pub kind: ProgramKind,
-  pub statements: Vec<Statement>,
+  pub modules: Vec<Module>,
 }
 
 impl ShadyProgram {
@@ -20,19 +20,19 @@ impl ShadyProgram {
   }
 
   pub fn accept(&self, visitor: &mut impl Visitor) {
-    for statement in &self.statements {
-      visitor.visit_statement(statement);
+    for module in &self.modules {
+      visitor.visit_module(module);
     }
   }
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum ConstantType {
   Int,
   Float,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum RuntimeType {
   Void,
   Bool,
@@ -45,7 +45,7 @@ pub enum RuntimeType {
   Sampler3D,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Operator {
   Equal,
   NotEqual,
@@ -55,7 +55,7 @@ pub enum Operator {
   GreaterEqual,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Precision {
   Default,
   Low,
@@ -63,32 +63,32 @@ pub enum Precision {
   High,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Interpolation {
   Flat,
   Smooth,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum ProgramKind {
   Sprite,
   Mesh,
   Compute,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum IntrinsicKind {
   VertexOutput,
   FragmentOutput,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum MethodBinding {
   VertexBody,
   FragmentBody,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum Token {
   Unknown,
   Identifier,
@@ -98,10 +98,9 @@ pub enum Token {
   Type(RuntimeType),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum Expression {
   Unknown,
-  Empty,
   Operator {
     name: String,
     return_type: RuntimeType,
@@ -123,10 +122,9 @@ pub enum Expression {
   },
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum Statement {
   Unknown,
-  Empty,
   KindSpecification {
     kind: ProgramKind,
     version: u16,
@@ -139,8 +137,18 @@ pub enum Statement {
   },
 }
 
+#[derive(Debug)]
+pub enum Module {
+  Shared,
+  Shader {
+    kind: ProgramKind,
+    statements: Vec<Statement>,
+  },
+}
+
 /// Visitation pattern for the shady AST.
 pub trait Visitor {
+  fn visit_module(&mut self, module: &Module);
   fn visit_statement(&mut self, statement: &Statement);
   fn visit_expression(&mut self, expression: &Expression);
 }
@@ -150,8 +158,8 @@ pub trait Visitor {
 /// Converts strings into Shady `Token`s.
 struct Tokenizer<'a> {
   input: &'a str,
-  row: usize,
-  column: usize,
+  current_row: usize,
+  current_column: usize,
 }
 
 impl<'a> Tokenizer<'a> {
@@ -165,8 +173,8 @@ impl<'a> Tokenizer<'a> {
   fn new(input: &'a str) -> Self {
     Self {
       input,
-      row: 0,
-      column: 0,
+      current_row: 0,
+      current_column: 0,
     }
   }
 
@@ -178,7 +186,6 @@ impl<'a> Tokenizer<'a> {
 /// A parser for Shady programs.
 ///
 /// Turns raw text into the shady AST.
-#[derive(Clone, Debug)]
 struct Parser {
   tokens: Vec<Token>,
   position: usize,
@@ -206,8 +213,10 @@ impl Parser {
 }
 
 /// Possible errors when parsing.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum ParseError {
+  InvalidModule,
+  InvalidStatement,
   InvalidSymbol,
   NoKindSpecified,
 }
@@ -220,6 +229,7 @@ mod tests {
 
   #[test]
   fn it_should_parse_a_simple_program() {
-    ShadyProgram::parse("#kind sprite").expect("Failed to parse simple program!");
+    ShadyProgram::parse("#kind sprite")
+        .expect("Failed to parse simple program!");
   }
 }

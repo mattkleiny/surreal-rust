@@ -1,16 +1,28 @@
-//! Path-finding utilities.
-
 use std::collections::{HashMap, HashSet};
 
 use smallvec::SmallVec;
 
 use crate::collections::MinHeap;
 
+/// A point in the path-finding grid.
 pub type Point = super::Vector2<i32>;
+
+/// A cost for path searches and relative queries.
 pub type Cost = f64;
 
+/// Represents a path of points.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Path(Vec<Point>);
+
+impl Path {
+  /// The start point of the path.
+  #[inline]
+  pub fn start(&self) -> Point { self.0[0] }
+
+  /// The goal point of the path.
+  #[inline]
+  pub fn goal(&self) -> Point { self.0[self.0.len() - 1] }
+}
 
 /// Permits exploratory path-finding over some connected grid.
 pub trait PathFindingGrid {
@@ -18,7 +30,7 @@ pub trait PathFindingGrid {
   fn get_neighbours(&self, center: Point) -> SmallVec<[Point; 8]>;
 
   /// Locate a path from the given start point to the given goal via a heuristic.
-  fn find_path(&self, start: Point, goal: Point, heuristic: impl Fn(Point, Point) -> Cost) -> Option<Path> {
+  fn find_path(&self, start: Point, goal: Point, heuristic: fn(Point, Point) -> Cost) -> Option<Path> {
     let mut visited = HashSet::new();
 
     let mut came_from = HashMap::new();
@@ -102,15 +114,13 @@ pub mod heuristics {
 
   use super::*;
 
+  /// A constant distance
   #[inline]
-  pub fn constant(from: Point, to: Point) -> Cost {
-    1.
-  }
+  pub fn constant(from: Point, to: Point) -> Cost { 1. }
 
+  /// The straight-line distance between two points.
   #[inline]
-  pub fn euclidean_distance(from: Point, to: Point) -> Cost {
-    unimplemented!()
-  }
+  pub fn euclidean_distance(from: Point, to: Point) -> Cost { unimplemented!() }
 }
 
 #[cfg(test)]
@@ -127,6 +137,6 @@ mod tests {
     let goal = vec2(15, 15);
 
     let path = grid.find_path(start, goal, heuristics::euclidean_distance)
-      .expect("Expected to locate a valid path!");
+        .expect("Expected to locate a valid path!");
   }
 }

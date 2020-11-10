@@ -13,11 +13,11 @@ impl Seed {
   }
 
   /// Converts the seed into an `RandomGenerator`.
-  pub fn to_random(&self) -> RandomGenerator {
+  pub fn to_random(&self) -> RNG {
     if self.0 == 0 {
-      RandomGenerator::new(random_u64())
+      RNG::new(random_u64())
     } else {
-      RandomGenerator::new(self.0)
+      RNG::new(self.0)
     }
   }
 }
@@ -30,32 +30,29 @@ pub trait Random: Sized {
   }
 
   /// Generates a new random value of this type using the given generator.
-  fn random(generator: &mut RandomGenerator) -> Self;
+  fn random(generator: &mut RNG) -> Self;
 }
 
 impl Random for Seed {
-  fn random(generator: &mut RandomGenerator) -> Self {
+  fn random(generator: &mut RNG) -> Self {
     Self(generator.next())
   }
 }
 
 /// Adapt all standard distribution types to our custom Random interface.
-impl<T> Random for T
-where
-  rand::distributions::Standard: Distribution<T>,
-{
-  fn random(generator: &mut RandomGenerator) -> Self {
+impl<T> Random for T where rand::distributions::Standard: Distribution<T> {
+  fn random(generator: &mut RNG) -> Self {
     generator.rng.sample(rand::distributions::Standard)
   }
 }
 
 /// A pseudo-random number generator.
 #[derive(Clone, Debug)]
-pub struct RandomGenerator {
+pub struct RNG {
   rng: StdRng,
 }
 
-impl RandomGenerator {
+impl RNG {
   pub fn new(seed: u64) -> Self {
     Self {
       rng: StdRng::seed_from_u64(seed),
@@ -67,9 +64,9 @@ impl RandomGenerator {
   }
 }
 
-impl Default for RandomGenerator {
+impl Default for RNG {
   fn default() -> Self {
-    RandomGenerator::new(random_u64())
+    RNG::new(random_u64())
   }
 }
 
@@ -83,8 +80,7 @@ mod tests {
 
   #[test]
   fn seed_should_generate_a_valid_rng() {
-    let seed = Seed::random();
-    let mut rng = seed.to_random();
+    let mut rng = Seed::random().to_random();
 
     let first: f64 = rng.next();
     let second: f64 = rng.next();
