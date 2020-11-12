@@ -2,8 +2,8 @@ use std::ops::Sub;
 
 use crate::maths::{vec2, vec3, Vector2, Vector3};
 
-pub type Volume<T> = Bounds3<T>;
 pub type Rect<T> = Bounds2<T>;
+pub type Volume<T> = Bounds3<T>;
 
 /// A bounded space in 2 dimensions formed from the two corner points.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -12,13 +12,16 @@ pub struct Bounds2<T> {
   max: Vector2<T>,
 }
 
-impl<T : Copy> Bounds2<T> {
+impl<T: Copy> Bounds2<T> {
   pub fn new(left: T, top: T, right: T, bottom: T) -> Self {
     Self {
       min: vec2(left, top),
       max: vec2(right, bottom),
     }
   }
+
+  pub fn min(&self) -> Vector<T> { self.min }
+  pub fn max(&self) -> Vector<T> { self.max }
 
   pub fn left(&self) -> T { self.min.x }
   pub fn right(&self) -> T { self.max.x }
@@ -29,11 +32,17 @@ impl<T : Copy> Bounds2<T> {
   pub fn height(&self) -> T where T: Sub<Output=T> { self.bottom() - self.top() }
 
   pub fn size(&self) -> Vector2<T> where T: Sub<Output=T> {
-    vec2(self.max.x - self.min.x, self.max.y - self.min.y)
+    vec2(
+      self.max.x - self.min.x,
+      self.max.y - self.min.y,
+    )
   }
 
   pub fn contains_point(&self, point: Vector2<T>) -> bool where T: PartialOrd {
-    point.x >= self.min.x && point.y >= self.min.y && point.y <= self.max.y && point.y <= self.max.y
+    point.x >= self.min.x &&
+        point.y >= self.min.y &&
+        point.y <= self.max.y &&
+        point.y <= self.max.y
   }
 }
 
