@@ -139,7 +139,9 @@ pub enum Statement {
 
 #[derive(Debug)]
 pub enum Module {
-  Shared,
+  Shared {
+    statements: Vec<Statement>,
+  },
   Shader {
     kind: ProgramKind,
     statements: Vec<Statement>,
@@ -197,7 +199,7 @@ impl Parser {
     let tokens = Tokenizer::tokenize(raw)?;
     let mut parser = Self::new(tokens);
 
-    parser.parse_tokens(raw.as_ref())
+    parser.parse_tokens()
   }
 
   fn new(tokens: Vec<Token>) -> Self {
@@ -207,7 +209,7 @@ impl Parser {
     }
   }
 
-  fn parse_tokens(&mut self, input: &str) -> ParseResult<ShadyProgram> {
+  fn parse_tokens(&mut self) -> ParseResult<ShadyProgram> {
     unimplemented!()
   }
 }

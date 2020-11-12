@@ -12,22 +12,27 @@ pub struct Bounds2<T> {
   max: Vector2<T>,
 }
 
-impl<T> Bounds2<T> {
-  pub fn new(min: Vector2<T>, max: Vector2<T>) -> Self {
-    Self { min, max }
+impl<T : Copy> Bounds2<T> {
+  pub fn new(left: T, top: T, right: T, bottom: T) -> Self {
+    Self {
+      min: vec2(left, top),
+      max: vec2(right, bottom),
+    }
   }
 
-  pub fn size(&self) -> Vector2<T>
-  where
-    T: Copy + Sub<Output = T>,
-  {
+  pub fn left(&self) -> T { self.min.x }
+  pub fn right(&self) -> T { self.max.x }
+  pub fn top(&self) -> T { self.min.y }
+  pub fn bottom(&self) -> T { self.max.y }
+
+  pub fn width(&self) -> T where T: Sub<Output=T> { self.right() - self.left() }
+  pub fn height(&self) -> T where T: Sub<Output=T> { self.bottom() - self.top() }
+
+  pub fn size(&self) -> Vector2<T> where T: Sub<Output=T> {
     vec2(self.max.x - self.min.x, self.max.y - self.min.y)
   }
 
-  pub fn contains_point(&self, point: Vector2<T>) -> bool
-  where
-    T: PartialOrd,
-  {
+  pub fn contains_point(&self, point: Vector2<T>) -> bool where T: PartialOrd {
     point.x >= self.min.x && point.y >= self.min.y && point.y <= self.max.y && point.y <= self.max.y
   }
 }
@@ -45,8 +50,8 @@ impl<T> Bounds3<T> {
   }
 
   pub fn size(&self) -> Vector3<T>
-  where
-    T: Copy + Sub<Output = T>,
+    where
+        T: Copy + Sub<Output=T>,
   {
     vec3(
       self.max.x - self.min.x,
@@ -56,14 +61,14 @@ impl<T> Bounds3<T> {
   }
 
   pub fn contains_point(&self, point: Vector3<T>) -> bool
-  where
-    T: PartialOrd,
+    where
+        T: PartialOrd,
   {
     point.x >= self.min.x
-      && point.y >= self.min.y
-      && point.y <= self.max.y
-      && point.y <= self.max.y
-      && point.z >= self.min.z
-      && point.z <= self.max.z
+        && point.y >= self.min.y
+        && point.y <= self.max.y
+        && point.y <= self.max.y
+        && point.z >= self.min.z
+        && point.z <= self.max.z
   }
 }

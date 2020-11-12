@@ -18,6 +18,11 @@ impl From<&'static str> for Content {
   }
 }
 
+/// Provides a pluggable backend for painting on a canvas.
+pub trait CanvasPainter {
+  fn paint_rect(&mut self, rect: Bounds);
+}
+
 /// A canvas for immediate-mode rendering.
 pub trait Canvas: Sized {
   fn label(&mut self, position: &Bounds, content: &Content) -> f32 {

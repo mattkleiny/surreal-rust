@@ -2,6 +2,7 @@
 
 pub use automata::*;
 pub use bounds::*;
+pub use bsp::*;
 pub use curves::*;
 pub use directions::*;
 pub use grids::*;
@@ -13,6 +14,7 @@ pub use ranges::*;
 
 mod automata;
 mod bounds;
+mod bsp;
 mod curves;
 mod directions;
 mod grids;

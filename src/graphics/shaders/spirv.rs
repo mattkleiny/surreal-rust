@@ -28,14 +28,33 @@ impl SpirvCompiler {
 
 impl super::shady::Visitor for SpirvCompiler {
   fn visit_module(&mut self, module: &Module) {
+    match module {
+      Module::Shared { .. } => {}
+      Module::Shader { .. } => {}
+    }
+
     unimplemented!()
   }
 
   fn visit_statement(&mut self, statement: &Statement) {
+    match statement {
+      Statement::Unknown => {}
+      Statement::KindSpecification { .. } => {}
+      Statement::MethodDefinition { .. } => {}
+    }
+
     unimplemented!()
   }
 
   fn visit_expression(&mut self, expression: &Expression) {
+    match expression {
+      Expression::Unknown => {}
+      Expression::Operator { .. } => {}
+      Expression::Variable { .. } => {}
+      Expression::FunctionCall { .. } => {}
+      Expression::Intrinsic { .. } => {}
+    }
+
     unimplemented!()
   }
 }
@@ -57,7 +76,10 @@ impl SpirvBuilder {
   pub fn build(self) -> SpirvProgram {
     use rspirv::binary::Assemble;
 
-    SpirvProgram(self.builder.module().assemble())
+    let module = self.builder.module();
+    let assembled = module.assemble();
+
+    SpirvProgram(assembled)
   }
 }
 
