@@ -10,7 +10,8 @@
 
 #![allow(dead_code)]
 #![allow(unused_variables)]
-#![feature(type_alias_impl_trait)]
+
+#![feature(const_fn)]
 
 #[macro_use]
 extern crate enumflags2;

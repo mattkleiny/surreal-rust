@@ -137,6 +137,6 @@ mod tests {
     let goal = vec2(15, 15);
 
     let path = grid.find_path(start, goal, heuristics::euclidean_distance)
-        .expect("Expected to locate a valid path!");
+      .expect("Expected to locate a valid path!");
   }
 }

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run hello-world" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+  <configuration default="false" name="Run 'hello-world'" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
     <option name="channel" value="DEFAULT" />
     <option name="command" value="run --package hello-world --bin hello-world" />
     <option name="allFeatures" value="false" />

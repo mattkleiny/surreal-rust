@@ -16,21 +16,17 @@ pub type Matrix4<T> = cgmath::Matrix4<T>;
 pub type Euler<T> = cgmath::Euler<T>;
 pub type Quaternion<T> = cgmath::Quaternion<T>;
 
-pub const fn vec2<T>(x: T, y: T) -> Vector2<T> {
-  Vector2 { x, y }
-}
+#[inline]
+pub const fn vec2<T>(x: T, y: T) -> Vector2<T> { Vector2 { x, y } }
 
-pub const fn vec3<T>(x: T, y: T, z: T) -> Vector3<T> {
-  Vector3 { x, y, z }
-}
+#[inline]
+pub const fn vec3<T>(x: T, y: T, z: T) -> Vector3<T> { Vector3 { x, y, z } }
 
-pub const fn point2<T>(x: T, y: T) -> Point2<T> {
-  Point2 { x, y }
-}
+#[inline]
+pub const fn point2<T>(x: T, y: T) -> Point2<T> { Point2 { x, y } }
 
-pub const fn point3<T>(x: T, y: T, z: T) -> Point3<T> {
-  Point3 { x, y, z }
-}
+#[inline]
+pub const fn point3<T>(x: T, y: T, z: T) -> Point3<T> { Point3 { x, y, z } }
 
 /// Represents a plane in 3-space.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

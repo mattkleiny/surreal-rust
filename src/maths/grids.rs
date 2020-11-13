@@ -35,8 +35,8 @@ pub struct DenseGrid<T> {
   elements: Vec<T>,
 }
 
-impl<T: Clone> DenseGrid<T> {
-  pub fn new(width: usize, height: usize, default: T) -> Self {
+impl<T> DenseGrid<T> {
+  pub fn new(width: usize, height: usize, default: T) -> Self where T: Clone {
     Self {
       width,
       height,
@@ -88,7 +88,7 @@ impl<T: Clone> DenseGrid<T> {
   }
 
   /// Fills the grid with the given value
-  pub fn fill(&mut self, value: T) {
+  pub fn fill(&mut self, value: T) where T: Clone {
     for y in 0..self.height {
       for x in 0..self.width {
         self.set(x, y, value.clone())

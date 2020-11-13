@@ -31,9 +31,9 @@ impl Color {
 
   pub fn to_packed_rgba(&self) -> u32 {
     ((self.r as u32) << 24)
-        | ((self.g as u32) << 16)
-        | ((self.b as u32) << 8)
-        | (self.a as u32) as u32
+      | ((self.g as u32) << 16)
+      | ((self.b as u32) << 8)
+      | (self.a as u32) as u32
   }
 
   pub fn from_packed_rgba(packed: u32) -> Self {

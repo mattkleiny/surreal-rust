@@ -1,7 +1,7 @@
-use crate::assets::{Asset, AssetContext, LoadableAsset, AssetResult};
-use crate::graphics::{Color, GraphicsDevice, Error, Texture, TextureRegion};
-use crate::maths::Vector2;
+use crate::assets::{Asset, AssetContext, AssetResult, LoadableAsset};
+use crate::graphics::{Color, Error, GraphicsDevice, Texture, TextureRegion};
 use crate::io::Path;
+use crate::maths::Vector2;
 
 /// Represents a sprite that may be batched via a `SpriteBatch`.
 pub trait Sprite {
