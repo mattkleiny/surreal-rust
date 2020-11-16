@@ -1,4 +1,3 @@
-use surreal::platform::desktop::*;
 use surreal::prelude::*;
 
 fn main() {

@@ -1,121 +1,53 @@
 //! Input/output abstractions and virtual file system.
 
-use std::io::{Read, Write};
-
 pub use vfs::*;
 
 mod vfs;
 
-pub type StreamResult<T> = std::result::Result<T, Error>;
+pub type IOResult<T> = std::result::Result<T, Error>;
 
-/// Abstracts over a source of bytes for reading/writing.
-pub trait Stream {
-  fn is_eof(&self) -> bool;
+/// Permits binary I/O on some type.
+pub trait BinaryStream {
+  fn read_bytes(&mut self, buffer: &mut [u8]) -> IOResult<()>;
+  fn write_bytes(&mut self, buffer: &[u8]) -> IOResult<()>;
 
-  /// Attempts to read a sequence of bytes from the stream.
-  fn read_bytes(&mut self, buffer: &mut [u8]) -> StreamResult<usize>;
-
-  fn read_byte(&mut self) -> StreamResult<u8> {
-    let mut buffer = [0; 1];
+  fn read_byte(&mut self, value: &mut u8) -> IOResult<u8> {
+    let mut buffer = [0 as u8; 1];
     self.read_bytes(&mut buffer)?;
     Ok(buffer[0])
   }
 
-  fn read_all_bytes(&mut self) -> StreamResult<Vec<u8>> {
-    let mut buffer = Vec::new();
-
-    while self.read_bytes(&mut buffer)? > 0 {
-      // loop
-    }
-
-    Ok(buffer)
+  fn write_byte(&mut self, value: u8) -> IOResult<()> {
+    self.write_bytes(&[value])
   }
 
-  fn read_all_text(&mut self) -> StreamResult<String> {
-    let mut string = String::new();
-
-    unsafe {
-      while self.read_bytes(&mut string.as_bytes_mut())? > 0 {
-        // loop
-      }
-    }
-
-    Ok(string)
-  }
-
-  /// Attempts to write a sequence of bytes to the stream.
-  fn write_bytes(&mut self, buffer: &[u8]) -> StreamResult<usize>;
-
-  fn write_byte(&mut self, value: u8) -> StreamResult<()> {
-    let buffer = [value; 1];
-    self.write_bytes(&buffer)?;
-    Ok(())
-  }
-
-  fn write_all_bytes(&self, bytes: &[u8]) -> StreamResult<usize> {
-    unimplemented!()
-  }
-
-  fn write_all_text(&self, string: &impl AsRef<str>) -> StreamResult<usize> {
-    unimplemented!()
-  }
+  fn read_bool(&mut self) -> IOResult<bool> { unimplemented!() }
+  fn write_bool(&mut self, value: bool) -> IOResult<()> { unimplemented!() }
+  fn read_u16(&mut self) -> IOResult<u16> { unimplemented!() }
+  fn write_u16(&mut self, value: u16) -> IOResult<()> { unimplemented!() }
 }
 
-/// A stream implementation for standard files.
-pub struct FileStream {
-  file: std::fs::File,
+/// A type that can be serialized to/from a binary stream.
+pub trait BinarySerializable {
+  fn read(&mut self, stream: &mut impl BinaryStream) -> IOResult<()>;
+  fn write(&mut self, stream: &mut impl BinaryStream) -> IOResult<()>;
 }
 
-impl FileStream {
-  pub fn open(path: impl AsRef<str>) -> StreamResult<Self> {
-    let file = std::fs::File::open(path.as_ref())?;
-
-    Ok(Self { file })
-  }
-}
-
-impl Stream for FileStream {
-  fn is_eof(&self) -> bool {
-    unimplemented!()
-  }
-
-  fn read_bytes(&mut self, buffer: &mut [u8]) -> StreamResult<usize> {
-    Ok(self.file.read(buffer)?)
-  }
-
-  fn write_bytes(&mut self, buffer: &[u8]) -> StreamResult<usize> {
-    Ok(self.file.write(buffer)?)
-  }
-}
-
-/// Represents an error in the IO subsystem.
+/// Represents an error in the VFS.
 #[derive(Debug)]
 pub enum Error {
-  VFS(vfs::Error),
-  IO(std::io::Error),
+  General(std::io::Error),
+  InvalidPathScheme,
+}
+
+impl From<std::io::Error> for Error {
+  fn from(error: std::io::Error) -> Self {
+    Self::General(error)
+  }
 }
 
 impl From<Error> for crate::Error {
   fn from(error: Error) -> Self {
     Self::IO(error)
-  }
-}
-
-impl From<std::io::Error> for Error {
-  fn from(error: std::io::Error) -> Self {
-    Self::IO(error)
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn it_should_read_a_simple_file() {
-    let mut stream = FileStream::open("./README.md").unwrap();
-    let mut buffer = [0; 1024];
-
-    stream.read_bytes(&mut buffer).unwrap();
   }
 }

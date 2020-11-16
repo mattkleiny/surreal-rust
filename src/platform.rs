@@ -1,5 +1,8 @@
 //! Platform abstractions and utilities.
 
+#[cfg(feature = "desktop")]
+pub use desktop::*;
+
 use crate::audio::AudioDevice;
 use crate::graphics::GraphicsDevice;
 use crate::input::InputDevice;
@@ -35,7 +38,7 @@ pub trait PlatformWindow {
   fn set_title(&mut self, title: impl AsRef<str>);
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Error {
   General,
 }

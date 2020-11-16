@@ -53,7 +53,7 @@ pub enum PrimitiveTopology {
 }
 
 /// Represents an error with graphics.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Error {
   InvalidBuffer,
   InvalidTexture,

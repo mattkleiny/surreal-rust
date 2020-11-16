@@ -25,7 +25,7 @@ mod random;
 mod ranges;
 
 /// Clamps the given value between the given lower and upper bounds.
-pub fn clamp<T: PartialOrd>(value: T, lower: T, upper: T) -> T {
+pub fn clamp<T>(value: T, lower: T, upper: T) -> T where T: PartialOrd + Copy {
   match () {
     _ if value > upper => upper,
     _ if value < lower => lower,

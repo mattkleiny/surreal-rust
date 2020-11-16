@@ -1,4 +1,5 @@
 use std::ops::Sub;
+use crate::maths::clamp;
 
 /// Builds a range between the given values.
 #[inline]
@@ -20,19 +21,18 @@ impl<T> Range<T> {
   }
 
   #[inline]
-  pub fn delta(&self) -> T
-  where
-    T: Copy + Sub<Output = T>,
-  {
+  pub fn delta(&self) -> T where T: Copy + Sub<Output=T> {
     self.max - self.min
   }
 
   #[inline]
-  pub fn contains(&self, other: T) -> bool
-  where
-    T: PartialOrd,
-  {
+  pub fn contains(&self, other: T) -> bool where T: PartialOrd {
     other >= self.min && other <= self.max
+  }
+
+  #[inline]
+  pub fn clamp(&self, value: T) -> T where T: PartialOrd + Copy {
+    clamp(value, self.min, self.max)
   }
 }
 

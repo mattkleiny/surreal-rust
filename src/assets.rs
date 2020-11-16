@@ -1,5 +1,7 @@
 //! A simple asset management system with support for hot file reloading.
 
+use std::cell::UnsafeCell;
+
 use crate::io::Path;
 
 pub type AssetResult<T> = std::result::Result<T, Error>;
@@ -11,7 +13,7 @@ pub type AssetResult<T> = std::result::Result<T, Error>;
 /// This asset can have it's contents asset updated at any time, permitting hot reload.
 /// Each time the asset is borrowed, the most up-to-date content is returned.
 pub struct Asset<T> {
-  state: AssetState<T>,
+  state: UnsafeCell<AssetState<T>>,
 }
 
 /// The internal state of an asset.
@@ -21,13 +23,11 @@ enum AssetState<T> {
 }
 
 impl<T> Asset<T> {
-  pub fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Asset<T>>
-    where T: LoadableAsset {
+  pub fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Asset<T>> where T: LoadableAsset {
     let asset = T::load(path, context)?;
+    let state = UnsafeCell::new(AssetState::Ready(asset));
 
-    Ok(Asset {
-      state: AssetState::Ready(asset),
-    })
+    Ok(Asset { state })
   }
 
   pub fn get(&self) -> Option<&T> {
@@ -50,6 +50,12 @@ impl<T> std::ops::Deref for Asset<T> {
 impl<T> std::ops::DerefMut for Asset<T> {
   fn deref_mut(&mut self) -> &mut Self::Target {
     self.get_mut().expect("This asset has not finished loading!")
+  }
+}
+
+impl<T> std::ops::Drop for Asset<T> {
+  fn drop(&mut self) {
+    unimplemented!()
   }
 }
 

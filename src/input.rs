@@ -2,6 +2,8 @@
 
 use crate::maths::Vector2;
 
+pub type InputResult<T> = std::result::Result<T, Error>;
+
 /// Abstracts over the input system of a device.
 ///
 /// Permits interaction with the underlying input API through a higher-level abstraction.
@@ -26,6 +28,7 @@ pub enum MouseButton {
 }
 
 /// Represents a key on the keyboard.
+#[repr(u32)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Key {
   Space,
@@ -34,7 +37,8 @@ pub enum Key {
 
 impl Key {
   pub fn from_scan_code(scancode: u32) -> Self {
-    unimplemented!()
+    // TODO: replace this with something safe
+    unsafe { std::mem::transmute(scancode) }
   }
 }
 
@@ -45,7 +49,7 @@ pub struct Touch {
 }
 
 /// Represents an error with input.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Error {}
 
 impl From<Error> for crate::Error {

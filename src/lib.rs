@@ -12,6 +12,7 @@
 #![allow(unused_variables)]
 
 #![feature(const_fn)]
+#![feature(once_cell)]
 
 #[macro_use]
 extern crate enumflags2;
@@ -42,6 +43,7 @@ pub enum Error {
   Input(input::Error),
   IO(io::Error),
   Platform(platform::Error),
+  Scripting(scripting::Error),
 }
 
 pub mod prelude {

@@ -7,5 +7,17 @@
 // TODO: abstract over scripting language, add debugging and profiling/etc.
 // TODO: strongly emphasise duck-typing for game
 
-/// Represents an engine for scripting support.
+pub type ScriptResult<T> = std::result::Result<T, Error>;
+
 pub trait ScriptEngine {}
+
+#[derive(Debug)]
+pub enum Error {
+  General,
+}
+
+impl From<Error> for crate::Error {
+  fn from(error: Error) -> Self {
+    Self::Scripting(error)
+  }
+}

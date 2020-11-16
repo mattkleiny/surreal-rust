@@ -12,7 +12,7 @@ pub type AudioResult<T> = std::result::Result<T, Error>;
 pub trait AudioDevice {}
 
 /// Represents an error with audio.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub enum Error {
   NotEnoughMemory,
 }
