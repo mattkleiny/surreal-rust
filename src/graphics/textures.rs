@@ -22,16 +22,16 @@ impl Texture {
     }
   }
 
-  pub fn width(&self) -> usize {
-    self.width
-  }
-
-  pub fn height(&self) -> usize {
-    self.height
-  }
+  pub fn width(&self) -> usize { self.width }
+  pub fn height(&self) -> usize { self.height }
 
   pub fn upload(&mut self, image: &Image) {
-    unimplemented!()
+    unsafe {
+      let data = image.as_slice().as_ptr() as *const std::os::raw::c_void;
+
+      gl::BindTexture(gl::TEXTURE_2D, self.handle.0);
+      gl::TexImage2D(gl::TEXTURE_2D, 0, 0, self.width() as i32, self.height() as i32, 0, 0, 0, data);
+    }
   }
 }
 
@@ -65,9 +65,16 @@ struct TextureHandle(u32);
 
 impl TextureHandle {
   pub fn new() -> Self {
-    let mut id = 0;
-    unsafe { gl::GenTextures(1, &mut id) }
-    Self(id)
+    unsafe {
+      let mut id: u32 = -1;
+      gl::GenTextures(1, &mut id);
+
+      if id == -1 {
+        panic!("Failed to allocate GPU texture!");
+      }
+
+      Self(id as u32)
+    }
   }
 }
 

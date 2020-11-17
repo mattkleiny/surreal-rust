@@ -61,6 +61,12 @@ impl Program {
     }
   }
 
+  pub fn bind(&self) {
+    unsafe {
+      gl::UseProgram(self.handle.0);
+    }
+  }
+
   pub fn link(&mut self, shaders: &[Shader]) {
     unsafe {
       for shader in shaders {

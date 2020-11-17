@@ -88,6 +88,16 @@ mod tests {
   use super::*;
 
   #[test]
+  fn color_should_interpolate_between_values() {
+    let color = Color::lerp(&Color::BLACK, &Color::WHITE, 0.5);
+
+    assert_eq!(color.r, 127);
+    assert_eq!(color.g, 127);
+    assert_eq!(color.b, 127);
+    assert_eq!(color.a, 255);
+  }
+
+  #[test]
   fn color_should_generate_random_values() {
     let seed = Seed::random();
     let mut rng = seed.to_random();
@@ -100,15 +110,5 @@ mod tests {
     assert_ne!(color1, color2);
     assert_ne!(color2, color3);
     assert_ne!(color3, color4);
-  }
-
-  #[test]
-  fn color_should_interpolate_between_values() {
-    let color = Color::lerp(&Color::BLACK, &Color::WHITE, 0.5);
-
-    assert_eq!(color.r, 127);
-    assert_eq!(color.g, 127);
-    assert_eq!(color.b, 127);
-    assert_eq!(color.a, 255);
   }
 }

@@ -24,6 +24,7 @@ pub mod audio;
 pub mod collections;
 pub mod diagnostics;
 pub mod editor;
+pub mod extensions;
 pub mod graphics;
 pub mod input;
 pub mod io;
@@ -54,6 +55,7 @@ pub mod prelude {
   pub use crate::collections::*;
   pub use crate::diagnostics::*;
   pub use crate::editor::*;
+  pub use crate::extensions::*;
   pub use crate::graphics::*;
   pub use crate::input::*;
   pub use crate::io::*;

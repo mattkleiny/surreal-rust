@@ -33,7 +33,7 @@ impl<T> BSP<T> {
     }
   }
 
-  /// Determines if this node is a leaf node in the tere.
+  /// Determines if this node is a leaf node in the tree.
   pub fn is_leaf(&self) -> bool {
     match self.node {
       Node::Split { .. } => false,
