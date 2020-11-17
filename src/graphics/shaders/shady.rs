@@ -7,6 +7,8 @@
 //!
 //! An extension of this might also allow constructions of shaders via a shader graph.
 
+type ParseResult<T> = std::result::Result<T, ParseError>;
+
 /// A high-level shady program.
 #[derive(Debug)]
 pub struct ShadyProgram {
@@ -160,28 +162,33 @@ pub trait Visitor {
 /// Converts strings into Shady `Token`s.
 struct Tokenizer<'a> {
   input: &'a str,
-  current_row: usize,
-  current_column: usize,
+  index: usize,
 }
 
 impl<'a> Tokenizer<'a> {
   pub fn tokenize(input: &'a str) -> ParseResult<Vec<Token>> {
-    let mut tokenizer = Self::new(input);
-    let tokens = tokenizer.extract_tokens();
-
-    Ok(tokens)
+    Self::new(input).extract_tokens()
   }
 
   fn new(input: &'a str) -> Self {
     Self {
       input,
-      current_row: 0,
-      current_column: 0,
+      index: 0,
     }
   }
 
-  fn extract_tokens(&mut self) -> Vec<Token> {
-    unimplemented!();
+  fn extract_tokens(&mut self) -> ParseResult<Vec<Token>> {
+    let mut result = Vec::new();
+
+    while let Some(token) = self.extract_token()? {
+      result.push(token);
+    }
+
+    Ok(result)
+  }
+
+  fn extract_token(&mut self) -> ParseResult<Option<Token>> {
+    unimplemented!()
   }
 }
 
@@ -223,15 +230,25 @@ pub enum ParseError {
   NoKindSpecified,
 }
 
-type ParseResult<T> = std::result::Result<T, ParseError>;
-
 #[cfg(test)]
 mod tests {
   use super::*;
 
   #[test]
   fn it_should_parse_a_simple_program() {
-    ShadyProgram::parse("#kind sprite")
+    const PROGRAM: &'static str = r"
+      #kind sprite
+
+      void vertex() {
+        POSITION += vec2(0,TIME);
+      }
+
+      void fragment() {
+        COLOR = rgba(1,1,1,1);
+      }
+    ";
+
+    ShadyProgram::parse(PROGRAM)
         .expect("Failed to parse simple program!");
   }
 }
