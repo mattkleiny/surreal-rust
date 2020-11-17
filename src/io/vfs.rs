@@ -35,7 +35,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_parse_simple_schemes() {
+  fn path_should_parse_simple_schemes() {
     let path = Path::parse("local://README.md").unwrap();
 
     assert_eq!("local", path.scheme);

@@ -1,4 +1,5 @@
 use std::ops::Sub;
+
 use crate::maths::clamp;
 
 /// Builds a range between the given values.
@@ -31,7 +32,7 @@ impl<T> Range<T> {
   }
 
   #[inline]
-  pub fn clamp(&self, value: T) -> T where T: PartialOrd + Copy {
+  pub fn clamp(&self, value: T) -> T where T: Copy + PartialOrd {
     clamp(value, self.min, self.max)
   }
 }
@@ -41,7 +42,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_produce_a_valid_f64_range() {
+  fn range_should_produce_a_valid_f64_range() {
     let range = range(0., 2.);
 
     assert!(range.contains(1.));
@@ -49,7 +50,7 @@ mod tests {
   }
 
   #[test]
-  fn it_should_produce_a_valid_i64_range() {
+  fn range_should_produce_a_valid_i64_range() {
     let range = range(-2, 5);
 
     assert!(range.contains(-1));
@@ -57,7 +58,15 @@ mod tests {
   }
 
   #[test]
-  fn it_should_produce_a_valid_str_range() {
+  fn range_should_clamp_a_valid_range() {
+    let range = range(-2, 5);
+
+    assert_eq!(-2, range.clamp(-100));
+    assert_eq!(5, range.clamp(100));
+  }
+
+  #[test]
+  fn range_should_produce_a_valid_str_range() {
     let range = range("Test 1", "Test 3");
 
     assert!(range.contains("Test 3"));

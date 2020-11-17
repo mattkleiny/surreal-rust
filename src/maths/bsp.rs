@@ -19,7 +19,7 @@ pub struct BSP<T> {
 }
 
 impl<T> BSP<T> {
-  pub fn new(bounds: Bounds, value: T) -> Self {
+  pub fn new_leaf(bounds: Bounds, value: T) -> Self {
     Self {
       bounds,
       node: Node::Leaf(Some(value)),
@@ -47,24 +47,18 @@ impl<T> BSP<T> {
   }
 
   /// Borrows the value of this leaf node.
-  pub fn get(&self) -> &T {
+  pub fn get(&self) -> Option<&T> {
     match &self.node {
-      Node::Leaf(value) => match value {
-        None => panic!("This value doesn't exist!"),
-        Some(value) => value,
-      },
-      _ => panic!("This is not a leaf node!")
+      Node::Leaf(Some(value)) => Some(value),
+      _ => None,
     }
   }
 
   /// Mutably borrows the value of this leaf node.
-  pub fn get_mut(&mut self) -> &mut T {
+  pub fn get_mut(&mut self) -> Option<&mut T> {
     match &mut self.node {
-      Node::Leaf(value) => match value {
-        None => panic!("This value doesn't exist!"),
-        Some(value) => value,
-      },
-      _ => panic!("This is not a leaf node!")
+      Node::Leaf(Some(value)) => Some(value),
+      _ => None,
     }
   }
 
@@ -114,16 +108,17 @@ impl<T> BSP<T> {
         left.accept(visitor);
         right.accept(visitor);
       }
-      Node::Leaf(value) => {
+      Node::Leaf(Some(value)) => {
         visitor.visit_leaf(&self.bounds, value);
       }
+      Node::Leaf(None) => {} // no-op
     }
   }
 }
 
 /// A visitor for BSP trees.
 pub trait Visitor<T> {
-  fn visit_leaf(&mut self, bounds: &Bounds, value: &Option<T>);
+  fn visit_leaf(&mut self, bounds: &Bounds, value: &T);
 }
 
 #[cfg(test)]
@@ -131,15 +126,15 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_split_and_create_simple_trees() {
+  fn bsp_should_split_and_create_simple_trees() {
     let bounds = Bounds::new(0., 0., 100., 100.);
-    let mut bsp = BSP::new(bounds, "Test");
+    let mut bsp = BSP::new_leaf(bounds, "Test");
 
     bsp.split(Point::new(50., 50.), Axis::Horizontal);
   }
 
   #[test]
-  fn it_should_visit_all_nodes() {
+  fn bsp_should_visit_all_nodes() {
     let tree = BSP {
       bounds: Bounds::new(0., 0., 100., 100.),
       node: Node::Split {
@@ -157,11 +152,8 @@ mod tests {
     struct TestVisitor;
 
     impl<T: std::fmt::Debug> Visitor<T> for TestVisitor {
-      fn visit_leaf(&mut self, bounds: &Bounds, value: &Option<T>) {
-        match value {
-          None => println!("Doesn't look like anything to me 🤷‍"),
-          Some(value) => println!("The value is {:?}", value),
-        }
+      fn visit_leaf(&mut self, bounds: &Bounds, value: &T) {
+        println!("The value is {:?}", value);
       }
     }
 

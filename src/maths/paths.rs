@@ -1,14 +1,17 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use smallvec::SmallVec;
 
-use crate::collections::{MinHeap};
+use crate::collections::MinHeap;
 
 /// A point in the path-finding grid.
 pub type Point = super::Vector2<i32>;
 
 /// A cost for path searches and relative queries.
 pub type Cost = f64;
+
+/// A heuristic function for path-finding.
+pub type Heuristic = fn(&Point, &Point) -> Cost;
 
 /// Represents a path of points.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -34,37 +37,13 @@ pub trait PathFindingGrid {
   fn get_neighbours(&self, center: Point) -> SmallVec<[Point; 8]>;
 
   /// Locate a path from the given start point to the given goal via a heuristic.
-  fn find_path(&self, start: Point, goal: Point, heuristic: fn(Point, Point) -> Cost) -> Option<Path> {
-    /// Rebuilds the path taken to get to the destination.
-    fn rebuild_path(start: Point, goal: Point, came_from: HashMap<Point, Point>) -> Path {
-      let mut result = Vec::new();
-      let mut current = goal;
-
-      while current != start {
-        result.push(current);
-
-        if current == start {
-          break;
-        }
-
-        current = *came_from.get(&current).unwrap();
-      }
-
-      result.push(start);
-      result.reverse();
-
-      Path(result)
-    }
-
-    let mut visited = HashSet::new();
-
+  fn find_path(&self, start: Point, goal: Point, heuristic: Heuristic) -> Option<Path> {
     let mut came_from = HashMap::new();
     let mut cost_so_far = HashMap::new();
 
     let mut frontier = MinHeap::new();
 
     frontier.push(start, 0.);
-    visited.insert(start);
 
     came_from.insert(start, start);
     cost_so_far.insert(start, 0.);
@@ -75,23 +54,16 @@ pub trait PathFindingGrid {
         Some(current) if current == goal => {
           return Some(rebuild_path(start, goal, came_from));
         }
-        Some(current) => {
-          for neighbour in self.get_neighbours(current) {
-            let new_cost = cost_so_far.get(&current).unwrap() + self.get_cost(current, neighbour);
+        Some(current) => for neighbour in self.get_neighbours(current) {
+          let new_cost = cost_so_far[&current] + self.get_cost(current, neighbour);
 
-            if cost_so_far.contains_key(&neighbour) || new_cost < *cost_so_far.get(&neighbour).unwrap() {
-              if cost_so_far.contains_key(&neighbour) {
-                cost_so_far.remove(&neighbour);
-                came_from.remove(&neighbour);
-              }
+          if !cost_so_far.contains_key(&neighbour) || new_cost < cost_so_far[&neighbour] {
+            cost_so_far.insert(neighbour, new_cost);
+            came_from.insert(neighbour, current);
 
-              cost_so_far.insert(neighbour, new_cost);
-              came_from.insert(neighbour, current);
+            let priority = new_cost + heuristic(&neighbour, &goal);
 
-              let priority = new_cost + heuristic(neighbour, goal);
-
-              frontier.push(neighbour, priority);
-            }
+            frontier.push(neighbour, new_cost);
           }
         }
       }
@@ -99,6 +71,27 @@ pub trait PathFindingGrid {
 
     None
   }
+}
+
+/// Rebuilds the path taken to get to the destination.
+fn rebuild_path(start: Point, goal: Point, mut came_from: HashMap<Point, Point>) -> Path {
+  let mut result = Vec::new();
+  let mut current = goal;
+
+  while current != start {
+    result.push(current);
+
+    if current == start {
+      break;
+    }
+
+    current = came_from.remove(&current).unwrap();
+  }
+
+  result.push(start);
+  result.reverse();
+
+  Path(result)
 }
 
 // Generic implementation for any grid space.
@@ -119,10 +112,10 @@ pub mod heuristics {
   use super::*;
 
   /// A constant distance
-  pub fn constant(from: Point, to: Point) -> Cost { 1. }
+  pub fn constant(from: &Point, to: &Point) -> Cost { 1. }
 
   /// The straight-line distance between two points.
-  pub fn euclidean_distance(from: Point, to: Point) -> Cost {
+  pub fn euclidean_distance(from: &Point, to: &Point) -> Cost {
     let dx = to.x - from.x;
     let dy = to.y - from.y;
 
@@ -137,7 +130,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_find_a_simple_path() {
+  fn grid_should_find_a_simple_path() {
     let grid = DenseGrid::new(16, 16, 1.);
 
     let start = vec2(0, 0);

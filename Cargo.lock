@@ -1780,7 +1780,6 @@ version = "0.1.0"
 dependencies = [
  "cgmath",
  "enumflags2",
- "enumflags2_derive",
  "gl",
  "glutin",
  "image",

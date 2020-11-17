@@ -94,11 +94,23 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_compile_a_simple_program() {
-    let program = ShadyProgram::parse("TEST PROGRAM")
+  fn compiler_should_compile_a_simple_program() {
+    const PROGRAM: &'static str = r"
+      #kind sprite
+
+      void vertex() {
+        POSITION += vec2(0,TIME);
+      }
+
+      void fragment() {
+        COLOR = rgba(1,1,1,1);
+      }
+    ";
+
+    let program = ShadyProgram::parse(PROGRAM)
         .expect("Failed to parse program!");
 
-    let program = SpirvCompiler::compile(&program)
+    let compiled = SpirvCompiler::compile(&program)
         .expect("Failed to compile program!");
   }
 }

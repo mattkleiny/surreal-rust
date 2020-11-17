@@ -235,7 +235,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_parse_a_simple_program() {
+  fn parser_should_parse_a_simple_program() {
     const PROGRAM: &'static str = r"
       #kind sprite
 

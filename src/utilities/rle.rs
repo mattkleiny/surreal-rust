@@ -56,7 +56,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_encode_and_decode() {
+  fn rle_should_encode_and_decode() {
     let raw = "i aaaaam a a teeeexxxxxttt messssaaaagggeee";
     let encoded = run_length_encode(raw);
     let decoded = run_length_decode(encoded.as_str());
