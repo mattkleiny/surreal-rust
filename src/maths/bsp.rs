@@ -104,21 +104,20 @@ impl<T> BSP<T> {
   /// Visits all nodes in the graph recursively.
   pub fn accept(&self, visitor: &mut impl Visitor<T>) {
     match &self.node {
-      Node::Split { left, right } => {
-        left.accept(visitor);
-        right.accept(visitor);
-      }
-      Node::Leaf(Some(value)) => {
-        visitor.visit_leaf(&self.bounds, value);
-      }
-      Node::Leaf(None) => {} // no-op
+      Node::Split { left, right } => visitor.visit_split(&self.bounds, left, right),
+      Node::Leaf(value) => visitor.visit_leaf(&self.bounds, value),
     }
   }
 }
 
 /// A visitor for BSP trees.
-pub trait Visitor<T> {
-  fn visit_leaf(&mut self, bounds: &Bounds, value: &T);
+pub trait Visitor<T>: Sized {
+  fn visit_split(&mut self, bounds: &Bounds, left: &BSP<T>, right: &BSP<T>) {
+    left.accept(self);
+    right.accept(self);
+  }
+
+  fn visit_leaf(&mut self, bounds: &Bounds, value: &Option<T>);
 }
 
 #[cfg(test)]
@@ -152,8 +151,10 @@ mod tests {
     struct TestVisitor;
 
     impl<T: std::fmt::Debug> Visitor<T> for TestVisitor {
-      fn visit_leaf(&mut self, bounds: &Bounds, value: &T) {
-        println!("The value is {:?}", value);
+      fn visit_leaf(&mut self, bounds: &Bounds, value: &Option<T>) {
+        if let Some(value) = value {
+          println!("The value is {:?}", value);
+        }
       }
     }
 
