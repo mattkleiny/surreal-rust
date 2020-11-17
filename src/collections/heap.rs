@@ -1,66 +1,44 @@
-use std::cmp::Ordering;
+pub type MinHeap<T, TCost> = Heap<T, TCost, { HeapType::Min }>;
+pub type MaxHeap<T, TCost> = Heap<T, TCost, { HeapType::Max }>;
 
-/// A simple binary min-heap implementation with distinct cost type.
+/// Different heap types supported.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum HeapType { Min, Max }
+
+/// A simple binary heap implementation with distinct cost type.
 #[derive(Clone, Debug)]
-pub struct MinHeap<T, TCost> {
-  entries: Vec<Entry<T, TCost>>,
+pub struct Heap<V, C, const TYPE: HeapType> {
+  entries: Vec<Entry<V, C>>,
 }
 
-impl<T, TCost: PartialOrd> MinHeap<T, TCost> {
+impl<V, C, const TYPE: HeapType> Heap<V, C, { TYPE }> where C: PartialOrd {
   pub fn new() -> Self {
     Self { entries: Vec::new() }
   }
 
-  pub fn push(&mut self, value: T, cost: TCost) {
-    self.entries.push(Entry::new(value, cost));
+  pub fn push(&mut self, value: V, cost: C) {
+    self.entries.push(Entry { value, cost });
   }
 
-  pub fn pop(&mut self) -> Option<T> {
+  pub fn pop(&mut self) -> Option<V> {
     unimplemented!()
   }
 
   pub fn size(&self) -> usize {
     self.entries.len()
   }
+
+  // key index accessors
+  const fn parent(key: usize) -> usize { (key - 1) / 2 }
+  const fn left(key: usize) -> usize { 2 * key + 1 }
+  const fn right(key: usize) -> usize { 2 * key + 2 }
 }
 
-#[inline]
-fn swap<T: Copy>(a: &mut T, b: &mut T) {
-  let temp = *b;
-  *a = *b;
-  *b = temp;
-}
-
-const fn parent(key: usize) -> usize { (key - 1) / 2 }
-
-const fn left(key: usize) -> usize { 2 * key + 1 }
-
-const fn right(key: usize) -> usize { 2 * key + 2 }
-
-/// An entry in a min or max heap.
+/// An entry in a heap.
 #[derive(Copy, Clone, Debug)]
-struct Entry<T, TCost> {
-  value: T,
-  cost: TCost,
-}
-
-impl<T, TCost> Entry<T, TCost> {
-  #[inline]
-  pub const fn new(value: T, cost: TCost) -> Self {
-    Self { value, cost }
-  }
-}
-
-impl<T, TCost: PartialEq> PartialEq for Entry<T, TCost> {
-  fn eq(&self, other: &Self) -> bool {
-    self.cost.eq(&other.cost)
-  }
-}
-
-impl<T, TCost: PartialOrd> PartialOrd for Entry<T, TCost> {
-  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-    self.cost.partial_cmp(&other.cost)
-  }
+struct Entry<V, C> {
+  value: V,
+  cost: C,
 }
 
 #[cfg(test)]
@@ -68,9 +46,28 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_insert_items() {
+  fn min_heap_should_insert_and_remove_items_in_the_right_order() {
     let mut heap = MinHeap::new();
 
-    heap.push("Hello", 1.);
+    heap.push("A", 1.);
+    heap.push("B", 2.);
+    heap.push("C", 3.);
+
+    assert_eq!("A", heap.pop().unwrap());
+    assert_eq!("B", heap.pop().unwrap());
+    assert_eq!("C", heap.pop().unwrap());
+  }
+
+  #[test]
+  fn max_heap_should_insert_and_remove_items_in_the_right_order() {
+    let mut heap = MaxHeap::new();
+
+    heap.push("A", 1.);
+    heap.push("B", 2.);
+    heap.push("C", 3.);
+
+    assert_eq!("C", heap.pop().unwrap());
+    assert_eq!("B", heap.pop().unwrap());
+    assert_eq!("A", heap.pop().unwrap());
   }
 }

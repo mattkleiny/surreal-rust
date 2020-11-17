@@ -10,9 +10,11 @@
 
 #![allow(dead_code)]
 #![allow(unused_variables)]
+#![allow(incomplete_features)]
 
 #![feature(const_fn)]
 #![feature(once_cell)]
+#![feature(const_generics)]
 
 #[macro_use]
 extern crate enumflags2;

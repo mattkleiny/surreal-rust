@@ -20,7 +20,7 @@ rand = { version = "0.7.3", default-features = false, features = ["std"] }
 rodio = { version = "0.13.0", default-features = false }
 rspirv = { version = "0.7", optional = true }
 smallvec = "1.4.2"
-winit = { version = "0.23", optional = true }
+winit = { version = "0.23", default-features = false, optional = true }
 
 [features]
 default = []

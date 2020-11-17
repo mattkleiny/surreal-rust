@@ -95,15 +95,16 @@ impl Platform for DesktopPlatform {
     event_loop.run_return(move |event, _, control_flow| {
       match event {
         // generic winit events
+        Event::MainEventsCleared => {
+          callback(&mut self);
+
+          if self.is_continuous_rendering {
+            self.window_context.window().request_redraw();
+          }
+        }
         Event::RedrawRequested(window_id) => {
           if window_id == self.window_context.window().id() {
-            callback(&mut self);
-
             self.window_context.swap_buffers().unwrap();
-
-            if self.is_continuous_rendering {
-              self.window_context.window().request_redraw();
-            }
           }
         }
         Event::Suspended => {}

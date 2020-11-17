@@ -32,12 +32,7 @@ impl Buffer {
         BufferUsage::Dynamic => gl::DYNAMIC_DRAW,
       };
       gl::BindBuffer(kind, self.handle.0);
-      gl::BufferData(
-        kind,
-        data.len() as isize,
-        data.as_ptr() as *const c_void,
-        usage,
-      )
+      gl::BufferData(kind, data.len() as isize, data.as_ptr() as *const c_void, usage)
     }
   }
 }
@@ -56,12 +51,6 @@ pub enum BufferUsage {
   Dynamic,
 }
 
-/// Represents a vertex type that possesses `VertexAttribute`s.
-// TODO: implement a #[derive] macro for vertex attributes?
-pub trait Vertex {
-  fn attributes() -> &'static [VertexAttribute];
-}
-
 /// Contains rendering attributes about a vertex.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct VertexAttribute {
@@ -76,9 +65,11 @@ struct BufferHandle(u32);
 
 impl BufferHandle {
   pub fn new() -> Self {
-    let mut id = 0;
-    unsafe { gl::GenBuffers(1, &mut id) }
-    Self(id)
+    let mut handle = Self(0);
+    unsafe {
+      gl::GenBuffers(1, &mut handle.0);
+    }
+    handle
   }
 }
 

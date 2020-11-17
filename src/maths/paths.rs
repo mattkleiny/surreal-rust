@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use smallvec::SmallVec;
 
-use crate::collections::MinHeap;
+use crate::collections::{MinHeap};
 
 /// A point in the path-finding grid.
 pub type Point = super::Vector2<i32>;
@@ -22,6 +22,10 @@ impl Path {
   /// The goal point of the path.
   #[inline]
   pub fn goal(&self) -> Point { self.0[self.0.len() - 1] }
+
+  /// Returns all points in the path as a slice.
+  #[inline]
+  pub fn as_slice(&self) -> &[Point] { &self.0 }
 }
 
 /// Permits exploratory path-finding over some connected grid.
@@ -31,6 +35,27 @@ pub trait PathFindingGrid {
 
   /// Locate a path from the given start point to the given goal via a heuristic.
   fn find_path(&self, start: Point, goal: Point, heuristic: fn(Point, Point) -> Cost) -> Option<Path> {
+    /// Rebuilds the path taken to get to the destination.
+    fn rebuild_path(start: Point, goal: Point, came_from: HashMap<Point, Point>) -> Path {
+      let mut result = Vec::new();
+      let mut current = goal;
+
+      while current != start {
+        result.push(current);
+
+        if current == start {
+          break;
+        }
+
+        current = *came_from.get(&current).unwrap();
+      }
+
+      result.push(start);
+      result.reverse();
+
+      Path(result)
+    }
+
     let mut visited = HashSet::new();
 
     let mut came_from = HashMap::new();
@@ -76,27 +101,6 @@ pub trait PathFindingGrid {
   }
 }
 
-/// Rebuilds the path taken to get to the destination.
-fn rebuild_path(start: Point, goal: Point, came_from: HashMap<Point, Point>) -> Path {
-  let mut result = Vec::new();
-  let mut current = goal;
-
-  while current != start {
-    result.push(current);
-
-    if current == start {
-      break;
-    }
-
-    current = *came_from.get(&current).unwrap();
-  }
-
-  result.push(start);
-  result.reverse();
-
-  Path(result)
-}
-
 // Generic implementation for any grid space.
 impl<T> PathFindingGrid for super::DenseGrid<T> {
   #[inline(always)]
@@ -115,12 +119,15 @@ pub mod heuristics {
   use super::*;
 
   /// A constant distance
-  #[inline]
   pub fn constant(from: Point, to: Point) -> Cost { 1. }
 
   /// The straight-line distance between two points.
-  #[inline]
-  pub fn euclidean_distance(from: Point, to: Point) -> Cost { unimplemented!() }
+  pub fn euclidean_distance(from: Point, to: Point) -> Cost {
+    let dx = to.x - from.x;
+    let dy = to.y - from.y;
+
+    (dx * dx + dy * dy) as Cost
+  }
 }
 
 #[cfg(test)]
@@ -137,6 +144,6 @@ mod tests {
     let goal = vec2(15, 15);
 
     let path = grid.find_path(start, goal, heuristics::euclidean_distance)
-      .expect("Expected to locate a valid path!");
+        .expect("Expected to locate a valid path!");
   }
 }

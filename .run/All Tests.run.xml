@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Tests in 'surreal'" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+  <configuration default="false" name="All Tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
     <option name="channel" value="DEFAULT" />
     <option name="command" value="test" />
-    <option name="allFeatures" value="true" />
+    <option name="allFeatures" value="false" />
     <option name="emulateTerminal" value="false" />
     <option name="backtrace" value="SHORT" />
     <option name="workingDirectory" value="file://$PROJECT_DIR$" />

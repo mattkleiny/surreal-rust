@@ -7,12 +7,8 @@ pub enum Axis {
 }
 
 impl Axis {
-  pub fn all() -> AxisSet {
-    Axis::Horizontal | Axis::Vertical
-  }
-  pub fn none() -> AxisSet {
-    AxisSet::empty()
-  }
+  pub fn all() -> AxisSet { Axis::Horizontal | Axis::Vertical }
+  pub fn none() -> AxisSet { AxisSet::empty() }
 }
 
 /// A set of `Axis`.
@@ -32,12 +28,8 @@ pub enum Direction {
 pub type DirectionSet = enumflags2::BitFlags<Direction>;
 
 impl Direction {
-  pub fn all() -> DirectionSet {
-    Direction::North | Direction::South | Direction::East | Direction::West
-  }
-  pub fn none() -> DirectionSet {
-    DirectionSet::empty()
-  }
+  pub fn all() -> DirectionSet { Direction::North | Direction::South | Direction::East | Direction::West }
+  pub fn none() -> DirectionSet { DirectionSet::empty() }
 
   /// Returns the opposite direction.
   pub fn opposite(&self) -> Direction {
