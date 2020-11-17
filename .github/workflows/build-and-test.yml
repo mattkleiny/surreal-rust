@@ -12,5 +12,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install xmllint
+      run: sudo apt-get install libasound2-dev
     - name: Run tests
-      run: cargo test --verbose --all-features
+      run: cargo test --all-features
