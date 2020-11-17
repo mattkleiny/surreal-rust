@@ -190,6 +190,37 @@ impl<T> Arena<T> {
       }
     }
   }
+
+  pub fn iter(&self) -> ArenaIterator<T> {
+    ArenaIterator { arena: self, index: 0 }
+  }
+}
+
+/// Permits iteration over an arena.
+pub struct ArenaIterator<'a, T> {
+  arena: &'a Arena<T>,
+  index: usize,
+}
+
+impl<'a, T> Iterator for ArenaIterator<'a, T> {
+  type Item = &'a T;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    use ArenaEntry::*;
+
+    while self.index < self.arena.items.len() {
+      let current_index = self.index;
+      self.index += 1;
+
+      if let Some(Occupied { generation, value }) = self.arena.items.get(current_index) {
+        if *generation == self.arena.generation {
+          return Some(value);
+        }
+      }
+    }
+
+    None
+  }
 }
 
 #[cfg(test)]
@@ -216,5 +247,22 @@ mod tests {
     assert_eq!(*arena.get(index4).unwrap(), "Test 4");
 
     arena.clear();
+  }
+
+  #[test]
+  fn arena_should_support_iteration() {
+    let mut arena = Arena::new();
+
+    arena.insert("Test 1");
+    arena.insert("Test 2");
+    arena.insert("Test 3");
+
+    let mut iterator = arena.iter();
+
+    iterator.next().unwrap();
+    iterator.next().unwrap();
+    iterator.next().unwrap();
+
+    assert_eq!(None, iterator.next());
   }
 }
