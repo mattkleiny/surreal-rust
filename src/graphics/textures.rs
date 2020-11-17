@@ -1,7 +1,6 @@
-use crate::assets::{Asset, AssetContext, LoadableAsset, AssetResult};
+use crate::assets::*;
 use crate::graphics::Image;
 use crate::maths::{vec2, Vector2};
-use crate::io::Path;
 
 /// Represents a 2d texture.
 #[derive(Debug, Eq, PartialEq)]
@@ -26,13 +25,7 @@ impl Texture {
   pub fn height(&self) -> usize { self.height }
 
   pub fn upload(&mut self, image: &Image) {
-    unsafe {
-      let data = image.as_slice().as_ptr() as *const std::os::raw::c_void;
-
-      // TODO: actually make this work
-      gl::BindTexture(gl::TEXTURE_2D, self.handle.0);
-      gl::TexImage2D(gl::TEXTURE_2D, 0, 0, self.width() as i32, self.height() as i32, 0, 0, 0, data);
-    }
+    unimplemented!()
   }
 }
 
@@ -83,8 +76,9 @@ impl Drop for TextureHandle {
 }
 
 impl LoadableAsset for Texture {
-  fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Self> {
+  fn load(path: impl AsRef<str>, context: &mut impl AssetContext) -> AssetResult<Self> {
     let image = Image::load(path, context)?;
+
     let mut texture = Texture {
       handle: TextureHandle::new(),
       width: image.width(),

@@ -2,8 +2,6 @@
 
 use std::cell::UnsafeCell;
 
-use crate::io::Path;
-
 pub type AssetResult<T> = std::result::Result<T, Error>;
 
 /// A shared pointer to an asset, with support for interior hot-reloading.
@@ -23,7 +21,7 @@ enum AssetState<T> {
 }
 
 impl<T> Asset<T> {
-  pub fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Asset<T>> where T: LoadableAsset {
+  pub fn load(path: impl AsRef<str>, context: &mut impl AssetContext) -> AssetResult<Asset<T>> where T: LoadableAsset {
     let asset = T::load(path, context)?;
     let state = UnsafeCell::new(AssetState::Ready(asset));
 
@@ -61,7 +59,7 @@ impl<T> std::ops::Drop for Asset<T> {
 
 /// Permits loading an object from disk.
 pub trait LoadableAsset: Sized {
-  fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Self>;
+  fn load(path: impl AsRef<str>, context: &mut impl AssetContext) -> AssetResult<Self>;
 }
 
 /// Permits hot-loading an asset as it changes on disk.
@@ -77,22 +75,29 @@ pub struct AssetManager {}
 
 /// Context for asset operations.
 pub trait AssetContext {
-  fn load<T: LoadableAsset>(&mut self, path: Path) -> AssetResult<Asset<T>>;
+  fn load<T: LoadableAsset>(&mut self, path: impl AsRef<str>) -> AssetResult<Asset<T>>;
 }
 
 impl AssetContext for AssetManager {
-  fn load<T: LoadableAsset>(&mut self, path: Path) -> AssetResult<Asset<T>> {
+  fn load<T: LoadableAsset>(&mut self, path: impl AsRef<str>) -> AssetResult<Asset<T>> {
     unimplemented!()
   }
 }
 
 #[derive(Debug)]
 pub enum Error {
-  UnableToLoadAsset
+  General,
+  AssetIOError(std::io::Error),
 }
 
 impl From<Error> for crate::Error {
   fn from(error: Error) -> Self {
     Self::Asset(error)
+  }
+}
+
+impl From<std::io::Error> for Error {
+  fn from(error: std::io::Error) -> Self {
+    Self::AssetIOError(error)
   }
 }

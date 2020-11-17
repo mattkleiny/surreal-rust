@@ -1,43 +1,52 @@
-use crate::assets::{AssetContext, AssetResult, LoadableAsset};
-use crate::graphics::Color;
-use crate::io::Path;
-use crate::maths::DenseGrid;
+use image::{DynamicImage, ImageError, ImageFormat, RgbaImage};
 
-/// An image is essentially a 2d-grid of `Color`s, uncompressed.
+use crate::assets::*;
+use crate::graphics::Color;
+
+/// A 2d image, iwth
 pub struct Image {
-  pixels: DenseGrid<Color>,
+  image: RgbaImage
 }
 
 impl Image {
   pub fn new(width: usize, height: usize, default_color: Color) -> Self {
     Self {
-      pixels: DenseGrid::new(width, height, default_color)
+      image: RgbaImage::from_raw(
+        width as u32,
+        height as u32,
+        Vec::with_capacity(width * height),
+      ).unwrap()
     }
+  }
+
+  pub fn from(image: DynamicImage) -> Self {
+    Self { image: image.into_rgba() }
   }
 
   #[inline]
   pub fn width(&self) -> usize {
-    self.pixels.width()
+    self.image.width() as usize
   }
 
   #[inline]
   pub fn height(&self) -> usize {
-    self.pixels.height()
-  }
-
-  #[inline]
-  pub fn as_slice(&self) -> &[Color] {
-    self.pixels.as_slice()
-  }
-
-  #[inline]
-  pub fn as_mut_slice(&mut self) -> &mut [Color] {
-    self.pixels.as_mut_slice()
+    self.image.height() as usize
   }
 }
 
 impl LoadableAsset for Image {
-  fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Self> {
-    unimplemented!()
+  fn load(path: impl AsRef<str>, context: &mut impl AssetContext) -> AssetResult<Self> {
+    let format = ImageFormat::from_path(path.as_ref())?;
+    let file = std::fs::File::open(path.as_ref())?;
+    let reader = std::io::BufReader::new(file);
+    let image = image::load(reader, format)?;
+
+    Ok(Self::from(image))
+  }
+}
+
+impl From<ImageError> for crate::assets::Error {
+  fn from(error: ImageError) -> Self {
+    Self::General
   }
 }

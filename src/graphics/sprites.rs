@@ -1,6 +1,4 @@
-use crate::assets::{Asset, AssetContext, AssetResult, LoadableAsset};
-use crate::graphics::{Color, Error, GraphicsDevice, Texture, TextureRegion};
-use crate::io::Path;
+use crate::graphics::{Color, Error, GraphicsDevice, TextureRegion};
 use crate::maths::Vector2;
 
 /// Represents a sprite that may be batched via a `SpriteBatch`.
@@ -40,23 +38,11 @@ struct SpriteVertex {
 }
 
 /// A sheet of multiple sprites from a single source.
-pub struct SpriteSheet {
-  texture: Asset<Texture>,
-}
+pub struct SpriteSheet {}
 
 impl SpriteSheet {
   /// Gets a single sprite `TextureRegion` from the sprite sheet.
   pub fn get_sprite(&self, x: u32, y: u32) -> TextureRegion {
     unimplemented!()
-  }
-}
-
-impl LoadableAsset for SpriteSheet {
-  fn load(path: Path, context: &mut impl AssetContext) -> AssetResult<Self> {
-    let sheet = SpriteSheet {
-      texture: Asset::load(path, context)?,
-    };
-
-    Ok(sheet)
   }
 }
