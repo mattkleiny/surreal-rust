@@ -2,23 +2,21 @@
 
 use std::collections::HashSet;
 
-use glutin::{ContextWrapper, PossiblyCurrent};
-use winit::{
+use glutin::{
+  ContextWrapper,
   dpi::LogicalSize,
   event::{ElementState, Event, KeyboardInput, WindowEvent},
   event_loop::{ControlFlow, EventLoop},
   platform::desktop::EventLoopExtDesktop,
+  PossiblyCurrent,
   window::{Window, WindowBuilder},
 };
 
-use crate::input::{Key, MouseButton};
+use crate::audio::*;
+use crate::graphics::*;
+use crate::input::*;
 use crate::maths::{vec2, Vector2};
-use crate::platform::{Platform, Error};
-
-mod audio;
-mod graphics;
-mod input;
-mod window;
+use crate::platform::{*, Error as Error};
 
 /// Configuration for the `DesktopPlatform`.
 #[derive(Copy, Clone, Debug)]
@@ -166,8 +164,83 @@ impl Platform for DesktopPlatform {
   }
 }
 
-impl From<winit::error::OsError> for Error {
-  fn from(_: winit::error::OsError) -> Self {
+impl AudioDevice for DesktopPlatform {}
+
+impl GraphicsDevice for DesktopPlatform {
+  fn clear_active_frame_buffer(&mut self, color: Color) {
+    unsafe {
+      gl::ClearColor(
+        color.r as f32 / 255.0,
+        color.g as f32 / 255.0,
+        color.b as f32 / 255.0,
+        color.a as f32 / 255.0,
+      );
+      gl::Clear(gl::COLOR_BUFFER_BIT);
+    }
+  }
+
+  fn set_viewport(&mut self, viewport: Viewport) {
+    unsafe {
+      gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
+    }
+  }
+}
+
+impl InputDevice for DesktopPlatform {
+  fn is_button_up(&self, button: MouseButton) -> bool {
+    !self.pressed_buttons.contains(&button)
+  }
+
+  fn is_button_down(&self, button: MouseButton) -> bool {
+    self.pressed_buttons.contains(&button)
+  }
+
+  fn is_button_pressed(&self, button: MouseButton) -> bool {
+    self.pressed_buttons.contains(&button)
+  }
+
+  fn is_key_up(&self, key: Key) -> bool {
+    !self.pressed_keys.contains(&key)
+  }
+
+  fn is_key_down(&self, key: Key) -> bool {
+    self.pressed_keys.contains(&key)
+  }
+
+  fn is_key_pressed(&self, key: Key) -> bool {
+    self.pressed_keys.contains(&key)
+  }
+
+  fn get_active_touches(&self) -> &[Touch] {
+    unimplemented!()
+  }
+}
+
+impl PlatformWindow for DesktopPlatform {
+  fn set_title(&mut self, title: impl AsRef<str>) {
+    self.window_context.window().set_title(title.as_ref());
+  }
+}
+
+impl From<glutin::event::MouseButton> for MouseButton {
+  fn from(button: glutin::event::MouseButton) -> Self {
+    match button {
+      glutin::event::MouseButton::Left => Self::Left,
+      glutin::event::MouseButton::Right => Self::Right,
+      glutin::event::MouseButton::Middle => Self::Middle,
+      glutin::event::MouseButton::Other(_) => Self::Middle,
+    }
+  }
+}
+
+impl From<glutin::event::ScanCode> for Key {
+  fn from(code: u32) -> Self {
+    Self::from_scan_code(code)
+  }
+}
+
+impl From<glutin::error::OsError> for Error {
+  fn from(_: glutin::error::OsError) -> Self {
     Error::General
   }
 }
