@@ -16,8 +16,7 @@ mod shaders;
 mod sprites;
 mod textures;
 
-// TODO: support hot-reloading for textures and shaders?
-
+/// Represents an error in the graphics subsystem.
 pub type GraphicsResult<T> = std::result::Result<T, Error>;
 
 /// Abstracts over a graphics device or GPU.

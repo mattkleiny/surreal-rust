@@ -39,30 +39,52 @@ pub trait PathFindingGrid {
   /// Gets the potential neighbours around the given point.
   fn get_neighbours(&self, center: Point) -> SmallVec<[Point; 8]>;
 
-  /// Locate a path from the given start point to the given goal via a heuristic.
+  /// Locates a path using A* from from the given start point to the given goal.
   fn find_path(&self, start: Point, goal: Point, heuristic: Heuristic) -> Option<Path> {
-    let mut came_from = HashMap::new();
-    let mut cost_so_far = HashMap::new();
+    /// Represents a node that's already been visited in the path.
+    struct Segment {
+      from: Point,
+      cost: Cost,
+    }
+
+    /// Rebuilds the path taken to get to the destination.
+    fn rebuild_path(start: Point, goal: Point, mut segments: HashMap<Point, Segment>) -> Path {
+      let mut result = Vec::new();
+      let mut current = goal;
+
+      while current != start {
+        result.push(current);
+
+        if current == start {
+          break;
+        }
+
+        current = segments.remove(&current).unwrap().from;
+      }
+
+      result.push(start);
+      result.reverse();
+
+      Path(result)
+    }
 
     let mut frontier = MinHeap::new();
+    let mut segments = HashMap::new();
 
     frontier.push(start, 0.);
-
-    came_from.insert(start, start);
-    cost_so_far.insert(start, 0.);
+    segments.insert(start, Segment { from: start, cost: 0. });
 
     while frontier.size() > 0 {
       match frontier.pop() {
         None => break,
         Some(current) if current == goal => {
-          return Some(rebuild_path(start, goal, came_from));
+          return Some(rebuild_path(start, goal, segments));
         }
         Some(current) => for neighbour in self.get_neighbours(current) {
-          let new_cost = cost_so_far[&current] + self.get_cost(current, neighbour);
+          let new_cost = segments[&current].cost + self.get_cost(current, neighbour);
 
-          if !cost_so_far.contains_key(&neighbour) || new_cost < cost_so_far[&neighbour] {
-            cost_so_far.insert(neighbour, new_cost);
-            came_from.insert(neighbour, current);
+          if !segments.contains_key(&neighbour) || new_cost < segments[&neighbour].cost {
+            segments.insert(neighbour, Segment { from: current, cost: new_cost });
 
             let priority = new_cost + heuristic(&neighbour, &goal);
 
@@ -74,27 +96,6 @@ pub trait PathFindingGrid {
 
     None
   }
-}
-
-/// Rebuilds the path taken to get to the destination.
-fn rebuild_path(start: Point, goal: Point, mut came_from: HashMap<Point, Point>) -> Path {
-  let mut result = Vec::new();
-  let mut current = goal;
-
-  while current != start {
-    result.push(current);
-
-    if current == start {
-      break;
-    }
-
-    current = came_from.remove(&current).unwrap();
-  }
-
-  result.push(start);
-  result.reverse();
-
-  Path(result)
 }
 
 // Generic implementation for any grid space.
@@ -141,6 +142,6 @@ mod tests {
     let goal = vec2(15, 15);
 
     let path = grid.find_path(start, goal, heuristics::euclidean_distance)
-        .expect("Expected to locate a valid path!");
+      .expect("Expected to locate a valid path!");
   }
 }

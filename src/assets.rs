@@ -2,7 +2,13 @@
 
 use std::cell::UnsafeCell;
 
+use crate::collections::ArenaIndex;
+
 pub type AssetResult<T> = std::result::Result<T, Error>;
+
+/// A handle to an asset in the asset manager.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct AssetHandle(ArenaIndex);
 
 /// A shared pointer to an asset, with support for interior hot-reloading.
 ///
@@ -12,6 +18,7 @@ pub type AssetResult<T> = std::result::Result<T, Error>;
 /// Each time the asset is borrowed, the most up-to-date content is returned.
 pub struct Asset<T> {
   state: UnsafeCell<AssetState<T>>,
+  manager: *mut AssetManager,
 }
 
 /// The internal state of an asset.
@@ -21,11 +28,8 @@ enum AssetState<T> {
 }
 
 impl<T> Asset<T> {
-  pub fn load(path: impl AsRef<str>, context: &mut impl AssetContext) -> AssetResult<Asset<T>> where T: LoadableAsset {
-    let asset = T::load(path, context)?;
-    let state = UnsafeCell::new(AssetState::Ready(asset));
-
-    Ok(Asset { state })
+  pub fn load(path: impl AsRef<str>) -> AssetResult<Asset<T>> where T: Loadable {
+    unimplemented!()
   }
 
   pub fn get(&self) -> Option<&T> {
@@ -57,37 +61,32 @@ impl<T> std::ops::Drop for Asset<T> {
   }
 }
 
-/// Permits loading an object from disk.
-pub trait LoadableAsset: Sized {
-  fn load(path: impl AsRef<str>, context: &mut impl AssetContext) -> AssetResult<Self>;
-}
-
-/// Permits hot-loading an asset as it changes on disk.
-pub trait ReloadableAsset: LoadableAsset {
-  fn on_asset_reload(&mut self, updated_asset: &mut Self);
-}
-
 /// A manager for assets.
 ///
 /// Assets are cached centrally by the manager, so accessing the same path
 /// twice will always result in the same asset being returned.
 pub struct AssetManager {}
 
-/// Context for asset operations.
-pub trait AssetContext {
-  fn load<T: LoadableAsset>(&mut self, path: impl AsRef<str>) -> AssetResult<Asset<T>>;
-}
-
-impl AssetContext for AssetManager {
-  fn load<T: LoadableAsset>(&mut self, path: impl AsRef<str>) -> AssetResult<Asset<T>> {
+impl AssetManager {
+  pub fn load<T>(&mut self, path: impl AsRef<str>) -> AssetResult<Asset<T>> where T: Loadable {
     unimplemented!()
   }
+}
+
+/// Permits loading an asset from disk.
+pub trait Loadable: Sized {
+  fn load(path: impl AsRef<str>) -> AssetResult<Self>;
+}
+
+/// Permits hot-loading an asset as it changes on disk.
+pub trait Reloadable: Loadable {
+  fn reload(&mut self, path: impl AsRef<str>) -> AssetResult<()>;
 }
 
 #[derive(Debug)]
 pub enum Error {
   General,
-  AssetIOError(std::io::Error),
+  IOError(std::io::Error),
 }
 
 impl From<Error> for crate::Error {
@@ -98,6 +97,6 @@ impl From<Error> for crate::Error {
 
 impl From<std::io::Error> for Error {
   fn from(error: std::io::Error) -> Self {
-    Self::AssetIOError(error)
+    Self::IOError(error)
   }
 }

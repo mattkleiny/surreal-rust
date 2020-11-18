@@ -1,6 +1,6 @@
-use crate::assets::*;
+use crate::assets::Asset;
 use crate::graphics::Image;
-use crate::maths::{vec2, Vector2};
+use crate::maths::Vector2;
 
 /// Represents a 2d texture.
 #[derive(Debug, Eq, PartialEq)]
@@ -37,16 +37,6 @@ pub struct TextureRegion {
   pub texture: Asset<Texture>,
 }
 
-impl From<Asset<Texture>> for TextureRegion {
-  fn from(texture: Asset<Texture>) -> Self {
-    Self {
-      offset: vec2(0., 0.),
-      size: vec2(texture.width(), texture.height()),
-      texture,
-    }
-  }
-}
-
 /// Flags for texture creation.
 #[repr(u8)]
 #[derive(BitFlags, Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -73,22 +63,5 @@ impl Drop for TextureHandle {
     unsafe {
       gl::DeleteTextures(1, &self.0);
     }
-  }
-}
-
-impl LoadableAsset for Texture {
-  fn load(path: impl AsRef<str>, context: &mut impl AssetContext) -> AssetResult<Self> {
-    let image = Image::load(path, context)?;
-
-    let mut texture = Texture {
-      width: image.width(),
-      height: image.height(),
-      flags: TextureFlags::Clamp,
-      handle: TextureHandle::new(),
-    };
-
-    texture.upload(&image);
-
-    Ok(texture)
   }
 }

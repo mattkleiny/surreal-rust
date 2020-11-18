@@ -7,8 +7,8 @@ pub trait Tile {
   fn to_id(&self) -> Self::Id;
 }
 
-/// A simple 2d map of tiles.
-struct TileMap<T> where T: Tile {
+/// A simple 2d map of `Tile`s.
+pub struct TileMap<T> where T: Tile {
   width: usize,
   height: usize,
   tiles: Vec<T::Id>,

@@ -30,23 +30,23 @@ impl Seed {
 /// A type that can be randomly generated.
 pub trait Random: Sized {
   /// Generates a new value of this type with a global random seed.
-  fn random_global() -> Self {
-    Self::random(&mut Seed::random().to_rng())
+  fn random() -> Self {
+    Self::generate(&mut Seed::random().to_rng())
   }
 
   /// Generates a new random value of this type using the given generator.
-  fn random(generator: &mut RNG) -> Self;
+  fn generate(generator: &mut RNG) -> Self;
 }
 
 impl Random for Seed {
-  fn random(generator: &mut RNG) -> Self {
+  fn generate(generator: &mut RNG) -> Self {
     Self(generator.next())
   }
 }
 
 /// Adapt all standard distribution types to our custom Random interface.
 impl<T> Random for T where rand::distributions::Standard: Distribution<T> {
-  fn random(generator: &mut RNG) -> Self {
+  fn generate(generator: &mut RNG) -> Self {
     generator.rng.sample(rand::distributions::Standard)
   }
 }
@@ -68,7 +68,7 @@ impl RNG {
 
   #[inline(always)]
   pub fn next<T: Random>(&mut self) -> T {
-    T::random(self)
+    T::generate(self)
   }
 }
 

@@ -45,15 +45,15 @@ impl DesktopPlatform {
   pub fn new(config: Configuration) -> Result<Self, Error> {
     let event_loop = EventLoop::new();
     let window_builder = WindowBuilder::new()
-        .with_title(config.title)
-        .with_inner_size(LogicalSize::new(config.size.0, config.size.1));
+      .with_title(config.title)
+      .with_inner_size(LogicalSize::new(config.size.0, config.size.1));
 
     // prepare the OpenGL window context
     let window_context = unsafe {
       glutin::ContextBuilder::new()
-          .build_windowed(window_builder, &event_loop)?
-          .make_current()
-          .unwrap()
+        .build_windowed(window_builder, &event_loop)?
+        .make_current()
+        .unwrap()
     };
 
     // load OpenGL functions from the associated binary
@@ -110,54 +110,45 @@ impl Platform for DesktopPlatform {
         Event::LoopDestroyed => {}
 
         // generic window events
-        Event::WindowEvent { window_id, event }
-        if window_id == self.window_context.window().id() =>
-          {
-            match event {
-              WindowEvent::Resized(new_size) => {
-                self.window_context.resize(new_size);
-              }
-              WindowEvent::CloseRequested => {
-                *control_flow = ControlFlow::Exit;
-              }
-              WindowEvent::CursorMoved { position, .. } => {
-                self.mouse_delta = vec2(
-                  position.x - self.mouse_position.x,
-                  position.y - self.mouse_position.y,
-                );
-                self.mouse_position = vec2(position.x, position.y);
-              }
-              WindowEvent::MouseInput { button, state, .. } => {
-                let button = button.into();
+        Event::WindowEvent { window_id, event } if window_id == self.window_context.window().id() => match event {
+          WindowEvent::Resized(new_size) => {
+            self.window_context.resize(new_size);
+          }
+          WindowEvent::CloseRequested => {
+            *control_flow = ControlFlow::Exit;
+          }
+          WindowEvent::CursorMoved { position, .. } => {
+            self.mouse_delta = vec2(
+              position.x - self.mouse_position.x,
+              position.y - self.mouse_position.y,
+            );
+            self.mouse_position = vec2(position.x, position.y);
+          }
+          WindowEvent::MouseInput { button, state, .. } => {
+            let button = button.into();
 
-                if state == ElementState::Pressed {
-                  self.released_buttons.remove(&button);
-                  self.pressed_buttons.insert(button);
-                } else {
-                  self.pressed_buttons.remove(&button);
-                  self.released_buttons.insert(button);
-                }
-              }
-              WindowEvent::KeyboardInput {
-                input: KeyboardInput {
-                  scancode, state, ..
-                },
-                ..
-              } => {
-                let key = scancode.into();
-
-                if state == ElementState::Pressed {
-                  self.released_keys.remove(&key);
-                  self.pressed_keys.insert(key);
-                } else {
-                  self.pressed_keys.remove(&key);
-                  self.released_keys.insert(key);
-                }
-              }
-              WindowEvent::Focused(is_focused) => {}
-              _ => {}
+            if state == ElementState::Pressed {
+              self.released_buttons.remove(&button);
+              self.pressed_buttons.insert(button);
+            } else {
+              self.pressed_buttons.remove(&button);
+              self.released_buttons.insert(button);
             }
           }
+          WindowEvent::KeyboardInput { input: KeyboardInput { scancode, state, .. }, .. } => {
+            let key = scancode.into();
+
+            if state == ElementState::Pressed {
+              self.released_keys.remove(&key);
+              self.pressed_keys.insert(key);
+            } else {
+              self.pressed_keys.remove(&key);
+              self.released_keys.insert(key);
+            }
+          }
+          WindowEvent::Focused(is_focused) => {}
+          _ => {}
+        }
         _ => {}
       }
     });
