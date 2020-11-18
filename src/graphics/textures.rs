@@ -5,24 +5,25 @@ use crate::maths::{vec2, Vector2};
 /// Represents a 2d texture.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Texture {
-  handle: TextureHandle,
   width: usize,
   height: usize,
   flags: TextureFlags,
+  handle: TextureHandle,
 }
 
 impl Texture {
   pub fn new(width: usize, height: usize, flags: TextureFlags) -> Self {
     Self {
-      handle: TextureHandle::new(),
       width,
       height,
       flags,
+      handle: TextureHandle::new(),
     }
   }
 
   pub fn width(&self) -> usize { self.width }
   pub fn height(&self) -> usize { self.height }
+  pub fn flags(&self) -> TextureFlags { self.flags }
 
   pub fn upload(&mut self, image: &Image) {
     unimplemented!()
@@ -31,9 +32,9 @@ impl Texture {
 
 /// Represents a sub-region of a `Texture`.
 pub struct TextureRegion {
-  pub texture: Asset<Texture>,
   pub offset: Vector2<f32>,
   pub size: Vector2<usize>,
+  pub texture: Asset<Texture>,
 }
 
 impl From<Asset<Texture>> for TextureRegion {
@@ -80,10 +81,10 @@ impl LoadableAsset for Texture {
     let image = Image::load(path, context)?;
 
     let mut texture = Texture {
-      handle: TextureHandle::new(),
       width: image.width(),
       height: image.height(),
       flags: TextureFlags::Clamp,
+      handle: TextureHandle::new(),
     };
 
     texture.upload(&image);

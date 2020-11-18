@@ -5,7 +5,7 @@ use crate::maths::clamp;
 /// Builds a range between the given values.
 #[inline]
 pub const fn range<T>(min: T, max: T) -> Range<T> {
-  Range::new(min, max)
+  Range { min, max }
 }
 
 /// An inclusive range that spans the given (min, max) values.
@@ -16,11 +16,6 @@ pub struct Range<T> {
 }
 
 impl<T> Range<T> {
-  #[inline]
-  pub const fn new(min: T, max: T) -> Self {
-    Self { min, max }
-  }
-
   #[inline]
   pub fn delta(&self) -> T where T: Copy + Sub<Output=T> {
     self.max - self.min
@@ -40,6 +35,20 @@ impl<T> Range<T> {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn range_should_produce_a_valid_f64_delta() {
+    let range = range(-2., 2.);
+
+    assert_eq!(4., range.delta());
+  }
+
+  #[test]
+  fn range_should_produce_a_valid_i64_delta() {
+    let range = range(-2, 2);
+
+    assert_eq!(4, range.delta());
+  }
 
   #[test]
   fn range_should_produce_a_valid_f64_range() {

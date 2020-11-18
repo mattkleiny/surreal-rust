@@ -33,7 +33,10 @@ impl Path {
 
 /// Permits exploratory path-finding over some connected grid.
 pub trait PathFindingGrid {
+  /// Gets the pathing cost between the given two points.
   fn get_cost(&self, from: Point, to: Point) -> Cost;
+
+  /// Gets the potential neighbours around the given point.
   fn get_neighbours(&self, center: Point) -> SmallVec<[Point; 8]>;
 
   /// Locate a path from the given start point to the given goal via a heuristic.
@@ -100,7 +103,8 @@ impl<T> PathFindingGrid for super::DenseGrid<T> {
   fn get_cost(&self, from: Point, to: Point) -> f64 { 1. }
 
   fn get_neighbours(&self, center: Point) -> SmallVec<[Point; 8]> {
-    use super::automata::*;
+    // by default, we explore the moore neighbourhood around the point
+    use super::automata::MooreNeighbourhood;
 
     center.get_moore_neighbours()
   }

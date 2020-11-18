@@ -2,31 +2,6 @@ use std::collections::HashMap;
 
 use crate::maths::{vec2, Vector2};
 
-/// Permits iterating over the cells in a grid.
-#[derive(Copy, Clone, Debug)]
-pub struct GridCellIterator {
-  size: usize,
-  stride: usize,
-  index: usize,
-}
-
-impl Iterator for GridCellIterator {
-  type Item = Vector2<usize>;
-
-  fn next(&mut self) -> Option<Self::Item> {
-    if self.index < self.size {
-      let x = self.index % self.stride;
-      let y = self.index / self.stride;
-
-      self.index += 1;
-
-      Some(vec2(x, y))
-    } else {
-      None
-    }
-  }
-}
-
 /// A densely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct DenseGrid<T> {
@@ -44,25 +19,8 @@ impl<T> DenseGrid<T> {
     }
   }
 
-  #[inline]
-  pub fn width(&self) -> usize {
-    self.width
-  }
-
-  #[inline]
-  pub fn height(&self) -> usize {
-    self.height
-  }
-
-  #[inline]
-  pub fn as_slice(&self) -> &[T] {
-    self.elements.as_slice()
-  }
-
-  #[inline]
-  pub fn as_mut_slice(&mut self) -> &mut [T] {
-    self.elements.as_mut_slice()
-  }
+  pub fn width(&self) -> usize { self.width }
+  pub fn height(&self) -> usize { self.height }
 
   pub fn get(&self, x: usize, y: usize) -> &T {
     assert!(x < self.width);
@@ -89,11 +47,17 @@ impl<T> DenseGrid<T> {
 
   /// Fills the grid with the given value
   pub fn fill(&mut self, value: T) where T: Clone {
-    for y in 0..self.height {
-      for x in 0..self.width {
-        self.set(x, y, value.clone())
-      }
+    for element in self.elements.iter_mut() {
+      *element = value.clone();
     }
+  }
+
+  pub fn as_slice(&self) -> &[T] {
+    &self.elements
+  }
+
+  pub fn as_mut_slice(&mut self) -> &mut [T] {
+    &mut self.elements
   }
 }
 
@@ -105,9 +69,7 @@ pub struct SparseGrid<T> {
 
 impl<T> SparseGrid<T> {
   pub fn new() -> Self {
-    Self {
-      elements: HashMap::new(),
-    }
+    Self { elements: HashMap::new() }
   }
 
   pub fn get(&self, x: i32, y: i32) -> Option<&T> {
@@ -121,6 +83,31 @@ impl<T> SparseGrid<T> {
   /// Clears the contents of the grid.
   pub fn clear(&mut self) {
     self.elements.clear();
+  }
+}
+
+/// Permits iterating over the cells in a grid.
+#[derive(Copy, Clone, Debug)]
+pub struct GridCellIterator {
+  size: usize,
+  stride: usize,
+  index: usize,
+}
+
+impl Iterator for GridCellIterator {
+  type Item = Vector2<usize>;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    if self.index < self.size {
+      let x = self.index % self.stride;
+      let y = self.index / self.stride;
+
+      self.index += 1;
+
+      Some(vec2(x, y))
+    } else {
+      None
+    }
   }
 }
 

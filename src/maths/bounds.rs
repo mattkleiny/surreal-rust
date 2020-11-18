@@ -12,7 +12,7 @@ pub struct Bounds2<T> {
   max: Vector2<T>,
 }
 
-impl<T: Copy> Bounds2<T> {
+impl<T> Bounds2<T> where T: Copy {
   pub const fn new(left: T, top: T, right: T, bottom: T) -> Self {
     Self {
       min: vec2(left, top),
@@ -62,7 +62,7 @@ pub struct Bounds3<T> {
   max: Vector3<T>,
 }
 
-impl<T: Copy> Bounds3<T> {
+impl<T> Bounds3<T> where T: Copy {
   pub const fn new(min: Vector3<T>, max: Vector3<T>) -> Self {
     Self { min, max }
   }

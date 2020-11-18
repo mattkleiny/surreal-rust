@@ -100,7 +100,7 @@ mod tests {
   #[test]
   fn color_should_generate_random_values() {
     let seed = Seed::random();
-    let mut rng = seed.to_random();
+    let mut rng = seed.to_rng();
 
     let color1: Color = rng.next();
     let color2: Color = rng.next();

@@ -17,11 +17,11 @@ impl Buffer {
     }
   }
 
-  fn kind(&self) -> BufferKind { self.kind }
-  fn usage(&self) -> BufferUsage { self.usage }
+  pub fn kind(&self) -> BufferKind { self.kind }
+  pub fn usage(&self) -> BufferUsage { self.usage }
 
   /// Uploads the given data to the buffer.
-  fn upload<T>(&mut self, data: &[T]) {
+  pub fn upload<T>(&mut self, data: &[T]) {
     unsafe {
       let kind = match self.kind {
         BufferKind::Element => gl::ARRAY_BUFFER,

@@ -1,6 +1,7 @@
 use std::time::Instant;
 
 use crate::collections::RingBuffer;
+use crate::maths::clamp;
 
 /// Returns the current time, in seconds since the epoch.
 pub fn now() -> u64 {
@@ -18,8 +19,8 @@ pub struct GameTime {
 pub struct Clock {
   last_time: u64,
   current_time: u64,
-  max_time: f64,
-  time_scale: f64,
+  pub max_time: f64,
+  pub time_scale: f64,
 }
 
 impl Clock {
@@ -32,10 +33,6 @@ impl Clock {
     }
   }
 
-  pub fn set_time_scale(&mut self, time_scale: f64) {
-    self.time_scale = time_scale;
-  }
-
   /// Ticks the clock by a single frame, returning a time delta.
   pub fn tick(&mut self, current_time: u64, frequency: u64) -> f64 {
     self.last_time = self.current_time;
@@ -43,11 +40,7 @@ impl Clock {
 
     // compute delta time since the last update
     let delta_time = ((self.current_time - self.last_time) * 1000 / frequency) as f64 / 1000.;
-    let clamped_time = if delta_time > self.max_time {
-      self.max_time
-    } else {
-      delta_time
-    };
+    let clamped_time = clamp(delta_time, 0., self.max_time);
 
     clamped_time * self.time_scale
   }

@@ -2,22 +2,27 @@ use rand::prelude::*;
 
 /// A seed for random generation.
 ///
-/// Seeds can be passed around efficiently and turned into `RandomGenerator` easily.
+/// Seeds can be passed around efficiently and turned into an `RNG` easily.
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
 pub struct Seed(u64);
 
 impl Seed {
-  /// Generates a new seed using a new random value.
-  pub fn random() -> Self {
-    Self(random_u64())
+  /// Creates a new seed using the given value.
+  pub const fn new(seed: u64) -> Self {
+    Self(seed)
   }
 
-  /// Converts the seed into an `RandomGenerator`.
-  pub fn to_random(&self) -> RNG {
+  /// Generates a new seed using a new random value.
+  pub fn random() -> Self {
+    Self::new(rand::thread_rng().next_u64())
+  }
+
+  /// Converts the seed into an `RNG`.
+  pub fn to_rng(&self) -> RNG {
     if self.0 == 0 {
-      RNG::new(random_u64())
+      RNG::with_random_seed()
     } else {
-      RNG::new(self.0)
+      RNG::with_seed(self.0)
     }
   }
 }
@@ -26,7 +31,7 @@ impl Seed {
 pub trait Random: Sized {
   /// Generates a new value of this type with a global random seed.
   fn random_global() -> Self {
-    Self::random(&mut Seed::random().to_random())
+    Self::random(&mut Seed::random().to_rng())
   }
 
   /// Generates a new random value of this type using the given generator.
@@ -53,12 +58,15 @@ pub struct RNG {
 }
 
 impl RNG {
-  pub fn new(seed: u64) -> Self {
-    Self {
-      rng: StdRng::seed_from_u64(seed),
-    }
+  pub fn with_seed(seed: u64) -> Self {
+    Self { rng: StdRng::seed_from_u64(seed) }
   }
 
+  pub fn with_random_seed() -> Self {
+    Self::with_seed(rand::thread_rng().next_u64())
+  }
+
+  #[inline(always)]
   pub fn next<T: Random>(&mut self) -> T {
     T::random(self)
   }
@@ -66,12 +74,8 @@ impl RNG {
 
 impl Default for RNG {
   fn default() -> Self {
-    RNG::new(random_u64())
+    RNG::with_random_seed()
   }
-}
-
-fn random_u64() -> u64 {
-  rand::thread_rng().next_u64()
 }
 
 #[cfg(test)]
@@ -80,7 +84,7 @@ mod tests {
 
   #[test]
   fn seed_should_generate_a_valid_rng() {
-    let mut rng = Seed::random().to_random();
+    let mut rng = Seed::random().to_rng();
 
     let first: f64 = rng.next();
     let second: f64 = rng.next();

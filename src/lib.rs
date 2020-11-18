@@ -11,8 +11,8 @@
 #![allow(incomplete_features)]
 
 #![feature(const_fn)]
-#![feature(once_cell)]
 #![feature(const_generics)]
+#![feature(once_cell)]
 
 #[macro_use]
 extern crate enumflags2;

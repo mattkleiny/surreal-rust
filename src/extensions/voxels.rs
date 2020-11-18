@@ -1,5 +1,7 @@
 //! A simple toolkit for voxel-based tessellation and rendering.
 
+use crate::graphics::Mesh;
+
 /// Describes the behaviour of a single voxel in the engine.
 ///
 /// A voxel is essentially translatable to/from some smaller ID representation for efficient packing.
@@ -73,6 +75,20 @@ impl<V> Chunk<V> where V: Voxel {
     &mut self.voxels
   }
 
+  /// Blanket implementation for any chunk where the voxels are tessellatable.
+  pub fn tessellate(&self, mesh: &mut impl Mesh<Vertex=V::Vertex, Index=V::Index>) where V: Tessellator {
+    for z in 0..self.depth() {
+      for y in 0..self.height() {
+        for x in 0..self.width() {
+          let position = (x, y, z);
+          let voxel = self.get(x, y, z);
+
+          voxel.tessellate(position, mesh);
+        }
+      }
+    }
+  }
+
   /// Computes the index into the voxel array for the given (x, y, z) coordinates.
   #[inline(always)]
   fn compute_index(x: usize, y: usize, z: usize) -> usize {
@@ -80,59 +96,27 @@ impl<V> Chunk<V> where V: Voxel {
   }
 }
 
-/// A type that supports procedural construction of meshes.
-pub trait MeshBuilder {
+/// Represents a type that can be tessellated into a `Mesh`.
+pub trait Tessellator {
   type Vertex;
   type Index;
 
-  /// Accesses the vertices of the mesh.
-  fn vertices(&self) -> &[Self::Vertex];
-
-  /// Mutably accesses the vertices of the mesh.
-  fn vertices_mut(&mut self) -> &mut [Self::Vertex];
-
-  /// Accesses the indices of the mesh.
-  fn indices(&self) -> &[Self::Index];
-
-  /// Mutably accesses the indices of the mesh.
-  fn indices_mut(&mut self) -> &mut [Self::Index];
-
-  /// Adds a single vertex to the mesh.
-  fn add_vertex(&mut self, vertex: &Self::Vertex);
-
-  /// Adds a single index to the mesh.
-  fn add_index(&mut self, index: Self::Index);
-
-  /// Adds a triangle of vertices to the mesh.
-  fn add_triangle(&mut self, vertices: &[Self::Vertex; 3]) {
-    self.add_vertex(&vertices[0]);
-    self.add_vertex(&vertices[1]);
-    self.add_vertex(&vertices[2]);
-  }
-
-  /// Adds a quad of vertices to the mesh.
-  fn add_quad(&mut self, vertices: &[Self::Vertex; 4]) {
-    self.add_vertex(&vertices[0]);
-    self.add_vertex(&vertices[1]);
-    self.add_vertex(&vertices[2]);
-    self.add_vertex(&vertices[3]);
-  }
-
-  /// Adds a triangle fan of vertices to the mesh.
-  fn add_triangle_fan(&mut self, vertices: &[Self::Vertex]) {
-    unimplemented!()
-  }
-}
-
-/// Represents a type that can be tessellated into a `MeshBuilder`.
-pub trait Tessellator {
   /// Tessellates the shape into the given mesh builder.
-  fn tessellate(&self, position: (usize, usize, usize), builder: &mut impl MeshBuilder);
+  fn tessellate(
+    &self,
+    position: (usize, usize, usize),
+    mesh: &mut impl Mesh<Vertex=Self::Vertex, Index=Self::Index>,
+  );
 }
 
 #[cfg(test)]
 mod tests {
+  use crate::graphics::BufferedMesh;
+  use crate::maths::{vec2, Vector2};
+
   use super::*;
+
+  type Chunk = super::Chunk<Block>;
 
   #[repr(C)]
   #[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
@@ -152,12 +136,18 @@ mod tests {
   }
 
   impl Tessellator for Block {
-    fn tessellate(&self, (x, y, z): (usize, usize, usize), builder: &mut impl MeshBuilder) {
-      unimplemented!()
+    type Vertex = Vector2<f32>;
+    type Index = u16;
+
+    fn tessellate(&self, position: (usize, usize, usize), mesh: &mut impl Mesh<Vertex=Self::Vertex, Index=Self::Index>) {
+      mesh.add_quad(&[
+        vec2(0., 0.),
+        vec2(1., 0.),
+        vec2(0., 1.),
+        vec2(1., 1.),
+      ]);
     }
   }
-
-  type Chunk = super::Chunk<Block>;
 
   #[test]
   fn chunk_should_read_and_write_voxels() {
@@ -174,5 +164,13 @@ mod tests {
         }
       }
     }
+  }
+
+  #[test]
+  fn chunk_should_tessellate_to_a_mesh() {
+    let chunk = Chunk::new();
+    let mut mesh = BufferedMesh::new();
+
+    chunk.tessellate(&mut mesh);
   }
 }
