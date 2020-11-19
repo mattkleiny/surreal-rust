@@ -7,9 +7,12 @@ fn main() {
   };
 
   let platform = DesktopPlatform::new(configuration)
-    .expect("Failed to create platform!");
+      .expect("Failed to create platform!");
 
   platform.run(|platform| {
-    platform.graphics().clear_active_frame_buffer(Color::BLACK);
+    let mut commands = CommandBuffer::new();
+
+    commands.clear_frame_buffer(Color::BLACK);
+    commands.execute(platform);
   });
 }

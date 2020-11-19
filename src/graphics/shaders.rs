@@ -27,6 +27,7 @@ impl Shader {
 }
 
 /// A managed ID for OpenGL shaders.
+#[derive(Debug, Eq, PartialEq)]
 struct ShaderHandle(u32);
 
 impl ShaderHandle {

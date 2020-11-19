@@ -148,16 +148,24 @@ mod tests {
       },
     };
 
-    struct TestVisitor;
+    struct TestVisitor {
+      buffer: String,
+    }
 
     impl<T: std::fmt::Debug> Visitor<T> for TestVisitor {
       fn visit_leaf(&mut self, bounds: &Bounds, value: &Option<T>) {
         if let Some(value) = value {
-          println!("The value is {:?}", value);
+          self.buffer += format!("The value is {:?}", value).as_str();
         }
       }
     }
 
-    tree.accept(&mut TestVisitor);
+    let mut visitor = TestVisitor {
+      buffer: String::new(),
+    };
+
+    tree.accept(&mut visitor);
+
+    assert!(visitor.buffer.len() > 0);
   }
 }

@@ -1,6 +1,7 @@
 use std::os::raw::c_void;
 
 /// A buffer implementation based on OpenGL.
+#[derive(Debug, Eq, PartialEq)]
 pub struct Buffer {
   handle: BufferHandle,
   kind: BufferKind,
@@ -61,6 +62,7 @@ pub struct VertexAttribute {
 }
 
 /// A managed ID for OpenGL buffers.
+#[derive(Debug, Eq, PartialEq)]
 struct BufferHandle(u32);
 
 impl BufferHandle {

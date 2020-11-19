@@ -59,7 +59,7 @@ impl<V, C, const TYPE: HeapType> Heap<V, C, { TYPE }> where C: PartialOrd {
 
   fn bubble_up(&mut self) {
     // there's nothing to bubble
-    if self.size() <= 1 { return; }
+    if self.size() < 2 { return; }
 
     let mut index = self.size() - 1;
     let mut parent_index = Self::parent(index);
@@ -82,7 +82,7 @@ impl<V, C, const TYPE: HeapType> Heap<V, C, { TYPE }> where C: PartialOrd {
 
   fn bubble_down(&mut self) {
     // there's nothing to bubble
-    if self.size() <= 1 { return; }
+    if self.size() < 2 { return; }
 
     let mut parent_index = 0;
 

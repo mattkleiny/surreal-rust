@@ -2,6 +2,28 @@ use std::collections::HashMap;
 
 use crate::maths::{vec2, Vector2};
 
+/// Represents (x, y) position in a grid.
+pub type GridPos = (usize, usize);
+
+/// Permits grid-like access to elements using (x, y) indices.
+pub trait Grid {
+  type Target;
+
+  /// Reads the grid at the given (x, y) position.
+  fn get(&self, position: GridPos) -> &Self::Target;
+}
+
+/// Permits mutable grid-like access to elements using (x, y) indices.
+pub trait GridMut: Grid {
+  /// Mutably reads the grid at the given (x, y) position.
+  fn get_mut(&mut self, position: GridPos) -> &mut Self::Target;
+
+  /// Sets the contents of the grid at the given (x, y) position.
+  fn set(&mut self, position: GridPos, value: Self::Target) {
+    *self.get_mut(position) = value;
+  }
+}
+
 /// A densely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct DenseGrid<T> {
@@ -29,11 +51,11 @@ impl<T> DenseGrid<T> {
     &self.elements[x + y * self.width]
   }
 
-  pub fn set(&mut self, x: usize, y: usize, value: T) {
+  pub fn get_mut(&mut self, x: usize, y: usize) -> &mut T {
     assert!(x < self.width);
     assert!(y < self.height);
 
-    self.elements[x + y * self.width] = value;
+    &mut self.elements[x + y * self.width]
   }
 
   #[inline]
@@ -61,6 +83,20 @@ impl<T> DenseGrid<T> {
   }
 }
 
+impl<T> Grid for DenseGrid<T> {
+  type Target = T;
+
+  fn get(&self, (x, y): (usize, usize)) -> &Self::Target {
+    self.get(x, y)
+  }
+}
+
+impl<T> GridMut for DenseGrid<T> {
+  fn get_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Target {
+    self.get_mut(x, y)
+  }
+}
+
 /// A sparsely packed grid of T.
 #[derive(Clone, Debug)]
 pub struct SparseGrid<T> {
@@ -76,6 +112,10 @@ impl<T> SparseGrid<T> {
     self.elements.get(&vec2(x, y))
   }
 
+  pub fn get_mut(&mut self, x: i32, y: i32) -> Option<&mut T> {
+    self.elements.get_mut(&vec2(x, y))
+  }
+
   pub fn set(&mut self, x: i32, y: i32, value: T) {
     self.elements.insert(vec2(x, y), value);
   }
@@ -83,6 +123,20 @@ impl<T> SparseGrid<T> {
   /// Clears the contents of the grid.
   pub fn clear(&mut self) {
     self.elements.clear();
+  }
+}
+
+impl<T> Grid for SparseGrid<T> {
+  type Target = T;
+
+  fn get(&self, (x, y): (usize, usize)) -> &Self::Target {
+    self.get(x as i32, y as i32).unwrap()
+  }
+}
+
+impl<T> GridMut for SparseGrid<T> {
+  fn get_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Target {
+    self.get_mut(x as i32, y as i32).unwrap()
   }
 }
 
@@ -117,16 +171,16 @@ mod tests {
 
   #[test]
   fn dense_grid_should_read_and_write() {
-    let mut grid = DenseGrid::<i32>::new(16, 9, 0);
+    let mut grid = DenseGrid::new(16, 9, 0);
 
-    grid.set(0, 0, 128);
+    grid.set((0, 0), 128);
 
     assert_eq!(*grid.get(0, 0), 128);
   }
 
   #[test]
   fn dense_grid_should_fill_with_values() {
-    let mut grid = DenseGrid::<i32>::new(16, 9, 0);
+    let mut grid = DenseGrid::new(16, 9, 0);
 
     grid.fill(128);
 
@@ -137,7 +191,7 @@ mod tests {
 
   #[test]
   fn sparse_grid_should_read_and_write() {
-    let mut grid = SparseGrid::<i32>::new();
+    let mut grid = SparseGrid::new();
 
     grid.set(0, 0, 128);
 
@@ -146,7 +200,7 @@ mod tests {
 
   #[test]
   fn sparse_grid_should_clear_values() {
-    let mut grid = SparseGrid::<i32>::new();
+    let mut grid = SparseGrid::new();
 
     grid.set(0, 0, 128);
     grid.clear();

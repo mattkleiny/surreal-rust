@@ -12,9 +12,8 @@ use glutin::{
   window::{Window, WindowBuilder},
 };
 
-use crate::audio::*;
-use crate::graphics::*;
-use crate::input::*;
+use crate::graphics::{Buffer, Color, PrimitiveTopology};
+use crate::input::{Key, MouseButton, Touch};
 use crate::maths::{vec2, Vector2};
 use crate::platform::{*, Error as Error};
 
@@ -45,15 +44,15 @@ impl DesktopPlatform {
   pub fn new(config: Configuration) -> Result<Self, Error> {
     let event_loop = EventLoop::new();
     let window_builder = WindowBuilder::new()
-      .with_title(config.title)
-      .with_inner_size(LogicalSize::new(config.size.0, config.size.1));
+        .with_title(config.title)
+        .with_inner_size(LogicalSize::new(config.size.0, config.size.1));
 
     // prepare the OpenGL window context
     let window_context = unsafe {
       glutin::ContextBuilder::new()
-        .build_windowed(window_builder, &event_loop)?
-        .make_current()
-        .unwrap()
+          .build_windowed(window_builder, &event_loop)?
+          .make_current()
+          .unwrap()
     };
 
     // load OpenGL functions from the associated binary
@@ -158,7 +157,7 @@ impl Platform for DesktopPlatform {
 impl AudioDevice for DesktopPlatform {}
 
 impl GraphicsDevice for DesktopPlatform {
-  fn clear_active_frame_buffer(&mut self, color: Color) {
+  fn clear_frame_buffer(&mut self, color: Color) {
     unsafe {
       gl::ClearColor(
         color.r as f32 / 255.0,
@@ -170,10 +169,8 @@ impl GraphicsDevice for DesktopPlatform {
     }
   }
 
-  fn set_viewport(&mut self, viewport: Viewport) {
-    unsafe {
-      gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
-    }
+  fn draw_mesh(&mut self, topology: PrimitiveTopology, vertex_buffer: &Buffer, index_buffer: &Buffer, vertex_count: usize) {
+    unimplemented!()
   }
 }
 

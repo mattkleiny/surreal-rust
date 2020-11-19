@@ -86,7 +86,7 @@ pub trait Reloadable: Loadable {
 #[derive(Debug)]
 pub enum Error {
   General,
-  IOError(std::io::Error),
+  IO(std::io::Error),
 }
 
 impl From<Error> for crate::Error {
@@ -97,6 +97,6 @@ impl From<Error> for crate::Error {
 
 impl From<std::io::Error> for Error {
   fn from(error: std::io::Error) -> Self {
-    Self::IOError(error)
+    Self::IO(error)
   }
 }

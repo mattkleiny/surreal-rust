@@ -13,16 +13,19 @@ pub struct Image {
 }
 
 impl Image {
+  /// Constructs a new empty image, filled with (0,0,0,0) pixels.
   pub fn new(width: usize, height: usize) -> Self {
     let image = RgbaImage::new(width as u32, height as u32);
 
     Self::from_rgba(image)
   }
 
+  /// Constructs an image from an existing `DynamicImage`, converting it into RGBA.
   pub fn from_dynamic(image: DynamicImage) -> Self {
     Self { image: image.into_rgba() }
   }
 
+  /// Constructs an image from an existing `RgbaImage`.
   pub fn from_rgba(image: RgbaImage) -> Self {
     Self { image }
   }
@@ -31,6 +34,7 @@ impl Image {
   pub fn height(&self) -> usize { self.image.height() as usize }
 }
 
+/// Support de-referencing images to pixels/colors.
 impl std::ops::Deref for Image {
   type Target = [Color];
 

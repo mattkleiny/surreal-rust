@@ -1,32 +1,28 @@
-use crate::graphics::{Color, Error, GraphicsDevice, TextureRegion};
+use crate::assets::Asset;
+use crate::graphics::{BufferedMesh, Color, GraphicsDevice, Texture, TextureRegion};
 use crate::maths::Vector2;
 
-/// Represents a sprite that may be batched via a `SpriteBatch`.
-pub trait Sprite {
-  /// Gets the `TextureRegion` for this sprite.
-  fn get_sprite_texture(&self) -> &TextureRegion;
-}
-
 /// An efficiently batched array of `Sprite`s.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct SpriteBatch {
-  vertices: Vec<SpriteVertex>,
-  indices: Vec<u16>,
+  mesh: BufferedMesh<SpriteVertex>,
 }
 
 impl SpriteBatch {
-  pub fn new(graphics: &mut impl GraphicsDevice) -> Result<Self, Error> {
-    Ok(SpriteBatch {
-      vertices: Vec::new(),
-      indices: Vec::new(),
-    })
+  /// Creates a new empty sprite batch.
+  pub fn new() -> Self {
+    Self { mesh: BufferedMesh::new() }
   }
 
   /// Pushes sprite geometry into the batch.
-  pub fn push(&mut self, position: Vector2<f32>, rotation: f32, sprite: &impl Sprite) {}
+  pub fn push(&mut self, position: Vector2<f32>, rotation: f32, size: Vector2<f32>, sprite: &impl Into<TextureRegion>) {
+    unimplemented!()
+  }
 
   /// Flushes the sprite batch to the given batch target.
-  pub fn flush(&mut self, graphics: &mut impl GraphicsDevice) {}
+  pub fn flush(&mut self, graphics: &mut impl GraphicsDevice) {
+    unimplemented!()
+  }
 }
 
 /// Vertex definition for our sprite.
@@ -37,8 +33,10 @@ struct SpriteVertex {
   pub color: Color,
 }
 
-/// A sheet of multiple sprites from a single source.
-pub struct SpriteSheet {}
+/// A sheet of multiple sprites from a single texture.
+pub struct SpriteSheet {
+  texture: Asset<Texture>
+}
 
 impl SpriteSheet {
   /// Gets a single sprite `TextureRegion` from the sprite sheet.

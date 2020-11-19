@@ -2,6 +2,7 @@
 
 pub use buffers::*;
 pub use colors::*;
+pub use commands::*;
 pub use images::*;
 pub use meshes::*;
 pub use shaders::*;
@@ -10,6 +11,7 @@ pub use textures::*;
 
 mod buffers;
 mod colors;
+mod commands;
 mod images;
 mod meshes;
 mod shaders;
@@ -23,9 +25,11 @@ pub type GraphicsResult<T> = std::result::Result<T, Error>;
 ///
 /// Permits interaction with the underlying graphics API through a higher-level abstraction.
 pub trait GraphicsDevice {
-  // frame buffers
-  fn clear_active_frame_buffer(&mut self, color: Color);
-  fn set_viewport(&mut self, viewport: Viewport);
+  /// Clears the active frame buffer on the device.
+  fn clear_frame_buffer(&mut self, color: Color);
+
+  /// Draws a mesh on the device.
+  fn draw_mesh(&mut self, topology: PrimitiveTopology, vertex_buffer: &Buffer, index_buffer: &Buffer, vertex_count: usize);
 }
 
 /// A viewport for scissoring operations on a `GraphicsDevice`.
@@ -35,20 +39,19 @@ pub struct Viewport {
   pub height: usize,
 }
 
-impl Viewport {
-  #[inline]
-  pub const fn new(width: usize, height: usize) -> Self {
-    Self { width, height }
-  }
-}
-
-/// A represents the topology of a mesh for draw calls.
+/// Represents the different topologies supported for a mesh.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PrimitiveTopology {
   Points,
   Lines,
   Triangles,
   Quads,
+}
+
+/// Represents the different blending modes for the graphics pipeline.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum BlendingMode {
+  None,
 }
 
 /// Represents an error with graphics.

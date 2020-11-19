@@ -36,6 +36,7 @@ pub trait Mesh {
 }
 
 /// Represents a mesh of vertices and indices.
+#[derive(Default, Clone)]
 pub struct BufferedMesh<V> {
   vertices: Vec<V>,
   indices: Vec<Index>,
