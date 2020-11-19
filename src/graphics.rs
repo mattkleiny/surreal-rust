@@ -28,6 +28,9 @@ pub trait GraphicsDevice {
   /// Clears the active frame buffer on the device.
   fn clear_frame_buffer(&mut self, color: Color);
 
+  /// Sets the viewport on the device.
+  fn set_viewport(&mut self, viewport: Viewport);
+
   /// Draws a mesh on the device.
   fn draw_mesh(&mut self, topology: PrimitiveTopology, vertex_buffer: &Buffer, index_buffer: &Buffer, vertex_count: usize);
 }
@@ -40,6 +43,7 @@ pub struct Viewport {
 }
 
 /// Represents the different topologies supported for a mesh.
+#[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PrimitiveTopology {
   Points,
@@ -49,6 +53,7 @@ pub enum PrimitiveTopology {
 }
 
 /// Represents the different blending modes for the graphics pipeline.
+#[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum BlendingMode {
   None,

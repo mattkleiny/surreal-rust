@@ -12,7 +12,7 @@ use glutin::{
   window::{Window, WindowBuilder},
 };
 
-use crate::graphics::{Buffer, Color, PrimitiveTopology};
+use crate::graphics::{Buffer, Color, PrimitiveTopology, Viewport};
 use crate::input::{Key, MouseButton, Touch};
 use crate::maths::{vec2, Vector2};
 use crate::platform::{*, Error as Error};
@@ -166,6 +166,12 @@ impl GraphicsDevice for DesktopPlatform {
         color.a as f32 / 255.0,
       );
       gl::Clear(gl::COLOR_BUFFER_BIT);
+    }
+  }
+
+  fn set_viewport(&mut self, viewport: Viewport) {
+    unsafe {
+      gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
     }
   }
 

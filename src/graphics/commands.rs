@@ -1,3 +1,5 @@
+use crate::graphics::Viewport;
+
 use super::{Buffer, Color, GraphicsDevice, PrimitiveTopology};
 
 /// A buffer of commands to be executed on the GPU.
@@ -17,6 +19,11 @@ impl<'a> CommandBuffer<'a> {
     self.commands.push(Command::ClearFrameBuffer(color));
   }
 
+  /// Sets the viewport for drawing operations.
+  pub fn set_viewport(&mut self, viewport: Viewport) {
+    self.commands.push(Command::SetViewport(viewport));
+  }
+
   /// Draws a mesh to the active frame buffer.
   pub fn draw_mesh(&mut self, topology: PrimitiveTopology, vertex_buffer: &'a Buffer, index_buffer: &'a Buffer, vertex_count: usize) {
     self.commands.push(Command::DrawMesh { topology, vertex_buffer, index_buffer, vertex_count })
@@ -29,6 +36,9 @@ impl<'a> CommandBuffer<'a> {
         Command::ClearFrameBuffer(color) => {
           device.clear_frame_buffer(color);
         }
+        Command::SetViewport(viewport) => {
+          device.set_viewport(viewport);
+        }
         Command::DrawMesh { topology, vertex_buffer, index_buffer, vertex_count } => {
           device.draw_mesh(topology, vertex_buffer, index_buffer, vertex_count);
         }
@@ -40,9 +50,8 @@ impl<'a> CommandBuffer<'a> {
 /// Represents a single command in a `CommandBuffer`.
 #[derive(Clone)]
 enum Command<'a> {
-  /// Clears the active frame buffer.
   ClearFrameBuffer(Color),
-  /// Draws a mesh to the active frame buffer.
+  SetViewport(Viewport),
   DrawMesh {
     topology: PrimitiveTopology,
     vertex_buffer: &'a Buffer,
