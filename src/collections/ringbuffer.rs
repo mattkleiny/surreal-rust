@@ -18,15 +18,8 @@ impl<T: Clone> RingBuffer<T> {
     }
   }
 
-  /// The total capacity of the buffer.
-  pub fn capacity(&self) -> usize {
-    self.elements.len()
-  }
-
-  /// The number of elements currently occupying the buffer.
-  pub fn occupied(&self) -> usize {
-    self.occupied
-  }
+  pub fn capacity(&self) -> usize { self.elements.len() }
+  pub fn occupied(&self) -> usize { self.occupied }
 
   /// Appends an element to the buffer.
   pub fn append(&mut self, element: T) {

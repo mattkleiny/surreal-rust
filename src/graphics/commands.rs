@@ -19,12 +19,7 @@ impl<'a> CommandBuffer<'a> {
 
   /// Draws a mesh to the active frame buffer.
   pub fn draw_mesh(&mut self, topology: PrimitiveTopology, vertex_buffer: &'a Buffer, index_buffer: &'a Buffer, vertex_count: usize) {
-    self.commands.push(Command::DrawMesh {
-      topology,
-      vertex_buffer,
-      index_buffer,
-      vertex_count,
-    })
+    self.commands.push(Command::DrawMesh { topology, vertex_buffer, index_buffer, vertex_count })
   }
 
   /// Executes the command buffer's commands on the given graphics device.

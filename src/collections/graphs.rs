@@ -34,6 +34,7 @@ impl<V> Graph<V> {
     }
   }
 
+  /// Creates an edge from the given node to the given node.
   pub fn create_edge(&mut self, from: NodeId, to: NodeId) {
     unimplemented!()
   }
