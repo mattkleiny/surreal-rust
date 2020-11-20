@@ -3,24 +3,34 @@ use std::collections::HashMap;
 use crate::maths::{vec2, Vector2};
 
 /// Represents (x, y) position in a grid.
-pub type GridPos = (usize, usize);
+pub type GridPoint = (usize, usize);
 
 /// Permits grid-like access to elements using (x, y) indices.
 pub trait Grid {
   type Target;
 
+  fn width(&self) -> usize;
+  fn height(&self) -> usize;
+
+  /// Determines if the given grid point is valid.
+  fn is_valid(&self, point: GridPoint) -> bool {
+    let (x, y) = point;
+
+    x < self.width() && y < self.height()
+  }
+
   /// Reads the grid at the given (x, y) position.
-  fn get(&self, position: GridPos) -> &Self::Target;
+  fn get(&self, point: GridPoint) -> &Self::Target;
 }
 
 /// Permits mutable grid-like access to elements using (x, y) indices.
 pub trait GridMut: Grid {
-  /// Mutably reads the grid at the given (x, y) position.
-  fn get_mut(&mut self, position: GridPos) -> &mut Self::Target;
+  /// Mutably reads the grid at the given (x, y) point.
+  fn get_mut(&mut self, point: GridPoint) -> &mut Self::Target;
 
-  /// Sets the contents of the grid at the given (x, y) position.
-  fn set(&mut self, position: GridPos, value: Self::Target) {
-    *self.get_mut(position) = value;
+  /// Sets the contents of the grid at the given (x, y) point.
+  fn set(&mut self, point: GridPoint, value: Self::Target) {
+    *self.get_mut(point) = value;
   }
 }
 
@@ -86,6 +96,9 @@ impl<T> DenseGrid<T> {
 impl<T> Grid for DenseGrid<T> {
   type Target = T;
 
+  fn width(&self) -> usize { self.width }
+  fn height(&self) -> usize { self.height }
+
   fn get(&self, (x, y): (usize, usize)) -> &Self::Target {
     self.get(x, y)
   }
@@ -128,6 +141,9 @@ impl<T> SparseGrid<T> {
 
 impl<T> Grid for SparseGrid<T> {
   type Target = T;
+
+  fn width(&self) -> usize { unimplemented!() }
+  fn height(&self) -> usize { unimplemented!() }
 
   fn get(&self, (x, y): (usize, usize)) -> &Self::Target {
     self.get(x as i32, y as i32).unwrap()

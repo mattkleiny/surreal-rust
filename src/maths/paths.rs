@@ -42,10 +42,7 @@ pub trait PathFindingGrid {
   /// Locates a path using A* from from the given start point to the given goal.
   fn find_path(&self, start: Point, goal: Point, heuristic: Heuristic) -> Option<Path> {
     /// Represents a node that's already been visited in the path.
-    struct Segment {
-      from: Point,
-      cost: Cost,
-    }
+    struct Segment { from: Point, cost: Cost }
 
     /// Rebuilds the path taken to get to the destination.
     fn rebuild_path(start: Point, goal: Point, mut segments: HashMap<Point, Segment>) -> Path {
@@ -98,16 +95,25 @@ pub trait PathFindingGrid {
   }
 }
 
-// Generic implementation for any grid space.
-impl<T> PathFindingGrid for super::DenseGrid<T> {
+// Generic implementation for any dense grid.
+impl<G> PathFindingGrid for G where G: crate::maths::Grid {
   #[inline(always)]
   fn get_cost(&self, from: Point, to: Point) -> f64 { 1. }
 
   fn get_neighbours(&self, center: Point) -> SmallVec<[Point; 8]> {
-    // by default, we explore the moore neighbourhood around the point
     use super::automata::MooreNeighbourhood;
 
-    center.get_moore_neighbours()
+    let mut results = SmallVec::new();
+
+    for neighbour in center.get_moore_neighbours() {
+      let point = (neighbour.x as usize, neighbour.y as usize);
+
+      if self.is_valid(point) {
+        results.push(neighbour);
+      }
+    }
+
+    results
   }
 }
 
@@ -142,6 +148,6 @@ mod tests {
     let goal = vec2(15, 15);
 
     let path = grid.find_path(start, goal, heuristics::euclidean_distance)
-      .expect("Expected to locate a valid path!");
+        .expect("Expected to locate a valid path!");
   }
 }
