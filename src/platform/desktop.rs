@@ -2,18 +2,13 @@
 
 use std::collections::HashSet;
 
-use glutin::{
-  ContextWrapper,
-  dpi::LogicalSize,
-  event::{ElementState, Event, KeyboardInput, WindowEvent},
-  event_loop::{ControlFlow, EventLoop},
-  platform::desktop::EventLoopExtDesktop,
-  PossiblyCurrent,
-  window::{Window, WindowBuilder},
-};
+use raw_gl_context::{GlConfig, GlContext};
+use winit::dpi::LogicalSize;
+use winit::event_loop::{ControlFlow, EventLoop};
+use winit::window::{Window, WindowBuilder};
 
 use crate::graphics::{Buffer, Color, PrimitiveTopology, Viewport};
-use crate::input::{Key, MouseButton, Touch};
+use crate::input::{Key, MouseButton};
 use crate::maths::{vec2, Vector2};
 use crate::platform::{*, Error as Error};
 
@@ -28,7 +23,8 @@ pub struct Configuration {
 pub struct DesktopPlatform {
   // core
   event_loop: Option<EventLoop<()>>,
-  window_context: ContextWrapper<PossiblyCurrent, Window>,
+  window: Window,
+  context: GlContext,
   is_continuous_rendering: bool,
 
   // input
@@ -42,26 +38,23 @@ pub struct DesktopPlatform {
 
 impl DesktopPlatform {
   pub fn new(config: Configuration) -> Result<Self, Error> {
+    // prepare the main window and event loop
     let event_loop = EventLoop::new();
-    let window_builder = WindowBuilder::new()
+    let window = WindowBuilder::new()
         .with_title(config.title)
-        .with_inner_size(LogicalSize::new(config.size.0, config.size.1));
+        .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
+        .build(&event_loop)?;
 
-    // prepare the OpenGL window context
-    let window_context = unsafe {
-      glutin::ContextBuilder::new()
-          .build_windowed(window_builder, &event_loop)?
-          .make_current()
-          .unwrap()
-    };
-
-    // load OpenGL functions from the associated binary
-    gl::load_with(|ptr| window_context.get_proc_address(ptr) as *const _);
+    // prepare and load opengl functionality
+    let context = GlContext::create(&window, GlConfig::default()).unwrap();
+    context.make_current();
+    gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
     Ok(Self {
       // core
       event_loop: Some(event_loop),
-      window_context,
+      window,
+      context,
       is_continuous_rendering: true,
 
       // input
@@ -87,65 +80,30 @@ impl Platform for DesktopPlatform {
   fn window(&mut self) -> &mut Self::PlatformWindow { self }
 
   fn run(mut self, mut callback: impl FnMut(&mut Self)) {
+    use winit::platform::desktop::EventLoopExtDesktop;
+
     let mut event_loop = self.event_loop.take().unwrap();
 
     event_loop.run_return(move |event, _, control_flow| {
+      use winit::event::*;
+
       match event {
         // generic winit events
-        Event::MainEventsCleared => {
-          callback(&mut self);
-
-          if self.is_continuous_rendering {
-            self.window_context.window().request_redraw();
-          }
-        }
         Event::RedrawRequested(window_id) => {
-          if window_id == self.window_context.window().id() {
-            self.window_context.swap_buffers().unwrap();
+          if window_id == self.window.id() {
+            self.context.make_current();
+
+            callback(&mut self);
+
+            self.context.swap_buffers();
+            self.context.make_not_current();
           }
         }
-        Event::Suspended => {}
-        Event::Resumed => {}
-        Event::LoopDestroyed => {}
-
         // generic window events
-        Event::WindowEvent { window_id, event } if window_id == self.window_context.window().id() => match event {
-          WindowEvent::Resized(new_size) => {
-            self.window_context.resize(new_size);
-          }
+        Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
           WindowEvent::CloseRequested => {
             *control_flow = ControlFlow::Exit;
           }
-          WindowEvent::CursorMoved { position, .. } => {
-            self.mouse_delta = vec2(
-              position.x - self.mouse_position.x,
-              position.y - self.mouse_position.y,
-            );
-            self.mouse_position = vec2(position.x, position.y);
-          }
-          WindowEvent::MouseInput { button, state, .. } => {
-            let button = button.into();
-
-            if state == ElementState::Pressed {
-              self.released_buttons.remove(&button);
-              self.pressed_buttons.insert(button);
-            } else {
-              self.pressed_buttons.remove(&button);
-              self.released_buttons.insert(button);
-            }
-          }
-          WindowEvent::KeyboardInput { input: KeyboardInput { scancode, state, .. }, .. } => {
-            let key = scancode.into();
-
-            if state == ElementState::Pressed {
-              self.released_keys.remove(&key);
-              self.pressed_keys.insert(key);
-            } else {
-              self.pressed_keys.remove(&key);
-              self.released_keys.insert(key);
-            }
-          }
-          WindowEvent::Focused(is_focused) => {}
           _ => {}
         }
         _ => {}
@@ -181,66 +139,40 @@ impl GraphicsDevice for DesktopPlatform {
 }
 
 impl InputDevice for DesktopPlatform {
-  fn is_button_up(&self, button: MouseButton) -> bool {
-    !self.pressed_buttons.contains(&button)
-  }
+  fn is_button_up(&self, button: MouseButton) -> bool { !self.pressed_buttons.contains(&button) }
+  fn is_button_down(&self, button: MouseButton) -> bool { self.pressed_buttons.contains(&button) }
+  fn is_button_pressed(&self, button: MouseButton) -> bool { self.pressed_buttons.contains(&button) }
 
-  fn is_button_down(&self, button: MouseButton) -> bool {
-    self.pressed_buttons.contains(&button)
-  }
-
-  fn is_button_pressed(&self, button: MouseButton) -> bool {
-    self.pressed_buttons.contains(&button)
-  }
-
-  fn is_key_up(&self, key: Key) -> bool {
-    !self.pressed_keys.contains(&key)
-  }
-
-  fn is_key_down(&self, key: Key) -> bool {
-    self.pressed_keys.contains(&key)
-  }
-
-  fn is_key_pressed(&self, key: Key) -> bool {
-    self.pressed_keys.contains(&key)
-  }
-
-  fn get_active_touches(&self) -> &[Touch] {
-    unimplemented!()
-  }
+  fn is_key_up(&self, key: Key) -> bool { !self.pressed_keys.contains(&key) }
+  fn is_key_down(&self, key: Key) -> bool { self.pressed_keys.contains(&key) }
+  fn is_key_pressed(&self, key: Key) -> bool { self.pressed_keys.contains(&key) }
 }
 
 impl PlatformWindow for DesktopPlatform {
   fn set_title(&mut self, title: impl AsRef<str>) {
-    self.window_context.window().set_title(title.as_ref());
+    self.window.set_title(title.as_ref());
   }
 }
 
-impl From<glutin::event::MouseButton> for MouseButton {
-  fn from(button: glutin::event::MouseButton) -> Self {
+impl From<winit::event::MouseButton> for MouseButton {
+  fn from(button: winit::event::MouseButton) -> Self {
     match button {
-      glutin::event::MouseButton::Left => Self::Left,
-      glutin::event::MouseButton::Right => Self::Right,
-      glutin::event::MouseButton::Middle => Self::Middle,
-      glutin::event::MouseButton::Other(_) => Self::Middle,
+      winit::event::MouseButton::Left => Self::Left,
+      winit::event::MouseButton::Right => Self::Right,
+      winit::event::MouseButton::Middle => Self::Middle,
+      winit::event::MouseButton::Other(_) => Self::Middle,
     }
   }
 }
 
-impl From<glutin::event::ScanCode> for Key {
+impl From<winit::event::ScanCode> for Key {
   fn from(code: u32) -> Self {
     Self::from_scan_code(code)
   }
 }
 
-impl From<glutin::error::OsError> for Error {
-  fn from(_: glutin::error::OsError) -> Self {
-    Error::General
-  }
-}
-
-impl From<glutin::CreationError> for Error {
-  fn from(_: glutin::CreationError) -> Self {
+impl From<winit::error::OsError> for Error {
+  fn from(_: winit::error::OsError) -> Self {
     Error::General
   }
 }

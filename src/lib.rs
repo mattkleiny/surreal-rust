@@ -14,12 +14,10 @@
 #![feature(const_generics)]
 #![feature(once_cell)]
 
-#[macro_use]
-extern crate enumflags2;
-
 pub mod assets;
 pub mod audio;
 pub mod collections;
+pub mod config;
 pub mod diagnostics;
 pub mod editor;
 pub mod extensions;
@@ -51,6 +49,7 @@ pub mod prelude {
   pub use crate::assets::*;
   pub use crate::audio::*;
   pub use crate::collections::*;
+  pub use crate::config::*;
   pub use crate::diagnostics::*;
   pub use crate::editor::*;
   pub use crate::extensions::*;

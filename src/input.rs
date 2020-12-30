@@ -15,8 +15,6 @@ pub trait InputDevice {
   fn is_key_up(&self, key: Key) -> bool;
   fn is_key_down(&self, key: Key) -> bool;
   fn is_key_pressed(&self, key: Key) -> bool;
-
-  fn get_active_touches(&self) -> &[Touch];
 }
 
 /// Represents a button on the mouse.
@@ -40,12 +38,6 @@ impl Key {
     // TODO: replace this with something safe
     unsafe { std::mem::transmute(scancode) }
   }
-}
-
-/// Represents a touch on a touch screen.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Touch {
-  pos: Vector2<u32>,
 }
 
 /// Represents an error with input.

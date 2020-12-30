@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub};
 
-use crate::maths::{Lerp, Random, RNG};
+use crate::maths::{Lerp, Random, RandomGenerator};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[repr(C)]
@@ -47,10 +47,6 @@ impl Color {
   }
 }
 
-unsafe impl bytemuck::Zeroable for Color {}
-
-unsafe impl bytemuck::Pod for Color {}
-
 impl Add for Color {
   type Output = Color;
 
@@ -81,7 +77,7 @@ impl Lerp for Color {
 }
 
 impl Random for Color {
-  fn generate(gen: &mut RNG) -> Self {
+  fn generate(gen: &mut RandomGenerator) -> Self {
     Color::rgba(gen.next(), gen.next(), gen.next(), gen.next())
   }
 }

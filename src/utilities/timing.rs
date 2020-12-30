@@ -15,7 +15,7 @@ pub struct GameTime {
 }
 
 /// A simple clock for measuring the time between frames.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Clock {
   last_time: u64,
   current_time: u64,
@@ -47,7 +47,7 @@ impl Clock {
 }
 
 /// Counts frames per second using a smoothed average.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct FrameCounter {
   samples: RingBuffer<f64>,
 }

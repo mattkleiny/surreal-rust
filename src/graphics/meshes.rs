@@ -93,13 +93,13 @@ impl<V> Mesh for BufferedMesh<V> where V: Copy {
 /// Represents a mesh of vertices that can be rendered to a graphics device.
 ///
 /// This implementation wraps the underlying mesh and provides de-referencing directly through to it.
-pub struct GpuMesh<V> {
+pub struct GraphicsMesh<V> {
   mesh: BufferedMesh<V>,
   vertex_buffer: Buffer,
   index_buffer: Buffer,
 }
 
-impl<V> GpuMesh<V> {
+impl<V> GraphicsMesh<V> {
   /// Creates a new empty GPU mesh.
   pub fn new(usage: BufferUsage) -> Self {
     Self::from_mesh(BufferedMesh::new(), usage)
@@ -123,7 +123,7 @@ impl<V> GpuMesh<V> {
   }
 }
 
-impl<V> std::ops::Deref for GpuMesh<V> {
+impl<V> std::ops::Deref for GraphicsMesh<V> {
   type Target = BufferedMesh<V>;
 
   fn deref(&self) -> &Self::Target {
@@ -131,7 +131,7 @@ impl<V> std::ops::Deref for GpuMesh<V> {
   }
 }
 
-impl<V> std::ops::DerefMut for GpuMesh<V> {
+impl<V> std::ops::DerefMut for GraphicsMesh<V> {
   fn deref_mut(&mut self) -> &mut Self::Target {
     &mut self.mesh
   }
@@ -145,7 +145,7 @@ mod tests {
 
   #[test]
   fn it_should_work() {
-    let mut mesh = GpuMesh::new(BufferUsage::Static);
+    let mut mesh = GraphicsMesh::new(BufferUsage::Static);
 
     mesh.add_triangle(&[vec2(0., 0.), vec2(1., 0.), vec2(1., 1.)]);
     mesh.add_triangle(&[vec2(0., 0.), vec2(1., 0.), vec2(1., 1.)]);

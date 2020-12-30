@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use smallvec::SmallVec;
-
 use crate::collections::MinHeap;
 
 /// A point in the path-finding grid.
@@ -37,7 +35,7 @@ pub trait PathFindingGrid {
   fn get_cost(&self, from: Point, to: Point) -> Cost;
 
   /// Gets the potential neighbours around the given point.
-  fn get_neighbours(&self, center: Point) -> SmallVec<[Point; 8]>;
+  fn get_neighbours(&self, center: Point) -> Vec<Point>;
 
   /// Locates a path using A* from from the given start point to the given goal.
   fn find_path(&self, start: Point, goal: Point, heuristic: Heuristic) -> Option<Path> {
@@ -95,15 +93,15 @@ pub trait PathFindingGrid {
   }
 }
 
-// Generic implementation for any dense grid.
+// Generic implementation for any grid.
 impl<G> PathFindingGrid for G where G: crate::maths::Grid {
   #[inline(always)]
   fn get_cost(&self, from: Point, to: Point) -> f64 { 1. }
 
-  fn get_neighbours(&self, center: Point) -> SmallVec<[Point; 8]> {
+  fn get_neighbours(&self, center: Point) -> Vec<Point> {
     use super::automata::MooreNeighbourhood;
 
-    let mut results = SmallVec::new();
+    let mut results = Vec::new();
 
     for neighbour in center.get_moore_neighbours() {
       let point = (neighbour.x as usize, neighbour.y as usize);

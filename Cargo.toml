@@ -10,18 +10,10 @@ members = [
 ]
 
 [dependencies]
-bytemuck = { version = "1.4.1", default-features = false }
-cgmath = "0.17.0"
-enumflags2 = { version = "0.6.4", default-features = false }
 gl = "0.14.0"
-glutin = { version = "0.25.1", default-features = false }
-image = { version = "0.23.11", default-features = false, features = ["png"] }
-rand = { version = "0.7.3", default-features = false, features = ["std"] }
-rodio = { version = "0.13.0", default-features = false }
-rspirv = { version = "0.7", optional = true }
-smallvec = "1.4.2"
+raw-gl-context = "0.1.2"
+winit = { version = "0.22.2", default-features = false }
 
 [features]
 default = []
-desktop = ["glutin/x11"]
-shady = ["rspirv"]
+desktop = []

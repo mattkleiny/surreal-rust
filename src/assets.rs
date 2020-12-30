@@ -80,7 +80,9 @@ pub trait Loadable: Sized {
 
 /// Permits hot-loading an asset as it changes on disk.
 pub trait Reloadable: Loadable {
-  fn reload(&mut self, path: impl AsRef<str>) -> AssetResult<()>;
+  fn reload(&mut self, path: impl AsRef<str>) -> AssetResult<()>{
+    Ok(*self = Self::load(path)?)
+  }
 }
 
 #[derive(Debug)]

@@ -1,5 +1,4 @@
 use crate::collections::{Arena, ArenaIndex};
-use crate::scripting::{Compilable, Compiler};
 
 pub type NodeId = ArenaIndex;
 
@@ -55,28 +54,6 @@ struct Node<V> {
 struct Edge {
   from: NodeId,
   to: NodeId,
-}
-
-/// Support recursively compiling nodes via each child node in the graph.
-impl<N> Compilable for Graph<N> where N: Compilable {
-  type Instruction = N::Instruction;
-
-  fn emit_instructions(&self, compiler: &mut impl Compiler<Instruction=Self::Instruction>) {
-    // pass compilation through to the child node
-    for node in self.nodes.iter() {
-      node.emit_instructions(compiler);
-    }
-  }
-}
-
-/// Support recursively compiling nodes via each child node in the graph.
-impl<N> Compilable for Node<N> where N: Compilable {
-  type Instruction = N::Instruction;
-
-  fn emit_instructions(&self, compiler: &mut impl Compiler<Instruction=Self::Instruction>) {
-    // pass compilation through to the child node
-    self.value.emit_instructions(compiler);
-  }
 }
 
 #[cfg(test)]

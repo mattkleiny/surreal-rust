@@ -39,7 +39,7 @@ pub struct TextureRegion {
 
 /// Flags for texture creation.
 #[repr(u8)]
-#[derive(BitFlags, Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TextureFlags {
   Clamp = 1 << 0,
 }

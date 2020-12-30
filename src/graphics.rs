@@ -25,13 +25,8 @@ pub type GraphicsResult<T> = std::result::Result<T, Error>;
 ///
 /// Permits interaction with the underlying graphics API through a higher-level abstraction.
 pub trait GraphicsDevice {
-  /// Clears the active frame buffer on the device.
   fn clear_frame_buffer(&mut self, color: Color);
-
-  /// Sets the viewport on the device.
   fn set_viewport(&mut self, viewport: Viewport);
-
-  /// Draws a mesh on the device.
   fn draw_mesh(&mut self, topology: PrimitiveTopology, vertex_buffer: &Buffer, index_buffer: &Buffer, vertex_count: usize);
 }
 

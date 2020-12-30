@@ -1,5 +1,3 @@
-use rand::prelude::*;
-
 /// A seed for random generation.
 ///
 /// Seeds can be passed around efficiently and turned into an `RNG` easily.
@@ -14,15 +12,15 @@ impl Seed {
 
   /// Generates a new seed using a new random value.
   pub fn random() -> Self {
-    Self::new(rand::thread_rng().next_u64())
+    Self::new(unimplemented!())
   }
 
   /// Converts the seed into an `RNG`.
-  pub fn to_rng(&self) -> RNG {
+  pub fn to_rng(&self) -> RandomGenerator {
     if self.0 == 0 {
-      RNG::with_random_seed()
+      RandomGenerator::with_random_seed()
     } else {
-      RNG::with_seed(self.0)
+      RandomGenerator::with_seed(self.0)
     }
   }
 }
@@ -35,46 +33,68 @@ pub trait Random: Sized {
   }
 
   /// Generates a new random value of this type using the given generator.
-  fn generate(generator: &mut RNG) -> Self;
+  fn generate(generator: &mut RandomGenerator) -> Self;
 }
 
-impl Random for Seed {
-  fn generate(generator: &mut RNG) -> Self {
-    Self(generator.next())
+impl Random for u8 {
+  fn generate(generator: &mut RandomGenerator) -> Self {
+    unimplemented!()
   }
 }
 
-/// Adapt all standard distribution types to our custom Random interface.
-impl<T> Random for T where rand::distributions::Standard: Distribution<T> {
-  fn generate(generator: &mut RNG) -> Self {
-    generator.rng.sample(rand::distributions::Standard)
+impl Random for u16 {
+  fn generate(generator: &mut RandomGenerator) -> Self {
+    unimplemented!()
+  }
+}
+
+impl Random for u32 {
+  fn generate(generator: &mut RandomGenerator) -> Self {
+    unimplemented!()
+  }
+}
+
+impl Random for u64 {
+  fn generate(generator: &mut RandomGenerator) -> Self {
+    unimplemented!()
+  }
+}
+
+impl Random for Seed {
+  fn generate(generator: &mut RandomGenerator) -> Self {
+    Self(generator.next())
   }
 }
 
 /// A pseudo-random number generator.
 #[derive(Clone, Debug)]
-pub struct RNG {
-  rng: StdRng,
+pub struct RandomGenerator {
+  state: u64,
 }
 
-impl RNG {
+impl RandomGenerator {
   pub fn with_seed(seed: u64) -> Self {
-    Self { rng: StdRng::seed_from_u64(seed) }
+    Self { state: seed }
   }
 
   pub fn with_random_seed() -> Self {
-    Self::with_seed(rand::thread_rng().next_u64())
+    Self::with_seed(unimplemented!())
   }
 
   #[inline(always)]
-  pub fn next<T: Random>(&mut self) -> T {
+  pub fn next<T>(&mut self) -> T where T: Random {
     T::generate(self)
+  }
+
+  #[inline]
+  pub fn next_u64(&mut self) -> u64 {
+    unimplemented!()
   }
 }
 
-impl Default for RNG {
+impl Default for RandomGenerator {
   fn default() -> Self {
-    RNG::with_random_seed()
+    RandomGenerator::with_random_seed()
   }
 }
 

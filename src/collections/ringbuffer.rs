@@ -2,15 +2,15 @@
 ///
 /// Synchronization should occur outside of the buffer itself, with a mutex or some
 /// other locking primitive depending on the use case.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct RingBuffer<T> {
   occupied: usize,
   write_pos: usize,
   elements: Vec<Option<T>>,
 }
 
-impl<T: Clone> RingBuffer<T> {
-  pub fn new(capacity: usize) -> Self {
+impl<T> RingBuffer<T> {
+  pub fn new(capacity: usize) -> Self where T : Clone {
     Self {
       occupied: 0,
       write_pos: 0,
@@ -62,8 +62,8 @@ pub struct RingBufferIterator<'a, T> {
   touched: usize,
 }
 
-impl<'a, T: Clone> Iterator for RingBufferIterator<'a, T> {
-  type Item = T;
+impl<'a, T> Iterator for RingBufferIterator<'a, T> {
+  type Item = &'a T;
 
   fn next(&mut self) -> Option<Self::Item> {
     if self.index == 0 {
@@ -76,7 +76,7 @@ impl<'a, T: Clone> Iterator for RingBufferIterator<'a, T> {
       self.touched += 1;
 
       match &self.buffer.elements[self.index] {
-        Some(item) => Some(item.clone()),
+        Some(item) => Some(item),
         None => None,
       }
     } else {
@@ -122,11 +122,11 @@ mod tests {
     buffer.append(3);
     buffer.append(4);
 
-    let results: Vec<u32> = buffer.iter().collect();
+    let results: Vec<&u32> = buffer.iter().collect();
 
-    assert_eq!(results[0], 4);
-    assert_eq!(results[1], 3);
-    assert_eq!(results[2], 2);
-    assert_eq!(results[3], 1);
+    assert_eq!(*results[0], 4);
+    assert_eq!(*results[1], 3);
+    assert_eq!(*results[2], 2);
+    assert_eq!(*results[3], 1);
   }
 }

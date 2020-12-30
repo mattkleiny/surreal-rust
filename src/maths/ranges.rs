@@ -44,7 +44,7 @@ mod tests {
   }
 
   #[test]
-  fn range_should_produce_a_valid_i64_delta() {
+  fn range_should_produce_a_valid_i32_delta() {
     let range = range(-2, 2);
 
     assert_eq!(4, range.delta());
@@ -59,7 +59,7 @@ mod tests {
   }
 
   #[test]
-  fn range_should_produce_a_valid_i64_range() {
+  fn range_should_produce_a_valid_i32_range() {
     let range = range(-2, 5);
 
     assert!(range.contains(-1));

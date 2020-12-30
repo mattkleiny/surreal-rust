@@ -14,10 +14,11 @@ pub struct Bounds2<T> {
 
 impl<T> Bounds2<T> where T: Copy {
   pub const fn new(left: T, top: T, right: T, bottom: T) -> Self {
-    Self {
-      min: vec2(left, top),
-      max: vec2(right, bottom),
-    }
+    Self::from(vec2(left, top), vec2(right, bottom))
+  }
+
+  pub const fn from(min: Vector2<T>, max: Vector2<T>) -> Self {
+    Self { min, max }
   }
 
   pub const fn min(&self) -> Vector2<T> { self.min }

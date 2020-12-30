@@ -69,10 +69,25 @@ impl<T> BSP<T> {
     }
 
     // split the node on the desired axis
+    // TODO: implement these properly
     let bounds = &self.bounds;
     let (left, right) = match axis {
       Axis::Horizontal => {
-        unimplemented!()
+        let top = Bounds::new(
+          bounds.left(),
+          bounds.top(),
+          bounds.right(),
+          bounds.bottom() / 2. + bounds.height() / 2.
+        );
+
+        let bottom = Bounds::new(
+          bounds.left(),
+          bounds.top() + bounds.height() / 2.,
+          bounds.right(),
+          bounds.bottom() / 2. + bounds.height() / 2.
+        );
+
+        (top, bottom)
       }
       Axis::Vertical => {
         let left = Bounds::new(

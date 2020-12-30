@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
-pub type MinHeap<T, TCost> = Heap<T, TCost, { HeapType::Min }>;
-pub type MaxHeap<T, TCost> = Heap<T, TCost, { HeapType::Max }>;
+pub type MinHeap<V, C> = Heap<V, C, { HeapType::Min }>;
+pub type MaxHeap<V, C> = Heap<V, C, { HeapType::Max }>;
 
 /// Different `Heap` types supported by this implementation.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
