@@ -1,7 +1,5 @@
 //! A lightweight and fast cross-platform input engine.
 
-use crate::maths::Vector2;
-
 pub type InputResult<T> = std::result::Result<T, Error>;
 
 /// Abstracts over the input system of a device.

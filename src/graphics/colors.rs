@@ -1,9 +1,8 @@
 use std::ops::{Add, Sub};
 
-use crate::maths::{Lerp, Random, RandomGenerator};
+use crate::maths::{Lerp, Random, Rng};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
-#[repr(C)]
 #[derive(Copy, Clone, Default, Eq, PartialEq, PartialOrd, Debug)]
 pub struct Color {
   pub r: u8,
@@ -13,12 +12,13 @@ pub struct Color {
 }
 
 impl Color {
-  pub const WHITE: Color = Color::rgb(255, 255, 255);
-  pub const BLACK: Color = Color::rgb(0, 0, 0);
-  pub const RED: Color = Color::rgb(255, 0, 0);
-  pub const GREEN: Color = Color::rgb(0, 255, 0);
-  pub const BLUE: Color = Color::rgb(0, 0, 255);
-  pub const PINK: Color = Color::rgb(255, 0, 255);
+  pub const CLEAR: Color = Self::rgba(0,0,0,0);
+  pub const WHITE: Color = Self::rgb(255, 255, 255);
+  pub const BLACK: Color = Self::rgb(0, 0, 0);
+  pub const RED: Color = Self::rgb(255, 0, 0);
+  pub const GREEN: Color = Self::rgb(0, 255, 0);
+  pub const BLUE: Color = Self::rgb(0, 0, 255);
+  pub const PINK: Color = Self::rgb(255, 0, 255);
 
   #[inline]
   pub const fn rgb(r: u8, g: u8, b: u8) -> Self {
@@ -32,9 +32,9 @@ impl Color {
 
   pub fn to_packed_rgba(&self) -> u32 {
     ((self.r as u32) << 24)
-      | ((self.g as u32) << 16)
-      | ((self.b as u32) << 8)
-      | (self.a as u32) as u32
+        | ((self.g as u32) << 16)
+        | ((self.b as u32) << 8)
+        | (self.a as u32) as u32
   }
 
   pub fn from_packed_rgba(packed: u32) -> Self {
@@ -77,7 +77,7 @@ impl Lerp for Color {
 }
 
 impl Random for Color {
-  fn generate(gen: &mut RandomGenerator) -> Self {
+  fn generate(gen: &mut Rng) -> Self {
     Color::rgba(gen.next(), gen.next(), gen.next(), gen.next())
   }
 }

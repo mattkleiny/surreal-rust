@@ -1,5 +1,3 @@
-use super::*;
-
 #[derive(Copy, Clone, Debug)]
 pub struct Quaternion<T> {
   pub x: T,
