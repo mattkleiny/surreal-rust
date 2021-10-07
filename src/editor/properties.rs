@@ -2,41 +2,41 @@ use crate::maths::Range;
 use crate::ui::*;
 
 /// Permits rendering of mutable properties in a canvas.
-pub trait Property {
+pub trait PropertyEditor {
   fn on_property_gui(&mut self, canvas: &mut impl Canvas, position: &Bounds, label: &Content);
 }
 
-impl Property for bool {
+impl PropertyEditor for bool {
   fn on_property_gui(&mut self, canvas: &mut impl Canvas, position: &Bounds, label: &Content) {
     *self = canvas.toggle(&position, label, *self);
   }
 }
 
-impl Property for i32 {
+impl PropertyEditor for i32 {
   fn on_property_gui(&mut self, canvas: &mut impl Canvas, position: &Bounds, label: &Content) {
     *self = canvas.int_field(&position, label, *self as i64) as i32;
   }
 }
 
-impl Property for i64 {
+impl PropertyEditor for i64 {
   fn on_property_gui(&mut self, canvas: &mut impl Canvas, position: &Bounds, label: &Content) {
     *self = canvas.int_field(&position, label, *self);
   }
 }
 
-impl Property for f64 {
+impl PropertyEditor for f64 {
   fn on_property_gui(&mut self, canvas: &mut impl Canvas, position: &Bounds, label: &Content) {
     *self = canvas.float_field(&position, label, *self);
   }
 }
 
-impl Property for f32 {
+impl PropertyEditor for f32 {
   fn on_property_gui(&mut self, canvas: &mut impl Canvas, position: &Bounds, label: &Content) {
     *self = canvas.float_field(&position, label, *self as f64) as f32;
   }
 }
 
-impl Property for Range<f32> {
+impl PropertyEditor for Range<f32> {
   fn on_property_gui(&mut self, canvas: &mut impl Canvas, position: &Bounds, label: &Content) {
     let (min, max) = canvas.min_max_slider(&position);
 
@@ -45,7 +45,7 @@ impl Property for Range<f32> {
   }
 }
 
-impl Property for Range<f64> {
+impl PropertyEditor for Range<f64> {
   fn on_property_gui(&mut self, canvas: &mut impl Canvas, position: &Bounds, label: &Content) {
     let (min, max) = canvas.min_max_slider(&position);
 

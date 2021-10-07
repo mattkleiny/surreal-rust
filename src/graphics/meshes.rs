@@ -106,14 +106,14 @@ impl<V> GraphicsMesh<V> {
   }
 
   /// Creates a new GPU mesh from the given raw mesh.
-  ///
-  /// N.B: The resultant mesh has not yet been `upload`ed to the GPU.
   pub fn from_mesh(mesh: BufferedMesh<V>, usage: BufferUsage) -> Self {
-    Self {
+    let mut result = Self {
       mesh,
       vertex_buffer: Buffer::new(BufferKind::Element, usage),
       index_buffer: Buffer::new(BufferKind::Index, usage),
-    }
+    };
+    result.upload();
+    result
   }
 
   /// Uploads the mesh contents to the GPU.
@@ -123,17 +123,16 @@ impl<V> GraphicsMesh<V> {
   }
 }
 
-impl<V> std::ops::Deref for GraphicsMesh<V> {
-  type Target = BufferedMesh<V>;
+impl<V> Mesh for GraphicsMesh<V> where V: Copy {
+  type Vertex = V;
+  type Index = Index;
 
-  fn deref(&self) -> &Self::Target {
-    &self.mesh
+  fn add_vertex(&mut self, vertex: &Self::Vertex) {
+    self.mesh.add_vertex(vertex);
   }
-}
 
-impl<V> std::ops::DerefMut for GraphicsMesh<V> {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.mesh
+  fn add_index(&mut self, index: Self::Index) {
+    self.mesh.add_index(index);
   }
 }
 

@@ -10,8 +10,6 @@
 #![allow(unused_variables)]
 #![allow(incomplete_features)]
 
-#![feature(const_fn)]
-#![feature(const_generics)]
 #![feature(once_cell)]
 
 pub mod assets;

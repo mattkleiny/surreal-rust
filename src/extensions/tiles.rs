@@ -15,12 +15,16 @@ pub struct TileMap<T> where T: Tile {
 }
 
 impl<T> TileMap<T> where T: Tile {
-  pub fn new(width: usize, height: usize, default: T) -> Self {
-    Self { width, height, tiles: vec![default.to_id(); width * height] }
+  pub fn new(width: usize, height: usize) -> Self where T: Default {
+    Self::with_default(width, height, T::default())
   }
 
-  pub fn with_default(width: usize, height: usize) -> Self where T: Default {
-    Self::new(width, height, T::default())
+  pub fn with_default(width: usize, height: usize, default: T) -> Self {
+    Self {
+      width,
+      height,
+      tiles: vec![default.to_id(); width * height],
+    }
   }
 
   pub fn width(&self) -> usize { self.width }
@@ -89,9 +93,13 @@ mod tests {
 
   #[test]
   fn tilemap_should_read_and_write() {
-    let mut map = TileMap::with_default(16, 16);
+    let mut map = TileMap::new(16, 16);
 
     map.set(0, 0, Tiles::Grass);
     map.set(0, 1, Tiles::Water);
+
+    let tile = map.get(0, 1);
+
+    assert_eq!(tile, Tiles::Water);
   }
 }

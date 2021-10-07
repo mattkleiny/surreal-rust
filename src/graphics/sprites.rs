@@ -35,7 +35,7 @@ struct SpriteVertex {
 
 /// A sheet of multiple sprites from a single texture.
 pub struct SpriteSheet {
-  texture: Asset<Texture>
+  texture: Asset<Texture>,
 }
 
 impl SpriteSheet {

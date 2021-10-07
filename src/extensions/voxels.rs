@@ -21,7 +21,7 @@ const CHUNK_DEPTH: usize = 16;
 ///
 /// Chunks are groups of voxels that can be efficiently manipulated in bulk.
 pub struct Chunk<V> where V: Voxel {
-  voxels: [V::Id; CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH]
+  voxels: [V::Id; CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH],
 }
 
 impl<V> Chunk<V> where V: Voxel {
@@ -118,28 +118,41 @@ mod tests {
 
   type Chunk = super::Chunk<Block>;
 
-  #[repr(C)]
-  #[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
-  struct Block(u8);
+  #[repr(u8)]
+  #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+  enum Block {
+    Void = 0,
+    Grass = 1,
+    Water = 2,
+  }
 
-  impl Block {
-    const VOID: Block = Self(0);
-    const GRASS: Block = Self(1);
-    const WATER: Block = Self(2);
+  impl Default for Block {
+    fn default() -> Self {
+      Self::Void
+    }
   }
 
   impl Voxel for Block {
     type Id = u8;
 
-    fn from_id(id: Self::Id) -> Self { Self(id) }
-    fn to_id(&self) -> Self::Id { self.0 }
+    fn from_id(id: Self::Id) -> Self {
+      unsafe { std::mem::transmute(id) }
+    }
+
+    fn to_id(&self) -> Self::Id {
+      *self as Self::Id
+    }
   }
 
   impl Tessellator for Block {
     type Vertex = Vector2<f32>;
     type Index = u16;
 
-    fn tessellate(&self, position: (usize, usize, usize), mesh: &mut impl Mesh<Vertex=Self::Vertex, Index=Self::Index>) {
+    fn tessellate(
+      &self,
+      position: (usize, usize, usize),
+      mesh: &mut impl Mesh<Vertex=Self::Vertex, Index=Self::Index>,
+    ) {
       mesh.add_quad(&[
         vec2(0., 0.),
         vec2(1., 0.),
@@ -157,9 +170,9 @@ mod tests {
       for y in 0..chunk.height() {
         for x in 0..chunk.width() {
           chunk.set(x, y, z, match x % 3 {
-            1 => Block::GRASS,
-            2 => Block::WATER,
-            _ => Block::VOID,
+            1 => Block::Grass,
+            2 => Block::Water,
+            _ => Block::Void,
           });
         }
       }

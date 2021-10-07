@@ -9,6 +9,7 @@
 
 pub type ScriptResult<T> = std::result::Result<T, Error>;
 
+/// Abstracts over the scripting system supported by the engine.
 pub trait ScriptEngine {}
 
 #[derive(Debug)]

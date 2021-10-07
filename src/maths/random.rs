@@ -12,7 +12,7 @@ impl Seed {
 
   /// Generates a new seed using a new random value.
   pub fn random() -> Self {
-    Self::new(unimplemented!())
+    todo!()
   }
 
   /// Converts the seed into an `Rng`.
@@ -96,7 +96,7 @@ impl Rng {
   }
 
   pub fn with_random_seed() -> Self {
-    Self::with_seed(unimplemented!())
+    todo!()
   }
 
   #[inline(always)]

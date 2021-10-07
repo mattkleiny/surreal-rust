@@ -1,9 +1,3 @@
-#[cfg(feature = "shady")]
-pub mod shady;
-
-#[cfg(feature = "shady")]
-pub mod spirv;
-
 /// Different types fo shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ShaderKind {

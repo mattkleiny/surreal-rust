@@ -10,6 +10,8 @@ members = [
 ]
 
 [dependencies]
+anyhow = "1.0.44"
+derive_more = "0.99.16"
 gl = "0.14.0"
 raw-gl-context = "0.1.2"
 winit = { version = "0.22.2", default-features = false }

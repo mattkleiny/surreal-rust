@@ -115,7 +115,7 @@ impl Platform for DesktopPlatform {
 impl AudioDevice for DesktopPlatform {}
 
 impl GraphicsDevice for DesktopPlatform {
-  fn clear_frame_buffer(&mut self, color: Color) {
+  fn clear_color_buffer(&mut self, color: Color) {
     unsafe {
       gl::ClearColor(
         color.r as f32 / 255.0,
@@ -124,6 +124,12 @@ impl GraphicsDevice for DesktopPlatform {
         color.a as f32 / 255.0,
       );
       gl::Clear(gl::COLOR_BUFFER_BIT);
+    }
+  }
+
+  fn clear_depth_buffer(&mut self) {
+    unsafe {
+      gl::Clear(gl::DEPTH_BUFFER_BIT);
     }
   }
 

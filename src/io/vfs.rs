@@ -1,4 +1,4 @@
-use super::{Error, IOResult};
+use super::{Error, StreamResult};
 
 /// Represents a path in a virtual file system.
 #[derive(Copy, Clone)]
@@ -9,7 +9,7 @@ pub struct Path<'a> {
 
 impl<'a> Path<'a> {
   /// Parses the given string-like object into a path with scheme and location.
-  pub fn parse<S: AsRef<str> + ?Sized>(raw: &'a S) -> IOResult<Self> {
+  pub fn parse<S: AsRef<str> + ?Sized>(raw: &'a S) -> StreamResult<Self> {
     let raw = raw.as_ref();
     let split: Vec<&str> = raw.split("://").collect();
 
