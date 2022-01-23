@@ -3,10 +3,10 @@
 pub struct Size(usize);
 
 impl Size {
-  pub const fn bytes(amount: usize) -> Self { Self(amount) }
-  pub const fn kilobytes(amount: usize) -> Self { Self::bytes(amount * 1024) }
-  pub const fn megabytes(amount: usize) -> Self { Self::kilobytes(amount * 1024) }
-  pub const fn gigabytes(amount: usize) -> Self { Self::megabytes(amount * 1024) }
+  pub const fn from_bytes(amount: usize) -> Self { Self(amount) }
+  pub const fn from_kilobytes(amount: usize) -> Self { Self::from_bytes(amount * 1024) }
+  pub const fn from_megabytes(amount: usize) -> Self { Self::from_kilobytes(amount * 1024) }
+  pub const fn gigabytes(amount: usize) -> Self { Self::from_megabytes(amount * 1024) }
 
   pub fn as_bytes(&self) -> usize { self.0 }
   pub fn as_kilobytes(&self) -> usize { self.as_bytes() / 1024 }
@@ -16,7 +16,7 @@ impl Size {
 
 impl From<usize> for Size {
   #[inline]
-  fn from(amount: usize) -> Self { Self::bytes(amount) }
+  fn from(amount: usize) -> Self { Self::from_bytes(amount) }
 }
 
 impl From<Size> for usize {

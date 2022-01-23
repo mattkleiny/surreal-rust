@@ -130,6 +130,26 @@ impl FrameTimer {
   }
 }
 
+/// A representation of a span of time.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct TimeSpan {
+  offset: u64,
+}
+
+impl TimeSpan {
+  pub const fn from_milliseconds(milliseconds: f32) -> TimeSpan { todo!() }
+  pub const fn from_seconds(seconds: f32) -> TimeSpan { todo!() }
+  pub const fn from_minutes(minutes: f32) -> TimeSpan { todo!() }
+  pub const fn from_hours(hours: f32) -> TimeSpan { todo!() }
+  pub const fn from_days(days: f32) -> TimeSpan { todo!() }
+
+  pub fn total_milliseconds(&self) -> f32 { todo!() }
+  pub fn total_seconds(&self) -> f32 { todo!() }
+  pub fn total_minutes(&self) -> f32 { todo!() }
+  pub fn total_hours(&self) -> f32 { todo!() }
+  pub fn total_days(&self) -> f32 { todo!() }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
