@@ -1,15 +1,8 @@
 //! Image loading and management.
 
-pub use bmp::*;
-pub use jpg::*;
-pub use png::*;
-
 use crate::assets::{AssetResult, Loadable};
 use crate::graphics::Color;
-
-mod bmp;
-mod png;
-mod jpg;
+use crate::io::VirtualPath;
 
 /// An image of pixels, uncompressed, in RGBA format.
 ///
@@ -37,7 +30,7 @@ impl Image {
 }
 
 impl Loadable for Image {
-  fn load(path: impl AsRef<str>) -> AssetResult<Self> {
+  fn load(path: VirtualPath) -> AssetResult<Self> {
     // TODO: switch on the file extension
 
     unimplemented!()

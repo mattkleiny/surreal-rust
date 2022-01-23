@@ -7,18 +7,8 @@
 // TODO: abstract over scripting language, add debugging and profiling/etc.
 // TODO: strongly emphasise duck-typing for game
 
-pub type ScriptResult<T> = std::result::Result<T, Error>;
+/// Represents a fallible result in the scripting subsystem.
+pub type ScriptResult<T> = anyhow::Result<T>;
 
 /// Abstracts over the scripting system supported by the engine.
 pub trait ScriptEngine {}
-
-#[derive(Debug)]
-pub enum Error {
-  General,
-}
-
-impl From<Error> for crate::Error {
-  fn from(error: Error) -> Self {
-    Self::Scripting(error)
-  }
-}

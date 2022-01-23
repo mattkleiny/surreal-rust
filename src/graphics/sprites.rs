@@ -1,26 +1,19 @@
 use crate::assets::Asset;
-use crate::graphics::{BufferedMesh, Color, GraphicsDevice, Texture, TextureRegion};
+use crate::graphics::{Color, Texture, TextureRegion};
 use crate::maths::Vector2;
 
 /// An efficiently batched array of `Sprite`s.
 #[derive(Clone)]
-pub struct SpriteBatch {
-  mesh: BufferedMesh<SpriteVertex>,
-}
+pub struct SpriteBatch {}
 
 impl SpriteBatch {
   /// Creates a new empty sprite batch.
   pub fn new() -> Self {
-    Self { mesh: BufferedMesh::new() }
+    Self {}
   }
 
   /// Pushes sprite geometry into the batch.
   pub fn push(&mut self, position: Vector2<f32>, rotation: f32, size: Vector2<f32>, sprite: &impl Into<TextureRegion>) {
-    unimplemented!()
-  }
-
-  /// Flushes the sprite batch to the given batch target.
-  pub fn flush(&mut self, graphics: &mut impl GraphicsDevice) {
     unimplemented!()
   }
 }

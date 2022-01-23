@@ -355,6 +355,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "isaac"
+version = "0.1.0"
+dependencies = [
+ "surreal",
+]
+
+[[package]]
 name = "jni-sys"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

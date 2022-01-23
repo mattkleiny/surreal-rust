@@ -1,6 +1,7 @@
 //! A lightweight and fast cross-platform input engine.
 
-pub type InputResult<T> = std::result::Result<T, Error>;
+/// Represents a fallible result in the input subsystem.
+pub type InputResult<T> = anyhow::Result<T>;
 
 /// Abstracts over the input system of a device.
 ///
@@ -38,12 +39,3 @@ impl Key {
   }
 }
 
-/// Represents an error with input.
-#[derive(Debug)]
-pub enum Error {}
-
-impl From<Error> for crate::Error {
-  fn from(error: Error) -> Self {
-    Self::Input(error)
-  }
-}

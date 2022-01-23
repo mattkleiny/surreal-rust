@@ -1,3 +1,8 @@
+pub use compiler::*;
+pub use parser::*;
+
+use crate::graphics::GraphicsHandle;
+
 /// Different types fo shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ShaderKind {
@@ -5,88 +10,60 @@ pub enum ShaderKind {
   Fragment,
 }
 
-/// Represents a single raw shader program.
-pub struct Shader {
-  handle: ShaderHandle,
-  kind: ShaderKind,
-}
-
-impl Shader {
-  pub fn new(kind: ShaderKind, source: &impl AsRef<str>) -> Self {
-    Self {
-      handle: ShaderHandle::new(kind),
-      kind,
-    }
-  }
-}
-
-/// A managed ID for OpenGL shaders.
-#[derive(Debug, Eq, PartialEq)]
-struct ShaderHandle(u32);
-
-impl ShaderHandle {
-  pub fn new(kind: ShaderKind) -> Self {
-    Self(unsafe {
-      gl::CreateShader(match kind {
-        ShaderKind::Vertex => gl::VERTEX_SHADER,
-        ShaderKind::Fragment => gl::FRAGMENT_SHADER,
-      })
-    })
-  }
-}
-
-impl Drop for ShaderHandle {
-  fn drop(&mut self) {
-    unsafe {
-      gl::DeleteShader(self.0);
-    }
-  }
-}
-
 /// Represents a single compiled shader program.
 #[derive(Debug, Eq, PartialEq)]
-pub struct Program {
-  handle: ProgramHandle,
+pub struct ShaderProgram {
+  handle: GraphicsHandle,
 }
 
-impl Program {
+impl ShaderProgram {
   pub fn new() -> Self {
-    Self {
-      handle: ProgramHandle::new(),
-    }
-  }
-
-  pub fn bind(&self) {
-    unsafe {
-      gl::UseProgram(self.handle.0);
-    }
-  }
-
-  pub fn link(&mut self, shaders: &[Shader]) {
-    unsafe {
-      for shader in shaders {
-        gl::AttachShader(self.handle.0, shader.handle.0);
-      }
-
-      gl::LinkProgram(self.handle.0);
-    }
+    todo!()
   }
 }
 
-/// A managed ID for OpenGL shader programs.
-#[derive(Debug, Eq, PartialEq)]
-struct ProgramHandle(u32);
+mod parser {
+  /// Represents the result of a fallible execution in the shader parser.
+  pub type ParseResult<T> = anyhow::Result<T>;
 
-impl ProgramHandle {
-  pub fn new() -> Self {
-    Self(unsafe { gl::CreateProgram() })
+  /// A parser for shader programs.
+  pub trait ShaderParser {
+    fn parse_raw(&mut self, raw: &str) -> ParseResult<ShaderDeclaration>;
   }
+
+  /// A declaration of a shader program, in AST form.
+  pub struct ShaderDeclaration {
+    source_path: String,
+    compilation_unit: ShaderCompilationUnit,
+  }
+
+  /// A single compilation unit in a shader program.
+  pub struct ShaderCompilationUnit {
+    globals: Vec<GlobalDeclaration>,
+    functions: Vec<FunctionDeclaration>,
+    stages: Vec<ShaderStage>,
+  }
+
+  /// A global top-level declaration for the entire shader program.
+  pub enum GlobalDeclaration {
+    Include,
+    Uniform,
+    Varying,
+    Constant,
+  }
+
+  /// Different stages of the shader pipeline.
+  pub enum ShaderStage {
+    Vertex,
+    Fragment,
+    Geometry,
+  }
+
+  /// Declares a single function.
+  pub struct FunctionDeclaration {}
 }
 
-impl Drop for ProgramHandle {
-  fn drop(&mut self) {
-    unsafe {
-      gl::DeleteProgram(self.0);
-    }
-  }
+mod compiler {
+  /// A compiler for parsed shaders that converts programs into executable code on the platform.
+  pub trait ShaderCompiler {}
 }

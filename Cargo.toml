@@ -2,11 +2,12 @@
 name = "surreal"
 version = "0.1.0"
 authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [workspace]
 members = [
     "examples/hello-world",
+    "examples/isaac"
 ]
 
 [dependencies]
@@ -17,5 +18,5 @@ raw-gl-context = "0.1.2"
 winit = { version = "0.22.2", default-features = false }
 
 [features]
-default = []
+default = ["desktop"]
 desktop = []

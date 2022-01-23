@@ -12,6 +12,8 @@ pub fn now() -> u64 {
 #[derive(Copy, Clone, Debug)]
 pub struct GameTime {
   pub delta_time: f64,
+  pub total_time: f64,
+  pub is_running_slowly: bool,
 }
 
 /// A simple clock for measuring the time between frames.

@@ -8,7 +8,6 @@ pub struct Texture {
   width: usize,
   height: usize,
   flags: TextureFlags,
-  handle: TextureHandle,
 }
 
 impl Texture {
@@ -17,7 +16,6 @@ impl Texture {
       width,
       height,
       flags,
-      handle: TextureHandle::new(),
     }
   }
 
@@ -42,26 +40,4 @@ pub struct TextureRegion {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TextureFlags {
   Clamp = 1 << 0,
-}
-
-/// A managed ID for OpenGL textures.
-#[derive(Debug, Eq, PartialEq)]
-struct TextureHandle(u32);
-
-impl TextureHandle {
-  pub fn new() -> Self {
-    let mut handle = Self(0);
-    unsafe {
-      gl::GenTextures(1, &mut handle.0);
-    }
-    handle
-  }
-}
-
-impl Drop for TextureHandle {
-  fn drop(&mut self) {
-    unsafe {
-      gl::DeleteTextures(1, &self.0);
-    }
-  }
 }

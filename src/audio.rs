@@ -4,21 +4,19 @@ pub use clips::*;
 
 mod clips;
 
-pub type AudioResult<T> = std::result::Result<T, Error>;
+/// Represents a fallible result in the audio subsystem.
+pub type AudioResult<T> = anyhow::Result<T>;
 
-/// Abstracts over an audio device.
+/// An opaque handle to an underlying resource in the `AudioServer`.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct AudioHandle(u64);
+
+/// A server for the underlying audio subsystem.
 ///
-/// Permits interaction with the underlying audio API through a higher-level abstraction.
-pub trait AudioDevice {}
-
-/// Represents an error with audio.
-#[derive(Debug)]
-pub enum Error {
-  NotEnoughMemory,
-}
-
-impl From<Error> for crate::Error {
-  fn from(error: Error) -> Self {
-    Self::Audio(error)
-  }
+/// Permits interaction with the underlying audio API through unsafe lower-level abstraction.
+pub unsafe trait AudioServer {
+  // clips
+  fn create_clip(&self) -> AudioHandle;
+  fn upload_clip_data<T>(&self, handle: AudioHandle, data: &[T]);
+  fn delete_clip(&self, handle: AudioHandle);
 }

@@ -3,12 +3,14 @@
 #[cfg(feature = "desktop")]
 pub use desktop::*;
 
-use crate::audio::AudioDevice;
-use crate::graphics::GraphicsDevice;
-use crate::input::InputDevice;
+use crate::audio::AudioServer;
+use crate::graphics::GraphicsServer;
 
 #[cfg(feature = "desktop")]
 pub mod desktop;
+
+/// Represents a fallible result in the platform subsystem.
+pub type PlatformResult<T> = anyhow::Result<T>;
 
 /// Represents a platform capable of executing the application.
 ///
@@ -17,34 +19,12 @@ pub mod desktop;
 /// The platform is also responsible for the core loop, and should callback into user code
 /// in order to process application logic.
 pub trait Platform {
-  type AudioDevice: AudioDevice;
-  type GraphicsDevice: GraphicsDevice;
-  type InputDevice: InputDevice;
-  type PlatformWindow: PlatformWindow;
+  type AudioServer: AudioServer;
+  type GraphicsServer: GraphicsServer;
 
-  fn audio(&mut self) -> &mut Self::AudioDevice;
-  fn graphics(&mut self) -> &mut Self::GraphicsDevice;
-  fn input(&mut self) -> &mut Self::InputDevice;
-  fn window(&mut self) -> &mut Self::PlatformWindow;
+  fn audio(&mut self) -> &mut Self::AudioServer;
+  fn graphics(&mut self) -> &mut Self::GraphicsServer;
 
   /// Runs platform, invoking the given callback when available to process the next frame.
   fn run(self, callback: impl FnMut(&mut Self));
-}
-
-/// Abstracts over the window provider of a device.
-///
-/// Permits interaction with the underlying window API through a higher-level abstraction.
-pub trait PlatformWindow {
-  fn set_title(&mut self, title: impl AsRef<str>);
-}
-
-#[derive(Debug)]
-pub enum Error {
-  General,
-}
-
-impl From<Error> for crate::Error {
-  fn from(error: Error) -> Self {
-    Self::Platform(error)
-  }
 }

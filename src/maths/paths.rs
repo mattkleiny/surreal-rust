@@ -40,7 +40,10 @@ pub trait PathFindingGrid {
   /// Locates a path using A* from from the given start point to the given goal.
   fn find_path(&self, start: Point, goal: Point, heuristic: Heuristic) -> Option<Path> {
     /// Represents a node that's already been visited in the path.
-    struct Segment { from: Point, cost: Cost }
+    struct Segment {
+      from: Point,
+      cost: Cost,
+    }
 
     /// Rebuilds the path taken to get to the destination.
     fn rebuild_path(start: Point, goal: Point, mut segments: HashMap<Point, Segment>) -> Path {

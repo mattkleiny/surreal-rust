@@ -16,34 +16,55 @@ mod shaders;
 mod sprites;
 mod textures;
 
-/// Represents an error in the graphics subsystem.
-pub type GraphicsResult<T> = std::result::Result<T, Error>;
+/// Represents a fallible result in the graphics subsystem.
+pub type GraphicsResult<T> = anyhow::Result<T>;
 
-/// Abstracts over a graphics device or GPU.
+/// An opaque handle to an underlying resource in the `GraphicsServer`.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct GraphicsHandle(u64);
+
+/// A server for the underlying graphics subsystem.
 ///
-/// Permits interaction with the underlying graphics API through a higher-level abstraction.
-pub trait GraphicsDevice {
-  fn clear_color_buffer(&mut self, color: Color);
-  fn clear_depth_buffer(&mut self);
-  fn set_viewport(&mut self, viewport: Viewport);
-  fn draw_mesh(&mut self, topology: PrimitiveTopology, vertex_buffer: &Buffer, index_buffer: &Buffer, vertex_count: usize);
-
-  /// Executes all command stored in the given command buffer against the device.
-  fn execute_commands(&mut self, buffer: &mut CommandBuffer) {
-    while let Some(command) = buffer.dequeue() {
+/// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
+/// details. The server is intended to be a low-level unsafe implementation abstraction, and not
+/// imply higher-level constructs and safety, which would instead come from the graphics module
+/// primitives.
+pub unsafe trait GraphicsServer {
+  // commands
+  fn execute_command_queue(&mut self, mut commands: CommandBuffer) {
+    while let Some(command) = commands.dequeue() {
       match command {
         Command::ClearColor(color) => self.clear_color_buffer(color),
         Command::ClearDepth => self.clear_depth_buffer(),
         Command::SetViewport(viewport) => self.set_viewport(viewport),
-        Command::DrawMesh { topology, vertex_buffer, index_buffer, vertex_count } => {
-          self.draw_mesh(topology, vertex_buffer, index_buffer, vertex_count);
-        }
+        _ => {}
       }
     }
   }
+
+  // intrinsics
+  fn set_viewport(&self, viewport: Viewport);
+  fn clear_color_buffer(&self, color: Color);
+  fn clear_depth_buffer(&self);
+  fn flush_commands(&self);
+
+  // buffers
+  fn create_buffer(&self) -> GraphicsHandle;
+  fn write_buffer_data<T>(&self, handle: GraphicsHandle, data: &[T]);
+  fn delete_buffer(&self, buffer: GraphicsHandle);
+
+  // textures
+  fn create_texture(&self) -> GraphicsHandle;
+  fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]);
+  fn delete_texture(&self);
+
+  // shaders
+  fn create_shader(&self) -> GraphicsHandle;
+  fn delete_shader(&self, shader: GraphicsHandle);
 }
 
-/// Commands that can be enqueued in a `CommandBuffer`
+/// Commands that can be enqueued in a `CommandBuffer` and replayed at a later date on the graphics
+/// server or graphics pipeline.
 pub enum Command<'a> {
   ClearColor(Color),
   ClearDepth,
@@ -97,20 +118,6 @@ pub enum PrimitiveTopology {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum BlendingMode {
   None,
-}
-
-/// Represents an error with graphics.
-#[derive(Debug)]
-pub enum Error {
-  InvalidBuffer,
-  InvalidTexture,
-  InvalidShaderProgram,
-}
-
-impl From<Error> for crate::Error {
-  fn from(error: Error) -> Self {
-    Self::Graphics(error)
-  }
 }
 
 #[cfg(test)]

@@ -12,9 +12,9 @@ fn main() {
   platform.run(|platform| {
     let mut commands = CommandBuffer::new();
 
-    commands.set_viewport(Viewport { width: 1920, height: 1080 });
-    commands.clear_frame_buffer(Color::BLACK);
+    commands.enqueue(Command::SetViewport(Viewport { width: 1920, height: 1080 }));
+    commands.enqueue(Command::ClearColor(Color::BLACK));
 
-    commands.execute(platform);
+    platform.execute_command_queue(commands);
   });
 }

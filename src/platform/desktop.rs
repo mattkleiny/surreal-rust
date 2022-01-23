@@ -7,10 +7,12 @@ use winit::dpi::LogicalSize;
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Window, WindowBuilder};
 
-use crate::graphics::{Buffer, Color, PrimitiveTopology, Viewport};
+use crate::audio::AudioHandle;
+use crate::graphics::{Color, GraphicsHandle, Viewport};
 use crate::input::{Key, MouseButton};
 use crate::maths::{vec2, Vector2};
-use crate::platform::{*, Error as Error};
+
+use super::*;
 
 /// Configuration for the `DesktopPlatform`.
 #[derive(Copy, Clone, Debug)]
@@ -37,7 +39,7 @@ pub struct DesktopPlatform {
 }
 
 impl DesktopPlatform {
-  pub fn new(config: Configuration) -> Result<Self, Error> {
+  pub fn new(config: Configuration) -> PlatformResult<Self> {
     // prepare the main window and event loop
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
@@ -66,18 +68,19 @@ impl DesktopPlatform {
       released_keys: HashSet::new(),
     })
   }
+
+  /// Sets the title of the platform's main window.
+  pub fn set_title(&mut self, title: impl AsRef<str>) {
+    self.window.set_title(title.as_ref());
+  }
 }
 
 impl Platform for DesktopPlatform {
-  type AudioDevice = Self;
-  type GraphicsDevice = Self;
-  type InputDevice = Self;
-  type PlatformWindow = Self;
+  type AudioServer = Self;
+  type GraphicsServer = Self;
 
-  fn audio(&mut self) -> &mut Self::AudioDevice { self }
-  fn graphics(&mut self) -> &mut Self::GraphicsDevice { self }
-  fn input(&mut self) -> &mut Self::InputDevice { self }
-  fn window(&mut self) -> &mut Self::PlatformWindow { self }
+  fn audio(&mut self) -> &mut Self::AudioServer { self }
+  fn graphics(&mut self) -> &mut Self::GraphicsServer { self }
 
   fn run(mut self, mut callback: impl FnMut(&mut Self)) {
     use winit::platform::desktop::EventLoopExtDesktop;
@@ -112,10 +115,28 @@ impl Platform for DesktopPlatform {
   }
 }
 
-impl AudioDevice for DesktopPlatform {}
+unsafe impl AudioServer for DesktopPlatform {
+  fn create_clip(&self) -> AudioHandle {
+    todo!()
+  }
 
-impl GraphicsDevice for DesktopPlatform {
-  fn clear_color_buffer(&mut self, color: Color) {
+  fn upload_clip_data<T>(&self, handle: AudioHandle, data: &[T]) {
+    todo!()
+  }
+
+  fn delete_clip(&self, handle: AudioHandle) {
+    todo!()
+  }
+}
+
+unsafe impl GraphicsServer for DesktopPlatform {
+  fn set_viewport(&self, viewport: Viewport) {
+    unsafe {
+      gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
+    }
+  }
+
+  fn clear_color_buffer(&self, color: Color) {
     unsafe {
       gl::ClearColor(
         color.r as f32 / 255.0,
@@ -127,58 +148,43 @@ impl GraphicsDevice for DesktopPlatform {
     }
   }
 
-  fn clear_depth_buffer(&mut self) {
-    unsafe {
-      gl::Clear(gl::DEPTH_BUFFER_BIT);
-    }
+  fn clear_depth_buffer(&self) {
+    todo!()
   }
 
-  fn set_viewport(&mut self, viewport: Viewport) {
-    unsafe {
-      gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
-    }
+  fn flush_commands(&self) {
+    todo!()
   }
 
-  fn draw_mesh(&mut self, topology: PrimitiveTopology, vertex_buffer: &Buffer, index_buffer: &Buffer, vertex_count: usize) {
-    unimplemented!()
+  fn create_buffer(&self) -> GraphicsHandle {
+    todo!()
   }
-}
 
-impl InputDevice for DesktopPlatform {
-  fn is_button_up(&self, button: MouseButton) -> bool { !self.pressed_buttons.contains(&button) }
-  fn is_button_down(&self, button: MouseButton) -> bool { self.pressed_buttons.contains(&button) }
-  fn is_button_pressed(&self, button: MouseButton) -> bool { self.pressed_buttons.contains(&button) }
-
-  fn is_key_up(&self, key: Key) -> bool { !self.pressed_keys.contains(&key) }
-  fn is_key_down(&self, key: Key) -> bool { self.pressed_keys.contains(&key) }
-  fn is_key_pressed(&self, key: Key) -> bool { self.pressed_keys.contains(&key) }
-}
-
-impl PlatformWindow for DesktopPlatform {
-  fn set_title(&mut self, title: impl AsRef<str>) {
-    self.window.set_title(title.as_ref());
+  fn write_buffer_data<T>(&self, handle: GraphicsHandle, data: &[T]) {
+    todo!()
   }
-}
 
-impl From<winit::event::MouseButton> for MouseButton {
-  fn from(button: winit::event::MouseButton) -> Self {
-    match button {
-      winit::event::MouseButton::Left => Self::Left,
-      winit::event::MouseButton::Right => Self::Right,
-      winit::event::MouseButton::Middle => Self::Middle,
-      winit::event::MouseButton::Other(_) => Self::Middle,
-    }
+  fn delete_buffer(&self, handle: GraphicsHandle) {
+    todo!()
   }
-}
 
-impl From<winit::event::ScanCode> for Key {
-  fn from(code: u32) -> Self {
-    Self::from_scan_code(code)
+  fn create_texture(&self) -> GraphicsHandle {
+    todo!()
   }
-}
 
-impl From<winit::error::OsError> for Error {
-  fn from(_: winit::error::OsError) -> Self {
-    Error::General
+  fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]) {
+    todo!()
+  }
+
+  fn delete_texture(&self) {
+    todo!()
+  }
+
+  fn create_shader(&self) -> GraphicsHandle {
+    todo!()
+  }
+
+  fn delete_shader(&self, shader: GraphicsHandle) {
+    todo!()
   }
 }

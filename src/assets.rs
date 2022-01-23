@@ -2,13 +2,14 @@
 
 use std::cell::UnsafeCell;
 
-use crate::collections::ArenaIndex;
+use crate::io::VirtualPath;
 
-pub type AssetResult<T> = std::result::Result<T, Error>;
+/// Represents a fallible result in the asset subsystem.
+pub type AssetResult<T> = anyhow::Result<T>;
 
-/// A handle to an asset in the asset manager.
+/// An opaque handle to an asset in the asset system.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct AssetHandle(ArenaIndex);
+pub struct AssetHandle(u64);
 
 /// A shared pointer to an asset, with support for interior hot-reloading.
 ///
@@ -28,7 +29,7 @@ enum AssetState<T> {
 }
 
 impl<T> Asset<T> {
-  pub fn load(path: impl AsRef<str>) -> AssetResult<Asset<T>> where T: Loadable {
+  pub fn load(path: VirtualPath) -> AssetResult<Asset<T>> where T: Loadable {
     unimplemented!()
   }
 
@@ -41,22 +42,9 @@ impl<T> Asset<T> {
   }
 }
 
-impl<T> std::ops::Deref for Asset<T> {
-  type Target = T;
-
-  fn deref(&self) -> &Self::Target {
-    self.get().expect("This asset has not finished loading!")
-  }
-}
-
-impl<T> std::ops::DerefMut for Asset<T> {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    self.get_mut().expect("This asset has not finished loading!")
-  }
-}
-
 impl<T> std::ops::Drop for Asset<T> {
   fn drop(&mut self) {
+    // TODO: reference counting semantics in the asset manager?
     unimplemented!()
   }
 }
@@ -68,37 +56,37 @@ impl<T> std::ops::Drop for Asset<T> {
 pub struct AssetManager {}
 
 impl AssetManager {
-  pub fn load<T>(&mut self, path: impl AsRef<str>) -> AssetResult<Asset<T>> where T: Loadable {
+  pub fn new() -> Self {
+    Self {}
+  }
+
+  pub fn load<T>(&mut self, path: VirtualPath) -> AssetResult<Asset<T>> where T: Loadable {
     unimplemented!()
   }
 }
 
 /// Permits loading an asset from disk.
 pub trait Loadable: Sized {
-  fn load(path: impl AsRef<str>) -> AssetResult<Self>;
+  fn load(path: VirtualPath) -> AssetResult<Self>;
 }
 
 /// Permits hot-loading an asset as it changes on disk.
 pub trait Reloadable: Loadable {
-  fn reload(&mut self, path: impl AsRef<str>) -> AssetResult<()>{
+  fn reload(&mut self, path: VirtualPath) -> AssetResult<()> {
     Ok(*self = Self::load(path)?)
   }
 }
 
-#[derive(Debug)]
-pub enum Error {
-  General,
-  IO(std::io::Error),
-}
+#[cfg(test)]
+mod tests {
+  use crate::graphics::Image;
 
-impl From<Error> for crate::Error {
-  fn from(error: Error) -> Self {
-    Self::Asset(error)
-  }
-}
+  use super::*;
 
-impl From<std::io::Error> for Error {
-  fn from(error: std::io::Error) -> Self {
-    Self::IO(error)
+  #[test]
+  fn it_should_work() {
+    let mut manager = AssetManager::new();
+
+    let image: Asset<Image> = manager.load(VirtualPath::parse("test.png")).unwrap();
   }
 }
