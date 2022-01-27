@@ -26,16 +26,11 @@ pub struct DesktopPlatform {
   // core
   event_loop: Option<EventLoop<()>>,
   window: Window,
-  context: GlContext,
-  is_continuous_rendering: bool,
 
-  // input
-  mouse_position: Vector2<f64>,
-  mouse_delta: Vector2<f64>,
-  pressed_buttons: HashSet<MouseButton>,
-  released_buttons: HashSet<MouseButton>,
-  pressed_keys: HashSet<Key>,
-  released_keys: HashSet<Key>,
+  // servers
+  audio_server: Mutex<DesktopAudioServer>,
+  graphics_server: Mutex<DesktopGraphicsServer>,
+  input_server: Mutex<DesktopInputServer>,
 }
 
 impl DesktopPlatform {
@@ -47,25 +42,19 @@ impl DesktopPlatform {
         .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
         .build(&event_loop)?;
 
-    // prepare and load opengl functionality
-    let context = GlContext::create(&window, GlConfig::default()).unwrap();
-    context.make_current();
-    gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
+    let audio_server = DesktopAudioServer::new();
+    let graphics_server = DesktopGraphicsServer::new(&window);
+    let input_server = DesktopInputServer::new();
 
     Ok(Self {
       // core
       event_loop: Some(event_loop),
       window,
-      context,
-      is_continuous_rendering: true,
 
-      // input
-      mouse_position: vec2(0., 0.),
-      mouse_delta: vec2(0., 0.),
-      pressed_buttons: HashSet::new(),
-      released_buttons: HashSet::new(),
-      pressed_keys: HashSet::new(),
-      released_keys: HashSet::new(),
+      // servers
+      audio_server: Mutex::new(audio_server),
+      graphics_server: Mutex::new(graphics_server),
+      input_server: Mutex::new(input_server),
     })
   }
 
@@ -76,15 +65,16 @@ impl DesktopPlatform {
 }
 
 impl Platform for DesktopPlatform {
-  type AudioServer = Self;
-  type GraphicsServer = Self;
+  fn audio(&self) -> &Mutex<dyn AudioServer> {
+    &self.audio_server
+  }
 
-  fn audio(&mut self) -> &mut Self::AudioServer { self }
-  fn graphics(&mut self) -> &mut Self::GraphicsServer { self }
+  fn graphics(&self) -> &Mutex<dyn GraphicsServer> {
+    &self.graphics_server
+  }
 
-  fn run(mut self, mut callback: impl FnMut(&mut Self)) {
+  fn run(mut self) {
     use winit::platform::desktop::EventLoopExtDesktop;
-
     let mut event_loop = self.event_loop.take().unwrap();
 
     event_loop.run_return(move |event, _, control_flow| {
@@ -94,12 +84,10 @@ impl Platform for DesktopPlatform {
         // generic winit events
         Event::RedrawRequested(window_id) => {
           if window_id == self.window.id() {
-            self.context.make_current();
+            let graphics_server = self.graphics_server.lock().unwrap();
 
-            callback(&mut self);
-
-            self.context.swap_buffers();
-            self.context.make_not_current();
+            graphics_server.begin_frame();
+            graphics_server.end_frame();
           }
         }
         // generic window events
@@ -115,12 +103,21 @@ impl Platform for DesktopPlatform {
   }
 }
 
-unsafe impl AudioServer for DesktopPlatform {
+/// The audio server for the desktop platform.
+struct DesktopAudioServer {}
+
+impl DesktopAudioServer {
+  pub fn new() -> Self {
+    Self {}
+  }
+}
+
+unsafe impl AudioServer for DesktopAudioServer {
   fn create_clip(&self) -> AudioHandle {
     todo!()
   }
 
-  fn upload_clip_data<T>(&self, handle: AudioHandle, data: &[T]) {
+  fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]) {
     todo!()
   }
 
@@ -129,7 +126,36 @@ unsafe impl AudioServer for DesktopPlatform {
   }
 }
 
-unsafe impl GraphicsServer for DesktopPlatform {
+/// The graphics server for the desktop platform.
+struct DesktopGraphicsServer {
+  context: GlContext,
+  is_continuous_rendering: bool,
+}
+
+impl DesktopGraphicsServer {
+  pub fn new(window: &Window) -> Self {
+    // prepare and load opengl functionality
+    let context = GlContext::create(window, GlConfig::default()).unwrap();
+    context.make_current();
+    gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
+
+    Self {
+      context,
+      is_continuous_rendering: true,
+    }
+  }
+}
+
+unsafe impl GraphicsServer for DesktopGraphicsServer {
+  fn begin_frame(&self) {
+    self.context.make_current();
+  }
+
+  fn end_frame(&self) {
+    self.context.swap_buffers();
+    self.context.make_not_current();
+  }
+
   fn set_viewport(&self, viewport: Viewport) {
     unsafe {
       gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
@@ -149,35 +175,51 @@ unsafe impl GraphicsServer for DesktopPlatform {
   }
 
   fn clear_depth_buffer(&self) {
-    todo!()
+    unsafe {
+      gl::Clear(gl::DEPTH_BUFFER_BIT);
+    }
   }
 
   fn flush_commands(&self) {
-    todo!()
+    unsafe {
+      gl::Flush();
+    }
   }
 
   fn create_buffer(&self) -> GraphicsHandle {
+    unsafe {
+      let mut id: u32 = 0;
+      gl::GenBuffers(1, &mut id);
+      GraphicsHandle(id)
+    }
+  }
+
+  fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]) {
     todo!()
   }
 
-  fn write_buffer_data<T>(&self, handle: GraphicsHandle, data: &[T]) {
-    todo!()
-  }
-
-  fn delete_buffer(&self, handle: GraphicsHandle) {
-    todo!()
+  fn delete_buffer(&self, buffer: GraphicsHandle) {
+    unsafe {
+      gl::DeleteBuffers(1, &buffer.0);
+    }
   }
 
   fn create_texture(&self) -> GraphicsHandle {
+    unsafe {
+      let mut id: u32 = 0;
+      gl::GenTextures(1, &mut id);
+      GraphicsHandle(id)
+    }
+  }
+
+  fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]) {
     todo!()
   }
 
-  fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]) {
-    todo!()
-  }
-
-  fn delete_texture(&self) {
-    todo!()
+  fn delete_texture(&self, texture: GraphicsHandle) {
+    unsafe {
+      gl::DeleteTextures(1, &texture.0);
+    }
   }
 
   fn create_shader(&self) -> GraphicsHandle {
@@ -186,5 +228,28 @@ unsafe impl GraphicsServer for DesktopPlatform {
 
   fn delete_shader(&self, shader: GraphicsHandle) {
     todo!()
+  }
+}
+
+/// The server for input management.
+struct DesktopInputServer {
+  mouse_position: Vector2<f64>,
+  mouse_delta: Vector2<f64>,
+  pressed_buttons: HashSet<MouseButton>,
+  released_buttons: HashSet<MouseButton>,
+  pressed_keys: HashSet<Key>,
+  released_keys: HashSet<Key>,
+}
+
+impl DesktopInputServer {
+  pub fn new() -> Self {
+    Self {
+      mouse_position: vec2(0., 0.),
+      mouse_delta: vec2(0., 0.),
+      pressed_buttons: HashSet::new(),
+      released_buttons: HashSet::new(),
+      pressed_keys: HashSet::new(),
+      released_keys: HashSet::new(),
+    }
   }
 }

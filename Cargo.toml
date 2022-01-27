@@ -6,8 +6,7 @@ edition = "2021"
 
 [workspace]
 members = [
-    "examples/hello-world",
-    "examples/isaac"
+    "examples/hello-world"
 ]
 
 [dependencies]

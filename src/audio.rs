@@ -19,7 +19,7 @@ pub struct AudioHandle(u64);
 pub unsafe trait AudioServer {
   // clips
   fn create_clip(&self) -> AudioHandle;
-  fn upload_clip_data<T>(&self, handle: AudioHandle, data: &[T]);
+  fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]);
   fn delete_clip(&self, handle: AudioHandle);
 }
 

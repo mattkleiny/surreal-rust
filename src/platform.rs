@@ -1,5 +1,6 @@
 //! Platform abstractions and utilities.
 
+use std::sync::Mutex;
 #[cfg(feature = "desktop")]
 pub use desktop::*;
 
@@ -19,12 +20,9 @@ pub type PlatformResult<T> = anyhow::Result<T>;
 /// The platform is also responsible for the core loop, and should callback into user code
 /// in order to process application logic.
 pub trait Platform {
-  type AudioServer: AudioServer;
-  type GraphicsServer: GraphicsServer;
-
-  fn audio(&mut self) -> &mut Self::AudioServer;
-  fn graphics(&mut self) -> &mut Self::GraphicsServer;
+  fn audio(&self) -> &Mutex<dyn AudioServer>;
+  fn graphics(&self) -> &Mutex<dyn GraphicsServer>;
 
   /// Runs platform, invoking the given callback when available to process the next frame.
-  fn run(self, callback: impl FnMut(&mut Self));
+  fn run(self);
 }

@@ -9,12 +9,5 @@ fn main() {
   let platform = DesktopPlatform::new(configuration)
       .expect("Failed to create platform!");
 
-  platform.run(|platform| {
-    let mut commands = CommandBuffer::new();
-
-    commands.enqueue(Command::SetViewport(Viewport { width: 1920, height: 1080 }));
-    commands.enqueue(Command::ClearColor(Color::BLACK));
-
-    platform.execute_command_queue(commands);
-  });
+  platform.run();
 }

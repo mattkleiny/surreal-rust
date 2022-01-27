@@ -21,7 +21,7 @@ pub type GraphicsResult<T> = anyhow::Result<T>;
 
 /// An opaque handle to an underlying resource in the `GraphicsServer`.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-pub struct GraphicsHandle(u64);
+pub struct GraphicsHandle(pub u32);
 
 /// A server for the underlying graphics subsystem.
 ///
@@ -42,6 +42,10 @@ pub unsafe trait GraphicsServer {
     }
   }
 
+  // frame operations
+  fn begin_frame(&self);
+  fn end_frame(&self);
+
   // intrinsics
   fn set_viewport(&self, viewport: Viewport);
   fn clear_color_buffer(&self, color: Color);
@@ -50,13 +54,13 @@ pub unsafe trait GraphicsServer {
 
   // buffers
   fn create_buffer(&self) -> GraphicsHandle;
-  fn write_buffer_data<T>(&self, handle: GraphicsHandle, data: &[T]);
+  fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]);
   fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
   fn create_texture(&self) -> GraphicsHandle;
-  fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]);
-  fn delete_texture(&self);
+  fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]);
+  fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders
   fn create_shader(&self) -> GraphicsHandle;
