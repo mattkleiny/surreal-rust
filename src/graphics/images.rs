@@ -1,8 +1,6 @@
 use crate::graphics::Color;
 
 /// An image of pixels, uncompressed, in RGBA format.
-///
-/// An image can be loaded from disc and dynamically manipulated.
 pub struct Image {
   width: usize,
   height: usize,
@@ -10,6 +8,7 @@ pub struct Image {
 }
 
 impl Image {
+  /// Constructs a new image with the given width and height.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
       width,
@@ -18,11 +17,27 @@ impl Image {
     }
   }
 
-  pub fn width(&self) -> usize { self.width }
-  pub fn height(&self) -> usize { self.height }
+  /// The width of the image, in pixels.
+  #[inline(always)]
+  pub fn width(&self) -> usize {
+    self.width
+  }
 
-  pub fn as_slice(&self) -> &[Color] { self.pixels.as_slice() }
-  pub fn as_mut_slice(&mut self) -> &mut [Color] { self.pixels.as_mut_slice() }
+  /// The height of the image, in pixels.
+  #[inline(always)]
+  pub fn height(&self) -> usize {
+    self.height
+  }
+
+  /// Retrieves a slice of the image's pixels.
+  pub fn as_slice(&self) -> &[Color] {
+    self.pixels.as_slice()
+  }
+
+  /// Retrieves a mutable slice of the image's pixels.
+  pub fn as_mut_slice(&mut self) -> &mut [Color] {
+    self.pixels.as_mut_slice()
+  }
 }
 
 #[cfg(test)]

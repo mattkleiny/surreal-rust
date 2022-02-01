@@ -1,5 +1,6 @@
 use crate::graphics::{BufferedMesh, Color, Mesh};
 use crate::maths::{vec2, Vector2};
+use crate::prelude::GraphicsServer;
 
 /// Represents a single vertex in the sprite batch.
 #[derive(Copy, Clone, Debug)]
@@ -30,5 +31,10 @@ impl SpriteBatch {
       SpriteVertex { pos: position + vec2(0.5, 0.5), uv: vec2(1., 1.), color },
       SpriteVertex { pos: position + vec2(0.5, -0.5), uv: vec2(1., 0.), color },
     ]);
+  }
+
+  /// Flushes the batch to the given graphics server, rendering the results.
+  pub fn draw(&mut self, graphics_server: &dyn GraphicsServer) {
+    todo!()
   }
 }

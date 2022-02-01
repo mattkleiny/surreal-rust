@@ -9,7 +9,7 @@ use winit::window::{Window, WindowBuilder};
 
 use crate::audio::AudioHandle;
 use crate::graphics::{Color, GraphicsHandle, Viewport};
-use crate::input::{Key, MouseButton};
+use crate::input::{InputServer, Key, KeyboardDevice, MouseButton, MouseDevice};
 use crate::maths::{vec2, Vector2};
 
 use super::*;
@@ -255,5 +255,43 @@ impl DesktopInputServer {
       pressed_keys: HashSet::new(),
       released_keys: HashSet::new(),
     }
+  }
+}
+
+unsafe impl InputServer for DesktopInputServer {
+  fn keyboard_devices(&self) -> &[&dyn KeyboardDevice] {
+    todo!()
+  }
+
+  fn mouse_devices(&self) -> &[&dyn MouseDevice] {
+    todo!()
+  }
+}
+
+impl KeyboardDevice for DesktopInputServer {
+  fn is_key_up(&self, key: Key) -> bool {
+    todo!()
+  }
+
+  fn is_key_down(&self, key: Key) -> bool {
+    todo!()
+  }
+
+  fn is_key_pressed(&self, key: Key) -> bool {
+    todo!()
+  }
+}
+
+impl MouseDevice for DesktopInputServer {
+  fn is_button_up(&self, button: MouseButton) -> bool {
+    todo!()
+  }
+
+  fn is_button_down(&self, button: MouseButton) -> bool {
+    todo!()
+  }
+
+  fn is_button_pressed(&self, button: MouseButton) -> bool {
+    todo!()
   }
 }

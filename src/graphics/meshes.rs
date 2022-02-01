@@ -38,10 +38,19 @@ pub struct BufferedMesh<V, I> {
 }
 
 impl<V, I> BufferedMesh<V, I> {
+  /// Creates a new, empty, `BufferedMesh`.
   pub fn new() -> Self {
     Self {
       vertices: Vec::new(),
       indices: Vec::new(),
+    }
+  }
+
+  /// Creates a `BufferedMesh` with the given initial capacities.
+  pub fn with_capacity(vertex_size: usize, index_size: usize) -> Self {
+    Self {
+      vertices: Vec::with_capacity(vertex_size),
+      indices: Vec::with_capacity(index_size),
     }
   }
 }
@@ -50,10 +59,12 @@ impl<V, I> Mesh for BufferedMesh<V, I> {
   type Vertex = V;
   type Index = I;
 
+  #[inline]
   fn add_vertex(&mut self, vertex: Self::Vertex) {
     self.vertices.push(vertex);
   }
 
+  #[inline]
   fn add_index(&mut self, index: Self::Index) {
     self.indices.push(index);
   }
