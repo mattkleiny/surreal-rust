@@ -99,7 +99,9 @@ pub trait PathFindingGrid {
 // Generic implementation for any grid.
 impl<G> PathFindingGrid for G where G: crate::maths::Grid {
   #[inline(always)]
-  fn get_cost(&self, from: Point, to: Point) -> f64 { 1. }
+  fn get_cost(&self, from: Point, to: Point) -> f64 {
+    1. // uniform grid distribution with no inherent costs
+  }
 
   fn get_neighbours(&self, center: Point) -> Vec<Point> {
     use super::automata::MooreNeighbourhood;
@@ -119,8 +121,6 @@ impl<G> PathFindingGrid for G where G: crate::maths::Grid {
 }
 
 pub mod heuristics {
-  //! Path-finding heuristic functions.
-
   use super::*;
 
   /// A constant distance
@@ -132,23 +132,5 @@ pub mod heuristics {
     let dy = to.y - from.y;
 
     (dx * dx + dy * dy) as Cost
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use crate::maths::{DenseGrid, vec2};
-
-  use super::*;
-
-  #[test]
-  fn grid_should_find_a_simple_path() {
-    let grid = DenseGrid::new(16, 16, 1.);
-
-    let start = vec2(0, 0);
-    let goal = vec2(15, 15);
-
-    let path = grid.find_path(start, goal, heuristics::euclidean_distance)
-        .expect("Expected to locate a valid path!");
   }
 }

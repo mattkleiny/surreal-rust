@@ -69,24 +69,3 @@ impl AssetManager {
 pub trait Loadable: Sized {
   fn load(path: VirtualPath) -> AssetResult<Self>;
 }
-
-/// Permits hot-loading an asset as it changes on disk.
-pub trait Reloadable: Loadable {
-  fn reload(&mut self, path: VirtualPath) -> AssetResult<()> {
-    Ok(*self = Self::load(path)?)
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use crate::graphics::Image;
-
-  use super::*;
-
-  #[test]
-  fn it_should_work() {
-    let mut manager = AssetManager::new();
-
-    let image: Asset<Image> = manager.load(VirtualPath::parse("test.png")).unwrap();
-  }
-}

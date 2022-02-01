@@ -126,7 +126,7 @@ impl<T> BSP<T> {
 }
 
 /// A visitor for BSP trees.
-pub trait Visitor<T> where Self: Sized {
+pub trait Visitor<T> : Sized {
   fn visit_split(&mut self, bounds: &Bounds, left: &BSP<T>, right: &BSP<T>) {
     left.accept(self);
     right.accept(self);

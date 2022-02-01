@@ -65,34 +65,3 @@ impl<V, C> Heap<V, C> where C: PartialOrd {
   #[inline(always)]
   fn right(key: usize) -> usize { 2 * key + 2 }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn min_heap_should_insert_and_remove_items_in_the_right_order() {
-    let mut heap = MinHeap::new();
-
-    heap.push("A", 1.);
-    heap.push("B", 2.);
-    heap.push("C", 3.);
-
-    assert_eq!("A", heap.pop().unwrap());
-    assert_eq!("B", heap.pop().unwrap());
-    assert_eq!("C", heap.pop().unwrap());
-  }
-
-  #[test]
-  fn max_heap_should_insert_and_remove_items_in_the_right_order() {
-    let mut heap = MaxHeap::new();
-
-    heap.push("A", 1.);
-    heap.push("B", 2.);
-    heap.push("C", 3.);
-
-    assert_eq!("C", heap.pop().unwrap());
-    assert_eq!("B", heap.pop().unwrap());
-    assert_eq!("A", heap.pop().unwrap());
-  }
-}

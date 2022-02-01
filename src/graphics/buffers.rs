@@ -1,4 +1,6 @@
-use crate::graphics::GraphicsHandle;
+use std::rc::Rc;
+
+use crate::graphics::{GraphicsHandle, GraphicsServer};
 
 /// The different kinds of buffer we support.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -15,8 +17,8 @@ pub enum BufferUsage {
 }
 
 /// A buffer implementation based on OpenGL.
-#[derive(Debug, Eq, PartialEq)]
 pub struct Buffer {
+  server: Rc<dyn GraphicsServer>,
   handle: GraphicsHandle,
   kind: BufferKind,
   usage: BufferUsage,
@@ -33,8 +35,15 @@ pub struct VertexAttribute {
 
 /// Represents abstractly some buffer of data on the GPU.
 impl Buffer {
-  pub fn new(kind: BufferKind, usage: BufferUsage) -> Self {
-    todo!()
+  pub fn new(server: &Rc<dyn GraphicsServer>, kind: BufferKind, usage: BufferUsage) -> Self {
+    let handle = server.create_buffer();
+
+    Self {
+      server: server.clone(),
+      handle,
+      kind,
+      usage,
+    }
   }
 
   pub fn kind(&self) -> BufferKind { self.kind }
@@ -48,5 +57,11 @@ impl Buffer {
   /// Uploads the given data to the buffer.
   pub unsafe fn write_data<T>(&mut self, data: &[T]) {
     todo!()
+  }
+}
+
+impl Drop for Buffer {
+  fn drop(&mut self) {
+    self.server.delete_buffer(self.handle);
   }
 }

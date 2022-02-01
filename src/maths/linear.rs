@@ -12,5 +12,12 @@ mod matrices;
 mod rays;
 mod quaternions;
 
-pub const fn vec2<T>(x: T, y: T) -> Vector2<T> { Vector2 { x, y } }
-pub const fn vec3<T>(x: T, y: T, z: T) -> Vector3<T> { Vector3 { x, y, z } }
+/// Shorthand to construct a `Vector2`
+pub const fn vec2<T>(x: T, y: T) -> Vector2<T> {
+  Vector2 { x, y }
+}
+
+/// Shorthand to construct a `Vector3`
+pub const fn vec3<T>(x: T, y: T, z: T) -> Vector3<T> {
+  Vector3 { x, y, z }
+}

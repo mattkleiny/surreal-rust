@@ -28,9 +28,9 @@ pub struct DesktopPlatform {
   window: Window,
 
   // servers
-  audio_server: Mutex<DesktopAudioServer>,
-  graphics_server: Mutex<DesktopGraphicsServer>,
-  input_server: Mutex<DesktopInputServer>,
+  audio_server: Rc<dyn AudioServer>,
+  graphics_server: Rc<dyn GraphicsServer>,
+  input_server: Rc<DesktopInputServer>,
 }
 
 impl DesktopPlatform {
@@ -52,9 +52,9 @@ impl DesktopPlatform {
       window,
 
       // servers
-      audio_server: Mutex::new(audio_server),
-      graphics_server: Mutex::new(graphics_server),
-      input_server: Mutex::new(input_server),
+      audio_server: Rc::new(audio_server),
+      graphics_server: Rc::new(graphics_server),
+      input_server: Rc::new(input_server),
     })
   }
 
@@ -65,11 +65,11 @@ impl DesktopPlatform {
 }
 
 impl Platform for DesktopPlatform {
-  fn audio(&self) -> &Mutex<dyn AudioServer> {
+  fn audio(&self) -> &Rc<dyn AudioServer> {
     &self.audio_server
   }
 
-  fn graphics(&self) -> &Mutex<dyn GraphicsServer> {
+  fn graphics(&self) -> &Rc<dyn GraphicsServer> {
     &self.graphics_server
   }
 
@@ -84,7 +84,7 @@ impl Platform for DesktopPlatform {
         // generic winit events
         Event::RedrawRequested(window_id) => {
           if window_id == self.window.id() {
-            let graphics_server = self.graphics_server.lock().unwrap();
+            let graphics_server = &self.graphics_server;
 
             graphics_server.begin_frame();
             graphics_server.end_frame();
@@ -223,11 +223,15 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   }
 
   fn create_shader(&self) -> GraphicsHandle {
-    todo!()
+    unsafe {
+      GraphicsHandle(gl::CreateProgram())
+    }
   }
 
   fn delete_shader(&self, shader: GraphicsHandle) {
-    todo!()
+    unsafe {
+      gl::DeleteProgram(shader.0);
+    }
   }
 }
 

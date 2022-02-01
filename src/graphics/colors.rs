@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub};
 
-use crate::maths::{Lerp, Random, Rng};
+use crate::maths::{Lerp, Random, RandomGenerator};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[derive(Copy, Clone, Default, Eq, PartialEq, PartialOrd, Debug)]
@@ -77,15 +77,13 @@ impl Lerp for Color {
 }
 
 impl Random for Color {
-  fn generate(gen: &mut Rng) -> Self {
+  fn generate(gen: &mut RandomGenerator) -> Self {
     Color::rgba(gen.next(), gen.next(), gen.next(), gen.next())
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::maths::Seed;
-
   use super::*;
 
   #[test]
@@ -96,20 +94,5 @@ mod tests {
     assert_eq!(color.g, 127);
     assert_eq!(color.b, 127);
     assert_eq!(color.a, 255);
-  }
-
-  #[test]
-  fn color_should_generate_random_values() {
-    let seed = Seed::random();
-    let mut rng = seed.to_rng();
-
-    let color1: Color = rng.next();
-    let color2: Color = rng.next();
-    let color3: Color = rng.next();
-    let color4: Color = rng.next();
-
-    assert_ne!(color1, color2);
-    assert_ne!(color2, color3);
-    assert_ne!(color3, color4);
   }
 }

@@ -1,8 +1,4 @@
-//! Image loading and management.
-
-use crate::assets::{AssetResult, Loadable};
 use crate::graphics::Color;
-use crate::io::VirtualPath;
 
 /// An image of pixels, uncompressed, in RGBA format.
 ///
@@ -27,14 +23,6 @@ impl Image {
 
   pub fn as_slice(&self) -> &[Color] { self.pixels.as_slice() }
   pub fn as_mut_slice(&mut self) -> &mut [Color] { self.pixels.as_mut_slice() }
-}
-
-impl Loadable for Image {
-  fn load(path: VirtualPath) -> AssetResult<Self> {
-    // TODO: switch on the file extension
-
-    unimplemented!()
-  }
 }
 
 #[cfg(test)]
