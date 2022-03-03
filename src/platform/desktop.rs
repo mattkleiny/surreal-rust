@@ -1,6 +1,7 @@
 //! A platform implementation for desktop PCs.
 
 use std::collections::HashSet;
+use std::rc::Rc;
 
 use raw_gl_context::{GlConfig, GlContext};
 use winit::dpi::LogicalSize;
@@ -9,7 +10,7 @@ use winit::window::{Window, WindowBuilder};
 
 use crate::audio::AudioHandle;
 use crate::graphics::{Color, GraphicsHandle, Viewport};
-use crate::input::{InputServer, Key, KeyboardDevice, MouseButton, MouseDevice};
+use crate::input::{Key, MouseButton};
 use crate::maths::{vec2, Vector2};
 
 use super::*;
@@ -28,9 +29,9 @@ pub struct DesktopPlatform {
   window: Window,
 
   // servers
-  audio_server: Rc<dyn AudioServer>,
-  graphics_server: Rc<dyn GraphicsServer>,
-  input_server: Rc<DesktopInputServer>,
+  pub audio_server: Rc<DesktopAudioServer>,
+  pub graphics_server: Rc<DesktopGraphicsServer>,
+  pub input_server: Rc<DesktopInputServer>,
 }
 
 impl DesktopPlatform {
@@ -65,14 +66,6 @@ impl DesktopPlatform {
 }
 
 impl Platform for DesktopPlatform {
-  fn audio(&self) -> &Rc<dyn AudioServer> {
-    &self.audio_server
-  }
-
-  fn graphics(&self) -> &Rc<dyn GraphicsServer> {
-    &self.graphics_server
-  }
-
   fn run(mut self) {
     use winit::platform::desktop::EventLoopExtDesktop;
     let mut event_loop = self.event_loop.take().unwrap();
@@ -82,12 +75,10 @@ impl Platform for DesktopPlatform {
 
       match event {
         // generic winit events
-        Event::RedrawRequested(window_id) => {
+        Event::RedrawRequested(window_id) => unsafe {
           if window_id == self.window.id() {
-            let graphics_server = &self.graphics_server;
-
-            graphics_server.begin_frame();
-            graphics_server.end_frame();
+            self.graphics_server.begin_frame();
+            self.graphics_server.end_frame();
           }
         }
         // generic window events
@@ -104,7 +95,7 @@ impl Platform for DesktopPlatform {
 }
 
 /// The audio server for the desktop platform.
-struct DesktopAudioServer {}
+pub struct DesktopAudioServer {}
 
 impl DesktopAudioServer {
   pub fn new() -> Self {
@@ -127,7 +118,7 @@ unsafe impl AudioServer for DesktopAudioServer {
 }
 
 /// The graphics server for the desktop platform.
-struct DesktopGraphicsServer {
+pub struct DesktopGraphicsServer {
   context: GlContext,
   is_continuous_rendering: bool,
 }
@@ -147,96 +138,76 @@ impl DesktopGraphicsServer {
 }
 
 unsafe impl GraphicsServer for DesktopGraphicsServer {
-  fn begin_frame(&self) {
+  unsafe fn begin_frame(&self) {
     self.context.make_current();
   }
 
-  fn end_frame(&self) {
+  unsafe fn end_frame(&self) {
     self.context.swap_buffers();
     self.context.make_not_current();
   }
 
-  fn set_viewport(&self, viewport: Viewport) {
-    unsafe {
-      gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
-    }
+  unsafe fn set_viewport(&self, viewport: Viewport) {
+    gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
   }
 
-  fn clear_color_buffer(&self, color: Color) {
-    unsafe {
-      gl::ClearColor(
-        color.r as f32 / 255.0,
-        color.g as f32 / 255.0,
-        color.b as f32 / 255.0,
-        color.a as f32 / 255.0,
-      );
-      gl::Clear(gl::COLOR_BUFFER_BIT);
-    }
+  unsafe fn clear_color_buffer(&self, color: Color) {
+    gl::ClearColor(
+      color.r as f32 / 255.0,
+      color.g as f32 / 255.0,
+      color.b as f32 / 255.0,
+      color.a as f32 / 255.0,
+    );
+    gl::Clear(gl::COLOR_BUFFER_BIT);
   }
 
-  fn clear_depth_buffer(&self) {
-    unsafe {
-      gl::Clear(gl::DEPTH_BUFFER_BIT);
-    }
+  unsafe fn clear_depth_buffer(&self) {
+    gl::Clear(gl::DEPTH_BUFFER_BIT);
   }
 
-  fn flush_commands(&self) {
-    unsafe {
-      gl::Flush();
-    }
+  unsafe fn flush_commands(&self) {
+    gl::Flush();
   }
 
-  fn create_buffer(&self) -> GraphicsHandle {
-    unsafe {
-      let mut id: u32 = 0;
-      gl::GenBuffers(1, &mut id);
-      GraphicsHandle(id)
-    }
+  unsafe fn create_buffer(&self) -> GraphicsHandle {
+    let mut id: u32 = 0;
+    gl::GenBuffers(1, &mut id);
+    GraphicsHandle(id)
   }
 
-  fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]) {
+  unsafe fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]) {
     todo!()
   }
 
-  fn delete_buffer(&self, buffer: GraphicsHandle) {
-    unsafe {
-      gl::DeleteBuffers(1, &buffer.0);
-    }
+  unsafe fn delete_buffer(&self, buffer: GraphicsHandle) {
+    gl::DeleteBuffers(1, &buffer.0);
   }
 
-  fn create_texture(&self) -> GraphicsHandle {
-    unsafe {
-      let mut id: u32 = 0;
-      gl::GenTextures(1, &mut id);
-      GraphicsHandle(id)
-    }
+  unsafe fn create_texture(&self) -> GraphicsHandle {
+    let mut id: u32 = 0;
+    gl::GenTextures(1, &mut id);
+    GraphicsHandle(id)
   }
 
-  fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]) {
+  unsafe fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]) {
     todo!()
   }
 
-  fn delete_texture(&self, texture: GraphicsHandle) {
-    unsafe {
-      gl::DeleteTextures(1, &texture.0);
-    }
+  unsafe fn delete_texture(&self, texture: GraphicsHandle) {
+    gl::DeleteTextures(1, &texture.0);
   }
 
-  fn create_shader(&self) -> GraphicsHandle {
-    unsafe {
-      GraphicsHandle(gl::CreateProgram())
-    }
+  unsafe fn create_shader(&self) -> GraphicsHandle {
+    todo!()
   }
 
-  fn delete_shader(&self, shader: GraphicsHandle) {
-    unsafe {
-      gl::DeleteProgram(shader.0);
-    }
+  unsafe fn delete_shader(&self, shader: GraphicsHandle) {
+    todo!()
   }
 }
 
 /// The server for input management.
-struct DesktopInputServer {
+pub struct DesktopInputServer {
   mouse_position: Vector2<f64>,
   mouse_delta: Vector2<f64>,
   pressed_buttons: HashSet<MouseButton>,
@@ -255,43 +226,5 @@ impl DesktopInputServer {
       pressed_keys: HashSet::new(),
       released_keys: HashSet::new(),
     }
-  }
-}
-
-unsafe impl InputServer for DesktopInputServer {
-  fn keyboard_devices(&self) -> &[&dyn KeyboardDevice] {
-    todo!()
-  }
-
-  fn mouse_devices(&self) -> &[&dyn MouseDevice] {
-    todo!()
-  }
-}
-
-impl KeyboardDevice for DesktopInputServer {
-  fn is_key_up(&self, key: Key) -> bool {
-    todo!()
-  }
-
-  fn is_key_down(&self, key: Key) -> bool {
-    todo!()
-  }
-
-  fn is_key_pressed(&self, key: Key) -> bool {
-    todo!()
-  }
-}
-
-impl MouseDevice for DesktopInputServer {
-  fn is_button_up(&self, button: MouseButton) -> bool {
-    todo!()
-  }
-
-  fn is_button_down(&self, button: MouseButton) -> bool {
-    todo!()
-  }
-
-  fn is_button_pressed(&self, button: MouseButton) -> bool {
-    todo!()
   }
 }

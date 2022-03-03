@@ -20,6 +20,9 @@ mod textures;
 pub type GraphicsResult<T> = anyhow::Result<T>;
 
 /// An opaque handle to an underlying resource in the `GraphicsServer`.
+///
+/// A handle can represent arbitrarily many different resources, and forms
+/// the building blocks for any higher level APIs.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct GraphicsHandle(pub u32);
 
@@ -31,7 +34,7 @@ pub struct GraphicsHandle(pub u32);
 /// primitives.
 pub unsafe trait GraphicsServer {
   // commands
-  fn execute_command_queue(&mut self, mut commands: CommandBuffer) {
+  unsafe fn execute_command_buffer(&mut self, mut commands: CommandBuffer) {
     while let Some(command) = commands.dequeue() {
       match command {
         Command::ClearColor(color) => self.clear_color_buffer(color),
@@ -43,28 +46,28 @@ pub unsafe trait GraphicsServer {
   }
 
   // frame operations
-  fn begin_frame(&self);
-  fn end_frame(&self);
+  unsafe fn begin_frame(&self);
+  unsafe fn end_frame(&self);
 
   // intrinsics
-  fn set_viewport(&self, viewport: Viewport);
-  fn clear_color_buffer(&self, color: Color);
-  fn clear_depth_buffer(&self);
-  fn flush_commands(&self);
+  unsafe fn set_viewport(&self, viewport: Viewport);
+  unsafe fn clear_color_buffer(&self, color: Color);
+  unsafe fn clear_depth_buffer(&self);
+  unsafe fn flush_commands(&self);
 
   // buffers
-  fn create_buffer(&self) -> GraphicsHandle;
-  fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]);
-  fn delete_buffer(&self, buffer: GraphicsHandle);
+  unsafe fn create_buffer(&self) -> GraphicsHandle;
+  unsafe fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]);
+  unsafe fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
-  fn create_texture(&self) -> GraphicsHandle;
-  fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]);
-  fn delete_texture(&self, texture: GraphicsHandle);
+  unsafe fn create_texture(&self) -> GraphicsHandle;
+  unsafe fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]);
+  unsafe fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders
-  fn create_shader(&self) -> GraphicsHandle;
-  fn delete_shader(&self, shader: GraphicsHandle);
+  unsafe fn create_shader(&self) -> GraphicsHandle;
+  unsafe fn delete_shader(&self, shader: GraphicsHandle);
 }
 
 /// Commands that can be enqueued in a `CommandBuffer` and replayed at a later date on the graphics

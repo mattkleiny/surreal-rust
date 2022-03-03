@@ -1,7 +1,5 @@
 //! Platform abstractions and utilities.
 
-use std::rc::Rc;
-
 #[cfg(feature = "desktop")]
 pub use desktop::*;
 
@@ -21,9 +19,6 @@ pub type PlatformResult<T> = anyhow::Result<T>;
 /// The platform is also responsible for the core loop, and should callback into user code
 /// in order to process application logic.
 pub trait Platform {
-  fn audio(&self) -> &Rc<dyn AudioServer>;
-  fn graphics(&self) -> &Rc<dyn GraphicsServer>;
-
   /// Runs platform, invoking the given callback when available to process the next frame.
   fn run(self);
 }
