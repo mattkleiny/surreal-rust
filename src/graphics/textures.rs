@@ -1,7 +1,5 @@
-use std::rc::Rc;
-
 use crate::assets::Asset;
-use crate::graphics::{GraphicsHandle, GraphicsServer, Image};
+use crate::graphics::Image;
 use crate::maths::Vector2;
 
 /// Flags for texture creation.
@@ -13,8 +11,6 @@ pub enum TextureFlags {
 
 /// Represents a 2d texture.
 pub struct Texture {
-  server: Rc<dyn GraphicsServer>,
-  handle: GraphicsHandle,
   width: usize,
   height: usize,
   flags: TextureFlags,
@@ -28,21 +24,24 @@ pub struct TextureRegion {
 }
 
 impl Texture {
-  pub fn new(server: &Rc<dyn GraphicsServer>, width: usize, height: usize, flags: TextureFlags) -> Self {
-    let handle = server.create_texture();
-
-    Self {
-      server: server.clone(),
-      handle,
-      width,
-      height,
-      flags,
-    }
+  pub fn new(width: usize, height: usize, flags: TextureFlags) -> Self {
+    todo!()
   }
 
-  pub fn width(&self) -> usize { self.width }
-  pub fn height(&self) -> usize { self.height }
-  pub fn flags(&self) -> TextureFlags { self.flags }
+  #[inline(always)]
+  pub fn width(&self) -> usize {
+    self.width
+  }
+
+  #[inline(always)]
+  pub fn height(&self) -> usize {
+    self.height
+  }
+
+  #[inline(always)]
+  pub fn flags(&self) -> TextureFlags {
+    self.flags
+  }
 
   pub fn upload(&mut self, image: &Image) {
     unimplemented!()
@@ -51,6 +50,6 @@ impl Texture {
 
 impl Drop for Texture {
   fn drop(&mut self) {
-    self.server.delete_texture(self.handle);
+    todo!()
   }
 }

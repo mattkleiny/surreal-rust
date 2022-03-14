@@ -9,11 +9,5 @@ fn main() {
   let platform = DesktopPlatform::new(configuration)
       .expect("Failed to create platform!");
 
-  let buffer = Buffer::new(
-    platform.graphics_server.clone(),
-    BufferKind::Element,
-    BufferUsage::Static,
-  );
-
   platform.run();
 }

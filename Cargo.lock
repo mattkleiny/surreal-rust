@@ -834,6 +834,7 @@ dependencies = [
  "anyhow",
  "derive_more",
  "gl",
+ "num-traits",
  "raw-gl-context",
  "winit",
 ]

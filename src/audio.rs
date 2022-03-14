@@ -33,7 +33,11 @@ pub struct AudioSampleRate {
 
 impl AudioSampleRate {
   /// A standard-purpose sampling rate, good for most situations.
-  pub const STANDARD: Self = Self { frequency: 44_000, channels: 2, bits_per_sample: 16 };
+  pub const STANDARD: Self = Self {
+    frequency: 44_000,
+    channels: 2,
+    bits_per_sample: 16,
+  };
 
   fn bits_per_second(&self) -> u16 {
     self.frequency * self.channels as u16 * self.bits_per_sample as u16

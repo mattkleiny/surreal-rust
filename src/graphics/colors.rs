@@ -66,12 +66,12 @@ impl Sub for Color {
 }
 
 impl Lerp for Color {
-  fn lerp(a: &Color, b: &Color, t: f32) -> Self {
+  fn lerp(a: Color, b: Color, t: f32) -> Self {
     Color::rgba(
-      u8::lerp(&a.r, &b.r, t),
-      u8::lerp(&a.g, &b.g, t),
-      u8::lerp(&a.b, &b.b, t),
-      u8::lerp(&a.a, &b.a, t),
+      u8::lerp(a.r, b.r, t),
+      u8::lerp(a.g, b.g, t),
+      u8::lerp(a.b, b.b, t),
+      u8::lerp(a.a, b.a, t),
     )
   }
 }
@@ -88,7 +88,7 @@ mod tests {
 
   #[test]
   fn color_should_interpolate_between_values() {
-    let color = Color::lerp(&Color::BLACK, &Color::WHITE, 0.5);
+    let color = Color::lerp(Color::BLACK, Color::WHITE, 0.5);
 
     assert_eq!(color.r, 127);
     assert_eq!(color.g, 127);

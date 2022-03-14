@@ -55,7 +55,7 @@ impl Default for RandomGenerator {
 
 /// A seed for random generation.
 ///
-/// Seeds can be passed around efficiently and turned into an `RNG` easily.
+/// Seeds can be passed around efficiently and turned into a random generator easily.
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
 pub struct Seed(u64);
 

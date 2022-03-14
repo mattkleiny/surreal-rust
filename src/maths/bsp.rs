@@ -1,3 +1,5 @@
+//! A simple binary space partitioning tree, with support for basic recursion and deconstruction.
+
 use super::Axis;
 
 type Point = super::Vector2<f32>;

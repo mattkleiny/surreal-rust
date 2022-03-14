@@ -1,6 +1,7 @@
 //! A simple asset management system with support for hot file reloading.
 
 use std::cell::UnsafeCell;
+use std::ops::{Deref, DerefMut};
 
 use crate::io::VirtualPath;
 
@@ -19,7 +20,6 @@ pub struct AssetHandle(u64);
 /// Each time the asset is borrowed, the most up-to-date content is returned.
 pub struct Asset<T> {
   state: UnsafeCell<AssetState<T>>,
-  manager: *mut AssetManager,
 }
 
 /// The internal state of an asset.
@@ -29,43 +29,69 @@ enum AssetState<T> {
 }
 
 impl<T> Asset<T> {
+  fn new(value: T) -> Self {
+    Self {
+      state: UnsafeCell::new(AssetState::Ready(value)),
+    }
+  }
+
   pub fn load(path: VirtualPath) -> AssetResult<Asset<T>> where T: Loadable {
-    unimplemented!()
-  }
+    let result = T::load(path)?;
+    let asset = Self::new(result);
 
-  pub fn get(&self) -> Option<&T> {
-    unimplemented!()
-  }
-
-  pub fn get_mut(&mut self) -> Option<&mut T> {
-    unimplemented!()
+    Ok(asset)
   }
 }
 
-impl<T> std::ops::Drop for Asset<T> {
-  fn drop(&mut self) {
-    // TODO: reference counting semantics in the asset manager?
-    unimplemented!()
+impl<T> Deref for Asset<T> {
+  type Target = T;
+
+  fn deref(&self) -> &Self::Target {
+    let state = unsafe { &*self.state.get() };
+
+    match state {
+      AssetState::Ready(value) => &value,
+      AssetState::NotReady => panic!("Asset is not ready!")
+    }
   }
 }
 
-/// A manager for assets.
-///
-/// Assets are cached centrally by the manager, so accessing the same path
-/// twice will always result in the same asset being returned.
-pub struct AssetManager {}
+impl<T> DerefMut for Asset<T> {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    let state = unsafe { &mut *self.state.get() };
 
-impl AssetManager {
-  pub fn new() -> Self {
-    Self {}
-  }
-
-  pub fn load<T>(&mut self, path: VirtualPath) -> AssetResult<Asset<T>> where T: Loadable {
-    unimplemented!()
+    match state {
+      AssetState::Ready(value) => value,
+      AssetState::NotReady => panic!("Asset is not ready!")
+    }
   }
 }
 
 /// Permits loading an asset from disk.
 pub trait Loadable: Sized {
   fn load(path: VirtualPath) -> AssetResult<Self>;
+}
+
+/// Permits hot-loading an asset as it changes on disk.
+pub trait Reloadable: Loadable {
+  fn reload(&mut self, path: VirtualPath) -> AssetResult<()> {
+    Ok(*self = Self::load(path)?)
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use crate::graphics::Image;
+
+  use super::*;
+
+  #[test]
+  fn it_should_load_an_image() {
+    let image: Asset<Image> = Asset::load(VirtualPath::parse("test.png")).unwrap();
+    let pixels = image.as_slice();
+
+    for pixel in pixels {
+      println!("{:?}", pixel);
+    }
+  }
 }

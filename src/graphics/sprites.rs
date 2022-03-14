@@ -1,4 +1,4 @@
-use crate::graphics::{BufferedMesh, Color, Mesh};
+use crate::graphics::{BufferMesh, Color, Mesh};
 use crate::maths::{vec2, Vector2};
 use crate::prelude::GraphicsServer;
 
@@ -13,19 +13,19 @@ struct SpriteVertex {
 /// An efficiently batched array of sprite geometry.
 #[derive(Clone)]
 pub struct SpriteBatch {
-  mesh: BufferedMesh<SpriteVertex, u16>,
+  mesh: BufferMesh<SpriteVertex>,
 }
 
 impl SpriteBatch {
   pub fn new() -> Self {
     Self {
-      mesh: BufferedMesh::new()
+      mesh: BufferMesh::new()
     }
   }
 
   /// Adds sprite geometry into the batch.
   pub fn add_sprite(&mut self, position: Vector2<f32>, rotation: f32, size: Vector2<f32>, color: Color) {
-    self.mesh.add_quad([
+    self.mesh.add_quad(&[
       SpriteVertex { pos: position + vec2(-0.5, -0.5), uv: vec2(0., 0.), color },
       SpriteVertex { pos: position + vec2(-0.5, 0.5), uv: vec2(0., 1.), color },
       SpriteVertex { pos: position + vec2(0.5, 0.5), uv: vec2(1., 1.), color },

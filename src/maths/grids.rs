@@ -3,33 +3,33 @@ use std::collections::HashMap;
 use crate::maths::{vec2, Vector2};
 
 /// Represents (x, y) position in a grid.
-pub type GridPoint = (usize, usize);
+pub type Point = (usize, usize);
 
 /// Permits grid-like access to elements using (x, y) indices.
 pub trait Grid {
-  type Target;
+  type Cell;
 
   fn width(&self) -> usize;
   fn height(&self) -> usize;
 
   /// Determines if the given grid point is valid.
-  fn is_valid(&self, point: GridPoint) -> bool {
+  fn is_valid(&self, point: Point) -> bool {
     let (x, y) = point;
 
     x < self.width() && y < self.height()
   }
 
   /// Reads the grid at the given (x, y) position.
-  fn get(&self, point: GridPoint) -> &Self::Target;
+  fn get(&self, point: Point) -> &Self::Cell;
 }
 
 /// Permits mutable grid-like access to elements using (x, y) indices.
 pub trait GridMut: Grid {
   /// Mutably reads the grid at the given (x, y) point.
-  fn get_mut(&mut self, point: GridPoint) -> &mut Self::Target;
+  fn get_mut(&mut self, point: Point) -> &mut Self::Cell;
 
   /// Sets the contents of the grid at the given (x, y) point.
-  fn set(&mut self, point: GridPoint, value: Self::Target) {
+  fn set(&mut self, point: Point, value: Self::Cell) {
     *self.get_mut(point) = value;
   }
 }
@@ -68,15 +68,6 @@ impl<T> DenseGrid<T> {
     &mut self.elements[x + y * self.width]
   }
 
-  #[inline]
-  pub fn cells(&self) -> GridCellIterator {
-    GridCellIterator {
-      size: self.width() * self.height(),
-      stride: self.width(),
-      index: 0,
-    }
-  }
-
   /// Fills the grid with the given value
   pub fn fill(&mut self, value: T) where T: Clone {
     for element in self.elements.iter_mut() {
@@ -94,18 +85,18 @@ impl<T> DenseGrid<T> {
 }
 
 impl<T> Grid for DenseGrid<T> {
-  type Target = T;
+  type Cell = T;
 
   fn width(&self) -> usize { self.width }
   fn height(&self) -> usize { self.height }
 
-  fn get(&self, (x, y): (usize, usize)) -> &Self::Target {
+  fn get(&self, (x, y): (usize, usize)) -> &Self::Cell {
     self.get(x, y)
   }
 }
 
 impl<T> GridMut for DenseGrid<T> {
-  fn get_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Target {
+  fn get_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Cell {
     self.get_mut(x, y)
   }
 }
@@ -140,44 +131,19 @@ impl<T> SparseGrid<T> {
 }
 
 impl<T> Grid for SparseGrid<T> {
-  type Target = T;
+  type Cell = T;
 
   fn width(&self) -> usize { unimplemented!() }
   fn height(&self) -> usize { unimplemented!() }
 
-  fn get(&self, (x, y): (usize, usize)) -> &Self::Target {
+  fn get(&self, (x, y): (usize, usize)) -> &Self::Cell {
     self.get(x as i32, y as i32).unwrap()
   }
 }
 
 impl<T> GridMut for SparseGrid<T> {
-  fn get_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Target {
+  fn get_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Cell {
     self.get_mut(x as i32, y as i32).unwrap()
-  }
-}
-
-/// Permits iterating over the cells in a grid.
-#[derive(Copy, Clone, Debug)]
-pub struct GridCellIterator {
-  size: usize,
-  stride: usize,
-  index: usize,
-}
-
-impl Iterator for GridCellIterator {
-  type Item = Vector2<usize>;
-
-  fn next(&mut self) -> Option<Self::Item> {
-    if self.index < self.size {
-      let x = self.index % self.stride;
-      let y = self.index / self.stride;
-
-      self.index += 1;
-
-      Some(vec2(x, y))
-    } else {
-      None
-    }
   }
 }
 

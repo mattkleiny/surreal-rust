@@ -1,9 +1,5 @@
-use std::rc::Rc;
-
 pub use compiler::*;
 pub use parser::*;
-
-use crate::graphics::{GraphicsHandle, GraphicsServer};
 
 /// Different types fo shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -14,24 +10,11 @@ pub enum ShaderKind {
 
 /// Represents a single compiled shader program.
 pub struct ShaderProgram {
-  server: Rc<dyn GraphicsServer>,
-  handle: GraphicsHandle,
 }
 
 impl ShaderProgram {
-  pub fn new(server: &Rc<dyn GraphicsServer>) -> Self {
-    let handle = server.create_shader();
-
-    Self {
-      server: server.clone(),
-      handle
-    }
-  }
-}
-
-impl Drop for ShaderProgram {
-  fn drop(&mut self) {
-    self.server.delete_shader(self.handle);
+  pub fn new() -> Self {
+    todo!()
   }
 }
 

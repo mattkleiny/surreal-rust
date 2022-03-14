@@ -1,6 +1,12 @@
+//! Image loading and management.
+
+use crate::assets::{AssetResult, Loadable};
 use crate::graphics::Color;
+use crate::io::VirtualPath;
 
 /// An image of pixels, uncompressed, in RGBA format.
+///
+/// An image can be loaded from disc and dynamically manipulated.
 pub struct Image {
   width: usize,
   height: usize,
@@ -37,6 +43,21 @@ impl Image {
   /// Retrieves a mutable slice of the image's pixels.
   pub fn as_mut_slice(&mut self) -> &mut [Color] {
     self.pixels.as_mut_slice()
+  }
+}
+
+impl Loadable for Image {
+  fn load(path: VirtualPath) -> AssetResult<Self> {
+    // TODO: switch on the file extension
+    // TODO: properly implement me
+
+    let image = Image {
+      width: 128,
+      height: 128,
+      pixels: Vec::new(),
+    };
+
+    Ok(image)
   }
 }
 

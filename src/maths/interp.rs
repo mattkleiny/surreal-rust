@@ -1,79 +1,18 @@
+use num_traits::{FromPrimitive, Num, ToPrimitive};
+
 /// Allows interpolation of arbitrary values.
 pub trait Lerp {
-  fn lerp(a: &Self, b: &Self, t: f32) -> Self;
+  fn lerp(a: Self, b: Self, t: f32) -> Self;
 }
 
-impl Lerp for u8 {
+impl<T: Copy + Num + FromPrimitive + ToPrimitive> Lerp for T {
   #[inline]
-  fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-    let a = *a as f32;
-    let b = *b as f32;
+  fn lerp(a: Self, b: Self, t: f32) -> T {
+    let a = a.to_f32().unwrap();
+    let b = b.to_f32().unwrap();
 
-    (a + t * (b - a)) as u8
-  }
-}
+    let result = a + t * (b - a);
 
-impl Lerp for u32 {
-  #[inline]
-  fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-    let a = *a as f32;
-    let b = *b as f32;
-
-    (a + t * (b - a)) as u32
-  }
-}
-
-impl Lerp for i32 {
-  #[inline]
-  fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-    let a = *a as f32;
-    let b = *b as f32;
-
-    (a + t * (b - a)) as i32
-  }
-}
-
-impl Lerp for u64 {
-  #[inline]
-  fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-    let a = *a as f32;
-    let b = *b as f32;
-
-    (a + t * (b - a)) as u64
-  }
-}
-
-impl Lerp for i64 {
-  #[inline]
-  fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-    let a = *a as f32;
-    let b = *b as f32;
-
-    (a + t * (b - a)) as i64
-  }
-}
-
-impl Lerp for f32 {
-  #[inline]
-  fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-    a + t * (b - a)
-  }
-}
-
-impl Lerp for f64 {
-  #[inline]
-  fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-    a + (t as f64) * (b - a)
-  }
-}
-
-// Allows in-place blending between values
-pub trait Blend {
-  fn blend(&mut self, to: &Self, amount: f32);
-}
-
-impl<T> Blend for T where T: Lerp {
-  fn blend(&mut self, to: &Self, amount: f32) {
-    *self = Self::lerp(self, to, amount);
+    T::from_f32(result).unwrap()
   }
 }

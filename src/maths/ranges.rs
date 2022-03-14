@@ -78,6 +78,6 @@ mod tests {
   fn range_should_produce_a_valid_str_range() {
     let range = range("Test 1", "Test 3");
 
-    assert!(range.contains("Test 3"));
+    assert!(range.contains("Test 2"));
   }
 }

@@ -1,6 +1,9 @@
-/// Represents a type that supports procedural construction of mesh geometry.
+/// Represents a single index in a mesh.
+pub type Index = u16;
+
+/// Represents type that supports procedural construction of mesh geometry.
 pub trait Mesh {
-  type Vertex;
+  type Vertex: Copy;
   type Index;
 
   /// Adds a single vertex to the mesh.
@@ -10,14 +13,14 @@ pub trait Mesh {
   fn add_index(&mut self, index: Self::Index);
 
   /// Adds a triangle of vertices to the mesh.
-  fn add_triangle(&mut self, vertices: [Self::Vertex; 3]) where Self::Vertex: Copy {
+  fn add_triangle(&mut self, vertices: &[Self::Vertex; 3]) {
     self.add_vertex(vertices[0]);
     self.add_vertex(vertices[1]);
     self.add_vertex(vertices[2]);
   }
 
   /// Adds a quad of vertices to the mesh.
-  fn add_quad(&mut self, vertices: [Self::Vertex; 4]) where Self::Vertex: Copy {
+  fn add_quad(&mut self, vertices: &[Self::Vertex; 4]) {
     self.add_vertex(vertices[0]);
     self.add_vertex(vertices[1]);
     self.add_vertex(vertices[2]);
@@ -25,47 +28,55 @@ pub trait Mesh {
   }
 
   /// Adds a triangle fan of vertices to the mesh.
-  fn add_triangle_fan(&mut self, vertices: &[Self::Vertex]) where Self::Vertex: Copy {
+  fn add_triangle_fan(&mut self, vertices: &[Self::Vertex]) {
     unimplemented!()
   }
 }
 
-/// A in-memory mesh of vertices/indices.
+/// A simple in-memory mesh backed by a `Vec`.
 #[derive(Clone, Debug)]
-pub struct BufferedMesh<V, I> {
+pub struct BufferMesh<V> {
   vertices: Vec<V>,
-  indices: Vec<I>,
+  indices: Vec<Index>,
 }
 
-impl<V, I> BufferedMesh<V, I> {
-  /// Creates a new, empty, `BufferedMesh`.
+impl<V> BufferMesh<V> {
   pub fn new() -> Self {
     Self {
       vertices: Vec::new(),
       indices: Vec::new(),
     }
   }
-
-  /// Creates a `BufferedMesh` with the given initial capacities.
-  pub fn with_capacity(vertex_size: usize, index_size: usize) -> Self {
-    Self {
-      vertices: Vec::with_capacity(vertex_size),
-      indices: Vec::with_capacity(index_size),
-    }
-  }
 }
 
-impl<V, I> Mesh for BufferedMesh<V, I> {
+impl<V> Mesh for BufferMesh<V> where V: Copy {
   type Vertex = V;
-  type Index = I;
+  type Index = Index;
 
-  #[inline]
   fn add_vertex(&mut self, vertex: Self::Vertex) {
     self.vertices.push(vertex);
   }
 
-  #[inline]
   fn add_index(&mut self, index: Self::Index) {
     self.indices.push(index);
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use crate::maths::vec2;
+  use super::*;
+
+  #[test]
+  fn it_should_add_a_triangle_to_the_mesh() {
+    let mut mesh = BufferMesh::new();
+
+    mesh.add_triangle(&[
+      vec2(0., 0.),
+      vec2(1., 0.),
+      vec2(1., 1.)
+    ]);
+
+    println!("{:?}", mesh);
   }
 }
