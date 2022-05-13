@@ -22,17 +22,20 @@ impl<'a> Material<'a> {
   /// Sets the given material uniform.
   pub fn set_uniform<T>(&mut self, name: &str, value: T) where T: IntoUniform {
     if let Some(location) = self.shader.get_uniform_location(name) {
-      self.uniforms.insert(name.to_string(), Uniform {
+      let key = name.to_string();
+      let value = Uniform {
         location,
         value: value.to_uniform(),
-      });
+      };
+
+      self.uniforms.insert(key, value);
     }
   }
 
-  /// Binds the material as the active shader.
-  pub fn bind(&self) {
+  /// Binds the material as the active shader and uploads it's uniforms.
+  pub unsafe fn upload(&self) {
     for (_, uniform) in &self.uniforms {
-      self.shader.set_uniform(uniform.location, &uniform.value);
+      uniform.value.upload(uniform.location, &self.shader);
     }
   }
 }
@@ -59,6 +62,22 @@ pub enum UniformValue {
   Matrix3(Matrix3<f32>),
   Matrix4(Matrix4<f32>),
   Texture(GraphicsHandle, usize),
+}
+
+impl UniformValue {
+  unsafe fn upload(&self, location: usize, program: &ShaderProgram) {
+    match self {
+      UniformValue::Integer(value) => program.set_uniform_u32(location, *value),
+      UniformValue::Floating(value) => program.set_uniform_f32(location, *value),
+      UniformValue::Point2(value) => program.set_uniform_vec2i32(location, *value),
+      UniformValue::Point3(value) => program.set_uniform_vec3i32(location, *value),
+      UniformValue::Point4(value) => program.set_uniform_vec4i32(location, *value),
+      UniformValue::Vector2(value) => program.set_uniform_vec2f32(location, *value),
+      UniformValue::Vector3(value) => program.set_uniform_vec3f32(location, *value),
+      UniformValue::Vector4(value) => program.set_uniform_vec4f32(location, *value),
+      _ => {}
+    }
+  }
 }
 
 /// Allows conversion of value into a `UniformValue`.
@@ -105,5 +124,7 @@ mod tests {
     material.set_uniform("Test 4", vec3(0., 1., 0.));
 
     println!("{:#?}", material);
+
+    unsafe { material.upload(); }
   }
 }
