@@ -2,24 +2,20 @@
 
 pub use automata::*;
 pub use bounds::*;
-pub use bsp::*;
 pub use curves::*;
-pub use directions::*;
-pub use grids::*;
 pub use interp::*;
 pub use linear::*;
+pub use numbers::*;
 pub use paths::*;
 pub use random::*;
 pub use ranges::*;
 
 mod automata;
 mod bounds;
-mod bsp;
 mod curves;
-mod directions;
-mod grids;
 mod interp;
 mod linear;
+mod numbers;
 mod paths;
 mod random;
 mod ranges;

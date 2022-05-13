@@ -1,23 +1,23 @@
 /// A type that can be randomly generated.
-pub trait Random: Sized {
+pub trait FromRandom: Sized {
   /// Generates a new value of this type with a global random seed.
   fn random() -> Self {
-    Self::generate(&mut Seed::random().to_rng())
+    Self::from_random(&mut Seed::generate().to_random())
   }
 
   /// Generates a new random value of this type using the given generator.
-  fn generate(generator: &mut RandomGenerator) -> Self;
+  fn from_random(random: &mut Random) -> Self;
 }
 
 /// A pseudo-random number generator.
 #[derive(Clone, Debug)]
-pub struct RandomGenerator {
+pub struct Random {
   next: i32,
   next_prime: i32,
-  seed_array: [i32; 56]
+  seed_array: [i32; 56],
 }
 
-impl RandomGenerator {
+impl Random {
   const SEED_CONSTANT: u32 = 161803398;
 
   /// Constructs a random generator with the given seed.
@@ -32,8 +32,8 @@ impl RandomGenerator {
 
   /// Generates a new value of the given `Random` type, T.
   #[inline(always)]
-  pub fn next<T>(&mut self) -> T where T: Random {
-    T::generate(self)
+  pub fn next<T>(&mut self) -> T where T: FromRandom {
+    T::from_random(self)
   }
 
   /// Generates a random u64 number between 0 and u64::MAX, inclusive.
@@ -47,9 +47,9 @@ impl RandomGenerator {
   }
 }
 
-impl Default for RandomGenerator {
+impl Default for Random {
   fn default() -> Self {
-    RandomGenerator::with_random_seed()
+    Random::with_random_seed()
   }
 }
 
@@ -66,66 +66,66 @@ impl Seed {
   }
 
   /// Generates a new seed using a new random value.
-  pub fn random() -> Self {
+  pub fn generate() -> Self {
     todo!()
   }
 
-  /// Converts the seed into an `Rng`.
-  pub fn to_rng(&self) -> RandomGenerator {
+  /// Converts the seed into a `Random` generator.
+  pub fn to_random(&self) -> Random {
     if self.0 == 0 {
-      RandomGenerator::with_random_seed()
+      Random::with_random_seed()
     } else {
-      RandomGenerator::with_seed(self.0)
+      Random::with_seed(self.0)
     }
   }
 }
 
 // commonly used random types
 
-impl Random for bool {
-  fn generate(generator: &mut RandomGenerator) -> Self {
+impl FromRandom for bool {
+  fn from_random(generator: &mut Random) -> Self {
     generator.next_f64() < 0.5
   }
 }
 
-impl Random for u8 {
-  fn generate(generator: &mut RandomGenerator) -> Self {
+impl FromRandom for u8 {
+  fn from_random(generator: &mut Random) -> Self {
     generator.next_u64() as u8
   }
 }
 
-impl Random for u16 {
-  fn generate(generator: &mut RandomGenerator) -> Self {
+impl FromRandom for u16 {
+  fn from_random(generator: &mut Random) -> Self {
     generator.next_u64() as u16
   }
 }
 
-impl Random for u32 {
-  fn generate(generator: &mut RandomGenerator) -> Self {
+impl FromRandom for u32 {
+  fn from_random(generator: &mut Random) -> Self {
     generator.next_u64() as u32
   }
 }
 
-impl Random for u64 {
-  fn generate(generator: &mut RandomGenerator) -> Self {
+impl FromRandom for u64 {
+  fn from_random(generator: &mut Random) -> Self {
     generator.next_u64()
   }
 }
 
-impl Random for f32 {
-  fn generate(generator: &mut RandomGenerator) -> Self {
+impl FromRandom for f32 {
+  fn from_random(generator: &mut Random) -> Self {
     generator.next_f64() as f32
   }
 }
 
-impl Random for f64 {
-  fn generate(generator: &mut RandomGenerator) -> Self {
+impl FromRandom for f64 {
+  fn from_random(generator: &mut Random) -> Self {
     generator.next_f64()
   }
 }
 
-impl Random for Seed {
-  fn generate(generator: &mut RandomGenerator) -> Self {
+impl FromRandom for Seed {
+  fn from_random(generator: &mut Random) -> Self {
     Self(generator.next())
   }
 }

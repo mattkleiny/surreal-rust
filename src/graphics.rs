@@ -3,18 +3,16 @@
 pub use buffers::*;
 pub use colors::*;
 pub use images::*;
+pub use materials::*;
 pub use meshes::*;
 pub use shaders::*;
-pub use sprites::*;
-pub use textures::*;
 
 mod buffers;
 mod colors;
 mod images;
+mod materials;
 mod meshes;
 mod shaders;
-mod sprites;
-mod textures;
 
 /// Represents a fallible result in the graphics subsystem.
 pub type GraphicsResult<T> = anyhow::Result<T>;
@@ -24,7 +22,7 @@ pub type GraphicsResult<T> = anyhow::Result<T>;
 /// A handle can represent arbitrarily many different resources, and forms
 /// the building blocks for any higher level APIs.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-pub struct GraphicsHandle(pub u32);
+pub struct GraphicsHandle(pub usize);
 
 /// A server for the underlying graphics subsystem.
 ///
@@ -34,12 +32,12 @@ pub struct GraphicsHandle(pub u32);
 /// primitives.
 pub unsafe trait GraphicsServer {
   // commands
-  unsafe fn execute_command_buffer(&mut self, mut commands: CommandBuffer) {
+  unsafe fn execute_command_buffer(&mut self, commands: &mut CommandBuffer) {
     while let Some(command) = commands.dequeue() {
       match command {
+        Command::SetViewport(viewport) => self.set_viewport_size(viewport),
         Command::ClearColor(color) => self.clear_color_buffer(color),
         Command::ClearDepth => self.clear_depth_buffer(),
-        Command::SetViewport(viewport) => self.set_viewport(viewport),
         _ => {}
       }
     }
@@ -50,19 +48,20 @@ pub unsafe trait GraphicsServer {
   unsafe fn end_frame(&self);
 
   // intrinsics
-  unsafe fn set_viewport(&self, viewport: Viewport);
+  unsafe fn set_viewport_size(&self, viewport: Viewport);
   unsafe fn clear_color_buffer(&self, color: Color);
   unsafe fn clear_depth_buffer(&self);
   unsafe fn flush_commands(&self);
 
   // buffers
   unsafe fn create_buffer(&self) -> GraphicsHandle;
-  unsafe fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]);
+  unsafe fn read_buffer_data<T>(&self, buffer: GraphicsHandle) -> Vec<T>;
+  unsafe fn write_buffer_data<T>(&self, buffer: GraphicsHandle, data: &[T]);
   unsafe fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
   unsafe fn create_texture(&self) -> GraphicsHandle;
-  unsafe fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]);
+  unsafe fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]);
   unsafe fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders
@@ -72,29 +71,30 @@ pub unsafe trait GraphicsServer {
 
 /// Commands that can be enqueued in a `CommandBuffer` and replayed at a later date on the graphics
 /// server or graphics pipeline.
-pub enum Command<'a> {
+pub enum Command {
+  SetViewport(Viewport),
   ClearColor(Color),
   ClearDepth,
-  SetViewport(Viewport),
   DrawMesh {
+    mesh: GraphicsHandle,
+    vertex_buffer: GraphicsHandle,
+    index_buffer: GraphicsHandle,
     topology: PrimitiveTopology,
-    vertex_buffer: &'a Buffer,
-    index_buffer: &'a Buffer,
     vertex_count: usize,
   },
 }
 
 /// A command buffer that can be used to issue instructions to the GPU.
-pub struct CommandBuffer<'a> {
-  commands: Vec<Command<'a>>,
+pub struct CommandBuffer {
+  commands: Vec<Command>,
 }
 
-impl<'a> CommandBuffer<'a> {
+impl CommandBuffer {
   pub fn new() -> Self {
     Self { commands: Vec::new() }
   }
 
-  pub fn enqueue(&mut self, command: Command<'a>) {
+  pub fn enqueue(&mut self, command: Command) {
     self.commands.push(command);
   }
 

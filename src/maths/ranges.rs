@@ -1,11 +1,9 @@
-use std::ops::Sub;
-
-use crate::maths::clamp;
+use crate::maths::{clamp, Numeric};
 
 /// Builds a range between the given values.
 #[inline]
-pub const fn range<T>(min: T, max: T) -> Range<T> {
-  Range { min, max }
+pub const fn range<T>(min: T, max: T) -> Range<T> where T : Numeric {
+  Range::new(min, max)
 }
 
 /// An inclusive range that spans the given (min, max) values.
@@ -15,19 +13,23 @@ pub struct Range<T> {
   pub max: T,
 }
 
-impl<T> Range<T> {
+impl<T> Range<T> where T: Numeric {
+  pub const fn new(min: T, max: T) -> Self {
+    Self { min, max }
+  }
+
   #[inline]
-  pub fn delta(&self) -> T where T: Copy + Sub<Output=T> {
+  pub fn delta(&self) -> T {
     self.max - self.min
   }
 
   #[inline]
-  pub fn contains(&self, other: T) -> bool where T: PartialOrd {
+  pub fn contains(&self, other: T) -> bool {
     other >= self.min && other <= self.max
   }
 
   #[inline]
-  pub fn clamp(&self, value: T) -> T where T: Copy + PartialOrd {
+  pub fn clamp(&self, value: T) -> T {
     clamp(value, self.min, self.max)
   }
 }
@@ -72,12 +74,5 @@ mod tests {
 
     assert_eq!(-2, range.clamp(-100));
     assert_eq!(5, range.clamp(100));
-  }
-
-  #[test]
-  fn range_should_produce_a_valid_str_range() {
-    let range = range("Test 1", "Test 3");
-
-    assert!(range.contains("Test 2"));
   }
 }

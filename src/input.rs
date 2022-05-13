@@ -40,8 +40,8 @@ pub enum MouseButton {
 #[repr(u32)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Key {
-  Space,
-  Escape,
+  Space = 0x20,
+  Escape = 0x1B,
 }
 
 impl Key {

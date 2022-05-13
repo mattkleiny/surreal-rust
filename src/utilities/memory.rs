@@ -15,13 +15,9 @@ impl Size {
 }
 
 impl From<usize> for Size {
-  #[inline]
-  fn from(amount: usize) -> Self { Self::from_bytes(amount) }
-}
-
-impl From<Size> for usize {
-  #[inline]
-  fn from(size: Size) -> Self { size.0 }
+  fn from(amount: usize) -> Self {
+    Self::from_bytes(amount)
+  }
 }
 
 #[cfg(test)]

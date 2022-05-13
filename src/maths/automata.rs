@@ -1,6 +1,4 @@
-use num_traits::Num;
-
-use crate::maths::{vec2, Vector2};
+use crate::maths::{Numeric, vec2, Vector2};
 
 /// Provides a von neumann neighbour expansion for points in 2-space.
 pub trait VonNeumannNeighbourhood<T> {
@@ -9,16 +7,15 @@ pub trait VonNeumannNeighbourhood<T> {
   fn get_von_neumann_neighbours(&self) -> Self::Output;
 }
 
-impl<T> VonNeumannNeighbourhood<T> for Vector2<T> where T: Copy + Num {
+impl<T> VonNeumannNeighbourhood<T> for Vector2<T> where T: Numeric {
   type Output = [Vector2<T>; 4];
 
   fn get_von_neumann_neighbours(&self) -> Self::Output {
-    let one = T::one();
     [
-      Vector2::new(self.x - one, self.y), // left
-      Vector2::new(self.x + one, self.y), // right
-      Vector2::new(self.x, self.y - one), // bottom
-      Vector2::new(self.x, self.y + one), // top
+      vec2(self.x - T::ONE, self.y), // left
+      vec2(self.x + T::ONE, self.y), // right
+      vec2(self.x, self.y - T::ONE), // bottom
+      vec2(self.x, self.y + T::ONE), // top
     ]
   }
 }
@@ -30,21 +27,20 @@ pub trait MooreNeighbourhood<T> {
   fn get_moore_neighbours(&self) -> Self::Output;
 }
 
-impl<T> MooreNeighbourhood<T> for Vector2<T> where T: Copy + Num {
+impl<T> MooreNeighbourhood<T> for Vector2<T> where T: Numeric {
   type Output = [Vector2<T>; 8];
 
   fn get_moore_neighbours(&self) -> Self::Output {
-    let one = T::one();
     [
-      Vector2::new(self.x - one, self.y), // left
-      Vector2::new(self.x + one, self.y), // right
-      Vector2::new(self.x, self.y - one), // bottom
-      Vector2::new(self.x, self.y + one), // top
+      vec2(self.x - T::ONE, self.y), // left
+      vec2(self.x + T::ONE, self.y), // right
+      vec2(self.x, self.y - T::ONE), // bottom
+      vec2(self.x, self.y + T::ONE), // top
 
-      Vector2::new(self.x - one, self.y - one), // bottom left
-      Vector2::new(self.x - one, self.y + one), // top left
-      Vector2::new(self.x + one, self.y - one), // bottom right
-      Vector2::new(self.x + one, self.y + one), // top right
+      vec2(self.x - T::ONE, self.y - T::ONE), // bottom left
+      vec2(self.x - T::ONE, self.y + T::ONE), // top left
+      vec2(self.x + T::ONE, self.y - T::ONE), // bottom right
+      vec2(self.x + T::ONE, self.y + T::ONE), // top right
     ]
   }
 }

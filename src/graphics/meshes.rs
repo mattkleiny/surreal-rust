@@ -13,14 +13,14 @@ pub trait Mesh {
   fn add_index(&mut self, index: Self::Index);
 
   /// Adds a triangle of vertices to the mesh.
-  fn add_triangle(&mut self, vertices: &[Self::Vertex; 3]) {
+  fn add_triangle(&mut self, vertices: [Self::Vertex; 3]) {
     self.add_vertex(vertices[0]);
     self.add_vertex(vertices[1]);
     self.add_vertex(vertices[2]);
   }
 
   /// Adds a quad of vertices to the mesh.
-  fn add_quad(&mut self, vertices: &[Self::Vertex; 4]) {
+  fn add_quad(&mut self, vertices: [Self::Vertex; 4]) {
     self.add_vertex(vertices[0]);
     self.add_vertex(vertices[1]);
     self.add_vertex(vertices[2]);
@@ -65,13 +65,14 @@ impl<V> Mesh for BufferMesh<V> where V: Copy {
 #[cfg(test)]
 mod tests {
   use crate::maths::vec2;
+
   use super::*;
 
   #[test]
   fn it_should_add_a_triangle_to_the_mesh() {
     let mut mesh = BufferMesh::new();
 
-    mesh.add_triangle(&[
+    mesh.add_triangle([
       vec2(0., 0.),
       vec2(1., 0.),
       vec2(1., 1.)

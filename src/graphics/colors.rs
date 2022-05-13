@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub};
 
-use crate::maths::{Lerp, Random, RandomGenerator};
+use crate::maths::{Lerp, FromRandom, Random};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[derive(Copy, Clone, Default, Eq, PartialEq, PartialOrd, Debug)]
@@ -12,7 +12,7 @@ pub struct Color {
 }
 
 impl Color {
-  pub const CLEAR: Color = Self::rgba(0,0,0,0);
+  pub const CLEAR: Color = Self::rgba(0, 0, 0, 0);
   pub const WHITE: Color = Self::rgb(255, 255, 255);
   pub const BLACK: Color = Self::rgb(0, 0, 0);
   pub const RED: Color = Self::rgb(255, 0, 0);
@@ -76,9 +76,13 @@ impl Lerp for Color {
   }
 }
 
-impl Random for Color {
-  fn generate(gen: &mut RandomGenerator) -> Self {
-    Color::rgba(gen.next(), gen.next(), gen.next(), gen.next())
+impl FromRandom for Color {
+  fn from_random(random: &mut Random) -> Self {
+    Color::rgb(
+      random.next(),
+      random.next(),
+      random.next(),
+    )
   }
 }
 

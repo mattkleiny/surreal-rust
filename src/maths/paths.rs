@@ -1,7 +1,3 @@
-use std::collections::HashMap;
-
-use crate::collections::MinHeap;
-
 /// A point in the path-finding grid.
 pub type Point = super::Vector2<i32>;
 
@@ -39,84 +35,7 @@ pub trait PathFindingGrid {
 
   /// Locates a path using A* from from the given start point to the given goal.
   fn find_path(&self, start: Point, goal: Point, heuristic: Heuristic) -> Option<Path> {
-    /// Represents a node that's already been visited in the path.
-    struct Segment {
-      from: Point,
-      cost: Cost,
-    }
-
-    /// Rebuilds the path taken to get to the destination.
-    fn rebuild_path(start: Point, goal: Point, mut segments: HashMap<Point, Segment>) -> Path {
-      let mut result = Vec::new();
-      let mut current = goal;
-
-      while current != start {
-        result.push(current);
-
-        if current == start {
-          break;
-        }
-
-        current = segments.remove(&current).unwrap().from;
-      }
-
-      result.push(start);
-      result.reverse();
-
-      Path(result)
-    }
-
-    let mut frontier = MinHeap::new();
-    let mut segments = HashMap::new();
-
-    frontier.push(start, 0.);
-    segments.insert(start, Segment { from: start, cost: 0. });
-
-    while frontier.size() > 0 {
-      match frontier.pop() {
-        None => break,
-        Some(current) if current == goal => {
-          return Some(rebuild_path(start, goal, segments));
-        }
-        Some(current) => for neighbour in self.get_neighbours(current) {
-          let new_cost = segments[&current].cost + self.get_cost(current, neighbour);
-
-          if !segments.contains_key(&neighbour) || new_cost < segments[&neighbour].cost {
-            segments.insert(neighbour, Segment { from: current, cost: new_cost });
-
-            let priority = new_cost + heuristic(&neighbour, &goal);
-
-            frontier.push(neighbour, new_cost);
-          }
-        }
-      }
-    };
-
-    None
-  }
-}
-
-// Generic implementation for any grid.
-impl<G> PathFindingGrid for G where G: crate::maths::Grid {
-  #[inline(always)]
-  fn get_cost(&self, from: Point, to: Point) -> f64 {
-    1. // uniform grid distribution with no inherent costs
-  }
-
-  fn get_neighbours(&self, center: Point) -> Vec<Point> {
-    use super::automata::MooreNeighbourhood;
-
-    let mut results = Vec::new();
-
-    for neighbour in center.get_moore_neighbours() {
-      let point = (neighbour.x as usize, neighbour.y as usize);
-
-      if self.is_valid(point) {
-        results.push(neighbour);
-      }
-    }
-
-    results
+    todo!()
   }
 }
 

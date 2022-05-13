@@ -1,7 +1,10 @@
 /// A lightweight, fast and append-only ring buffer of elements of type T.
 ///
-/// Synchronization should occur outside of the buffer itself, with a mutex or some
-/// other locking primitive depending on the use case.
+/// It's intended to be used for small windowed set operations, like time sampling or frequency
+/// analyses.
+///
+/// This collection is not thread-safe. Synchronization should occur outside
+/// of the buffer itself, with a mutex or some other locking primitive depending on the use case.
 #[derive(Debug)]
 pub struct RingBuffer<T> {
   occupied: usize,
@@ -10,7 +13,7 @@ pub struct RingBuffer<T> {
 }
 
 impl<T> RingBuffer<T> {
-  pub fn new(capacity: usize) -> Self where T : Clone {
+  pub fn new(capacity: usize) -> Self where T: Clone {
     Self {
       occupied: 0,
       write_pos: 0,
@@ -54,6 +57,16 @@ impl<T> RingBuffer<T> {
   }
 }
 
+/// Allows iterating over the ring  buffer.
+impl<'a, T> IntoIterator for &'a RingBuffer<T> {
+  type Item = &'a T;
+  type IntoIter = RingBufferIterator<'a, T>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
+  }
+}
+
 /// An iterator for the ring buffer. This is a forward-only iterator,
 /// and does not support in-place mutation.
 pub struct RingBufferIterator<'a, T> {
@@ -66,6 +79,7 @@ impl<'a, T> Iterator for RingBufferIterator<'a, T> {
   type Item = &'a T;
 
   fn next(&mut self) -> Option<Self::Item> {
+    // wrap around walking backwards
     if self.index == 0 {
       self.index = self.buffer.occupied() - 1;
     } else {

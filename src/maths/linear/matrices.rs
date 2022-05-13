@@ -1,4 +1,4 @@
-use super::*;
+use crate::maths::{Vector2, Vector3, Vector4};
 
 #[derive(Clone, Debug)]
 pub struct Matrix2<T> {

@@ -104,15 +104,15 @@ impl DesktopAudioServer {
 }
 
 unsafe impl AudioServer for DesktopAudioServer {
-  fn create_clip(&self) -> AudioHandle {
+  unsafe fn create_clip(&self) -> AudioHandle {
     todo!()
   }
 
-  fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]) {
+  unsafe fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]) {
     todo!()
   }
 
-  fn delete_clip(&self, handle: AudioHandle) {
+  unsafe fn delete_clip(&self, handle: AudioHandle) {
     todo!()
   }
 }
@@ -120,20 +120,17 @@ unsafe impl AudioServer for DesktopAudioServer {
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphicsServer {
   context: GlContext,
-  is_continuous_rendering: bool,
 }
 
 impl DesktopGraphicsServer {
   pub fn new(window: &Window) -> Self {
     // prepare and load opengl functionality
     let context = GlContext::create(window, GlConfig::default()).unwrap();
+
     context.make_current();
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
-    Self {
-      context,
-      is_continuous_rendering: true,
-    }
+    Self { context }
   }
 }
 
@@ -147,7 +144,7 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     self.context.make_not_current();
   }
 
-  unsafe fn set_viewport(&self, viewport: Viewport) {
+  unsafe fn set_viewport_size(&self, viewport: Viewport) {
     gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
   }
 
@@ -172,29 +169,33 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   unsafe fn create_buffer(&self) -> GraphicsHandle {
     let mut id: u32 = 0;
     gl::GenBuffers(1, &mut id);
-    GraphicsHandle(id)
+    GraphicsHandle(id as usize)
   }
 
-  unsafe fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]) {
+  unsafe fn read_buffer_data<T>(&self, buffer: GraphicsHandle) -> Vec<T> where Self: Sized {
+    todo!()
+  }
+
+  unsafe fn write_buffer_data<T>(&self, buffer: GraphicsHandle, data: &[T]) {
     todo!()
   }
 
   unsafe fn delete_buffer(&self, buffer: GraphicsHandle) {
-    gl::DeleteBuffers(1, &buffer.0);
+    gl::DeleteBuffers(1, &(buffer.0 as u32));
   }
 
   unsafe fn create_texture(&self) -> GraphicsHandle {
     let mut id: u32 = 0;
     gl::GenTextures(1, &mut id);
-    GraphicsHandle(id)
+    GraphicsHandle(id as usize)
   }
 
-  unsafe fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]) {
+  unsafe fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]) {
     todo!()
   }
 
   unsafe fn delete_texture(&self, texture: GraphicsHandle) {
-    gl::DeleteTextures(1, &texture.0);
+    gl::DeleteTextures(1, &(texture.0 as u32));
   }
 
   unsafe fn create_shader(&self) -> GraphicsHandle {

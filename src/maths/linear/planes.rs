@@ -1,4 +1,4 @@
-use super::*;
+use crate::maths::Vector2;
 
 /// Represents a plane in 3-space.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

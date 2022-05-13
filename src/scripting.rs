@@ -9,6 +9,3 @@
 
 /// Represents a fallible result in the scripting subsystem.
 pub type ScriptResult<T> = anyhow::Result<T>;
-
-/// Abstracts over the scripting system supported by the engine.
-pub trait ScriptEngine {}

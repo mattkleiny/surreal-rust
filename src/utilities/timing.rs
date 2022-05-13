@@ -16,11 +16,10 @@ pub struct GameTime {
   pub is_running_slowly: bool,
 }
 
-/// A simple clock for measuring the time between frames.
+/// A simple clock for measuring the time between ticks.
 #[derive(Debug)]
 pub struct Clock {
   last_time: u64,
-  current_time: u64,
   pub max_time: f64,
   pub time_scale: f64,
 }
@@ -29,20 +28,20 @@ impl Clock {
   pub fn new(max_time: f64) -> Self {
     Self {
       last_time: 0,
-      current_time: 0,
       max_time,
       time_scale: 1.,
     }
   }
 
   /// Ticks the clock by a single frame, returning a time delta.
-  pub fn tick(&mut self, current_time: u64, frequency: u64) -> f64 {
-    self.last_time = self.current_time;
-    self.current_time = current_time;
+  pub fn tick(&mut self,  frequency: u64) -> f64 {
+    let current_time = now();
 
     // compute delta time since the last update
-    let delta_time = ((self.current_time - self.last_time) * 1000 / frequency) as f64 / 1000.;
+    let delta_time = ((current_time - self.last_time) * 1000 / frequency) as f64 / 1000.;
     let clamped_time = clamp(delta_time, 0., self.max_time);
+
+    self.last_time = current_time;
 
     clamped_time * self.time_scale
   }
@@ -68,7 +67,7 @@ impl FrameCounter {
   pub fn average_frame_time(&self) -> f64 {
     let mut total_frame_time = 0.;
 
-    for sample in self.samples.iter() {
+    for sample in &self.samples {
       total_frame_time += sample;
     }
 
@@ -153,16 +152,6 @@ impl TimeSpan {
 #[cfg(test)]
 mod tests {
   use super::*;
-
-  #[test]
-  fn clock_should_compute_delta_with_previous_frame() {
-    let mut clock = Clock::new(32.);
-
-    let delta1 = clock.tick(10000, 60);
-    let delta2 = clock.tick(10010, 60);
-
-    assert_ne!(delta1, delta2);
-  }
 
   #[test]
   fn fps_counter_should_accumulate_over_time() {
