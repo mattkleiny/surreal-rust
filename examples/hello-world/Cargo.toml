@@ -1,8 +1,7 @@
 [package]
 name = "hello-world"
 version = "0.1.0"
-authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-surreal = { version = "*", path = "../../", features=["desktop"] }
+surreal = { version = "*", path = "../..", features = ["desktop"] }

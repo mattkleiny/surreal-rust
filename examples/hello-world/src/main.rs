@@ -1,13 +1,12 @@
 use surreal::prelude::*;
 
 fn main() {
-  let configuration = Configuration {
+  let mut platform = DesktopPlatform::new(Configuration {
     title: "Hello, World!",
-    size: (1920 / 2, 1080 / 2),
-  };
+    ..Default::default()
+  });
 
-  let platform = DesktopPlatform::new(configuration)
-      .expect("Failed to create platform!");
-
-  platform.run();
+  platform.run(|platform| unsafe {
+    platform.graphics_server.clear_color_buffer(Color::MAGENTA);
+  });
 }

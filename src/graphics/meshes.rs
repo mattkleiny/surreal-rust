@@ -1,83 +1,165 @@
-/// Represents a single index in a mesh.
-pub type Index = u16;
+use crate::graphics::Color;
+use crate::maths::{Tessellator, vec2, Vector2, Vector3};
 
-/// Represents type that supports procedural construction of mesh geometry.
-pub trait Mesh {
-  type Vertex: Copy;
-  type Index;
-
-  /// Adds a single vertex to the mesh.
-  fn add_vertex(&mut self, vertex: Self::Vertex);
-
-  /// Adds a single index to the mesh.
-  fn add_index(&mut self, index: Self::Index);
-
-  /// Adds a triangle of vertices to the mesh.
-  fn add_triangle(&mut self, vertices: [Self::Vertex; 3]) {
-    self.add_vertex(vertices[0]);
-    self.add_vertex(vertices[1]);
-    self.add_vertex(vertices[2]);
-  }
-
-  /// Adds a quad of vertices to the mesh.
-  fn add_quad(&mut self, vertices: [Self::Vertex; 4]) {
-    self.add_vertex(vertices[0]);
-    self.add_vertex(vertices[1]);
-    self.add_vertex(vertices[2]);
-    self.add_vertex(vertices[3]);
-  }
-
-  /// Adds a triangle fan of vertices to the mesh.
-  fn add_triangle_fan(&mut self, vertices: &[Self::Vertex]) {
-    unimplemented!()
-  }
-}
-
-/// A simple in-memory mesh backed by a `Vec`.
+/// A mesh of vertices of `V`.
 #[derive(Clone, Debug)]
-pub struct BufferMesh<V> {
+pub struct Mesh<V> {
   vertices: Vec<V>,
-  indices: Vec<Index>,
+  indices: Vec<u32>,
 }
 
-impl<V> BufferMesh<V> {
-  pub fn new() -> Self {
+impl<V> Mesh<V> where V: Vertex {
+  /// Constructs a new blank mesh.
+  pub const fn new() -> Self {
     Self {
       vertices: Vec::new(),
       indices: Vec::new(),
     }
   }
+
+  /// Constructs a mesh with the given factory method.
+  pub fn create(factory: impl Fn(&mut Self)) -> Self {
+    let mut mesh = Self::new();
+    factory(&mut mesh);
+    mesh
+  }
 }
 
-impl<V> Mesh for BufferMesh<V> where V: Copy {
+impl Mesh<Vertex2> {
+  /// Constructs a simple triangle mesh of the given size.
+  pub fn create_triangle(size: f32) -> Self {
+    Self::create(|mesh| {
+      mesh.add_triangle(&[
+        Vertex2 { position: vec2(-size, -size), color: Color::WHITE, uv: vec2(0., 0.) },
+        Vertex2 { position: vec2(0., size), color: Color::WHITE, uv: vec2(0.5, 1.) },
+        Vertex2 { position: vec2(size, -size), color: Color::WHITE, uv: vec2(1., 0.) },
+      ]);
+    })
+  }
+
+  /// Constructs a simple quad mesh of the given size.
+  pub fn create_quad(size: f32) -> Self {
+    Self::create(|mesh| {
+      mesh.add_quad(&[
+        Vertex2 { position: vec2(-size, -size), color: Color::WHITE, uv: vec2(0., 1.) },
+        Vertex2 { position: vec2(-size, size), color: Color::WHITE, uv: vec2(0., 0.) },
+        Vertex2 { position: vec2(size, size), color: Color::WHITE, uv: vec2(1., 0.) },
+        Vertex2 { position: vec2(size, -size), color: Color::WHITE, uv: vec2(1., 1.) },
+      ]);
+    })
+  }
+
+  /// Constructs a simple circle mesh of the given size.
+  pub fn create_circle(radius: f32, segments: usize) -> Self {
+    Self::create(|mesh| {
+      use std::f32::consts::PI;
+
+      let mut vertices = Vec::with_capacity(segments);
+      let mut theta = 0.;
+
+      for i in 0..segments {
+        theta += 2. * PI / segments as f32;
+
+        let cos = theta.cos();
+        let sin = theta.sin();
+
+        let x = radius * cos;
+        let y = radius * sin;
+
+        let u = (cos + 1.) / 2.;
+        let v = (sin + 1.) / 2.;
+
+        vertices.push(Vertex2 {
+          position: vec2(x, y),
+          color: Color::WHITE,
+          uv: vec2(u, v),
+        })
+      }
+
+      mesh.add_triangle_fan(&vertices);
+    })
+  }
+}
+
+/// Default tessellation support for meshes.
+impl<V> Tessellator for Mesh<V> where V: Copy {
   type Vertex = V;
-  type Index = Index;
+
+  fn vertex_count(&self) -> u32 { self.vertices.len() as u32 }
+  fn index_count(&self) -> usize { self.indices.len() }
 
   fn add_vertex(&mut self, vertex: Self::Vertex) {
     self.vertices.push(vertex);
   }
 
-  fn add_index(&mut self, index: Self::Index) {
+  fn add_index(&mut self, index: u32) {
     self.indices.push(index);
   }
 }
 
-#[cfg(test)]
-mod tests {
-  use crate::maths::vec2;
+/// Describes a kind of vertex.
+pub trait Vertex: Copy {
+  fn vertex_descriptors() -> &'static [VertexDescriptor];
+}
 
-  use super::*;
+/// Describes a single vertex field.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct VertexDescriptor {
+  offset: usize,
+  count: usize,
+  kind: VertexKind,
+  should_normalize: bool,
+}
 
-  #[test]
-  fn it_should_add_a_triangle_to_the_mesh() {
-    let mut mesh = BufferMesh::new();
+/// Different kinds of vertex primitives.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum VertexKind {
+  U8,
+  U16,
+  U32,
+  I16,
+  I32,
+  F32,
+  F64,
+}
 
-    mesh.add_triangle([
-      vec2(0., 0.),
-      vec2(1., 0.),
-      vec2(1., 1.)
-    ]);
+/// A simple vertex in 2-space.
+#[derive(Copy, Clone, Debug)]
+pub struct Vertex2 {
+  pub position: Vector2<f32>,
+  pub color: Color,
+  pub uv: Vector2<f32>,
+}
 
-    println!("{:?}", mesh);
+impl Vertex for Vertex2 {
+  fn vertex_descriptors() -> &'static [VertexDescriptor] {
+    // TODO: use a proc macro for this instead?
+    static DESCRIPTORS: &[VertexDescriptor] = &[
+      VertexDescriptor { offset: 0, count: 2, kind: VertexKind::F32, should_normalize: false },
+      VertexDescriptor { offset: 8, count: 4, kind: VertexKind::U8, should_normalize: true },
+      VertexDescriptor { offset: 16, count: 2, kind: VertexKind::F32, should_normalize: false },
+    ];
+
+    DESCRIPTORS
+  }
+}
+
+/// A simple vertex in 3-space.
+#[derive(Copy, Clone, Debug)]
+pub struct Vertex3 {
+  pub position: Vector3<f32>,
+  pub color: Color,
+  pub uv: Vector2<f32>,
+}
+
+impl Vertex for Vertex3 {
+  fn vertex_descriptors() -> &'static [VertexDescriptor] {
+    static DESCRIPTORS: &[VertexDescriptor] = &[
+      VertexDescriptor { offset: 0, count: 3, kind: VertexKind::F32, should_normalize: false },
+      VertexDescriptor { offset: 12, count: 4, kind: VertexKind::U8, should_normalize: true },
+      VertexDescriptor { offset: 20, count: 2, kind: VertexKind::F32, should_normalize: false },
+    ];
+
+    DESCRIPTORS
   }
 }

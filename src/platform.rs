@@ -20,5 +20,5 @@ pub type PlatformResult<T> = anyhow::Result<T>;
 /// in order to process application logic.
 pub trait Platform {
   /// Runs platform, invoking the given callback when available to process the next frame.
-  fn run(self);
+  fn run(&mut self, body: impl FnMut(&mut Self));
 }

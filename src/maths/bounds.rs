@@ -31,28 +31,20 @@ impl<T> Bounds2<T> where T: Numeric {
 
   pub fn width(&self) -> T { self.right() - self.left() }
   pub fn height(&self) -> T { self.bottom() - self.top() }
+  pub fn area(&self) -> T { self.width() * self.height() }
 
   pub fn size(&self) -> Vector2<T> {
     vec2(
-      self.max.x - self.min.x,
-      self.max.y - self.min.y,
+      self.width(),
+      self.height(),
     )
   }
 
-  pub fn contains_point(&self, point: Vector2<T>) -> bool where T: PartialOrd {
+  pub fn contains_point(&self, point: Vector2<T>) -> bool {
     point.x >= self.min.x &&
         point.y >= self.min.y &&
         point.y <= self.max.y &&
         point.y <= self.max.y
-  }
-}
-
-impl Bounds2<usize> {
-  pub fn area(&self) -> usize {
-    let width = self.max.x - self.min.x;
-    let height = self.max.y - self.min.y;
-
-    width * height
   }
 }
 
@@ -84,28 +76,11 @@ impl<T> Bounds3<T> where T: Numeric {
 
   pub fn size(&self) -> Vector3<T> {
     vec3(
-      self.max.x - self.min.x,
-      self.max.y - self.min.y,
-      self.max.z - self.min.z,
+      self.width(),
+      self.height(),
+      self.depth(),
     )
   }
 
-  pub fn contains_point(&self, point: Vector3<T>) -> bool where T: PartialOrd {
-    point.x >= self.min.x
-        && point.y >= self.min.y
-        && point.y <= self.max.y
-        && point.y <= self.max.y
-        && point.z >= self.min.z
-        && point.z <= self.max.z
-  }
-}
-
-impl Bounds3<usize> {
-  pub fn volume(&self) -> usize {
-    let width = self.max.x - self.min.x;
-    let height = self.max.y - self.min.y;
-    let depth = self.max.z - self.min.z;
-
-    width * height * depth
-  }
+  pub fn volume(&self) -> T { self.width() * self.height() * self.depth() }
 }

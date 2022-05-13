@@ -2,14 +2,12 @@
 
 pub use buffers::*;
 pub use colors::*;
-pub use images::*;
 pub use materials::*;
 pub use meshes::*;
 pub use shaders::*;
 
 mod buffers;
 mod colors;
-mod images;
 mod materials;
 mod meshes;
 mod shaders;
@@ -111,7 +109,6 @@ pub struct Viewport {
 }
 
 /// Represents the different topologies supported for a mesh.
-#[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PrimitiveTopology {
   Points,
@@ -121,7 +118,6 @@ pub enum PrimitiveTopology {
 }
 
 /// Represents the different blending modes for the graphics pipeline.
-#[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum BlendingMode {
   None,

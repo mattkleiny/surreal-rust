@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::graphics::{GraphicsHandle, ShaderProgram};
-use crate::maths::{Vector2, Vector3, Vector4};
+use crate::maths::{Matrix2, Matrix3, Matrix4, Vector2, Vector3, Vector4};
 
 /// A material of uniform values and associated `Shader`.
 #[derive(Debug)]
@@ -11,7 +11,7 @@ pub struct Material<'a> {
 }
 
 impl<'a> Material<'a> {
-  /// Constructs a new material from the given shader program.
+  /// Constructs a new material for the given shader program.
   pub fn new(shader: &'a ShaderProgram) -> Self {
     Self {
       shader,
@@ -20,7 +20,7 @@ impl<'a> Material<'a> {
   }
 
   /// Sets the given material uniform.
-  pub fn set_uniform<T: IntoUniform>(&mut self, name: &str, value: T) {
+  pub fn set_uniform<T>(&mut self, name: &str, value: T) where T: IntoUniform {
     if let Some(location) = self.shader.get_uniform_location(name) {
       self.uniforms.insert(name.to_string(), Uniform {
         location,
@@ -55,6 +55,9 @@ pub enum UniformValue {
   Vector2(Vector2<f32>),
   Vector3(Vector3<f32>),
   Vector4(Vector4<f32>),
+  Matrix2(Matrix2<f32>),
+  Matrix3(Matrix3<f32>),
+  Matrix4(Matrix4<f32>),
   Texture(GraphicsHandle, usize),
 }
 
@@ -81,6 +84,9 @@ implement_uniform!(Vector4<i32>, Point4);
 implement_uniform!(Vector2<f32>, Vector2);
 implement_uniform!(Vector3<f32>, Vector3);
 implement_uniform!(Vector4<f32>, Vector4);
+implement_uniform!(Matrix2<f32>, Matrix2);
+implement_uniform!(Matrix3<f32>, Matrix3);
+implement_uniform!(Matrix4<f32>, Matrix4);
 
 #[cfg(test)]
 mod tests {

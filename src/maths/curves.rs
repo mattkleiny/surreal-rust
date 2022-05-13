@@ -2,7 +2,7 @@ use crate::maths::{Lerp, Vector2};
 
 /// Represents a curve on a plane in 2-space.
 pub trait PlanarCurve {
-  fn sample(&self, t: f32) -> Vector2<f32>;
+  fn sample_at(&self, t: f32) -> Vector2<f32>;
 }
 
 /// A linear curve in 2-space.
@@ -19,7 +19,7 @@ impl Line {
 }
 
 impl PlanarCurve for Line {
-  fn sample(&self, t: f32) -> Vector2<f32> {
+  fn sample_at(&self, t: f32) -> Vector2<f32> {
     Vector2::lerp(self.a, self.b, t)
   }
 }
@@ -33,7 +33,7 @@ pub struct QuadraticBezierCurve {
 }
 
 impl PlanarCurve for QuadraticBezierCurve {
-  fn sample(&self, normal: f32) -> Vector2<f32> {
+  fn sample_at(&self, normal: f32) -> Vector2<f32> {
     todo!()
   }
 }
@@ -48,7 +48,7 @@ pub struct CubicBezierCurve {
 }
 
 impl PlanarCurve for CubicBezierCurve {
-  fn sample(&self, normal: f32) -> Vector2<f32> {
+  fn sample_at(&self, normal: f32) -> Vector2<f32> {
     todo!()
   }
 }
