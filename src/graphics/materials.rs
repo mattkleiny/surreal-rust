@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::graphics::{GraphicsHandle, ShaderProgram};
 use crate::maths::{Matrix2, Matrix3, Matrix4, Vector2, Vector3, Vector4};
 
-/// A material of uniform values and associated `Shader`.
+/// A material of uniform values and associated `ShaderProgram`.
 #[derive(Debug)]
 pub struct Material<'a> {
   shader: &'a ShaderProgram,
@@ -20,22 +20,53 @@ impl<'a> Material<'a> {
   }
 
   /// Sets the given material uniform.
-  pub fn set_uniform<T>(&mut self, name: &str, value: T) where T: IntoUniform {
+  pub fn set_uniform(&mut self, name: &str, value: impl Into<UniformValue>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
       let key = name.to_string();
       let value = Uniform {
         location,
-        value: value.to_uniform(),
+        value: value.into(),
       };
 
       self.uniforms.insert(key, value);
     }
   }
 
+  /// Sets the given material texture.
+  pub fn set_uniform_texture(&mut self, name: &str, texture: GraphicsHandle, slot: usize) {
+    if let Some(location) = self.shader.get_uniform_location(name) {
+      let key = name.to_string();
+      let value = Uniform {
+        location,
+        value: UniformValue::Texture(texture, slot),
+      };
+
+      self.uniforms.insert(key, value);
+    }
+  }
+
+  /// Removes a uniform from the material.
+  pub fn clear_uniform(&mut self, name: &str) {
+    self.uniforms.remove(name);
+  }
+
   /// Binds the material as the active shader and uploads it's uniforms.
-  pub unsafe fn upload(&self) {
+  pub unsafe fn bind(&self) {
+    self.shader.bind();
+
     for (_, uniform) in &self.uniforms {
-      uniform.value.upload(uniform.location, &self.shader);
+      match uniform.value {
+        UniformValue::Integer(value) => self.shader.set_uniform_u32(uniform.location, value),
+        UniformValue::Floating(value) => self.shader.set_uniform_f32(uniform.location, value),
+        UniformValue::Point2(value) => self.shader.set_uniform_vec2i32(uniform.location, value),
+        UniformValue::Point3(value) => self.shader.set_uniform_vec3i32(uniform.location, value),
+        UniformValue::Point4(value) => self.shader.set_uniform_vec4i32(uniform.location, value),
+        UniformValue::Vector2(value) => self.shader.set_uniform_vec2f32(uniform.location, value),
+        UniformValue::Vector3(value) => self.shader.set_uniform_vec3f32(uniform.location, value),
+        UniformValue::Vector4(value) => self.shader.set_uniform_vec4f32(uniform.location, value),
+        UniformValue::Texture(texture, slot) => self.shader.set_texture(uniform.location, texture, slot),
+        _ => {}
+      };
     }
   }
 }
@@ -64,31 +95,10 @@ pub enum UniformValue {
   Texture(GraphicsHandle, usize),
 }
 
-impl UniformValue {
-  unsafe fn upload(&self, location: usize, program: &ShaderProgram) {
-    match self {
-      UniformValue::Integer(value) => program.set_uniform_u32(location, *value),
-      UniformValue::Floating(value) => program.set_uniform_f32(location, *value),
-      UniformValue::Point2(value) => program.set_uniform_vec2i32(location, *value),
-      UniformValue::Point3(value) => program.set_uniform_vec3i32(location, *value),
-      UniformValue::Point4(value) => program.set_uniform_vec4i32(location, *value),
-      UniformValue::Vector2(value) => program.set_uniform_vec2f32(location, *value),
-      UniformValue::Vector3(value) => program.set_uniform_vec3f32(location, *value),
-      UniformValue::Vector4(value) => program.set_uniform_vec4f32(location, *value),
-      _ => {}
-    }
-  }
-}
-
-/// Allows conversion of value into a `UniformValue`.
-pub trait IntoUniform {
-  fn to_uniform(self) -> UniformValue;
-}
-
 macro_rules! implement_uniform {
   ($type:ty, $value:tt) => {
-    impl IntoUniform for $type {
-      fn to_uniform(self) -> UniformValue {
+    impl Into<UniformValue> for $type {
+      fn into(self) -> UniformValue {
         UniformValue::$value(self)
       }
     }
@@ -124,7 +134,5 @@ mod tests {
     material.set_uniform("Test 4", vec3(0., 1., 0.));
 
     println!("{:#?}", material);
-
-    unsafe { material.upload(); }
   }
 }

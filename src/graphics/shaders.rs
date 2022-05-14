@@ -21,6 +21,10 @@ impl ShaderProgram {
     }
   }
 
+  pub unsafe fn bind(&self) {
+    todo!()
+  }
+
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
     Some(0)
   }
@@ -54,6 +58,10 @@ impl ShaderProgram {
   }
 
   pub unsafe fn set_uniform_vec4f32(&self, location: usize, value: Vector4<f32>) {
+    todo!()
+  }
+
+  pub unsafe fn set_texture(&self, location: usize, texture: GraphicsHandle, slot: usize) {
     todo!()
   }
 }
