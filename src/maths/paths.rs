@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 /// A point in the path-finding grid.
 pub type Point = super::Vector2<i32>;
 
@@ -13,16 +15,18 @@ pub struct Path(Vec<Point>);
 
 impl Path {
   /// The start point of the path.
-  #[inline]
   pub fn start(&self) -> Point { self.0[0] }
 
   /// The goal point of the path.
-  #[inline]
   pub fn goal(&self) -> Point { self.0[self.0.len() - 1] }
+}
 
-  /// Returns all points in the path as a slice.
-  #[inline]
-  pub fn as_slice(&self) -> &[Point] { &self.0 }
+impl Deref for Path {
+  type Target = [Point];
+
+  fn deref(&self) -> &Self::Target {
+    &self.0
+  }
 }
 
 /// Permits exploratory path-finding over some connected grid.
@@ -43,7 +47,9 @@ pub mod heuristics {
   use super::*;
 
   /// A constant distance
-  pub fn constant(from: &Point, to: &Point) -> Cost { 1. }
+  pub fn constant(from: &Point, to: &Point) -> Cost {
+    1.
+  }
 
   /// The straight-line distance between two points.
   pub fn euclidean_distance(from: &Point, to: &Point) -> Cost {
