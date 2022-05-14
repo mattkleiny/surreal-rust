@@ -1,4 +1,6 @@
-use super::{GraphicsHandle, GraphicsServer};
+use std::rc::Rc;
+
+use super::{GraphicsContext, GraphicsHandle};
 
 /// The different kinds of buffer we support.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -16,8 +18,8 @@ pub enum BufferUsage {
 }
 
 /// A buffer implementation based on OpenGL.
-pub struct Buffer<G: 'static + GraphicsServer> {
-  server: &'static G,
+pub struct Buffer {
+  context: Rc<GraphicsContext>,
   handle: GraphicsHandle,
   kind: BufferKind,
   usage: BufferUsage,
@@ -33,11 +35,11 @@ pub struct VertexAttribute {
 }
 
 /// Represents abstractly some buffer of data on the GPU.
-impl<G: GraphicsServer> Buffer<G> {
-  pub fn new(server: &'static G, kind: BufferKind, usage: BufferUsage) -> Self {
+impl Buffer {
+  pub fn new(context: Rc<GraphicsContext>, kind: BufferKind, usage: BufferUsage) -> Self {
     Buffer {
-      server,
-      handle: unsafe { server.create_buffer() },
+      context: context.clone(),
+      handle: GraphicsHandle { id: 0 },
       kind,
       usage,
     }
@@ -48,19 +50,17 @@ impl<G: GraphicsServer> Buffer<G> {
 
   /// Reads data from the buffer.
   pub unsafe fn read_data<T>(&self) -> Vec<T> {
-    self.server.read_buffer_data(self.handle)
+    todo!()
   }
 
   /// Uploads the given data to the buffer.
   pub unsafe fn write_data<T>(&mut self, data: &[T]) {
-    self.server.write_buffer_data(self.handle, data);
+    todo!()
   }
 }
 
-impl<G: GraphicsServer> Drop for Buffer<G> {
+impl Drop for Buffer {
   fn drop(&mut self) {
-    unsafe {
-      self.server.delete_buffer(self.handle);
-    }
+    todo!()
   }
 }

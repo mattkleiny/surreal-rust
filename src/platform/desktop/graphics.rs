@@ -10,8 +10,12 @@ pub struct DesktopGraphicsServer {
 impl DesktopGraphicsServer {
   pub fn new(window: &Window) -> Self {
     // prepare and load opengl functionality
-    let context = GlContext::create(window, GlConfig::default()).unwrap();
+    let config = GlConfig {
+      vsync: false,
+      ..Default::default()
+    };
 
+    let context = GlContext::create(window, config).unwrap();
     context.make_current();
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
@@ -54,10 +58,10 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   unsafe fn create_buffer(&self) -> GraphicsHandle {
     let mut id: u32 = 0;
     gl::GenBuffers(1, &mut id);
-    GraphicsHandle(id as usize)
+    GraphicsHandle { id: id as usize }
   }
 
-  unsafe fn read_buffer_data<T>(&self, buffer: GraphicsHandle) -> Vec<T> where Self: Sized {
+  unsafe fn read_buffer_data<T>(&self, buffer: GraphicsHandle) -> Vec<T> {
     todo!()
   }
 
@@ -66,20 +70,21 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   }
 
   unsafe fn delete_buffer(&self, buffer: GraphicsHandle) {
-    gl::DeleteBuffers(1, &(buffer.0 as u32));
+    gl::DeleteBuffers(1, &(buffer.id as u32));
   }
 
   unsafe fn create_texture(&self) -> GraphicsHandle {
     let mut id: u32 = 0;
     gl::GenTextures(1, &mut id);
-    GraphicsHandle(id as usize)
+    GraphicsHandle { id: id as usize }
   }
 
   unsafe fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]) {
+    todo!()
   }
 
   unsafe fn delete_texture(&self, texture: GraphicsHandle) {
-    gl::DeleteTextures(1, &(texture.0 as u32));
+    gl::DeleteTextures(1, &(texture.id as u32));
   }
 
   unsafe fn create_shader(&self) -> GraphicsHandle {

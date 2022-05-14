@@ -20,7 +20,15 @@ pub type GraphicsResult<T> = anyhow::Result<T>;
 /// A handle can represent arbitrarily many different resources, and forms
 /// the building blocks for any higher level APIs.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-pub struct GraphicsHandle(pub(crate) usize);
+pub struct GraphicsHandle {
+  pub(crate) id: usize,
+}
+
+/// An opaque context for graphics operations.
+///
+/// This context can be passed around the application and allows resources to refer back to
+/// the originating graphics server.
+pub struct GraphicsContext {}
 
 /// A server for the underlying graphics subsystem.
 ///

@@ -17,7 +17,7 @@ pub struct ShaderProgram {
 impl ShaderProgram {
   pub fn new() -> Self {
     Self {
-      handle: GraphicsHandle(0)
+      handle: GraphicsHandle { id: 0 }
     }
   }
 

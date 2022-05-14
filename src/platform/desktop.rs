@@ -60,6 +60,7 @@ impl DesktopPlatform {
     let window = WindowBuilder::new()
         .with_title(config.title)
         .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
+        .with_resizable(true)
         .build(&event_loop)
         .unwrap();
 
