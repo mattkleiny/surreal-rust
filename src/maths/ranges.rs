@@ -18,17 +18,14 @@ impl<T> Range<T> where T: Numeric {
     Self { min, max }
   }
 
-  #[inline]
   pub fn delta(&self) -> T {
     self.max - self.min
   }
 
-  #[inline]
   pub fn contains(&self, other: T) -> bool {
     other >= self.min && other <= self.max
   }
 
-  #[inline]
   pub fn clamp(&self, value: T) -> T {
     clamp(value, self.min, self.max)
   }

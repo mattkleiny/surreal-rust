@@ -9,8 +9,14 @@ fn main() {
   let mut pixels = vec![Color::BLACK; 256 * 256];
   let mut pixels = Grid::new(&mut pixels, 256);
 
-  platform.run(move |_platform| {
+  platform.run(move |platform| unsafe {
     pixels.fill(Color::WHITE);
-    // pixels.draw_circle(vec2(0., 0.), 4., Color::WHITE);
+
+    let texture = platform.graphics_server.create_texture();
+
+    platform.graphics_server.clear_color_buffer(Color::WHITE);
+    platform.graphics_server.write_texture_data(texture, &pixels);
+
+    platform.graphics_server.delete_texture(texture);
   });
 }

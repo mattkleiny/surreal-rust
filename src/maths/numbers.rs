@@ -35,12 +35,14 @@ implement_numeric!(u8);
 implement_numeric!(u16);
 implement_numeric!(u32);
 implement_numeric!(u64);
+implement_numeric!(u128);
 implement_numeric!(usize);
 
 implement_numeric!(i8);
 implement_numeric!(i16);
 implement_numeric!(i32);
 implement_numeric!(i64);
+implement_numeric!(i128);
 implement_numeric!(isize);
 
 implement_numeric!(f32);

@@ -57,7 +57,7 @@ impl<T> RingBuffer<T> {
   }
 }
 
-/// Allows iterating over the ring  buffer.
+/// Allows iterating over the ring buffer.
 impl<'a, T> IntoIterator for &'a RingBuffer<T> {
   type Item = &'a T;
   type IntoIter = RingBufferIterator<'a, T>;

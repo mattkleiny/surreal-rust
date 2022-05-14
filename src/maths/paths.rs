@@ -24,6 +24,7 @@ impl Path {
 impl Deref for Path {
   type Target = [Point];
 
+  #[inline(always)]
   fn deref(&self) -> &Self::Target {
     &self.0
   }

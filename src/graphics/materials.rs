@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::graphics::{GraphicsHandle, ShaderProgram};
+use crate::graphics::{GraphicsHandle, MagnifyFilter, MinifyFilter, ShaderProgram, WrapFunction};
 use crate::maths::{Matrix2, Matrix3, Matrix4, Vector2, Vector3, Vector4};
 
 /// A material of uniform values and associated `ShaderProgram`.
@@ -33,12 +33,12 @@ impl<'a> Material<'a> {
   }
 
   /// Sets the given material texture.
-  pub fn set_uniform_texture(&mut self, name: &str, texture: GraphicsHandle, slot: usize) {
+  pub fn set_texture(&mut self, name: &str, texture: GraphicsHandle, slot: usize, sampler: Option<Sampler>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
       let key = name.to_string();
       let value = Uniform {
         location,
-        value: UniformValue::Texture(texture, slot),
+        value: UniformValue::Texture(texture, slot, sampler),
       };
 
       self.uniforms.insert(key, value);
@@ -55,16 +55,19 @@ impl<'a> Material<'a> {
     self.shader.bind();
 
     for (_, uniform) in &self.uniforms {
-      match uniform.value {
-        UniformValue::Integer(value) => self.shader.set_uniform_u32(uniform.location, value),
-        UniformValue::Floating(value) => self.shader.set_uniform_f32(uniform.location, value),
-        UniformValue::Point2(value) => self.shader.set_uniform_vec2i32(uniform.location, value),
-        UniformValue::Point3(value) => self.shader.set_uniform_vec3i32(uniform.location, value),
-        UniformValue::Point4(value) => self.shader.set_uniform_vec4i32(uniform.location, value),
-        UniformValue::Vector2(value) => self.shader.set_uniform_vec2f32(uniform.location, value),
-        UniformValue::Vector3(value) => self.shader.set_uniform_vec3f32(uniform.location, value),
-        UniformValue::Vector4(value) => self.shader.set_uniform_vec4f32(uniform.location, value),
-        UniformValue::Texture(texture, slot) => self.shader.set_texture(uniform.location, texture, slot),
+      match &uniform.value {
+        UniformValue::Integer(value) => self.shader.set_uniform_u32(uniform.location, *value),
+        UniformValue::Floating(value) => self.shader.set_uniform_f32(uniform.location, *value),
+        UniformValue::Point2(value) => self.shader.set_uniform_vec2i32(uniform.location, *value),
+        UniformValue::Point3(value) => self.shader.set_uniform_vec3i32(uniform.location, *value),
+        UniformValue::Point4(value) => self.shader.set_uniform_vec4i32(uniform.location, *value),
+        UniformValue::Vector2(value) => self.shader.set_uniform_vec2f32(uniform.location, *value),
+        UniformValue::Vector3(value) => self.shader.set_uniform_vec3f32(uniform.location, *value),
+        UniformValue::Vector4(value) => self.shader.set_uniform_vec4f32(uniform.location, *value),
+        UniformValue::Texture(texture, slot, sampler) => {
+          // TODO: set sampler state, as well
+          self.shader.set_texture(uniform.location, *texture, *slot)
+        }
         _ => {}
       };
     }
@@ -92,7 +95,15 @@ pub enum UniformValue {
   Matrix2(Matrix2<f32>),
   Matrix3(Matrix3<f32>),
   Matrix4(Matrix4<f32>),
-  Texture(GraphicsHandle, usize),
+  Texture(GraphicsHandle, usize, Option<Sampler>),
+}
+
+/// Behaviour for a sampler in a material.
+#[derive(Debug)]
+pub struct Sampler {
+  pub wrap_function: (WrapFunction, WrapFunction, WrapFunction),
+  pub minify_filter: MinifyFilter,
+  pub magnify_filter: MagnifyFilter,
 }
 
 macro_rules! implement_uniform {

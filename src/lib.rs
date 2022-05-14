@@ -19,7 +19,6 @@ pub mod input;
 pub mod io;
 pub mod maths;
 pub mod platform;
-pub mod scripting;
 pub mod utilities;
 
 pub mod prelude {
@@ -31,6 +30,5 @@ pub mod prelude {
   pub use crate::io::*;
   pub use crate::maths::*;
   pub use crate::platform::*;
-  pub use crate::scripting::*;
   pub use crate::utilities::*;
 }

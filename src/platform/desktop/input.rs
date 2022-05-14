@@ -1,3 +1,5 @@
+use crate::input::{InputServer, KeyboardDevice, MouseDevice};
+
 use super::*;
 
 /// The server for input management.
@@ -23,5 +25,15 @@ impl DesktopInputServer {
       pressed_keys: HashSet::new(),
       released_keys: HashSet::new(),
     }
+  }
+}
+
+unsafe impl InputServer for DesktopInputServer {
+  fn keyboard_devices(&self) -> &[&dyn KeyboardDevice] {
+    todo!()
+  }
+
+  fn mouse_devices(&self) -> &[&dyn MouseDevice] {
+    todo!()
   }
 }

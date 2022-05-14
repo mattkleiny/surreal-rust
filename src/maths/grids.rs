@@ -1,4 +1,4 @@
-use std::ops::{Index, IndexMut};
+use std::ops::{Deref, Index, IndexMut};
 
 /// A grid slice is a managed read/write layer over the top of some slice of data.
 pub struct Grid<'a, T> {
@@ -35,6 +35,14 @@ impl<'a, T> Index<(usize, usize)> for Grid<'a, T> {
 impl<'a, T> IndexMut<(usize, usize)> for Grid<'a, T> {
   fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Output {
     &mut self.slice[x + y * self.width]
+  }
+}
+
+impl<'a, T> Deref for Grid<'a, T> {
+  type Target = [T];
+
+  fn deref(&self) -> &Self::Target {
+    self.slice
   }
 }
 

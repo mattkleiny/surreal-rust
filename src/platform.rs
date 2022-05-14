@@ -3,8 +3,9 @@
 #[cfg(feature = "desktop")]
 pub use desktop::*;
 
-use crate::audio::AudioServer;
-use crate::graphics::GraphicsServer;
+pub use crate::audio::AudioServer;
+pub use crate::graphics::GraphicsServer;
+pub use crate::input::InputServer;
 
 #[cfg(feature = "desktop")]
 pub mod desktop;

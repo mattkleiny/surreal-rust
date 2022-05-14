@@ -123,6 +123,27 @@ pub enum BlendingMode {
   None,
 }
 
+/// Texture wrapping modes modes.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum WrapFunction {
+  Clamp,
+  Mirror,
+}
+
+/// Texture minify filter modes.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum MinifyFilter {
+  Nearest,
+  Linear,
+}
+
+/// Texture magnify filter modes.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum MagnifyFilter {
+  Nearest,
+  Linear,
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;

@@ -44,7 +44,7 @@ impl Default for Configuration {
 pub struct DesktopPlatform {
   // core
   config: Configuration,
-  event_loop: EventLoop<()>,
+  event_loop: Option<EventLoop<()>>,
   window: Window,
 
   // servers
@@ -70,7 +70,7 @@ impl DesktopPlatform {
       input_server: DesktopInputServer::new(),
 
       // core
-      event_loop,
+      event_loop: Some(event_loop),
       config,
       window,
     }
@@ -83,16 +83,19 @@ impl DesktopPlatform {
 }
 
 impl Platform for DesktopPlatform {
-  fn run(&mut self, body: impl FnMut(&mut Self)) {
+  fn run(&mut self, mut body: impl FnMut(&mut Self)) {
     use winit::platform::desktop::EventLoopExtDesktop;
 
-    self.event_loop.run_return(|event, _, control_flow| {
+    let mut event_loop = self.event_loop.take().unwrap();
+
+    event_loop.run_return(|event, _, control_flow| {
       use winit::event::*;
 
       match event {
         Event::RedrawRequested(window_id) => unsafe {
           if window_id == self.window.id() {
             self.graphics_server.begin_frame();
+            body(self);
             self.graphics_server.end_frame();
           }
         }

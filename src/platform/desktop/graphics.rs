@@ -1,3 +1,5 @@
+use crate::graphics::GraphicsServer;
+
 use super::*;
 
 /// The graphics server for the desktop platform.
@@ -74,7 +76,6 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   }
 
   unsafe fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]) {
-    todo!()
   }
 
   unsafe fn delete_texture(&self, texture: GraphicsHandle) {

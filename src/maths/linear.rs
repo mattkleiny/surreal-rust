@@ -6,9 +6,9 @@ pub use quaternions::*;
 pub use rays::*;
 pub use vectors::*;
 
-mod vectors;
-mod planes;
 mod matrices;
-mod rays;
+mod planes;
 mod quaternions;
+mod rays;
+mod vectors;
 
