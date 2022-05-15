@@ -12,11 +12,11 @@ fn main() {
   platform.run(move |platform| unsafe {
     pixels.fill(Color::WHITE);
 
-    let texture = platform.graphics_server.create_texture();
+    let texture = platform.graphics.create_texture();
 
-    platform.graphics_server.clear_color_buffer(Color::WHITE);
-    platform.graphics_server.write_texture_data(texture, &pixels);
+    platform.graphics.clear_color_buffer(Color::WHITE);
+    platform.graphics.write_texture_data(texture, &pixels);
 
-    platform.graphics_server.delete_texture(texture);
+    platform.graphics.delete_texture(texture);
   });
 }

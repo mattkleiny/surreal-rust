@@ -1,11 +1,14 @@
-use std::time::Instant;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::collections::RingBuffer;
 use crate::maths::clamp;
 
-/// Returns the current time, in seconds since the epoch.
-pub fn now() -> u64 {
-  Instant::now().elapsed().as_secs()
+/// Returns the current time, in milliseconds since the epoch.
+pub fn now() -> u128 {
+  SystemTime::now()
+      .duration_since(UNIX_EPOCH)
+      .expect("Unable to acquire system time")
+      .as_millis()
 }
 
 /// Contains information on the game's timing state.
@@ -19,31 +22,28 @@ pub struct GameTime {
 /// A simple clock for measuring the time between ticks.
 #[derive(Debug)]
 pub struct Clock {
-  last_time: u64,
-  pub max_time: f64,
-  pub time_scale: f64,
+  last_time: u128,
+  max_time: f64,
+  time_scale: f64,
 }
 
 impl Clock {
-  pub fn new(max_time: f64) -> Self {
+  /// Creates a new clock.
+  pub fn new() -> Self {
     Self {
       last_time: 0,
-      max_time,
+      max_time: 0.16,
       time_scale: 1.,
     }
   }
 
   /// Ticks the clock by a single frame, returning a time delta.
-  pub fn tick(&mut self,  frequency: u64) -> f64 {
+  pub fn tick(&mut self) -> f64 {
     let current_time = now();
-
-    // compute delta time since the last update
-    let delta_time = ((current_time - self.last_time) * 1000 / frequency) as f64 / 1000.;
-    let clamped_time = clamp(delta_time, 0., self.max_time);
-
+    let delta_time = current_time - self.last_time;
     self.last_time = current_time;
 
-    clamped_time * self.time_scale
+    clamp(delta_time as f64 / 1000., 0., self.max_time)
   }
 }
 

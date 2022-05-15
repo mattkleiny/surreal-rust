@@ -6,13 +6,21 @@ fn main() {
     ..Default::default()
   });
 
-  platform.run(|platform| unsafe {
-    platform.graphics_server.clear_color_buffer(Color::BLACK);
+  let color1 = Color::random();
+  let color2 = Color::random();
 
-    if let Some(keyboard) = platform.input_server.primary_keyboard_device() {
+  let mut timer = Clock::new();
+  let mut total_time = 0.;
+
+  platform.run(|platform| unsafe {
+    total_time += timer.tick() as f32;
+
+    if let Some(keyboard) = platform.input.primary_keyboard_device() {
       if keyboard.is_key_pressed(Key::Escape) {
         platform.exit();
       }
     }
+
+    platform.graphics.clear_color_buffer(Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.));
   });
 }

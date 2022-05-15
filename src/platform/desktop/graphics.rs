@@ -11,7 +11,7 @@ impl DesktopGraphicsServer {
   pub fn new(window: &Window) -> Self {
     // prepare and load opengl functionality
     let config = GlConfig {
-      vsync: false,
+      vsync: true,
       ..Default::default()
     };
 

@@ -49,9 +49,9 @@ pub struct DesktopPlatform {
   is_exiting: bool,
 
   // servers
-  pub audio_server: DesktopAudioServer,
-  pub graphics_server: DesktopGraphicsServer,
-  pub input_server: DesktopInputServer,
+  pub audio: DesktopAudioServer,
+  pub graphics: DesktopGraphicsServer,
+  pub input: DesktopInputServer,
 }
 
 impl DesktopPlatform {
@@ -67,9 +67,9 @@ impl DesktopPlatform {
 
     Self {
       // servers
-      audio_server: DesktopAudioServer::new(),
-      graphics_server: DesktopGraphicsServer::new(&window),
-      input_server: DesktopInputServer::new(),
+      audio: DesktopAudioServer::new(),
+      graphics: DesktopGraphicsServer::new(&window),
+      input: DesktopInputServer::new(),
 
       // core
       event_loop: Some(event_loop),
@@ -102,9 +102,9 @@ impl Platform for DesktopPlatform {
       match event {
         Event::RedrawRequested(window_id) => unsafe {
           if window_id == self.window.id() {
-            self.graphics_server.begin_frame();
+            self.graphics.begin_frame();
             body(self);
-            self.graphics_server.end_frame();
+            self.graphics.end_frame();
           }
         }
         Event::MainEventsCleared => {
@@ -117,10 +117,10 @@ impl Platform for DesktopPlatform {
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
           match event {
             WindowEvent::MouseInput { button, state, .. } => {
-              self.input_server.on_mouse_event(button, state);
+              self.input.on_mouse_event(button, state);
             }
             WindowEvent::KeyboardInput { input, .. } => {
-              self.input_server.on_keyboard_event(input);
+              self.input.on_keyboard_event(input);
             }
             WindowEvent::CloseRequested => {
               *control_flow = ControlFlow::Exit;
