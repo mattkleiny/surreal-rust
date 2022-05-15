@@ -12,6 +12,8 @@ fn main() {
     let color1 = Color::random();
     let color2 = Color::random();
 
+    let _mesh = Mesh::create_quad(&game.host.graphics, 1.);
+
     game.run_variable_step(|frame| unsafe {
       let total_time = frame.time.total_time as f32;
       let color = Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.);

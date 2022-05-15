@@ -1,7 +1,0 @@
-[package]
-name = "falling-sand"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-surreal = { version = "*", path = "../..", features = ["desktop"] }

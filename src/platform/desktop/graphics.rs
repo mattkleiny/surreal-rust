@@ -98,10 +98,12 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   }
 
   unsafe fn create_mesh(&self) -> GraphicsHandle {
-    todo!()
+    let mut id: u32 = 0;
+    gl::GenVertexArrays(1, &mut id);
+    GraphicsHandle { id: id as usize }
   }
 
   unsafe fn delete_mesh(&self, mesh: GraphicsHandle) {
-    todo!()
+    gl::DeleteVertexArrays(1, &(mesh.id as u32));
   }
 }

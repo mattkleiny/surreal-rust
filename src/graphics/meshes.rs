@@ -1,5 +1,6 @@
-use crate::graphics::{Color, GraphicsContext, GraphicsHandle};
+use crate::graphics::{BufferUsage, Color, GraphicsBuffer, GraphicsContext, GraphicsHandle};
 use crate::maths::{Tessellation, vec2, Vector2, Vector3};
+use crate::prelude::BufferKind;
 
 /// Represents the different topologies supported for a mesh.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -32,8 +33,8 @@ pub enum VertexKind { U8, U16, U32, I16, I32, F32, F64 }
 pub struct Mesh<V> {
   handle: GraphicsHandle,
   context: GraphicsContext,
-  vertices: Vec<V>,
-  indices: Vec<u32>,
+  vertices: GraphicsBuffer<V>,
+  indices: GraphicsBuffer<u32>,
 }
 
 impl<V> Mesh<V> where V: Vertex {
@@ -42,15 +43,20 @@ impl<V> Mesh<V> where V: Vertex {
     Self {
       handle: unsafe { context.create_mesh() },
       context: context.clone(),
-      vertices: Vec::new(),
-      indices: Vec::new(),
+      vertices: GraphicsBuffer::new(context, BufferKind::Element, BufferUsage::Static),
+      indices: GraphicsBuffer::new(context, BufferKind::Index, BufferUsage::Static),
     }
   }
 
   /// Constructs a mesh with the given factory method.
-  pub fn create(context: &GraphicsContext, factory: impl Fn(&mut Self)) -> Self {
+  pub fn create(context: &GraphicsContext, factory: impl Fn(&mut Tessellator<V>)) -> Self {
     let mut mesh = Self::new(context);
-    factory(&mut mesh);
+    let mut tessellator = Tessellator::new();
+
+    factory(&mut tessellator);
+
+    tessellator.upload_to(&mut mesh);
+
     mesh
   }
 }
@@ -120,8 +126,29 @@ impl<V> Drop for Mesh<V> {
   }
 }
 
-/// Default tessellation support for meshes.
-impl<V> Tessellation for Mesh<V> where V: Vertex {
+/// A simple tessellator for meshes.
+pub struct Tessellator<V> {
+  vertices: Vec<V>,
+  indices: Vec<u32>,
+}
+
+impl<V> Tessellator<V> {
+  /// Creates a new empty tessellator.
+  pub fn new() -> Self {
+    Self {
+      vertices: Vec::new(),
+      indices: Vec::new(),
+    }
+  }
+
+  /// Uploads the contents of the tessellator to the given `Mesh`.
+  pub fn upload_to(&self, mesh: &mut Mesh<V>) {
+    mesh.vertices.write_data(self.vertices.as_slice());
+    mesh.indices.write_data(self.indices.as_slice());
+  }
+}
+
+impl<V> Tessellation for Tessellator<V> where V: Vertex {
   type Vertex = V;
 
   fn vertex_count(&self) -> u32 { self.vertices.len() as u32 }
