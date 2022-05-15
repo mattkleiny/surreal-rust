@@ -7,11 +7,11 @@ pub type InputResult<T> = anyhow::Result<T>;
 ///
 /// Permits interaction with the underlying input API through unsafe lower-level abstraction.
 pub unsafe trait InputServer {
-  /// Retrieves a list of all attached `KeyboardDevice`s.
   fn keyboard_devices(&self) -> &[&dyn KeyboardDevice];
+  fn primary_keyboard_device(&self) -> Option<&dyn KeyboardDevice>;
 
-  /// Retrieves a list of all attached `MouseDevice`s.
   fn mouse_devices(&self) -> &[&dyn MouseDevice];
+  fn primary_mouse_device(&self) -> Option<&dyn MouseDevice>;
 }
 
 /// Abstracts over a keyboard device in the system.
@@ -40,13 +40,12 @@ pub enum MouseButton {
 #[repr(u32)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Key {
-  Space = 0x20,
-  Escape = 0x1B,
+  Escape = 0x01,
 }
 
 impl Key {
-  pub fn from_scan_code(scancode: u32) -> Self {
-    // TODO: replace this with something safe
+  pub fn from_scancode(scancode: u32) -> Self {
+    // TODO: replace this with something safe?
     unsafe { std::mem::transmute(scancode) }
   }
 }

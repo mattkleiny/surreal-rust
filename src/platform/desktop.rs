@@ -46,6 +46,7 @@ pub struct DesktopPlatform {
   config: Configuration,
   event_loop: Option<EventLoop<()>>,
   window: Window,
+  is_exiting: bool,
 
   // servers
   pub audio_server: DesktopAudioServer,
@@ -74,12 +75,18 @@ impl DesktopPlatform {
       event_loop: Some(event_loop),
       config,
       window,
+      is_exiting: false,
     }
   }
 
   /// Sets the title of the platform's main window.
   pub fn set_title(&mut self, title: impl AsRef<str>) {
     self.window.set_title(title.as_ref());
+  }
+
+  /// Exits the platform at the next loop.
+  pub fn exit(&mut self) {
+    self.is_exiting = true;
   }
 }
 
@@ -101,12 +108,20 @@ impl Platform for DesktopPlatform {
           }
         }
         Event::MainEventsCleared => {
-          if self.config.update_continuously {
+          if self.is_exiting {
+            *control_flow = ControlFlow::Exit;
+          } else if self.config.update_continuously {
             self.window.request_redraw();
           }
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
           match event {
+            WindowEvent::MouseInput { button, state, .. } => {
+              self.input_server.on_mouse_event(button, state);
+            }
+            WindowEvent::KeyboardInput { input, .. } => {
+              self.input_server.on_keyboard_event(input);
+            }
             WindowEvent::CloseRequested => {
               *control_flow = ControlFlow::Exit;
             }

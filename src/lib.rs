@@ -21,7 +21,6 @@ pub mod io;
 pub mod maths;
 pub mod platform;
 pub mod utilities;
-pub mod ui;
 
 pub mod prelude {
   pub use crate::assets::*;
@@ -34,5 +33,4 @@ pub mod prelude {
   pub use crate::maths::*;
   pub use crate::platform::*;
   pub use crate::utilities::*;
-  pub use crate::ui::*;
 }
