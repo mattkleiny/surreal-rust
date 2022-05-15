@@ -1,5 +1,32 @@
 use crate::graphics::{Color, GraphicsContext, GraphicsHandle};
-use crate::maths::{Tessellator, vec2, Vector2, Vector3};
+use crate::maths::{Tessellation, vec2, Vector2, Vector3};
+
+/// Represents the different topologies supported for a mesh.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum PrimitiveTopology {
+  Points,
+  Lines,
+  Triangles,
+  Quads,
+}
+
+/// Describes a kind of vertex.
+pub trait Vertex: Copy {
+  fn vertex_descriptors() -> &'static [VertexDescriptor];
+}
+
+/// Describes a single vertex field.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct VertexDescriptor {
+  offset: usize,
+  count: usize,
+  kind: VertexKind,
+  should_normalize: bool,
+}
+
+/// Different kinds of vertex primitives.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum VertexKind { U8, U16, U32, I16, I32, F32, F64 }
 
 /// A mesh of vertices of `V`.
 pub struct Mesh<V> {
@@ -10,7 +37,7 @@ pub struct Mesh<V> {
 }
 
 impl<V> Mesh<V> where V: Vertex {
-  /// Constructs a new blank mesh.
+  /// Constructs a new blank mesh on the GPU.
   pub fn new(context: &GraphicsContext) -> Self {
     Self {
       handle: unsafe { context.create_mesh() },
@@ -84,8 +111,17 @@ impl Mesh<Vertex2> {
   }
 }
 
+impl<V> Drop for Mesh<V> {
+  /// Deletes the mesh from the GPU.
+  fn drop(&mut self) {
+    unsafe {
+      self.context.delete_mesh(self.handle);
+    }
+  }
+}
+
 /// Default tessellation support for meshes.
-impl<V> Tessellator for Mesh<V> where V: Copy {
+impl<V> Tessellation for Mesh<V> where V: Vertex {
   type Vertex = V;
 
   fn vertex_count(&self) -> u32 { self.vertices.len() as u32 }
@@ -98,32 +134,6 @@ impl<V> Tessellator for Mesh<V> where V: Copy {
   fn add_index(&mut self, index: u32) {
     self.indices.push(index);
   }
-}
-
-/// Describes a kind of vertex.
-pub trait Vertex: Copy {
-  fn vertex_descriptors() -> &'static [VertexDescriptor];
-}
-
-/// Describes a single vertex field.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct VertexDescriptor {
-  offset: usize,
-  count: usize,
-  kind: VertexKind,
-  should_normalize: bool,
-}
-
-/// Different kinds of vertex primitives.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum VertexKind {
-  U8,
-  U16,
-  U32,
-  I16,
-  I32,
-  F32,
-  F64,
 }
 
 /// A simple vertex in 2-space.

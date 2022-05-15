@@ -100,4 +100,8 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   unsafe fn create_mesh(&self) -> GraphicsHandle {
     todo!()
   }
+
+  unsafe fn delete_mesh(&self, mesh: GraphicsHandle) {
+    todo!()
+  }
 }

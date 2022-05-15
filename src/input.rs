@@ -11,9 +11,9 @@ pub type InputResult<T> = anyhow::Result<T>;
 /// Permits interaction with the underlying input API through unsafe lower-level abstraction.
 pub unsafe trait InputServer {
   fn keyboard_devices(&self) -> &[&dyn KeyboardDevice];
-  fn primary_keyboard_device(&self) -> Option<&dyn KeyboardDevice>;
-
   fn mouse_devices(&self) -> &[&dyn MouseDevice];
+
+  fn primary_keyboard_device(&self) -> Option<&dyn KeyboardDevice>;
   fn primary_mouse_device(&self) -> Option<&dyn MouseDevice>;
 }
 

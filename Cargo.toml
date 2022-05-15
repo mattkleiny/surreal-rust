@@ -10,10 +10,17 @@ members = [
     "examples/hello-world"
 ]
 
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
 [dependencies]
-anyhow = "1.0.44"
+anyhow = "1.0.57"
 gl = "0.14.0"
 raw-gl-context = "0.1.2"
+image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
 winit = { version = "0.22.2", default-features = false }
 
 [features]

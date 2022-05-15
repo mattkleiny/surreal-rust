@@ -15,15 +15,12 @@ pub struct ShaderProgram {
 }
 
 impl ShaderProgram {
+  /// Creates a new blank shader program on the GPU.
   pub fn new(context: &GraphicsContext) -> Self {
     Self {
       handle: unsafe { context.create_shader() },
       context: context.clone(),
     }
-  }
-
-  pub unsafe fn bind(&self) {
-    todo!()
   }
 
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
@@ -64,5 +61,14 @@ impl ShaderProgram {
 
   pub unsafe fn set_texture(&self, location: usize, texture: GraphicsHandle, slot: usize) {
     todo!()
+  }
+}
+
+impl Drop for ShaderProgram {
+  /// Deletes the shader program from the GPU.
+  fn drop(&mut self) {
+    unsafe {
+      self.context.delete_shader(self.handle);
+    }
   }
 }

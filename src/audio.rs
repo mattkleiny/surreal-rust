@@ -9,6 +9,15 @@ pub type AudioResult<T> = anyhow::Result<T>;
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct AudioHandle(usize);
 
+/// The context for audio operations.
+pub type AudioContext = super::Context<dyn AudioServer>;
+
+impl AudioContext {
+  pub fn new(value: impl AudioServer + 'static) -> Self {
+    Self(std::rc::Rc::new(value))
+  }
+}
+
 /// A server for the underlying audio subsystem.
 ///
 /// Permits interaction with the underlying audio API through unsafe lower-level abstraction.

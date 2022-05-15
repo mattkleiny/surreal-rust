@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::{GraphicsContext, GraphicsHandle};
 
 /// The different kinds of buffer we support.
@@ -15,12 +17,13 @@ pub enum BufferUsage {
   Dynamic,
 }
 
-/// A buffer implementation based on OpenGL.
-pub struct Buffer {
+/// A GPU buffer implementation that can upload data of type `T`.
+pub struct Buffer<T> {
   handle: GraphicsHandle,
   context: GraphicsContext,
   kind: BufferKind,
   usage: BufferUsage,
+  _type: PhantomData<T>,
 }
 
 /// Contains rendering attributes about a vertex.
@@ -32,32 +35,31 @@ pub struct VertexAttribute {
   pub stride: usize,
 }
 
-/// Represents abstractly some buffer of data on the GPU.
-impl Buffer {
+impl<T> Buffer<T> {
+  /// Constructs a new empty buffer on the GPU.
   pub fn new(context: &GraphicsContext, kind: BufferKind, usage: BufferUsage) -> Self {
-    Buffer {
+    Self {
       handle: unsafe { context.create_buffer() },
       context: context.clone(),
       kind,
       usage,
+      _type: PhantomData
     }
   }
 
-  pub fn kind(&self) -> BufferKind { self.kind }
-  pub fn usage(&self) -> BufferUsage { self.usage }
-
   /// Reads data from the buffer.
-  pub unsafe fn read_data<T>(&self) -> Vec<T> {
+  pub unsafe fn read_data(&self) -> Vec<T> {
     todo!()
   }
 
   /// Uploads the given data to the buffer.
-  pub unsafe fn write_data<T>(&mut self, data: &[T]) {
+  pub unsafe fn write_data(&mut self, data: &[T]) {
     todo!()
   }
 }
 
-impl Drop for Buffer {
+impl<T> Drop for Buffer<T> {
+  /// Deletes the buffer from the GPU.
   fn drop(&mut self) {
     unsafe {
       self.context.delete_buffer(self.handle)

@@ -5,3 +5,6 @@ edition = "2021"
 
 [dependencies]
 surreal = { version = "*", path = "../..", features = ["desktop"] }
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1.12"

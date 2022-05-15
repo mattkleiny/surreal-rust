@@ -1,5 +1,5 @@
 /// Represents type that supports procedural construction of mesh geometry.
-pub trait Tessellator {
+pub trait Tessellation {
   type Vertex: Copy;
 
   fn vertex_count(&self) -> u32;

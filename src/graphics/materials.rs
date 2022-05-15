@@ -51,8 +51,6 @@ impl<'a> Material<'a> {
 
   /// Binds the material as the active shader and uploads it's uniforms.
   pub unsafe fn bind(&self) {
-    self.shader.bind();
-
     for (_, uniform) in &self.uniforms {
       match &uniform.value {
         UniformValue::Integer(value) => self.shader.set_uniform_u32(uniform.location, *value),

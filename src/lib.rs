@@ -9,12 +9,14 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+#![feature(downcast_unchecked)]
+
 extern crate core;
 
 pub mod assets;
 pub mod audio;
 pub mod collections;
-pub mod ecs;
+pub mod framework;
 pub mod graphics;
 pub mod input;
 pub mod io;
@@ -26,61 +28,33 @@ pub mod prelude {
   pub use crate::assets::*;
   pub use crate::audio::*;
   pub use crate::collections::*;
-  pub use crate::ecs::*;
+  pub use crate::framework::*;
   pub use crate::graphics::*;
   pub use crate::input::*;
   pub use crate::io::*;
   pub use crate::maths::*;
   pub use crate::platform::*;
   pub use crate::utilities::*;
-
-  pub use super::Game;
 }
 
-/// A utility context for bootstrapping games.
-pub struct Game<P> {
-  /// The underlying backend platform for the game.
-  pub platform: P,
+/// An context for object-based operations.
+///
+/// This context can be easily passed around the application and
+/// allows resources to refer back to the originating server `S`.
+pub struct Context<S: ?Sized>(std::rc::Rc<S>);
 
-  /// Is the game still running? false if we should end at the end of the frame.
-  is_running: bool,
+impl<S: ?Sized> std::clone::Clone for Context<S> {
+  /// Clones the reference to the core system.
+  fn clone(&self) -> Self {
+    Self(self.0.clone())
+  }
 }
 
-impl<P> Game<P> where P: platform::Platform {
-  /// Starts a new game with the given platform.
-  pub fn start(platform: P, mut setup: impl FnMut(Game<P>)) {
-    let game = Game {
-      platform,
-      is_running: false,
-    };
+impl<S: ?Sized> std::ops::Deref for Context<S> {
+  type Target = S;
 
-    setup(game);
-  }
-
-  /// Runs the game loop in a variable step fashion.
-  pub fn run_variable_step(mut self, mut tick: impl FnMut(&mut Game<P>, utilities::GameTime)) {
-    use crate::utilities::{Clock, GameTime};
-
-    let mut timer = Clock::new();
-
-    while self.is_running {
-      let time = GameTime {
-        delta_time: timer.tick(),
-        total_time: timer.total_time(),
-      };
-
-      self.platform.tick();
-      tick(&mut self, time);
-    };
-  }
-
-  /// Runs the game loop in a fixed step fashion.
-  pub fn run_fixed_step(mut self, mut update: impl FnMut(&mut Game<P>, utilities::GameTime)) {
-    todo!()
-  }
-
-  /// Exits the game at the end of the frame.
-  pub fn exit(&mut self) {
-    self.is_running = false;
+  /// Directly de-references the core system.
+  fn deref(&self) -> &Self::Target {
+    self.0.deref()
   }
 }

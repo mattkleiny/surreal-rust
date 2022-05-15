@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use winit::event::ElementState;
 
 use crate::input::{InputServer, KeyboardDevice, MouseDevice};
@@ -20,12 +22,14 @@ impl DesktopInputServer {
   }
 
   pub fn on_keyboard_event(&mut self, event: winit::event::KeyboardInput) {
+    // TODO: make this support multiple devices?
     let keyboard = self.keyboards.first_mut().unwrap();
 
     keyboard.on_event_received(event);
   }
 
   pub fn on_mouse_event(&mut self, button: winit::event::MouseButton, state: winit::event::ElementState) {
+    // TODO: make this support multiple devices?
     let mouse = self.mice.first_mut().unwrap();
 
     mouse.on_event_received(button, state);
@@ -37,12 +41,12 @@ unsafe impl InputServer for DesktopInputServer {
     todo!()
   }
 
-  fn primary_keyboard_device(&self) -> Option<&dyn KeyboardDevice> {
-    self.keyboards.first().map(|device| device as &dyn KeyboardDevice)
-  }
-
   fn mouse_devices(&self) -> &[&dyn MouseDevice] {
     todo!()
+  }
+
+  fn primary_keyboard_device(&self) -> Option<&dyn KeyboardDevice> {
+    self.keyboards.first().map(|device| device as &dyn KeyboardDevice)
   }
 
   fn primary_mouse_device(&self) -> Option<&dyn MouseDevice> {
