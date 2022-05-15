@@ -28,6 +28,7 @@ pub struct Asset<T> {
 /// The internal state machine for an asset.
 enum AssetState<T> {
   Unloaded,
+  Loading,
   Loaded(T),
 }
 
@@ -47,7 +48,7 @@ impl<T> Deref for Asset<T> {
 
     match state {
       AssetState::Loaded(value) => &value,
-      AssetState::Unloaded => panic!("Asset is not loaded!")
+      _ => panic!("Asset is not loaded!")
     }
   }
 }
@@ -58,7 +59,7 @@ impl<T> DerefMut for Asset<T> {
 
     match state {
       AssetState::Loaded(value) => value,
-      AssetState::Unloaded => panic!("Asset is not loaded!")
+      _ => panic!("Asset is not loaded!")
     }
   }
 }

@@ -40,7 +40,7 @@ pub trait Component: Sized + Default {
 }
 
 /// Blanket storage for all potential component types, `T`.
-impl<T> Component for T where T: Sized + Default + Send + Sync {
+impl<T> Component for T where T: Sized + Default {
   type Storage = VecStorage<Self>;
 }
 
@@ -59,7 +59,7 @@ pub struct VecStorage<C> {
   components: Vec<C>,
 }
 
-impl<C: Component> ComponentStorage<C> for VecStorage<C> {
+impl<C> ComponentStorage<C> for VecStorage<C> where C: Component {
   fn new() -> Self where Self: Sized {
     Self { components: Vec::new() }
   }
@@ -91,7 +91,7 @@ pub struct HashMapStorage<C> {
   components: HashMap<usize, C>,
 }
 
-impl<C: Component> ComponentStorage<C> for HashMapStorage<C> {
+impl<C> ComponentStorage<C> for HashMapStorage<C> where C: Component {
   fn new() -> Self where Self: Sized {
     Self { components: HashMap::new() }
   }
@@ -119,6 +119,11 @@ impl<C: Component> ComponentStorage<C> for HashMapStorage<C> {
 }
 
 /// Represents an entity `World`.
+///
+/// World state is managed through interior mutability;
+///
+/// A world can be cloned and internally will point to the same world state, thus it's safe to
+/// pass a world instance to different systems and structs.
 #[derive(Clone)]
 pub struct World {
   state: Rc<UnsafeCell<WorldState>>,
@@ -128,7 +133,7 @@ pub struct World {
 unsafe impl Send for World {}
 
 impl World {
-  /// Constructs a new world context with the given world.
+  /// Constructs a new blank world.
   pub fn new() -> Self {
     Self {
       state: Rc::new(UnsafeCell::new(WorldState::new()))
@@ -137,8 +142,8 @@ impl World {
 
   /// Spawns a new entity into the world.
   pub fn spawn(&mut self) -> Entity {
-    let world = unsafe { &*self.state.get() };
-    let entity_id = world.entities.len();
+    let state = unsafe { &*self.state.get() };
+    let entity_id = state.entities.len();
 
     Entity {
       id: entity_id,
@@ -148,20 +153,20 @@ impl World {
 
   /// Retrieves the component storage for the given component type, `C`.
   pub fn get_storage<C: 'static + Component>(&self) -> Option<&mut C::Storage> {
-    let world = unsafe { &mut *self.state.get() };
+    let state = unsafe { &mut *self.state.get() };
 
-    world.components
+    state.components
         .get_mut(&TypeId::of::<C>())
         .map(|value| value
             .downcast_mut::<C::Storage>()
             .unwrap())
   }
 
-  /// Retrieves the component storage for the given component type, `C`.
+  /// Retrieves the component storage for the given component type, `C`, creating it if it doesn't exist.
   pub fn get_or_create_storage<C: 'static + Component>(&self) -> &mut C::Storage {
-    let world = unsafe { &mut *self.state.get() };
+    let state = unsafe { &mut *self.state.get() };
 
-    world.components
+    state.components
         .entry(TypeId::of::<C>())
         .or_insert_with(|| Box::new(C::Storage::new()))
         .downcast_mut::<C::Storage>()
@@ -170,13 +175,13 @@ impl World {
 
   /// Updates the world a single frame.
   pub fn tick(&self) {
-    let world = unsafe { &mut *self.state.get() };
+    let state = unsafe { &mut *self.state.get() };
 
-    world.tick();
+    state.tick();
   }
 }
 
-/// The state of the entity world.
+/// The internal state of a `World`.
 struct WorldState {
   entities: Vec<usize>,
   components: HashMap<TypeId, Box<dyn Any>>,
@@ -203,9 +208,11 @@ mod tests {
 
   use super::*;
 
+  /// An example component representing a position in 2-space.
   #[derive(Default, Debug)]
   struct Position(Vector2<f32>);
 
+  /// An example component representing a rotation in 2-space (in radians from the positive Y axis).
   #[derive(Default, Debug)]
   struct Rotation(f32);
 
@@ -214,8 +221,9 @@ mod tests {
     let mut world = World::new();
 
     let entity = world.spawn();
+
     let position = entity.add(Position(vec2(1., 2.)));
-    let rotation = entity.add(Rotation(2. * std::f32::consts::PI));
+    let rotation = entity.add(Rotation(std::f32::consts::PI));
 
     println!("Position is {:#?}", position);
     println!("Rotation is {:#?}", rotation);

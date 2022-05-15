@@ -1,4 +1,4 @@
-use crate::graphics::GraphicsHandle;
+use crate::graphics::{GraphicsContext, GraphicsHandle};
 use crate::maths::{Vector2, Vector3, Vector4};
 
 /// Different types fo shaders supported by the engine.
@@ -9,15 +9,16 @@ pub enum ShaderKind {
 }
 
 /// Represents a single compiled shader program.
-#[derive(Debug)]
 pub struct ShaderProgram {
   handle: GraphicsHandle,
+  context: GraphicsContext,
 }
 
 impl ShaderProgram {
-  pub fn new() -> Self {
+  pub fn new(context: &GraphicsContext) -> Self {
     Self {
-      handle: GraphicsHandle { id: 0 }
+      handle: unsafe { context.create_shader() },
+      context: context.clone(),
     }
   }
 

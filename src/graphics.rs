@@ -1,6 +1,7 @@
 //! A lightweight cross-platform graphics engine.
 
-use std::collections::VecDeque;
+use std::ops::Deref;
+use std::rc::Rc;
 pub use buffers::*;
 pub use colors::*;
 pub use materials::*;
@@ -29,7 +30,26 @@ pub struct GraphicsHandle {
 ///
 /// This context can be passed around the application and allows resources to refer back to
 /// the originating graphics server.
-pub struct GraphicsContext {}
+#[derive(Clone)]
+pub struct GraphicsContext {
+  server: Rc<dyn GraphicsServer>,
+}
+
+impl GraphicsContext {
+  /// Constructs a new graphics context for the given `GraphicsServer`.
+  pub fn new(server: impl GraphicsServer + 'static) -> Self {
+    Self { server: Rc::new(server) }
+  }
+}
+
+/// Allows direct access to the backing `GraphicsServer`.
+impl Deref for GraphicsContext {
+  type Target = dyn GraphicsServer;
+
+  fn deref(&self) -> &Self::Target {
+    self.server.deref()
+  }
+}
 
 /// A server for the underlying graphics subsystem.
 ///
@@ -37,7 +57,7 @@ pub struct GraphicsContext {}
 /// details. The server is intended to be a low-level unsafe implementation abstraction.
 pub unsafe trait GraphicsServer {
   // commands
-  unsafe fn execute_command_buffer(&mut self, commands: &mut CommandBuffer) {
+  unsafe fn execute_command_buffer(&self, commands: &mut CommandBuffer) {
     while let Some(command) = commands.dequeue() {
       match command {
         Command::SetViewport(viewport) => self.set_viewport_size(viewport),
@@ -60,18 +80,21 @@ pub unsafe trait GraphicsServer {
 
   // buffers
   unsafe fn create_buffer(&self) -> GraphicsHandle;
-  unsafe fn read_buffer_data<T>(&self, buffer: GraphicsHandle) -> Vec<T>;
-  unsafe fn write_buffer_data<T>(&self, buffer: GraphicsHandle, data: &[T]);
+  unsafe fn read_buffer_data(&self, buffer: GraphicsHandle) -> Vec<u8>;
+  unsafe fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]);
   unsafe fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
   unsafe fn create_texture(&self) -> GraphicsHandle;
-  unsafe fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]);
+  unsafe fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]);
   unsafe fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders
   unsafe fn create_shader(&self) -> GraphicsHandle;
   unsafe fn delete_shader(&self, shader: GraphicsHandle);
+
+  // meshes
+  unsafe fn create_mesh(&self) -> GraphicsHandle;
 }
 
 /// Commands that can be enqueued in a `CommandBuffer` and replayed at a later date on the graphics
@@ -91,12 +114,14 @@ pub enum Command {
 
 /// A command buffer that can be used to issue instructions to the GPU.
 pub struct CommandBuffer {
-  commands: VecDeque<Command>,
+  commands: std::collections::VecDeque<Command>,
 }
 
 impl CommandBuffer {
   pub fn new() -> Self {
-    Self { commands: VecDeque::new() }
+    Self {
+      commands: std::collections::VecDeque::new()
+    }
   }
 
   pub fn enqueue(&mut self, command: Command) {

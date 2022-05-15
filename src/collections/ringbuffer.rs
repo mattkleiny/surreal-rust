@@ -1,10 +1,9 @@
 /// A lightweight, fast and append-only ring buffer of elements of type T.
 ///
 /// It's intended to be used for small windowed set operations, like time sampling or frequency
-/// analyses.
+/// analysis.
 ///
-/// This collection is not thread-safe. Synchronization should occur outside
-/// of the buffer itself, with a mutex or some other locking primitive depending on the use case.
+/// This collection is not thread-safe.
 #[derive(Debug)]
 pub struct RingBuffer<T> {
   occupied: usize,

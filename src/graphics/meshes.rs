@@ -1,25 +1,28 @@
-use crate::graphics::Color;
+use crate::graphics::{Color, GraphicsContext, GraphicsHandle};
 use crate::maths::{Tessellator, vec2, Vector2, Vector3};
 
 /// A mesh of vertices of `V`.
-#[derive(Clone, Debug)]
 pub struct Mesh<V> {
+  handle: GraphicsHandle,
+  context: GraphicsContext,
   vertices: Vec<V>,
   indices: Vec<u32>,
 }
 
 impl<V> Mesh<V> where V: Vertex {
   /// Constructs a new blank mesh.
-  pub const fn new() -> Self {
+  pub fn new(context: &GraphicsContext) -> Self {
     Self {
+      handle: unsafe { context.create_mesh() },
+      context: context.clone(),
       vertices: Vec::new(),
       indices: Vec::new(),
     }
   }
 
   /// Constructs a mesh with the given factory method.
-  pub fn create(factory: impl Fn(&mut Self)) -> Self {
-    let mut mesh = Self::new();
+  pub fn create(context: &GraphicsContext, factory: impl Fn(&mut Self)) -> Self {
+    let mut mesh = Self::new(context);
     factory(&mut mesh);
     mesh
   }
@@ -27,8 +30,8 @@ impl<V> Mesh<V> where V: Vertex {
 
 impl Mesh<Vertex2> {
   /// Constructs a simple triangle mesh of the given size.
-  pub fn create_triangle(size: f32) -> Self {
-    Self::create(|mesh| {
+  pub fn create_triangle(context: &GraphicsContext, size: f32) -> Self {
+    Self::create(context, |mesh| {
       mesh.add_triangle(&[
         Vertex2 { position: vec2(-size, -size), color: Color::WHITE, uv: vec2(0., 0.) },
         Vertex2 { position: vec2(0., size), color: Color::WHITE, uv: vec2(0.5, 1.) },
@@ -38,8 +41,8 @@ impl Mesh<Vertex2> {
   }
 
   /// Constructs a simple quad mesh of the given size.
-  pub fn create_quad(size: f32) -> Self {
-    Self::create(|mesh| {
+  pub fn create_quad(context: &GraphicsContext, size: f32) -> Self {
+    Self::create(context, |mesh| {
       mesh.add_quad(&[
         Vertex2 { position: vec2(-size, -size), color: Color::WHITE, uv: vec2(0., 1.) },
         Vertex2 { position: vec2(-size, size), color: Color::WHITE, uv: vec2(0., 0.) },
@@ -50,8 +53,8 @@ impl Mesh<Vertex2> {
   }
 
   /// Constructs a simple circle mesh of the given size.
-  pub fn create_circle(radius: f32, segments: usize) -> Self {
-    Self::create(|mesh| {
+  pub fn create_circle(context: &GraphicsContext, radius: f32, segments: usize) -> Self {
+    Self::create(context, |mesh| {
       use std::f32::consts::PI;
 
       let mut vertices = Vec::with_capacity(segments);

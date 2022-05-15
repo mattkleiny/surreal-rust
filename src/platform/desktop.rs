@@ -11,7 +11,7 @@ use graphics::DesktopGraphicsServer;
 use input::DesktopInputServer;
 
 use crate::audio::AudioHandle;
-use crate::graphics::{Color, GraphicsHandle, Viewport};
+use crate::graphics::{Color, GraphicsContext, GraphicsHandle, Viewport};
 use crate::input::{Key, MouseButton};
 use crate::maths::{vec2, Vector2};
 
@@ -49,7 +49,7 @@ pub struct DesktopPlatform {
 
   // servers
   pub audio: DesktopAudioServer,
-  pub graphics: DesktopGraphicsServer,
+  pub graphics: GraphicsContext,
   pub input: DesktopInputServer,
 }
 
@@ -67,7 +67,7 @@ impl DesktopPlatform {
     Self {
       // servers
       audio: DesktopAudioServer::new(),
-      graphics: DesktopGraphicsServer::new(&window),
+      graphics: GraphicsContext::new(DesktopGraphicsServer::new(&window)),
       input: DesktopInputServer::new(),
 
       // core

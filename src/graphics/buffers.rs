@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use super::{GraphicsContext, GraphicsHandle};
 
 /// The different kinds of buffer we support.
@@ -19,8 +17,8 @@ pub enum BufferUsage {
 
 /// A buffer implementation based on OpenGL.
 pub struct Buffer {
-  context: Rc<GraphicsContext>,
   handle: GraphicsHandle,
+  context: GraphicsContext,
   kind: BufferKind,
   usage: BufferUsage,
 }
@@ -36,10 +34,10 @@ pub struct VertexAttribute {
 
 /// Represents abstractly some buffer of data on the GPU.
 impl Buffer {
-  pub fn new(context: Rc<GraphicsContext>, kind: BufferKind, usage: BufferUsage) -> Self {
+  pub fn new(context: &GraphicsContext, kind: BufferKind, usage: BufferUsage) -> Self {
     Buffer {
+      handle: unsafe { context.create_buffer() },
       context: context.clone(),
-      handle: GraphicsHandle { id: 0 },
       kind,
       usage,
     }
@@ -61,6 +59,8 @@ impl Buffer {
 
 impl Drop for Buffer {
   fn drop(&mut self) {
-    todo!()
+    unsafe {
+      self.context.delete_buffer(self.handle)
+    }
   }
 }

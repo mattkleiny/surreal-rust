@@ -4,7 +4,6 @@ use crate::graphics::{GraphicsHandle, MagnifyFilter, MinifyFilter, ShaderProgram
 use crate::maths::{Matrix2, Matrix3, Matrix4, Vector2, Vector3, Vector4};
 
 /// A material of uniform values and associated `ShaderProgram`.
-#[derive(Debug)]
 pub struct Material<'a> {
   shader: &'a ShaderProgram,
   uniforms: HashMap<String, Uniform>,
@@ -127,23 +126,3 @@ implement_uniform!(Vector4<f32>, Vector4);
 implement_uniform!(Matrix2<f32>, Matrix2);
 implement_uniform!(Matrix3<f32>, Matrix3);
 implement_uniform!(Matrix4<f32>, Matrix4);
-
-#[cfg(test)]
-mod tests {
-  use crate::maths::{vec2, vec3};
-
-  use super::*;
-
-  #[test]
-  fn it_should_set_uniform_values() {
-    let shader = ShaderProgram::new();
-    let mut material = Material::new(&shader);
-
-    material.set_uniform("Test 1", vec2(0., 1.));
-    material.set_uniform("Test 2", vec3(0., 1., 0.));
-    material.set_uniform("Test 3", vec2(0., 1.));
-    material.set_uniform("Test 4", vec3(0., 1., 0.));
-
-    println!("{:#?}", material);
-  }
-}

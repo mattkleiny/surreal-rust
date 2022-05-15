@@ -63,11 +63,11 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     GraphicsHandle { id: id as usize }
   }
 
-  unsafe fn read_buffer_data<T>(&self, buffer: GraphicsHandle) -> Vec<T> {
+  unsafe fn read_buffer_data(&self, buffer: GraphicsHandle) -> Vec<u8> {
     todo!()
   }
 
-  unsafe fn write_buffer_data<T>(&self, buffer: GraphicsHandle, data: &[T]) {
+  unsafe fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]) {
     todo!()
   }
 
@@ -81,7 +81,7 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     GraphicsHandle { id: id as usize }
   }
 
-  unsafe fn write_texture_data<T>(&self, texture: GraphicsHandle, data: &[T]) {
+  unsafe fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]) {
     todo!()
   }
 
@@ -94,6 +94,10 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   }
 
   unsafe fn delete_shader(&self, shader: GraphicsHandle) {
+    todo!()
+  }
+
+  unsafe fn create_mesh(&self) -> GraphicsHandle {
     todo!()
   }
 }
