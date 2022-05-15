@@ -17,5 +17,6 @@ raw-gl-context = "0.1.2"
 winit = { version = "0.22.2", default-features = false }
 
 [features]
-default = ["desktop"]
+default = ["desktop", "headless"]
 desktop = []
+headless = []

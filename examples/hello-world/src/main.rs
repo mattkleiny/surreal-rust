@@ -1,24 +1,20 @@
 use surreal::prelude::*;
 
 fn main() {
-  let mut platform = DesktopPlatform::new(Configuration {
+  let platform = DesktopPlatform::new(Configuration {
     title: "Hello, World!",
     ..Default::default()
   });
 
-  let color1 = Color::random();
-  let color2 = Color::random();
-  let timer = Clock::new();
+  Game::start(platform, |game| {
+    let color1 = Color::random();
+    let color2 = Color::random();
 
-  platform.run(|platform| unsafe {
-    if let Some(keyboard) = platform.input.primary_keyboard_device() {
-      if keyboard.is_key_pressed(Key::Escape) {
-        platform.exit();
-      }
-    }
+    game.run_variable_step(|game, time| unsafe {
+      let total_time = time.total_time as f32;
+      let color = Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.);
 
-    let total_time = timer.total_time() as f32;
-
-    platform.graphics.clear_color_buffer(Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.));
+      game.platform.graphics.clear_color_buffer(color);
+    });
   });
 }

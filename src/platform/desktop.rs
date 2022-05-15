@@ -90,45 +90,49 @@ impl DesktopPlatform {
 }
 
 impl Platform for DesktopPlatform {
-  fn run(&mut self, mut body: impl FnMut(&mut Self)) {
-    use winit::platform::desktop::EventLoopExtDesktop;
-
-    let mut event_loop = self.event_loop.take().unwrap();
-
-    event_loop.run_return(|event, _, control_flow| {
-      use winit::event::*;
-
-      match event {
-        Event::RedrawRequested(window_id) => unsafe {
-          if window_id == self.window.id() {
-            self.graphics.begin_frame();
-            body(self);
-            self.graphics.end_frame();
-          }
-        }
-        Event::MainEventsCleared => {
-          if self.is_exiting {
-            *control_flow = ControlFlow::Exit;
-          } else if self.config.update_continuously {
-            self.window.request_redraw();
-          }
-        }
-        Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
-          match event {
-            WindowEvent::MouseInput { button, state, .. } => {
-              self.input.on_mouse_event(button, state);
-            }
-            WindowEvent::KeyboardInput { input, .. } => {
-              self.input.on_keyboard_event(input);
-            }
-            WindowEvent::CloseRequested => {
-              *control_flow = ControlFlow::Exit;
-            }
-            _ => {}
-          }
-        }
-        _ => {}
-      }
-    });
+  fn tick(&mut self) {
+    // TODO: implement me
   }
+
+  // fn run(&mut self, mut body: impl FnMut(&mut Self)) {
+  //   use winit::platform::desktop::EventLoopExtDesktop;
+  //
+  //   let mut event_loop = self.event_loop.take().unwrap();
+  //
+  //   event_loop.run_return(|event, _, control_flow| {
+  //     use winit::event::*;
+  //
+  //     match event {
+  //       Event::RedrawRequested(window_id) => unsafe {
+  //         if window_id == self.window.id() {
+  //           self.graphics.begin_frame();
+  //           body(self);
+  //           self.graphics.end_frame();
+  //         }
+  //       }
+  //       Event::MainEventsCleared => {
+  //         if self.is_exiting {
+  //           *control_flow = ControlFlow::Exit;
+  //         } else if self.config.update_continuously {
+  //           self.window.request_redraw();
+  //         }
+  //       }
+  //       Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
+  //         match event {
+  //           WindowEvent::MouseInput { button, state, .. } => {
+  //             self.input.on_mouse_event(button, state);
+  //           }
+  //           WindowEvent::KeyboardInput { input, .. } => {
+  //             self.input.on_keyboard_event(input);
+  //           }
+  //           WindowEvent::CloseRequested => {
+  //             *control_flow = ControlFlow::Exit;
+  //           }
+  //           _ => {}
+  //         }
+  //       }
+  //       _ => {}
+  //     }
+  //   });
+  // }
 }
