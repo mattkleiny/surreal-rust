@@ -1,5 +1,5 @@
 /// A standard purpose quaternion.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Default, Debug)]
 pub struct Quaternion<T> {
   pub x: T,
   pub y: T,

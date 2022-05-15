@@ -18,7 +18,7 @@ pub const fn vec4<T>(x: T, y: T, z: T, w: T) -> Vector4<T> {
 }
 
 /// A standard purpose 2d vector
-#[derive(Hash, Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Hash, Copy, Clone, Default, Debug, Eq, PartialEq)]
 pub struct Vector2<T> {
   pub x: T,
   pub y: T,
@@ -83,7 +83,7 @@ impl<T> Lerp for Vector2<T> where T: Lerp {
 }
 
 /// A standard purpose 3d vector
-#[derive(Hash, Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Hash, Copy, Clone, Default, Debug, Eq, PartialEq)]
 pub struct Vector3<T> {
   pub x: T,
   pub y: T,
@@ -132,7 +132,7 @@ impl<T> Lerp for Vector3<T> where T: Lerp {
 }
 
 /// A standard purpose 4d vector
-#[derive(Hash, Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Hash, Copy, Clone, Default, Debug, Eq, PartialEq)]
 pub struct Vector4<T> {
   pub x: T,
   pub y: T,

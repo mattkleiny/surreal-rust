@@ -1,4 +1,4 @@
-//! A lightweight and fast cross-platform graphics engine using OpenGL.
+//! A lightweight cross-platform graphics engine.
 
 pub use buffers::*;
 pub use colors::*;
@@ -19,7 +19,7 @@ pub type GraphicsResult<T> = anyhow::Result<T>;
 ///
 /// A handle can represent arbitrarily many different resources, and forms
 /// the building blocks for any higher level APIs.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct GraphicsHandle {
   pub(crate) id: usize,
 }
@@ -33,9 +33,7 @@ pub struct GraphicsContext {}
 /// A server for the underlying graphics subsystem.
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
-/// details. The server is intended to be a low-level unsafe implementation abstraction, and not
-/// imply higher-level constructs and safety, which would instead come from the graphics module
-/// primitives.
+/// details. The server is intended to be a low-level unsafe implementation abstraction.
 pub unsafe trait GraphicsServer {
   // commands
   unsafe fn execute_command_buffer(&mut self, commands: &mut CommandBuffer) {

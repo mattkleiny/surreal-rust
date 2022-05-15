@@ -1,4 +1,4 @@
-//! A lightweight and fast cross-platform audio engine.
+//! A lightweight cross-platform audio engine.
 
 use crate::utilities::{Size, TimeSpan};
 
@@ -6,7 +6,7 @@ use crate::utilities::{Size, TimeSpan};
 pub type AudioResult<T> = anyhow::Result<T>;
 
 /// An opaque handle to an underlying resource in the `AudioServer`.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct AudioHandle(usize);
 
 /// A server for the underlying audio subsystem.
