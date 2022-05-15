@@ -8,27 +8,27 @@ use std::rc::Rc;
 /// An opaque handle to an entity in the ECS.
 pub struct Entity {
   id: usize,
-  world: WorldContext,
+  world: World,
 }
 
 impl Entity {
   /// Adds a component 'C' to the entity.
-  pub fn add_component<C: 'static + Component>(&mut self, component: C) -> &mut C {
+  pub fn add<C: 'static + Component>(&self, component: C) -> &mut C {
     self.world.get_or_create_storage::<C>().add_component(self.id, component)
   }
 
   /// Retrieves a reference for the given component type `C` for the entity.
-  pub fn get_component<C: 'static + Component>(&mut self) -> Option<&C> {
+  pub fn get<C: 'static + Component>(&self) -> Option<&C> {
     self.world.get_storage::<C>().and_then(|storage| storage.get_component(self.id))
   }
 
   /// Retrieves a mutable reference for the given component type `C` for the entity.
-  pub fn get_component_mut<C: 'static + Component>(&mut self) -> Option<&mut C> {
+  pub fn get_mut<C: 'static + Component>(&self) -> Option<&mut C> {
     self.world.get_or_create_storage::<C>().get_component_mut(self.id)
   }
 
   /// Retrieves a reference for the given component type `C` for the entity, creating it if it doesn't exist.
-  pub fn get_or_create_component<C: 'static + Component>(&mut self) -> &mut C {
+  pub fn get_or_create<C: 'static + Component>(&self) -> &mut C {
     self.world.get_or_create_storage::<C>().get_or_create_component(self.id)
   }
 }
@@ -37,6 +37,11 @@ impl Entity {
 pub trait Component: Sized + Default {
   /// The type of storage associated with this component.
   type Storage: ComponentStorage<Self>;
+}
+
+/// Blanket storage for all potential component types, `T`.
+impl<T> Component for T where T: Sized + Default + Send + Sync {
+  type Storage = VecStorage<Self>;
 }
 
 /// Allows storage of `Component`s in different schemes depending on use cases.
@@ -113,37 +118,26 @@ impl<C: Component> ComponentStorage<C> for HashMapStorage<C> {
   }
 }
 
-/// The entity world.
+/// Represents an entity `World`.
+#[derive(Clone)]
 pub struct World {
-  entities: Vec<usize>,
-  components: HashMap<TypeId, Box<dyn Any>>,
+  state: Rc<UnsafeCell<WorldState>>,
 }
+
+/// Worlds can be sent between threads but we don't support automatic `Sync`.
+unsafe impl Send for World {}
 
 impl World {
-  /// Creates a new empty world.
-  pub fn new() -> WorldContext {
-    WorldContext::with_world(Self {
-      entities: Vec::new(),
-      components: HashMap::new(),
-    })
-  }
-}
-
-/// A context for accessing a `World`.
-#[derive(Clone)]
-pub struct WorldContext {
-  world: Rc<UnsafeCell<World>>,
-}
-
-impl WorldContext {
   /// Constructs a new world context with the given world.
-  pub fn with_world(world: World) -> Self {
-    Self { world: Rc::new(UnsafeCell::new(world)) }
+  pub fn new() -> Self {
+    Self {
+      state: Rc::new(UnsafeCell::new(WorldState::new()))
+    }
   }
 
   /// Spawns a new entity into the world.
   pub fn spawn(&mut self) -> Entity {
-    let world = unsafe { &*self.world.get() };
+    let world = unsafe { &*self.state.get() };
     let entity_id = world.entities.len();
 
     Entity {
@@ -153,8 +147,8 @@ impl WorldContext {
   }
 
   /// Retrieves the component storage for the given component type, `C`.
-  pub fn get_storage<C: 'static + Component>(&mut self) -> Option<&mut C::Storage> {
-    let world = unsafe { &mut *self.world.get() };
+  pub fn get_storage<C: 'static + Component>(&self) -> Option<&mut C::Storage> {
+    let world = unsafe { &mut *self.state.get() };
 
     world.components
         .get_mut(&TypeId::of::<C>())
@@ -164,14 +158,42 @@ impl WorldContext {
   }
 
   /// Retrieves the component storage for the given component type, `C`.
-  pub fn get_or_create_storage<C: 'static + Component>(&mut self) -> &mut C::Storage {
-    let world = unsafe { &mut *self.world.get() };
+  pub fn get_or_create_storage<C: 'static + Component>(&self) -> &mut C::Storage {
+    let world = unsafe { &mut *self.state.get() };
 
     world.components
         .entry(TypeId::of::<C>())
         .or_insert_with(|| Box::new(C::Storage::new()))
         .downcast_mut::<C::Storage>()
         .unwrap()
+  }
+
+  /// Updates the world a single frame.
+  pub fn tick(&self) {
+    let world = unsafe { &mut *self.state.get() };
+
+    world.tick();
+  }
+}
+
+/// The state of the entity world.
+struct WorldState {
+  entities: Vec<usize>,
+  components: HashMap<TypeId, Box<dyn Any>>,
+}
+
+impl WorldState {
+  /// Creates a new empty world state.
+  pub fn new() -> Self {
+    Self {
+      entities: Vec::new(),
+      components: HashMap::new(),
+    }
+  }
+
+  /// Updates the world state a single frame.
+  pub fn tick(&mut self) {
+    // TODO: implement me
   }
 }
 
@@ -184,23 +206,18 @@ mod tests {
   #[derive(Default, Debug)]
   struct Position(Vector2<f32>);
 
-  impl Component for Position {
-    type Storage = VecStorage<Self>;
-  }
-
   #[derive(Default, Debug)]
   struct Rotation(f32);
 
-  impl Component for Rotation {
-    type Storage = VecStorage<Self>;
-  }
-
   #[test]
-  fn it_should_add_entities_and_update_components() {
+  fn it_should_add_components_to_entities() {
     let mut world = World::new();
-    let mut entity = world.spawn();
 
-    println!("Position is {:#?}", entity.add_component(Position(vec2(1., 2.))));
-    println!("Rotation is {:#?}", entity.add_component(Rotation(2. * std::f32::consts::PI)));
+    let entity = world.spawn();
+    let position = entity.add(Position(vec2(1., 2.)));
+    let rotation = entity.add(Rotation(2. * std::f32::consts::PI));
+
+    println!("Position is {:#?}", position);
+    println!("Rotation is {:#?}", rotation);
   }
 }
