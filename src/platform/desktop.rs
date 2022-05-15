@@ -2,7 +2,6 @@
 
 use std::collections::HashSet;
 
-use raw_gl_context::{GlConfig, GlContext};
 use winit::dpi::LogicalSize;
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Window, WindowBuilder};

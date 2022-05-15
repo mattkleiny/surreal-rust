@@ -1,5 +1,6 @@
 //! A lightweight cross-platform graphics engine.
 
+use std::collections::VecDeque;
 pub use buffers::*;
 pub use colors::*;
 pub use materials::*;
@@ -90,20 +91,20 @@ pub enum Command {
 
 /// A command buffer that can be used to issue instructions to the GPU.
 pub struct CommandBuffer {
-  commands: Vec<Command>,
+  commands: VecDeque<Command>,
 }
 
 impl CommandBuffer {
   pub fn new() -> Self {
-    Self { commands: Vec::new() }
+    Self { commands: VecDeque::new() }
   }
 
   pub fn enqueue(&mut self, command: Command) {
-    self.commands.push(command);
+    self.commands.push_back(command);
   }
 
   pub fn dequeue(&mut self) -> Option<Command> {
-    self.commands.pop()
+    self.commands.pop_front()
   }
 }
 

@@ -1,3 +1,5 @@
+use raw_gl_context::{GlConfig, GlContext};
+
 use crate::graphics::GraphicsServer;
 
 use super::*;

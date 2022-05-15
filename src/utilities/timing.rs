@@ -22,6 +22,7 @@ pub struct GameTime {
 /// A simple clock for measuring the time between ticks.
 #[derive(Debug)]
 pub struct Clock {
+  start_time: u128,
   last_time: u128,
   max_time: f64,
   time_scale: f64,
@@ -31,6 +32,7 @@ impl Clock {
   /// Creates a new clock.
   pub fn new() -> Self {
     Self {
+      start_time: now(),
       last_time: 0,
       max_time: 0.16,
       time_scale: 1.,
@@ -44,6 +46,10 @@ impl Clock {
     self.last_time = current_time;
 
     clamp(delta_time as f64 / 1000., 0., self.max_time)
+  }
+
+  pub fn total_time(&self) -> f64 {
+    (now() - self.start_time) as f64 / 1000.
   }
 }
 
