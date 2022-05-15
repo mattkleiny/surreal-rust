@@ -1,4 +1,5 @@
 use winit::event::ElementState;
+
 use crate::input::{InputServer, KeyboardDevice, MouseDevice};
 
 use super::*;
@@ -62,12 +63,12 @@ impl DesktopKeyboardDevice {
   }
 
   pub fn on_event_received(&mut self, event: winit::event::KeyboardInput) {
-    let key = Key::from_scancode(event.scancode);
-
-    if event.state == ElementState::Pressed {
-      self.pressed_keys.insert(key);
-    } else {
-      self.pressed_keys.remove(&key);
+    if let Some(virtual_key_code) = event.virtual_keycode {
+      if event.state == ElementState::Pressed {
+        self.pressed_keys.insert(virtual_key_code);
+      } else {
+        self.pressed_keys.remove(&virtual_key_code);
+      }
     }
   }
 }
@@ -104,13 +105,6 @@ impl DesktopMouseDevice {
   }
 
   pub fn on_event_received(&mut self, button: winit::event::MouseButton, state: winit::event::ElementState) {
-    let button = match button {
-      winit::event::MouseButton::Left => MouseButton::Left,
-      winit::event::MouseButton::Right => MouseButton::Right,
-      winit::event::MouseButton::Middle => MouseButton::Middle,
-      winit::event::MouseButton::Other(_) => MouseButton::Middle
-    };
-
     match state {
       ElementState::Pressed => self.pressed_buttons.insert(button),
       ElementState::Released => self.pressed_buttons.remove(&button)

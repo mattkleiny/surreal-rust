@@ -37,10 +37,13 @@ pub mod prelude {
   pub use super::Game;
 }
 
-/// A utility context for bootstrapping games with a nice API.
+/// A utility context for bootstrapping games.
 pub struct Game<P> {
+  /// The underlying backend platform for the game.
   pub platform: P,
-  is_exiting: bool,
+
+  /// Is the game still running? false if we should end at the end of the frame.
+  is_running: bool,
 }
 
 impl<P> Game<P> where P: platform::Platform {
@@ -48,7 +51,7 @@ impl<P> Game<P> where P: platform::Platform {
   pub fn start(platform: P, mut setup: impl FnMut(Game<P>)) {
     let game = Game {
       platform,
-      is_exiting: false,
+      is_running: false,
     };
 
     setup(game);
@@ -60,11 +63,10 @@ impl<P> Game<P> where P: platform::Platform {
 
     let mut timer = Clock::new();
 
-    while !self.is_exiting {
+    while self.is_running {
       let time = GameTime {
         delta_time: timer.tick(),
         total_time: timer.total_time(),
-        is_running_slowly: false,
       };
 
       self.platform.tick();
@@ -75,5 +77,10 @@ impl<P> Game<P> where P: platform::Platform {
   /// Runs the game loop in a fixed step fashion.
   pub fn run_fixed_step(mut self, mut update: impl FnMut(&mut Game<P>, utilities::GameTime)) {
     todo!()
+  }
+
+  /// Exits the game at the end of the frame.
+  pub fn exit(&mut self) {
+    self.is_running = false;
   }
 }

@@ -3,7 +3,7 @@
 use std::collections::HashSet;
 
 use winit::dpi::LogicalSize;
-use winit::event_loop::{ControlFlow, EventLoop};
+use winit::event_loop::EventLoop;
 use winit::window::{Window, WindowBuilder};
 
 use audio::DesktopAudioServer;

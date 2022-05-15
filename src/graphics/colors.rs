@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub};
 
-use crate::maths::{Lerp, FromRandom, Random};
+use crate::maths::{FromRandom, Lerp, Random};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
 #[derive(Copy, Clone, Default, Eq, PartialEq, PartialOrd, Debug)]

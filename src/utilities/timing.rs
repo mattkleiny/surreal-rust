@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+use std::ops::{Add, Div, Mul, Sub};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::collections::RingBuffer;
@@ -16,7 +18,6 @@ pub fn now() -> u128 {
 pub struct GameTime {
   pub delta_time: f64,
   pub total_time: f64,
-  pub is_running_slowly: bool,
 }
 
 /// A simple clock for measuring the time between ticks.
@@ -138,21 +139,75 @@ impl FrameTimer {
 /// A representation of a span of time.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct TimeSpan {
-  offset: u64,
+  offset: u128,
 }
 
 impl TimeSpan {
-  pub const fn from_milliseconds(milliseconds: f32) -> TimeSpan { todo!() }
-  pub const fn from_seconds(seconds: f32) -> TimeSpan { todo!() }
-  pub const fn from_minutes(minutes: f32) -> TimeSpan { todo!() }
-  pub const fn from_hours(hours: f32) -> TimeSpan { todo!() }
-  pub const fn from_days(days: f32) -> TimeSpan { todo!() }
+  /// Computes the current time span, as an offset from the unix epoch.
+  pub fn now() -> Self {
+    Self::new(now())
+  }
 
-  pub fn total_milliseconds(&self) -> f32 { todo!() }
-  pub fn total_seconds(&self) -> f32 { todo!() }
-  pub fn total_minutes(&self) -> f32 { todo!() }
-  pub fn total_hours(&self) -> f32 { todo!() }
-  pub fn total_days(&self) -> f32 { todo!() }
+  /// Creates a new time span with the given offset since the unix epoch.
+  pub const fn new(offset: u128) -> Self {
+    Self { offset }
+  }
+
+  pub fn from_millis(millis: f32) -> TimeSpan { Self::new(millis as u128) }
+  pub fn from_seconds(seconds: f32) -> TimeSpan { Self::from_millis(seconds * 1000.) }
+  pub fn from_minutes(minutes: f32) -> TimeSpan { Self::from_seconds(minutes * 60.) }
+  pub fn from_hours(hours: f32) -> TimeSpan { Self::from_minutes(hours * 60.) }
+  pub fn from_days(days: f32) -> TimeSpan { Self::from_hours(days * 24.) }
+
+  pub fn total_millis(&self) -> f32 { self.offset as f32 }
+  pub fn total_seconds(&self) -> f32 { self.total_millis() / 1000. }
+  pub fn total_minutes(&self) -> f32 { self.total_seconds() / 60. }
+  pub fn total_hours(&self) -> f32 { self.total_minutes() / 60. }
+  pub fn total_days(&self) -> f32 { self.total_hours() / 24. }
+}
+
+impl Add for TimeSpan {
+  type Output = TimeSpan;
+
+  fn add(self, rhs: Self) -> Self::Output {
+    TimeSpan::new(self.offset + rhs.offset)
+  }
+}
+
+impl Sub for TimeSpan {
+  type Output = TimeSpan;
+
+  fn sub(self, rhs: Self) -> Self::Output {
+    TimeSpan::new(self.offset - rhs.offset)
+  }
+}
+
+impl Mul<f32> for TimeSpan {
+  type Output = TimeSpan;
+
+  fn mul(self, rhs: f32) -> Self::Output {
+    TimeSpan::new((self.offset as f32 * rhs) as u128)
+  }
+}
+
+impl Div<f32> for TimeSpan {
+  type Output = TimeSpan;
+
+  fn div(self, rhs: f32) -> Self::Output {
+    TimeSpan::new((self.offset as f32 / rhs) as u128)
+  }
+}
+
+impl Display for TimeSpan {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+    match self {
+      _ if self.total_days() > 1. => write!(formatter, "{} days", self.total_days()),
+      _ if self.total_hours() > 1. => write!(formatter, "{} hours", self.total_hours()),
+      _ if self.total_minutes() > 1. => write!(formatter, "{} minutes", self.total_minutes()),
+      _ if self.total_seconds() > 1. => write!(formatter, "{} seconds", self.total_seconds()),
+      _ => write!(formatter, "{} milliseconds", self.total_millis())
+    }
+  }
 }
 
 #[cfg(test)]

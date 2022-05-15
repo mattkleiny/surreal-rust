@@ -1,5 +1,8 @@
 //! A lightweight and fast cross-platform input engine.
 
+pub use winit::event::MouseButton as MouseButton;
+pub use winit::event::VirtualKeyCode as Key;
+
 /// Represents a fallible result in the input subsystem.
 pub type InputResult<T> = anyhow::Result<T>;
 
@@ -27,26 +30,3 @@ pub trait MouseDevice {
   fn is_button_down(&self, button: MouseButton) -> bool;
   fn is_button_pressed(&self, button: MouseButton) -> bool;
 }
-
-/// Represents a button on the mouse.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub enum MouseButton {
-  Left,
-  Middle,
-  Right,
-}
-
-/// Represents a key on the keyboard.
-#[repr(u32)]
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub enum Key {
-  Escape = 0x01,
-}
-
-impl Key {
-  pub fn from_scancode(scancode: u32) -> Self {
-    // TODO: replace this with something safe?
-    unsafe { std::mem::transmute(scancode) }
-  }
-}
-
