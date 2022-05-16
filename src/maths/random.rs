@@ -16,8 +16,6 @@ pub struct Random {
 }
 
 impl Random {
-  const SEED_CONSTANT: u32 = 161803398;
-
   /// Constructs a random generator with the given seed.
   pub fn with_seed(seed: u64) -> Self {
     Random { state: seed }

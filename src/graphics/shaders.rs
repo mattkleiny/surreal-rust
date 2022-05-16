@@ -1,5 +1,5 @@
-use crate::graphics::{GraphicsContext, GraphicsHandle};
-use crate::maths::{Vector2, Vector3, Vector4};
+use crate::graphics::{GraphicsContext, GraphicsHandle, Sampler};
+use crate::maths::{Matrix2, Matrix3, Matrix4, Vector2, Vector3, Vector4};
 
 /// Different types fo shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -59,7 +59,23 @@ impl ShaderProgram {
     todo!()
   }
 
+  pub unsafe fn set_uniform_mat2(&self, location: usize, value: &Matrix2<f32>) {
+    todo!()
+  }
+
+  pub unsafe fn set_uniform_mat3(&self, location: usize, value: &Matrix3<f32>) {
+    todo!()
+  }
+
+  pub unsafe fn set_uniform_mat4(&self, location: usize, value: &Matrix4<f32>) {
+    todo!()
+  }
+
   pub unsafe fn set_texture(&self, location: usize, texture: GraphicsHandle, slot: usize) {
+    todo!()
+  }
+
+  pub unsafe fn set_texture_sampler(&self, texture: GraphicsHandle, sampler: &Sampler) {
     todo!()
   }
 }

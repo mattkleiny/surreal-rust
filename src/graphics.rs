@@ -23,7 +23,7 @@ pub type GraphicsResult<T> = anyhow::Result<T>;
 /// the building blocks for any higher level APIs.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct GraphicsHandle {
-  pub(crate) id: usize,
+  pub(crate) id: u32,
 }
 
 /// The context for graphics operations.
@@ -52,13 +52,13 @@ pub unsafe trait GraphicsServer {
 
   // buffers
   unsafe fn create_buffer(&self) -> GraphicsHandle;
-  unsafe fn read_buffer_data(&self, buffer: GraphicsHandle) -> Vec<u8>;
-  unsafe fn write_buffer_data(&self, buffer: GraphicsHandle, data: &[u8]);
+  unsafe fn read_buffer_data(&self, buffer: GraphicsHandle, kind: BufferKind, offset: usize, length: usize) -> Vec<u8>;
+  unsafe fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: &[u8]);
   unsafe fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
-  unsafe fn create_texture(&self) -> GraphicsHandle;
-  unsafe fn write_texture_data(&self, texture: GraphicsHandle, data: &[u8]);
+  unsafe fn create_texture(&self, filter_mode: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle;
+  unsafe fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: &[u8], format: TextureFormat, mip_level: usize);
   unsafe fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders

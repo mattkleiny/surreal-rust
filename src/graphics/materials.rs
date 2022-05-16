@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::graphics::{GraphicsHandle, MagnifyFilter, MinifyFilter, ShaderProgram, WrapFunction};
+use crate::graphics::{GraphicsHandle, ShaderProgram, TextureFilter, TextureWrap};
 use crate::maths::{Matrix2, Matrix3, Matrix4, Vector2, Vector3, Vector4};
 
 /// A material of uniform values and associated `ShaderProgram`.
@@ -61,11 +61,16 @@ impl<'a> Material<'a> {
         UniformValue::Vector2(value) => self.shader.set_uniform_vec2f32(uniform.location, *value),
         UniformValue::Vector3(value) => self.shader.set_uniform_vec3f32(uniform.location, *value),
         UniformValue::Vector4(value) => self.shader.set_uniform_vec4f32(uniform.location, *value),
+        UniformValue::Matrix2(value) => self.shader.set_uniform_mat2(uniform.location, value),
+        UniformValue::Matrix3(value) => self.shader.set_uniform_mat3(uniform.location, value),
+        UniformValue::Matrix4(value) => self.shader.set_uniform_mat4(uniform.location, value),
         UniformValue::Texture(texture, slot, sampler) => {
-          // TODO: set sampler state, as well
-          self.shader.set_texture(uniform.location, *texture, *slot)
+          self.shader.set_texture(uniform.location, *texture, *slot);
+
+          if let Some(sampler) = sampler {
+            self.shader.set_texture_sampler(*texture, sampler);
+          }
         }
-        _ => {}
       };
     }
   }
@@ -98,9 +103,9 @@ pub enum UniformValue {
 /// Behaviour for a sampler in a material.
 #[derive(Debug)]
 pub struct Sampler {
-  pub wrap_function: (WrapFunction, WrapFunction, WrapFunction),
-  pub minify_filter: MinifyFilter,
-  pub magnify_filter: MagnifyFilter,
+  pub wrap_function: (TextureWrap, TextureWrap, TextureWrap),
+  pub minify_filter: TextureFilter,
+  pub magnify_filter: TextureFilter,
 }
 
 macro_rules! implement_uniform {

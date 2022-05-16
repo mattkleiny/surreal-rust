@@ -3,47 +3,31 @@ use std::ops::{Add, Sub};
 use crate::maths::{FromRandom, Lerp, Random};
 
 /// A simple 32 bit color value with 4 channels (RGBA).
-#[derive(Copy, Clone, Default, Eq, PartialEq, PartialOrd, Debug)]
+#[derive(Copy, Clone, Default, Debug)]
 pub struct Color {
-  pub r: u8,
-  pub g: u8,
-  pub b: u8,
-  pub a: u8,
+  pub r: f32,
+  pub g: f32,
+  pub b: f32,
+  pub a: f32,
 }
 
 impl Color {
-  pub const CLEAR: Color = Self::rgba(0, 0, 0, 0);
-  pub const WHITE: Color = Self::rgb(255, 255, 255);
-  pub const BLACK: Color = Self::rgb(0, 0, 0);
-  pub const RED: Color = Self::rgb(255, 0, 0);
-  pub const GREEN: Color = Self::rgb(0, 255, 0);
-  pub const BLUE: Color = Self::rgb(0, 0, 255);
-  pub const MAGENTA: Color = Self::rgb(255, 0, 255);
+  pub const CLEAR: Color = Self::rgba(0., 0., 0., 0.);
+  pub const WHITE: Color = Self::rgb(1., 1., 1.);
+  pub const BLACK: Color = Self::rgb(0., 0., 0.);
+  pub const RED: Color = Self::rgb(1., 0., 0.);
+  pub const GREEN: Color = Self::rgb(0., 1., 0.);
+  pub const BLUE: Color = Self::rgb(0., 0., 1.);
+  pub const MAGENTA: Color = Self::rgb(1., 0., 1.);
 
   #[inline]
-  pub const fn rgb(r: u8, g: u8, b: u8) -> Self {
-    Self::rgba(r, g, b, 255)
+  pub const fn rgb(r: f32, g: f32, b: f32) -> Self {
+    Self::rgba(r, g, b, 1.)
   }
 
   #[inline]
-  pub const fn rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
+  pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
     Self { r, g, b, a }
-  }
-
-  pub fn to_packed_rgba(&self) -> u32 {
-    ((self.r as u32) << 24)
-        | ((self.g as u32) << 16)
-        | ((self.b as u32) << 8)
-        | (self.a as u32) as u32
-  }
-
-  pub fn from_packed_rgba(packed: u32) -> Self {
-    Self::rgba(
-      (packed >> 24 & 0xFF) as u8,
-      (packed >> 16 & 0xFF) as u8,
-      (packed >> 8 & 0xFF) as u8,
-      (packed >> 0 & 0xFF) as u8,
-    )
   }
 }
 
@@ -68,10 +52,10 @@ impl Sub for Color {
 impl Lerp for Color {
   fn lerp(a: Color, b: Color, t: f32) -> Self {
     Color::rgba(
-      u8::lerp(a.r, b.r, t),
-      u8::lerp(a.g, b.g, t),
-      u8::lerp(a.b, b.b, t),
-      u8::lerp(a.a, b.a, t),
+      f32::lerp(a.r, b.r, t),
+      f32::lerp(a.g, b.g, t),
+      f32::lerp(a.b, b.b, t),
+      f32::lerp(a.a, b.a, t),
     )
   }
 }

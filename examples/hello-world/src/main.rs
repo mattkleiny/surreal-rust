@@ -12,17 +12,22 @@ fn main() {
     let color1 = Color::random();
     let color2 = Color::random();
 
-    let _mesh = Mesh::create_quad(&game.host.graphics, 1.);
+    let mut pixels = Vec::with_capacity(256 * 144);
+    let mut texture = Texture::new(&game.host.graphics, TextureFormat::RGBA, TextureFilter::Nearest, TextureWrap::Clamp);
 
-    game.run_variable_step(|frame| unsafe {
-      let total_time = frame.time.total_time as f32;
+    pixels.fill(Color::WHITE);
+
+    game.run_variable_step(|context| unsafe {
+      let total_time = context.time.total_time as f32;
       let color = Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.);
 
-      frame.host.graphics.clear_color_buffer(color);
+      texture.write_pixel_data(256, 144, pixels.as_slice());
 
-      if let Some(keyboard) = frame.host.input.primary_keyboard_device() {
+      context.host.graphics.clear_color_buffer(color);
+
+      if let Some(keyboard) = context.host.input.primary_keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          frame.exit();
+          context.exit();
         }
       }
     });

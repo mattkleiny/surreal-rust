@@ -42,15 +42,15 @@ pub trait Tessellation {
 
     self.add_vertex(vertices[0].clone());
 
-    for i in 1..vertices.len() - 2 {
+    for i in 1..vertices.len() - 1 {
       let offset = self.vertex_count();
 
+      self.add_vertex(vertices[i + 0].clone());
       self.add_vertex(vertices[i + 1].clone());
-      self.add_vertex(vertices[i + 2].clone());
 
       self.add_index(first);
+      self.add_index(offset + 0);
       self.add_index(offset + 1);
-      self.add_index(offset + 2);
     }
   }
 
