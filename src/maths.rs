@@ -3,7 +3,6 @@
 pub use automata::*;
 pub use bounds::*;
 pub use curves::*;
-pub use grids::*;
 pub use interp::*;
 pub use linear::*;
 pub use numbers::*;
@@ -15,7 +14,6 @@ pub use tessellation::*;
 mod automata;
 mod bounds;
 mod curves;
-mod grids;
 mod interp;
 mod linear;
 mod numbers;
@@ -44,4 +42,15 @@ pub fn to_radians(degrees: f64) -> f64 {
 #[inline]
 pub fn to_degrees(radians: f64) -> f64 {
   (radians * 180.0) / std::f64::consts::PI
+}
+
+/// Allows approximate equality between types.
+pub trait ApproxEq<T = Self> {
+  fn approx_eq(&self, other: T) -> bool;
+}
+
+impl ApproxEq for f32 {
+  fn approx_eq(&self, other: Self) -> bool {
+    (other - self).abs() < f32::EPSILON
+  }
 }

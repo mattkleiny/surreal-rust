@@ -28,7 +28,7 @@ impl DesktopInputServer {
     keyboard.on_event_received(event);
   }
 
-  pub fn on_mouse_event(&mut self, button: winit::event::MouseButton, state: winit::event::ElementState) {
+  pub fn on_mouse_event(&mut self, button: MouseButton, state: ElementState) {
     // TODO: make this support multiple devices?
     let mouse = self.mice.first_mut().unwrap();
 
@@ -108,7 +108,7 @@ impl DesktopMouseDevice {
     }
   }
 
-  pub fn on_event_received(&mut self, button: winit::event::MouseButton, state: winit::event::ElementState) {
+  pub fn on_event_received(&mut self, button: MouseButton, state: ElementState) {
     match state {
       ElementState::Pressed => self.pressed_buttons.insert(button),
       ElementState::Released => self.pressed_buttons.remove(&button)

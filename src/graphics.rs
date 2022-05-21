@@ -1,17 +1,17 @@
 //! A lightweight cross-platform graphics engine.
 
 pub use buffers::*;
-pub use colors::*;
 pub use materials::*;
 pub use meshes::*;
+pub use pixels::*;
 pub use shaders::*;
 pub use textures::*;
 
 mod buffers;
-mod colors;
 mod materials;
 mod meshes;
 mod shaders;
+mod pixels;
 mod textures;
 
 /// Represents a fallible result in the graphics subsystem.
@@ -46,6 +46,7 @@ pub unsafe trait GraphicsServer {
 
   // intrinsics
   unsafe fn set_viewport_size(&self, viewport: Viewport);
+  unsafe fn set_blend_state(&self, blend_state: BlendState);
   unsafe fn clear_color_buffer(&self, color: Color);
   unsafe fn clear_depth_buffer(&self);
   unsafe fn flush_commands(&self);
@@ -66,7 +67,7 @@ pub unsafe trait GraphicsServer {
   unsafe fn delete_shader(&self, shader: GraphicsHandle);
 
   // meshes
-  unsafe fn create_mesh(&self) -> GraphicsHandle;
+  unsafe fn create_mesh(&self, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
   unsafe fn delete_mesh(&self, mesh: GraphicsHandle);
 }
 

@@ -36,11 +36,16 @@ pub trait Platform {
 ///
 /// An example host is the main window for a game in desktop environments.
 pub trait PlatformHost {
+  // basic state queries
   fn width(&self) -> usize;
   fn height(&self) -> usize;
   fn is_visible(&self) -> bool;
   fn is_focused(&self) -> bool;
   fn is_closing(&self) -> bool;
+
+  /// Runs the given body function on the platform.
   fn run(&mut self, body: impl FnMut(&mut Self));
+
+  /// Exits the platform.
   fn exit(&mut self);
 }

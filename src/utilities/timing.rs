@@ -1,3 +1,5 @@
+//! General utilities related to time.
+
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Div, Mul, Sub};
 use std::time::{SystemTime, UNIX_EPOCH};

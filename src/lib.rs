@@ -8,8 +8,10 @@
 
 #![allow(dead_code)]
 #![allow(unused_variables)]
+#![allow(incomplete_features)]
 
 #![feature(downcast_unchecked)]
+#![feature(generic_const_exprs)]
 
 extern crate core;
 
@@ -43,7 +45,7 @@ pub mod prelude {
 /// allows resources to refer back to the originating server `S`.
 pub struct Context<S: ?Sized>(std::rc::Rc<S>);
 
-impl<S: ?Sized> std::clone::Clone for Context<S> {
+impl<S: ?Sized> Clone for Context<S> {
   /// Clones the reference to the core system.
   fn clone(&self) -> Self {
     Self(self.0.clone())

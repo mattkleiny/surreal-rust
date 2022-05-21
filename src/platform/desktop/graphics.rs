@@ -2,7 +2,7 @@ use std::ffi::c_void;
 
 use raw_gl_context::{GlConfig, GlContext};
 
-use crate::graphics::{BufferKind, BufferUsage, GraphicsServer, TextureFilter, TextureFormat, TextureWrap};
+use crate::graphics::{BlendState, BufferKind, BufferUsage, GraphicsServer, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
 
 use super::*;
 
@@ -39,6 +39,10 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
 
   unsafe fn set_viewport_size(&self, viewport: Viewport) {
     gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
+  }
+
+  unsafe fn set_blend_state(&self, blend_state: BlendState) {
+    todo!()
   }
 
   unsafe fn clear_color_buffer(&self, color: Color) {
@@ -148,10 +152,12 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     todo!()
   }
 
-  unsafe fn create_mesh(&self) -> GraphicsHandle {
+  unsafe fn create_mesh(&self, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     let mut id: u32 = 0;
     gl::GenVertexArrays(1, &mut id);
-    GraphicsHandle { id }
+    GraphicsHandle { id };
+
+    todo!()
   }
 
   unsafe fn delete_mesh(&self, mesh: GraphicsHandle) {

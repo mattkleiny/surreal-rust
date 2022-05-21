@@ -2,12 +2,8 @@
 //!
 //! Bootstrapping, entities, framework systems and other miscellanea for common projects.
 
-pub use ecs::*;
-
 use crate::platform::{Platform, PlatformHost};
 use crate::utilities::{Clock, GameTime};
-
-mod ecs;
 
 /// The context for bootstrapping a game.
 pub struct Game<P> where P: Platform {

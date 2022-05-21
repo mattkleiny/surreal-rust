@@ -1,21 +1,54 @@
 use std::collections::HashMap;
 
-use crate::graphics::{GraphicsHandle, ShaderProgram, TextureFilter, TextureWrap};
+use crate::graphics::{GraphicsContext, GraphicsHandle, ShaderProgram, TextureFilter, TextureWrap};
 use crate::maths::{Matrix2, Matrix3, Matrix4, Vector2, Vector3, Vector4};
+
+/// Blending states for materials.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum BlendState {
+  Disabled,
+  Enabled {
+    source: BlendFactor,
+    destination: BlendFactor,
+  },
+}
+
+/// Blending factors for materials.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum BlendFactor {
+  OneMinusSrcAlpha,
+  OneMinusSrcColor,
+  OneMinusDstAlpha,
+  OneMinusDstColor,
+}
 
 /// A material of uniform values and associated `ShaderProgram`.
 pub struct Material<'a> {
+  context: GraphicsContext,
   shader: &'a ShaderProgram,
   uniforms: HashMap<String, Uniform>,
+  blend_state: BlendState,
 }
 
 impl<'a> Material<'a> {
   /// Constructs a new material for the given shader program.
-  pub fn new(shader: &'a ShaderProgram) -> Self {
+  pub fn new(context: &GraphicsContext, shader: &'a ShaderProgram) -> Self {
     Self {
+      context: context.clone(),
       shader,
       uniforms: HashMap::new(),
+      blend_state: BlendState::Disabled,
     }
+  }
+
+  /// Gets the blend state of the material.
+  pub fn blend_state(&self) -> BlendState {
+    self.blend_state
+  }
+
+  /// Sets the blend state of the material.
+  pub fn set_blend_state(&mut self, state: BlendState) {
+    self.blend_state = state;
   }
 
   /// Sets the given material uniform.
@@ -51,6 +84,8 @@ impl<'a> Material<'a> {
 
   /// Binds the material as the active shader and uploads it's uniforms.
   pub unsafe fn bind(&self) {
+    self.context.set_blend_state(self.blend_state);
+
     for (_, uniform) in &self.uniforms {
       match &uniform.value {
         UniformValue::Integer(value) => self.shader.set_uniform_u32(uniform.location, *value),
@@ -109,7 +144,7 @@ pub struct Sampler {
 }
 
 macro_rules! implement_uniform {
-  ($type:ty, $value:tt) => {
+  ($type:ty, $value:ident) => {
     impl Into<UniformValue> for $type {
       fn into(self) -> UniformValue {
         UniformValue::$value(self)

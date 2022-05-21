@@ -1,4 +1,4 @@
-use crate::graphics::{BufferUsage, Color, GraphicsBuffer, GraphicsContext, GraphicsHandle};
+use crate::graphics::{BufferUsage, Color, GraphicsBuffer, GraphicsContext, GraphicsHandle, Material};
 use crate::maths::{Tessellation, vec2, Vector2, Vector3};
 use crate::prelude::BufferKind;
 
@@ -13,7 +13,7 @@ pub enum PrimitiveTopology {
 
 /// Describes a kind of vertex.
 pub trait Vertex: Copy {
-  fn vertex_descriptors() -> &'static [VertexDescriptor];
+  fn descriptors() -> &'static [VertexDescriptor];
 }
 
 /// Describes a single vertex field.
@@ -41,7 +41,7 @@ impl<V> Mesh<V> where V: Vertex {
   /// Constructs a new blank mesh on the GPU.
   pub fn new(context: &GraphicsContext) -> Self {
     Self {
-      handle: unsafe { context.create_mesh() },
+      handle: unsafe { context.create_mesh(V::descriptors()) },
       context: context.clone(),
       vertices: GraphicsBuffer::new(context, BufferKind::Element, BufferUsage::Static),
       indices: GraphicsBuffer::new(context, BufferKind::Index, BufferUsage::Static),
@@ -59,8 +59,14 @@ impl<V> Mesh<V> where V: Vertex {
 
     mesh
   }
+
+  /// Draws this mesh with the given material and topology.
+  pub fn draw(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+    todo!()
+  }
 }
 
+/// Specialization for standard 2d meshes.
 impl Mesh<Vertex2> {
   /// Constructs a simple triangle mesh of the given size.
   pub fn create_triangle(context: &GraphicsContext, size: f32) -> Self {
@@ -126,7 +132,7 @@ impl<V> Drop for Mesh<V> {
   }
 }
 
-/// A simple tessellator for meshes.
+/// A simple tessellator for mesh shapes.
 pub struct Tessellator<V> {
   vertices: Vec<V>,
   indices: Vec<u32>,
@@ -172,7 +178,7 @@ pub struct Vertex2 {
 }
 
 impl Vertex for Vertex2 {
-  fn vertex_descriptors() -> &'static [VertexDescriptor] {
+  fn descriptors() -> &'static [VertexDescriptor] {
     // TODO: use a proc macro for this instead?
     static DESCRIPTORS: &[VertexDescriptor] = &[
       VertexDescriptor { offset: 0, count: 2, kind: VertexKind::F32, should_normalize: false },
@@ -193,7 +199,7 @@ pub struct Vertex3 {
 }
 
 impl Vertex for Vertex3 {
-  fn vertex_descriptors() -> &'static [VertexDescriptor] {
+  fn descriptors() -> &'static [VertexDescriptor] {
     static DESCRIPTORS: &[VertexDescriptor] = &[
       VertexDescriptor { offset: 0, count: 3, kind: VertexKind::F32, should_normalize: false },
       VertexDescriptor { offset: 12, count: 4, kind: VertexKind::U8, should_normalize: true },

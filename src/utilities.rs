@@ -1,7 +1,7 @@
 //! General utilities.
 
-pub use memory::*;
+pub use size::*;
 pub use timing::*;
 
-mod memory;
+mod size;
 mod timing;
