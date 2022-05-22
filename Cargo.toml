@@ -8,6 +8,7 @@ edition = "2021"
 [workspace]
 members = [
     "macros",
+    "examples/headless",
     "examples/hello-world",
     "examples/isaac",
     "examples/mindustry",

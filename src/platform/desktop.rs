@@ -23,6 +23,7 @@ mod input;
 pub struct Configuration {
   pub title: &'static str,
   pub size: (u32, u32),
+  pub vsync_enabled: bool,
   pub update_continuously: bool,
   pub show_fps_in_title: bool,
   pub icon: Option<&'static [u8]>,
@@ -33,6 +34,7 @@ impl Default for Configuration {
     Self {
       title: "Surreal",
       size: (1280, 720),
+      vsync_enabled: true,
       update_continuously: true,
       show_fps_in_title: true,
       icon: Some(include_bytes!("../../surreal.ico")),
@@ -77,7 +79,7 @@ impl Platform for DesktopPlatform {
     Self::Host {
       // servers
       audio: AudioContext::new(DesktopAudioServer::new()),
-      graphics: GraphicsContext::new(DesktopGraphicsServer::new(&window)),
+      graphics: GraphicsContext::new(DesktopGraphicsServer::new(&window, self.config.vsync_enabled)),
       input: DesktopInputServer::new(),
 
       // core

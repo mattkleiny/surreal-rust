@@ -384,6 +384,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "headless"
+version = "0.1.0"
+dependencies = [
+ "surreal",
+]
+
+[[package]]
 name = "hello-world"
 version = "0.1.0"
 dependencies = [

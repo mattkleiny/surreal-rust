@@ -1,0 +1,8 @@
+[package]
+name = "headless"
+description = "A headless platform example for Surreal"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+surreal = { version = "*", path = "../..", features = ["headless"] }
