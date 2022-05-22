@@ -1,4 +1,4 @@
-//! A lightweight and fast cross-platform input engine.
+//! A lightweight and cross-platform input engine.
 
 pub use winit::event::MouseButton as MouseButton;
 pub use winit::event::VirtualKeyCode as Key;

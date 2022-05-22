@@ -16,11 +16,11 @@ unsafe impl AudioServer for DesktopAudioServer {
     todo!()
   }
 
-  unsafe fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]) {
+  unsafe fn upload_clip_data(&self, _handle: AudioHandle, _data: &[u8]) {
     todo!()
   }
 
-  unsafe fn delete_clip(&self, handle: AudioHandle) {
+  unsafe fn delete_clip(&self, _handle: AudioHandle) {
     todo!()
   }
 }

@@ -33,7 +33,7 @@ pub struct QuadraticBezierCurve {
 }
 
 impl PlanarCurve for QuadraticBezierCurve {
-  fn sample_at(&self, normal: f32) -> Vector2<f32> {
+  fn sample_at(&self, _normal: f32) -> Vector2<f32> {
     todo!()
   }
 }
@@ -48,7 +48,7 @@ pub struct CubicBezierCurve {
 }
 
 impl PlanarCurve for CubicBezierCurve {
-  fn sample_at(&self, normal: f32) -> Vector2<f32> {
+  fn sample_at(&self, _normal: f32) -> Vector2<f32> {
     todo!()
   }
 }

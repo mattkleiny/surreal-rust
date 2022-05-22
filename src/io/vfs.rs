@@ -52,11 +52,6 @@ pub trait FileSystem {
   fn open_write(&self, path: VirtualPath) -> FileResult<Self::Stream>;
 }
 
-/// The local file system.
-struct LocalFileSystem {
-  base_path: String,
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;

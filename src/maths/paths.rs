@@ -39,7 +39,7 @@ pub trait PathFindingGrid {
   fn get_neighbours(&self, center: Point) -> Vec<Point>;
 
   /// Locates a path using A* from from the given start point to the given goal.
-  fn find_path(&self, start: Point, goal: Point, heuristic: Heuristic) -> Option<Path> {
+  fn find_path(&self, _start: Point, _goal: Point, _heuristic: Heuristic) -> Option<Path> {
     todo!()
   }
 }
@@ -48,7 +48,7 @@ pub mod heuristics {
   use super::*;
 
   /// A constant distance
-  pub fn constant(from: &Point, to: &Point) -> Cost {
+  pub fn constant(_from: &Point, _to: &Point) -> Cost {
     1.
   }
 

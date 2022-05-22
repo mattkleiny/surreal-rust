@@ -28,7 +28,6 @@ pub struct Clock {
   start_time: u128,
   last_time: u128,
   max_time: f64,
-  time_scale: f64,
 }
 
 impl Clock {
@@ -38,7 +37,6 @@ impl Clock {
       start_time: now(),
       last_time: 0,
       max_time: 0.16,
-      time_scale: 1.,
     }
   }
 

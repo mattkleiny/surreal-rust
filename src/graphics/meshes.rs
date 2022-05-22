@@ -12,24 +12,29 @@ pub enum PrimitiveTopology {
 }
 
 /// Describes a kind of vertex.
+///
+/// Vertices provide a set of `VertexDescriptor`s which are used for binding vertex data to a mesh.
 pub trait Vertex: Copy {
   fn descriptors() -> &'static [VertexDescriptor];
 }
 
-/// Describes a single vertex field.
+/// Describes a single vertex field in `Vertex` type.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct VertexDescriptor {
-  offset: usize,
-  count: usize,
-  kind: VertexKind,
-  should_normalize: bool,
+  pub offset: usize,
+  pub count: usize,
+  pub kind: VertexKind,
+  pub should_normalize: bool,
 }
 
 /// Different kinds of vertex primitives.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum VertexKind { U8, U16, U32, I16, I32, F32, F64 }
 
-/// A mesh of vertices of `V`.
+/// A mesh of vertices of `V` that has been uploaded to the GPU.
+///
+/// Meshes are stored on the GPU as vertex/index buffers and can be submitted for rendering at any
+/// time, provided a valid `Material` is available.
 pub struct Mesh<V> {
   handle: GraphicsHandle,
   context: GraphicsContext,
@@ -61,7 +66,7 @@ impl<V> Mesh<V> where V: Vertex {
   }
 
   /// Draws this mesh with the given material and topology.
-  pub fn draw(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  pub fn draw(&self, _material: &Material, _topology: PrimitiveTopology, _vertex_count: usize, _index_count: usize) {
     todo!()
   }
 }
@@ -99,7 +104,7 @@ impl Mesh<Vertex2> {
       let mut vertices = Vec::with_capacity(segments);
       let mut theta = 0.;
 
-      for i in 0..segments {
+      for _ in 0..segments {
         theta += 2. * PI / segments as f32;
 
         let cos = theta.cos();

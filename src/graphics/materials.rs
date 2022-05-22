@@ -22,7 +22,7 @@ pub enum BlendFactor {
   OneMinusDstColor,
 }
 
-/// A material of uniform values and associated `ShaderProgram`.
+/// A material describes how to render a mesh and describes the underlying GPU pipeline state needed.
 pub struct Material<'a> {
   context: GraphicsContext,
   shader: &'a ShaderProgram,
@@ -54,32 +54,25 @@ impl<'a> Material<'a> {
   /// Sets the given material uniform.
   pub fn set_uniform(&mut self, name: &str, value: impl Into<UniformValue>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
-      let key = name.to_string();
-      let value = Uniform {
-        location,
-        value: value.into(),
-      };
-
-      self.uniforms.insert(key, value);
+      self.uniforms.insert(name.to_string(), Uniform::new(location, value.into()));
     }
   }
 
-  /// Sets the given material texture.
+  /// Sets the given material texture, with optional sampler configuration.
   pub fn set_texture(&mut self, name: &str, texture: GraphicsHandle, slot: usize, sampler: Option<Sampler>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
-      let key = name.to_string();
-      let value = Uniform {
-        location,
-        value: UniformValue::Texture(texture, slot, sampler),
-      };
-
-      self.uniforms.insert(key, value);
+      self.uniforms.insert(name.to_string(), Uniform::new(location, UniformValue::Texture(texture, slot, sampler)));
     }
   }
 
   /// Removes a uniform from the material.
-  pub fn clear_uniform(&mut self, name: &str) {
+  pub fn remove_uniform(&mut self, name: &str) {
     self.uniforms.remove(name);
+  }
+
+  /// Removes all uniforms from the material.
+  pub fn clear_uniforms(&mut self) {
+    self.uniforms.clear();
   }
 
   /// Binds the material as the active shader and uploads it's uniforms.
@@ -118,7 +111,14 @@ struct Uniform {
   pub value: UniformValue,
 }
 
-/// Representation of single value in a `Uniform` in a `Material`.
+impl Uniform {
+  /// Creates a new uniform.
+  pub fn new(location: usize, value: UniformValue) -> Self {
+    Self { location, value }
+  }
+}
+
+/// Representation of single value that can be used in a `Material`.
 #[derive(Debug)]
 pub enum UniformValue {
   Integer(u32),
@@ -135,7 +135,9 @@ pub enum UniformValue {
   Texture(GraphicsHandle, usize, Option<Sampler>),
 }
 
-/// Behaviour for a sampler in a material.
+/// A sampler describes how a texture should be read from a shader program.
+///
+/// Sampler allow re-configuring wrap and filter modes on a per-material basis.
 #[derive(Debug)]
 pub struct Sampler {
   pub wrap_function: (TextureWrap, TextureWrap, TextureWrap),

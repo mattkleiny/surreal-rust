@@ -1,4 +1,4 @@
-//! Input/output abstractions and virtual file system.
+//! Input/output utilities and virtual file system.
 
 pub use vfs::*;
 

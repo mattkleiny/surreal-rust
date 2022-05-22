@@ -18,22 +18,13 @@ pub enum BufferUsage {
   Dynamic,
 }
 
-/// A GPU buffer implementation that can upload data of type `T`.
+/// A buffer implementation that can upload data of type `T` to the GPU.
 pub struct GraphicsBuffer<T> {
   handle: GraphicsHandle,
   context: GraphicsContext,
   kind: BufferKind,
   usage: BufferUsage,
   _type: PhantomData<T>,
-}
-
-/// Contains rendering attributes about a vertex.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VertexAttribute {
-  pub name: String,
-  pub binding: String,
-  pub offset: usize,
-  pub stride: usize,
 }
 
 impl<T> GraphicsBuffer<T> {

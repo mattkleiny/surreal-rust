@@ -23,59 +23,59 @@ impl ShaderProgram {
     }
   }
 
-  pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
+  pub fn get_uniform_location(&self, _name: &str) -> Option<usize> {
     Some(0)
   }
 
-  pub unsafe fn set_uniform_u32(&self, location: usize, value: u32) {
+  pub unsafe fn set_uniform_u32(&self, _location: usize, _value: u32) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_f32(&self, location: usize, value: f32) {
+  pub unsafe fn set_uniform_f32(&self, _location: usize, _value: f32) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_vec2i32(&self, location: usize, value: Vector2<i32>) {
+  pub unsafe fn set_uniform_vec2i32(&self, _location: usize, _value: Vector2<i32>) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_vec3i32(&self, location: usize, value: Vector3<i32>) {
+  pub unsafe fn set_uniform_vec3i32(&self, _location: usize, _value: Vector3<i32>) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_vec4i32(&self, location: usize, value: Vector4<i32>) {
+  pub unsafe fn set_uniform_vec4i32(&self, _location: usize, _value: Vector4<i32>) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_vec2f32(&self, location: usize, value: Vector2<f32>) {
+  pub unsafe fn set_uniform_vec2f32(&self, _location: usize, _value: Vector2<f32>) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_vec3f32(&self, location: usize, value: Vector3<f32>) {
+  pub unsafe fn set_uniform_vec3f32(&self, _location: usize, _value: Vector3<f32>) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_vec4f32(&self, location: usize, value: Vector4<f32>) {
+  pub unsafe fn set_uniform_vec4f32(&self, _location: usize, _value: Vector4<f32>) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_mat2(&self, location: usize, value: &Matrix2<f32>) {
+  pub unsafe fn set_uniform_mat2(&self, _location: usize, _value: &Matrix2<f32>) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_mat3(&self, location: usize, value: &Matrix3<f32>) {
+  pub unsafe fn set_uniform_mat3(&self, _location: usize, _value: &Matrix3<f32>) {
     todo!()
   }
 
-  pub unsafe fn set_uniform_mat4(&self, location: usize, value: &Matrix4<f32>) {
+  pub unsafe fn set_uniform_mat4(&self, _location: usize, _value: &Matrix4<f32>) {
     todo!()
   }
 
-  pub unsafe fn set_texture(&self, location: usize, texture: GraphicsHandle, slot: usize) {
+  pub unsafe fn set_texture(&self, _location: usize, _texture: GraphicsHandle, _slot: usize) {
     todo!()
   }
 
-  pub unsafe fn set_texture_sampler(&self, texture: GraphicsHandle, sampler: &Sampler) {
+  pub unsafe fn set_texture_sampler(&self, _texture: GraphicsHandle, _sampler: &Sampler) {
     todo!()
   }
 }

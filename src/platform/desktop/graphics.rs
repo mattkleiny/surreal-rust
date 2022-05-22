@@ -41,7 +41,7 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
   }
 
-  unsafe fn set_blend_state(&self, blend_state: BlendState) {
+  unsafe fn set_blend_state(&self, _blend_state: BlendState) {
     todo!()
   }
 
@@ -137,7 +137,7 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     let pointer = pixels.as_ptr() as *const c_void;
 
     gl::BindTexture(target, texture.id);
-    gl::TexImage2D(target, 0, internal_format as i32, width as i32, height as i32, 0, gl::RGBA, gl::FLOAT, pointer);
+    gl::TexImage2D(target, mip_level as i32, internal_format as i32, width as i32, height as i32, 0, gl::RGBA, gl::FLOAT, pointer);
   }
 
   unsafe fn delete_texture(&self, texture: GraphicsHandle) {
@@ -149,7 +149,7 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   }
 
   unsafe fn delete_shader(&self, shader: GraphicsHandle) {
-    todo!()
+    gl::DeleteProgram(shader.id);
   }
 
   unsafe fn create_mesh(&self, descriptors: &[VertexDescriptor]) -> GraphicsHandle {

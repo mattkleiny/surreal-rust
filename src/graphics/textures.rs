@@ -23,7 +23,7 @@ pub enum TextureFilter {
   Linear,
 }
 
-/// A GPU texture that can read and write pixel data.
+/// A texture is a set of pixel data that has been uploaded to the GPU.
 pub struct Texture {
   handle: GraphicsHandle,
   context: GraphicsContext,

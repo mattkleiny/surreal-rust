@@ -6,8 +6,6 @@
 //! for constructing small but fast 2d games (and maybe 3d someday). A lot of the work is left
 //! to the author as to how they'd like to glue things together.
 
-#![allow(dead_code)]
-#![allow(unused_variables)]
 #![allow(incomplete_features)]
 
 #![feature(downcast_unchecked)]
@@ -27,6 +25,10 @@ pub mod platform;
 pub mod utilities;
 
 pub mod prelude {
+  //! A prelude for the Surreal engine.
+  //!
+  //! Import this module to get convenient access to all engine features.
+
   pub use crate::assets::*;
   pub use crate::audio::*;
   pub use crate::collections::*;
