@@ -7,8 +7,10 @@ edition = "2021"
 
 [workspace]
 members = [
-    "crates/macros",
-    "examples/hello-world"
+    "macros",
+    "examples/hello-world",
+    "examples/isaac",
+    "examples/mindustry"
 ]
 
 [profile.dev.package."*"]
@@ -22,7 +24,7 @@ headless = []
 
 [dependencies]
 # internal dependencies
-surreal-macros = { path = "crates/macros" }
+surreal-macros = { path = "macros" }
 
 # third-party dependencies
 anyhow = "1.0.57"

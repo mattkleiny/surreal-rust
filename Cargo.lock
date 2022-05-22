@@ -426,6 +426,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "isaac"
+version = "0.1.0"
+dependencies = [
+ "surreal",
+ "winres",
+]
+
+[[package]]
 name = "jni-sys"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -525,6 +533,14 @@ checksum = "6585fd95e7bb50d6cc31e20d4cf9afb4e2ba16c5846fc76793f11218da9c475b"
 dependencies = [
  "libc",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "mindustry"
+version = "0.1.0"
+dependencies = [
+ "surreal",
+ "winres",
 ]
 
 [[package]]

@@ -33,7 +33,7 @@ impl Default for Configuration {
   fn default() -> Self {
     Self {
       title: "Surreal",
-      size: (1920, 1080),
+      size: (1280, 720),
       update_continuously: true,
       icon: Some(include_bytes!("../../surreal.ico")),
     }

@@ -1,6 +1,6 @@
 [package]
-name = "hello-world"
-description = "A simple 'Hello, World' example for Surreal"
+name = "mindustry"
+description = "A remake of the classic 'Mindustry' in Rust using Surreal"
 version = "0.1.0"
 edition = "2021"
 
