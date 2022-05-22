@@ -2,7 +2,6 @@
 
 use std::ops::{Add, Sub};
 
-use crate::io::AsVirtualPath;
 use crate::maths::{ApproxEq, FromRandom, Lerp, Numeric, Random};
 
 /// Represents a type of pixel.

@@ -59,10 +59,11 @@ fn parse_vertex_attributes(attributes: &Vec<Attribute>) -> (usize, proc_macro2::
   for attribute in attributes {
     if let Ok(meta) = attribute.parse_meta() {
       if meta.path().is_ident("vertex") {
-        let mut count: Option<usize> = Some(2);
-        let mut kind: Option<proc_macro2::TokenStream> = Some(quote!(F32));
-        let mut normalize: Option<bool> = Some(false);
+        let count: Option<usize> = Some(2);
+        let kind: Option<proc_macro2::TokenStream> = Some(quote!(F32));
+        let normalize: Option<bool> = Some(false);
 
+        // TODO: finish me
         // match meta {
         //   Meta::List(ref list) => {
         //     for nested in list.nested.iter() {

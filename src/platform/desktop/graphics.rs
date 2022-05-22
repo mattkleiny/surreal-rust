@@ -102,14 +102,19 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     gl::DeleteBuffers(1, &buffer.id);
   }
 
-  unsafe fn create_texture(&self, filter_mode: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle {
+  unsafe fn create_texture(&self, minify_filter: TextureFilter, magnify_filter: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle {
     let mut id: u32 = 0;
     let target = gl::TEXTURE_2D;
 
     gl::GenTextures(1, &mut id);
     gl::BindTexture(target, id);
 
-    let filter_mode = match filter_mode {
+    let minify_filter = match minify_filter {
+      TextureFilter::Nearest => gl::NEAREST,
+      TextureFilter::Linear => gl::LINEAR,
+    };
+
+    let magnify_filter = match magnify_filter {
       TextureFilter::Nearest => gl::NEAREST,
       TextureFilter::Linear => gl::LINEAR,
     };
@@ -119,8 +124,8 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
       TextureWrap::Mirror => gl::MIRRORED_REPEAT,
     };
 
-    gl::TexParameteri(target, gl::TEXTURE_MIN_FILTER, filter_mode as i32);
-    gl::TexParameteri(target, gl::TEXTURE_MAG_FILTER, filter_mode as i32);
+    gl::TexParameteri(target, gl::TEXTURE_MIN_FILTER, minify_filter as i32);
+    gl::TexParameteri(target, gl::TEXTURE_MAG_FILTER, magnify_filter as i32);
     gl::TexParameteri(target, gl::TEXTURE_WRAP_S, wrap_mode as i32);
     gl::TexParameteri(target, gl::TEXTURE_WRAP_T, wrap_mode as i32);
 
@@ -147,7 +152,7 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     todo!()
   }
 
-  unsafe fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()> {
+  unsafe fn link_shaders(&self, _shader: GraphicsHandle, _shaders: Vec<Shader>) -> GraphicsResult<()> {
     todo!()
   }
 
@@ -155,7 +160,7 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     gl::DeleteProgram(shader.id);
   }
 
-  unsafe fn create_mesh(&self, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
+  unsafe fn create_mesh(&self, _descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     let mut id: u32 = 0;
     gl::GenVertexArrays(1, &mut id);
     GraphicsHandle { id };

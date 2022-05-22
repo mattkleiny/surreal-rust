@@ -66,7 +66,7 @@ unsafe impl GraphicsServer for HeadlessGraphicsServer {
     // no-op
   }
 
-  unsafe fn create_texture(&self, _filter_mode: TextureFilter, _wrap_mode: TextureWrap) -> GraphicsHandle {
+  unsafe fn create_texture(&self, _minify_filter: TextureFilter, _magnify_filter: TextureFilter, _wrap_mode: TextureWrap) -> GraphicsHandle {
     GraphicsHandle { id: self.next_texture_id.fetch_add(1, Ordering::Relaxed) }
   }
 

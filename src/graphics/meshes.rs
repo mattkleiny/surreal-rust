@@ -9,7 +9,6 @@ pub enum PrimitiveTopology {
   Points,
   Lines,
   Triangles,
-  Quads,
 }
 
 /// Describes a kind of vertex.
@@ -96,8 +95,18 @@ impl<V> Mesh<V> where V: Vertex {
     mesh
   }
 
+  /// Returns the underlying GPU texture handle.
+  pub fn handle(&self) -> GraphicsHandle {
+    self.handle
+  }
+
   /// Draws this mesh with the given material and topology.
-  pub fn draw(&self, _material: &Material, _topology: PrimitiveTopology, _vertex_count: usize, _index_count: usize) {
+  pub fn draw(&self, _material: &Material, _topology: PrimitiveTopology) {
+    todo!()
+  }
+
+  /// Draws this mesh with the given material and topology.
+  pub fn draw_sub(&self, _material: &Material, _topology: PrimitiveTopology, _vertex_count: usize, _index_count: usize) {
     todo!()
   }
 }

@@ -1,5 +1,6 @@
 use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
 use crate::graphics::{GraphicsContext, GraphicsHandle, GraphicsResult, Sampler};
+use crate::io::{AsVirtualPath, FileResult};
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 /// Different types fo shaders supported by the engine.
@@ -28,6 +29,22 @@ impl ShaderProgram {
       handle: unsafe { context.create_shader() },
       context: context.clone(),
     }
+  }
+
+  /// Loads a shader program from a file.
+  pub fn load(context: &GraphicsContext, path: impl AsVirtualPath) -> FileResult<Self> {
+    let source_code = path.as_virtual_path().read_all_text()?;
+    let shaders = parse_glsl_source(&source_code);
+    let program = ShaderProgram::new(&context);
+
+    program.link_shaders(shaders)?;
+
+    Ok(program)
+  }
+
+  /// Returns the underlying GPU texture handle.
+  pub fn handle(&self) -> GraphicsHandle {
+    self.handle
   }
 
   pub fn get_uniform_location(&self, _name: &str) -> Option<usize> {

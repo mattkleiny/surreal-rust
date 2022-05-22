@@ -27,16 +27,18 @@ pub enum TextureFilter {
 /// Options for configuring a `Texture`.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct TextureOptions {
-  format: TextureFormat,
-  filter_mode: TextureFilter,
-  wrap_mode: TextureWrap,
+  pub format: TextureFormat,
+  pub minify_filter: TextureFilter,
+  pub magnify_filter: TextureFilter,
+  pub wrap_mode: TextureWrap,
 }
 
 impl Default for TextureOptions {
   fn default() -> Self {
     Self {
       format: TextureFormat::RGBA,
-      filter_mode: TextureFilter::Nearest,
+      minify_filter: TextureFilter::Nearest,
+      magnify_filter: TextureFilter::Nearest,
       wrap_mode: TextureWrap::Clamp,
     }
   }
@@ -58,7 +60,7 @@ impl Texture {
   /// Creates a new blank texture on the GPU.
   pub fn new_with_options(context: &GraphicsContext, options: TextureOptions) -> Self {
     Self {
-      handle: unsafe { context.create_texture(options.filter_mode, options.wrap_mode) },
+      handle: unsafe { context.create_texture(options.minify_filter, options.magnify_filter, options.wrap_mode) },
       context: context.clone(),
       options,
     }
@@ -71,6 +73,11 @@ impl Texture {
     texture.write_pixels(image.width(), image.height(), &image.as_slice());
 
     texture
+  }
+
+  /// Returns the underlying GPU texture handle.
+  pub fn handle(&self) -> GraphicsHandle {
+    self.handle
   }
 
   /// Downloads pixel data from the texture.

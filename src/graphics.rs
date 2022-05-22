@@ -62,7 +62,7 @@ pub unsafe trait GraphicsServer {
   unsafe fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
-  unsafe fn create_texture(&self, filter_mode: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle;
+  unsafe fn create_texture(&self, minify_filter: TextureFilter, magnify_filter: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle;
   unsafe fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: &[u8], format: TextureFormat, mip_level: usize);
   unsafe fn delete_texture(&self, texture: GraphicsHandle);
 
