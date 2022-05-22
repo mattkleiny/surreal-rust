@@ -5,6 +5,7 @@ pub use colors::*;
 pub use images::*;
 pub use materials::*;
 pub use meshes::*;
+pub use palettes::*;
 pub use shaders::*;
 pub use textures::*;
 
@@ -13,6 +14,7 @@ mod colors;
 mod images;
 mod materials;
 mod meshes;
+mod palettes;
 mod shaders;
 mod textures;
 

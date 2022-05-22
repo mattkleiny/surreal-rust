@@ -12,7 +12,8 @@ members = [
     "examples/hello-world",
     "examples/isaac",
     "examples/mindustry",
-    "examples/minecraft"
+    "examples/minecraft",
+    "examples/sand"
 ]
 
 [profile.dev.package."*"]
