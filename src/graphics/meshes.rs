@@ -1,4 +1,4 @@
-use surreal_macros::Vertex;
+pub use surreal_macros::Vertex;
 
 use crate::graphics::{BufferUsage, Color, GraphicsBuffer, GraphicsContext, GraphicsHandle, Material};
 use crate::maths::{Tessellation, vec2, Vector2, Vector3};
@@ -17,14 +17,12 @@ pub enum PrimitiveTopology {
 ///
 /// Vertices provide a set of `VertexDescriptor`s which are used for binding vertex data to a mesh.
 pub trait Vertex: Copy {
-  /// Returns the vertex descriptor for this vertex type.
-  fn descriptors() -> &'static [VertexDescriptor];
+  const DESCRIPTORS: &'static [VertexDescriptor];
 }
 
 /// Describes a single vertex field in a `Vertex` type.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct VertexDescriptor {
-  pub offset: usize,
   pub count: usize,
   pub kind: VertexKind,
   pub should_normalize: bool,
@@ -32,14 +30,21 @@ pub struct VertexDescriptor {
 
 /// Different kinds of vertex primitives.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum VertexKind {
-  U8,
-  U16,
-  U32,
-  I16,
-  I32,
-  F32,
-  F64,
+pub enum VertexKind { U8, U16, U32, I16, I32, F32, F64 }
+
+impl VertexKind {
+  /// Returns the size of this element type, in bytes.
+  pub const fn size(&self) -> usize {
+    match self {
+      VertexKind::U8 => std::mem::size_of::<u8>(),
+      VertexKind::U16 => std::mem::size_of::<u16>(),
+      VertexKind::U32 => std::mem::size_of::<u32>(),
+      VertexKind::I16 => std::mem::size_of::<i16>(),
+      VertexKind::I32 => std::mem::size_of::<i32>(),
+      VertexKind::F32 => std::mem::size_of::<f32>(),
+      VertexKind::F64 => std::mem::size_of::<f64>(),
+    }
+  }
 }
 
 /// A simple vertex in 2-space.
@@ -50,37 +55,12 @@ pub struct Vertex2 {
   #[vertex(2, F32)] pub uv: Vector2<f32>,
 }
 
-impl Vertex for Vertex2 {
-  fn descriptors() -> &'static [VertexDescriptor] {
-    // TODO: use a proc macro for this instead?
-    static DESCRIPTORS: &[VertexDescriptor] = &[
-      VertexDescriptor { offset: 0, count: 2, kind: VertexKind::F32, should_normalize: false },
-      VertexDescriptor { offset: 8, count: 4, kind: VertexKind::U8, should_normalize: true },
-      VertexDescriptor { offset: 16, count: 2, kind: VertexKind::F32, should_normalize: false },
-    ];
-
-    DESCRIPTORS
-  }
-}
-
 /// A simple vertex in 3-space.
 #[derive(Vertex, Copy, Clone, Debug)]
 pub struct Vertex3 {
   #[vertex(3, F32)] pub position: Vector3<f32>,
   #[vertex(4, F32)] pub color: Color,
   #[vertex(2, F32)] pub uv: Vector2<f32>,
-}
-
-impl Vertex for Vertex3 {
-  fn descriptors() -> &'static [VertexDescriptor] {
-    static DESCRIPTORS: &[VertexDescriptor] = &[
-      VertexDescriptor { offset: 0, count: 3, kind: VertexKind::F32, should_normalize: false },
-      VertexDescriptor { offset: 12, count: 4, kind: VertexKind::U8, should_normalize: true },
-      VertexDescriptor { offset: 20, count: 2, kind: VertexKind::F32, should_normalize: false },
-    ];
-
-    DESCRIPTORS
-  }
 }
 
 /// A mesh of vertices of `V` that has been uploaded to the GPU.
@@ -99,7 +79,7 @@ impl<V> Mesh<V> where V: Vertex {
   pub fn new(context: &GraphicsContext) -> Self {
     Self {
       context: context.clone(),
-      handle: unsafe { context.create_mesh(V::descriptors()) },
+      handle: unsafe { context.create_mesh(V::DESCRIPTORS) },
       vertices: GraphicsBuffer::new(context, BufferKind::Element, BufferUsage::Static),
       indices: GraphicsBuffer::new(context, BufferKind::Index, BufferUsage::Static),
     }
@@ -223,5 +203,24 @@ impl<V> Tessellation for Tessellator<V> where V: Vertex {
 
   fn add_index(&mut self, index: u32) {
     self.indices.push(index);
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn vertex_2_should_derive_valid_descriptors() {
+    let descriptors = Vertex2::DESCRIPTORS;
+
+    assert_eq!(descriptors.len(), 3);
+  }
+
+  #[test]
+  fn vertex_3_should_derive_valid_descriptors() {
+    let descriptors = Vertex3::DESCRIPTORS;
+
+    assert_eq!(descriptors.len(), 3);
   }
 }

@@ -13,8 +13,6 @@
 #![feature(const_refs_to_cell)]
 #![feature(decl_macro)]
 
-extern crate core;
-
 pub mod assets;
 pub mod audio;
 pub mod collections;

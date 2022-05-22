@@ -146,7 +146,7 @@ fn parse_glsl_source(source: &str) -> Vec<Shader> {
         kind,
         source_code: shared_code.clone(),
       });
-    } else if let Some(mut shader) = result.last_mut() {
+    } else if let Some(shader) = result.last_mut() {
       // build up the active shader unit
       shader.source_code.push_str(line);
       shader.source_code.push('\n');

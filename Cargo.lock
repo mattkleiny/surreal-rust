@@ -764,12 +764,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "proc"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7374c47d163806e1e2f12b63e5f2a6d6093e351a91a088b00fc654a354a5a332"
-
-[[package]]
 name = "proc-macro-crate"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -957,7 +951,8 @@ dependencies = [
 name = "surreal-macros"
 version = "0.1.0"
 dependencies = [
- "proc",
+ "proc-macro2 1.0.39",
+ "quote 1.0.18",
  "syn",
 ]
 
