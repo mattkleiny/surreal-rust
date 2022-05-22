@@ -1,10 +1,9 @@
 use std::collections::HashSet;
 
-use winit::event::ElementState;
+use winit::event::{ElementState, MouseButton};
 
-use crate::input::{InputServer, KeyboardDevice, MouseDevice};
-
-use super::*;
+use crate::input::{InputServer, Key, KeyboardDevice, MouseDevice};
+use crate::maths::{vec2, Vector2};
 
 /// The server for input management.
 pub struct DesktopInputServer {

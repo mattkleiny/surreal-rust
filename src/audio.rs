@@ -7,7 +7,9 @@ pub type AudioResult<T> = anyhow::Result<T>;
 
 /// An opaque handle to an underlying resource in the `AudioServer`.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct AudioHandle(usize);
+pub struct AudioHandle {
+  pub(crate) id: u32,
+}
 
 /// The context for audio operations.
 pub type AudioContext = super::Context<dyn AudioServer>;
@@ -44,11 +46,13 @@ impl AudioSampleRate {
     bits_per_sample: 16,
   };
 
-  fn bits_per_second(&self) -> u16 {
+  /// Calculates the bits per second for this sample rate.
+  pub fn bits_per_second(&self) -> u16 {
     self.frequency * self.channels as u16 * self.bits_per_sample as u16
   }
 
-  fn bytes_per_second(&self) -> f32 {
+  /// Calculates the bytes per second for this sample rate.
+  pub fn bytes_per_second(&self) -> f32 {
     self.bits_per_second() as f32 / 8.0
   }
 

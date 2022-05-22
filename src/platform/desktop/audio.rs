@@ -1,6 +1,4 @@
-use crate::audio::AudioServer;
-
-use super::*;
+use crate::audio::{AudioHandle, AudioServer};
 
 /// The audio server for the desktop platform.
 pub struct DesktopAudioServer {}

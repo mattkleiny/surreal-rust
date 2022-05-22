@@ -4,7 +4,7 @@ use std::ops::Deref;
 pub type Point = super::Vector2<i32>;
 
 /// A cost for path searches and relative queries.
-pub type Cost = f64;
+pub type Cost = f32;
 
 /// A heuristic function for path-finding.
 pub type Heuristic = fn(&Point, &Point) -> Cost;
@@ -15,16 +15,19 @@ pub struct Path(Vec<Point>);
 
 impl Path {
   /// The start point of the path.
-  pub fn start(&self) -> Point { self.0[0] }
+  pub fn start(&self) -> Option<Point> {
+    self.0.first().map(|value| *value)
+  }
 
   /// The goal point of the path.
-  pub fn goal(&self) -> Point { self.0[self.0.len() - 1] }
+  pub fn goal(&self) -> Option<Point> {
+    self.0.last().map(|value| *value)
+  }
 }
 
 impl Deref for Path {
   type Target = [Point];
 
-  #[inline(always)]
   fn deref(&self) -> &Self::Target {
     &self.0
   }

@@ -13,7 +13,7 @@ pub enum ShaderKind {
 #[derive(Clone, Debug)]
 pub struct Shader {
   kind: ShaderKind,
-  source_code: String,
+  code: String,
 }
 
 /// Represents a single compiled shader program.
@@ -114,7 +114,8 @@ impl AssetLoader for ShaderProgramLoader {
   }
 
   fn load(&self, context: AssetLoadContext) -> AssetResult<ShaderProgram> {
-    let shaders = parse_glsl_source(&context.path.read_all_text()?);
+    let source_code = context.path.read_all_text()?;
+    let shaders = parse_glsl_source(&source_code);
     let program = ShaderProgram::new(&self.context);
 
     program.link_shaders(shaders)?;
@@ -142,16 +143,13 @@ fn parse_glsl_source(source: &str) -> Vec<Shader> {
         _ => continue,
       };
 
-      result.push(Shader {
-        kind,
-        source_code: shared_code.clone(),
-      });
+      result.push(Shader { kind, code: shared_code.clone() });
     } else if let Some(shader) = result.last_mut() {
       // build up the active shader unit
-      shader.source_code.push_str(line);
-      shader.source_code.push('\n');
+      shader.code.push_str(line);
+      shader.code.push('\n');
     } else {
-      // build up the shared code
+      // build up the shared code unit
       shared_code.push_str(line);
       shared_code.push('\n');
     };
@@ -204,6 +202,8 @@ mod tests {
 
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].kind, ShaderKind::Vertex);
+    assert!(result[0].code.trim().starts_with("#version 330 core"));
     assert_eq!(result[1].kind, ShaderKind::Fragment);
+    assert!(result[1].code.trim().starts_with("#version 330 core"));
   }
 }

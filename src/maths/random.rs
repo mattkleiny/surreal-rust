@@ -3,7 +3,9 @@ use std::cell::UnsafeCell;
 /// A type that can be randomly generated.
 pub trait FromRandom: Sized {
   /// Generates a new value of this type with a global random seed.
-  fn random() -> Self { generate_thread_local() }
+  fn random() -> Self {
+    generate_thread_local()
+  }
 
   /// Generates a new random value of this type using the given generator.
   fn from_random(random: &mut Random) -> Self;
@@ -27,7 +29,6 @@ impl Random {
   }
 
   /// Generates a new value of the given `Random` type, T.
-  #[inline(always)]
   pub fn next<T>(&mut self) -> T where T: FromRandom {
     T::from_random(self)
   }

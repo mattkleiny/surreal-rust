@@ -43,18 +43,3 @@ impl Image {
     todo!()
   }
 }
-
-/// Allows loading `Image`s as assets.
-pub struct ImageLoader {}
-
-impl AssetLoader for ImageLoader {
-  type Asset = Image;
-
-  fn can_load(&self, context: AssetLoadContext) -> bool {
-    context.path.extension().ends_with("png")
-  }
-
-  fn load(&self, context: AssetLoadContext) -> AssetResult<Self::Asset> {
-    Image::load(context.path)
-  }
-}

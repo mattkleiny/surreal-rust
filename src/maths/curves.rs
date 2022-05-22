@@ -1,7 +1,7 @@
 use crate::maths::{Lerp, Vector2};
 
 /// Represents a curve on a plane in 2-space.
-pub trait PlanarCurve {
+pub trait Curve {
   fn sample_at(&self, t: f32) -> Vector2<f32>;
 }
 
@@ -12,13 +12,7 @@ pub struct Line {
   pub b: Vector2<f32>,
 }
 
-impl Line {
-  pub const fn new(a: Vector2<f32>, b: Vector2<f32>) -> Self {
-    Self { a, b }
-  }
-}
-
-impl PlanarCurve for Line {
+impl Curve for Line {
   fn sample_at(&self, t: f32) -> Vector2<f32> {
     Vector2::lerp(self.a, self.b, t)
   }
@@ -26,13 +20,13 @@ impl PlanarCurve for Line {
 
 /// Represents a quadratic bezier curve in 2-space.
 #[derive(Copy, Clone, Debug)]
-pub struct QuadraticBezierCurve {
+pub struct QuadraticBezier {
   pub start: Vector2<f32>,
   pub control: Vector2<f32>,
   pub end: Vector2<f32>,
 }
 
-impl PlanarCurve for QuadraticBezierCurve {
+impl Curve for QuadraticBezier {
   fn sample_at(&self, _normal: f32) -> Vector2<f32> {
     todo!()
   }
@@ -40,14 +34,14 @@ impl PlanarCurve for QuadraticBezierCurve {
 
 /// Represents a cubic bezier curve in 2-space.
 #[derive(Copy, Clone, Debug)]
-pub struct CubicBezierCurve {
+pub struct CubicBezier {
   pub start: Vector2<f32>,
   pub control1: Vector2<f32>,
   pub control2: Vector2<f32>,
   pub end: Vector2<f32>,
 }
 
-impl PlanarCurve for CubicBezierCurve {
+impl Curve for CubicBezier {
   fn sample_at(&self, _normal: f32) -> Vector2<f32> {
     todo!()
   }

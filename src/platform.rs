@@ -5,10 +5,6 @@ pub use desktop::*;
 #[cfg(feature = "headless")]
 pub use headless::*;
 
-pub use crate::audio::AudioServer;
-pub use crate::graphics::GraphicsServer;
-pub use crate::input::InputServer;
-
 #[cfg(feature = "desktop")]
 pub mod desktop;
 #[cfg(feature = "headless")]
@@ -39,7 +35,6 @@ pub trait PlatformHost {
   // basic state queries
   fn width(&self) -> usize;
   fn height(&self) -> usize;
-  fn is_visible(&self) -> bool;
   fn is_focused(&self) -> bool;
   fn is_closing(&self) -> bool;
 

@@ -10,7 +10,8 @@ members = [
     "macros",
     "examples/hello-world",
     "examples/isaac",
-    "examples/mindustry"
+    "examples/mindustry",
+    "examples/minecraft"
 ]
 
 [profile.dev.package."*"]

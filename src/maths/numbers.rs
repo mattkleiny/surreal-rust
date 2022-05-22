@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-/// Represents a numeric type.
+/// Represents a numeric type that allows standard equality and arithmetic.
 pub trait Numeric: Copy + PartialOrd + PartialEq + Add<Output=Self> + Sub<Output=Self> + Mul<Output=Self> + Div<Output=Self> {
   const ZERO: Self;
   const ONE: Self;

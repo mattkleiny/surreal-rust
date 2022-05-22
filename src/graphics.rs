@@ -47,7 +47,7 @@ pub unsafe trait GraphicsServer {
   unsafe fn end_frame(&self);
 
   // intrinsics
-  unsafe fn set_viewport_size(&self, viewport: Viewport);
+  unsafe fn set_viewport_size(&self, viewport: (usize, usize));
   unsafe fn set_blend_state(&self, blend_state: BlendState);
   unsafe fn clear_color_buffer(&self, color: Color);
   unsafe fn clear_depth_buffer(&self);
@@ -72,11 +72,4 @@ pub unsafe trait GraphicsServer {
   // meshes
   unsafe fn create_mesh(&self, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
   unsafe fn delete_mesh(&self, mesh: GraphicsHandle);
-}
-
-/// A viewport for scissoring operations on a `GraphicsDevice`.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Viewport {
-  pub width: usize,
-  pub height: usize,
 }

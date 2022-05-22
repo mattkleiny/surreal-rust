@@ -1,6 +1,6 @@
 //! Game framework for Surreal.
 //!
-//! Bootstrapping, entities, framework systems and other miscellanea for common projects.
+//! Bootstrapping and other framework systems for common projects.
 
 use crate::platform::{Platform, PlatformHost};
 use crate::utilities::{Clock, GameTime};

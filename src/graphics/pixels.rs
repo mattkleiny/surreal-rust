@@ -37,12 +37,10 @@ impl Color {
   pub const BLUE: Color = Self::rgb(0., 0., 1.);
   pub const MAGENTA: Color = Self::rgb(1., 0., 1.);
 
-  #[inline]
   pub const fn rgb(r: f32, g: f32, b: f32) -> Self {
     Self::rgba(r, g, b, 1.)
   }
 
-  #[inline]
   pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
     Self { r, g, b, a }
   }
@@ -74,7 +72,6 @@ impl PartialEq for Color {
 impl Add for Color {
   type Output = Color;
 
-  #[inline]
   fn add(self, rhs: Self) -> Self::Output {
     Color::rgba(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
   }
@@ -83,7 +80,6 @@ impl Add for Color {
 impl Sub for Color {
   type Output = Color;
 
-  #[inline]
   fn sub(self, rhs: Self) -> Self::Output {
     Color::rgba(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
   }

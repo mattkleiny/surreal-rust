@@ -544,6 +544,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "minecraft"
+version = "0.1.0"
+dependencies = [
+ "surreal",
+ "winres",
+]
+
+[[package]]
 name = "miniz_oxide"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

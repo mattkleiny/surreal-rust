@@ -1,10 +1,9 @@
 use std::ffi::c_void;
 
 use raw_gl_context::{GlConfig, GlContext};
+use winit::window::Window;
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, GraphicsResult, GraphicsServer, Shader, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
-
-use super::*;
+use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, Shader, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
 
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphicsServer {
@@ -37,8 +36,8 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
     self.context.make_not_current();
   }
 
-  unsafe fn set_viewport_size(&self, viewport: Viewport) {
-    gl::Viewport(0, 0, viewport.width as i32, viewport.height as i32);
+  unsafe fn set_viewport_size(&self, (width, height): (usize, usize)) {
+    gl::Viewport(0, 0, width as i32, height as i32);
   }
 
   unsafe fn set_blend_state(&self, _blend_state: BlendState) {
