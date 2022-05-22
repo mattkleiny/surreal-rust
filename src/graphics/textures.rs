@@ -24,39 +24,67 @@ pub enum TextureFilter {
   Linear,
 }
 
+/// Options for configuring a `Texture`.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct TextureOptions {
+  format: TextureFormat,
+  filter_mode: TextureFilter,
+  wrap_mode: TextureWrap,
+}
+
+impl Default for TextureOptions {
+  fn default() -> Self {
+    Self {
+      format: TextureFormat::RGBA,
+      filter_mode: TextureFilter::Nearest,
+      wrap_mode: TextureWrap::Clamp,
+    }
+  }
+}
+
 /// A texture is a set of pixel data that has been uploaded to the GPU.
 pub struct Texture {
   handle: GraphicsHandle,
   context: GraphicsContext,
-  format: TextureFormat,
+  options: TextureOptions,
 }
 
 impl Texture {
+  /// Creates a new blank texture on the GPU with default options.
+  pub fn new(context: &GraphicsContext) -> Self {
+    Self::new_with_options(context, TextureOptions::default())
+  }
+
   /// Creates a new blank texture on the GPU.
-  pub fn new(context: &GraphicsContext, format: TextureFormat, filter_mode: TextureFilter, wrap_mode: TextureWrap) -> Self {
+  pub fn new_with_options(context: &GraphicsContext, options: TextureOptions) -> Self {
     Self {
-      handle: unsafe { context.create_texture(filter_mode, wrap_mode) },
+      handle: unsafe { context.create_texture(options.filter_mode, options.wrap_mode) },
       context: context.clone(),
-      format,
+      options,
     }
   }
 
   /// Creates a new texture from an image.
-  pub fn from_image(context: &GraphicsContext, image: &Image, format: TextureFormat, filter: TextureFilter, wrap: TextureWrap) -> Texture {
-    let mut texture = Self::new(context, format, filter, wrap);
+  pub fn from_image(context: &GraphicsContext, image: &Image, options: TextureOptions) -> Texture {
+    let mut texture = Self::new_with_options(context, options);
 
-    texture.write_pixel_data(image.width(), image.height(), &image.as_slice());
+    texture.write_pixels(image.width(), image.height(), &image.as_slice());
 
     texture
   }
 
+  /// Downloads pixel data from the texture.
+  pub fn read_pixels(&self) -> Vec<Color> {
+    todo!()
+  }
+
   /// Uploads pixel data to the texture.
-  pub fn write_pixel_data(&mut self, width: usize, height: usize, pixels: &[Color]) {
+  pub fn write_pixels(&mut self, width: usize, height: usize, pixels: &[Color]) {
     unsafe {
       let size = pixels.len() * size_of::<Color>();
       let bytes = slice::from_raw_parts(pixels.as_ptr() as *const u8, size);
 
-      self.context.write_texture_data(self.handle, width, height, bytes, self.format, 0);
+      self.context.write_texture_data(self.handle, width, height, bytes, self.options.format, 0);
     }
   }
 }
@@ -73,18 +101,14 @@ impl Drop for Texture {
 /// Allows loading `Texture` from the virtual file system.
 pub struct TextureLoader {
   context: GraphicsContext,
-  default_format: TextureFormat,
-  default_filter: TextureFilter,
-  default_wrap: TextureWrap,
+  options: TextureOptions,
 }
 
 impl TextureLoader {
   pub fn new(context: &GraphicsContext) -> Self {
     Self {
       context: context.clone(),
-      default_format: TextureFormat::RGBA,
-      default_filter: TextureFilter::Nearest,
-      default_wrap: TextureWrap::Clamp,
+      options: TextureOptions::default(),
     }
   }
 }
@@ -98,7 +122,7 @@ impl AssetLoader for TextureLoader {
 
   fn load(&self, context: AssetLoadContext) -> AssetResult<Self::Asset> {
     let image = context.load_asset(context.path)?;
-    let texture = Texture::from_image(&self.context, image, self.default_format, self.default_filter, self.default_wrap);
+    let texture = Texture::from_image(&self.context, image, self.options);
 
     Ok(texture)
   }

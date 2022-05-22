@@ -17,7 +17,7 @@ impl Image {
     }
   }
 
-  /// Attempts to load an image from the given path with a dynamic format.
+  /// Attempts to load an image from the given path with a discovered format.
   pub fn load(path: impl AsVirtualPath) -> AssetResult<Self> {
     let stream = path.as_virtual_path().open_input_stream()?;
     let reader = image::io::Reader::new(stream).with_guessed_format()?;
@@ -49,19 +49,6 @@ impl Image {
   /// Returns the height of the image.
   pub fn height(&self) -> usize {
     self.buffer.height() as usize
-  }
-
-  /// Gets the color of the pixel at the given coordinates.
-  pub fn get_pixel(&self, x: usize, y: usize) -> Color {
-    let pixel = self.buffer.get_pixel(x as u32, y as u32);
-    let [r, g, b, a] = pixel.0;
-
-    Color::rgba(r, g, b, a)
-  }
-
-  /// Sets the color of the pixel at the given coordinates.
-  pub fn set_pixel(&mut self, x: usize, y: usize, color: Color) {
-    self.buffer.get_pixel_mut(x as u32, y as u32).0 = [color.r, color.g, color.b, color.a];
   }
 
   /// Retrieves the pixels of the image as a slice of `Color`s.

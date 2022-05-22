@@ -13,7 +13,7 @@ fn main() {
     let color2 = Color::random();
 
     let mut pixels = Vec::with_capacity(256 * 144);
-    let mut texture = Texture::new(&game.host.graphics, TextureFormat::RGBA, TextureFilter::Nearest, TextureWrap::Clamp);
+    let mut texture = Texture::new_with_options(&game.host.graphics, TextureFormat::RGBA, TextureFilter::Nearest, TextureWrap::Clamp);
 
     pixels.fill(Color::WHITE);
 
@@ -21,7 +21,7 @@ fn main() {
       let total_time = context.time.total_time as f32;
       let color = Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.);
 
-      texture.write_pixel_data(256, 144, pixels.as_slice());
+      texture.write_pixels(256, 144, pixels.as_slice());
 
       context.host.graphics.clear_color_buffer(color);
 

@@ -10,9 +10,6 @@ members = [
     "macros",
     "examples/headless",
     "examples/hello-world",
-    "examples/isaac",
-    "examples/mindustry",
-    "examples/minecraft",
     "examples/sand"
 ]
 

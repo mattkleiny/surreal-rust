@@ -3,9 +3,8 @@ use std::ops::Index;
 
 use anyhow::anyhow;
 
-use crate::graphics::Pixel;
+use crate::graphics::{Color, Pixel, Texture};
 use crate::io::{AsVirtualPath, FileResult};
-use crate::maths::Numeric;
 
 /// A palette of colors of type `P`.
 pub struct ColorPalette<P> {
@@ -88,6 +87,13 @@ impl<P> ColorPalette<P> where P: Pixel {
   /// Returns the colors as a mutable slice of pixels.
   pub fn as_slice_mut(&mut self) -> &mut [P] {
     &mut self.colors
+  }
+}
+
+impl Texture {
+  /// Writes the palette to the given texture at the given Y index.
+  pub fn write_palette(&mut self, channel: usize, palette: &ColorPalette<Color>) {
+    self.write_pixels(palette.len(), channel, palette.as_slice());
   }
 }
 
