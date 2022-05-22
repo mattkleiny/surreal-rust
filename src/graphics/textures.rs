@@ -42,8 +42,12 @@ impl Texture {
   }
 
   /// Creates a new texture from an image.
-  pub fn from_image(context: &GraphicsContext, image: &Image) -> Texture {
-    todo!()
+  pub fn from_image(context: &GraphicsContext, image: &Image, format: TextureFormat, filter: TextureFilter, wrap: TextureWrap) -> Texture {
+    let mut texture = Self::new(context, format, filter, wrap);
+
+    texture.write_pixel_data(image.width(), image.height(), &image.as_slice());
+
+    texture
   }
 
   /// Uploads pixel data to the texture.
@@ -69,6 +73,20 @@ impl Drop for Texture {
 /// Allows loading `Texture` from the virtual file system.
 pub struct TextureLoader {
   context: GraphicsContext,
+  default_format: TextureFormat,
+  default_filter: TextureFilter,
+  default_wrap: TextureWrap,
+}
+
+impl TextureLoader {
+  pub fn new(context: &GraphicsContext) -> Self {
+    Self {
+      context: context.clone(),
+      default_format: TextureFormat::RGBA,
+      default_filter: TextureFilter::Nearest,
+      default_wrap: TextureWrap::Clamp,
+    }
+  }
 }
 
 impl AssetLoader for TextureLoader {
@@ -80,7 +98,8 @@ impl AssetLoader for TextureLoader {
 
   fn load(&self, context: AssetLoadContext) -> AssetResult<Self::Asset> {
     let image = context.load_asset(context.path)?;
+    let texture = Texture::from_image(&self.context, image, self.default_format, self.default_filter, self.default_wrap);
 
-    Ok(Texture::from_image(&self.context, image))
+    Ok(texture)
   }
 }

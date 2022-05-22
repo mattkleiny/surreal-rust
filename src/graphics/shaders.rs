@@ -10,7 +10,6 @@ pub enum ShaderKind {
 }
 
 /// Defines a single shader kernel in a shader program.
-#[derive(Clone, Debug)]
 pub struct Shader {
   kind: ShaderKind,
   code: String,

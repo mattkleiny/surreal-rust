@@ -13,9 +13,9 @@ pub trait Pixel: Copy + Clone {
   const CHANNEL_COUNT: usize;
 
   /// Constructs this pixel type from raw subpixel values.
-  fn from_slice(slice: &[Self::Subpixel]) -> Self;
+  fn from_slice(slice: &[Self::Subpixel; Self::CHANNEL_COUNT]) -> Self;
 
-  /// Gets an array of the pixel's values.
+  /// Gets an array of the pixel's channels.
   fn channels(&self) -> [Self::Subpixel; Self::CHANNEL_COUNT];
 }
 
@@ -51,7 +51,7 @@ impl Pixel for Color {
 
   const CHANNEL_COUNT: usize = 4;
 
-  fn from_slice(slice: &[Self::Subpixel]) -> Self {
+  fn from_slice(slice: &[Self::Subpixel; Self::CHANNEL_COUNT]) -> Self {
     Self { r: slice[0], g: slice[1], b: slice[2], a: slice[3] }
   }
 

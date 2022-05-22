@@ -57,7 +57,7 @@ impl AudioSampleRate {
   }
 
   /// Calculates the total `Size` required for the given duration at this sample rate.
-  fn calculate_size(&self, duration: TimeSpan) -> Size {
+  pub fn calculate_size(&self, duration: TimeSpan) -> Size {
     Size::from_bytes((duration.total_seconds() * self.bytes_per_second()).ceil() as usize)
   }
 }

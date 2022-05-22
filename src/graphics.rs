@@ -1,19 +1,19 @@
 //! A lightweight cross-platform graphics engine.
 
 pub use buffers::*;
+pub use colors::*;
 pub use images::*;
 pub use materials::*;
 pub use meshes::*;
-pub use pixels::*;
 pub use shaders::*;
 pub use textures::*;
 
 mod buffers;
+mod colors;
 mod images;
 mod materials;
 mod meshes;
 mod shaders;
-mod pixels;
 mod textures;
 
 /// Represents a fallible result in the graphics subsystem.

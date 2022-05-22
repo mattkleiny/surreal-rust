@@ -63,6 +63,18 @@ impl Image {
   pub fn set_pixel(&mut self, x: usize, y: usize, color: Color) {
     self.buffer.get_pixel_mut(x as u32, y as u32).0 = [color.r, color.g, color.b, color.a];
   }
+
+  /// Retrieves the pixels of the image as a slice of `Color`s.
+  pub fn as_slice(&self) -> &[Color] {
+    let rgba = self.buffer.as_ref();
+
+    unsafe {
+      std::slice::from_raw_parts(
+        rgba.as_ptr() as *const Color,
+        rgba.len() / 4,
+      )
+    }
+  }
 }
 
 #[cfg(test)]
@@ -75,5 +87,9 @@ mod tests {
 
     assert_eq!(image.width(), 32);
     assert_eq!(image.height(), 32);
+
+    let colors = image.as_slice();
+
+    assert_eq!(colors.len(), 32 * 32);
   }
 }
