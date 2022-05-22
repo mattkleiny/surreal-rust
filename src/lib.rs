@@ -10,6 +10,7 @@
 
 #![feature(downcast_unchecked)]
 #![feature(generic_const_exprs)]
+#![feature(const_refs_to_cell)]
 
 extern crate core;
 

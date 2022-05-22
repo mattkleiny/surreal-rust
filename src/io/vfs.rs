@@ -27,6 +27,10 @@ impl<'a> VirtualPath<'a> {
       location: split[1],
     }
   }
+
+  pub fn read_all_text(&self) -> FileResult<String> {
+    todo!()
+  }
 }
 
 impl<'a> std::fmt::Debug for VirtualPath<'a> {

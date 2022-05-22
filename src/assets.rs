@@ -7,12 +7,19 @@ use std::cell::UnsafeCell;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
+use crate::io::VirtualPath;
+
 /// Represents a fallible result in the asset subsystem.
 pub type AssetResult<T> = anyhow::Result<T>;
 
 /// An opaque handle to an asset in the asset system.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct AssetHandle(usize);
+
+/// Allows loading an asset from the virtual file system.
+pub trait AssetLoader<T> {
+  fn load(&self, path: VirtualPath) -> AssetResult<T>;
+}
 
 /// A shared pointer to an asset, with support for interior hot-reloading.
 ///

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::graphics::{GraphicsContext, GraphicsHandle, ShaderProgram, TextureFilter, TextureWrap};
-use crate::maths::{Matrix2, Matrix3, Matrix4, Vector2, Vector3, Vector4};
+use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 /// Blending states for materials.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -129,9 +129,9 @@ pub enum UniformValue {
   Vector2(Vector2<f32>),
   Vector3(Vector3<f32>),
   Vector4(Vector4<f32>),
-  Matrix2(Matrix2<f32>),
-  Matrix3(Matrix3<f32>),
-  Matrix4(Matrix4<f32>),
+  Matrix2(Matrix2x2<f32>),
+  Matrix3(Matrix3x3<f32>),
+  Matrix4(Matrix4x4<f32>),
   Texture(GraphicsHandle, usize, Option<Sampler>),
 }
 
@@ -163,6 +163,6 @@ implement_uniform!(Vector4<i32>, Point4);
 implement_uniform!(Vector2<f32>, Vector2);
 implement_uniform!(Vector3<f32>, Vector3);
 implement_uniform!(Vector4<f32>, Vector4);
-implement_uniform!(Matrix2<f32>, Matrix2);
-implement_uniform!(Matrix3<f32>, Matrix3);
-implement_uniform!(Matrix4<f32>, Matrix4);
+implement_uniform!(Matrix2x2<f32>, Matrix2);
+implement_uniform!(Matrix3x3<f32>, Matrix3);
+implement_uniform!(Matrix4x4<f32>, Matrix4);

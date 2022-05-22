@@ -64,6 +64,7 @@ pub unsafe trait GraphicsServer {
 
   // shaders
   unsafe fn create_shader(&self) -> GraphicsHandle;
+  unsafe fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()>;
   unsafe fn delete_shader(&self, shader: GraphicsHandle);
 
   // meshes

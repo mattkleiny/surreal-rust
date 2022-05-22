@@ -2,7 +2,7 @@ use std::ffi::c_void;
 
 use raw_gl_context::{GlConfig, GlContext};
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, GraphicsServer, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
+use crate::graphics::{BlendState, BufferKind, BufferUsage, GraphicsResult, GraphicsServer, Shader, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
 
 use super::*;
 
@@ -145,6 +145,10 @@ unsafe impl GraphicsServer for DesktopGraphicsServer {
   }
 
   unsafe fn create_shader(&self) -> GraphicsHandle {
+    todo!()
+  }
+
+  unsafe fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()> {
     todo!()
   }
 

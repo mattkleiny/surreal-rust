@@ -14,7 +14,6 @@ fn main() {
 
     let mut pixels = Vec::with_capacity(256 * 144);
     let mut texture = Texture::new(&game.host.graphics, TextureFormat::RGBA, TextureFilter::Nearest, TextureWrap::Clamp);
-    let mesh = Mesh::create_quad(&game.host.graphics, 1.);
 
     pixels.fill(Color::WHITE);
 

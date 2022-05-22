@@ -45,6 +45,8 @@ pub trait PathFindingGrid {
 }
 
 pub mod heuristics {
+  //! Heuristic functions for path-finding.
+
   use super::*;
 
   /// A constant distance

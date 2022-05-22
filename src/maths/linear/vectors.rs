@@ -18,32 +18,29 @@ pub const fn vec4<T>(x: T, y: T, z: T, w: T) -> Vector4<T> {
 }
 
 /// A standard purpose 2d vector
-#[derive(Hash, Copy, Clone, Default, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash)]
 pub struct Vector2<T> {
   pub x: T,
   pub y: T,
 }
 
 impl<T> Vector2<T> {
-  #[inline(always)]
   pub const fn new(x: T, y: T) -> Self {
     Self { x, y }
   }
 }
 
-impl<T> Add for Vector2<T> where T: Add<Output=T> {
+impl<T> Add for Vector2<T> where T: Numeric {
   type Output = Self;
 
-  #[inline(always)]
   fn add(self, rhs: Self) -> Self::Output {
     Self::new(self.x + rhs.x, self.y + rhs.y)
   }
 }
 
-impl<T> Sub for Vector2<T> where T: Sub<Output=T> {
+impl<T> Sub for Vector2<T> where T: Numeric {
   type Output = Self;
 
-  #[inline(always)]
   fn sub(self, rhs: Self) -> Self::Output {
     Self::new(self.x - rhs.x, self.y - rhs.y)
   }
@@ -52,7 +49,6 @@ impl<T> Sub for Vector2<T> where T: Sub<Output=T> {
 impl<T> Mul<T> for Vector2<T> where T: Numeric {
   type Output = Self;
 
-  #[inline(always)]
   fn mul(self, rhs: T) -> Self::Output {
     Self::new(self.x * rhs, self.y * rhs)
   }
@@ -61,7 +57,6 @@ impl<T> Mul<T> for Vector2<T> where T: Numeric {
 impl<T> Div<T> for Vector2<T> where T: Numeric {
   type Output = Self;
 
-  #[inline(always)]
   fn div(self, rhs: T) -> Self::Output {
     Self::new(self.x / rhs, self.y / rhs)
   }
@@ -83,7 +78,7 @@ impl<T> Lerp for Vector2<T> where T: Lerp {
 }
 
 /// A standard purpose 3d vector
-#[derive(Hash, Copy, Clone, Default, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash)]
 pub struct Vector3<T> {
   pub x: T,
   pub y: T,
@@ -91,27 +86,40 @@ pub struct Vector3<T> {
 }
 
 impl<T> Vector3<T> {
-  #[inline(always)]
   pub const fn new(x: T, y: T, z: T) -> Self {
     Self { x, y, z }
   }
 }
 
-impl<T> Add for Vector3<T> where T: Add<Output=T> {
+impl<T> Add for Vector3<T> where T: Numeric {
   type Output = Self;
 
-  #[inline]
   fn add(self, rhs: Self) -> Self::Output {
     Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
   }
 }
 
-impl<T> Sub for Vector3<T> where T: Sub<Output=T> {
+impl<T> Sub for Vector3<T> where T: Numeric {
   type Output = Self;
 
-  #[inline]
   fn sub(self, rhs: Self) -> Self::Output {
     Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
+  }
+}
+
+impl<T> Mul<T> for Vector3<T> where T: Numeric {
+  type Output = Self;
+
+  fn mul(self, rhs: T) -> Self::Output {
+    Self::new(self.x * rhs, self.y * rhs, self.z * rhs)
+  }
+}
+
+impl<T> Div<T> for Vector3<T> where T: Numeric {
+  type Output = Self;
+
+  fn div(self, rhs: T) -> Self::Output {
+    Self::new(self.x / rhs, self.y / rhs, self.z / rhs)
   }
 }
 
@@ -132,7 +140,7 @@ impl<T> Lerp for Vector3<T> where T: Lerp {
 }
 
 /// A standard purpose 4d vector
-#[derive(Hash, Copy, Clone, Default, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash)]
 pub struct Vector4<T> {
   pub x: T,
   pub y: T,
@@ -141,27 +149,40 @@ pub struct Vector4<T> {
 }
 
 impl<T> Vector4<T> {
-  #[inline(always)]
   pub const fn new(x: T, y: T, z: T, w: T) -> Self {
     Self { x, y, z, w }
   }
 }
 
-impl<T> Add for Vector4<T> where T: Add<Output=T> {
+impl<T> Add for Vector4<T> where T: Numeric {
   type Output = Self;
 
-  #[inline]
   fn add(self, rhs: Self) -> Self::Output {
     Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z, self.w + rhs.w)
   }
 }
 
-impl<T> Sub for Vector4<T> where T: Sub<Output=T> {
+impl<T> Sub for Vector4<T> where T: Numeric {
   type Output = Self;
 
-  #[inline]
   fn sub(self, rhs: Self) -> Self::Output {
     Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z, self.w - rhs.w)
+  }
+}
+
+impl<T> Mul<T> for Vector4<T> where T: Numeric {
+  type Output = Self;
+
+  fn mul(self, rhs: T) -> Self::Output {
+    Self::new(self.x * rhs, self.y * rhs, self.z * rhs, self.w * rhs)
+  }
+}
+
+impl<T> Div<T> for Vector4<T> where T: Numeric {
+  type Output = Self;
+
+  fn div(self, rhs: T) -> Self::Output {
+    Self::new(self.x / rhs, self.y / rhs, self.z / rhs, self.w / rhs)
   }
 }
 

@@ -2,7 +2,10 @@ use crate::maths::Numeric;
 
 use super::{vec2, vec3, Vector2, Vector3};
 
+/// A rectangle in 2-space.
 pub type Rectangle = Bounds2<f32>;
+
+/// A volume in 3-space.
 pub type Volume = Bounds3<f32>;
 
 /// A bounded space in 2 dimensions formed from the two corner points.
