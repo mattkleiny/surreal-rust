@@ -1,56 +1,52 @@
 /// A lightweight, fast and append-only ring buffer of elements of type T.
 ///
-/// It's intended to be used for small windowed set operations, like time sampling or frequency
-/// analysis.
-///
-/// This collection is not thread-safe.
+/// It's intended to be used for small windowed set operations, like time sampling or frequency analysis.
 #[derive(Debug)]
 pub struct RingBuffer<T> {
-  occupied: usize,
-  write_pos: usize,
+  cursor: usize,
   elements: Vec<Option<T>>,
 }
 
 impl<T> RingBuffer<T> {
-  pub fn new(capacity: usize) -> Self where T: Clone {
+  /// Creates a new ring buffer with the given capacity.
+  pub fn new(capacity: usize) -> Self where T :Clone {
     Self {
-      occupied: 0,
-      write_pos: 0,
+      cursor: 0,
       elements: vec![None; capacity],
     }
   }
 
-  pub fn capacity(&self) -> usize { self.elements.len() }
-  pub fn occupied(&self) -> usize { self.occupied }
+  /// Returns the maximum number of elements in the buffer.
+  pub fn capacity(&self) -> usize {
+    self.elements.capacity()
+  }
+
+  /// Returns the current number of elements in the buffer.
+  pub fn occupied(&self) -> usize {
+    self.elements.len()
+  }
 
   /// Appends an element to the buffer.
   pub fn append(&mut self, element: T) {
-    self.elements[self.write_pos] = Some(element);
-    self.write_pos += 1;
+    self.elements[self.cursor] = Some(element);
+    self.cursor += 1;
 
-    if self.write_pos >= self.capacity() {
-      self.write_pos = 0;
-    }
-    if self.occupied < self.capacity() {
-      self.occupied += 1;
+    if self.cursor >= self.capacity() {
+      self.cursor = 0;
     }
   }
 
   /// Clears the buffer of all elements.
   pub fn clear(&mut self) {
-    self.occupied = 0;
-    self.write_pos = 0;
-
-    for element in self.elements.iter_mut() {
-      *element = None;
-    }
+    self.cursor = 0;
+    self.elements.clear();
   }
 
   /// Permits iterating over the ring buffer.
   pub fn iter(&self) -> RingBufferIterator<T> {
     RingBufferIterator {
       buffer: self,
-      index: self.write_pos,
+      index: self.cursor,
       touched: 0,
     }
   }

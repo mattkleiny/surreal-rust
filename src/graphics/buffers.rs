@@ -19,8 +19,8 @@ pub enum BufferUsage {
 
 /// A buffer implementation that can upload data of type `T` to the GPU.
 pub struct GraphicsBuffer<T> {
-  handle: GraphicsHandle,
   context: GraphicsContext,
+  handle: GraphicsHandle,
   kind: BufferKind,
   usage: BufferUsage,
   _type: PhantomData<T>,
@@ -30,8 +30,8 @@ impl<T> GraphicsBuffer<T> {
   /// Constructs a new empty buffer on the GPU.
   pub fn new(context: &GraphicsContext, kind: BufferKind, usage: BufferUsage) -> Self {
     Self {
-      handle: unsafe { context.create_buffer() },
       context: context.clone(),
+      handle: unsafe { context.create_buffer() },
       kind,
       usage,
       _type: PhantomData,

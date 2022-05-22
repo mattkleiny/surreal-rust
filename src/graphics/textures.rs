@@ -75,7 +75,7 @@ impl AssetLoader for TextureLoader {
   type Asset = Texture;
 
   fn can_load(&self, context: AssetLoadContext) -> bool {
-    context.path.extension().ends_with("png")
+    context.path.extension() == ".png"
   }
 
   fn load(&self, context: AssetLoadContext) -> AssetResult<Self::Asset> {

@@ -110,7 +110,7 @@ impl AssetLoader for ShaderProgramLoader {
   type Asset = ShaderProgram;
 
   fn can_load(&self, context: AssetLoadContext) -> bool {
-    context.path.extension().ends_with("glsl")
+    context.path.extension() == ".glsl"
   }
 
   fn load(&self, context: AssetLoadContext) -> AssetResult<ShaderProgram> {

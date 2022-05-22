@@ -93,16 +93,12 @@ impl KeyboardDevice for DesktopKeyboardDevice {
 
 /// A mouse device for desktop platforms.
 struct DesktopMouseDevice {
-  mouse_position: Vector2<f64>,
-  mouse_delta: Vector2<f64>,
   pressed_buttons: HashSet<MouseButton>,
 }
 
 impl DesktopMouseDevice {
   pub fn new() -> Self {
     Self {
-      mouse_position: vec2(0., 0.),
-      mouse_delta: vec2(0., 0.),
       pressed_buttons: HashSet::new(),
     }
   }

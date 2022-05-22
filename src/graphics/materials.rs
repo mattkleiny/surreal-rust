@@ -9,7 +9,7 @@ pub enum BlendState {
   Disabled,
   Enabled {
     source: BlendFactor,
-    destination: BlendFactor,
+    dest: BlendFactor,
   },
 }
 
