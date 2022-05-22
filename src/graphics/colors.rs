@@ -37,10 +37,12 @@ impl Color {
   pub const BLUE: Color = Self::rgb(0., 0., 1.);
   pub const MAGENTA: Color = Self::rgb(1., 0., 1.);
 
+  /// Creates a new color with the given components.
   pub const fn rgb(r: f32, g: f32, b: f32) -> Self {
     Self::rgba(r, g, b, 1.)
   }
 
+  /// Creates a new color with the given components.
   pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
     Self { r, g, b, a }
   }
@@ -147,7 +149,7 @@ mod tests {
   }
 
   #[test]
-  fn color_should_interpolate_between_values() {
+  fn color_should_lerp_between_values() {
     let color = Color::lerp(Color::BLACK, Color::WHITE, 0.5);
 
     assert_eq!(color.r, 0.5);

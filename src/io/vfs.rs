@@ -16,7 +16,7 @@ pub type FileResult<T> = anyhow::Result<T>;
 pub trait InputStream: std::io::BufRead + std::io::Seek {}
 
 /// A stream for writing to some `VirtualPath`.
-pub trait OutputStream: std::io::Write {}
+pub trait OutputStream: std::io::Write + std::io::Seek {}
 
 /// Represents a type capable of acting as a file system.
 pub trait FileSystem {

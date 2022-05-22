@@ -1,20 +1,19 @@
 pub use image::ImageFormat as ImageFormat;
-use image::Rgba32FImage;
 
 use crate::assets::AssetResult;
 use crate::graphics::Color;
-use crate::io::AsVirtualPath;
+use crate::io::{AsVirtualPath, FileResult};
 
 /// An image of RGBA pixels, loadable from a variety of different formats.
 pub struct Image {
-  buffer: Rgba32FImage,
+  buffer: image::Rgba32FImage,
 }
 
 impl Image {
-  /// Creates a new empty image.
+  /// Creates a new empty image with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
-      buffer: Rgba32FImage::new(width as u32, height as u32),
+      buffer: image::Rgba32FImage::new(width as u32, height as u32),
     }
   }
 
@@ -33,6 +32,7 @@ impl Image {
   pub fn load_with_format(path: impl AsVirtualPath, format: ImageFormat) -> AssetResult<Self> {
     let stream = path.as_virtual_path().open_input_stream()?;
     let mut reader = image::io::Reader::new(stream);
+
     reader.set_format(format);
 
     let image = reader.decode()?;
@@ -69,11 +69,26 @@ impl Image {
     let rgba = self.buffer.as_ref();
 
     unsafe {
-      std::slice::from_raw_parts(
-        rgba.as_ptr() as *const Color,
-        rgba.len() / 4,
-      )
+      std::slice::from_raw_parts(rgba.as_ptr() as *const Color, rgba.len() / 4)
     }
+  }
+
+  /// Retrieves the pixels of the image as a mutable slice of `Color`s.
+  pub fn as_slice_mut(&mut self) -> &mut [Color] {
+    let rgba = self.buffer.as_mut();
+
+    unsafe {
+      std::slice::from_raw_parts_mut(rgba.as_ptr() as *mut Color, rgba.len() / 4)
+    }
+  }
+
+  /// Saves the image to the given path.
+  pub fn save_to(&self, path: impl AsVirtualPath, format: ImageFormat) -> FileResult<()> {
+    let mut stream = path.as_virtual_path().open_output_stream()?;
+
+    self.buffer.write_to(&mut stream, format)?;
+
+    Ok(())
   }
 }
 

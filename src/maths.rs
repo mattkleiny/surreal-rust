@@ -2,6 +2,7 @@
 
 pub use bounds::*;
 pub use curves::*;
+pub use grids::*;
 pub use interpolation::*;
 pub use linear::*;
 pub use neighbours::*;
@@ -13,6 +14,7 @@ pub use tessellation::*;
 
 mod bounds;
 mod curves;
+mod grids;
 mod interpolation;
 mod linear;
 mod neighbours;

@@ -102,6 +102,12 @@ pub struct LocalOutputStream {
   writer: BufWriter<File>,
 }
 
+impl Seek for LocalOutputStream {
+  fn seek(&mut self, pos: SeekFrom) -> std::io::Result<u64> {
+    self.writer.seek(pos)
+  }
+}
+
 impl Write for LocalOutputStream {
   fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
     self.writer.write(buf)
