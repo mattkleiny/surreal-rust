@@ -1,6 +1,5 @@
-use crate::assets::{AssetLoader, AssetResult};
+use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
 use crate::graphics::{GraphicsContext, GraphicsHandle, GraphicsResult, Sampler};
-use crate::io::VirtualPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 /// Different types fo shaders supported by the engine.
@@ -107,9 +106,15 @@ pub struct ShaderProgramLoader {
   context: GraphicsContext,
 }
 
-impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
-  fn load(&self, path: VirtualPath) -> AssetResult<ShaderProgram> {
-    let shaders = parse_glsl_source(&path.read_all_text()?);
+impl AssetLoader for ShaderProgramLoader {
+  type Asset = ShaderProgram;
+
+  fn can_load(&self, context: AssetLoadContext) -> bool {
+    context.path.extension().ends_with("glsl")
+  }
+
+  fn load(&self, context: AssetLoadContext) -> AssetResult<ShaderProgram> {
+    let shaders = parse_glsl_source(&context.path.read_all_text()?);
     let program = ShaderProgram::new(&self.context);
 
     program.link_shaders(shaders)?;

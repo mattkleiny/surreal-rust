@@ -1,0 +1,12 @@
+[package]
+name = "surreal-macros"
+description = "Declarative macros for Surreal"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc = "0.1.4"
+syn = "1.0.95"

@@ -28,6 +28,12 @@ impl<'a> VirtualPath<'a> {
     }
   }
 
+  /// Returns the file extension of the path.
+  pub fn extension(&self) -> &'a str {
+    todo!()
+  }
+
+  /// Attempts to read all text from the given path.
   pub fn read_all_text(&self) -> FileResult<String> {
     todo!()
   }

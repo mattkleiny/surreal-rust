@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
-use std::slice::from_raw_parts;
 
-use super::{GraphicsContext, GraphicsHandle};
+use crate::graphics::{GraphicsContext, GraphicsHandle};
 
 /// The different kinds of buffer we support.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -40,23 +39,13 @@ impl<T> GraphicsBuffer<T> {
   }
 
   /// Reads data from the buffer.
-  pub fn read_data(&self, offset: usize, length: usize) -> Vec<T> where T: Clone {
-    unsafe {
-      let buffer = self.context.read_buffer_data(self.handle, self.kind, offset, length);
-      let slice = from_raw_parts(buffer.as_ptr() as *const T, length);
-
-      Vec::from(slice)
-    }
+  pub fn read_data(&self, _offset: usize, _length: usize) -> Vec<T> where T: Clone {
+    todo!()
   }
 
   /// Uploads the given data to the buffer.
-  pub fn write_data(&mut self, data: &[T]) {
-    unsafe {
-      let size = data.len() * std::mem::size_of::<T>();
-      let bytes = from_raw_parts(data.as_ptr() as *const u8, size);
-
-      self.context.write_buffer_data(self.handle, self.usage, self.kind, bytes);
-    }
+  pub fn write_data(&mut self, _data: &[T]) {
+    todo!()
   }
 }
 

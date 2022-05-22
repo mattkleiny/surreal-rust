@@ -1,3 +1,5 @@
+use surreal_macros::Vertex;
+
 use crate::graphics::{BufferUsage, Color, GraphicsBuffer, GraphicsContext, GraphicsHandle, Material};
 use crate::maths::{Tessellation, vec2, Vector2, Vector3};
 use crate::prelude::BufferKind;
@@ -15,10 +17,11 @@ pub enum PrimitiveTopology {
 ///
 /// Vertices provide a set of `VertexDescriptor`s which are used for binding vertex data to a mesh.
 pub trait Vertex: Copy {
+  /// Returns the vertex descriptor for this vertex type.
   fn descriptors() -> &'static [VertexDescriptor];
 }
 
-/// Describes a single vertex field in `Vertex` type.
+/// Describes a single vertex field in a `Vertex` type.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct VertexDescriptor {
   pub offset: usize,
@@ -29,15 +32,64 @@ pub struct VertexDescriptor {
 
 /// Different kinds of vertex primitives.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum VertexKind { U8, U16, U32, I16, I32, F32, F64 }
+pub enum VertexKind {
+  U8,
+  U16,
+  U32,
+  I16,
+  I32,
+  F32,
+  F64,
+}
+
+/// A simple vertex in 2-space.
+#[derive(Vertex, Copy, Clone, Debug)]
+pub struct Vertex2 {
+  #[vertex(2, F32)] pub position: Vector2<f32>,
+  #[vertex(4, F32)] pub color: Color,
+  #[vertex(2, F32)] pub uv: Vector2<f32>,
+}
+
+impl Vertex for Vertex2 {
+  fn descriptors() -> &'static [VertexDescriptor] {
+    // TODO: use a proc macro for this instead?
+    static DESCRIPTORS: &[VertexDescriptor] = &[
+      VertexDescriptor { offset: 0, count: 2, kind: VertexKind::F32, should_normalize: false },
+      VertexDescriptor { offset: 8, count: 4, kind: VertexKind::U8, should_normalize: true },
+      VertexDescriptor { offset: 16, count: 2, kind: VertexKind::F32, should_normalize: false },
+    ];
+
+    DESCRIPTORS
+  }
+}
+
+/// A simple vertex in 3-space.
+#[derive(Vertex, Copy, Clone, Debug)]
+pub struct Vertex3 {
+  #[vertex(3, F32)] pub position: Vector3<f32>,
+  #[vertex(4, F32)] pub color: Color,
+  #[vertex(2, F32)] pub uv: Vector2<f32>,
+}
+
+impl Vertex for Vertex3 {
+  fn descriptors() -> &'static [VertexDescriptor] {
+    static DESCRIPTORS: &[VertexDescriptor] = &[
+      VertexDescriptor { offset: 0, count: 3, kind: VertexKind::F32, should_normalize: false },
+      VertexDescriptor { offset: 12, count: 4, kind: VertexKind::U8, should_normalize: true },
+      VertexDescriptor { offset: 20, count: 2, kind: VertexKind::F32, should_normalize: false },
+    ];
+
+    DESCRIPTORS
+  }
+}
 
 /// A mesh of vertices of `V` that has been uploaded to the GPU.
 ///
 /// Meshes are stored on the GPU as vertex/index buffers and can be submitted for rendering at any
 /// time, provided a valid `Material` is available.
 pub struct Mesh<V> {
-  handle: GraphicsHandle,
   context: GraphicsContext,
+  handle: GraphicsHandle,
   vertices: GraphicsBuffer<V>,
   indices: GraphicsBuffer<u32>,
 }
@@ -46,8 +98,8 @@ impl<V> Mesh<V> where V: Vertex {
   /// Constructs a new blank mesh on the GPU.
   pub fn new(context: &GraphicsContext) -> Self {
     Self {
-      handle: unsafe { context.create_mesh(V::descriptors()) },
       context: context.clone(),
+      handle: unsafe { context.create_mesh(V::descriptors()) },
       vertices: GraphicsBuffer::new(context, BufferKind::Element, BufferUsage::Static),
       indices: GraphicsBuffer::new(context, BufferKind::Index, BufferUsage::Static),
     }
@@ -171,46 +223,5 @@ impl<V> Tessellation for Tessellator<V> where V: Vertex {
 
   fn add_index(&mut self, index: u32) {
     self.indices.push(index);
-  }
-}
-
-/// A simple vertex in 2-space.
-#[derive(Copy, Clone, Debug)]
-pub struct Vertex2 {
-  pub position: Vector2<f32>,
-  pub color: Color,
-  pub uv: Vector2<f32>,
-}
-
-impl Vertex for Vertex2 {
-  fn descriptors() -> &'static [VertexDescriptor] {
-    // TODO: use a proc macro for this instead?
-    static DESCRIPTORS: &[VertexDescriptor] = &[
-      VertexDescriptor { offset: 0, count: 2, kind: VertexKind::F32, should_normalize: false },
-      VertexDescriptor { offset: 8, count: 4, kind: VertexKind::U8, should_normalize: true },
-      VertexDescriptor { offset: 16, count: 2, kind: VertexKind::F32, should_normalize: false },
-    ];
-
-    DESCRIPTORS
-  }
-}
-
-/// A simple vertex in 3-space.
-#[derive(Copy, Clone, Debug)]
-pub struct Vertex3 {
-  pub position: Vector3<f32>,
-  pub color: Color,
-  pub uv: Vector2<f32>,
-}
-
-impl Vertex for Vertex3 {
-  fn descriptors() -> &'static [VertexDescriptor] {
-    static DESCRIPTORS: &[VertexDescriptor] = &[
-      VertexDescriptor { offset: 0, count: 3, kind: VertexKind::F32, should_normalize: false },
-      VertexDescriptor { offset: 12, count: 4, kind: VertexKind::U8, should_normalize: true },
-      VertexDescriptor { offset: 20, count: 2, kind: VertexKind::F32, should_normalize: false },
-    ];
-
-    DESCRIPTORS
   }
 }

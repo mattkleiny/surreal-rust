@@ -12,23 +12,22 @@ pub trait Numeric: Copy + PartialOrd + PartialEq + Add<Output=Self> + Sub<Output
   fn to_f32(self) -> f32;
 }
 
-macro_rules! implement_numeric {
-  ($type:ty) => {
-    impl Numeric for $type {
-      const ZERO: Self = 0 as Self;
-      const ONE: Self = 1 as Self;
+/// Implements the numeric traits for standard purpose a numeric type.
+macro implement_numeric($type:ty) {
+impl Numeric for $type {
+  const ZERO: Self = 0 as Self;
+  const ONE: Self = 1 as Self;
 
-      #[inline(always)]
-      fn from_f32(value: f32) -> Self {
-        value as Self
-      }
+  #[inline(always)]
+  fn from_f32(value: f32) -> Self {
+    value as Self
+  }
 
-      #[inline(always)]
-      fn to_f32(self) -> f32 {
-        self as f32
-      }
-    }
-  };
+  #[inline(always)]
+  fn to_f32(self) -> f32 {
+    self as f32
+  }
+}
 }
 
 implement_numeric!(u8);

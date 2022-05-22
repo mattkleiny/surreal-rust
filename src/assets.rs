@@ -13,13 +13,8 @@ use crate::io::VirtualPath;
 pub type AssetResult<T> = anyhow::Result<T>;
 
 /// An opaque handle to an asset in the asset system.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct AssetHandle(usize);
-
-/// Allows loading an asset from the virtual file system.
-pub trait AssetLoader<T> {
-  fn load(&self, path: VirtualPath) -> AssetResult<T>;
-}
 
 /// A shared pointer to an asset, with support for interior hot-reloading.
 ///
@@ -69,4 +64,25 @@ impl<T> DerefMut for Asset<T> {
       _ => panic!("Asset is not loaded!")
     }
   }
+}
+
+/// A context for asset operations.
+pub struct AssetLoadContext<'a> {
+  /// The path of the asset being loaded.
+  pub path: VirtualPath<'a>,
+}
+
+impl<'a> AssetLoadContext<'a> {
+  /// Loads a dependent asset from the given path.
+  pub fn load_asset<T>(&self, path: VirtualPath) -> AssetResult<T> {
+    todo!()
+  }
+}
+
+/// Allows loading an asset from the virtual file system.
+pub trait AssetLoader {
+  type Asset;
+
+  fn can_load(&self, context: AssetLoadContext) -> bool;
+  fn load(&self, context: AssetLoadContext) -> AssetResult<Self::Asset>;
 }

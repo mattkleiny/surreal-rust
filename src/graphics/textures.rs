@@ -1,7 +1,8 @@
 use std::mem::size_of;
 use std::slice;
 
-use crate::graphics::{Color, GraphicsContext, GraphicsHandle};
+use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
+use crate::graphics::{Color, GraphicsContext, GraphicsHandle, Image};
 
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -40,6 +41,11 @@ impl Texture {
     }
   }
 
+  /// Creates a new texture from an image.
+  pub fn from_image(context: &GraphicsContext, image: &Image) -> Texture {
+    todo!()
+  }
+
   /// Uploads pixel data to the texture.
   pub fn write_pixel_data(&mut self, width: usize, height: usize, pixels: &[Color]) {
     unsafe {
@@ -57,5 +63,24 @@ impl Drop for Texture {
     unsafe {
       self.context.delete_texture(self.handle);
     }
+  }
+}
+
+/// Allows loading `Texture` from the virtual file system.
+pub struct TextureLoader {
+  context: GraphicsContext,
+}
+
+impl AssetLoader for TextureLoader {
+  type Asset = Texture;
+
+  fn can_load(&self, context: AssetLoadContext) -> bool {
+    context.path.extension().ends_with("png")
+  }
+
+  fn load(&self, context: AssetLoadContext) -> AssetResult<Self::Asset> {
+    let image = context.load_asset(context.path)?;
+
+    Ok(Texture::from_image(&self.context, image))
   }
 }

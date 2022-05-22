@@ -1,25 +1,32 @@
 [package]
 name = "surreal"
+description = "The Surreal game engine"
 version = "0.1.0"
 authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
 edition = "2021"
 
 [workspace]
 members = [
+    "crates/macros",
     "examples/hello-world"
 ]
 
 [profile.dev.package."*"]
+# compile third party dependencies by default with some sane optimizations
 opt-level = 3
-
-[dependencies]
-anyhow = "1.0.57"
-gl = "0.14.0"
-raw-gl-context = "0.1.2"
-image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
-winit = { version = "0.22.2", default-features = false }
 
 [features]
 default = ["desktop", "headless"]
 desktop = []
 headless = []
+
+[dependencies]
+# internal dependencies
+surreal-macros = { path = "crates/macros" }
+
+# third-party dependencies
+anyhow = "1.0.57"
+gl = "0.14.0"
+raw-gl-context = "0.1.2"
+image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
+winit = { version = "0.22.2", default-features = false }
