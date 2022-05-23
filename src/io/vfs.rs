@@ -69,18 +69,14 @@ impl<'a> VirtualPath<'a> {
 
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> FileResult<Box<dyn InputStream>> {
-    let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
-      file_system.open_read(self)
-    })?;
+    let stream = CURRENT_FILE_SYSTEM.with(|file_system| file_system.open_read(self))?;
 
     Ok(Box::new(stream))
   }
 
   /// Opens a writer for the given path.
   pub fn open_output_stream(&self) -> FileResult<Box<dyn OutputStream>> {
-    let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
-      file_system.open_write(self)
-    })?;
+    let stream = CURRENT_FILE_SYSTEM.with(|file_system| file_system.open_write(self))?;
 
     Ok(Box::new(stream))
   }
@@ -115,6 +111,12 @@ impl<'a> std::fmt::Debug for VirtualPath<'a> {
 /// Allows a type to be converted to a `VirtualPath`.
 pub trait AsVirtualPath {
   fn as_virtual_path(&self) -> VirtualPath;
+}
+
+impl<'a> AsVirtualPath for VirtualPath<'a> {
+  fn as_virtual_path(&self) -> VirtualPath<'a> {
+    *self
+  }
 }
 
 impl AsVirtualPath for &str {
