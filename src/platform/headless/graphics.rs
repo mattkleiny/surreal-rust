@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, Shader, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
+use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
 
 /// The graphics server for the headless platform.
 pub struct HeadlessGraphicsServer {
@@ -82,6 +82,34 @@ impl GraphicsServer for HeadlessGraphicsServer {
     GraphicsHandle { id: self.next_shader_id.fetch_add(1, Ordering::Relaxed) }
   }
 
+  fn get_shader_uniform_location(&self, _shader: GraphicsHandle, _name: &str) -> Option<usize> {
+    None
+  }
+
+  fn set_shader_uniform_u32(&self, _shader: GraphicsHandle, _location: usize, _value: u32) {
+    // no-op
+  }
+
+  fn set_shader_uniform_f32(&self, _shader: GraphicsHandle, _location: usize, _value: f32) {
+    // no-op
+  }
+
+  fn set_shader_uniform_i32(&self, _shader: GraphicsHandle, _location: usize, _value: i32) {
+    // no-op
+  }
+
+  fn set_shader_uniform_uv(&self, shader: GraphicsHandle, location: usize, value: &[u32]) {
+    // no-op
+  }
+
+  fn set_shader_uniform_iv(&self, _shader: GraphicsHandle, _location: usize, _value: &[i32]) {
+    // no-op
+  }
+
+  fn set_shader_uniform_fv(&self, _shader: GraphicsHandle, _location: usize, _value: &[f32]) {
+    // no-op
+  }
+
   fn link_shaders(&self, _shader: GraphicsHandle, _shaders: Vec<Shader>) -> GraphicsResult<()> {
     Ok(())
   }
@@ -92,6 +120,10 @@ impl GraphicsServer for HeadlessGraphicsServer {
 
   fn create_mesh(&self, _vertices: GraphicsHandle, _indices: GraphicsHandle, _descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     GraphicsHandle { id: self.next_mesh_id.fetch_add(1, Ordering::Relaxed) }
+  }
+
+  fn draw_mesh(&self, _mesh: GraphicsHandle, _topology: PrimitiveTopology, _vertex_count: usize, _index_count: usize) {
+    // no-op
   }
 
   fn delete_mesh(&self, _mesh: GraphicsHandle) {

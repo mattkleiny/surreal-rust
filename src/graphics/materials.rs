@@ -117,22 +117,22 @@ impl<'a> Material<'a> {
   }
 
   /// Binds the material as the active shader and uploads it's uniforms.
-  pub unsafe fn bind(&self) {
+  pub fn bind(&self) {
     self.context.set_blend_state(self.blend_state);
 
     for (_, uniform) in &self.uniforms {
       match &uniform.value {
-        UniformValue::Integer(value) => self.shader.set_uniform_u32(uniform.location, *value),
-        UniformValue::Floating(value) => self.shader.set_uniform_f32(uniform.location, *value),
-        UniformValue::Point2(value) => self.shader.set_uniform_vec2i32(uniform.location, *value),
-        UniformValue::Point3(value) => self.shader.set_uniform_vec3i32(uniform.location, *value),
-        UniformValue::Point4(value) => self.shader.set_uniform_vec4i32(uniform.location, *value),
-        UniformValue::Vector2(value) => self.shader.set_uniform_vec2f32(uniform.location, *value),
-        UniformValue::Vector3(value) => self.shader.set_uniform_vec3f32(uniform.location, *value),
-        UniformValue::Vector4(value) => self.shader.set_uniform_vec4f32(uniform.location, *value),
-        UniformValue::Matrix2x2(value) => self.shader.set_uniform_mat2(uniform.location, value),
-        UniformValue::Matrix3x3(value) => self.shader.set_uniform_mat3(uniform.location, value),
-        UniformValue::Matrix4x4(value) => self.shader.set_uniform_mat4(uniform.location, value),
+        UniformValue::Integer(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Floating(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Point2(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Point3(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Point4(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Vector2(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Vector3(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Vector4(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Matrix2x2(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Matrix3x3(value) => self.shader.set_uniform(uniform.location, value),
+        UniformValue::Matrix4x4(value) => self.shader.set_uniform(uniform.location, value),
         UniformValue::Texture(texture, slot, sampler) => {
           self.shader.set_texture(uniform.location, *texture, *slot);
 

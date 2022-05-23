@@ -105,6 +105,16 @@ impl<T, const S: usize, const L: usize> Matrix<T, S, L> where T: Numeric {
 
     result
   }
+
+  /// Converts the matrix to a slice.
+  pub fn as_slice(&self) -> &[T] {
+    self.elements.as_slice()
+  }
+
+  /// Converts the matrix to a mutable slice.
+  pub fn as_mut_slice(&mut self) -> &mut [T] {
+    self.elements.as_mut_slice()
+  }
 }
 
 impl<T, const S: usize, const L: usize> Debug for Matrix<T, S, L> where T: Display {

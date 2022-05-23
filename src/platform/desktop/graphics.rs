@@ -1,10 +1,10 @@
 use std::ffi::c_void;
-use anyhow::anyhow;
 
+use anyhow::anyhow;
 use raw_gl_context::{GlConfig, GlContext};
 use winit::window::Window;
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, Shader, ShaderKind, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor, VertexKind};
+use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, ShaderKind, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor, VertexKind};
 
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphicsServer {
@@ -183,6 +183,42 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
+  fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
+    unsafe {
+      let name: *const i8 = std::mem::transmute(name.as_bytes().as_ptr());
+      let location = gl::GetUniformLocation(shader.id, name);
+
+      match location {
+        -1 => None,
+        location => Some(location as usize),
+      }
+    }
+  }
+
+  fn set_shader_uniform_u32(&self, shader: GraphicsHandle, location: usize, value: u32) {
+    todo!()
+  }
+
+  fn set_shader_uniform_f32(&self, shader: GraphicsHandle, location: usize, value: f32) {
+    todo!()
+  }
+
+  fn set_shader_uniform_i32(&self, shader: GraphicsHandle, location: usize, value: i32) {
+    todo!()
+  }
+
+  fn set_shader_uniform_uv(&self, shader: GraphicsHandle, location: usize, value: &[u32]) {
+    todo!()
+  }
+
+  fn set_shader_uniform_iv(&self, shader: GraphicsHandle, location: usize, value: &[i32]) {
+    todo!()
+  }
+
+  fn set_shader_uniform_fv(&self, shader: GraphicsHandle, location: usize, value: &[f32]) {
+    todo!()
+  }
+
   fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()> {
     unsafe {
       gl::UseProgram(shader.id);
@@ -299,6 +335,26 @@ impl GraphicsServer for DesktopGraphicsServer {
       gl::BindVertexArray(0);
 
       GraphicsHandle { id }
+    }
+  }
+
+  fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+    // TODO: variable index type?
+
+    unsafe {
+      gl::BindVertexArray(mesh.id);
+
+      let topology = match topology {
+        PrimitiveTopology::Points => gl::POINTS,
+        PrimitiveTopology::Lines => gl::LINES,
+        PrimitiveTopology::Triangles => gl::TRIANGLES,
+      };
+
+      if index_count > 0 {
+        gl::DrawElements(topology, index_count as i32, gl::UNSIGNED_INT, std::ptr::null());
+      } else {
+        gl::DrawArrays(topology, 0, vertex_count as i32);
+      }
     }
   }
 

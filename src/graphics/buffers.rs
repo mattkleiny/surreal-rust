@@ -23,6 +23,7 @@ pub struct GraphicsBuffer<T> {
   handle: GraphicsHandle,
   kind: BufferKind,
   usage: BufferUsage,
+  length: usize,
   _type: PhantomData<T>,
 }
 
@@ -34,6 +35,7 @@ impl<T> GraphicsBuffer<T> {
       handle: context.create_buffer(),
       kind,
       usage,
+      length: 0,
       _type: PhantomData,
     }
   }
@@ -41,6 +43,11 @@ impl<T> GraphicsBuffer<T> {
   /// Returns the underlying GPU buffer handle.
   pub fn handle(&self) -> GraphicsHandle {
     self.handle
+  }
+
+  /// The number of elements in the buffer.
+  pub fn len(&self) -> usize {
+    self.length
   }
 
   /// Reads data from the buffer.

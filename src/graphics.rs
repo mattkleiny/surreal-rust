@@ -68,10 +68,18 @@ pub trait GraphicsServer {
 
   // shaders
   fn create_shader(&self) -> GraphicsHandle;
+  fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize>;
+  fn set_shader_uniform_u32(&self, shader: GraphicsHandle, location: usize, value: u32);
+  fn set_shader_uniform_f32(&self, shader: GraphicsHandle, location: usize, value: f32);
+  fn set_shader_uniform_i32(&self, shader: GraphicsHandle, location: usize, value: i32);
+  fn set_shader_uniform_uv(&self, shader: GraphicsHandle, location: usize, value: &[u32]);
+  fn set_shader_uniform_iv(&self, shader: GraphicsHandle, location: usize, value: &[i32]);
+  fn set_shader_uniform_fv(&self, shader: GraphicsHandle, location: usize, value: &[f32]);
   fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()>;
   fn delete_shader(&self, shader: GraphicsHandle);
 
   // meshes
   fn create_mesh(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
+  fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize);
   fn delete_mesh(&self, mesh: GraphicsHandle);
 }

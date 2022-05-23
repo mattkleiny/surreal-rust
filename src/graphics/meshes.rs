@@ -104,13 +104,15 @@ impl<V> Mesh<V> where V: Vertex {
   }
 
   /// Draws this mesh with the given material and topology.
-  pub fn draw(&self, _material: &Material, _topology: PrimitiveTopology) {
-    todo!()
+  pub fn draw(&self, material: &Material, topology: PrimitiveTopology) {
+    self.draw_sub_mesh(material, topology, self.vertices.len(), self.indices.len());
   }
 
-  /// Draws this mesh with the given material and topology.
-  pub fn draw_sub(&self, _material: &Material, _topology: PrimitiveTopology, _vertex_count: usize, _index_count: usize) {
-    todo!()
+  /// Draws a sub mesh of this mesh with the given material and topology.
+  pub fn draw_sub_mesh(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+    material.bind();
+
+    self.context.draw_mesh(self.handle, topology, vertex_count, index_count);
   }
 }
 
