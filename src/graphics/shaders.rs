@@ -1,5 +1,5 @@
 use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
-use crate::graphics::{GraphicsContext, GraphicsHandle, GraphicsResult, Sampler};
+use crate::graphics::{GraphicsContext, GraphicsHandle, GraphicsResult, TextureSampler};
 use crate::io::{AsVirtualPath, FileResult};
 use crate::maths::{Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 use crate::prelude::Matrix2x2;
@@ -15,6 +15,23 @@ pub enum ShaderKind {
 pub struct Shader {
   pub kind: ShaderKind,
   pub code: String,
+}
+
+/// Representation of single value that can be used in a `Material`.
+#[derive(Debug)]
+pub enum ShaderUniform {
+  Integer(u32),
+  Floating(f32),
+  Point2(Vector2<i32>),
+  Point3(Vector3<i32>),
+  Point4(Vector4<i32>),
+  Vector2(Vector2<f32>),
+  Vector3(Vector3<f32>),
+  Vector4(Vector4<f32>),
+  Matrix2x2(Matrix2x2<f32>),
+  Matrix3x3(Matrix3x3<f32>),
+  Matrix4x4(Matrix4x4<f32>),
+  Texture(GraphicsHandle, usize, Option<TextureSampler>),
 }
 
 /// Represents a single compiled shader program.
@@ -54,18 +71,11 @@ impl ShaderProgram {
   }
 
   /// Sets the given uniform value in the underlying program.
-  pub fn set_uniform(&self, location: usize, value: &impl ShaderUniform) {
-    value.bind(&self.context, self, location);
+  pub fn set_uniform(&self, location: usize, value: &ShaderUniform) {
+    self.context.set_shader_uniform(self.handle, location, value);
   }
 
-  pub fn set_texture(&self, _location: usize, _texture: GraphicsHandle, _slot: usize) {
-    todo!()
-  }
-
-  pub fn set_texture_sampler(&self, _texture: GraphicsHandle, _sampler: &Sampler) {
-    todo!()
-  }
-
+  /// Links the given shader kernels to the underlying program.
   fn link_shaders(&self, shaders: Vec<Shader>) -> GraphicsResult<()> {
     self.context.link_shaders(self.handle, shaders)
   }
@@ -75,84 +85,6 @@ impl Drop for ShaderProgram {
   /// Deletes the shader program from the GPU.
   fn drop(&mut self) {
     self.context.delete_shader(self.handle);
-  }
-}
-
-/// A uniform value for use in a [`ShaderProgram`].
-pub trait ShaderUniform {
-  /// Binds the uniform to the shader program.
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize);
-}
-
-impl ShaderUniform for u32 {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_u32(program.handle, location, *self);
-  }
-}
-
-impl ShaderUniform for f32 {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_f32(program.handle, location, *self);
-  }
-}
-
-impl ShaderUniform for i32 {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_i32(program.handle, location, *self);
-  }
-}
-
-impl ShaderUniform for Vector2<i32> {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_iv(program.handle, location, &[self.x, self.y]);
-  }
-}
-
-impl ShaderUniform for Vector3<i32> {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_iv(program.handle, location, &[self.x, self.y, self.z]);
-  }
-}
-
-impl ShaderUniform for Vector4<i32> {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_iv(program.handle, location, &[self.x, self.y, self.z, self.w]);
-  }
-}
-
-impl ShaderUniform for Vector2<f32> {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_fv(program.handle, location, &[self.x, self.y]);
-  }
-}
-
-impl ShaderUniform for Vector3<f32> {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_fv(program.handle, location, &[self.x, self.y, self.z]);
-  }
-}
-
-impl ShaderUniform for Vector4<f32> {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_fv(program.handle, location, &[self.x, self.y, self.z, self.w]);
-  }
-}
-
-impl ShaderUniform for Matrix2x2<f32> {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_fv(program.handle, location, self.as_slice());
-  }
-}
-
-impl ShaderUniform for Matrix3x3<f32> {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_fv(program.handle, location, self.as_slice());
-  }
-}
-
-impl ShaderUniform for Matrix4x4<f32> {
-  fn bind(&self, context: &GraphicsContext, program: &ShaderProgram, location: usize) {
-    context.set_shader_uniform_fv(program.handle, location, self.as_slice());
   }
 }
 
@@ -178,6 +110,29 @@ impl AssetLoader for ShaderProgramLoader {
     Ok(program)
   }
 }
+
+/// Implements uniform value transformation for common shader uniforms.
+macro_rules! implement_uniform {
+  ($type:ty, $value:ident) => {
+    impl Into<ShaderUniform> for $type {
+      fn into(self) -> ShaderUniform {
+        ShaderUniform::$value(self)
+      }
+    }
+  };
+}
+
+implement_uniform!(u32, Integer);
+implement_uniform!(f32, Floating);
+implement_uniform!(Vector2<i32>, Point2);
+implement_uniform!(Vector3<i32>, Point3);
+implement_uniform!(Vector4<i32>, Point4);
+implement_uniform!(Vector2<f32>, Vector2);
+implement_uniform!(Vector3<f32>, Vector3);
+implement_uniform!(Vector4<f32>, Vector4);
+implement_uniform!(Matrix2x2<f32>, Matrix2x2);
+implement_uniform!(Matrix3x3<f32>, Matrix3x3);
+implement_uniform!(Matrix4x4<f32>, Matrix4x4);
 
 /// Parses the given raw GLSL source and performs some basic pre-processing.
 ///

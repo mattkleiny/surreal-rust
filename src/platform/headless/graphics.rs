@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
+use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, ShaderUniform, TextureFormat, TextureSampler, VertexDescriptor};
 
 /// The graphics server for the headless platform.
 pub struct HeadlessGraphicsServer {
@@ -66,7 +66,7 @@ impl GraphicsServer for HeadlessGraphicsServer {
     // no-op
   }
 
-  fn create_texture(&self, _minify_filter: TextureFilter, _magnify_filter: TextureFilter, _wrap_mode: TextureWrap) -> GraphicsHandle {
+  fn create_texture(&self, _sampler: &TextureSampler) -> GraphicsHandle {
     GraphicsHandle { id: self.next_texture_id.fetch_add(1, Ordering::Relaxed) }
   }
 
@@ -82,36 +82,16 @@ impl GraphicsServer for HeadlessGraphicsServer {
     GraphicsHandle { id: self.next_shader_id.fetch_add(1, Ordering::Relaxed) }
   }
 
+  fn link_shaders(&self, _shader: GraphicsHandle, _shaders: Vec<Shader>) -> GraphicsResult<()> {
+    Ok(())
+  }
+
   fn get_shader_uniform_location(&self, _shader: GraphicsHandle, _name: &str) -> Option<usize> {
     None
   }
 
-  fn set_shader_uniform_u32(&self, _shader: GraphicsHandle, _location: usize, _value: u32) {
+  fn set_shader_uniform(&self, _shader: GraphicsHandle, _location: usize, _value: &ShaderUniform) {
     // no-op
-  }
-
-  fn set_shader_uniform_f32(&self, _shader: GraphicsHandle, _location: usize, _value: f32) {
-    // no-op
-  }
-
-  fn set_shader_uniform_i32(&self, _shader: GraphicsHandle, _location: usize, _value: i32) {
-    // no-op
-  }
-
-  fn set_shader_uniform_uv(&self, shader: GraphicsHandle, location: usize, value: &[u32]) {
-    // no-op
-  }
-
-  fn set_shader_uniform_iv(&self, _shader: GraphicsHandle, _location: usize, _value: &[i32]) {
-    // no-op
-  }
-
-  fn set_shader_uniform_fv(&self, _shader: GraphicsHandle, _location: usize, _value: &[f32]) {
-    // no-op
-  }
-
-  fn link_shaders(&self, _shader: GraphicsHandle, _shaders: Vec<Shader>) -> GraphicsResult<()> {
-    Ok(())
   }
 
   fn delete_shader(&self, _shader: GraphicsHandle) {

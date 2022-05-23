@@ -21,22 +21,32 @@ pub enum TextureFilter {
   Linear,
 }
 
+/// A sampler describes how a texture should be read from a shader program.
+///
+/// Sampler allow re-configuring wrap and filter modes on a per-material basis.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct TextureSampler {
+  pub wrap_mode: TextureWrap,
+  pub minify_filter: TextureFilter,
+  pub magnify_filter: TextureFilter,
+}
+
 /// Options for configuring a `Texture`.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct TextureOptions {
   pub format: TextureFormat,
-  pub minify_filter: TextureFilter,
-  pub magnify_filter: TextureFilter,
-  pub wrap_mode: TextureWrap,
+  pub sampler: TextureSampler,
 }
 
 impl Default for TextureOptions {
   fn default() -> Self {
     Self {
       format: TextureFormat::RGBA,
-      minify_filter: TextureFilter::Nearest,
-      magnify_filter: TextureFilter::Nearest,
-      wrap_mode: TextureWrap::Clamp,
+      sampler: TextureSampler {
+        wrap_mode: TextureWrap::Clamp,
+        minify_filter: TextureFilter::Nearest,
+        magnify_filter: TextureFilter::Nearest,
+      },
     }
   }
 }
@@ -58,18 +68,9 @@ impl Texture {
   pub fn new_with_options(context: &GraphicsContext, options: TextureOptions) -> Self {
     Self {
       context: context.clone(),
-      handle: context.create_texture(options.minify_filter, options.magnify_filter, options.wrap_mode),
+      handle: context.create_texture(&options.sampler),
       options,
     }
-  }
-
-  /// Creates a new texture from an image.
-  pub fn from_image(context: &GraphicsContext, image: &Image, options: TextureOptions) -> Texture {
-    let mut texture = Self::new_with_options(context, options);
-
-    texture.write_pixels(image.width(), image.height(), &image.as_slice());
-
-    texture
   }
 
   /// Returns the underlying GPU texture handle.
@@ -85,6 +86,11 @@ impl Texture {
   /// Uploads pixel data to the texture.
   pub fn write_pixels<P>(&mut self, _width: usize, _height: usize, _pixels: &[P]) where P: Pixel {
     todo!()
+  }
+
+  /// Uploads pixel data to the texture from the given image.
+  pub fn write_image(&mut self, image: &Image) {
+    self.write_pixels(image.width(), image.height(), &image.as_slice());
   }
 }
 
@@ -119,7 +125,9 @@ impl AssetLoader for TextureLoader {
 
   fn load(&self, context: AssetLoadContext) -> AssetResult<Self::Asset> {
     let image = context.load_asset(context.path)?;
-    let texture = Texture::from_image(&self.context, image, self.options);
+    let mut texture = Texture::new_with_options(&self.context, self.options);
+
+    texture.write_image(&image);
 
     Ok(texture)
   }

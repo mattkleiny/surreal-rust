@@ -62,20 +62,15 @@ pub trait GraphicsServer {
   fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
-  fn create_texture(&self, minify_filter: TextureFilter, magnify_filter: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle;
+  fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle;
   fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, length: usize, format: TextureFormat, mip_level: usize);
   fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders
   fn create_shader(&self) -> GraphicsHandle;
-  fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize>;
-  fn set_shader_uniform_u32(&self, shader: GraphicsHandle, location: usize, value: u32);
-  fn set_shader_uniform_f32(&self, shader: GraphicsHandle, location: usize, value: f32);
-  fn set_shader_uniform_i32(&self, shader: GraphicsHandle, location: usize, value: i32);
-  fn set_shader_uniform_uv(&self, shader: GraphicsHandle, location: usize, value: &[u32]);
-  fn set_shader_uniform_iv(&self, shader: GraphicsHandle, location: usize, value: &[i32]);
-  fn set_shader_uniform_fv(&self, shader: GraphicsHandle, location: usize, value: &[f32]);
   fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()>;
+  fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize>;
+  fn set_shader_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform);
   fn delete_shader(&self, shader: GraphicsHandle);
 
   // meshes

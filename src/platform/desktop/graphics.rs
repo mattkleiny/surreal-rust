@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use raw_gl_context::{GlConfig, GlContext};
 use winit::window::Window;
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, ShaderKind, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor, VertexKind};
+use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, ShaderKind, ShaderUniform, TextureFilter, TextureFormat, TextureSampler, TextureWrap, VertexDescriptor, VertexKind};
 
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphicsServer {
@@ -116,7 +116,7 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
-  fn create_texture(&self, minify_filter: TextureFilter, magnify_filter: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle {
+  fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
       let target = gl::TEXTURE_2D;
@@ -124,17 +124,17 @@ impl GraphicsServer for DesktopGraphicsServer {
       gl::GenTextures(1, &mut id);
       gl::BindTexture(target, id);
 
-      let minify_filter = match minify_filter {
+      let minify_filter = match sampler.minify_filter {
         TextureFilter::Nearest => gl::NEAREST,
         TextureFilter::Linear => gl::LINEAR,
       };
 
-      let magnify_filter = match magnify_filter {
+      let magnify_filter = match sampler.magnify_filter {
         TextureFilter::Nearest => gl::NEAREST,
         TextureFilter::Linear => gl::LINEAR,
       };
 
-      let wrap_mode = match wrap_mode {
+      let wrap_mode = match sampler.wrap_mode {
         TextureWrap::Clamp => gl::CLAMP_TO_EDGE,
         TextureWrap::Mirror => gl::MIRRORED_REPEAT,
       };
@@ -181,42 +181,6 @@ impl GraphicsServer for DesktopGraphicsServer {
       let id = gl::CreateProgram();
       GraphicsHandle { id }
     }
-  }
-
-  fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
-    unsafe {
-      let name: *const i8 = std::mem::transmute(name.as_bytes().as_ptr());
-      let location = gl::GetUniformLocation(shader.id, name);
-
-      match location {
-        -1 => None,
-        location => Some(location as usize),
-      }
-    }
-  }
-
-  fn set_shader_uniform_u32(&self, shader: GraphicsHandle, location: usize, value: u32) {
-    todo!()
-  }
-
-  fn set_shader_uniform_f32(&self, shader: GraphicsHandle, location: usize, value: f32) {
-    todo!()
-  }
-
-  fn set_shader_uniform_i32(&self, shader: GraphicsHandle, location: usize, value: i32) {
-    todo!()
-  }
-
-  fn set_shader_uniform_uv(&self, shader: GraphicsHandle, location: usize, value: &[u32]) {
-    todo!()
-  }
-
-  fn set_shader_uniform_iv(&self, shader: GraphicsHandle, location: usize, value: &[i32]) {
-    todo!()
-  }
-
-  fn set_shader_uniform_fv(&self, shader: GraphicsHandle, location: usize, value: &[f32]) {
-    todo!()
   }
 
   fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()> {
@@ -282,6 +246,64 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
 
     Ok(())
+  }
+
+  fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
+    unsafe {
+      let name: *const i8 = std::mem::transmute(name.as_bytes().as_ptr());
+      let location = gl::GetUniformLocation(shader.id, name);
+
+      match location {
+        -1 => None,
+        location => Some(location as usize),
+      }
+    }
+  }
+
+  fn set_shader_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform) {
+    unsafe {
+      match value {
+        ShaderUniform::Integer(value) => {
+          gl::ProgramUniform1i(shader.id, location as i32, *value as i32);
+        }
+        ShaderUniform::Floating(value) => {
+          gl::ProgramUniform1f(shader.id, location as i32, *value);
+        }
+        ShaderUniform::Point2(value) => {
+          gl::ProgramUniform2i(shader.id, location as i32, value.x, value.y);
+        }
+        ShaderUniform::Point3(value) => {
+          gl::ProgramUniform3i(shader.id, location as i32, value.x, value.y, value.z);
+        }
+        ShaderUniform::Point4(value) => {
+          gl::ProgramUniform4i(shader.id, location as i32, value.x, value.y, value.z, value.w);
+        }
+        ShaderUniform::Vector2(value) => {
+          gl::ProgramUniform2f(shader.id, location as i32, value.x, value.y);
+        }
+        ShaderUniform::Vector3(value) => {
+          gl::ProgramUniform3f(shader.id, location as i32, value.x, value.y, value.z);
+        }
+        ShaderUniform::Vector4(value) => {
+          gl::ProgramUniform4f(shader.id, location as i32, value.x, value.y, value.z, value.w);
+        }
+        ShaderUniform::Matrix2x2(value) => {
+          gl::ProgramUniformMatrix2fv(shader.id, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+        }
+        ShaderUniform::Matrix3x3(value) => {
+          gl::ProgramUniformMatrix3fv(shader.id, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+        }
+        ShaderUniform::Matrix4x4(value) => {
+          gl::ProgramUniformMatrix4fv(shader.id, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+        }
+        ShaderUniform::Texture(texture, slot, _) => {
+          // TODO: process sampler settings, too
+          gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
+          gl::BindTexture(gl::TEXTURE_2D, texture.id);
+          gl::ProgramUniform1i(shader.id, location as i32, *slot as i32);
+        }
+      }
+    }
   }
 
   fn delete_shader(&self, shader: GraphicsHandle) {
