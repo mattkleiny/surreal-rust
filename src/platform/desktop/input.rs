@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use winit::event::{ElementState, MouseButton};
 
 use crate::input::{InputServer, Key, KeyboardDevice, MouseDevice};
+use crate::maths::Vector2;
 
 /// The server for input management.
 pub struct DesktopInputServer {
@@ -23,14 +24,21 @@ impl DesktopInputServer {
     // TODO: make this support multiple devices?
     let keyboard = self.keyboards.first_mut().unwrap();
 
-    keyboard.on_event_received(event);
+    keyboard.on_keyboard_event(event);
+  }
+
+  pub fn on_mouse_move(&mut self, position: Vector2<f32>, window_size: Vector2<f32>) {
+    // TODO: make this support multiple devices?
+    let mouse = self.mice.first_mut().unwrap();
+
+    mouse.on_mouse_moved(position, window_size);
   }
 
   pub fn on_mouse_event(&mut self, button: MouseButton, state: ElementState) {
     // TODO: make this support multiple devices?
     let mouse = self.mice.first_mut().unwrap();
 
-    mouse.on_event_received(button, state);
+    mouse.on_mouse_event(button, state);
   }
 }
 
@@ -67,7 +75,7 @@ impl DesktopKeyboardDevice {
     }
   }
 
-  pub fn on_event_received(&mut self, event: winit::event::KeyboardInput) {
+  pub fn on_keyboard_event(&mut self, event: winit::event::KeyboardInput) {
     if let Some(virtual_key_code) = event.virtual_keycode {
       if event.state == ElementState::Pressed {
         self.pressed_keys.insert(virtual_key_code);
@@ -95,17 +103,26 @@ impl KeyboardDevice for DesktopKeyboardDevice {
 
 /// A mouse device for desktop platforms.
 struct DesktopMouseDevice {
+  position: Vector2<f32>,
+  normalised_position: Vector2<f32>,
   pressed_buttons: HashSet<MouseButton>,
 }
 
 impl DesktopMouseDevice {
   pub fn new() -> Self {
     Self {
+      position: Vector2::new(0., 0.),
+      normalised_position: Vector2::new(0., 0.),
       pressed_buttons: HashSet::new(),
     }
   }
 
-  pub fn on_event_received(&mut self, button: MouseButton, state: ElementState) {
+  pub fn on_mouse_moved(&mut self, new_position: Vector2<f32>, window_size: Vector2<f32>) {
+    self.position = new_position;
+    self.normalised_position = new_position / window_size;
+  }
+
+  pub fn on_mouse_event(&mut self, button: MouseButton, state: ElementState) {
     match state {
       ElementState::Pressed => self.pressed_buttons.insert(button),
       ElementState::Released => self.pressed_buttons.remove(&button),
@@ -114,6 +131,14 @@ impl DesktopMouseDevice {
 }
 
 impl MouseDevice for DesktopMouseDevice {
+  fn position(&self) -> Vector2<f32> {
+    self.position
+  }
+
+  fn normalised_position(&self) -> Vector2<f32> {
+    self.normalised_position
+  }
+
   fn is_button_up(&self, button: MouseButton) -> bool {
     !self.pressed_buttons.contains(&button)
   }

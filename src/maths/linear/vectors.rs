@@ -46,6 +46,22 @@ impl<T> Sub for Vector2<T> where T: Numeric {
   }
 }
 
+impl<T> Mul for Vector2<T> where T: Numeric {
+  type Output = Self;
+
+  fn mul(self, rhs: Self) -> Self::Output {
+    Self::new(self.x * rhs.x, self.y * rhs.y)
+  }
+}
+
+impl<T> Div for Vector2<T> where T: Numeric {
+  type Output = Self;
+
+  fn div(self, rhs: Self) -> Self::Output {
+    Self::new(self.x / rhs.x, self.y / rhs.y)
+  }
+}
+
 impl<T> Mul<T> for Vector2<T> where T: Numeric {
   type Output = Self;
 
@@ -104,6 +120,22 @@ impl<T> Sub for Vector3<T> where T: Numeric {
 
   fn sub(self, rhs: Self) -> Self::Output {
     Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
+  }
+}
+
+impl<T> Mul for Vector3<T> where T: Numeric {
+  type Output = Self;
+
+  fn mul(self, rhs: Self) -> Self::Output {
+    Self::new(self.x * rhs.x, self.y * rhs.y, self.z * rhs.z)
+  }
+}
+
+impl<T> Div for Vector3<T> where T: Numeric {
+  type Output = Self;
+
+  fn div(self, rhs: Self) -> Self::Output {
+    Self::new(self.x / rhs.x, self.y / rhs.y, self.z / rhs.z)
   }
 }
 
@@ -169,6 +201,23 @@ impl<T> Sub for Vector4<T> where T: Numeric {
     Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z, self.w - rhs.w)
   }
 }
+
+impl<T> Mul for Vector4<T> where T: Numeric {
+  type Output = Self;
+
+  fn mul(self, rhs: Self) -> Self::Output {
+    Self::new(self.x * rhs.x, self.y * rhs.y, self.z * rhs.z, self.w * rhs.w)
+  }
+}
+
+impl<T> Div for Vector4<T> where T: Numeric {
+  type Output = Self;
+
+  fn div(self, rhs: Self) -> Self::Output {
+    Self::new(self.x / rhs.x, self.y / rhs.y, self.z / rhs.z, self.w / rhs.w)
+  }
+}
+
 
 impl<T> Mul<T> for Vector4<T> where T: Numeric {
   type Output = Self;

@@ -40,19 +40,17 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
-    let palette = ColorPalette::from_jasc_file("assets/palettes/hollow-4.pal").expect("Failed to load color palette");
-    let shader = ShaderProgram::load(&game.host.graphics, "assets/shaders/standard.glsl").expect("Failed to load shader program");
+    let palette = ColorPalette::from_jasc_file("assets/palettes/hollow-4.pal")
+      .expect("Failed to load color palette");
+    let shader = ShaderProgram::load(&game.host.graphics, "assets/shaders/standard.glsl")
+      .expect("Failed to load shader program");
     let mut material = Material::new(&game.host.graphics, &shader);
     let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);
 
     material.set_uniform("u_projectionView", Matrix4x4::IDENTITY);
     material.set_texture("u_texture", canvas.texture.handle(), 0, None);
 
-    for y in 0..canvas.pixels.height() {
-      for x in 0..canvas.pixels.width() {
-        canvas.pixels[(x, y)] = Color::random();
-      }
-    }
+    canvas.pixels.fill(Color::WHITE);
 
     game.run_variable_step(|context| {
       context.host.graphics.clear_color_buffer(palette[0]);
@@ -62,6 +60,24 @@ fn main() {
       if let Some(keyboard) = context.host.input.primary_keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
           context.exit();
+        }
+
+        if keyboard.is_key_pressed(Key::Space) {
+          canvas.pixels.fill(Color::WHITE);
+        }
+      }
+
+      if let Some(mouse) = context.host.input.primary_mouse_device() {
+        if mouse.is_button_down(MouseButton::Left) {
+          let Vector2 { x, y } = mouse.normalised_position();
+
+          let x = (x * canvas.pixels.width() as f32).floor() as usize;
+          let y = (y * canvas.pixels.height() as f32).floor() as usize;
+
+          let x = clamp(x, 0, canvas.pixels.width() - 1);
+          let y = clamp(y, 0, canvas.pixels.height() - 1);
+
+          canvas.pixels[(x, y)] = Color::random();
         }
       }
     });

@@ -11,6 +11,7 @@ use input::DesktopInputServer;
 
 use crate::audio::AudioContext;
 use crate::graphics::GraphicsContext;
+use crate::maths::vec2;
 use crate::platform::{Platform, PlatformHost};
 use crate::utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan};
 
@@ -64,7 +65,8 @@ impl Platform for DesktopPlatform {
       .with_inner_size(LogicalSize::new(self.config.size.0, self.config.size.1))
       .with_resizable(true)
       .with_window_icon(self.config.icon.map(|buffer| {
-        let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico).expect("Failed to decode icon data");
+        let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico)
+          .expect("Failed to decode icon data");
         let rgba = image.as_rgba8().expect("Image was not in RGBA format");
 
         let pixels = rgba.pixels().flat_map(|pixel| pixel.0).collect();
@@ -79,7 +81,10 @@ impl Platform for DesktopPlatform {
     Self::Host {
       // servers
       audio: AudioContext::new(DesktopAudioServer::new()),
-      graphics: GraphicsContext::new(DesktopGraphicsServer::new(&window, self.config.vsync_enabled)),
+      graphics: GraphicsContext::new(DesktopGraphicsServer::new(
+        &window,
+        self.config.vsync_enabled,
+      )),
       input: DesktopInputServer::new(),
 
       // core
@@ -171,7 +176,11 @@ impl PlatformHost for DesktopPlatformHost {
             self.frame_counter.tick(delta_time);
 
             if self.frame_timer.tick(delta_time) {
-              self.window.set_title(&format!("{} - FPS: {:.2}", self.config.title, self.frame_counter.fps()));
+              self.window.set_title(&format!(
+                "{} - FPS: {:.2}",
+                self.config.title,
+                self.frame_counter.fps()
+              ));
 
               self.frame_timer.reset();
             }
@@ -184,26 +193,34 @@ impl PlatformHost for DesktopPlatformHost {
             self.window.request_redraw();
           }
         }
-        Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
-          match event {
-            WindowEvent::MouseInput { button, state, .. } => {
-              self.input.on_mouse_event(button, state);
-            }
-            WindowEvent::KeyboardInput { input, .. } => {
-              self.input.on_keyboard_event(input);
-            }
-            WindowEvent::CloseRequested => {
-              *control_flow = ControlFlow::Exit;
-            }
-            WindowEvent::Focused(focused) => {
-              self.is_focused = focused;
-            }
-            WindowEvent::Resized(size) => {
-              self.graphics.set_viewport_size((size.width as usize, size.height as usize));
-            }
-            _ => {}
+        Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
+          WindowEvent::CursorMoved { position, .. } => {
+            let size = self.window.inner_size();
+
+            self.input.on_mouse_move(
+              vec2(position.x as f32, position.y as f32),
+              vec2(size.width as f32, size.height as f32),
+            );
           }
-        }
+          WindowEvent::MouseInput { button, state, .. } => {
+            self.input.on_mouse_event(button, state);
+          }
+          WindowEvent::KeyboardInput { input, .. } => {
+            self.input.on_keyboard_event(input);
+          }
+          WindowEvent::CloseRequested => {
+            *control_flow = ControlFlow::Exit;
+          }
+          WindowEvent::Focused(focused) => {
+            self.is_focused = focused;
+          }
+          WindowEvent::Resized(size) => {
+            let size = (size.width as usize, size.height as usize);
+
+            self.graphics.set_viewport_size(size);
+          }
+          _ => {}
+        },
         _ => {}
       }
     });
