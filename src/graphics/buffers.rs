@@ -49,7 +49,7 @@ impl<T> GraphicsBuffer<T> {
   }
 
   /// Uploads the given data to the buffer.
-  pub fn write_data(&mut self, data: &[T]) {
+  pub fn write_data(&mut self, _data: &[T]) {
     todo!()
   }
 }

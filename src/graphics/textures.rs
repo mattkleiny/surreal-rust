@@ -1,8 +1,5 @@
-use std::mem::size_of;
-use std::slice;
-
 use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
-use crate::graphics::{Color, GraphicsContext, GraphicsHandle, Image};
+use crate::graphics::{GraphicsContext, GraphicsHandle, Image, Pixel};
 
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -81,12 +78,12 @@ impl Texture {
   }
 
   /// Downloads pixel data from the texture.
-  pub fn read_pixels(&self) -> Vec<Color> {
+  pub fn read_pixels<P>(&self) -> Vec<P> where P: Pixel {
     todo!()
   }
 
   /// Uploads pixel data to the texture.
-  pub fn write_pixels(&mut self, width: usize, height: usize, pixels: &[Color]) {
+  pub fn write_pixels<P>(&mut self, _width: usize, _height: usize, _pixels: &[P]) where P: Pixel {
     todo!()
   }
 }
