@@ -1,9 +1,8 @@
       #version 330 core
 
       // shared code
-      uniform mat4 u_projectionView;
-      uniform vec2 u_resolution;
-      uniform vec4 u_color;
+      uniform mat4 u_projectionView = mat4(1.0);
+      uniform vec4 u_color = vec4(1.0);
 
       #shader_type vertex
 
