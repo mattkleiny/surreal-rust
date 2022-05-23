@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-use crate::maths::{Rectangle, vec2, Vector2};
+use super::*;
 
 // TODO: think up a smarter trait for this?
 

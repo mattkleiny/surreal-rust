@@ -1,4 +1,4 @@
-use crate::maths::{Lerp, Vector2};
+use super::*;
 
 /// Represents a curve on a plane in 2-space.
 pub trait Curve {

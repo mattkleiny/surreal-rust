@@ -1,4 +1,4 @@
-use crate::maths::{Numeric, vec2, Vector2};
+use super::*;
 
 /// Provides a von neumann neighbour expansion for points in 2-space.
 pub trait VonNeumannNeighbourhood<T> {

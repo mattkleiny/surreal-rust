@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use winit::event::{ElementState, MouseButton};
 
-use crate::input::{InputServerImpl, Key, KeyboardDevice, MouseDevice};
+use crate::input::*;
 use crate::maths::Vector2;
 
 /// The server for input management.

@@ -1,7 +1,8 @@
 pub use surreal_macros::Vertex;
 
-use crate::graphics::{BufferKind, BufferUsage, Color, GraphicsBuffer, GraphicsServer, GraphicsImpl, Material};
 use crate::maths::{Tessellation, vec2, Vector2, Vector3};
+
+use super::*;
 
 /// Represents the different topologies supported for a mesh.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]

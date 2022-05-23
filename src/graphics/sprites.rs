@@ -1,4 +1,4 @@
-use crate::graphics::{GraphicsServer, GraphicsImpl, Material, Mesh, PrimitiveTopology, Texture, Vertex2};
+use super::*;
 
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;

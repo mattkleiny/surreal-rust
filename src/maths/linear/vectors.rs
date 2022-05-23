@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-use crate::maths::{Lerp, Numeric};
+use super::*;
 
 /// Shorthand to construct a [`Vector2`].
 pub const fn vec2<T>(x: T, y: T) -> Vector2<T> {

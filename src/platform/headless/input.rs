@@ -1,4 +1,4 @@
-use crate::input::{InputServerImpl, KeyboardDevice, MouseDevice};
+use crate::input::*;
 
 /// The input server for the headless platform.
 pub struct HeadlessInput {}

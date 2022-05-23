@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use raw_gl_context::{GlConfig, GlContext};
 use winit::window::Window;
 
-use crate::graphics::{BlendFactor, BlendState, BufferKind, BufferUsage, Color, GraphicsImpl, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, ShaderKind, ShaderUniform, TextureFilter, TextureFormat, TextureSampler, TextureWrap, VertexDescriptor, VertexKind};
+use crate::graphics::*;
 
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphics {
@@ -312,14 +312,7 @@ impl GraphicsImpl for DesktopGraphics {
           gl::ProgramUniform3i(shader, location as i32, value.x, value.y, value.z);
         }
         ShaderUniform::Point4(value) => {
-          gl::ProgramUniform4i(
-            shader,
-            location as i32,
-            value.x,
-            value.y,
-            value.z,
-            value.w,
-          );
+          gl::ProgramUniform4i(shader, location as i32, value.x, value.y, value.z, value.w);
         }
         ShaderUniform::Vector2(value) => {
           gl::ProgramUniform2f(shader, location as i32, value.x, value.y);
@@ -328,41 +321,16 @@ impl GraphicsImpl for DesktopGraphics {
           gl::ProgramUniform3f(shader, location as i32, value.x, value.y, value.z);
         }
         ShaderUniform::Vector4(value) => {
-          gl::ProgramUniform4f(
-            shader,
-            location as i32,
-            value.x,
-            value.y,
-            value.z,
-            value.w,
-          );
+          gl::ProgramUniform4f(shader, location as i32, value.x, value.y, value.z, value.w);
         }
         ShaderUniform::Matrix2x2(value) => {
-          gl::ProgramUniformMatrix2fv(
-            shader,
-            location as i32,
-            1,
-            gl::TRUE,
-            value.as_slice().as_ptr(),
-          );
+          gl::ProgramUniformMatrix2fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
         }
         ShaderUniform::Matrix3x3(value) => {
-          gl::ProgramUniformMatrix3fv(
-            shader,
-            location as i32,
-            1,
-            gl::TRUE,
-            value.as_slice().as_ptr(),
-          );
+          gl::ProgramUniformMatrix3fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
         }
         ShaderUniform::Matrix4x4(value) => {
-          gl::ProgramUniformMatrix4fv(
-            shader,
-            location as i32,
-            1,
-            gl::TRUE,
-            value.as_slice().as_ptr(),
-          );
+          gl::ProgramUniformMatrix4fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
         }
         ShaderUniform::Texture(texture, slot, _) => {
           // TODO: process sampler settings, too
@@ -386,12 +354,7 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn create_mesh(
-    &self,
-    vertex_buffer: Self::Handle,
-    index_buffer: Self::Handle,
-    descriptors: &[VertexDescriptor],
-  ) -> Self::Handle {
+  fn create_mesh(&self, vertex_buffer: Self::Handle, index_buffer: Self::Handle, descriptors: &[VertexDescriptor]) -> Self::Handle {
     unsafe {
       let mut id: u32 = 0;
       gl::GenVertexArrays(1, &mut id);
@@ -444,13 +407,7 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn draw_mesh(
-    &self,
-    mesh: Self::Handle,
-    topology: PrimitiveTopology,
-    vertex_count: usize,
-    index_count: usize,
-  ) {
+  fn draw_mesh(&self, mesh: Self::Handle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     // TODO: variable index type?
 
     unsafe {
@@ -463,12 +420,7 @@ impl GraphicsImpl for DesktopGraphics {
       };
 
       if index_count > 0 {
-        gl::DrawElements(
-          topology,
-          index_count as i32,
-          gl::UNSIGNED_INT,
-          std::ptr::null(),
-        );
+        gl::DrawElements(topology, index_count as i32, gl::UNSIGNED_INT, std::ptr::null());
       } else {
         gl::DrawArrays(topology, 0, vertex_count as i32);
       }

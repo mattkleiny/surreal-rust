@@ -1,6 +1,4 @@
-use crate::maths::{clamp, Numeric};
-
-use super::{vec2, Vector2};
+use super::*;
 
 /// A bounded space in 2 dimensions formed from the two corner points.
 #[derive(Clone, Debug, Eq, PartialEq)]

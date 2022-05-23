@@ -4,7 +4,7 @@ use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 
-use crate::io::{FileResult, FileSystem, InputStream, OutputStream, VirtualPath};
+use super::*;
 
 /// Converts a [`VirtualPath`] into a [`Path`].
 fn to_path(root: &Path, path: &VirtualPath) -> PathBuf {

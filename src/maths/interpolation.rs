@@ -1,4 +1,4 @@
-use crate::maths::Numeric;
+use super::*;
 
 /// Allows interpolation of arbitrary values.
 pub trait Lerp {

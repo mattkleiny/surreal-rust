@@ -1,29 +1,23 @@
 //! A lightweight cross-platform audio engine.
 
-use std::rc::Rc;
-
 use crate::utilities::{Size, TimeSpan};
 
 /// Represents a fallible result in the audio subsystem.
 pub type AudioResult<T> = anyhow::Result<T>;
 
-/// An opaque handle to an underlying resource in the [`AudioServer`].
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct AudioHandle {
-  pub(crate) id: u32,
-}
-
 /// The audio server implementation.
-pub type AudioServer<A> = Rc<A>;
+pub type AudioServer<A> = std::rc::Rc<A>;
 
 /// Represents a server implementation for the underlying audio subsystem.
 ///
 /// Permits interaction with the underlying audio API through unsafe lower-level abstraction.
 pub trait AudioImpl {
+  type Handle: Copy + std::fmt::Debug;
+
   // clips
-  fn create_clip(&self) -> AudioHandle;
-  fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]);
-  fn delete_clip(&self, handle: AudioHandle);
+  fn create_clip(&self) -> Self::Handle;
+  fn upload_clip_data(&self, handle: Self::Handle, data: &[u8]);
+  fn delete_clip(&self, handle: Self::Handle);
 }
 
 /// Describes sampling rates for an audio clip.

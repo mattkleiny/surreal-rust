@@ -1,4 +1,4 @@
-use crate::maths::{clamp, Numeric};
+use super::*;
 
 /// Builds a range between the given values.
 pub const fn range<T>(min: T, max: T) -> Range<T> where T: Numeric {

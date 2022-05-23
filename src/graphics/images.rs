@@ -1,8 +1,8 @@
 pub use image::ImageFormat as ImageFormat;
 
-use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
-use crate::graphics::Color;
 use crate::io::{AsVirtualPath, FileResult};
+
+use super::*;
 
 /// An image of RGBA pixels, loadable from a variety of different formats.
 pub struct Image {
@@ -18,7 +18,7 @@ impl Image {
   }
 
   /// Attempts to load an image from the given path with a discovered format.
-  pub fn load(path: impl AsVirtualPath) -> AssetResult<Self> {
+  pub fn load(path: impl AsVirtualPath) -> FileResult<Self> {
     let stream = path.as_virtual_path().open_input_stream()?;
     let reader = image::io::Reader::new(stream).with_guessed_format()?;
 
@@ -29,7 +29,7 @@ impl Image {
   }
 
   /// Attempts to load an image from the given path with the given format.
-  pub fn load_with_format(path: impl AsVirtualPath, format: ImageFormat) -> AssetResult<Self> {
+  pub fn load_with_format(path: impl AsVirtualPath, format: ImageFormat) -> FileResult<Self> {
     let stream = path.as_virtual_path().open_input_stream()?;
     let mut reader = image::io::Reader::new(stream);
 
@@ -76,22 +76,6 @@ impl Image {
     self.buffer.write_to(&mut stream, format)?;
 
     Ok(())
-  }
-}
-
-/// A loader for [`Image`] assets.
-pub struct ImageLoader {}
-
-impl ImageLoader {
-  /// Creates a new image loader.
-  pub fn new() -> Self {
-    Self {}
-  }
-}
-
-impl AssetLoader<Image> for ImageLoader {
-  fn load(&self, _context: &AssetLoadContext) -> AssetResult<Image> {
-    todo!()
   }
 }
 

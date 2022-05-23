@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::graphics::{GraphicsImpl, GraphicsServer, ShaderProgram, ShaderUniform, TextureSampler};
+use super::*;
 
 /// Blending states for materials.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

@@ -1,4 +1,4 @@
-use crate::graphics::{GraphicsServer, GraphicsImpl, Image, Pixel};
+use super::*;
 
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]

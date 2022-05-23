@@ -23,6 +23,8 @@ pub mod input;
 pub mod io;
 pub mod maths;
 pub mod platform;
+#[cfg(feature = "prototype")]
+pub mod prototype;
 pub mod utilities;
 
 pub mod prelude {
@@ -39,5 +41,7 @@ pub mod prelude {
   pub use crate::io::*;
   pub use crate::maths::*;
   pub use crate::platform::*;
+  #[cfg(feature = "prototype")]
+  pub use crate::prototype::*;
   pub use crate::utilities::*;
 }

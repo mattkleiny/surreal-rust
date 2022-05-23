@@ -226,11 +226,4 @@ mod tests {
 
     assert_eq!(position, None);
   }
-
-  #[test]
-  fn component_type_should_construct_arbitrarily() {
-    let component_type = ComponentType::from::<Vector2<f32>>();
-
-    println!("{:#?}", component_type);
-  }
 }

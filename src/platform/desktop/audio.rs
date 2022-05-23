@@ -1,4 +1,4 @@
-use crate::audio::{AudioHandle, AudioImpl, AudioServer};
+use crate::audio::*;
 
 /// The audio server for the desktop platform.
 pub struct DesktopAudio {}
@@ -10,15 +10,17 @@ impl DesktopAudio {
 }
 
 impl AudioImpl for DesktopAudio {
-  fn create_clip(&self) -> AudioHandle {
+  type Handle = u32;
+
+  fn create_clip(&self) -> Self::Handle {
     todo!()
   }
 
-  fn upload_clip_data(&self, _handle: AudioHandle, _data: &[u8]) {
+  fn upload_clip_data(&self, _handle: Self::Handle, _data: &[u8]) {
     todo!()
   }
 
-  fn delete_clip(&self, _handle: AudioHandle) {
+  fn delete_clip(&self, _handle: Self::Handle) {
     todo!()
   }
 }

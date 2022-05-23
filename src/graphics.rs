@@ -1,8 +1,5 @@
 //! A lightweight cross-platform graphics engine.
 
-use std::fmt::Debug;
-use std::rc::Rc;
-
 pub use buffers::*;
 pub use colors::*;
 pub use images::*;
@@ -27,14 +24,14 @@ mod textures;
 pub type GraphicsResult<T> = anyhow::Result<T>;
 
 /// The graphics server implementation.
-pub type GraphicsServer<G> = Rc<G>;
+pub type GraphicsServer<G> = std::rc::Rc<G>;
 
 /// Represents a server implementation for the underlying graphics subsystem.
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level unsafe implementation abstraction.
 pub trait GraphicsImpl {
-  type Handle: Copy + Debug;
+  type Handle: Copy + std::fmt::Debug;
 
   // frame operations
   fn begin_frame(&self);

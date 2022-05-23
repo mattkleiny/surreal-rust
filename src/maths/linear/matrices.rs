@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Index, IndexMut};
 
-use crate::maths::Numeric;
+use super::*;
 
 /// A standard 2x2 matrix.
 pub type Matrix2x2<T> = Matrix<T, 2, 4>;

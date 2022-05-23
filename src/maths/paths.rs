@@ -1,7 +1,9 @@
 use std::ops::Deref;
 
+use super::*;
+
 /// A point in the path-finding grid.
-pub type Point = super::Vector2<i32>;
+pub type Point = Vector2<i32>;
 
 /// A cost for path searches and relative queries.
 pub type Cost = f32;

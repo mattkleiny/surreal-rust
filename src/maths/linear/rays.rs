@@ -1,4 +1,4 @@
-use crate::maths::{Vector2, Vector3};
+use super::*;
 
 /// Shorthand to construct a [`Ray2`]
 pub const fn ray2<T>(origin: Vector2<T>, direction: Vector2<T>) -> Ray2<T> {

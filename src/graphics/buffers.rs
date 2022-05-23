@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::graphics::{GraphicsServer, GraphicsImpl};
+use super::*;
 
 /// The different kinds of buffer we support.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

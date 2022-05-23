@@ -2,6 +2,7 @@
 
 pub use winit::event::MouseButton as MouseButton;
 pub use winit::event::VirtualKeyCode as Key;
+
 use crate::maths::Vector2;
 
 /// Represents a fallible result in the input subsystem.

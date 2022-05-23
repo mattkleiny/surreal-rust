@@ -1,4 +1,4 @@
-use crate::maths::{Lerp, Numeric};
+use super::*;
 
 /// A standard purpose quaternion.
 #[derive(Copy, Clone, Default, Debug)]

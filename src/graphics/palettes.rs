@@ -3,8 +3,9 @@ use std::ops::Index;
 
 use anyhow::anyhow;
 
-use crate::graphics::{Color, GraphicsImpl, Pixel, Texture};
 use crate::io::{AsVirtualPath, FileResult};
+
+use super::*;
 
 /// A palette of colors of type [`P`].
 pub struct ColorPalette<P> {

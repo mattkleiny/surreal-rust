@@ -1,7 +1,6 @@
 use crate::graphics::{GraphicsServer, GraphicsResult, TextureSampler, GraphicsImpl};
 use crate::io::{AsVirtualPath, FileResult};
-use crate::maths::{Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
-use crate::prelude::Matrix2x2;
+use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 /// Different types fo shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -59,13 +58,13 @@ impl<G> ShaderProgram<G> where G: GraphicsImpl {
   }
 
   /// Reloads the shader program from a file.
-  pub fn reload(self, path: impl AsVirtualPath) -> FileResult<Self> {
+  pub fn reload(&self, path: impl AsVirtualPath) -> FileResult<()> {
     let source_code = path.as_virtual_path().read_all_text()?;
     let shaders = parse_glsl_source(&source_code);
 
     self.link_shaders(shaders)?;
 
-    Ok(self)
+    Ok(())
   }
 
   /// Links the given shader kernels to the underlying program.
