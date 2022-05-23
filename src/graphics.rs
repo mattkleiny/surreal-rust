@@ -1,5 +1,8 @@
 //! A lightweight cross-platform graphics engine.
 
+use std::ops::Deref;
+use std::rc::Rc;
+
 pub use buffers::*;
 pub use colors::*;
 pub use images::*;
@@ -32,12 +35,28 @@ pub struct GraphicsHandle {
   pub(crate) id: u32,
 }
 
-/// The context for graphics operations.
-pub type GraphicsContext = super::Context<dyn GraphicsServer>;
+/// The graphics server implementation.
+///
+/// Internally we manage a singleton server implementation backed by a single trait.
+#[derive(Clone)]
+pub struct GraphicsServer {
+  server: Rc<dyn GraphicsServerImpl>,
+}
 
-impl GraphicsContext {
-  pub fn new(value: impl GraphicsServer + 'static) -> Self {
-    Self(std::rc::Rc::new(value))
+impl GraphicsServer {
+  /// Creates a new graphics server.
+  pub fn new(server: impl GraphicsServerImpl + 'static) -> Self {
+    Self {
+      server: Rc::new(server),
+    }
+  }
+}
+
+impl Deref for GraphicsServer {
+  type Target = dyn GraphicsServerImpl;
+
+  fn deref(&self) -> &Self::Target {
+    self.server.as_ref()
   }
 }
 
@@ -45,7 +64,7 @@ impl GraphicsContext {
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level unsafe implementation abstraction.
-pub trait GraphicsServer {
+pub trait GraphicsServerImpl {
   // frame operations
   fn begin_frame(&self);
   fn end_frame(&self);

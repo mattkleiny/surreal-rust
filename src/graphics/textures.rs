@@ -1,5 +1,5 @@
 use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
-use crate::graphics::{GraphicsContext, GraphicsHandle, Image, Pixel};
+use crate::graphics::{GraphicsServer, GraphicsHandle, Image, Pixel};
 
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -53,22 +53,22 @@ impl Default for TextureOptions {
 
 /// A texture is a set of pixel data that has been uploaded to the GPU.
 pub struct Texture {
-  context: GraphicsContext,
+  context: GraphicsServer,
   pub handle: GraphicsHandle,
   options: TextureOptions,
 }
 
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new(context: &GraphicsContext) -> Self {
-    Self::with_options(context, TextureOptions::default())
+  pub fn new(server: &GraphicsServer) -> Self {
+    Self::with_options(server, TextureOptions::default())
   }
 
   /// Creates a new blank texture on the GPU with the given [`TextureOptions`].
-  pub fn with_options(context: &GraphicsContext, options: TextureOptions) -> Self {
+  pub fn with_options(server: &GraphicsServer, options: TextureOptions) -> Self {
     Self {
-      context: context.clone(),
-      handle: context.create_texture(&options.sampler),
+      context: server.clone(),
+      handle: server.create_texture(&options.sampler),
       options,
     }
   }
@@ -117,14 +117,14 @@ impl Drop for Texture {
 
 /// Allows loading `Texture` from the virtual file system.
 pub struct TextureLoader {
-  context: GraphicsContext,
+  server: GraphicsServer,
   options: TextureOptions,
 }
 
 impl TextureLoader {
-  pub fn new(context: &GraphicsContext) -> Self {
+  pub fn new(server: &GraphicsServer) -> Self {
     Self {
-      context: context.clone(),
+      server: server.clone(),
       options: TextureOptions::default(),
     }
   }
@@ -133,7 +133,7 @@ impl TextureLoader {
 impl AssetLoader<Texture> for TextureLoader {
   fn load(&self, context: &AssetLoadContext) -> AssetResult<Texture> {
     let image = context.load_asset(context.path)?;
-    let mut texture = Texture::with_options(&self.context, self.options);
+    let mut texture = Texture::with_options(&self.server, self.options);
 
     texture.write_image(&image);
 

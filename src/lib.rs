@@ -8,11 +8,8 @@
 
 #![allow(incomplete_features)]
 
-#![feature(downcast_unchecked)]
 #![feature(generic_const_exprs)]
 #![feature(const_refs_to_cell)]
-#![feature(associated_type_defaults)]
-#![feature(let_else)]
 
 // Re-export the macro crate for consumers.
 pub extern crate surreal_macros as macros;
@@ -43,26 +40,4 @@ pub mod prelude {
   pub use crate::maths::*;
   pub use crate::platform::*;
   pub use crate::utilities::*;
-}
-
-/// An context for object-based operations.
-///
-/// This context can be easily passed around the application and
-/// allows resources to refer back to the originating server [`S`].
-pub struct Context<S: ?Sized>(std::rc::Rc<S>);
-
-impl<S: ?Sized> Clone for Context<S> {
-  /// Clones the reference to the core system.
-  fn clone(&self) -> Self {
-    Self(self.0.clone())
-  }
-}
-
-impl<S: ?Sized> std::ops::Deref for Context<S> {
-  type Target = S;
-
-  /// Directly de-references the core system.
-  fn deref(&self) -> &Self::Target {
-    self.0.deref()
-  }
 }

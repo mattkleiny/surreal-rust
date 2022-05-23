@@ -66,10 +66,10 @@ struct PixelCanvas {
 
 impl PixelCanvas {
   /// Creates a new pixel canvas with the given dimensions.
-  pub fn new(context: &GraphicsContext, width: usize, height: usize) -> Self {
+  pub fn new(server: &GraphicsServer, width: usize, height: usize) -> Self {
     Self {
-      texture: Texture::new(context),
-      mesh: Mesh::create_quad(context, 1.),
+      texture: Texture::new(server),
+      mesh: Mesh::create_quad(server, 1.),
       timer: IntervalTimer::new(TimeSpan::from_millis(10.)),
       pixels: Grid::new(width, height),
     }

@@ -1,5 +1,8 @@
 //! A lightweight cross-platform audio engine.
 
+use std::ops::Deref;
+use std::rc::Rc;
+
 use crate::utilities::{Size, TimeSpan};
 
 /// Represents a fallible result in the audio subsystem.
@@ -11,19 +14,35 @@ pub struct AudioHandle {
   pub(crate) id: u32,
 }
 
-/// The context for audio operations.
-pub type AudioContext = super::Context<dyn AudioServer>;
+/// The audio server implementation.
+///
+/// Internally we manage a singleton server implementation backed by a single trait.
+#[derive(Clone)]
+pub struct AudioServer {
+  server: Rc<dyn AudioServerImpl>,
+}
 
-impl AudioContext {
-  pub fn new(value: impl AudioServer + 'static) -> Self {
-    Self(std::rc::Rc::new(value))
+impl AudioServer {
+  /// Creates a new graphics server.
+  pub fn new(server: impl AudioServerImpl + 'static) -> Self {
+    Self {
+      server: Rc::new(server),
+    }
+  }
+}
+
+impl Deref for AudioServer {
+  type Target = dyn AudioServerImpl;
+
+  fn deref(&self) -> &Self::Target {
+    self.server.as_ref()
   }
 }
 
 /// A server for the underlying audio subsystem.
 ///
 /// Permits interaction with the underlying audio API through unsafe lower-level abstraction.
-pub trait AudioServer {
+pub trait AudioServerImpl {
   // clips
   fn create_clip(&self) -> AudioHandle;
   fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]);

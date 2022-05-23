@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, ShaderUniform, TextureFormat, TextureSampler, VertexDescriptor};
+use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServerImpl, PrimitiveTopology, Shader, ShaderUniform, TextureFormat, TextureSampler, VertexDescriptor};
 
 /// The graphics server for the headless platform.
 pub struct HeadlessGraphicsServer {
@@ -21,7 +21,7 @@ impl HeadlessGraphicsServer {
   }
 }
 
-impl GraphicsServer for HeadlessGraphicsServer {
+impl GraphicsServerImpl for HeadlessGraphicsServer {
   fn begin_frame(&self) {
     // no-op
   }

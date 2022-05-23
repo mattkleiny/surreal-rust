@@ -6,16 +6,16 @@ use winit::window::Window;
 
 use crate::graphics::{
   BlendFactor, BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult,
-  GraphicsServer, PrimitiveTopology, Shader, ShaderKind, ShaderUniform, TextureFilter,
+  GraphicsServerImpl, PrimitiveTopology, Shader, ShaderKind, ShaderUniform, TextureFilter,
   TextureFormat, TextureSampler, TextureWrap, VertexDescriptor, VertexKind,
 };
 
 /// The graphics server for the desktop platform.
-pub struct DesktopGraphicsServer {
+pub struct DesktopGraphicsServerImpl {
   context: GlContext,
 }
 
-impl DesktopGraphicsServer {
+impl DesktopGraphicsServerImpl {
   pub fn new(window: &Window, vsync_enabled: bool) -> Self {
     // prepare and load opengl functionality
     let config = GlConfig {
@@ -31,7 +31,7 @@ impl DesktopGraphicsServer {
   }
 }
 
-impl GraphicsServer for DesktopGraphicsServer {
+impl GraphicsServerImpl for DesktopGraphicsServerImpl {
   fn begin_frame(&self) {
     self.context.make_current();
   }

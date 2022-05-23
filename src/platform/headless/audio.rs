@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::audio::{AudioHandle, AudioServer};
+use crate::audio::{AudioHandle, AudioServerImpl};
 
 /// The audio server for the headless platform.
 pub struct HeadlessAudioServer {
@@ -15,7 +15,7 @@ impl HeadlessAudioServer {
   }
 }
 
-impl AudioServer for HeadlessAudioServer {
+impl AudioServerImpl for HeadlessAudioServer {
   fn create_clip(&self) -> AudioHandle {
     AudioHandle { id: self.next_clip_id.fetch_add(1, Ordering::Relaxed) }
   }

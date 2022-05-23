@@ -4,8 +4,8 @@ pub use audio::*;
 pub use graphics::*;
 pub use input::*;
 
-use crate::audio::AudioContext;
-use crate::graphics::GraphicsContext;
+use crate::audio::AudioServer;
+use crate::graphics::GraphicsServer;
 use crate::platform::{Platform, PlatformHost};
 
 mod audio;
@@ -17,8 +17,8 @@ pub struct HeadlessPlatform;
 
 /// A host for headless environments.
 pub struct HeadlessPlatformHost {
-  pub audio: AudioContext,
-  pub graphics: GraphicsContext,
+  pub audio: AudioServer,
+  pub graphics: GraphicsServer,
   pub input: HeadlessInputServer,
   is_exiting: bool,
 }
@@ -28,8 +28,8 @@ impl Platform for HeadlessPlatform {
 
   fn create_host(&self) -> Self::Host {
     HeadlessPlatformHost {
-      audio: AudioContext::new(HeadlessAudioServer::new()),
-      graphics: GraphicsContext::new(HeadlessGraphicsServer::new()),
+      audio: AudioServer::new(HeadlessAudioServer::new()),
+      graphics: GraphicsServer::new(HeadlessGraphicsServer::new()),
       input: HeadlessInputServer::new(),
       is_exiting: false,
     }

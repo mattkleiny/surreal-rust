@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
-use crate::graphics::{GraphicsContext, GraphicsHandle, ShaderProgram, ShaderUniform, TextureSampler};
+use crate::graphics::{GraphicsServer, GraphicsHandle, ShaderProgram, ShaderUniform, TextureSampler};
 
 /// Blending states for materials.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -43,7 +43,7 @@ impl Entry {
 
 /// A material describes how to render a mesh and describes the underlying GPU pipeline state needed.
 pub struct Material<'a> {
-  context: GraphicsContext,
+  server: GraphicsServer,
   shader: &'a ShaderProgram,
   entries: HashMap<String, Entry>,
   blend_state: BlendState,
@@ -51,9 +51,9 @@ pub struct Material<'a> {
 
 impl<'a> Material<'a> {
   /// Constructs a new material for the given shader program.
-  pub fn new(context: &GraphicsContext, shader: &'a ShaderProgram) -> Self {
+  pub fn new(server: &GraphicsServer, shader: &'a ShaderProgram) -> Self {
     Self {
-      context: context.clone(),
+      server: server.clone(),
       shader,
       entries: HashMap::new(),
       blend_state: BlendState::Disabled,
@@ -102,26 +102,26 @@ impl<'a> Material<'a> {
 
   /// Binds the material as the active shader and uploads it's uniforms.
   pub fn bind(&self) {
-    self.context.set_blend_state(self.blend_state);
+    self.server.set_blend_state(self.blend_state);
 
     for (_, uniform) in &self.entries {
       self.shader.set_uniform(uniform.location, &uniform.value);
     }
 
-    self.context.set_active_shader(self.shader.handle);
+    self.server.set_active_shader(self.shader.handle);
   }
 }
 
 /// Allows loading [`Material`]s from the virtual file system.
 pub struct MaterialLoader {
-  context: GraphicsContext,
+  server: GraphicsServer,
 }
 
 impl MaterialLoader {
   /// Creates a new material loader.
-  pub fn new(context: &GraphicsContext) -> Self {
+  pub fn new(server: &GraphicsServer) -> Self {
     Self {
-      context: context.clone()
+      server: server.clone()
     }
   }
 }

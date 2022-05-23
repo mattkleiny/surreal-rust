@@ -1,5 +1,5 @@
 use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
-use crate::graphics::{GraphicsContext, GraphicsHandle, GraphicsResult, TextureSampler};
+use crate::graphics::{GraphicsServer, GraphicsHandle, GraphicsResult, TextureSampler};
 use crate::io::{AsVirtualPath, FileResult};
 use crate::maths::{Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 use crate::prelude::Matrix2x2;
@@ -36,16 +36,16 @@ pub enum ShaderUniform {
 
 /// Represents a single compiled shader program.
 pub struct ShaderProgram {
-  context: GraphicsContext,
+  context: GraphicsServer,
   pub handle: GraphicsHandle,
 }
 
 impl ShaderProgram {
   /// Creates a new blank shader program on the GPU.
-  pub fn new(context: &GraphicsContext) -> Self {
+  pub fn new(server: &GraphicsServer) -> Self {
     Self {
-      context: context.clone(),
-      handle: context.create_shader(),
+      context: server.clone(),
+      handle: server.create_shader(),
     }
   }
 
@@ -84,21 +84,21 @@ impl Drop for ShaderProgram {
 
 /// Allows loading [`ShaderProgram`]s from the virtual file system.
 pub struct ShaderProgramLoader {
-  context: GraphicsContext,
+  server: GraphicsServer,
 }
 
 impl ShaderProgramLoader {
   /// Creates a new shader program loader.
-  pub fn new(context: &GraphicsContext) -> Self {
+  pub fn new(server: &GraphicsServer) -> Self {
     Self {
-      context: context.clone()
+      server: server.clone()
     }
   }
 }
 
 impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
   fn load(&self, context: &AssetLoadContext) -> AssetResult<ShaderProgram> {
-    let program = ShaderProgram::new(&self.context);
+    let program = ShaderProgram::new(&self.server);
 
     Ok(program.reload(context.path)?)
   }

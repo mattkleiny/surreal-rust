@@ -1,15 +1,15 @@
-use crate::audio::{AudioHandle, AudioServer};
+use crate::audio::{AudioHandle, AudioServerImpl};
 
 /// The audio server for the desktop platform.
-pub struct DesktopAudioServer {}
+pub struct DesktopAudioServerImpl {}
 
-impl DesktopAudioServer {
+impl DesktopAudioServerImpl {
   pub fn new() -> Self {
     Self {}
   }
 }
 
-impl AudioServer for DesktopAudioServer {
+impl AudioServerImpl for DesktopAudioServerImpl {
   fn create_clip(&self) -> AudioHandle {
     todo!()
   }

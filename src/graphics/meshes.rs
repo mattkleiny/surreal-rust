@@ -1,6 +1,6 @@
 pub use surreal_macros::Vertex;
 
-use crate::graphics::{BufferKind, BufferUsage, Color, GraphicsBuffer, GraphicsContext, GraphicsHandle, Material};
+use crate::graphics::{BufferKind, BufferUsage, Color, GraphicsBuffer, GraphicsServer, GraphicsHandle, Material};
 use crate::maths::{Tessellation, vec2, Vector2, Vector3};
 
 /// Represents the different topologies supported for a mesh.
@@ -75,7 +75,7 @@ pub struct Vertex3 {
 /// Meshes are stored on the GPU as vertex/index buffers and can be submitted for rendering at any
 /// time, provided a valid [`Material`] is available.
 pub struct Mesh<V> {
-  context: GraphicsContext,
+  server: GraphicsServer,
   pub handle: GraphicsHandle,
   pub vertices: GraphicsBuffer<V>,
   pub indices: GraphicsBuffer<u32>,
@@ -83,13 +83,13 @@ pub struct Mesh<V> {
 
 impl<V> Mesh<V> where V: Vertex {
   /// Constructs a new blank mesh on the GPU.
-  pub fn new(context: &GraphicsContext) -> Self {
-    let vertices = GraphicsBuffer::new(context, BufferKind::Element, BufferUsage::Static);
-    let indices = GraphicsBuffer::new(context, BufferKind::Index, BufferUsage::Static);
+  pub fn new(server: &GraphicsServer) -> Self {
+    let vertices = GraphicsBuffer::new(server, BufferKind::Element, BufferUsage::Static);
+    let indices = GraphicsBuffer::new(server, BufferKind::Index, BufferUsage::Static);
 
     Self {
-      context: context.clone(),
-      handle: context.create_mesh(
+      server: server.clone(),
+      handle: server.create_mesh(
         vertices.handle,
         indices.handle,
         V::DESCRIPTORS,
@@ -100,8 +100,8 @@ impl<V> Mesh<V> where V: Vertex {
   }
 
   /// Constructs a mesh with the given factory method.
-  pub fn create(context: &GraphicsContext, factory: impl Fn(&mut Tessellator<V>)) -> Self {
-    let mut mesh = Self::new(context);
+  pub fn create(server: &GraphicsServer, factory: impl Fn(&mut Tessellator<V>)) -> Self {
+    let mut mesh = Self::new(server);
     let mut tessellator = Tessellator::new();
 
     factory(&mut tessellator);
@@ -120,15 +120,15 @@ impl<V> Mesh<V> where V: Vertex {
   pub fn draw_sub_mesh(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     material.bind();
 
-    self.context.draw_mesh(self.handle, topology, vertex_count, index_count);
+    self.server.draw_mesh(self.handle, topology, vertex_count, index_count);
   }
 }
 
 /// Specialization for standard 2d meshes.
 impl Mesh<Vertex2> {
   /// Constructs a simple triangle mesh of the given size.
-  pub fn create_triangle(context: &GraphicsContext, size: f32) -> Self {
-    Self::create(context, |mesh| {
+  pub fn create_triangle(server: &GraphicsServer, size: f32) -> Self {
+    Self::create(server, |mesh| {
       mesh.add_triangle(&[
         Vertex2 { position: vec2(-size, -size), color: Color::WHITE, uv: vec2(0., 0.) },
         Vertex2 { position: vec2(0., size), color: Color::WHITE, uv: vec2(0.5, 1.) },
@@ -138,8 +138,8 @@ impl Mesh<Vertex2> {
   }
 
   /// Constructs a simple quad mesh of the given size.
-  pub fn create_quad(context: &GraphicsContext, size: f32) -> Self {
-    Self::create(context, |mesh| {
+  pub fn create_quad(server: &GraphicsServer, size: f32) -> Self {
+    Self::create(server, |mesh| {
       mesh.add_quad(&[
         Vertex2 { position: vec2(-size, -size), color: Color::WHITE, uv: vec2(0., 1.) },
         Vertex2 { position: vec2(-size, size), color: Color::WHITE, uv: vec2(0., 0.) },
@@ -150,8 +150,8 @@ impl Mesh<Vertex2> {
   }
 
   /// Constructs a simple circle mesh of the given size.
-  pub fn create_circle(context: &GraphicsContext, radius: f32, segments: usize) -> Self {
-    Self::create(context, |mesh| {
+  pub fn create_circle(server: &GraphicsServer, radius: f32, segments: usize) -> Self {
+    Self::create(server, |mesh| {
       use std::f32::consts::PI;
 
       let mut vertices = Vec::with_capacity(segments);
@@ -184,7 +184,7 @@ impl Mesh<Vertex2> {
 impl<V> Drop for Mesh<V> {
   /// Deletes the mesh from the GPU.
   fn drop(&mut self) {
-    self.context.delete_mesh(self.handle);
+    self.server.delete_mesh(self.handle);
   }
 }
 

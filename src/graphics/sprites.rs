@@ -1,4 +1,4 @@
-use crate::graphics::{GraphicsContext, Material, Mesh, PrimitiveTopology, Texture, Vertex2};
+use crate::graphics::{GraphicsServer, Material, Mesh, PrimitiveTopology, Texture, Vertex2};
 
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
@@ -27,14 +27,14 @@ pub struct SpriteBatchScope<'a, 'b> {
 
 impl SpriteBatch {
   /// Constructs a new [`SpriteBatch`] .
-  pub fn new(context: &GraphicsContext) -> Self {
-    Self::with_capacity(context, DEFAULT_SPRITE_COUNT)
+  pub fn new(server: &GraphicsServer) -> Self {
+    Self::with_capacity(server, DEFAULT_SPRITE_COUNT)
   }
 
   /// Creates a new [`SpriteBatch`] with the given sprite capacity.
-  pub fn with_capacity(context: &GraphicsContext, sprite_count: usize) -> Self {
+  pub fn with_capacity(server: &GraphicsServer, sprite_count: usize) -> Self {
     // build standard quad indices ahead-of-time
-    let mut mesh = Mesh::new(context);
+    let mut mesh = Mesh::new(server);
     let indices = build_quad_indices(sprite_count * 6);
 
     mesh.indices.write_data(&indices);
