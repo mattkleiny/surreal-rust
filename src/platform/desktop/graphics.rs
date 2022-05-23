@@ -43,6 +43,7 @@ impl GraphicsServer for DesktopGraphicsServer {
 
   fn set_viewport_size(&self, (width, height): (usize, usize)) {
     unsafe {
+      self.context.make_current();
       gl::Viewport(0, 0, width as i32, height as i32);
     }
   }
@@ -415,9 +416,7 @@ impl GraphicsServer for DesktopGraphicsServer {
       let mut id: u32 = 0;
       gl::GenVertexArrays(1, &mut id);
 
-      // bind the backing buffers and vertex attributes
       gl::BindVertexArray(id);
-
       gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer.id);
       gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer.id);
 

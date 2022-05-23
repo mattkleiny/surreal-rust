@@ -43,12 +43,16 @@ fn main() {
     let palette = ColorPalette::from_jasc_file("assets/palettes/hollow-4.pal").expect("Failed to load color palette");
     let shader = ShaderProgram::load(&game.host.graphics, "assets/shaders/standard.glsl").expect("Failed to load shader program");
     let mut material = Material::new(&game.host.graphics, &shader);
-    let mut canvas = PixelCanvas::new(&game.host.graphics, 512, 512);
+    let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);
 
     material.set_uniform("u_projectionView", Matrix4x4::IDENTITY);
     material.set_texture("u_texture", canvas.texture.handle(), 0, None);
 
-    canvas.pixels.fill(Color::WHITE);
+    for y in 0..canvas.pixels.height() {
+      for x in 0..canvas.pixels.width() {
+        canvas.pixels[(x, y)] = Color::random();
+      }
+    }
 
     game.run_variable_step(|context| {
       context.host.graphics.clear_color_buffer(palette[0]);
