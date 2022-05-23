@@ -13,11 +13,14 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
-    let palette = ColorPalette::from_jasc_file("assets/palettes/hollow-4.pal").expect("Failed to load color palette");
-    let shader = ShaderProgram::load(&game.host.graphics, "assets/shaders/standard.glsl").expect("Failed to load shader program");
+    let shader = ShaderProgram::new(&game.host.graphics)
+      .reload("assets/shaders/standard.glsl")
+      .expect("Failed to load shader program");
 
     let mut material = Material::new(&game.host.graphics, &shader);
     let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);
+
+    let palette = ColorPalette::from_file("assets/palettes/hollow-4.pal").expect("Failed to load color palette");
 
     material.set_uniform("u_projectionView", Matrix4x4::IDENTITY);
     material.set_texture("u_texture", canvas.texture.handle, 0, None);

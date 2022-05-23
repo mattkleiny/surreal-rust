@@ -89,7 +89,11 @@ impl<V> Mesh<V> where V: Vertex {
 
     Self {
       context: context.clone(),
-      handle: context.create_mesh(vertices.handle, indices.handle, V::DESCRIPTORS),
+      handle: context.create_mesh(
+        vertices.handle,
+        indices.handle,
+        V::DESCRIPTORS,
+      ),
       vertices,
       indices,
     }

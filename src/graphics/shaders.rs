@@ -49,17 +49,6 @@ impl ShaderProgram {
     }
   }
 
-  /// Loads a shader program from a file.
-  pub fn load(context: &GraphicsContext, path: impl AsVirtualPath) -> FileResult<Self> {
-    let source_code = path.as_virtual_path().read_all_text()?;
-    let shaders = parse_glsl_source(&source_code);
-    let program = ShaderProgram::new(&context);
-
-    program.link_shaders(shaders)?;
-
-    Ok(program)
-  }
-
   /// Retrieves the binding location of the given shader uniform in the underlying program.
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
     self.context.get_shader_uniform_location(self.handle, name)
@@ -68,6 +57,16 @@ impl ShaderProgram {
   /// Sets the given uniform value in the underlying program.
   pub fn set_uniform(&self, location: usize, value: &ShaderUniform) {
     self.context.set_shader_uniform(self.handle, location, value);
+  }
+
+  /// Reloads the shader program from a file.
+  pub fn reload(self, path: impl AsVirtualPath) -> FileResult<Self> {
+    let source_code = path.as_virtual_path().read_all_text()?;
+    let shaders = parse_glsl_source(&source_code);
+
+    self.link_shaders(shaders)?;
+
+    Ok(self)
   }
 
   /// Links the given shader kernels to the underlying program.
@@ -96,13 +95,9 @@ impl AssetLoader for ShaderProgramLoader {
   }
 
   fn load(&self, context: AssetLoadContext) -> AssetResult<ShaderProgram> {
-    let source_code = context.path.read_all_text()?;
-    let shaders = parse_glsl_source(&source_code);
     let program = ShaderProgram::new(&self.context);
 
-    program.link_shaders(shaders)?;
-
-    Ok(program)
+    Ok(program.reload(context.path)?)
   }
 }
 

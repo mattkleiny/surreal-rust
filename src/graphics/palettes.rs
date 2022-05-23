@@ -28,7 +28,7 @@ impl<P> ColorPalette<P> where P: Pixel {
   }
 
   /// Loads a palette from the given JASC-PAL palette file.
-  pub fn from_jasc_file(path: impl AsVirtualPath) -> FileResult<Self> {
+  pub fn from_file(path: impl AsVirtualPath) -> FileResult<Self> {
     let path = path.as_virtual_path();
     let stream = path.open_input_stream()?;
     let lines: Vec<_> = stream.lines().collect::<Result<_, _>>()?;
