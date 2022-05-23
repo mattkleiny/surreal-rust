@@ -1,6 +1,10 @@
+//! A fun little falling sand simulation for Surreal.
+
 #![windows_subsystem = "windows"]
 
 use surreal::prelude::*;
+
+// TODO: clean up patterns used in here
 
 fn main() {
   let platform = DesktopPlatform::new(Configuration {
@@ -23,7 +27,7 @@ fn main() {
     game.run_variable_step(|context| {
       context.host.graphics.clear_color_buffer(palette[0]);
 
-      canvas.update();
+      canvas.update(context.time.delta_time);
       canvas.draw(&material);
 
       if let Some(keyboard) = context.host.input.primary_keyboard_device() {
@@ -53,6 +57,7 @@ fn main() {
 struct PixelCanvas {
   texture: Texture,
   mesh: Mesh<Vertex2>,
+  timer: IntervalTimer,
   pub pixels: Grid<Color>,
 }
 
@@ -62,6 +67,7 @@ impl PixelCanvas {
     Self {
       texture: Texture::new(context),
       mesh: Mesh::create_quad(context, 1.),
+      timer: IntervalTimer::new(TimeSpan::from_millis(10.)),
       pixels: Grid::new(width, height),
     }
   }
@@ -81,19 +87,23 @@ impl PixelCanvas {
   }
 
   /// Updates the sand simulation.
-  pub fn update(&mut self) {
-    for y in (0..self.pixels.height()).rev() {
-      for x in 0..self.pixels.width() {
-        let pixel = self.pixels[(x, y)];
-        if pixel.a <= 0. {
-          continue;
-        }
+  pub fn update(&mut self, delta_time: f32) {
+    if self.timer.tick(delta_time) {
+      self.timer.reset();
 
-        match () {
-          _ if self.simulate_sand((x, y), (x as isize, y as isize + 1)) => (),
-          _ if self.simulate_sand((x, y), (x as isize - 1, y as isize + 1)) => (),
-          _ if self.simulate_sand((x, y), (x as isize + 1, y as isize + 1)) => (),
-          _ => {}
+      for y in (0..self.pixels.height()).rev() {
+        for x in 0..self.pixels.width() {
+          let pixel = self.pixels[(x, y)];
+          if pixel.a <= 0. {
+            continue;
+          }
+
+          match () {
+            _ if self.simulate_sand((x, y), (x as isize, y as isize + 1)) => (),
+            _ if self.simulate_sand((x, y), (x as isize - 1, y as isize + 1)) => (),
+            _ if self.simulate_sand((x, y), (x as isize + 1, y as isize + 1)) => (),
+            _ => {}
+          }
         }
       }
     }

@@ -208,9 +208,6 @@ impl PlatformHost for DesktopPlatformHost {
           WindowEvent::KeyboardInput { input, .. } => {
             self.input.on_keyboard_event(input);
           }
-          WindowEvent::CloseRequested => {
-            *control_flow = ControlFlow::Exit;
-          }
           WindowEvent::Focused(focused) => {
             self.is_focused = focused;
           }
@@ -218,6 +215,9 @@ impl PlatformHost for DesktopPlatformHost {
             let size = (size.width as usize, size.height as usize);
 
             self.graphics.set_viewport_size(size);
+          }
+          WindowEvent::CloseRequested => {
+            *control_flow = ControlFlow::Exit;
           }
           _ => {}
         },

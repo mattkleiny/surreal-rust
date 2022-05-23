@@ -1,3 +1,5 @@
+//! An example of headless bootstrapping for Surreal.
+
 use surreal::prelude::*;
 
 fn main() {

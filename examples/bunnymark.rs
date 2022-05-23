@@ -1,4 +1,4 @@
-//! A simple Hello, World for Surreal.
+//! A simple sprite benchmark for Surreal.
 
 #![windows_subsystem = "windows"]
 
