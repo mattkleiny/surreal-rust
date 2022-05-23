@@ -8,13 +8,17 @@ pub enum BlendState {
   Disabled,
   Enabled {
     source: BlendFactor,
-    dest: BlendFactor,
+    destination: BlendFactor,
   },
 }
 
 /// Blending factors for materials.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum BlendFactor {
+  SrcAlpha,
+  SrcColor,
+  DstAlpha,
+  DstColor,
   OneMinusSrcAlpha,
   OneMinusSrcColor,
   OneMinusDstAlpha,

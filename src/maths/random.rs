@@ -11,6 +11,21 @@ pub trait FromRandom: Sized {
   fn from_random(random: &mut Random) -> Self;
 }
 
+/// Allows an item to be selected randomly.
+pub trait RandomSelection {
+  type Item;
+
+  /// Selects an item randomly from the type.
+  fn select_random(&self, random: &mut Random) -> &Self::Item;
+
+  /// Returns a random item from this collection using the thread-local random generator.
+  fn select_randomly(&self) -> &Self::Item {
+    THREAD_LOCAL_RANDOM.with(|random| unsafe {
+      self.select_random(&mut *random.get())
+    })
+  }
+}
+
 /// A pseudo-random number generator.
 #[derive(Clone, Debug)]
 pub struct Random {
@@ -113,5 +128,14 @@ impl FromRandom for f32 {
 impl FromRandom for f64 {
   fn from_random(generator: &mut Random) -> Self {
     generator.next_f64()
+  }
+}
+
+/// Allows random selection from a slice of [`T`].
+impl<T> RandomSelection for &[T] {
+  type Item = T;
+
+  fn select_random(&self, random: &mut Random) -> &Self::Item {
+    &self[random.next_u64() as usize % self.len()]
   }
 }

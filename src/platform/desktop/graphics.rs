@@ -51,6 +51,10 @@ impl GraphicsServer for DesktopGraphicsServer {
   fn set_blend_state(&self, blend_state: BlendState) {
     fn convert_blend_factor(factor: BlendFactor) -> u32 {
       match factor {
+        BlendFactor::SrcAlpha => gl::SRC_ALPHA,
+        BlendFactor::SrcColor => gl::SRC_COLOR,
+        BlendFactor::DstAlpha => gl::DST_ALPHA,
+        BlendFactor::DstColor => gl::DST_COLOR,
         BlendFactor::OneMinusSrcAlpha => gl::ONE_MINUS_SRC_ALPHA,
         BlendFactor::OneMinusSrcColor => gl::ONE_MINUS_SRC_COLOR,
         BlendFactor::OneMinusDstAlpha => gl::ONE_MINUS_DST_ALPHA,
@@ -61,7 +65,7 @@ impl GraphicsServer for DesktopGraphicsServer {
     unsafe {
       match blend_state {
         BlendState::Disabled => gl::Disable(gl::BLEND),
-        BlendState::Enabled { source, dest } => {
+        BlendState::Enabled { source, destination: dest } => {
           let source = convert_blend_factor(source);
           let dest = convert_blend_factor(dest);
 

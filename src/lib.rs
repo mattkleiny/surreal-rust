@@ -11,6 +11,7 @@
 #![feature(downcast_unchecked)]
 #![feature(generic_const_exprs)]
 #![feature(const_refs_to_cell)]
+#![feature(associated_type_defaults)]
 
 // Re-export the macro crate for consumers.
 pub extern crate surreal_macros as macros;
