@@ -36,7 +36,7 @@ impl<G> PixelCanvas<G> where G: GraphicsImpl {
   }
 
   /// Updates the pixel simulation.
-  pub fn simulate_falling_sand(&mut self, delta_time: f32) {
+  pub fn simulate(&mut self, delta_time: f32) {
     if self.timer.tick(delta_time) {
       self.timer.reset();
 

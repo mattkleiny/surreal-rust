@@ -1,3 +1,4 @@
+use crate::maths::Rectangle;
 use super::*;
 
 /// Different supported texture formats.
@@ -99,6 +100,11 @@ impl<G> Texture<G> where G: GraphicsImpl {
       self.options.format,
       0, // mip-level
     );
+  }
+
+  /// Uploads a sub-section of pixel data to the texture.
+  pub fn write_sub_pixels<P>(&mut self, _region: &Rectangle<usize>, _pixels: &[P]) where P: Pixel {
+    todo!()
   }
 
   /// Uploads pixel data to the texture from the given image.

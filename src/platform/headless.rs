@@ -1,8 +1,8 @@
 //! A platform implementation for headless environments.
 
-pub use audio::*;
-pub use graphics::*;
-pub use input::*;
+use audio::HeadlessAudio;
+use graphics::HeadlessGraphics;
+use input::HeadlessInput;
 
 use crate::audio::AudioServer;
 use crate::graphics::GraphicsServer;

@@ -18,8 +18,6 @@ fn main() {
     let palette = ColorPalette::from_file("assets/palettes/hollow-4.pal").expect("Failed to load color palette");
 
     shader.reload("assets/shaders/standard.glsl").expect("Failed to load shader program");
-
-    material.set_uniform("u_projectionView", Matrix4x4::IDENTITY);
     material.set_texture("u_texture", canvas.texture.handle, 0, None);
 
     canvas.clear();
@@ -27,7 +25,7 @@ fn main() {
     game.run_variable_step(|context| {
       context.host.graphics.clear_color_buffer(palette[0]);
 
-      canvas.simulate_falling_sand(context.time.delta_time);
+      canvas.simulate(context.time.delta_time);
       canvas.draw(&material);
 
       if let Some(keyboard) = context.host.input.primary_keyboard_device() {
