@@ -21,7 +21,7 @@ fn main() {
 
     canvas.fill(Color::BLACK);
 
-    game.run_variable_step(|context| unsafe {
+    game.run_variable_step(|context| {
       context.host.graphics.clear_color_buffer(palette[0]);
 
       texture.write_pixels(canvas.width(), canvas.height(), &canvas.as_slice());

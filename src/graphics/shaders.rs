@@ -18,16 +18,16 @@ pub struct Shader {
 
 /// Represents a single compiled shader program.
 pub struct ShaderProgram {
-  handle: GraphicsHandle,
   context: GraphicsContext,
+  handle: GraphicsHandle,
 }
 
 impl ShaderProgram {
   /// Creates a new blank shader program on the GPU.
   pub fn new(context: &GraphicsContext) -> Self {
     Self {
-      handle: unsafe { context.create_shader() },
       context: context.clone(),
+      handle: context.create_shader(),
     }
   }
 
@@ -104,16 +104,14 @@ impl ShaderProgram {
   }
 
   fn link_shaders(&self, shaders: Vec<Shader>) -> GraphicsResult<()> {
-    unsafe { self.context.link_shaders(self.handle, shaders) }
+    self.context.link_shaders(self.handle, shaders)
   }
 }
 
 impl Drop for ShaderProgram {
   /// Deletes the shader program from the GPU.
   fn drop(&mut self) {
-    unsafe {
-      self.context.delete_shader(self.handle);
-    }
+    self.context.delete_shader(self.handle);
   }
 }
 

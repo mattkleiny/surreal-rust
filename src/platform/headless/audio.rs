@@ -15,16 +15,16 @@ impl HeadlessAudioServer {
   }
 }
 
-unsafe impl AudioServer for HeadlessAudioServer {
-  unsafe fn create_clip(&self) -> AudioHandle {
+impl AudioServer for HeadlessAudioServer {
+  fn create_clip(&self) -> AudioHandle {
     AudioHandle { id: self.next_clip_id.fetch_add(1, Ordering::Relaxed) }
   }
 
-  unsafe fn upload_clip_data(&self, _handle: AudioHandle, _data: &[u8]) {
+  fn upload_clip_data(&self, _handle: AudioHandle, _data: &[u8]) {
     // no-op
   }
 
-  unsafe fn delete_clip(&self, _handle: AudioHandle) {
+  fn delete_clip(&self, _handle: AudioHandle) {
     // no-op
   }
 }

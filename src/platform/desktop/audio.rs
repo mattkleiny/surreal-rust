@@ -9,16 +9,16 @@ impl DesktopAudioServer {
   }
 }
 
-unsafe impl AudioServer for DesktopAudioServer {
-  unsafe fn create_clip(&self) -> AudioHandle {
+impl AudioServer for DesktopAudioServer {
+  fn create_clip(&self) -> AudioHandle {
     todo!()
   }
 
-  unsafe fn upload_clip_data(&self, _handle: AudioHandle, _data: &[u8]) {
+  fn upload_clip_data(&self, _handle: AudioHandle, _data: &[u8]) {
     todo!()
   }
 
-  unsafe fn delete_clip(&self, _handle: AudioHandle) {
+  fn delete_clip(&self, _handle: AudioHandle) {
     todo!()
   }
 }

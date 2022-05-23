@@ -77,7 +77,7 @@ impl<V> Mesh<V> where V: Vertex {
   pub fn new(context: &GraphicsContext) -> Self {
     Self {
       context: context.clone(),
-      handle: unsafe { context.create_mesh(V::DESCRIPTORS) },
+      handle: context.create_mesh(V::DESCRIPTORS),
       vertices: GraphicsBuffer::new(context, BufferKind::Element, BufferUsage::Static),
       indices: GraphicsBuffer::new(context, BufferKind::Index, BufferUsage::Static),
     }
@@ -171,9 +171,7 @@ impl Mesh<Vertex2> {
 impl<V> Drop for Mesh<V> {
   /// Deletes the mesh from the GPU.
   fn drop(&mut self) {
-    unsafe {
-      self.context.delete_mesh(self.handle);
-    }
+    self.context.delete_mesh(self.handle);
   }
 }
 

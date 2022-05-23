@@ -43,35 +43,35 @@ impl GraphicsContext {
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level unsafe implementation abstraction.
-pub unsafe trait GraphicsServer {
+pub trait GraphicsServer {
   // frame operations
-  unsafe fn begin_frame(&self);
-  unsafe fn end_frame(&self);
+  fn begin_frame(&self);
+  fn end_frame(&self);
 
   // intrinsics
-  unsafe fn set_viewport_size(&self, viewport: (usize, usize));
-  unsafe fn set_blend_state(&self, blend_state: BlendState);
-  unsafe fn clear_color_buffer(&self, color: Color);
-  unsafe fn clear_depth_buffer(&self);
-  unsafe fn flush_commands(&self);
+  fn set_viewport_size(&self, viewport: (usize, usize));
+  fn set_blend_state(&self, blend_state: BlendState);
+  fn clear_color_buffer(&self, color: Color);
+  fn clear_depth_buffer(&self);
+  fn flush_commands(&self);
 
   // buffers
-  unsafe fn create_buffer(&self) -> GraphicsHandle;
-  unsafe fn read_buffer_data(&self, buffer: GraphicsHandle, kind: BufferKind, offset: usize, length: usize) -> Vec<u8>;
-  unsafe fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: &[u8]);
-  unsafe fn delete_buffer(&self, buffer: GraphicsHandle);
+  fn create_buffer(&self) -> GraphicsHandle;
+  fn read_buffer_data(&self, buffer: GraphicsHandle, kind: BufferKind, offset: usize, length: usize) -> Vec<u8>;
+  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: &[u8]);
+  fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
-  unsafe fn create_texture(&self, minify_filter: TextureFilter, magnify_filter: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle;
-  unsafe fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: &[u8], format: TextureFormat, mip_level: usize);
-  unsafe fn delete_texture(&self, texture: GraphicsHandle);
+  fn create_texture(&self, minify_filter: TextureFilter, magnify_filter: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle;
+  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: &[u8], format: TextureFormat, mip_level: usize);
+  fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders
-  unsafe fn create_shader(&self) -> GraphicsHandle;
-  unsafe fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()>;
-  unsafe fn delete_shader(&self, shader: GraphicsHandle);
+  fn create_shader(&self) -> GraphicsHandle;
+  fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()>;
+  fn delete_shader(&self, shader: GraphicsHandle);
 
   // meshes
-  unsafe fn create_mesh(&self, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
-  unsafe fn delete_mesh(&self, mesh: GraphicsHandle);
+  fn create_mesh(&self, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
+  fn delete_mesh(&self, mesh: GraphicsHandle);
 }

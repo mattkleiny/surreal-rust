@@ -152,7 +152,7 @@ impl PlatformHost for DesktopPlatformHost {
 
     let mut event_loop = self.event_loop.take().unwrap();
 
-    event_loop.run_return(|event, _, control_flow| unsafe {
+    event_loop.run_return(|event, _, control_flow| {
       use winit::event::*;
 
       match event {

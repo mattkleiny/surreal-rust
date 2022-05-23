@@ -1,7 +1,6 @@
 use std::any::{Any, type_name, TypeId};
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
-use std::hash::{Hash, Hasher};
 
 use crate::collections::{Arena, ArenaIndex};
 
@@ -37,7 +36,7 @@ impl ComponentType {
   }
 
   /// Returns all [`ComponentType`] indicated by the given mask.
-  pub fn for_mask(mask: ComponentMask) -> Self {
+  pub fn for_mask(_mask: ComponentMask) -> Self {
     todo!()
   }
 }

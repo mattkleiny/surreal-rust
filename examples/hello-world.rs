@@ -12,7 +12,7 @@ fn main() {
     let color1 = Color::random();
     let color2 = Color::random();
 
-    game.run_variable_step(|context| unsafe {
+    game.run_variable_step(|context| {
       let total_time = context.time.total_time as f32;
       let color = Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.);
 

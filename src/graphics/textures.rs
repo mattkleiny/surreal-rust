@@ -46,8 +46,8 @@ impl Default for TextureOptions {
 
 /// A texture is a set of pixel data that has been uploaded to the GPU.
 pub struct Texture {
-  handle: GraphicsHandle,
   context: GraphicsContext,
+  handle: GraphicsHandle,
   options: TextureOptions,
 }
 
@@ -60,8 +60,8 @@ impl Texture {
   /// Creates a new blank texture on the GPU.
   pub fn new_with_options(context: &GraphicsContext, options: TextureOptions) -> Self {
     Self {
-      handle: unsafe { context.create_texture(options.minify_filter, options.magnify_filter, options.wrap_mode) },
       context: context.clone(),
+      handle: context.create_texture(options.minify_filter, options.magnify_filter, options.wrap_mode),
       options,
     }
   }
@@ -99,9 +99,7 @@ impl Texture {
 impl Drop for Texture {
   /// Deletes the texture from the GPU.
   fn drop(&mut self) {
-    unsafe {
-      self.context.delete_texture(self.handle);
-    }
+    self.context.delete_texture(self.handle);
   }
 }
 

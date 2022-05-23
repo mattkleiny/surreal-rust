@@ -31,7 +31,7 @@ impl<T> GraphicsBuffer<T> {
   pub fn new(context: &GraphicsContext, kind: BufferKind, usage: BufferUsage) -> Self {
     Self {
       context: context.clone(),
-      handle: unsafe { context.create_buffer() },
+      handle: context.create_buffer(),
       kind,
       usage,
       _type: PhantomData,
@@ -52,8 +52,6 @@ impl<T> GraphicsBuffer<T> {
 impl<T> Drop for GraphicsBuffer<T> {
   /// Deletes the buffer from the GPU.
   fn drop(&mut self) {
-    unsafe {
-      self.context.delete_buffer(self.handle)
-    }
+    self.context.delete_buffer(self.handle)
   }
 }

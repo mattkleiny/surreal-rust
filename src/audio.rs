@@ -23,11 +23,11 @@ impl AudioContext {
 /// A server for the underlying audio subsystem.
 ///
 /// Permits interaction with the underlying audio API through unsafe lower-level abstraction.
-pub unsafe trait AudioServer {
+pub trait AudioServer {
   // clips
-  unsafe fn create_clip(&self) -> AudioHandle;
-  unsafe fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]);
-  unsafe fn delete_clip(&self, handle: AudioHandle);
+  fn create_clip(&self) -> AudioHandle;
+  fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]);
+  fn delete_clip(&self, handle: AudioHandle);
 }
 
 /// Describes sampling rates for an audio clip.
