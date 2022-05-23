@@ -1,9 +1,10 @@
 use std::ffi::c_void;
+use anyhow::anyhow;
 
 use raw_gl_context::{GlConfig, GlContext};
 use winit::window::Window;
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, Shader, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
+use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, Shader, ShaderKind, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
 
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphicsServer {
@@ -171,11 +172,75 @@ impl GraphicsServer for DesktopGraphicsServer {
   }
 
   fn create_shader(&self) -> GraphicsHandle {
-    todo!()
+    unsafe {
+      let id = gl::CreateProgram();
+      GraphicsHandle { id }
+    }
   }
 
-  fn link_shaders(&self, _shader: GraphicsHandle, _shaders: Vec<Shader>) -> GraphicsResult<()> {
-    todo!()
+  fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()> {
+    unsafe {
+      gl::UseProgram(shader.id);
+
+      // compile the shader kernel code
+      let mut shader_ids = Vec::with_capacity(shaders.len());
+
+      for Shader { kind, code } in &shaders {
+        let shader_id = gl::CreateShader(match kind {
+          ShaderKind::Vertex => gl::VERTEX_SHADER,
+          ShaderKind::Fragment => gl::FRAGMENT_SHADER,
+        });
+
+        let code_length = code.len() as i32;
+        let code: *const i8 = std::mem::transmute(code.as_bytes().as_ptr());
+
+        gl::ShaderSource(shader_id, 1, &code, &code_length);
+        gl::CompileShader(shader_id);
+
+        let mut compile_status = 0;
+        gl::GetShaderiv(shader_id, gl::COMPILE_STATUS, &mut compile_status);
+
+        if compile_status == 0 {
+          let mut info_log_length = 0;
+          gl::GetShaderiv(shader_id, gl::INFO_LOG_LENGTH, &mut info_log_length);
+
+          let mut info_log = Vec::with_capacity(info_log_length as usize);
+          info_log.set_len(info_log_length as usize);
+
+          gl::GetShaderInfoLog(shader_id, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
+
+          return Err(anyhow!(String::from_utf8(info_log).unwrap()));
+        }
+
+        gl::AttachShader(shader.id, shader_id);
+        shader_ids.push(shader_id);
+      }
+
+      // link the kernels in the main program
+      let mut link_status = 0;
+
+      gl::LinkProgram(shader.id);
+      gl::GetProgramiv(shader.id, gl::LINK_STATUS, &mut link_status);
+
+      if link_status == 0 {
+        let mut info_log_length = 0;
+        gl::GetProgramiv(shader.id, gl::INFO_LOG_LENGTH, &mut info_log_length);
+
+        let mut info_log = Vec::with_capacity(info_log_length as usize);
+        info_log.set_len(info_log_length as usize);
+
+        gl::GetProgramInfoLog(shader.id, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
+
+        return Err(anyhow!(String::from_utf8(info_log).unwrap()));
+      }
+
+      // delete the kernels now that we've linked
+      for shader_id in shader_ids {
+        gl::DeleteShader(shader_id);
+      }
+    }
+
+    Ok(())
   }
 
   fn delete_shader(&self, shader: GraphicsHandle) {
