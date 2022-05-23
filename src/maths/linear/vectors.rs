@@ -25,8 +25,33 @@ pub struct Vector2<T> {
 }
 
 impl<T> Vector2<T> {
+  /// Creates a new vector from the given components.
   pub const fn new(x: T, y: T) -> Self {
     Self { x, y }
+  }
+}
+
+impl Vector2<f32> {
+  /// Calculates the length of the vector.
+  pub fn length(&self) -> f32 {
+    self.length_squared().sqrt() as f32
+  }
+
+  /// Calculates the squared length of the vector.
+  pub fn length_squared(&self) -> f32 {
+    self.x * self.x + self.y * self.y
+  }
+}
+
+impl Vector2<isize> {
+  /// Calculates the length of the vector.
+  pub fn length(&self) -> isize {
+    (self.length_squared() as f32).sqrt() as isize
+  }
+
+  /// Calculates the squared length of the vector.
+  pub fn length_squared(&self) -> isize {
+    self.x * self.x + self.y * self.y
   }
 }
 

@@ -1,5 +1,9 @@
 use std::ops::{Index, IndexMut};
 
+use crate::maths::{Rectangle, vec2, Vector2};
+
+// TODO: think up a smarter trait for this?
+
 /// A simple 2d grid that allows efficient random access.
 pub struct Grid<T> {
   stride: usize,
@@ -56,6 +60,22 @@ impl<T> Grid<T> {
   /// Returns the items as a mutable slice.
   pub fn as_mut_slice(&mut self) -> &mut [T] {
     self.items.as_mut_slice()
+  }
+
+  /// Draws a circle in the grid.
+  pub fn draw_circle(&mut self, center: Vector2<isize>, radius: isize, value: T) where T: Copy {
+    let rectangle = Rectangle::from_size(center, vec2(radius, radius))
+      .clamp(0, 0, self.width() as isize - 1, self.height() as isize - 1);
+
+    for y in rectangle.top()..rectangle.bottom() {
+      for x in rectangle.left()..rectangle.right() {
+        let point = vec2(x, y);
+
+        if (point - center).length_squared() <= radius {
+          self[(point.x as usize, point.y as usize)] = value;
+        }
+      }
+    }
   }
 }
 

@@ -68,16 +68,18 @@ fn main() {
       }
 
       if let Some(mouse) = context.host.input.primary_mouse_device() {
+        let Vector2 { x, y } = mouse.normalised_position();
+
+        let x = (x * canvas.pixels.width() as f32).floor() as usize;
+        let y = (y * canvas.pixels.height() as f32).floor() as usize;
+
+        let x = clamp(x, 0, canvas.pixels.width() - 1) as isize;
+        let y = clamp(y, 0, canvas.pixels.height() - 1) as isize;
+
         if mouse.is_button_down(MouseButton::Left) {
-          let Vector2 { x, y } = mouse.normalised_position();
-
-          let x = (x * canvas.pixels.width() as f32).floor() as usize;
-          let y = (y * canvas.pixels.height() as f32).floor() as usize;
-
-          let x = clamp(x, 0, canvas.pixels.width() - 1);
-          let y = clamp(y, 0, canvas.pixels.height() - 1);
-
-          canvas.pixels[(x, y)] = Color::random();
+          canvas.pixels.draw_circle(vec2(x, y), 6, Color::random());
+        } else if mouse.is_button_down(MouseButton::Right) {
+          canvas.pixels.draw_circle(vec2(x, y), 6, Color::WHITE);
         }
       }
     });
