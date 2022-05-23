@@ -87,12 +87,7 @@ impl Texture {
 
   /// Uploads pixel data to the texture.
   pub fn write_pixels(&mut self, width: usize, height: usize, pixels: &[Color]) {
-    unsafe {
-      let size = pixels.len() * size_of::<Color>();
-      let bytes = slice::from_raw_parts(pixels.as_ptr() as *const u8, size);
-
-      self.context.write_texture_data(self.handle, width, height, bytes, self.options.format, 0);
-    }
+    todo!()
   }
 }
 

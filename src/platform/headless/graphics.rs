@@ -58,7 +58,7 @@ impl GraphicsServer for HeadlessGraphicsServer {
     Vec::new()
   }
 
-  fn write_buffer_data(&self, _buffer: GraphicsHandle, _usage: BufferUsage, _kind: BufferKind, _data: &[u8]) {
+  fn write_buffer_data(&self, _buffer: GraphicsHandle, _usage: BufferUsage, _kind: BufferKind, _data: *const u8, _length: usize) {
     // no-op
   }
 
@@ -70,7 +70,7 @@ impl GraphicsServer for HeadlessGraphicsServer {
     GraphicsHandle { id: self.next_texture_id.fetch_add(1, Ordering::Relaxed) }
   }
 
-  fn write_texture_data(&self, _texture: GraphicsHandle, _width: usize, _height: usize, _pixels: &[u8], _format: TextureFormat, _mip_level: usize) {
+  fn write_texture_data(&self, _texture: GraphicsHandle, _width: usize, _height: usize, _pixels: *const u8, _length: usize, _format: TextureFormat, _mip_level: usize) {
     // no-op
   }
 
@@ -90,7 +90,7 @@ impl GraphicsServer for HeadlessGraphicsServer {
     // no-op
   }
 
-  fn create_mesh(&self, _descriptors: &[VertexDescriptor]) -> GraphicsHandle {
+  fn create_mesh(&self, _vertices: GraphicsHandle, _indices: GraphicsHandle, _descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     GraphicsHandle { id: self.next_mesh_id.fetch_add(1, Ordering::Relaxed) }
   }
 
