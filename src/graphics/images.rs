@@ -1,6 +1,6 @@
 pub use image::ImageFormat as ImageFormat;
 
-use crate::assets::AssetResult;
+use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
 use crate::graphics::Color;
 use crate::io::{AsVirtualPath, FileResult};
 
@@ -76,6 +76,22 @@ impl Image {
     self.buffer.write_to(&mut stream, format)?;
 
     Ok(())
+  }
+}
+
+/// A loader for [`Image`] assets.
+pub struct ImageLoader {}
+
+impl ImageLoader {
+  /// Creates a new image loader.
+  pub fn new() -> Self {
+    Self {}
+  }
+}
+
+impl AssetLoader<Image> for ImageLoader {
+  fn load(&self, _context: &AssetLoadContext) -> AssetResult<Image> {
+    todo!()
   }
 }
 

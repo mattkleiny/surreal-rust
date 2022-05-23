@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
 use crate::graphics::{GraphicsContext, GraphicsHandle, ShaderProgram, ShaderUniform, TextureSampler};
 
 /// Blending states for materials.
@@ -108,5 +109,25 @@ impl<'a> Material<'a> {
     }
 
     self.context.set_active_shader(self.shader.handle);
+  }
+}
+
+/// Allows loading [`Material`]s from the virtual file system.
+pub struct MaterialLoader {
+  context: GraphicsContext,
+}
+
+impl MaterialLoader {
+  /// Creates a new material loader.
+  pub fn new(context: &GraphicsContext) -> Self {
+    Self {
+      context: context.clone()
+    }
+  }
+}
+
+impl<'a> AssetLoader<Material<'a>> for MaterialLoader {
+  fn load(&self, _context: &AssetLoadContext) -> AssetResult<Material<'a>> {
+    todo!()
   }
 }

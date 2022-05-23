@@ -87,14 +87,17 @@ pub struct ShaderProgramLoader {
   context: GraphicsContext,
 }
 
-impl AssetLoader for ShaderProgramLoader {
-  type Asset = ShaderProgram;
-
-  fn can_load(&self, context: AssetLoadContext) -> bool {
-    context.path.extension() == ".glsl"
+impl ShaderProgramLoader {
+  /// Creates a new shader program loader.
+  pub fn new(context: &GraphicsContext) -> Self {
+    Self {
+      context: context.clone()
+    }
   }
+}
 
-  fn load(&self, context: AssetLoadContext) -> AssetResult<ShaderProgram> {
+impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
+  fn load(&self, context: &AssetLoadContext) -> AssetResult<ShaderProgram> {
     let program = ShaderProgram::new(&self.context);
 
     Ok(program.reload(context.path)?)

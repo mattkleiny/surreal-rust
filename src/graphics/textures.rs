@@ -61,11 +61,11 @@ pub struct Texture {
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
   pub fn new(context: &GraphicsContext) -> Self {
-    Self::new_with_options(context, TextureOptions::default())
+    Self::with_options(context, TextureOptions::default())
   }
 
-  /// Creates a new blank texture on the GPU.
-  pub fn new_with_options(context: &GraphicsContext, options: TextureOptions) -> Self {
+  /// Creates a new blank texture on the GPU with the given [`TextureOptions`].
+  pub fn with_options(context: &GraphicsContext, options: TextureOptions) -> Self {
     Self {
       context: context.clone(),
       handle: context.create_texture(&options.sampler),
@@ -130,16 +130,10 @@ impl TextureLoader {
   }
 }
 
-impl AssetLoader for TextureLoader {
-  type Asset = Texture;
-
-  fn can_load(&self, context: AssetLoadContext) -> bool {
-    context.path.extension() == ".png"
-  }
-
-  fn load(&self, context: AssetLoadContext) -> AssetResult<Self::Asset> {
+impl AssetLoader<Texture> for TextureLoader {
+  fn load(&self, context: &AssetLoadContext) -> AssetResult<Texture> {
     let image = context.load_asset(context.path)?;
-    let mut texture = Texture::new_with_options(&self.context, self.options);
+    let mut texture = Texture::with_options(&self.context, self.options);
 
     texture.write_image(&image);
 

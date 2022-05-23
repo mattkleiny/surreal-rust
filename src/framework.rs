@@ -4,6 +4,7 @@
 
 pub use ecs::*;
 
+use crate::assets::AssetManager;
 use crate::platform::{Platform, PlatformHost};
 use crate::utilities::{Clock, GameTime};
 
@@ -12,6 +13,7 @@ mod ecs;
 /// The context for bootstrapping a game.
 pub struct Game<P> where P: Platform {
   pub host: P::Host,
+  pub assets: AssetManager,
 }
 
 /// The context for a single tick of the game loop.
@@ -26,6 +28,7 @@ impl<P> Game<P> where P: Platform {
   pub fn start(platform: P, mut setup: impl FnMut(Game<P>)) {
     let game = Game {
       host: platform.create_host(),
+      assets: AssetManager::new(),
     };
 
     setup(game);
