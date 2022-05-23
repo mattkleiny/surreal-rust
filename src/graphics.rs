@@ -58,12 +58,12 @@ pub trait GraphicsServer {
   // buffers
   fn create_buffer(&self) -> GraphicsHandle;
   fn read_buffer_data(&self, buffer: GraphicsHandle, kind: BufferKind, offset: usize, length: usize) -> Vec<u8>;
-  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: &[u8]);
+  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: *const u8, length: usize);
   fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
   fn create_texture(&self, minify_filter: TextureFilter, magnify_filter: TextureFilter, wrap_mode: TextureWrap) -> GraphicsHandle;
-  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: &[u8], format: TextureFormat, mip_level: usize);
+  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, length: usize, format: TextureFormat, mip_level: usize);
   fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders
@@ -72,6 +72,6 @@ pub trait GraphicsServer {
   fn delete_shader(&self, shader: GraphicsHandle);
 
   // meshes
-  fn create_mesh(&self, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
+  fn create_mesh(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
   fn delete_mesh(&self, mesh: GraphicsHandle);
 }

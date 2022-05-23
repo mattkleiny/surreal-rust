@@ -75,11 +75,14 @@ pub struct Mesh<V> {
 impl<V> Mesh<V> where V: Vertex {
   /// Constructs a new blank mesh on the GPU.
   pub fn new(context: &GraphicsContext) -> Self {
+    let vertices = GraphicsBuffer::new(context, BufferKind::Element, BufferUsage::Static);
+    let indices = GraphicsBuffer::new(context, BufferKind::Index, BufferUsage::Static);
+
     Self {
       context: context.clone(),
-      handle: context.create_mesh(V::DESCRIPTORS),
-      vertices: GraphicsBuffer::new(context, BufferKind::Element, BufferUsage::Static),
-      indices: GraphicsBuffer::new(context, BufferKind::Index, BufferUsage::Static),
+      handle: context.create_mesh(vertices.handle(), indices.handle(), V::DESCRIPTORS),
+      vertices,
+      indices,
     }
   }
 

@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use raw_gl_context::{GlConfig, GlContext};
 use winit::window::Window;
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, Shader, ShaderKind, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor};
+use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, Shader, ShaderKind, TextureFilter, TextureFormat, TextureWrap, VertexDescriptor, VertexKind};
 
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphicsServer {
@@ -92,7 +92,7 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
-  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: &[u8]) {
+  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: *const u8, length: usize) {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -105,11 +105,8 @@ impl GraphicsServer for DesktopGraphicsServer {
         BufferUsage::Dynamic => gl::DYNAMIC_DRAW,
       };
 
-      let size = data.len() as isize;
-      let pointer = data.as_ptr() as *const c_void;
-
       gl::BindBuffer(kind, buffer.id);
-      gl::BufferData(kind, size, pointer, usage);
+      gl::BufferData(kind, length as isize, data as *const c_void, usage);
     }
   }
 
@@ -151,17 +148,25 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
-  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: &[u8], format: TextureFormat, mip_level: usize) {
+  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, _length: usize, format: TextureFormat, mip_level: usize) {
     unsafe {
       let target = gl::TEXTURE_2D;
       let internal_format = match format {
         TextureFormat::RGBA => gl::RGBA32F
       };
 
-      let pointer = pixels.as_ptr() as *const c_void;
-
       gl::BindTexture(target, texture.id);
-      gl::TexImage2D(target, mip_level as i32, internal_format as i32, width as i32, height as i32, 0, gl::RGBA, gl::FLOAT, pointer);
+      gl::TexImage2D(
+        target,
+        mip_level as i32,
+        internal_format as i32,
+        width as i32,
+        height as i32,
+        0, // border
+        gl::RGBA,
+        gl::FLOAT,
+        pixels as *const c_void,
+      );
     }
   }
 
@@ -249,13 +254,51 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
-  fn create_mesh(&self, _descriptors: &[VertexDescriptor]) -> GraphicsHandle {
+  fn create_mesh(&self, vertex_buffer: GraphicsHandle, index_buffer: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
       gl::GenVertexArrays(1, &mut id);
-      GraphicsHandle { id };
 
-      todo!()
+      // bind the backing buffers and vertex attributes
+      gl::BindVertexArray(id);
+
+      gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer.id);
+      gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer.id);
+
+      // TODO: calculate total stride
+      // TODO: calculate element offset?
+
+      for index in 0..descriptors.len() {
+        let descriptor = descriptors[index];
+
+        let kind = match descriptor.kind {
+          VertexKind::U8 => gl::UNSIGNED_BYTE,
+          VertexKind::U16 => gl::UNSIGNED_SHORT,
+          VertexKind::U32 => gl::UNSIGNED_INT,
+          VertexKind::I16 => gl::SHORT,
+          VertexKind::I32 => gl::INT,
+          VertexKind::F32 => gl::FLOAT,
+          VertexKind::F64 => gl::DOUBLE,
+        };
+
+        let should_normalize = match descriptor.should_normalize {
+          true => gl::TRUE,
+          false => gl::FALSE
+        };
+
+        gl::VertexAttribPointer(
+          index as u32,
+          descriptor.count as i32,
+          kind,
+          should_normalize,
+          0,
+          std::ptr::null(),
+        );
+      }
+
+      gl::BindVertexArray(0);
+
+      GraphicsHandle { id }
     }
   }
 

@@ -38,13 +38,18 @@ impl<T> GraphicsBuffer<T> {
     }
   }
 
+  /// Returns the underlying GPU buffer handle.
+  pub fn handle(&self) -> GraphicsHandle {
+    self.handle
+  }
+
   /// Reads data from the buffer.
   pub fn read_data(&self, _offset: usize, _length: usize) -> Vec<T> where T: Clone {
     todo!()
   }
 
   /// Uploads the given data to the buffer.
-  pub fn write_data(&mut self, _data: &[T]) {
+  pub fn write_data(&mut self, data: &[T]) {
     todo!()
   }
 }
