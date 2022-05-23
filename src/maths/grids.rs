@@ -1,140 +1,94 @@
 use std::ops::{Index, IndexMut};
 
-/// A grid allows random access to 2d data.
-pub trait Grid<T> {
+/// A simple 2d grid that allows efficient random access.
+pub struct Grid<T> {
+  stride: usize,
+  items: Vec<T>,
+}
+
+impl<T> Grid<T> {
+  /// Creates a new grid with the given dimensions.
+  pub fn new(width: usize, height: usize) -> Self {
+    Self {
+      stride: width,
+      items: Vec::with_capacity(width * height),
+    }
+  }
+
+  /// Converts the given slice into a grid.
+  pub fn from_slice(stride: usize, slice: &[T]) -> Self where T: Clone {
+    Self {
+      stride,
+      items: slice.to_vec(),
+    }
+  }
+
   /// Returns the stride/size between each row of the grid.
-  fn stride(&self) -> usize;
+  pub fn stride(&self) -> usize {
+    self.stride
+  }
 
   /// Returns the total length of the grid (width * height).
-  fn length(&self) -> usize;
+  pub fn length(&self) -> usize {
+    self.items.len()
+  }
 
   /// Returns the width of the grid.
-  fn width(&self) -> usize { self.length() % self.stride() }
+  pub fn width(&self) -> usize {
+    self.length() % self.stride()
+  }
 
   /// Returns the height of the grid.
-  fn height(&self) -> usize { self.length() / self.stride() }
-}
+  pub fn height(&self) -> usize {
+    self.length() / self.stride()
+  }
 
-/// A grid slice is a [T] that can be used in a grid format.
-#[derive(Debug)]
-pub struct GridSlice<'a, T> {
-  slice: &'a [T],
-  stride: usize,
-}
+  /// Fills the grid with the given value.
+  pub fn fill(&mut self, value: T) where T: Clone {
+    self.items.fill(value);
+  }
 
-impl<'a, T> GridSlice<'a, T> {
-  /// Creates a new grid slice from the given slice.
-  pub fn from(slice: &'a [T], stride: usize) -> Self {
-    Self {
-      slice,
-      stride,
-    }
+  /// Returns the items as a slice.
+  pub fn as_slice(&self) -> &[T] {
+    self.items.as_slice()
+  }
+
+  /// Returns the items as a mutable slice.
+  pub fn as_mut_slice(&mut self) -> &mut [T] {
+    self.items.as_mut_slice()
   }
 }
 
-impl<'a, T> Grid<T> for GridSlice<'a, T> {
-  fn stride(&self) -> usize {
-    self.stride
-  }
-
-  fn length(&self) -> usize {
-    self.slice.len()
-  }
-}
-
-impl<'a, T> Index<(usize, usize)> for GridSlice<'a, T> {
+impl<T> Index<(usize, usize)> for Grid<T> {
   type Output = T;
 
   fn index(&self, (x, y): (usize, usize)) -> &Self::Output {
-    &self.slice[x + y * self.stride]
+    &self.items[x + y * self.stride]
   }
 }
 
-/// A grid slice mut is a mut [T] that can be used in a grid format.
-#[derive(Debug)]
-pub struct GridSliceMut<'a, T> {
-  slice: &'a mut [T],
-  stride: usize,
-}
-
-impl<'a, T> GridSliceMut<'a, T> {
-  /// Creates a new grid slice from the given slice.
-  pub fn from(slice: &'a mut [T], stride: usize) -> Self {
-    Self {
-      slice,
-      stride
-    }
-  }
-}
-
-impl<'a, T> Grid<T> for GridSliceMut<'a, T> {
-  fn stride(&self) -> usize {
-    self.stride
-  }
-
-  fn length(&self) -> usize {
-    self.slice.len()
-  }
-}
-
-impl<'a, T> Index<(usize, usize)> for GridSliceMut<'a, T> {
-  type Output = T;
-
-  fn index(&self, (x, y): (usize, usize)) -> &Self::Output {
-    &self.slice[x + y * self.stride]
-  }
-}
-
-impl<'a, T> IndexMut<(usize, usize)> for GridSliceMut<'a, T> {
+impl<T> IndexMut<(usize, usize)> for Grid<T> {
   fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Output {
-    &mut self.slice[x + y * self.stride]
-  }
-}
-
-/// Allows conversion to a `GridSlice`.
-pub trait ToGridSlice {
-  type Element;
-
-  fn to_grid_slice(&self, stride: usize) -> GridSlice<Self::Element>;
-  fn to_grid_slice_mut(&mut self, stride: usize) -> GridSliceMut<Self::Element>;
-}
-
-impl<T> ToGridSlice for [T] {
-  type Element = T;
-
-  fn to_grid_slice(&self, stride: usize) -> GridSlice<Self::Element> {
-    GridSlice::from(&self[..], stride)
-  }
-
-  fn to_grid_slice_mut(&mut self, stride: usize) -> GridSliceMut<Self::Element> {
-    GridSliceMut::from(&mut self[..], stride)
-  }
-}
-
-impl<T> ToGridSlice for &mut [T] {
-  type Element = T;
-
-  fn to_grid_slice(&self, stride: usize) -> GridSlice<Self::Element> {
-    GridSlice::from(self, stride)
-  }
-
-  fn to_grid_slice_mut(&mut self, stride: usize) -> GridSliceMut<Self::Element> {
-    GridSliceMut::from(self, stride)
+    &mut self.items[x + y * self.stride]
   }
 }
 
 #[cfg(test)]
 mod tests {
+  use crate::graphics::Color32;
+  use crate::maths::FromRandom;
+
   use super::*;
 
   #[test]
-  fn grid_slice_should_read_and_write_simple_data() {
-    let mut array = [0f32; 64 * 64];
-    let mut slice = array.to_grid_slice_mut(64);
+  fn grid_should_read_and_write_elements() {
+    let mut grid = Grid::new(128, 128);
 
-    for y in 0..slice.height() {
-      for x in 0..slice.width() {
-        slice[(x, y)] = x as f32 + y as f32;
+    grid.fill(Color32::BLACK);
+
+    for y in 0..grid.height() {
+      for x in 0..grid.width() {
+        grid[(x, y)] = Color32::random();
       }
     }
   }
