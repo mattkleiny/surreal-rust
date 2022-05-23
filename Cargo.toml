@@ -6,16 +6,10 @@ authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
 edition = "2021"
 
 [workspace]
-members = [
-    "macros",
-    "examples/headless",
-    "examples/hello-world",
-    "examples/sand"
-]
+members = [ "macros" ]
 
 [profile.dev.package."*"]
-# compile third party dependencies by default with some sane optimizations
-opt-level = 3
+opt-level = 3 # compile third party dependencies by default with some sane optimizations
 
 [features]
 default = ["desktop", "headless"]

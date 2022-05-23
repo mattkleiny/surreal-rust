@@ -2,17 +2,31 @@
 
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Div, Mul, Sub};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant};
 
 use crate::collections::RingBuffer;
-use crate::maths::clamp;
 
-/// Returns the current time, in milliseconds since the epoch.
-pub fn now() -> u128 {
-  SystemTime::now()
-      .duration_since(UNIX_EPOCH)
-      .expect("Unable to acquire system time")
-      .as_millis()
+/// A high resolution timestamp that can be used to calculate intervals.
+#[derive(Copy, Clone, Debug)]
+pub struct TimeStamp {
+  instant: Instant,
+}
+
+impl TimeStamp {
+  /// Creates a new timestamp from the current time.
+  pub fn now() -> Self {
+    TimeStamp {
+      instant: Instant::now(),
+    }
+  }
+}
+
+impl Sub for TimeStamp {
+  type Output = TimeSpan;
+
+  fn sub(self, rhs: Self) -> Self::Output {
+    TimeSpan::from_duration(self.instant.duration_since(rhs.instant))
+  }
 }
 
 /// Contains information on the game's timing state.
@@ -25,32 +39,33 @@ pub struct GameTime {
 /// A simple clock for measuring the time between ticks.
 #[derive(Debug)]
 pub struct Clock {
-  start_time: u128,
-  last_time: u128,
-  max_time: f32,
+  start_time: TimeStamp,
+  last_time: TimeStamp,
 }
 
 impl Clock {
   /// Creates a new clock.
   pub fn new() -> Self {
     Self {
-      start_time: now(),
-      last_time: 0,
-      max_time: 0.16,
+      start_time: TimeStamp::now(),
+      last_time: TimeStamp::now(),
     }
   }
 
-  /// Ticks the clock by a single frame, returning a time delta.
+  /// Ticks the clock by a single frame, returning a time delta in seconds.
   pub fn tick(&mut self) -> f32 {
-    let current_time = now();
+    let current_time = TimeStamp::now();
     let delta_time = current_time - self.last_time;
+
     self.last_time = current_time;
 
-    clamp(delta_time as f32 / 1000., 0., self.max_time)
+    delta_time.total_seconds()
   }
 
   pub fn total_time(&self) -> f32 {
-    (now() - self.start_time) as f32 / 1000.
+    let now = TimeStamp::now();
+
+    (now - self.start_time).total_seconds()
   }
 }
 
@@ -137,40 +152,66 @@ impl FrameTimer {
 }
 
 /// A representation of a span of time.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
 pub struct TimeSpan {
-  offset: u128,
+  milliseconds: f32,
 }
 
 impl TimeSpan {
-  /// Computes the current time span, as an offset from the unix epoch.
-  pub fn now() -> Self {
-    Self::new(now())
+  pub fn from_duration(duration: Duration) -> TimeSpan {
+    Self::from_millis(duration.as_nanos() as f32 / (1000. * 1000.))
   }
 
-  /// Creates a new time span with the given offset since the unix epoch.
-  pub const fn new(offset: u128) -> Self {
-    Self { offset }
+  pub fn from_millis(milliseconds: f32) -> TimeSpan {
+    Self { milliseconds }
   }
 
-  pub fn from_millis(millis: f32) -> TimeSpan { Self::new(millis as u128) }
-  pub fn from_seconds(seconds: f32) -> TimeSpan { Self::from_millis(seconds * 1000.) }
-  pub fn from_minutes(minutes: f32) -> TimeSpan { Self::from_seconds(minutes * 60.) }
-  pub fn from_hours(hours: f32) -> TimeSpan { Self::from_minutes(hours * 60.) }
-  pub fn from_days(days: f32) -> TimeSpan { Self::from_hours(days * 24.) }
+  pub fn from_seconds(seconds: f32) -> TimeSpan {
+    Self::from_millis(seconds * 1000.)
+  }
 
-  pub fn total_millis(&self) -> f32 { self.offset as f32 }
-  pub fn total_seconds(&self) -> f32 { self.total_millis() / 1000. }
-  pub fn total_minutes(&self) -> f32 { self.total_seconds() / 60. }
-  pub fn total_hours(&self) -> f32 { self.total_minutes() / 60. }
-  pub fn total_days(&self) -> f32 { self.total_hours() / 24. }
+  pub fn from_minutes(minutes: f32) -> TimeSpan {
+    Self::from_seconds(minutes * 60.)
+  }
+
+  pub fn from_hours(hours: f32) -> TimeSpan {
+    Self::from_minutes(hours * 60.)
+  }
+
+  pub fn from_days(days: f32) -> TimeSpan {
+    Self::from_hours(days * 24.)
+  }
+
+  pub fn total_duration(&self) -> Duration {
+    Duration::from_micros((self.milliseconds * 1000.) as u64)
+  }
+
+  pub fn total_millis(&self) -> f32 {
+    self.milliseconds
+  }
+
+  pub fn total_seconds(&self) -> f32 {
+    self.total_millis() / 1000.
+  }
+
+  pub fn total_minutes(&self) -> f32 {
+    self.total_seconds() / 60.
+  }
+
+  pub fn total_hours(&self) -> f32 {
+    self.total_minutes() / 60.
+  }
+
+  pub fn total_days(&self) -> f32 {
+    self.total_hours() / 24.
+  }
 }
 
 impl Add for TimeSpan {
   type Output = TimeSpan;
 
   fn add(self, rhs: Self) -> Self::Output {
-    TimeSpan::new(self.offset + rhs.offset)
+    TimeSpan::from_millis(self.milliseconds + rhs.milliseconds)
   }
 }
 
@@ -178,7 +219,7 @@ impl Sub for TimeSpan {
   type Output = TimeSpan;
 
   fn sub(self, rhs: Self) -> Self::Output {
-    TimeSpan::new(self.offset - rhs.offset)
+    TimeSpan::from_millis(self.milliseconds - rhs.milliseconds)
   }
 }
 
@@ -186,7 +227,7 @@ impl Mul<f32> for TimeSpan {
   type Output = TimeSpan;
 
   fn mul(self, rhs: f32) -> Self::Output {
-    TimeSpan::new((self.offset as f32 * rhs) as u128)
+    TimeSpan::from_millis(self.milliseconds * rhs)
   }
 }
 
@@ -194,7 +235,7 @@ impl Div<f32> for TimeSpan {
   type Output = TimeSpan;
 
   fn div(self, rhs: f32) -> Self::Output {
-    TimeSpan::new((self.offset as f32 / rhs) as u128)
+    TimeSpan::from_millis(self.milliseconds / rhs)
   }
 }
 
@@ -205,7 +246,7 @@ impl Display for TimeSpan {
       _ if self.total_hours() > 1. => write!(formatter, "{} hours", self.total_hours()),
       _ if self.total_minutes() > 1. => write!(formatter, "{} minutes", self.total_minutes()),
       _ if self.total_seconds() > 1. => write!(formatter, "{} seconds", self.total_seconds()),
-      _ => write!(formatter, "{} milliseconds", self.total_millis())
+      _ => write!(formatter, "{} milliseconds", self.total_millis()),
     }
   }
 }

@@ -1,8 +1,0 @@
-[package]
-name = "sand"
-description = "A fun little falling sand app based on Surreal"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-surreal = { version = "*", path = "../..", features = ["desktop"] }
