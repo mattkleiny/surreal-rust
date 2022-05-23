@@ -54,7 +54,7 @@ impl Default for TextureOptions {
 /// A texture is a set of pixel data that has been uploaded to the GPU.
 pub struct Texture {
   context: GraphicsContext,
-  handle: GraphicsHandle,
+  pub handle: GraphicsHandle,
   options: TextureOptions,
 }
 
@@ -71,11 +71,6 @@ impl Texture {
       handle: context.create_texture(&options.sampler),
       options,
     }
-  }
-
-  /// Returns the underlying GPU texture handle.
-  pub fn handle(&self) -> GraphicsHandle {
-    self.handle
   }
 
   /// Returns the texture options.

@@ -6,19 +6,24 @@ use surreal::prelude::*;
 
 fn main() {
   let platform = DesktopPlatform::new(Configuration {
-    title: "Hello, World!",
+    title: "Bunnymark",
     ..Default::default()
   });
 
   Game::start(platform, |mut game| {
-    let color1 = Color::random();
-    let color2 = Color::random();
+    let shader = ShaderProgram::load(&game.host.graphics, "assets/shaders/standard.glsl").expect("Failed to load shader program");
+
+    let mut material = Material::new(&game.host.graphics, &shader);
+    let mut batch = SpriteBatch::new(&game.host.graphics);
+
+    material.set_uniform("u_projectionView", Matrix4x4::IDENTITY);
 
     game.run_variable_step(|context| {
-      let total_time = context.time.total_time as f32;
-      let color = Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.);
+      context.host.graphics.clear_color_buffer(Color::WHITE);
 
-      context.host.graphics.clear_color_buffer(color);
+      batch.begin(&mut material);
+
+      batch.flush();
 
       if let Some(keyboard) = context.host.input.primary_keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {

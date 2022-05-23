@@ -37,7 +37,7 @@ pub enum ShaderUniform {
 /// Represents a single compiled shader program.
 pub struct ShaderProgram {
   context: GraphicsContext,
-  handle: GraphicsHandle,
+  pub handle: GraphicsHandle,
 }
 
 impl ShaderProgram {
@@ -58,11 +58,6 @@ impl ShaderProgram {
     program.link_shaders(shaders)?;
 
     Ok(program)
-  }
-
-  /// Returns the underlying GPU texture handle.
-  pub fn handle(&self) -> GraphicsHandle {
-    self.handle
   }
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.

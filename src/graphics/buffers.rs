@@ -20,7 +20,7 @@ pub enum BufferUsage {
 /// A buffer implementation that can upload data of type [`T`] to the GPU.
 pub struct GraphicsBuffer<T> {
   context: GraphicsContext,
-  handle: GraphicsHandle,
+  pub handle: GraphicsHandle,
   kind: BufferKind,
   usage: BufferUsage,
   length: usize,
@@ -38,11 +38,6 @@ impl<T> GraphicsBuffer<T> {
       length: 0,
       _type: PhantomData,
     }
-  }
-
-  /// Returns the underlying GPU buffer handle.
-  pub fn handle(&self) -> GraphicsHandle {
-    self.handle
   }
 
   /// The number of elements in the buffer.

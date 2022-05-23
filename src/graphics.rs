@@ -7,6 +7,7 @@ pub use materials::*;
 pub use meshes::*;
 pub use palettes::*;
 pub use shaders::*;
+pub use sprites::*;
 pub use textures::*;
 
 mod buffers;
@@ -16,6 +17,7 @@ mod materials;
 mod meshes;
 mod palettes;
 mod shaders;
+mod sprites;
 mod textures;
 
 /// Represents a fallible result in the graphics subsystem.

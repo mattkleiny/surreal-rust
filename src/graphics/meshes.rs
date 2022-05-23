@@ -76,9 +76,9 @@ pub struct Vertex3 {
 /// time, provided a valid [`Material`] is available.
 pub struct Mesh<V> {
   context: GraphicsContext,
-  handle: GraphicsHandle,
-  vertices: GraphicsBuffer<V>,
-  indices: GraphicsBuffer<u32>,
+  pub handle: GraphicsHandle,
+  pub vertices: GraphicsBuffer<V>,
+  pub indices: GraphicsBuffer<u32>,
 }
 
 impl<V> Mesh<V> where V: Vertex {
@@ -89,7 +89,7 @@ impl<V> Mesh<V> where V: Vertex {
 
     Self {
       context: context.clone(),
-      handle: context.create_mesh(vertices.handle(), indices.handle(), V::DESCRIPTORS),
+      handle: context.create_mesh(vertices.handle, indices.handle, V::DESCRIPTORS),
       vertices,
       indices,
     }
@@ -105,11 +105,6 @@ impl<V> Mesh<V> where V: Vertex {
     tessellator.upload_to(&mut mesh);
 
     mesh
-  }
-
-  /// Returns the underlying GPU texture handle.
-  pub fn handle(&self) -> GraphicsHandle {
-    self.handle
   }
 
   /// Draws this mesh with the given material and topology.

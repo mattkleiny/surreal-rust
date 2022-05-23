@@ -20,7 +20,7 @@ fn main() {
     let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);
 
     material.set_uniform("u_projectionView", Matrix4x4::IDENTITY);
-    material.set_texture("u_texture", canvas.texture.handle(), 0, None);
+    material.set_texture("u_texture", canvas.texture.handle, 0, None);
 
     canvas.clear();
 
