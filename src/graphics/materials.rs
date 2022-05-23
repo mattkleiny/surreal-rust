@@ -102,5 +102,7 @@ impl<'a> Material<'a> {
     for (_, uniform) in &self.entries {
       self.shader.set_uniform(uniform.location, &uniform.value);
     }
+
+    self.context.set_active_shader(self.shader.handle());
   }
 }

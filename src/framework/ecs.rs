@@ -119,10 +119,10 @@ impl World {
     let type_id = TypeId::of::<C>();
 
     let storage = self.components
-        .entry(type_id)
-        .or_insert_with(|| Box::new(C::Storage::new()))
-        .downcast_mut::<C::Storage>()
-        .expect(format!("Failed to access component storage for {:?}", type_id).as_str());
+      .entry(type_id)
+      .or_insert_with(|| Box::new(C::Storage::new()))
+      .downcast_mut::<C::Storage>()
+      .expect(format!("Failed to access component storage for {:?}", type_id).as_str());
 
     storage.add_component(entity, component);
   }
@@ -132,8 +132,8 @@ impl World {
     let type_id = TypeId::of::<C>();
 
     let storage = self.components
-        .get(&type_id)?
-        .downcast_ref::<C::Storage>()?;
+      .get(&type_id)?
+      .downcast_ref::<C::Storage>()?;
 
     storage.get_component(entity)
   }
@@ -143,8 +143,8 @@ impl World {
     let type_id = TypeId::of::<C>();
 
     let storage = self.components
-        .get_mut(&type_id)?
-        .downcast_mut::<C::Storage>()?;
+      .get_mut(&type_id)?
+      .downcast_mut::<C::Storage>()?;
 
     return storage.get_component_mut(entity);
   }
@@ -154,8 +154,8 @@ impl World {
     let type_id = TypeId::of::<C>();
 
     if let Some(storage) = self.components
-        .get_mut(&type_id)
-        .and_then(|storage| storage.downcast_mut::<C::Storage>()) {
+      .get_mut(&type_id)
+      .and_then(|storage| storage.downcast_mut::<C::Storage>()) {
       storage.remove_component(entity);
     }
   }
@@ -186,12 +186,12 @@ mod tests {
     world.add_component(entity, 2. * std::f32::consts::PI);
 
     let position = world
-        .get_component::<Vector2<f32>>(entity)
-        .expect("Failed to get component");
+      .get_component::<Vector2<f32>>(entity)
+      .expect("Failed to get component");
 
     let rotation = world
-        .get_component::<f32>(entity)
-        .expect("Failed to get component");
+      .get_component::<f32>(entity)
+      .expect("Failed to get component");
 
     assert_eq!(*position, vec2(0., 10.));
     assert_eq!(*rotation, 2. * std::f32::consts::PI);
@@ -205,8 +205,8 @@ mod tests {
     world.add_component(entity, vec2(0f32, 10f32));
 
     let position = world
-        .get_component_mut::<Vector2<f32>>(entity)
-        .expect("Failed to get component");
+      .get_component_mut::<Vector2<f32>>(entity)
+      .expect("Failed to get component");
 
     position.x += 10.;
     position.y += 10.;

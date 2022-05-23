@@ -78,14 +78,33 @@ impl Texture {
     self.handle
   }
 
+  /// Returns the texture options.
+  pub fn options(&self) -> &TextureOptions {
+    &self.options
+  }
+
+  /// Sets the the texture's options on the GPU.
+  pub fn set_options(&mut self, options: TextureOptions) {
+    self.options = options;
+
+    // TODO: configure on the GPU, too
+  }
+
   /// Downloads pixel data from the texture.
   pub fn read_pixels<P>(&self) -> Vec<P> where P: Pixel {
     todo!()
   }
 
   /// Uploads pixel data to the texture.
-  pub fn write_pixels<P>(&mut self, _width: usize, _height: usize, _pixels: &[P]) where P: Pixel {
-    todo!()
+  pub fn write_pixels<P>(&mut self, width: usize, height: usize, pixels: &[P]) where P: Pixel {
+    self.context.write_texture_data(
+      self.handle,
+      width,
+      height,
+      pixels.as_ptr() as *const u8,
+      self.options.format,
+      0, // mip-level
+    );
   }
 
   /// Uploads pixel data to the texture from the given image.

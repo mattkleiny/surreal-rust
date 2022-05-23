@@ -48,7 +48,7 @@ fn main() {
     material.set_uniform("u_projectionView", Matrix4x4::IDENTITY);
     material.set_texture("u_texture", canvas.texture.handle(), 0, None);
 
-    canvas.pixels.fill(Color::BLACK);
+    canvas.pixels.fill(Color::WHITE);
 
     game.run_variable_step(|context| {
       context.host.graphics.clear_color_buffer(palette[0]);

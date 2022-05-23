@@ -39,8 +39,8 @@ impl<T> Rectangle<T> where T: Numeric {
 
   pub fn contains_point(&self, point: Vector2<T>) -> bool {
     point.x >= self.min.x &&
-        point.y >= self.min.y &&
-        point.y <= self.max.y &&
-        point.y <= self.max.y
+      point.y >= self.min.y &&
+      point.y <= self.max.y &&
+      point.y <= self.max.y
   }
 }

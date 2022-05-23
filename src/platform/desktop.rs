@@ -92,7 +92,7 @@ impl Platform for DesktopPlatform {
       // timing
       clock: Clock::new(),
       frame_timer: IntervalTimer::new(TimeSpan::from_seconds(1.)),
-      frame_counter: FrameCounter::new(32)
+      frame_counter: FrameCounter::new(32),
     }
   }
 }
@@ -197,6 +197,9 @@ impl PlatformHost for DesktopPlatformHost {
             }
             WindowEvent::Focused(focused) => {
               self.is_focused = focused;
+            }
+            WindowEvent::Resized(size) => {
+              self.graphics.set_viewport_size((size.width as usize, size.height as usize));
             }
             _ => {}
           }

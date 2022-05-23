@@ -46,11 +46,20 @@ impl VertexKind {
 }
 
 /// A simple vertex in 2-space.
-#[derive(Vertex, Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Vertex2 {
-  #[vertex(2, F32)] pub position: Vector2<f32>,
-  #[vertex(4, F32)] pub color: Color,
-  #[vertex(2, F32)] pub uv: Vector2<f32>,
+  pub position: Vector2<f32>,
+  pub color: Color,
+  pub uv: Vector2<f32>,
+}
+
+// TODO: swap with derive macro
+impl Vertex for Vertex2 {
+  const DESCRIPTORS: &'static [VertexDescriptor] = &[
+    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
+    VertexDescriptor { count: 4, kind: VertexKind::F32, should_normalize: false },
+    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
+  ];
 }
 
 /// A simple vertex in 3-space.

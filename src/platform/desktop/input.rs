@@ -44,7 +44,10 @@ unsafe impl InputServer for DesktopInputServer {
   }
 
   fn primary_keyboard_device(&self) -> Option<&dyn KeyboardDevice> {
-    self.keyboards.first().map(|device| device as &dyn KeyboardDevice)
+    self
+      .keyboards
+      .first()
+      .map(|device| device as &dyn KeyboardDevice)
   }
 
   fn primary_mouse_device(&self) -> Option<&dyn MouseDevice> {
@@ -105,7 +108,7 @@ impl DesktopMouseDevice {
   pub fn on_event_received(&mut self, button: MouseButton, state: ElementState) {
     match state {
       ElementState::Pressed => self.pressed_buttons.insert(button),
-      ElementState::Released => self.pressed_buttons.remove(&button)
+      ElementState::Released => self.pressed_buttons.remove(&button),
     };
   }
 }

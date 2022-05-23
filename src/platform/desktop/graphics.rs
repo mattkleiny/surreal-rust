@@ -4,7 +4,11 @@ use anyhow::anyhow;
 use raw_gl_context::{GlConfig, GlContext};
 use winit::window::Window;
 
-use crate::graphics::{BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, ShaderKind, ShaderUniform, TextureFilter, TextureFormat, TextureSampler, TextureWrap, VertexDescriptor, VertexKind};
+use crate::graphics::{
+  BlendFactor, BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult,
+  GraphicsServer, PrimitiveTopology, Shader, ShaderKind, ShaderUniform, TextureFilter,
+  TextureFormat, TextureSampler, TextureWrap, VertexDescriptor, VertexKind,
+};
 
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphicsServer {
@@ -43,8 +47,28 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
-  fn set_blend_state(&self, _blend_state: BlendState) {
-    todo!()
+  fn set_blend_state(&self, blend_state: BlendState) {
+    fn convert_blend_factor(factor: BlendFactor) -> u32 {
+      match factor {
+        BlendFactor::OneMinusSrcAlpha => gl::ONE_MINUS_SRC_ALPHA,
+        BlendFactor::OneMinusSrcColor => gl::ONE_MINUS_SRC_COLOR,
+        BlendFactor::OneMinusDstAlpha => gl::ONE_MINUS_DST_ALPHA,
+        BlendFactor::OneMinusDstColor => gl::ONE_MINUS_DST_COLOR,
+      }
+    }
+
+    unsafe {
+      match blend_state {
+        BlendState::Disabled => gl::Disable(gl::BLEND),
+        BlendState::Enabled { source, dest } => {
+          let source = convert_blend_factor(source);
+          let dest = convert_blend_factor(dest);
+
+          gl::Enable(gl::BLEND);
+          gl::BlendFunc(source, dest);
+        }
+      }
+    }
   }
 
   fn clear_color_buffer(&self, color: Color) {
@@ -74,7 +98,13 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
-  fn read_buffer_data(&self, buffer: GraphicsHandle, kind: BufferKind, offset: usize, length: usize) -> Vec<u8> {
+  fn read_buffer_data(
+    &self,
+    buffer: GraphicsHandle,
+    kind: BufferKind,
+    offset: usize,
+    length: usize,
+  ) -> Vec<u8> {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -92,7 +122,14 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
-  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: *const u8, length: usize) {
+  fn write_buffer_data(
+    &self,
+    buffer: GraphicsHandle,
+    usage: BufferUsage,
+    kind: BufferKind,
+    data: *const u8,
+    length: usize,
+  ) {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -106,7 +143,7 @@ impl GraphicsServer for DesktopGraphicsServer {
       };
 
       gl::BindBuffer(kind, buffer.id);
-      gl::BufferData(kind, length as isize, data as *const c_void, usage);
+      gl::BufferData(kind, length as isize, data as *const _, usage);
     }
   }
 
@@ -119,17 +156,16 @@ impl GraphicsServer for DesktopGraphicsServer {
   fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
-      let target = gl::TEXTURE_2D;
 
       gl::GenTextures(1, &mut id);
-      gl::BindTexture(target, id);
+      gl::BindTexture(gl::TEXTURE_2D, id);
 
-      let minify_filter = match sampler.minify_filter {
+      let min_filter = match sampler.minify_filter {
         TextureFilter::Nearest => gl::NEAREST,
         TextureFilter::Linear => gl::LINEAR,
       };
 
-      let magnify_filter = match sampler.magnify_filter {
+      let mag_filter = match sampler.magnify_filter {
         TextureFilter::Nearest => gl::NEAREST,
         TextureFilter::Linear => gl::LINEAR,
       };
@@ -139,25 +175,34 @@ impl GraphicsServer for DesktopGraphicsServer {
         TextureWrap::Mirror => gl::MIRRORED_REPEAT,
       };
 
-      gl::TexParameteri(target, gl::TEXTURE_MIN_FILTER, minify_filter as i32);
-      gl::TexParameteri(target, gl::TEXTURE_MAG_FILTER, magnify_filter as i32);
-      gl::TexParameteri(target, gl::TEXTURE_WRAP_S, wrap_mode as i32);
-      gl::TexParameteri(target, gl::TEXTURE_WRAP_T, wrap_mode as i32);
+      gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, min_filter as i32);
+      gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
+      gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrap_mode as i32);
+      gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrap_mode as i32);
+
+      gl::BindTexture(gl::TEXTURE_2D, 0);
 
       GraphicsHandle { id }
     }
   }
 
-  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, _length: usize, format: TextureFormat, mip_level: usize) {
+  fn write_texture_data(
+    &self,
+    texture: GraphicsHandle,
+    width: usize,
+    height: usize,
+    pixels: *const u8,
+    format: TextureFormat,
+    mip_level: usize,
+  ) {
     unsafe {
-      let target = gl::TEXTURE_2D;
       let internal_format = match format {
-        TextureFormat::RGBA => gl::RGBA32F
+        TextureFormat::RGBA => gl::RGBA32F,
       };
 
-      gl::BindTexture(target, texture.id);
+      gl::BindTexture(gl::TEXTURE_2D, texture.id);
       gl::TexImage2D(
-        target,
+        gl::TEXTURE_2D,
         mip_level as i32,
         internal_format as i32,
         width as i32,
@@ -165,7 +210,7 @@ impl GraphicsServer for DesktopGraphicsServer {
         0, // border
         gl::RGBA,
         gl::FLOAT,
-        pixels as *const c_void,
+        pixels as *const _,
       );
     }
   }
@@ -212,7 +257,12 @@ impl GraphicsServer for DesktopGraphicsServer {
           let mut info_log = Vec::with_capacity(info_log_length as usize);
           info_log.set_len(info_log_length as usize);
 
-          gl::GetShaderInfoLog(shader_id, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
+          gl::GetShaderInfoLog(
+            shader_id,
+            info_log_length,
+            std::ptr::null_mut(),
+            info_log.as_mut_ptr() as *mut _,
+          );
 
           return Err(anyhow!(String::from_utf8(info_log).unwrap()));
         }
@@ -234,7 +284,12 @@ impl GraphicsServer for DesktopGraphicsServer {
         let mut info_log = Vec::with_capacity(info_log_length as usize);
         info_log.set_len(info_log_length as usize);
 
-        gl::GetProgramInfoLog(shader.id, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
+        gl::GetProgramInfoLog(
+          shader.id,
+          info_log_length,
+          std::ptr::null_mut(),
+          info_log.as_mut_ptr() as *mut _,
+        );
 
         return Err(anyhow!(String::from_utf8(info_log).unwrap()));
       }
@@ -276,7 +331,14 @@ impl GraphicsServer for DesktopGraphicsServer {
           gl::ProgramUniform3i(shader.id, location as i32, value.x, value.y, value.z);
         }
         ShaderUniform::Point4(value) => {
-          gl::ProgramUniform4i(shader.id, location as i32, value.x, value.y, value.z, value.w);
+          gl::ProgramUniform4i(
+            shader.id,
+            location as i32,
+            value.x,
+            value.y,
+            value.z,
+            value.w,
+          );
         }
         ShaderUniform::Vector2(value) => {
           gl::ProgramUniform2f(shader.id, location as i32, value.x, value.y);
@@ -285,16 +347,41 @@ impl GraphicsServer for DesktopGraphicsServer {
           gl::ProgramUniform3f(shader.id, location as i32, value.x, value.y, value.z);
         }
         ShaderUniform::Vector4(value) => {
-          gl::ProgramUniform4f(shader.id, location as i32, value.x, value.y, value.z, value.w);
+          gl::ProgramUniform4f(
+            shader.id,
+            location as i32,
+            value.x,
+            value.y,
+            value.z,
+            value.w,
+          );
         }
         ShaderUniform::Matrix2x2(value) => {
-          gl::ProgramUniformMatrix2fv(shader.id, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+          gl::ProgramUniformMatrix2fv(
+            shader.id,
+            location as i32,
+            1,
+            gl::TRUE,
+            value.as_slice().as_ptr(),
+          );
         }
         ShaderUniform::Matrix3x3(value) => {
-          gl::ProgramUniformMatrix3fv(shader.id, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+          gl::ProgramUniformMatrix3fv(
+            shader.id,
+            location as i32,
+            1,
+            gl::TRUE,
+            value.as_slice().as_ptr(),
+          );
         }
         ShaderUniform::Matrix4x4(value) => {
-          gl::ProgramUniformMatrix4fv(shader.id, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+          gl::ProgramUniformMatrix4fv(
+            shader.id,
+            location as i32,
+            1,
+            gl::TRUE,
+            value.as_slice().as_ptr(),
+          );
         }
         ShaderUniform::Texture(texture, slot, _) => {
           // TODO: process sampler settings, too
@@ -306,13 +393,24 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
+  fn set_active_shader(&self, shader: GraphicsHandle) {
+    unsafe {
+      gl::UseProgram(shader.id);
+    }
+  }
+
   fn delete_shader(&self, shader: GraphicsHandle) {
     unsafe {
       gl::DeleteProgram(shader.id);
     }
   }
 
-  fn create_mesh(&self, vertex_buffer: GraphicsHandle, index_buffer: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
+  fn create_mesh(
+    &self,
+    vertex_buffer: GraphicsHandle,
+    index_buffer: GraphicsHandle,
+    descriptors: &[VertexDescriptor],
+  ) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
       gl::GenVertexArrays(1, &mut id);
@@ -323,8 +421,12 @@ impl GraphicsServer for DesktopGraphicsServer {
       gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer.id);
       gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer.id);
 
-      // TODO: calculate total stride
-      // TODO: calculate element offset?
+      let stride: usize = descriptors
+        .iter()
+        .map(|descriptor| descriptor.count * descriptor.kind.size())
+        .sum();
+
+      let mut offset = 0;
 
       for index in 0..descriptors.len() {
         let descriptor = descriptors[index];
@@ -341,7 +443,7 @@ impl GraphicsServer for DesktopGraphicsServer {
 
         let should_normalize = match descriptor.should_normalize {
           true => gl::TRUE,
-          false => gl::FALSE
+          false => gl::FALSE,
         };
 
         gl::VertexAttribPointer(
@@ -349,9 +451,12 @@ impl GraphicsServer for DesktopGraphicsServer {
           descriptor.count as i32,
           kind,
           should_normalize,
-          0,
-          std::ptr::null(),
+          stride as i32,
+          offset as *const _,
         );
+        gl::EnableVertexAttribArray(index as u32);
+
+        offset += descriptor.count * descriptor.kind.size();
       }
 
       gl::BindVertexArray(0);
@@ -360,7 +465,13 @@ impl GraphicsServer for DesktopGraphicsServer {
     }
   }
 
-  fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  fn draw_mesh(
+    &self,
+    mesh: GraphicsHandle,
+    topology: PrimitiveTopology,
+    vertex_count: usize,
+    index_count: usize,
+  ) {
     // TODO: variable index type?
 
     unsafe {
@@ -373,7 +484,12 @@ impl GraphicsServer for DesktopGraphicsServer {
       };
 
       if index_count > 0 {
-        gl::DrawElements(topology, index_count as i32, gl::UNSIGNED_INT, std::ptr::null());
+        gl::DrawElements(
+          topology,
+          index_count as i32,
+          gl::UNSIGNED_INT,
+          std::ptr::null(),
+        );
       } else {
         gl::DrawArrays(topology, 0, vertex_count as i32);
       }

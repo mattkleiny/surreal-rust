@@ -56,8 +56,15 @@ impl<T> GraphicsBuffer<T> {
   }
 
   /// Uploads the given data to the buffer.
-  pub fn write_data(&mut self, _data: &[T]) {
-    todo!()
+  pub fn write_data(&mut self, data: &[T]) {
+    self.length = data.len();
+    self.context.write_buffer_data(
+      self.handle,
+      self.usage,
+      self.kind,
+      data.as_ptr() as *const u8,
+      data.len() * std::mem::size_of::<T>(),
+    );
   }
 }
 

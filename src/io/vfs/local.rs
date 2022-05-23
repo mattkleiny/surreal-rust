@@ -122,13 +122,13 @@ impl OutputStream for LocalOutputStream {}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+  use super::*;
 
-    #[test]
-    fn read_from_local_file_system() {
-      let path = VirtualPath::parse("local://rustfmt.toml");
-      let text = path.read_all_text().expect("Failed to read test file");
+  #[test]
+  fn read_from_local_file_system() {
+    let path = VirtualPath::parse("local://rustfmt.toml");
+    let text = path.read_all_text().expect("Failed to read test file");
 
-      assert!(text.len() > 0);
-    }
+    assert!(text.len() > 0);
+  }
 }

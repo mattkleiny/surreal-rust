@@ -70,7 +70,7 @@ impl GraphicsServer for HeadlessGraphicsServer {
     GraphicsHandle { id: self.next_texture_id.fetch_add(1, Ordering::Relaxed) }
   }
 
-  fn write_texture_data(&self, _texture: GraphicsHandle, _width: usize, _height: usize, _pixels: *const u8, _length: usize, _format: TextureFormat, _mip_level: usize) {
+  fn write_texture_data(&self, _texture: GraphicsHandle, _width: usize, _height: usize, _pixels: *const u8, _format: TextureFormat, _mip_level: usize) {
     // no-op
   }
 
@@ -91,6 +91,10 @@ impl GraphicsServer for HeadlessGraphicsServer {
   }
 
   fn set_shader_uniform(&self, _shader: GraphicsHandle, _location: usize, _value: &ShaderUniform) {
+    // no-op
+  }
+
+  fn set_active_shader(&self, _shader: GraphicsHandle) {
     // no-op
   }
 

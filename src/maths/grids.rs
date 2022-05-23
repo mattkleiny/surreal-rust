@@ -8,10 +8,10 @@ pub struct Grid<T> {
 
 impl<T> Grid<T> {
   /// Creates a new grid with the given dimensions.
-  pub fn new(width: usize, height: usize) -> Self {
+  pub fn new(width: usize, height: usize) -> Self where T: Clone + Default {
     Self {
       stride: width,
-      items: Vec::with_capacity(width * height),
+      items: vec![T::default(); width * height],
     }
   }
 
@@ -35,7 +35,7 @@ impl<T> Grid<T> {
 
   /// Returns the width of the grid.
   pub fn width(&self) -> usize {
-    self.length() % self.stride()
+    self.stride
   }
 
   /// Returns the height of the grid.
