@@ -5,12 +5,12 @@ use winit::dpi::LogicalSize;
 use winit::event_loop::EventLoop;
 use winit::window::{Icon, Window, WindowBuilder};
 
-use audio::DesktopAudioServerImpl;
-use graphics::DesktopGraphicsServerImpl;
-use input::DesktopInputServer;
+use audio::DesktopAudio;
+use graphics::DesktopGraphics;
+use input::DesktopInput;
 
 use crate::audio::AudioServer;
-use crate::graphics::GraphicsServer;
+use crate::graphics::{GraphicsServer, GraphicsImpl};
 use crate::maths::vec2;
 use crate::platform::{Platform, PlatformHost};
 use crate::utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan};
@@ -80,9 +80,9 @@ impl Platform for DesktopPlatform {
 
     Self::Host {
       // servers
-      audio: AudioServer::new(DesktopAudioServerImpl::new()),
-      graphics: GraphicsServer::new(DesktopGraphicsServerImpl::new(&window, self.config.vsync_enabled)),
-      input: DesktopInputServer::new(),
+      audio: DesktopAudio::new(),
+      graphics: DesktopGraphics::new(&window, self.config.vsync_enabled),
+      input: DesktopInput::new(),
 
       // core
       window,
@@ -102,9 +102,9 @@ impl Platform for DesktopPlatform {
 /// The host for the desktop platform.
 pub struct DesktopPlatformHost {
   // servers
-  pub audio: AudioServer,
-  pub graphics: GraphicsServer,
-  pub input: DesktopInputServer,
+  pub audio: AudioServer<DesktopAudio>,
+  pub graphics: GraphicsServer<DesktopGraphics>,
+  pub input: DesktopInput,
 
   // core
   window: Window,

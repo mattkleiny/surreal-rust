@@ -1,5 +1,4 @@
-use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
-use crate::graphics::{GraphicsServer, GraphicsHandle, Image, Pixel};
+use crate::graphics::{GraphicsServer, GraphicsImpl, Image, Pixel};
 
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -52,22 +51,22 @@ impl Default for TextureOptions {
 }
 
 /// A texture is a set of pixel data that has been uploaded to the GPU.
-pub struct Texture {
-  context: GraphicsServer,
-  pub handle: GraphicsHandle,
+pub struct Texture<G> where G: GraphicsImpl {
+  server: GraphicsServer<G>,
+  pub handle: G::Handle,
   options: TextureOptions,
 }
 
-impl Texture {
+impl<G> Texture<G> where G: GraphicsImpl {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new(server: &GraphicsServer) -> Self {
+  pub fn new(server: &GraphicsServer<G>) -> Self {
     Self::with_options(server, TextureOptions::default())
   }
 
   /// Creates a new blank texture on the GPU with the given [`TextureOptions`].
-  pub fn with_options(server: &GraphicsServer, options: TextureOptions) -> Self {
+  pub fn with_options(server: &GraphicsServer<G>, options: TextureOptions) -> Self {
     Self {
-      context: server.clone(),
+      server: server.clone(),
       handle: server.create_texture(&options.sampler),
       options,
     }
@@ -92,7 +91,7 @@ impl Texture {
 
   /// Uploads pixel data to the texture.
   pub fn write_pixels<P>(&mut self, width: usize, height: usize, pixels: &[P]) where P: Pixel {
-    self.context.write_texture_data(
+    self.server.write_texture_data(
       self.handle,
       width,
       height,
@@ -108,35 +107,9 @@ impl Texture {
   }
 }
 
-impl Drop for Texture {
+impl<G> Drop for Texture<G> where G: GraphicsImpl {
   /// Deletes the texture from the GPU.
   fn drop(&mut self) {
-    self.context.delete_texture(self.handle);
-  }
-}
-
-/// Allows loading `Texture` from the virtual file system.
-pub struct TextureLoader {
-  server: GraphicsServer,
-  options: TextureOptions,
-}
-
-impl TextureLoader {
-  pub fn new(server: &GraphicsServer) -> Self {
-    Self {
-      server: server.clone(),
-      options: TextureOptions::default(),
-    }
-  }
-}
-
-impl AssetLoader<Texture> for TextureLoader {
-  fn load(&self, context: &AssetLoadContext) -> AssetResult<Texture> {
-    let image = context.load_asset(context.path)?;
-    let mut texture = Texture::with_options(&self.server, self.options);
-
-    texture.write_image(&image);
-
-    Ok(texture)
+    self.server.delete_texture(self.handle);
   }
 }

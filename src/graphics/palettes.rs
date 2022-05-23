@@ -3,7 +3,7 @@ use std::ops::Index;
 
 use anyhow::anyhow;
 
-use crate::graphics::{Color, Pixel, Texture};
+use crate::graphics::{Color, GraphicsImpl, Pixel, Texture};
 use crate::io::{AsVirtualPath, FileResult};
 
 /// A palette of colors of type [`P`].
@@ -90,7 +90,7 @@ impl<P> ColorPalette<P> where P: Pixel {
   }
 }
 
-impl Texture {
+impl<G> Texture<G> where G: GraphicsImpl {
   /// Writes the palette to the given texture at the given Y index.
   pub fn write_palette(&mut self, channel: usize, palette: &ColorPalette<Color>) {
     self.write_pixels(palette.len(), channel, palette.as_slice());

@@ -4,19 +4,15 @@ use anyhow::anyhow;
 use raw_gl_context::{GlConfig, GlContext};
 use winit::window::Window;
 
-use crate::graphics::{
-  BlendFactor, BlendState, BufferKind, BufferUsage, Color, GraphicsHandle, GraphicsResult,
-  GraphicsServerImpl, PrimitiveTopology, Shader, ShaderKind, ShaderUniform, TextureFilter,
-  TextureFormat, TextureSampler, TextureWrap, VertexDescriptor, VertexKind,
-};
+use crate::graphics::{BlendFactor, BlendState, BufferKind, BufferUsage, Color, GraphicsImpl, GraphicsResult, GraphicsServer, PrimitiveTopology, Shader, ShaderKind, ShaderUniform, TextureFilter, TextureFormat, TextureSampler, TextureWrap, VertexDescriptor, VertexKind};
 
 /// The graphics server for the desktop platform.
-pub struct DesktopGraphicsServerImpl {
+pub struct DesktopGraphics {
   context: GlContext,
 }
 
-impl DesktopGraphicsServerImpl {
-  pub fn new(window: &Window, vsync_enabled: bool) -> Self {
+impl DesktopGraphics {
+  pub fn new(window: &Window, vsync_enabled: bool) -> GraphicsServer<Self> {
     // prepare and load opengl functionality
     let config = GlConfig {
       vsync: vsync_enabled,
@@ -27,11 +23,13 @@ impl DesktopGraphicsServerImpl {
     context.make_current();
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
-    Self { context }
+    GraphicsServer::new(Self { context })
   }
 }
 
-impl GraphicsServerImpl for DesktopGraphicsServerImpl {
+impl GraphicsImpl for DesktopGraphics {
+  type Handle = u32;
+
   fn begin_frame(&self) {
     self.context.make_current();
   }
@@ -95,21 +93,15 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
     }
   }
 
-  fn create_buffer(&self) -> GraphicsHandle {
+  fn create_buffer(&self) -> Self::Handle {
     unsafe {
       let mut id: u32 = 0;
       gl::GenBuffers(1, &mut id);
-      GraphicsHandle { id }
+      id
     }
   }
 
-  fn read_buffer_data(
-    &self,
-    buffer: GraphicsHandle,
-    kind: BufferKind,
-    offset: usize,
-    length: usize,
-  ) -> Vec<u8> {
+  fn read_buffer_data(&self, buffer: Self::Handle, kind: BufferKind, offset: usize, length: usize) -> Vec<u8> {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -120,21 +112,14 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
       let mut data = Vec::with_capacity(length);
       let pointer = data.as_mut_ptr() as *mut c_void;
 
-      gl::BindBuffer(kind, buffer.id);
+      gl::BindBuffer(kind, buffer);
       gl::BufferSubData(kind, offset as isize, length as isize, pointer);
 
       data
     }
   }
 
-  fn write_buffer_data(
-    &self,
-    buffer: GraphicsHandle,
-    usage: BufferUsage,
-    kind: BufferKind,
-    data: *const u8,
-    length: usize,
-  ) {
+  fn write_buffer_data(&self, buffer: Self::Handle, usage: BufferUsage, kind: BufferKind, data: *const u8, length: usize) {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -147,18 +132,18 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
         BufferUsage::Dynamic => gl::DYNAMIC_DRAW,
       };
 
-      gl::BindBuffer(kind, buffer.id);
+      gl::BindBuffer(kind, buffer);
       gl::BufferData(kind, length as isize, data as *const _, usage);
     }
   }
 
-  fn delete_buffer(&self, buffer: GraphicsHandle) {
+  fn delete_buffer(&self, buffer: Self::Handle) {
     unsafe {
-      gl::DeleteBuffers(1, &buffer.id);
+      gl::DeleteBuffers(1, &buffer);
     }
   }
 
-  fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle {
+  fn create_texture(&self, sampler: &TextureSampler) -> Self::Handle {
     unsafe {
       let mut id: u32 = 0;
 
@@ -187,25 +172,17 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
 
       gl::BindTexture(gl::TEXTURE_2D, 0);
 
-      GraphicsHandle { id }
+      id
     }
   }
 
-  fn write_texture_data(
-    &self,
-    texture: GraphicsHandle,
-    width: usize,
-    height: usize,
-    pixels: *const u8,
-    format: TextureFormat,
-    mip_level: usize,
-  ) {
+  fn write_texture_data(&self, texture: Self::Handle, width: usize, height: usize, pixels: *const u8, format: TextureFormat, mip_level: usize) {
     unsafe {
       let internal_format = match format {
         TextureFormat::RGBA => gl::RGBA32F,
       };
 
-      gl::BindTexture(gl::TEXTURE_2D, texture.id);
+      gl::BindTexture(gl::TEXTURE_2D, texture);
       gl::TexImage2D(
         gl::TEXTURE_2D,
         mip_level as i32,
@@ -220,22 +197,21 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
     }
   }
 
-  fn delete_texture(&self, texture: GraphicsHandle) {
+  fn delete_texture(&self, texture: Self::Handle) {
     unsafe {
-      gl::DeleteTextures(1, &texture.id);
+      gl::DeleteTextures(1, &texture);
     }
   }
 
-  fn create_shader(&self) -> GraphicsHandle {
+  fn create_shader(&self) -> Self::Handle {
     unsafe {
-      let id = gl::CreateProgram();
-      GraphicsHandle { id }
+      gl::CreateProgram()
     }
   }
 
-  fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()> {
+  fn link_shaders(&self, shader: Self::Handle, shaders: Vec<Shader>) -> GraphicsResult<()> {
     unsafe {
-      gl::UseProgram(shader.id);
+      gl::UseProgram(shader);
 
       // compile the shader kernel code
       let mut shader_ids = Vec::with_capacity(shaders.len());
@@ -272,25 +248,25 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
           return Err(anyhow!(String::from_utf8(info_log).unwrap()));
         }
 
-        gl::AttachShader(shader.id, shader_id);
+        gl::AttachShader(shader, shader_id);
         shader_ids.push(shader_id);
       }
 
       // link the kernels in the main program
       let mut link_status = 0;
 
-      gl::LinkProgram(shader.id);
-      gl::GetProgramiv(shader.id, gl::LINK_STATUS, &mut link_status);
+      gl::LinkProgram(shader);
+      gl::GetProgramiv(shader, gl::LINK_STATUS, &mut link_status);
 
       if link_status == 0 {
         let mut info_log_length = 0;
-        gl::GetProgramiv(shader.id, gl::INFO_LOG_LENGTH, &mut info_log_length);
+        gl::GetProgramiv(shader, gl::INFO_LOG_LENGTH, &mut info_log_length);
 
         let mut info_log = Vec::with_capacity(info_log_length as usize);
         info_log.set_len(info_log_length as usize);
 
         gl::GetProgramInfoLog(
-          shader.id,
+          shader,
           info_log_length,
           std::ptr::null_mut(),
           info_log.as_mut_ptr() as *mut _,
@@ -308,10 +284,10 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
     Ok(())
   }
 
-  fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
+  fn get_shader_uniform_location(&self, shader: Self::Handle, name: &str) -> Option<usize> {
     unsafe {
       let name: *const i8 = std::mem::transmute(name.as_bytes().as_ptr());
-      let location = gl::GetUniformLocation(shader.id, name);
+      let location = gl::GetUniformLocation(shader, name);
 
       match location {
         -1 => None,
@@ -320,24 +296,24 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
     }
   }
 
-  fn set_shader_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform) {
+  fn set_shader_uniform(&self, shader: Self::Handle, location: usize, value: &ShaderUniform<Self>) {
     unsafe {
       match value {
         ShaderUniform::Integer(value) => {
-          gl::ProgramUniform1i(shader.id, location as i32, *value as i32);
+          gl::ProgramUniform1i(shader, location as i32, *value as i32);
         }
         ShaderUniform::Floating(value) => {
-          gl::ProgramUniform1f(shader.id, location as i32, *value);
+          gl::ProgramUniform1f(shader, location as i32, *value);
         }
         ShaderUniform::Point2(value) => {
-          gl::ProgramUniform2i(shader.id, location as i32, value.x, value.y);
+          gl::ProgramUniform2i(shader, location as i32, value.x, value.y);
         }
         ShaderUniform::Point3(value) => {
-          gl::ProgramUniform3i(shader.id, location as i32, value.x, value.y, value.z);
+          gl::ProgramUniform3i(shader, location as i32, value.x, value.y, value.z);
         }
         ShaderUniform::Point4(value) => {
           gl::ProgramUniform4i(
-            shader.id,
+            shader,
             location as i32,
             value.x,
             value.y,
@@ -346,14 +322,14 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
           );
         }
         ShaderUniform::Vector2(value) => {
-          gl::ProgramUniform2f(shader.id, location as i32, value.x, value.y);
+          gl::ProgramUniform2f(shader, location as i32, value.x, value.y);
         }
         ShaderUniform::Vector3(value) => {
-          gl::ProgramUniform3f(shader.id, location as i32, value.x, value.y, value.z);
+          gl::ProgramUniform3f(shader, location as i32, value.x, value.y, value.z);
         }
         ShaderUniform::Vector4(value) => {
           gl::ProgramUniform4f(
-            shader.id,
+            shader,
             location as i32,
             value.x,
             value.y,
@@ -363,7 +339,7 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
         }
         ShaderUniform::Matrix2x2(value) => {
           gl::ProgramUniformMatrix2fv(
-            shader.id,
+            shader,
             location as i32,
             1,
             gl::TRUE,
@@ -372,7 +348,7 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
         }
         ShaderUniform::Matrix3x3(value) => {
           gl::ProgramUniformMatrix3fv(
-            shader.id,
+            shader,
             location as i32,
             1,
             gl::TRUE,
@@ -381,7 +357,7 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
         }
         ShaderUniform::Matrix4x4(value) => {
           gl::ProgramUniformMatrix4fv(
-            shader.id,
+            shader,
             location as i32,
             1,
             gl::TRUE,
@@ -391,38 +367,38 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
         ShaderUniform::Texture(texture, slot, _) => {
           // TODO: process sampler settings, too
           gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
-          gl::BindTexture(gl::TEXTURE_2D, texture.id);
-          gl::ProgramUniform1i(shader.id, location as i32, *slot as i32);
+          gl::BindTexture(gl::TEXTURE_2D, *texture);
+          gl::ProgramUniform1i(shader, location as i32, *slot as i32);
         }
       }
     }
   }
 
-  fn set_active_shader(&self, shader: GraphicsHandle) {
+  fn set_active_shader(&self, shader: Self::Handle) {
     unsafe {
-      gl::UseProgram(shader.id);
+      gl::UseProgram(shader);
     }
   }
 
-  fn delete_shader(&self, shader: GraphicsHandle) {
+  fn delete_shader(&self, shader: Self::Handle) {
     unsafe {
-      gl::DeleteProgram(shader.id);
+      gl::DeleteProgram(shader);
     }
   }
 
   fn create_mesh(
     &self,
-    vertex_buffer: GraphicsHandle,
-    index_buffer: GraphicsHandle,
+    vertex_buffer: Self::Handle,
+    index_buffer: Self::Handle,
     descriptors: &[VertexDescriptor],
-  ) -> GraphicsHandle {
+  ) -> Self::Handle {
     unsafe {
       let mut id: u32 = 0;
       gl::GenVertexArrays(1, &mut id);
 
       gl::BindVertexArray(id);
-      gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer.id);
-      gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer.id);
+      gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
+      gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
 
       let stride: usize = descriptors
         .iter()
@@ -464,13 +440,13 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
 
       gl::BindVertexArray(0);
 
-      GraphicsHandle { id }
+      id
     }
   }
 
   fn draw_mesh(
     &self,
-    mesh: GraphicsHandle,
+    mesh: Self::Handle,
     topology: PrimitiveTopology,
     vertex_count: usize,
     index_count: usize,
@@ -478,7 +454,7 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
     // TODO: variable index type?
 
     unsafe {
-      gl::BindVertexArray(mesh.id);
+      gl::BindVertexArray(mesh);
 
       let topology = match topology {
         PrimitiveTopology::Points => gl::POINTS,
@@ -499,9 +475,9 @@ impl GraphicsServerImpl for DesktopGraphicsServerImpl {
     }
   }
 
-  fn delete_mesh(&self, mesh: GraphicsHandle) {
+  fn delete_mesh(&self, mesh: Self::Handle) {
     unsafe {
-      gl::DeleteVertexArrays(1, &mesh.id);
+      gl::DeleteVertexArrays(1, &mesh);
     }
   }
 }

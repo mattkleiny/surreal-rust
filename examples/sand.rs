@@ -57,16 +57,16 @@ fn main() {
 }
 
 /// A simple canvas of pixels that can be rendered to the screen.
-struct PixelCanvas {
-  texture: Texture,
-  mesh: Mesh<Vertex2>,
+struct PixelCanvas<G> where G: GraphicsImpl {
+  texture: Texture<G>,
+  mesh: Mesh<G, Vertex2>,
   timer: IntervalTimer,
   pub pixels: Grid<Color>,
 }
 
-impl PixelCanvas {
+impl<G> PixelCanvas<G> where G: GraphicsImpl {
   /// Creates a new pixel canvas with the given dimensions.
-  pub fn new(server: &GraphicsServer, width: usize, height: usize) -> Self {
+  pub fn new(server: &GraphicsServer<G>, width: usize, height: usize) -> Self {
     Self {
       texture: Texture::new(server),
       mesh: Mesh::create_quad(server, 1.),
@@ -132,7 +132,7 @@ impl PixelCanvas {
   }
 
   /// Draws the canvas to the screen.
-  pub fn draw(&mut self, material: &Material) {
+  pub fn draw(&mut self, material: &Material<G>) {
     // blit pixel data to the GPU
     self.texture.write_pixels(
       self.pixels.width(),

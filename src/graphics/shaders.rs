@@ -1,5 +1,4 @@
-use crate::assets::{AssetLoadContext, AssetLoader, AssetResult};
-use crate::graphics::{GraphicsServer, GraphicsHandle, GraphicsResult, TextureSampler};
+use crate::graphics::{GraphicsServer, GraphicsResult, TextureSampler, GraphicsImpl};
 use crate::io::{AsVirtualPath, FileResult};
 use crate::maths::{Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 use crate::prelude::Matrix2x2;
@@ -19,7 +18,7 @@ pub struct Shader {
 
 /// Representation of single value that can be used in a `Material`.
 #[derive(Debug)]
-pub enum ShaderUniform {
+pub enum ShaderUniform<G> where G: GraphicsImpl + ?Sized {
   Integer(u32),
   Floating(f32),
   Point2(Vector2<i32>),
@@ -31,32 +30,32 @@ pub enum ShaderUniform {
   Matrix2x2(Matrix2x2<f32>),
   Matrix3x3(Matrix3x3<f32>),
   Matrix4x4(Matrix4x4<f32>),
-  Texture(GraphicsHandle, usize, Option<TextureSampler>),
+  Texture(G::Handle, usize, Option<TextureSampler>),
 }
 
 /// Represents a single compiled shader program.
-pub struct ShaderProgram {
-  context: GraphicsServer,
-  pub handle: GraphicsHandle,
+pub struct ShaderProgram<G> where G: GraphicsImpl {
+  server: GraphicsServer<G>,
+  pub handle: G::Handle,
 }
 
-impl ShaderProgram {
+impl<G> ShaderProgram<G> where G: GraphicsImpl {
   /// Creates a new blank shader program on the GPU.
-  pub fn new(server: &GraphicsServer) -> Self {
+  pub fn new(server: &GraphicsServer<G>) -> Self {
     Self {
-      context: server.clone(),
+      server: server.clone(),
       handle: server.create_shader(),
     }
   }
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
-    self.context.get_shader_uniform_location(self.handle, name)
+    self.server.get_shader_uniform_location(self.handle, name)
   }
 
   /// Sets the given uniform value in the underlying program.
-  pub fn set_uniform(&self, location: usize, value: &ShaderUniform) {
-    self.context.set_shader_uniform(self.handle, location, value);
+  pub fn set_uniform(&self, location: usize, value: &ShaderUniform<G>) {
+    self.server.set_shader_uniform(self.handle, location, value);
   }
 
   /// Reloads the shader program from a file.
@@ -71,44 +70,22 @@ impl ShaderProgram {
 
   /// Links the given shader kernels to the underlying program.
   fn link_shaders(&self, shaders: Vec<Shader>) -> GraphicsResult<()> {
-    self.context.link_shaders(self.handle, shaders)
+    self.server.link_shaders(self.handle, shaders)
   }
 }
 
-impl Drop for ShaderProgram {
+impl<G> Drop for ShaderProgram<G> where G: GraphicsImpl {
   /// Deletes the shader program from the GPU.
   fn drop(&mut self) {
-    self.context.delete_shader(self.handle);
-  }
-}
-
-/// Allows loading [`ShaderProgram`]s from the virtual file system.
-pub struct ShaderProgramLoader {
-  server: GraphicsServer,
-}
-
-impl ShaderProgramLoader {
-  /// Creates a new shader program loader.
-  pub fn new(server: &GraphicsServer) -> Self {
-    Self {
-      server: server.clone()
-    }
-  }
-}
-
-impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
-  fn load(&self, context: &AssetLoadContext) -> AssetResult<ShaderProgram> {
-    let program = ShaderProgram::new(&self.server);
-
-    Ok(program.reload(context.path)?)
+    self.server.delete_shader(self.handle);
   }
 }
 
 /// Implements uniform value transformation for common shader uniforms.
 macro_rules! implement_uniform {
   ($type:ty, $value:ident) => {
-    impl Into<ShaderUniform> for $type {
-      fn into(self) -> ShaderUniform {
+    impl<G> Into<ShaderUniform<G>> for $type where G: GraphicsImpl {
+      fn into(self) -> ShaderUniform<G> {
         ShaderUniform::$value(self)
       }
     }

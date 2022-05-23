@@ -17,7 +17,7 @@ pub struct AssetManager {}
 impl AssetManager {
   /// Creates a new asset manager.
   pub fn new() -> Self {
-    todo!()
+    Self {}
   }
 
   /// Adds a new asset loader to the manager.

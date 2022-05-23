@@ -1,4 +1,4 @@
-use crate::graphics::{GraphicsServer, Material, Mesh, PrimitiveTopology, Texture, Vertex2};
+use crate::graphics::{GraphicsServer, GraphicsImpl, Material, Mesh, PrimitiveTopology, Texture, Vertex2};
 
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
@@ -10,8 +10,8 @@ const DEFAULT_SPRITE_COUNT: usize = 1024;
 ///
 /// Batching is possible over 1 material and texture pair; each texture swap requires a flush
 /// and so it's important to pre-sort sprites into batches by material and texture.
-pub struct SpriteBatch {
-  mesh: Mesh<Vertex2>,
+pub struct SpriteBatch<G> where G: GraphicsImpl {
+  mesh: Mesh<G, Vertex2>,
   vertices: Vec<Vertex2>,
   vertex_count: usize,
 }
@@ -19,20 +19,20 @@ pub struct SpriteBatch {
 /// A scope for [`SpriteBatch`] operation.
 ///
 /// Borrows the batch data and holds onto the material and active texture.
-pub struct SpriteBatchScope<'a, 'b> {
-  batch: &'a mut SpriteBatch,
-  material: &'b mut Material<'b>,
-  texture: Option<&'b Texture>,
+pub struct SpriteBatchScope<'a, G> where G: GraphicsImpl {
+  batch: &'a mut SpriteBatch<G>,
+  material: &'a mut Material<'a, G>,
+  texture: Option<&'a Texture<G>>,
 }
 
-impl SpriteBatch {
+impl<G> SpriteBatch<G> where G: GraphicsImpl {
   /// Constructs a new [`SpriteBatch`] .
-  pub fn new(server: &GraphicsServer) -> Self {
+  pub fn new(server: &GraphicsServer<G>) -> Self {
     Self::with_capacity(server, DEFAULT_SPRITE_COUNT)
   }
 
   /// Creates a new [`SpriteBatch`] with the given sprite capacity.
-  pub fn with_capacity(server: &GraphicsServer, sprite_count: usize) -> Self {
+  pub fn with_capacity(server: &GraphicsServer<G>, sprite_count: usize) -> Self {
     // build standard quad indices ahead-of-time
     let mut mesh = Mesh::new(server);
     let indices = build_quad_indices(sprite_count * 6);
@@ -43,13 +43,13 @@ impl SpriteBatch {
   }
 
   /// Starts a new [`SpriteBatchScope`] with the given [`Material`].
-  pub fn begin<'a, 'b>(&'a mut self, material: &'b mut Material<'b>) -> SpriteBatchScope<'a, 'b> {
+  pub fn begin<'a>(&'a mut self, material: &'a mut Material<'a, G>) -> SpriteBatchScope<'a, G> {
     SpriteBatchScope { batch: self, material, texture: None }
   }
 }
 
 
-impl<'a, 'b> SpriteBatchScope<'a, 'b> {
+impl<'a, G> SpriteBatchScope<'a, G> where G: GraphicsImpl {
   /// Draws a sprite to the batch.
   pub fn draw(&mut self) {
     todo!()

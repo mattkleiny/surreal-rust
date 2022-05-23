@@ -17,9 +17,9 @@ pub struct HeadlessPlatform;
 
 /// A host for headless environments.
 pub struct HeadlessPlatformHost {
-  pub audio: AudioServer,
-  pub graphics: GraphicsServer,
-  pub input: HeadlessInputServer,
+  pub audio: AudioServer<HeadlessAudio>,
+  pub graphics: GraphicsServer<HeadlessGraphics>,
+  pub input: HeadlessInput,
   is_exiting: bool,
 }
 
@@ -28,9 +28,9 @@ impl Platform for HeadlessPlatform {
 
   fn create_host(&self) -> Self::Host {
     HeadlessPlatformHost {
-      audio: AudioServer::new(HeadlessAudioServer::new()),
-      graphics: GraphicsServer::new(HeadlessGraphicsServer::new()),
-      input: HeadlessInputServer::new(),
+      audio: HeadlessAudio::new(),
+      graphics: HeadlessGraphics::new(),
+      input: HeadlessInput::new(),
       is_exiting: false,
     }
   }

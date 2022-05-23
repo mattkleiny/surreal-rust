@@ -1,15 +1,15 @@
-use crate::input::{InputServer, KeyboardDevice, MouseDevice};
+use crate::input::{InputServerImpl, KeyboardDevice, MouseDevice};
 
 /// The input server for the headless platform.
-pub struct HeadlessInputServer {}
+pub struct HeadlessInput {}
 
-impl HeadlessInputServer {
+impl HeadlessInput {
   pub fn new() -> Self {
     Self {}
   }
 }
 
-unsafe impl InputServer for HeadlessInputServer {
+impl InputServerImpl for HeadlessInput {
   fn keyboard_devices(&self) -> &[&dyn KeyboardDevice] {
     &[]
   }

@@ -2,16 +2,16 @@ use std::collections::HashSet;
 
 use winit::event::{ElementState, MouseButton};
 
-use crate::input::{InputServer, Key, KeyboardDevice, MouseDevice};
+use crate::input::{InputServerImpl, Key, KeyboardDevice, MouseDevice};
 use crate::maths::Vector2;
 
 /// The server for input management.
-pub struct DesktopInputServer {
+pub struct DesktopInput {
   keyboards: Vec<DesktopKeyboardDevice>,
   mice: Vec<DesktopMouseDevice>,
 }
 
-impl DesktopInputServer {
+impl DesktopInput {
   /// Creates a new input server.
   pub fn new() -> Self {
     Self {
@@ -42,7 +42,7 @@ impl DesktopInputServer {
   }
 }
 
-unsafe impl InputServer for DesktopInputServer {
+impl InputServerImpl for DesktopInput {
   fn keyboard_devices(&self) -> &[&dyn KeyboardDevice] {
     todo!()
   }
