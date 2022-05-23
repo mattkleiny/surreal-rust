@@ -5,7 +5,7 @@ use crate::utilities::{Size, TimeSpan};
 /// Represents a fallible result in the audio subsystem.
 pub type AudioResult<T> = anyhow::Result<T>;
 
-/// An opaque handle to an underlying resource in the `AudioServer`.
+/// An opaque handle to an underlying resource in the [`AudioServer`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct AudioHandle {
   pub(crate) id: u32,

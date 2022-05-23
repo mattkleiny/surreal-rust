@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use crate::io::{FileResult, FileSystem, InputStream, OutputStream, VirtualPath};
 
-/// Converts a `VirtualPath` into a `Path`.
+/// Converts a [`VirtualPath`] into a [`Path`].
 fn to_path(root: &Path, path: &VirtualPath) -> PathBuf {
   let mut local_path = PathBuf::new();
 

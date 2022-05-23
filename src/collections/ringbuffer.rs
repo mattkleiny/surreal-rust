@@ -1,4 +1,4 @@
-/// A lightweight, fast and append-only ring buffer of elements of type T.
+/// A lightweight, fast and append-only ring buffer of elements of type [`T`] .
 ///
 /// It's intended to be used for small windowed set operations, like time sampling or frequency analysis.
 #[derive(Debug)]

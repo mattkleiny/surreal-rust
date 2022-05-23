@@ -51,7 +51,7 @@ impl Image {
     self.buffer.height() as usize
   }
 
-  /// Retrieves the pixels of the image as a slice of `Color`s.
+  /// Retrieves the pixels of the image as a slice of [`Color`]s.
   pub fn as_slice(&self) -> &[Color] {
     let rgba = self.buffer.as_ref();
 
@@ -60,7 +60,7 @@ impl Image {
     }
   }
 
-  /// Retrieves the pixels of the image as a mutable slice of `Color`s.
+  /// Retrieves the pixels of the image as a mutable slice of [`Color`]s.
   pub fn as_slice_mut(&mut self) -> &mut [Color] {
     let rgba = self.buffer.as_mut();
 

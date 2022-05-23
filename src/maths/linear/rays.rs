@@ -1,11 +1,11 @@
 use crate::maths::{Vector2, Vector3};
 
-/// Shorthand to construct a `Ray2`
+/// Shorthand to construct a [`Ray2`]
 pub const fn ray2<T>(origin: Vector2<T>, direction: Vector2<T>) -> Ray2<T> {
   Ray2::new(origin, direction)
 }
 
-/// Shorthand to construct a `Ray3`
+/// Shorthand to construct a [`Ray3`]
 pub const fn ray3<T>(origin: Vector3<T>, direction: Vector3<T>) -> Ray3<T> {
   Ray3::new(origin, direction)
 }

@@ -6,7 +6,7 @@ use anyhow::anyhow;
 use crate::graphics::{Color, Pixel, Texture};
 use crate::io::{AsVirtualPath, FileResult};
 
-/// A palette of colors of type `P`.
+/// A palette of colors of type [`P`].
 pub struct ColorPalette<P> {
   colors: Vec<P>,
 }

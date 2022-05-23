@@ -13,7 +13,7 @@ pub enum PrimitiveTopology {
 
 /// Describes a kind of vertex.
 ///
-/// Vertices provide a set of `VertexDescriptor`s which are used for binding vertex data to a mesh.
+/// Vertices provide a set of [`VertexDescriptor`]s which are used for binding vertex data to a mesh.
 pub trait Vertex: Copy {
   const DESCRIPTORS: &'static [VertexDescriptor];
 }
@@ -61,10 +61,10 @@ pub struct Vertex3 {
   #[vertex(2, F32)] pub uv: Vector2<f32>,
 }
 
-/// A mesh of vertices of `V` that has been uploaded to the GPU.
+/// A mesh of vertices of [`V`] that has been uploaded to the GPU.
 ///
 /// Meshes are stored on the GPU as vertex/index buffers and can be submitted for rendering at any
-/// time, provided a valid `Material` is available.
+/// time, provided a valid [`Material`] is available.
 pub struct Mesh<V> {
   context: GraphicsContext,
   handle: GraphicsHandle,
@@ -192,7 +192,7 @@ impl<V> Tessellator<V> {
     }
   }
 
-  /// Uploads the contents of the tessellator to the given `Mesh`.
+  /// Uploads the contents of the tessellator to the given [`Mesh`].
   pub fn upload_to(&self, mesh: &mut Mesh<V>) {
     mesh.vertices.write_data(self.vertices.as_slice());
     mesh.indices.write_data(self.indices.as_slice());

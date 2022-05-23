@@ -12,10 +12,10 @@ thread_local! {
 /// Represents a fallible result in the virtual file system.
 pub type FileResult<T> = anyhow::Result<T>;
 
-/// A stream for reading from some `VirtualPath`.
+/// A stream for reading from some [`VirtualPath`].
 pub trait InputStream: std::io::BufRead + std::io::Seek {}
 
-/// A stream for writing to some `VirtualPath`.
+/// A stream for writing to some [`VirtualPath`].
 pub trait OutputStream: std::io::Write + std::io::Seek {}
 
 /// Represents a type capable of acting as a file system.
@@ -69,14 +69,18 @@ impl<'a> VirtualPath<'a> {
 
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> FileResult<Box<dyn InputStream>> {
-    let stream = CURRENT_FILE_SYSTEM.with(|file_system| file_system.open_read(self))?;
+    let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
+      file_system.open_read(self)
+    })?;
 
     Ok(Box::new(stream))
   }
 
   /// Opens a writer for the given path.
   pub fn open_output_stream(&self) -> FileResult<Box<dyn OutputStream>> {
-    let stream = CURRENT_FILE_SYSTEM.with(|file_system| file_system.open_write(self))?;
+    let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
+      file_system.open_write(self)
+    })?;
 
     Ok(Box::new(stream))
   }
@@ -108,7 +112,7 @@ impl<'a> std::fmt::Debug for VirtualPath<'a> {
   }
 }
 
-/// Allows a type to be converted to a `VirtualPath`.
+/// Allows a type to be converted to a [`VirtualPath`].
 pub trait AsVirtualPath {
   fn as_virtual_path(&self) -> VirtualPath;
 }

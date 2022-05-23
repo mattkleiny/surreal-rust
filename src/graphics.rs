@@ -21,7 +21,7 @@ mod textures;
 /// Represents a fallible result in the graphics subsystem.
 pub type GraphicsResult<T> = anyhow::Result<T>;
 
-/// An opaque handle to an underlying resource in the `GraphicsServer`.
+/// An opaque handle to an underlying resource in the [`GraphicsServer`].
 ///
 /// A handle can represent arbitrarily many different resources, and forms
 /// the building blocks for any higher level APIs.

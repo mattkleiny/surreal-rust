@@ -28,7 +28,7 @@ impl Random {
     Self::with_seed(generate_thread_local())
   }
 
-  /// Generates a new value of the given `Random` type, T.
+  /// Generates a new value of the given [`Random`] type, T.
   pub fn next<T>(&mut self) -> T where T: FromRandom {
     T::from_random(self)
   }
@@ -51,7 +51,7 @@ impl Random {
 }
 
 thread_local! {
-  /// A thread-local instance of the `Random`.
+  /// A thread-local instance of the [`Random`].
   static THREAD_LOCAL_RANDOM: UnsafeCell<Random> = UnsafeCell::new(Random::with_seed({
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};

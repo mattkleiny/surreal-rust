@@ -117,7 +117,7 @@ impl Drop for ShaderProgram {
   }
 }
 
-/// Allows loading `ShaderProgram`s from the virtual file system.
+/// Allows loading [`ShaderProgram`]s from the virtual file system.
 pub struct ShaderProgramLoader {
   context: GraphicsContext,
 }

@@ -47,7 +47,7 @@ pub mod prelude {
 /// An context for object-based operations.
 ///
 /// This context can be easily passed around the application and
-/// allows resources to refer back to the originating server `S`.
+/// allows resources to refer back to the originating server [`S`].
 pub struct Context<S: ?Sized>(std::rc::Rc<S>);
 
 impl<S: ?Sized> Clone for Context<S> {

@@ -18,7 +18,7 @@ mod audio;
 mod graphics;
 mod input;
 
-/// Configuration for the `DesktopPlatform`.
+/// Configuration for the [`DesktopPlatform`].
 #[derive(Clone, Debug)]
 pub struct Configuration {
   pub title: &'static str,
@@ -42,7 +42,7 @@ impl Default for Configuration {
   }
 }
 
-/// A `Platform` implementation for desktop PCs.
+/// A [`Platform`] implementation for desktop PCs.
 pub struct DesktopPlatform {
   config: Configuration,
 }

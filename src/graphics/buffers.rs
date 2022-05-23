@@ -17,7 +17,7 @@ pub enum BufferUsage {
   Dynamic,
 }
 
-/// A buffer implementation that can upload data of type `T` to the GPU.
+/// A buffer implementation that can upload data of type [`T`] to the GPU.
 pub struct GraphicsBuffer<T> {
   context: GraphicsContext,
   handle: GraphicsHandle,

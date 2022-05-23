@@ -20,14 +20,14 @@ pub type PlatformResult<T> = anyhow::Result<T>;
 /// The platform is also responsible for the core loop, and should callback into user code
 /// in order to process application logic.
 pub trait Platform {
-  /// The type of `PlatformHost` that this platform creates.
+  /// The type of [`PlatformHost`] that this platform creates.
   type Host: PlatformHost;
 
   /// Creates a new instance of the platform host.
   fn create_host(&self) -> Self::Host;
 }
 
-/// A host for a particular `Platform`, allowing user code to interact with low-level platform
+/// A host for a particular [`Platform`], allowing user code to interact with low-level platform
 /// resources and configuration.
 ///
 /// An example host is the main window for a game in desktop environments.

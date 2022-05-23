@@ -1,19 +1,21 @@
-/// Represents a safe index into an `Arena`.
+/// Represents a safe index into an [`Arena`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ArenaIndex {
-  index: usize,
-  generation: u16,
+  pub index: usize,
+  pub generation: u16,
 }
 
 /// A single entry in an `Arena`.
+#[derive(Debug)]
 struct ArenaEntry<T> {
   value: T,
   generation: u16,
 }
 
-/// A simple generational arena of elements of type T.
+/// A simple generational arena of elements of type [`T`] .
 ///
-/// An arena exposes safe externalized indices in the form of `ArenaIndex`es.
+/// An arena exposes safe externalized indices in the form of [`ArenaIndex`]es.
+#[derive(Debug)]
 pub struct Arena<T> {
   entries: Vec<Option<ArenaEntry<T>>>,
   current_generation: u16,
@@ -95,10 +97,10 @@ impl<T> Arena<T> {
   }
 
   /// Removes an item from the arena.
-  pub fn remove(&mut self, ArenaIndex { index, generation }: ArenaIndex) {
+  pub fn remove(&mut self, ArenaIndex { index, generation }: ArenaIndex) -> bool {
     // sanity check external index
     if index >= self.entries.len() {
-      return;
+      return false;
     }
 
     // if this is the relevant entry and the generation matches
@@ -106,8 +108,12 @@ impl<T> Arena<T> {
       if generation == entry.generation {
         self.entries[index] = None;
         self.is_generation_dirty = true;
+
+        return true;
       }
     }
+
+    return false;
   }
 
   /// Clears all entries from the arena.
@@ -116,7 +122,7 @@ impl<T> Arena<T> {
     self.is_generation_dirty = true;
   }
 
-  /// Allocates a new `ArenaIndex` for an item.
+  /// Allocates a new [`ArenaIndex`] for an item.
   fn allocate_index(&mut self) -> ArenaIndex {
     // increment the generation if necessary
     if self.is_generation_dirty {

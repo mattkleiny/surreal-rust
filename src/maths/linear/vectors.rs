@@ -2,17 +2,17 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::maths::{Lerp, Numeric};
 
-/// Shorthand to construct a `Vector2`
+/// Shorthand to construct a [`Vector2`].
 pub const fn vec2<T>(x: T, y: T) -> Vector2<T> {
   Vector2::new(x, y)
 }
 
-/// Shorthand to construct a `Vector3`
+/// Shorthand to construct a [`Vector3`].
 pub const fn vec3<T>(x: T, y: T, z: T) -> Vector3<T> {
   Vector3::new(x, y, z)
 }
 
-/// Shorthand to construct a `Vector4`
+/// Shorthand to construct a [`Vector4`].
 pub const fn vec4<T>(x: T, y: T, z: T, w: T) -> Vector4<T> {
   Vector4::new(x, y, z, w)
 }
