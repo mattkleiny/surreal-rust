@@ -16,7 +16,7 @@ pub enum Variant {
 /// Implements variant value transformation for common variant types.
 macro_rules! implement_variant {
   ($type:ty, $value:ident) => {
-    impl Into<Variant> for $type {}
+    impl Into<Variant> for $type {
       fn into(self) -> Variant {
         Variant::$value(self)
       }
