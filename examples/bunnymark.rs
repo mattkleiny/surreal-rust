@@ -11,7 +11,7 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
-    let shader = load_standard_shader(&game.host.graphics).expect("Failed to load standard shader");
+    let shader = ShaderProgram::from_string(&game.host.graphics, include_str!("../assets/shaders/standard.glsl")).expect("Failed to load standard shader");
     let _material = Material::new(&game.host.graphics, &shader);
     let _batch = SpriteBatch::new(&game.host.graphics);
 
