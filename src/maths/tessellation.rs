@@ -5,16 +5,19 @@ pub trait Tessellation {
   /// The type of vertex that we're emitting.
   type Vertex: Copy;
 
+  /// Returns the number of vertices in the tessellator.
   fn vertex_count(&self) -> u32;
+
+  /// Returns the number of indices in the tessellator.
   fn index_count(&self) -> usize;
 
-  /// Adds a single vertex to the mesh.
+  /// Adds a single vertex to the tessellator.
   fn add_vertex(&mut self, vertex: Self::Vertex);
 
-  /// Adds a single index to the mesh.
+  /// Adds a single index to the tessellator.
   fn add_index(&mut self, index: u32);
 
-  /// Adds a line of vertices to the mesh.
+  /// Adds a line of vertices to the tessellator.
   fn add_line(&mut self, vertices: &[Self::Vertex; 2]) {
     let offset = self.vertex_count();
 
@@ -26,7 +29,7 @@ pub trait Tessellation {
     self.add_index(offset + 1);
   }
 
-  /// Adds a triangle of vertices to the mesh.
+  /// Adds a triangle of vertices to the tessellator.
   fn add_triangle(&mut self, vertices: &[Self::Vertex; 3]) {
     let offset = self.vertex_count();
 
@@ -39,7 +42,7 @@ pub trait Tessellation {
     self.add_index(offset + 2);
   }
 
-  /// Adds a triangle fan of vertices to the mesh.
+  /// Adds a triangle fan of vertices to the tessellator.
   fn add_triangle_fan(&mut self, vertices: &[Self::Vertex]) {
     let first = self.vertex_count();
 
@@ -57,7 +60,7 @@ pub trait Tessellation {
     }
   }
 
-  /// Adds a quad of vertices to the mesh.
+  /// Adds a quad of vertices to the tessellator.
   fn add_quad(&mut self, vertices: &[Self::Vertex; 4]) {
     let offset = self.vertex_count();
 

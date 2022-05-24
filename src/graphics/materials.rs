@@ -27,7 +27,7 @@ pub enum BlendFactor {
 
 /// A single uniform setting in a `Material`.
 #[derive(Debug)]
-struct UniformSetting<G> where G: GraphicsImpl {
+struct MaterialUniform<G> where G: GraphicsImpl {
   pub location: usize,
   pub value: ShaderUniform<G>,
 }
@@ -36,7 +36,7 @@ struct UniformSetting<G> where G: GraphicsImpl {
 pub struct Material<'a, G> where G: GraphicsImpl {
   server: GraphicsServer<G>,
   shader: &'a ShaderProgram<G>,
-  uniforms: HashMap<String, UniformSetting<G>>,
+  uniforms: HashMap<String, MaterialUniform<G>>,
   blend_state: BlendState,
 }
 
@@ -60,17 +60,17 @@ impl<'a, G> Material<'a, G> where G: GraphicsImpl {
   pub fn set_blend_state(&mut self, state: BlendState) {
     self.blend_state = state;
   }
-  
+
   /// Sets the given material uniform.
   pub fn set_uniform(&mut self, name: &str, value: impl Into<ShaderUniform<G>>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
       self.uniforms.insert(
         name.to_string(),
-        UniformSetting { location, value: value.into() },
+        MaterialUniform { location, value: value.into() },
       );
     }
   }
-  
+
   /// Removes a uniform from the material.
   pub fn remove_uniform(&mut self, name: &str) {
     self.uniforms.remove(name);

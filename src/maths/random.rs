@@ -1,31 +1,5 @@
 use std::cell::UnsafeCell;
 
-/// A type that can be randomly generated.
-pub trait FromRandom: Sized {
-  /// Generates a new value of this type with a global random seed.
-  fn random() -> Self {
-    generate_thread_local()
-  }
-
-  /// Generates a new random value of this type using the given generator.
-  fn from_random(random: &mut Random) -> Self;
-}
-
-/// Allows an item to be selected randomly.
-pub trait RandomSelection {
-  type Item;
-
-  /// Selects an item randomly from the type.
-  fn select_random(&self, random: &mut Random) -> &Self::Item;
-
-  /// Returns a random item from this collection using the thread-local random generator.
-  fn select_randomly(&self) -> &Self::Item {
-    THREAD_LOCAL_RANDOM.with(|random| unsafe {
-      self.select_random(&mut *random.get())
-    })
-  }
-}
-
 /// A pseudo-random number generator.
 #[derive(Clone, Debug)]
 pub struct Random {
@@ -88,6 +62,17 @@ fn generate_thread_local<T>() -> T where T: FromRandom {
   })
 }
 
+/// A type that can be randomly generated.
+pub trait FromRandom: Sized {
+  /// Generates a new value of this type with a global random seed.
+  fn random() -> Self {
+    generate_thread_local()
+  }
+
+  /// Generates a new random value of this type using the given generator.
+  fn from_random(random: &mut Random) -> Self;
+}
+
 // commonly used random types
 impl FromRandom for bool {
   fn from_random(generator: &mut Random) -> Self {
@@ -131,11 +116,28 @@ impl FromRandom for f64 {
   }
 }
 
+/// Allows an item to be selected randomly.
+pub trait RandomSelect {
+  type Item;
+
+  /// Selects an item randomly from the object.
+  fn select_randomly(&self, random: &mut Random) -> &Self::Item;
+}
+
 /// Allows random selection from a slice of [`T`].
-impl<T> RandomSelection for &[T] {
+impl<T> RandomSelect for &[T] {
   type Item = T;
 
-  fn select_random(&self, random: &mut Random) -> &Self::Item {
+  fn select_randomly(&self, random: &mut Random) -> &Self::Item {
+    &self[random.next_u64() as usize % self.len()]
+  }
+}
+
+/// Allows random selection from a [`Vec<T>`].
+impl<T> RandomSelect for &Vec<T> {
+  type Item = T;
+
+  fn select_randomly(&self, random: &mut Random) -> &Self::Item {
     &self[random.next_u64() as usize % self.len()]
   }
 }

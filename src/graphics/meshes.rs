@@ -214,8 +214,13 @@ impl<V> Tessellator<V> {
 impl<V> Tessellation for Tessellator<V> where V: Vertex {
   type Vertex = V;
 
-  fn vertex_count(&self) -> u32 { self.vertices.len() as u32 }
-  fn index_count(&self) -> usize { self.indices.len() }
+  fn vertex_count(&self) -> u32 {
+    self.vertices.len() as u32
+  }
+
+  fn index_count(&self) -> usize {
+    self.indices.len()
+  }
 
   fn add_vertex(&mut self, vertex: Self::Vertex) {
     self.vertices.push(vertex);

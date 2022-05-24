@@ -19,6 +19,7 @@ fn main() {
 
     let mut material = Material::new(&game.host.graphics, &shader);
     let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);
+    let mut random = Random::with_random_seed();
 
     material.set_uniform("u_texture", &canvas.texture);
 
@@ -43,8 +44,9 @@ fn main() {
       if let Some(mouse) = context.host.input.primary_mouse_device() {
         if mouse.is_button_down(MouseButton::Left) {
           let colors = &palette.as_slice()[1..4];
+          let color = colors.select_randomly(&mut random);
 
-          canvas.draw_circle(mouse.normalised_position(), 6., *colors.select_randomly());
+          canvas.draw_circle(mouse.normalised_position(), 6., *color);
         } else if mouse.is_button_down(MouseButton::Right) {
           canvas.draw_circle(mouse.normalised_position(), 6., Color::CLEAR);
         }
