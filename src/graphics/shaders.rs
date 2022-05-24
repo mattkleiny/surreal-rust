@@ -4,7 +4,7 @@ use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 use super::*;
 
-/// Different types fo shaders supported by the engine.
+/// Different types of shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ShaderKind {
   Vertex,
@@ -17,7 +17,7 @@ pub struct Shader {
   pub code: String,
 }
 
-/// Representation of single value that can be used in a `Material`.
+/// Representation of a single value that can be used in a shader.
 #[derive(Debug)]
 pub enum ShaderUniform<G> where G: GraphicsImpl + ?Sized {
   Integer(u32),

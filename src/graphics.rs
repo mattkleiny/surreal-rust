@@ -31,6 +31,7 @@ pub type GraphicsServer<G> = std::rc::Rc<G>;
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level unsafe implementation abstraction.
 pub trait GraphicsImpl {
+  /// The type of handle used to represent an object in the underlying graphics API.
   type Handle: Copy + std::fmt::Debug;
 
   // frame operations
