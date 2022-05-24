@@ -1,4 +1,3 @@
-use std::io::BufRead;
 use std::ops::Index;
 
 use anyhow::anyhow;
@@ -28,18 +27,24 @@ impl<P> ColorPalette<P> where P: Pixel {
     Self { colors: slice.to_vec() }
   }
 
-  /// Loads a palette from the given JASC-PAL palette file.
+  /// Loads a palette from the given file path.
   pub fn from_file(path: impl AsVirtualPath) -> FileResult<Self> {
     let path = path.as_virtual_path();
     let stream = path.open_input_stream()?;
-    let lines: Vec<_> = stream.lines().collect::<Result<_, _>>()?;
+
+    Ok(Self::from_reader(stream)?)
+  }
+
+  /// Loads a palette from the given reader.
+  pub fn from_reader(reader: impl std::io::BufRead) -> FileResult<Self> {
+    let lines: Vec<_> = reader.lines().collect::<Result<_, _>>()?;
 
     if lines[0] != "JASC-PAL" {
-      return Err(anyhow!("Expected A JASC-PAL file format in file {:?}", path));
+      return Err(anyhow!("Expected A JASC-PAL file format"));
     }
 
     if lines[1] != "0100" {
-      return Err(anyhow!("Expected a 0100 magic header in file {:?}", path));
+      return Err(anyhow!("Expected a 0100 magic header"));
     }
 
     // read palette size and start building palette

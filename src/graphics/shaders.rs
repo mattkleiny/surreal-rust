@@ -2,6 +2,8 @@ use crate::graphics::{GraphicsServer, TextureSampler, GraphicsImpl};
 use crate::io::{AsVirtualPath, FileResult};
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
+use super::*;
+
 /// Different types fo shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ShaderKind {
@@ -47,6 +49,15 @@ impl<G> ShaderProgram<G> where G: GraphicsImpl {
     }
   }
 
+  /// Loads a shader program from the given raw code.
+  pub fn from_string(server: &GraphicsServer<G>, code: &str) -> GraphicsResult<Self> {
+    let program = Self::new(server);
+
+    program.load_from_string(code)?;
+
+    Ok(program)
+  }
+
   /// Retrieves the binding location of the given shader uniform in the underlying program.
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
     self.server.get_shader_uniform_location(self.handle, name)
@@ -57,8 +68,17 @@ impl<G> ShaderProgram<G> where G: GraphicsImpl {
     self.server.set_shader_uniform(self.handle, location, value);
   }
 
-  /// Reloads the shader program from a file.
-  pub fn reload(&self, path: impl AsVirtualPath) -> FileResult<()> {
+  /// Reloads the shader program from the given text.
+  pub fn load_from_string(&self, text: &str) -> FileResult<()> {
+    let shaders = parse_glsl_source(&text);
+
+    self.server.link_shaders(self.handle, shaders)?;
+
+    Ok(())
+  }
+  
+  /// Reloads the shader program from a file at the given virtual path.
+  pub fn load_from_path(&self, path: impl AsVirtualPath) -> FileResult<()> {
     let source_code = path.as_virtual_path().read_all_text()?;
     let shaders = parse_glsl_source(&source_code);
 

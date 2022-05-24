@@ -11,11 +11,9 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
-    let shader = ShaderProgram::new(&game.host.graphics);
+    let shader = load_standard_shader(&game.host.graphics).expect("Failed to load standard shader");
     let _material = Material::new(&game.host.graphics, &shader);
     let _batch = SpriteBatch::new(&game.host.graphics);
-
-    shader.reload("assets/shaders/standard.glsl").expect("Failed to load shader program");
 
     game.run_variable_step(move |context| {
       context.host.graphics.clear_color_buffer(Color::BLACK);
