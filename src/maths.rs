@@ -11,7 +11,6 @@ pub use numbers::*;
 pub use paths::*;
 pub use random::*;
 pub use ranges::*;
-pub use sdf::*;
 pub use tessellation::*;
 
 mod bitmap;
@@ -25,7 +24,6 @@ mod numbers;
 mod paths;
 mod random;
 mod ranges;
-mod sdf;
 mod tessellation;
 
 /// Clamps the given value between the given lower and upper bounds.

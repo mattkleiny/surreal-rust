@@ -112,6 +112,12 @@ impl<'a> std::fmt::Debug for VirtualPath<'a> {
   }
 }
 
+impl<'a> std::fmt::Display for VirtualPath<'a> {
+  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    Ok(write!(formatter, "{:}://{:}", self.scheme, self.location)?)
+  }
+}
+
 /// Allows a type to be converted to a [`VirtualPath`].
 pub trait AsVirtualPath {
   fn as_virtual_path(&self) -> VirtualPath;
