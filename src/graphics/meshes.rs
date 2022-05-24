@@ -78,15 +78,15 @@ pub struct Vertex3 {
 pub struct Mesh<G, V> where G: GraphicsImpl {
   server: GraphicsServer<G>,
   pub handle: G::Handle,
-  pub vertices: GraphicsBuffer<G, V>,
-  pub indices: GraphicsBuffer<G, u32>,
+  pub vertices: Buffer<G, V>,
+  pub indices: Buffer<G, u32>,
 }
 
 impl<G, V> Mesh<G, V> where G: GraphicsImpl, V: Vertex {
   /// Constructs a new blank mesh on the GPU.
   pub fn new(server: &GraphicsServer<G>) -> Self {
-    let vertices = GraphicsBuffer::new(server, BufferKind::Element, BufferUsage::Static);
-    let indices = GraphicsBuffer::new(server, BufferKind::Index, BufferUsage::Static);
+    let vertices = Buffer::new(server, BufferKind::Element, BufferUsage::Static);
+    let indices = Buffer::new(server, BufferKind::Index, BufferUsage::Static);
 
     Self {
       server: server.clone(),

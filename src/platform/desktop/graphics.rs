@@ -13,7 +13,7 @@ pub struct DesktopGraphics {
 
 impl DesktopGraphics {
   pub fn new(window: &Window, vsync_enabled: bool) -> GraphicsServer<Self> {
-    // prepare and load opengl functionality
+    // prepare and load opengl bindings
     let config = GlConfig {
       vsync: vsync_enabled,
       ..Default::default()

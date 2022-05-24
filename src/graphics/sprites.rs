@@ -67,7 +67,7 @@ impl<'a, G> SpriteBatchScope<'a, G> where G: GraphicsImpl {
     let index_count = sprite_count * 6;
 
     if let Some(texture) = self.texture {
-      self.material.set_texture("u_texture", texture.handle, 0, None);
+      self.material.set_uniform("u_texture", texture);
     }
 
     batch.mesh.vertices.write_data(&batch.vertices);

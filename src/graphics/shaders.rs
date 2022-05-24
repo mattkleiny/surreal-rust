@@ -98,9 +98,9 @@ impl<G> Drop for ShaderProgram<G> where G: GraphicsImpl {
 /// Implements uniform value transformation for common shader uniforms.
 macro_rules! implement_uniform {
   ($type:ty, $value:ident) => {
-    impl<G> Into<ShaderUniform<G>> for $type where G: GraphicsImpl {
-      fn into(self) -> ShaderUniform<G> {
-        ShaderUniform::$value(self)
+    impl<G> From<$type> for ShaderUniform<G> where G: GraphicsImpl {
+      fn from(value: $type) -> Self {
+        ShaderUniform::$value(value.clone())
       }
     }
   };
@@ -114,9 +114,15 @@ implement_uniform!(Vector4<i32>, Point4);
 implement_uniform!(Vector2<f32>, Vector2);
 implement_uniform!(Vector3<f32>, Vector3);
 implement_uniform!(Vector4<f32>, Vector4);
-implement_uniform!(Matrix2x2<f32>, Matrix2x2);
-implement_uniform!(Matrix3x3<f32>, Matrix3x3);
-implement_uniform!(Matrix4x4<f32>, Matrix4x4);
+implement_uniform!(&Matrix2x2<f32>, Matrix2x2);
+implement_uniform!(&Matrix3x3<f32>, Matrix3x3);
+implement_uniform!(&Matrix4x4<f32>, Matrix4x4);
+
+impl<G> From<&Texture<G>> for ShaderUniform<G> where G: GraphicsImpl {
+  fn from(texture: &Texture<G>) -> Self {
+    ShaderUniform::Texture(texture.handle, 0, None)
+  }
+}
 
 /// Parses the given raw GLSL source and performs some basic pre-processing.
 ///
@@ -197,7 +203,9 @@ mod tests {
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].kind, ShaderKind::Vertex);
     assert!(result[0].code.trim().starts_with("#version 330 core"));
+    assert!(result[0].code.contains("gl_Position"));
     assert_eq!(result[1].kind, ShaderKind::Fragment);
     assert!(result[1].code.trim().starts_with("#version 330 core"));
+    assert!(result[1].code.contains("gl_Frag"));
   }
 }

@@ -17,7 +17,7 @@ fn main() {
     let mut material = Material::new(&game.host.graphics, &shader);
     let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);
 
-    material.set_texture("u_texture", canvas.texture.handle, 0, None);
+    material.set_uniform("u_texture", &canvas.texture);
 
     canvas.clear();
 
