@@ -1,3 +1,5 @@
+use crate::maths::*;
+
 /// A simple variant type that can hold different kinds of objects.
 pub enum Variant {
   Bool(bool),

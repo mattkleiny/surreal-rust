@@ -1,5 +1,6 @@
 //! Mathematical utilities.
 
+pub use bitmap::*;
 pub use bounds::*;
 pub use curves::*;
 pub use grids::*;
@@ -10,8 +11,10 @@ pub use numbers::*;
 pub use paths::*;
 pub use random::*;
 pub use ranges::*;
+pub use sdf::*;
 pub use tessellation::*;
 
+mod bitmap;
 mod bounds;
 mod curves;
 mod grids;
@@ -22,10 +25,14 @@ mod numbers;
 mod paths;
 mod random;
 mod ranges;
+mod sdf;
 mod tessellation;
 
 /// Clamps the given value between the given lower and upper bounds.
-pub fn clamp<T>(value: T, lower: T, upper: T) -> T where T: Numeric {
+pub fn clamp<T>(value: T, lower: T, upper: T) -> T
+where
+  T: Numeric,
+{
   match () {
     _ if value > upper => upper,
     _ if value < lower => lower,
