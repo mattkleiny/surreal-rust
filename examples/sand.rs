@@ -4,6 +4,9 @@
 
 use surreal::prelude::*;
 
+const SHADER_CODE: &'static str = include_str!("../assets/shaders/standard.glsl");
+const COLOR_PALETTE: &'static [u8] = include_bytes!("../assets/palettes/hollow-4.pal");
+
 fn main() {
   let platform = DesktopPlatform::new(Configuration {
     title: "Falling Sand",
@@ -11,8 +14,8 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
-    let shader = ShaderProgram::from_string(&game.host.graphics, include_str!("../assets/shaders/standard.glsl")).expect("Failed to load standard shader");
-    let palette = ColorPalette::from_reader(include_bytes!("../assets/palettes/hollow-4.pal").as_slice()).expect("Failed to load palette");
+    let shader = ShaderProgram::from_string(&game.host.graphics, SHADER_CODE).expect("Failed to load standard shader");
+    let palette = ColorPalette::from_reader(COLOR_PALETTE).expect("Failed to load palette");
 
     let mut material = Material::new(&game.host.graphics, &shader);
     let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);

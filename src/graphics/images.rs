@@ -17,23 +17,22 @@ impl Image {
     }
   }
 
-  /// Attempts to load an image from the given path with a discovered format.
-  pub fn load(path: impl AsVirtualPath) -> FileResult<Self> {
+  /// Attempts to load an image from the given path.
+  pub fn from_path(path: impl AsVirtualPath, format: Option<ImageFormat>) -> FileResult<Self> {
     let stream = path.as_virtual_path().open_input_stream()?;
-    let reader = image::io::Reader::new(stream).with_guessed_format()?;
 
-    let image = reader.decode()?;
-    let buffer = image.to_rgba32f();
-
-    Ok(Self { buffer })
+    Ok(Self::from_reader(stream, format)?)
   }
 
-  /// Attempts to load an image from the given path with the given format.
-  pub fn load_with_format(path: impl AsVirtualPath, format: ImageFormat) -> FileResult<Self> {
-    let stream = path.as_virtual_path().open_input_stream()?;
-    let mut reader = image::io::Reader::new(stream);
+  /// Attempts to load an image from the given reader.
+  pub fn from_reader(reader: impl std::io::BufRead + std::io::Seek, format: Option<ImageFormat>) -> FileResult<Self> {
+    let mut reader = image::io::Reader::new(reader);
 
-    reader.set_format(format);
+    if let Some(format) = format {
+      reader.set_format(format);
+    } else {
+      reader = reader.with_guessed_format()?;
+    }
 
     let image = reader.decode()?;
     let buffer = image.to_rgba32f();
@@ -85,7 +84,7 @@ mod tests {
 
   #[test]
   fn image_should_load_from_path() {
-    let image = Image::load_with_format("local://surreal.ico", ImageFormat::Ico).expect("Failed to load image");
+    let image = Image::from_path("local://surreal.ico", Some(ImageFormat::Ico)).expect("Failed to load image");
 
     assert_eq!(image.width(), 32);
     assert_eq!(image.height(), 32);
