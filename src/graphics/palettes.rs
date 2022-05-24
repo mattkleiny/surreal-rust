@@ -32,11 +32,11 @@ impl<P> ColorPalette<P> where P: Pixel {
     let path = path.as_virtual_path();
     let stream = path.open_input_stream()?;
 
-    Ok(Self::from_reader(stream)?)
+    Ok(Self::from_bytes(stream)?)
   }
 
   /// Loads a palette from the given reader.
-  pub fn from_reader(reader: impl std::io::BufRead) -> FileResult<Self> {
+  pub fn from_bytes(reader: impl std::io::BufRead) -> FileResult<Self> {
     let lines: Vec<_> = reader.lines().collect::<Result<_, _>>()?;
 
     if lines[0] != "JASC-PAL" {

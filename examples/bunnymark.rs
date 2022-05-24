@@ -4,8 +4,6 @@
 
 use surreal::prelude::*;
 
-const SHADER_CODE: &'static str = include_str!("../assets/shaders/standard.glsl");
-
 fn main() {
   let platform = DesktopPlatform::new(Configuration {
     title: "Bunnymark",
@@ -13,7 +11,8 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
-    let shader = ShaderProgram::from_string(&game.host.graphics, SHADER_CODE).expect("Failed to load standard shader");
+    let shader = load_standard_shader(&game.host.graphics);
+
     let _material = Material::new(&game.host.graphics, &shader);
     let _batch = SpriteBatch::new(&game.host.graphics);
 
