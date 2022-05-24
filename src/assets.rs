@@ -1,22 +1,33 @@
 //! A simple asset management system with support for hot file reloading.
 
-use std::collections::HashMap;
 use std::any::Any;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 use crate::io::{AsVirtualPath, VirtualPath};
 
 /// Represents a fallible result in the asset subsystem.
 pub type AssetResult<T> = anyhow::Result<T>;
 
-/// An opaque pointer to a shared asset reference in an `AssetManager`.
-pub struct Asset<T> {
-  state: std::rc::Rc<AssetState<T>>,
-}
-
 /// The internal state for an `Asset`.
 enum AssetState<T> {
   NotReady,
   Ready(T),
+}
+
+/// An opaque pointer to a shared asset reference in an `AssetManager`.
+pub struct Asset<T> {
+  state: Rc<AssetState<T>>,
+}
+
+impl<T> Asset<T> {
+  /// Accesses the asset's data.
+  pub fn get(&self) -> Option<&T> {
+    match self.state.as_ref() {
+      AssetState::Ready(value) => Some(value),
+      _ => None,
+    }
+  }
 }
 
 /// A manager for assets.
@@ -46,10 +57,19 @@ impl AssetManager {
   }
 
   /// Attempts to load an asset from the given path.
-  pub fn load_asset<A>(&self, path: impl AsVirtualPath) -> AssetResult<Asset<A>> {
+  pub fn load_asset<A: 'static>(&mut self, path: impl AsVirtualPath) -> AssetResult<Asset<A>> {
     let key = path.as_virtual_path().to_string();
 
-    todo!()
+    let state = self.assets
+      .entry(key)
+      .or_insert_with(|| {
+        // TODO: kick off loading process for this asset?
+        Box::new(Rc::new(AssetState::<A>::NotReady))
+      })
+      .downcast_ref::<Rc<AssetState<A>>>()
+      .expect("Failed to access asset state");
+
+    Ok(Asset { state: state.clone() })
   }
 }
 
@@ -75,5 +95,23 @@ impl<'a> AssetLoadContext<'a> {
   /// Loads a dependent asset from the given path.
   pub fn load_asset<A>(&self, _path: VirtualPath) -> AssetResult<A> {
     todo!()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn assets_should_load() {
+    let mut manager = AssetManager::new();
+
+    let asset: Asset<String> = manager.load_asset("test.txt").expect("Failed to load asset");
+
+    if let Some(string) = asset.get() {
+      println!("Ready {:}", string);
+    } else {
+      println!("Not ready");
+    }
   }
 }
