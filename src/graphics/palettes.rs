@@ -7,6 +7,7 @@ use crate::io::AsVirtualPath;
 use super::*;
 
 /// A palette of colors of type [`P`].
+#[derive(Clone)]
 pub struct ColorPalette<P> {
   colors: Vec<P>,
 }

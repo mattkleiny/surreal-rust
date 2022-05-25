@@ -45,19 +45,20 @@ fn main() {
     let graphics = &game.host.graphics;
 
     // TODO: asset management
-    let mut renderer = Renderer::new(graphics);
     let mut texture = Texture::new(graphics);
     let image = Image::from_path("assets/sprites/bunny.png", None).expect("Failed to load sprite image");
-
     texture.write_image(&image);
-
-    let projection_view = Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.);
+    let region = TextureRegion::from(&texture); // TODO: simplify this
 
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
 
-    // TODO: simplify this
-    let region = TextureRegion::from(&texture);
+    // prepare renderer
+    let mut renderer = Renderer::new(graphics);
+    let sprite_descriptor = SpriteContextDescriptor::default();
+
+    // set-up camera perspective
+    let projection_view = Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.);
 
     game.run_variable_step(move |context| {
       context.host.graphics.clear_color_buffer(Color::BLACK);
@@ -68,19 +69,18 @@ fn main() {
       }
 
       // draw bunnies
-      renderer.with(|SpriteContext { batch, material }| {
-        material.set_uniform("u_projectionView", &projection_view);
-
-        batch.begin(&material);
+      renderer.with(&sprite_descriptor, |pass| {
+        pass.material.set_uniform("u_projectionView", &projection_view);
+        pass.batch.begin(&pass.material);
 
         for bunny in &bunnies {
-          batch.draw(&region, SpriteOptions {
+          pass.batch.draw(&region, SpriteOptions {
             position: bunny.position,
             ..Default::default()
           });
         }
 
-        batch.flush();
+        pass.batch.flush();
       });
 
       // handle input

@@ -13,22 +13,21 @@ fn main() {
   Game::start(platform, |mut game| {
     let graphics = &game.host.graphics;
 
+    let mut renderer = Renderer::new(graphics);
+    let sprite_descriptor = SpriteContextDescriptor::default();
     let palette = load_standard_palette(BuiltInPalette::Hollow4);
-    let shader = load_standard_shader(graphics);
-    let mut material = Material::new(graphics, &shader);
+
     let mut canvas = PixelCanvas::new(graphics, 256, 144);
     let mut random = Random::new();
 
-    material.set_uniform("u_texture", &canvas.texture);
-    material.set_uniform("u_projectionView", &Matrix4x4::identity());
-
-    canvas.clear();
-
     game.run_variable_step(|context| {
-      context.host.graphics.clear_color_buffer(palette[0]);
+      renderer.with(&sprite_descriptor, |pass| {
+        context.host.graphics.clear_color_buffer(palette[0]);
 
-      canvas.simulate(context.time.delta_time);
-      canvas.draw(&material);
+        // TODO: draw to sprite batch, instead?
+        canvas.simulate(context.time.delta_time);
+        canvas.draw(&pass.material);
+      });
 
       if let Some(keyboard) = context.host.input.primary_keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
