@@ -9,9 +9,9 @@ use crate::graphics::GraphicsServer;
 
 use super::*;
 
-mod audio;
-mod graphics;
-mod input;
+pub mod audio;
+pub mod graphics;
+pub mod input;
 
 /// A platform for headless environments.
 pub struct HeadlessPlatform;

@@ -26,26 +26,27 @@ pub enum BlendFactor {
 }
 
 /// A single uniform setting in a `Material`.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct MaterialUniform {
   pub location: usize,
   pub value: ShaderUniform,
 }
 
 /// A material describes how to render a mesh and describes the underlying GPU pipeline state needed.
-pub struct Material<'a> {
+#[derive(Clone)]
+pub struct Material {
   server: GraphicsServer,
-  shader: &'a ShaderProgram,
+  shader: ShaderProgram,
   uniforms: HashMap<String, MaterialUniform>,
   blend_state: BlendState,
 }
 
-impl<'a> Material<'a> {
+impl Material {
   /// Constructs a new material for the given shader program.
-  pub fn new(server: &GraphicsServer, shader: &'a ShaderProgram) -> Self {
+  pub fn new(server: &GraphicsServer, shader: &ShaderProgram) -> Self {
     Self {
       server: server.clone(),
-      shader,
+      shader: shader.clone(),
       uniforms: HashMap::new(),
       blend_state: BlendState::Disabled,
     }
@@ -76,7 +77,7 @@ impl<'a> Material<'a> {
     if let Some(location) = self.shader.get_uniform_location(name) {
       self.uniforms.insert(
         name.to_string(),
-        MaterialUniform { location, value: ShaderUniform::Texture(texture.handle, slot, sampler) },
+        MaterialUniform { location, value: ShaderUniform::Texture(texture.handle(), slot, sampler) },
       );
     }
   }
@@ -99,6 +100,6 @@ impl<'a> Material<'a> {
       self.shader.set_uniform(uniform.location, &uniform.value);
     }
 
-    self.server.set_active_shader(self.shader.handle);
+    self.server.set_active_shader(self.shader.handle());
   }
 }

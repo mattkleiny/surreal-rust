@@ -6,6 +6,7 @@ pub use images::*;
 pub use materials::*;
 pub use meshes::*;
 pub use palettes::*;
+pub use rendering::*;
 pub use shaders::*;
 pub use sprites::*;
 pub use textures::*;
@@ -16,6 +17,7 @@ mod images;
 mod materials;
 mod meshes;
 mod palettes;
+mod rendering;
 mod shaders;
 mod sprites;
 mod textures;
@@ -25,6 +27,11 @@ pub type GraphicsHandle = u32;
 
 /// The graphics server implementation.
 pub type GraphicsServer = std::rc::Rc<Box<dyn GraphicsBackend>>;
+
+/// Represents a type that possesses a `GraphicsHandle`.
+pub trait HasGraphicsHandle {
+  fn handle(&self) -> GraphicsHandle;
+}
 
 /// Represents a server implementation for the underlying graphics subsystem.
 ///

@@ -1,3 +1,6 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 pub use surreal_macros::Vertex;
 
 use crate::maths::{Tessellation, vec2, Vector2, Vector3};
@@ -82,11 +85,33 @@ impl Vertex for Vertex3 {
 ///
 /// Meshes are stored on the GPU as vertex/index buffers and can be submitted for rendering at any
 /// time, provided a valid [`Material`] is available.
+#[derive(Clone)]
 pub struct Mesh<V> {
+  state: Rc<RefCell<MeshState<V>>>,
+}
+
+/// The internal state for a mesh.
+struct MeshState<V> {
   server: GraphicsServer,
-  pub handle: GraphicsHandle,
-  pub vertices: Buffer<V>,
-  pub indices: Buffer<u32>,
+  handle: GraphicsHandle,
+  vertices: Buffer<V>,
+  indices: Buffer<u32>,
+}
+
+impl<V> MeshState<V> {
+  /// Borrows the underlying graphics buffers.
+  pub fn borrow_buffers(&mut self) -> (&mut Buffer<V>, &mut Buffer<u32>) {
+    (&mut self.vertices, &mut self.indices)
+  }
+}
+
+impl<V> HasGraphicsHandle for Mesh<V> {
+  /// Returns the underlying graphics handle of the mesh.
+  fn handle(&self) -> GraphicsHandle {
+    let state = self.state.borrow();
+
+    state.handle
+  }
 }
 
 impl<V> Mesh<V> where V: Vertex {
@@ -96,10 +121,12 @@ impl<V> Mesh<V> where V: Vertex {
     let indices = Buffer::new(server, BufferKind::Index, BufferUsage::Static);
 
     Self {
-      server: server.clone(),
-      handle: server.create_mesh(vertices.handle, indices.handle, V::DESCRIPTORS),
-      vertices,
-      indices,
+      state: Rc::new(RefCell::new(MeshState {
+        server: server.clone(),
+        handle: server.create_mesh(vertices.handle(), indices.handle(), V::DESCRIPTORS),
+        vertices,
+        indices,
+      })),
     }
   }
 
@@ -115,16 +142,28 @@ impl<V> Mesh<V> where V: Vertex {
     mesh
   }
 
+  /// Acquires mutable write access the mesh buffers.
+  pub fn with_buffers(&mut self, body: impl FnOnce(&mut Buffer<V>, &mut Buffer<u32>)) {
+    let state = &mut self.state.borrow_mut();
+    let (vertices, indices) = state.borrow_buffers();
+
+    body(vertices, indices);
+  }
+
   /// Draws this mesh with the given material and topology.
   pub fn draw(&self, material: &Material, topology: PrimitiveTopology) {
-    self.draw_sub_mesh(material, topology, self.vertices.len(), self.indices.len());
+    let state = self.state.borrow();
+
+    self.draw_sub_mesh(material, topology, state.vertices.len(), state.indices.len());
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
   pub fn draw_sub_mesh(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     material.bind();
 
-    self.server.draw_mesh(self.handle, topology, vertex_count, index_count);
+    let state = self.state.borrow();
+
+    state.server.draw_mesh(state.handle, topology, vertex_count, index_count);
   }
 }
 
@@ -185,7 +224,7 @@ impl Mesh<Vertex2> {
   }
 }
 
-impl<V> Drop for Mesh<V> {
+impl<V> Drop for MeshState<V> {
   /// Deletes the mesh from the GPU.
   fn drop(&mut self) {
     self.server.delete_mesh(self.handle);
@@ -208,9 +247,11 @@ impl<V> Tessellator<V> {
   }
 
   /// Uploads the contents of the tessellator to the given [`Mesh`].
-  pub fn upload_to(&self, mesh: &mut Mesh<V>) {
-    mesh.vertices.write_data(self.vertices.as_slice());
-    mesh.indices.write_data(self.indices.as_slice());
+  pub fn upload_to(&self, mesh: &mut Mesh<V>) where V: Vertex {
+    mesh.with_buffers(|vertices, indices| {
+      vertices.write_data(self.vertices.as_slice());
+      indices.write_data(self.indices.as_slice());
+    });
   }
 }
 

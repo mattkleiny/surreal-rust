@@ -21,7 +21,7 @@ pub struct SpriteBatch {
 /// Borrows the batch data and holds onto the material and active texture.
 pub struct SpriteBatchScope<'a> {
   batch: &'a mut SpriteBatch,
-  material: &'a mut Material<'a>,
+  material: &'a mut Material,
   texture: Option<&'a Texture>,
 }
 
@@ -37,13 +37,15 @@ impl SpriteBatch {
     let mut mesh = Mesh::new(server);
     let indices = build_quad_indices(sprite_count * 6);
 
-    mesh.indices.write_data(&indices);
+    mesh.with_buffers(|_, buffer| {
+      buffer.write_data(&indices);
+    });
 
     Self { mesh, vertices: Vec::with_capacity(sprite_count * 4), vertex_count: 0 }
   }
 
   /// Starts a new [`SpriteBatchScope`] with the given [`Material`].
-  pub fn begin<'a>(&'a mut self, material: &'a mut Material<'a>) -> SpriteBatchScope<'a> {
+  pub fn begin<'a>(&'a mut self, material: &'a mut Material) -> SpriteBatchScope<'a> {
     SpriteBatchScope { batch: self, material, texture: None }
   }
 }
@@ -70,7 +72,10 @@ impl<'a> SpriteBatchScope<'a> {
       self.material.set_uniform("u_texture", texture);
     }
 
-    batch.mesh.vertices.write_data(&batch.vertices);
+    batch.mesh.with_buffers(|vertices, _| {
+      vertices.write_data(&batch.vertices);
+    });
+
     batch.mesh.draw_sub_mesh(self.material, PrimitiveTopology::Triangles, batch.vertex_count, index_count);
 
     batch.vertex_count = 0;

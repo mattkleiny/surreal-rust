@@ -1,3 +1,6 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::maths::Rectangle;
 
 use super::*;
@@ -53,10 +56,25 @@ impl Default for TextureOptions {
 }
 
 /// A texture is a set of pixel data that has been uploaded to the GPU.
+#[derive(Clone)]
 pub struct Texture {
+  state: Rc<RefCell<TextureState>>,
+}
+
+/// The inner state of a texture.
+struct TextureState {
   server: GraphicsServer,
-  pub handle: GraphicsHandle,
+  handle: GraphicsHandle,
   options: TextureOptions,
+}
+
+impl HasGraphicsHandle for Texture {
+  /// Returns the underlying graphics handle of the texture.
+  fn handle(&self) -> GraphicsHandle {
+    let state = self.state.borrow();
+
+    state.handle
+  }
 }
 
 impl Texture {
@@ -68,21 +86,20 @@ impl Texture {
   /// Creates a new blank texture on the GPU with the given [`TextureOptions`].
   pub fn with_options(server: &GraphicsServer, options: TextureOptions) -> Self {
     Self {
-      server: server.clone(),
-      handle: server.create_texture(&options.sampler),
-      options,
+      state: Rc::new(RefCell::new(TextureState {
+        server: server.clone(),
+        handle: server.create_texture(&options.sampler),
+        options,
+      }))
     }
-  }
-
-  /// Returns the texture options.
-  pub fn options(&self) -> &TextureOptions {
-    &self.options
   }
 
   /// Sets the the texture's options on the GPU.
   pub fn set_options(&mut self, options: TextureOptions) {
-    self.options = options;
-    self.server.set_texture_options(self.handle, &options.sampler);
+    let mut state = self.state.borrow_mut();
+
+    state.options = options;
+    state.server.set_texture_options(state.handle, &options.sampler);
   }
 
   /// Downloads pixel data from the texture.
@@ -92,12 +109,14 @@ impl Texture {
 
   /// Uploads pixel data to the texture.
   pub fn write_pixels<P>(&mut self, width: usize, height: usize, pixels: &[P]) where P: Pixel {
-    self.server.write_texture_data(
-      self.handle,
+    let state = self.state.borrow();
+
+    state.server.write_texture_data(
+      state.handle,
       width,
       height,
       pixels.as_ptr() as *const u8,
-      self.options.format,
+      state.options.format,
       0, // mip-level
     );
   }
@@ -113,7 +132,7 @@ impl Texture {
   }
 }
 
-impl Drop for Texture {
+impl Drop for TextureState {
   /// Deletes the texture from the GPU.
   fn drop(&mut self) {
     self.server.delete_texture(self.handle);

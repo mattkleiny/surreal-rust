@@ -8,6 +8,11 @@ pub type AudioHandle = u32;
 /// The audio server implementation.
 pub type AudioServer<A> = std::rc::Rc<Box<A>>;
 
+/// Represents a type that possesses an `AudioHandle`.
+pub trait HasAudioHandle {
+  fn handle(&self) -> AudioHandle;
+}
+
 /// Represents a server implementation for the underlying audio subsystem.
 ///
 /// Permits interaction with the underlying audio API through unsafe lower-level abstraction.

@@ -16,9 +16,9 @@ use crate::utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan};
 
 use super::*;
 
-mod audio;
-mod graphics;
-mod input;
+pub mod audio;
+pub mod graphics;
+pub mod input;
 
 /// Configuration for the [`DesktopPlatform`].
 #[derive(Clone, Debug)]

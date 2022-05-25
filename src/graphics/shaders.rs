@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::graphics::{GraphicsServer, TextureSampler};
 use crate::io::AsVirtualPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
@@ -18,7 +20,7 @@ pub struct Shader {
 }
 
 /// Representation of a single value that can be used in a shader.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum ShaderUniform {
   Integer(u32),
   Floating(f32),
@@ -35,17 +37,32 @@ pub enum ShaderUniform {
 }
 
 /// Represents a single compiled shader program.
+#[derive(Clone)]
 pub struct ShaderProgram {
+  state: Rc<ShaderProgramState>,
+}
+
+/// The internal state for a shader program.
+struct ShaderProgramState {
   server: GraphicsServer,
-  pub handle: GraphicsHandle,
+  handle: GraphicsHandle,
+}
+
+impl HasGraphicsHandle for ShaderProgram {
+  /// Retrieves the handle for the given shader program.
+  fn handle(&self) -> GraphicsHandle {
+    self.state.handle
+  }
 }
 
 impl ShaderProgram {
   /// Creates a new blank shader program on the GPU.
   pub fn new(server: &GraphicsServer) -> Self {
     Self {
-      server: server.clone(),
-      handle: server.create_shader(),
+      state: Rc::new(ShaderProgramState {
+        server: server.clone(),
+        handle: server.create_shader(),
+      }),
     }
   }
 
@@ -60,35 +77,35 @@ impl ShaderProgram {
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
-    self.server.get_shader_uniform_location(self.handle, name)
+    self.state.server.get_shader_uniform_location(self.state.handle, name)
   }
 
   /// Sets the given uniform value in the underlying program.
   pub fn set_uniform(&self, location: usize, value: &ShaderUniform) {
-    self.server.set_shader_uniform(self.handle, location, value);
+    self.state.server.set_shader_uniform(self.state.handle, location, value);
   }
 
   /// Reloads the shader program from the given text.
   pub fn load_from_string(&self, text: &str) -> crate::Result<()> {
     let shaders = parse_glsl_source(&text);
 
-    self.server.link_shaders(self.handle, shaders)?;
+    self.state.server.link_shaders(self.state.handle, shaders)?;
 
     Ok(())
   }
-  
+
   /// Reloads the shader program from a file at the given virtual path.
   pub fn load_from_path(&self, path: impl AsVirtualPath) -> crate::Result<()> {
     let source_code = path.as_virtual_path().read_all_text()?;
     let shaders = parse_glsl_source(&source_code);
 
-    self.server.link_shaders(self.handle, shaders)?;
+    self.state.server.link_shaders(self.state.handle, shaders)?;
 
     Ok(())
   }
 }
 
-impl Drop for ShaderProgram {
+impl Drop for ShaderProgramState {
   /// Deletes the shader program from the GPU.
   fn drop(&mut self) {
     self.server.delete_shader(self.handle);
@@ -120,7 +137,7 @@ implement_uniform!(&Matrix4x4<f32>, Matrix4x4);
 
 impl From<&Texture> for ShaderUniform {
   fn from(texture: &Texture) -> Self {
-    ShaderUniform::Texture(texture.handle, 0, None)
+    ShaderUniform::Texture(texture.handle(), 0, None)
   }
 }
 
