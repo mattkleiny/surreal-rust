@@ -184,7 +184,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         TextureWrap::Mirror => gl::MIRRORED_REPEAT,
       };
       
-      gl::BindTexture(gl::TEXTURE_2D, id);
+      gl::BindTexture(gl::TEXTURE_2D, texture);
       
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, min_filter as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
@@ -303,8 +303,8 @@ impl GraphicsBackend for DesktopGraphicsBackend {
 
   fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
     unsafe {
-      let name: *const i8 = std::mem::transmute(name.as_bytes().as_ptr());
-      let location = gl::GetUniformLocation(shader, name);
+      let name = std::ffi::CString::new(name).unwrap();
+      let location = gl::GetUniformLocation(shader, name.as_ptr());
 
       match location {
         -1 => None,
@@ -361,12 +361,28 @@ impl GraphicsBackend for DesktopGraphicsBackend {
 
             let sampler_id = sampler_cache.entry(*sampler).or_insert_with(|| {
               let mut sampler_id = 0;
+
               gl::CreateSamplers(1, &mut sampler_id);
 
-              gl::SamplerParameteri(sampler_id, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
-              gl::SamplerParameteri(sampler_id, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
-              gl::SamplerParameteri(sampler_id, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
-              gl::SamplerParameteri(sampler_id, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
+              let min_filter = match sampler.minify_filter {
+                TextureFilter::Nearest => gl::NEAREST,
+                TextureFilter::Linear => gl::LINEAR,
+              };
+
+              let mag_filter = match sampler.magnify_filter {
+                TextureFilter::Nearest => gl::NEAREST,
+                TextureFilter::Linear => gl::LINEAR,
+              };
+
+              let wrap_mode = match sampler.wrap_mode {
+                TextureWrap::Clamp => gl::CLAMP_TO_EDGE,
+                TextureWrap::Mirror => gl::MIRRORED_REPEAT,
+              };
+
+              gl::SamplerParameteri(sampler_id, gl::TEXTURE_WRAP_S, wrap_mode as i32);
+              gl::SamplerParameteri(sampler_id, gl::TEXTURE_WRAP_T, wrap_mode as i32);
+              gl::SamplerParameteri(sampler_id, gl::TEXTURE_MIN_FILTER, min_filter as i32);
+              gl::SamplerParameteri(sampler_id, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
 
               sampler_id
             });

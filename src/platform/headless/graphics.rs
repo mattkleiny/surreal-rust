@@ -70,7 +70,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_texture_id.fetch_add(1, Ordering::Relaxed)
   }
   
-  fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler) {
+  fn set_texture_options(&self, _texture: GraphicsHandle, _sampler: &TextureSampler) {
     // no-op
   }
 

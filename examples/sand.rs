@@ -18,11 +18,8 @@ fn main() {
     let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);
     let mut random = Random::with_random_seed();
 
-    material.set_texture("u_texture", &canvas.texture, 0, Some(TextureSampler {
-      wrap_mode: TextureWrap::Mirror,
-      minify_filter: TextureFilter::Linear,
-      magnify_filter: TextureFilter::Linear
-    }));
+    material.set_uniform("u_texture", &canvas.texture);
+    material.set_uniform("u_projectionView", &Matrix4x4::identity());
 
     canvas.clear();
 

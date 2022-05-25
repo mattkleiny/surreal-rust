@@ -82,7 +82,7 @@ impl Texture {
   /// Sets the the texture's options on the GPU.
   pub fn set_options(&mut self, options: TextureOptions) {
     self.options = options;
-    self.server.set_texture_options(&self.handle, &options.sampler);
+    self.server.set_texture_options(self.handle, &options.sampler);
   }
 
   /// Downloads pixel data from the texture.
