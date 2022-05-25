@@ -74,17 +74,23 @@ impl RenderTarget {
 
   /// Retrieves the color attachment for the target.
   pub fn color_attachment(&self) -> Texture {
-    self.state.borrow().color_attachment.clone()
+    let state = self.state.borrow();
+
+    state.color_attachment.clone()
   }
 
   /// Retrieves the depth attachment for the target.
   pub fn depth_attachment(&self) -> Option<Texture> {
-    self.state.borrow().depth_attachment.as_ref().map(|it| it.clone())
+    let state = self.state.borrow();
+
+    state.depth_attachment.as_ref().map(|it| it.clone())
   }
 
   /// Retrieves the stencil attachment for the target.
   pub fn stencil_attachment(&self) -> Option<Texture> {
-    self.state.borrow().stencil_attachment.as_ref().map(|it| it.clone())
+    let state = self.state.borrow();
+
+    state.stencil_attachment.as_ref().map(|it| it.clone())
   }
 
   /// Activates the [`RenderTarget`].

@@ -7,8 +7,9 @@ use crate::graphics::*;
 mod pixels;
 
 // built-in shaders
-const SPRITE_STANDARD_SHADER: &'static str = include_str!("../assets/shaders/sprite-standard.glsl");
-const SPRITE_PALETTE_SHADER: &'static str = include_str!("../assets/shaders/sprite-palette.glsl");
+const SHADER_SPRITE_STANDARD: &'static str = include_str!("../assets/shaders/sprite-standard.glsl");
+const SHADER_SPRITE_PALETTE: &'static str = include_str!("../assets/shaders/sprite-palette.glsl");
+const SHADER_EFFECT_ABERRATION: &'static str = include_str!("../assets/shaders/effect-aberration.glsl");
 
 // built-in palettes
 const PALETTE_AYY_4: &'static [u8] = include_bytes!("../assets/palettes/ayy-4.pal");
@@ -22,6 +23,7 @@ const PALETTE_SPACE_DUST_9: &'static [u8] = include_bytes!("../assets/palettes/s
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BuiltInShader {
   Sprite(BuiltInSpriteShader),
+  Effect(BuiltInEffect),
 }
 
 /// Represents one of the built-in sprite shaders.
@@ -51,8 +53,9 @@ pub enum BuiltInPalette {
 /// Loads the standard shader program from embedded resources.
 pub fn load_standard_shader(server: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let shader = match shader {
-    BuiltInShader::Sprite(BuiltInSpriteShader::Standard) => ShaderProgram::from_string(server, SPRITE_STANDARD_SHADER),
-    BuiltInShader::Sprite(BuiltInSpriteShader::Palette) => ShaderProgram::from_string(server, SPRITE_PALETTE_SHADER),
+    BuiltInShader::Sprite(BuiltInSpriteShader::Standard) => ShaderProgram::from_string(server, SHADER_SPRITE_STANDARD),
+    BuiltInShader::Sprite(BuiltInSpriteShader::Palette) => ShaderProgram::from_string(server, SHADER_SPRITE_PALETTE),
+    BuiltInShader::Effect(BuiltInEffect::Aberration) => ShaderProgram::from_string(server, SHADER_EFFECT_ABERRATION),
   };
 
   shader.expect("Failed to load standard shader")
@@ -87,8 +90,6 @@ pub struct SpriteContext {
   pub material: Material,
   /// The sprite batch to use for sprite geometry.
   pub batch: SpriteBatch,
-  /// The render target capturing the output of the sprite pass.
-  pub effect_target: RenderTarget,
 }
 
 impl RenderContextDescriptor for SpriteContextDescriptor {
@@ -120,26 +121,8 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
       destination: BlendFactor::OneMinusSrcAlpha,
     });
 
-    let effect_target = RenderTarget::new(server, &RenderTargetDescriptor {
-      color_attachment: RenderTextureDescriptor {
-        width: 1920,
-        height: 1080,
-        options: Default::default()
-      },
-      depth_attachment: None,
-      stencil_attachment: None
-    });
-
-    Self::Context { material, batch, effect_target }
+    Self::Context { material, batch }
   }
 }
 
-impl RenderContext for SpriteContext {
-  fn on_before_with(&mut self) {
-    // self.effect_target.activate();
-  }
-
-  fn on_after_with(&mut self) {
-    // self.effect_target.deactivate();
-  }
-}
+impl RenderContext for SpriteContext {}

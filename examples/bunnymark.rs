@@ -40,7 +40,7 @@ fn main() {
     let mut texture = Texture::new(graphics);
     let image = Image::from_path("assets/sprites/bunny.png", None).expect("Failed to load sprite image");
     texture.write_image(&image);
-    let region = TextureRegion::from(&texture); // TODO: simplify this
+    let sprite = TextureRegion::from(&texture); // TODO: simplify this
 
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
@@ -66,7 +66,7 @@ fn main() {
         pass.batch.begin(&pass.material);
 
         for bunny in &bunnies {
-          pass.batch.draw(&region, SpriteOptions {
+          pass.batch.draw(&sprite, SpriteOptions {
             position: bunny.position,
             ..Default::default()
           });
