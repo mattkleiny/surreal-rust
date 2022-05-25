@@ -71,6 +71,16 @@ impl<'a> Material<'a> {
     }
   }
 
+  /// Sets the given material texture with texture slot and optional sampler options.
+  pub fn set_texture(&mut self, name: &str, texture: &Texture, slot: usize, sampler: Option<TextureSampler>) {
+    if let Some(location) = self.shader.get_uniform_location(name) {
+      self.uniforms.insert(
+        name.to_string(),
+        MaterialUniform { location, value: ShaderUniform::Texture(texture.handle, slot, sampler) },
+      );
+    }
+  }
+
   /// Removes a uniform from the material.
   pub fn remove_uniform(&mut self, name: &str) {
     self.uniforms.remove(name);
