@@ -161,6 +161,14 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       gl::GenTextures(1, &mut id);
       gl::BindTexture(gl::TEXTURE_2D, id);
 
+      self.set_texture_options(id, sampler);
+
+      id
+    }
+  }
+
+  fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler) {
+    unsafe {
       let min_filter = match sampler.minify_filter {
         TextureFilter::Nearest => gl::NEAREST,
         TextureFilter::Linear => gl::LINEAR,
@@ -175,15 +183,13 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         TextureWrap::Clamp => gl::CLAMP_TO_EDGE,
         TextureWrap::Mirror => gl::MIRRORED_REPEAT,
       };
-
+      
+      gl::BindTexture(gl::TEXTURE_2D, id);
+      
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, min_filter as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrap_mode as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrap_mode as i32);
-
-      gl::BindTexture(gl::TEXTURE_2D, 0);
-
-      id
     }
   }
 
