@@ -1,35 +1,39 @@
 //! A virtual file system with paths and common operations.
 
+use std::cell::UnsafeCell;
+use std::collections::HashMap;
+use std::io::{BufRead, Read, Seek, Write};
+
 pub use local::*;
 
 mod local;
 
 thread_local! {
-  static REGISTRY: Mutex<FileSystemRegistry> = Mutex::new(FileSystemRegistry::new());
+  /// Top-level registry of all file systems.
+  static REGISTRY: std::sync::Mutex<UnsafeCell<FileSystemRegistry>> = std::sync::Mutex::new(UnsafeCell::new(FileSystemRegistry::new()));
 }
 
-/// A stream for reading from some [`VirtualPath`].
-pub trait InputStream: std::io::BufRead + std::io::Seek {}
+// TODO: remove this unsafe hackery?
 
-/// A stream for writing to some [`VirtualPath`].
-pub trait OutputStream: std::io::Write + std::io::Seek {}
+/// Registers a new file system for the given virtual path scheme.
+pub fn register_file_system(scheme: &str, file_system: impl FileSystem + 'static) {
+  REGISTRY.with(|registry| {
+    let registry = unsafe { &mut *registry.lock().unwrap().get() };
 
-/// Represents a type capable of acting as a file system.
-pub trait FileSystem {
-  type InputStream: InputStream;
-  type OutputStream: OutputStream;
+    registry.file_systems.insert(scheme.to_string(), Box::new(file_system));
+  });
+}
 
-  /// The virtual path scheme for this file system.
-  const SCHEMES: &'static [&'static str];
+/// Attempts to get the file system for the given virtual path scheme.
+pub fn get_file_system(scheme: &str) -> crate::Result<&'static dyn FileSystem> {
+  REGISTRY.with(|registry| {
+    let registry = unsafe { &*registry.lock().unwrap().get() };
 
-  // basic operations
-  fn exists(&self, path: &VirtualPath) -> bool;
-  fn is_file(&self, path: &VirtualPath) -> bool;
-  fn is_directory(&self, path: &VirtualPath) -> bool;
-
-  // read and write
-  fn open_read(&self, path: &VirtualPath) -> crate::Result<Self::InputStream>;
-  fn open_write(&self, path: &VirtualPath) -> crate::Result<Self::OutputStream>;
+    match registry.file_systems.get(scheme) {
+      Some(file_system) => Ok(file_system.as_ref()),
+      None => Err(anyhow::anyhow!("No file system exists for {:}", scheme)),
+    }
+  })
 }
 
 /// Allows registering file systems for different virtual path schemes.
@@ -44,16 +48,18 @@ impl FileSystemRegistry {
       file_systems: HashMap::new(),
     }
   }
+}
 
-  /// Adds a new file system to the registry.
-  pub fn add_file_system(&mut self, file_system: impl FileSystem + 'static) {
-    todo!()
-  }
+/// Represents a type capable of acting as a file system.
+pub trait FileSystem {
+  // basic operations
+  fn exists(&self, path: &VirtualPath) -> bool;
+  fn is_file(&self, path: &VirtualPath) -> bool;
+  fn is_directory(&self, path: &VirtualPath) -> bool;
 
-  /// Retrieves the file system for the given virtual path scheme.
-  pub fn get_file_system(&self, scheme: &str) -> &dyn FileSystem {
-    todo!()
-  }
+  // read and write
+  fn open_read(&self, path: &VirtualPath) -> crate::Result<InputStream>;
+  fn open_write(&self, path: &VirtualPath) -> crate::Result<OutputStream>;
 }
 
 /// Represents a path in a virtual file system.
@@ -91,21 +97,17 @@ impl<'a> VirtualPath<'a> {
   }
 
   /// Opens a reader for the given path.
-  pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
-    let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
-      file_system.open_read(self)
-    })?;
+  pub fn open_input_stream(&self) -> crate::Result<InputStream> {
+    let file_system = get_file_system(self.scheme)?;
 
-    Ok(Box::new(stream))
+    Ok(file_system.open_read(self)?)
   }
 
   /// Opens a writer for the given path.
-  pub fn open_output_stream(&self) -> crate::Result<Box<dyn OutputStream>> {
-    let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
-      file_system.open_write(self)
-    })?;
+  pub fn open_output_stream(&self) -> crate::Result<OutputStream> {
+    let file_system = get_file_system(self.scheme)?;
 
-    Ok(Box::new(stream))
+    Ok(file_system.open_write(self)?)
   }
 
   /// Attempts to read all bytes from the given path.
@@ -155,6 +157,50 @@ impl<'a> AsVirtualPath for VirtualPath<'a> {
 impl AsVirtualPath for &str {
   fn as_virtual_path(&self) -> VirtualPath {
     VirtualPath::parse(self)
+  }
+}
+
+/// A stream for reading from some [`VirtualPath`].
+pub struct InputStream {}
+
+impl Seek for InputStream {
+  fn seek(&mut self, position: std::io::SeekFrom) -> std::io::Result<u64> {
+    todo!()
+  }
+}
+
+impl Read for InputStream {
+  fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+    todo!()
+  }
+}
+
+impl BufRead for InputStream {
+  fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
+    todo!()
+  }
+
+  fn consume(&mut self, amount: usize) {
+    todo!()
+  }
+}
+
+/// A stream for writing to some [`VirtualPath`].
+pub struct OutputStream {}
+
+impl Seek for OutputStream {
+  fn seek(&mut self, position: std::io::SeekFrom) -> std::io::Result<u64> {
+    todo!()
+  }
+}
+
+impl Write for OutputStream {
+  fn write(&mut self, buffer: &[u8]) -> std::io::Result<usize> {
+    todo!()
+  }
+
+  fn flush(&mut self) -> std::io::Result<()> {
+    todo!()
   }
 }
 

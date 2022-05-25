@@ -1,7 +1,6 @@
 //! The local file system implementation.
 
-use std::fs::{File, OpenOptions};
-use std::io::{BufRead, BufReader, BufWriter, Read, Seek, SeekFrom, Write};
+use std::fs::OpenOptions;
 use std::path::{Path, PathBuf};
 
 use super::*;
@@ -30,9 +29,6 @@ impl LocalFileSystem {
 }
 
 impl FileSystem for LocalFileSystem {
-  type InputStream = LocalInputStream;
-  type OutputStream = LocalOutputStream;
-
   fn exists(&self, path: &VirtualPath) -> bool {
     to_path(&self.root, path).exists()
   }
@@ -45,80 +41,24 @@ impl FileSystem for LocalFileSystem {
     to_path(&self.root, path).is_dir()
   }
 
-  fn open_read(&self, path: &VirtualPath) -> crate::Result<Self::InputStream> {
+  fn open_read(&self, path: &VirtualPath) -> crate::Result<InputStream> {
     let file = OpenOptions::new()
       .read(true)
       .write(false)
       .open(to_path(&self.root, path))?;
 
-    Ok(Self::InputStream {
-      reader: BufReader::new(file)
-    })
+    todo!()
   }
 
-  fn open_write(&self, path: &VirtualPath) -> crate::Result<Self::OutputStream> {
+  fn open_write(&self, path: &VirtualPath) -> crate::Result<OutputStream> {
     let file = OpenOptions::new()
       .read(false)
       .write(true)
       .open(to_path(&self.root, path))?;
 
-    Ok(Self::OutputStream {
-      writer: BufWriter::new(file)
-    })
+    todo!()
   }
 }
-
-/// A stream for reading from the local file system.
-pub struct LocalInputStream {
-  reader: BufReader<File>,
-}
-
-impl Seek for LocalInputStream {
-  fn seek(&mut self, pos: SeekFrom) -> std::io::Result<u64> {
-    self.reader.seek(pos)
-  }
-}
-
-impl Read for LocalInputStream {
-  fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-    self.reader.read(buf)
-  }
-}
-
-impl BufRead for LocalInputStream {
-  fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
-    self.reader.fill_buf()
-  }
-
-  fn consume(&mut self, amount: usize) {
-    self.reader.consume(amount)
-  }
-}
-
-impl InputStream for LocalInputStream {}
-
-/// A stream for writing to the local file system.
-pub struct LocalOutputStream {
-  writer: BufWriter<File>,
-}
-
-impl Seek for LocalOutputStream {
-  fn seek(&mut self, pos: SeekFrom) -> std::io::Result<u64> {
-    self.writer.seek(pos)
-  }
-}
-
-impl Write for LocalOutputStream {
-  fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-    self.writer.write(buf)
-  }
-
-  fn flush(&mut self) -> std::io::Result<()> {
-    self.writer.flush()
-  }
-}
-
-impl OutputStream for LocalOutputStream {}
 
 #[cfg(test)]
 mod tests {

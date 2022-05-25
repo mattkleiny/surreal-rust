@@ -5,6 +5,8 @@
 use surreal::prelude::*;
 
 fn main() {
+  register_file_system("local", LocalFileSystem::new());
+
   let platform = DesktopPlatform::new(Configuration {
     title: "Falling Sand",
     ..Default::default()
