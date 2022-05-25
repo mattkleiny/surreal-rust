@@ -183,9 +183,9 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         TextureWrap::Clamp => gl::CLAMP_TO_EDGE,
         TextureWrap::Mirror => gl::MIRRORED_REPEAT,
       };
-      
+
       gl::BindTexture(gl::TEXTURE_2D, texture);
-      
+
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, min_filter as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrap_mode as i32);
@@ -416,9 +416,9 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
 
       let stride: usize = descriptors
-          .iter()
-          .map(|it| it.count * it.kind.size())
-          .sum();
+        .iter()
+        .map(|it| it.count * it.kind.size())
+        .sum();
 
       let mut offset = 0;
 
@@ -482,6 +482,42 @@ impl GraphicsBackend for DesktopGraphicsBackend {
   fn delete_mesh(&self, mesh: GraphicsHandle) {
     unsafe {
       gl::DeleteVertexArrays(1, &mesh);
+    }
+  }
+
+  fn create_render_target(&self, color_attachment: GraphicsHandle, _depth_attachment: Option<GraphicsHandle>, _stencil_attachment: Option<GraphicsHandle>) -> GraphicsHandle {
+    unsafe {
+      let mut framebuffer = 0;
+      gl::CreateFramebuffers(1, &mut framebuffer);
+
+      gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer);
+      gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, color_attachment, 0);
+
+      // TODO: other attachments
+
+      if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {
+        panic!("Failed to create render target");
+      }
+
+      framebuffer
+    }
+  }
+
+  fn set_active_render_target(&self, render_target: GraphicsHandle) {
+    unsafe {
+      gl::BindFramebuffer(gl::FRAMEBUFFER, render_target);
+    }
+  }
+
+  fn set_default_render_target(&self) {
+    unsafe {
+      gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
+    }
+  }
+
+  fn delete_render_target(&self, render_target: GraphicsHandle) {
+    unsafe {
+      gl::DeleteFramebuffers(1, &render_target);
     }
   }
 }

@@ -1,6 +1,8 @@
 use crate::input::*;
 
-/// The input server for the headless platform.
+/// A headless [`InputBackend`] implementation.
+///
+/// This backend does nothing (no-ops) and can be used for testing/etc.
 pub struct HeadlessInput {}
 
 impl HeadlessInput {
@@ -9,7 +11,7 @@ impl HeadlessInput {
   }
 }
 
-impl InputServerImpl for HeadlessInput {
+impl InputBackend for HeadlessInput {
   fn keyboard_devices(&self) -> &[&dyn KeyboardDevice] {
     &[]
   }

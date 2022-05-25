@@ -22,9 +22,16 @@ pub struct Renderer {
 /// already exist.
 pub trait RenderContextDescriptor {
   /// The type of context that will be created by this descriptor.
-  type Context: Sized + 'static;
+  type Context: RenderContext;
 
   fn create(&self, server: &GraphicsServer) -> Self::Context;
+}
+
+/// A context for rendering operations.
+pub trait RenderContext: Sized + 'static {
+  fn on_initialize(&mut self) {}
+  fn on_before_with(&mut self) {}
+  fn on_after_with(&mut self) {}
 }
 
 impl Renderer {
@@ -42,12 +49,20 @@ impl Renderer {
   /// to initialize it anew.
   pub fn with<D>(&mut self, descriptor: &D, body: impl FnOnce(&mut D::Context) -> ()) where D: RenderContextDescriptor {
     match self.contexts.get_mut::<D::Context>() {
-      Some(context) => body(context), // already exists? just use it
+      Some(context) => {
+        // already exists? just use it
+        context.on_before_with();
+        body(context);
+        context.on_after_with();
+      }
       None => {
         // create a new context
         let mut context = descriptor.create(&self.server);
 
+        context.on_initialize();
+        context.on_before_with();
         body(&mut context);
+        context.on_after_with();
 
         self.contexts.insert(context);
       }
@@ -67,10 +82,7 @@ impl Renderer {
 
 #[cfg(test)]
 mod tests {
-  use crate::graphics::{Material, Texture};
-  use crate::platform::headless::graphics::HeadlessGraphicsBackend;
-
-  use super::*;
+  use crate::graphics::*;
 
   struct ExampleDescriptor {
     pub tolerance: f32,
@@ -96,6 +108,8 @@ mod tests {
       }
     }
   }
+
+  impl RenderContext for ExampleContext {}
 
   #[test]
   fn renderer_should_create_and_manage_contexts() {

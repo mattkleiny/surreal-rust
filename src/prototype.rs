@@ -18,20 +18,26 @@ const PALETTE_KULE_16: &'static [u8] = include_bytes!("../assets/palettes/kule-1
 const PALETTE_LOW_8: &'static [u8] = include_bytes!("../assets/palettes/low-8.pal");
 const PALETTE_SPACE_DUST_9: &'static [u8] = include_bytes!("../assets/palettes/space-dust-9.pal");
 
-/// Represents one of the embedded shaders.
+/// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BuiltInShader {
   Sprite(BuiltInSpriteShader),
 }
 
-/// Represents one of the sprite shaders.
+/// Represents one of the built-in sprite shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BuiltInSpriteShader {
   Standard,
   Palette,
 }
 
-/// Represents one of the embedded color palettes.
+/// Represents one of the built-in sprite shaders.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum BuiltInEffect {
+  Aberration,
+}
+
+/// Represents one of the built-in color palettes.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BuiltInPalette {
   Ayy4,
@@ -115,3 +121,5 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
     Self::Context { material, batch }
   }
 }
+
+impl RenderContext for SpriteContext {}

@@ -11,9 +11,10 @@ pub trait Loadable {
 }
 
 /// The internal state for an `Asset`.
+#[allow(dead_code)]
 enum AssetState<T> {
   NotReady,
-  Ready(T),
+  Ready(T), // TODO: implement me
 }
 
 /// An opaque pointer to a shared asset reference in an `AssetManager`.

@@ -1,12 +1,16 @@
 //! A lightweight cross-platform audio engine.
 
+pub use headless::*;
+
 use crate::utilities::{Size, TimeSpan};
+
+mod headless;
 
 /// An opaque handle to a resource in the sound system.
 pub type AudioHandle = u32;
 
 /// The audio server implementation.
-pub type AudioServer<A> = std::rc::Rc<Box<A>>;
+pub type AudioServer = std::rc::Rc<Box<dyn AudioBackend>>;
 
 /// Represents a type that possesses an `AudioHandle`.
 pub trait HasAudioHandle {

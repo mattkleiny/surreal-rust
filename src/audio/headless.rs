@@ -1,14 +1,16 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::audio::*;
+use super::*;
 
-/// The audio server for the headless platform.
+/// A headless [`AudioBackend`] implementation.
+///
+/// This backend does nothing (no-ops) and can be used for testing/etc.
 pub struct HeadlessAudioBackend {
   next_clip_id: AtomicU32,
 }
 
 impl HeadlessAudioBackend {
-  pub fn new() -> AudioServer<Self> {
+  pub fn new() -> AudioServer {
     AudioServer::new(Box::new(Self {
       next_clip_id: AtomicU32::new(0),
     }))

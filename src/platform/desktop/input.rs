@@ -42,7 +42,7 @@ impl DesktopInput {
   }
 }
 
-impl InputServerImpl for DesktopInput {
+impl InputBackend for DesktopInput {
   fn keyboard_devices(&self) -> &[&dyn KeyboardDevice] {
     todo!()
   }

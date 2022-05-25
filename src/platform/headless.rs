@@ -1,24 +1,17 @@
 //! A platform implementation for headless environments.
 
-use audio::HeadlessAudioBackend;
-use graphics::HeadlessGraphicsBackend;
-use input::HeadlessInput;
-
-use crate::audio::AudioServer;
-use crate::graphics::GraphicsServer;
+use crate::audio::{AudioServer, HeadlessAudioBackend};
+use crate::graphics::{GraphicsServer, HeadlessGraphicsBackend};
+use crate::input::HeadlessInput;
 
 use super::*;
-
-pub mod audio;
-pub mod graphics;
-pub mod input;
 
 /// A platform for headless environments.
 pub struct HeadlessPlatform;
 
 /// A host for headless environments.
 pub struct HeadlessPlatformHost {
-  pub audio: AudioServer<HeadlessAudioBackend>,
+  pub audio: AudioServer,
   pub graphics: GraphicsServer,
   pub input: HeadlessInput,
   is_exiting: bool,

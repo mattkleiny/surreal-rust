@@ -3,12 +3,16 @@
 pub use winit::event::MouseButton as MouseButton;
 pub use winit::event::VirtualKeyCode as Key;
 
+pub use headless::*;
+
 use crate::maths::Vector2;
 
-/// A server for the underlying input subsystem.
+mod headless;
+
+/// A backend for the underlying input subsystem.
 ///
 /// Permits interaction with the underlying input API through unsafe lower-level abstraction.
-pub trait InputServerImpl {
+pub trait InputBackend {
   fn keyboard_devices(&self) -> &[&dyn KeyboardDevice];
   fn mouse_devices(&self) -> &[&dyn MouseDevice];
 

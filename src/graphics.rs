@@ -2,6 +2,7 @@
 
 pub use buffers::*;
 pub use colors::*;
+pub use headless::*;
 pub use images::*;
 pub use materials::*;
 pub use meshes::*;
@@ -9,10 +10,12 @@ pub use palettes::*;
 pub use rendering::*;
 pub use shaders::*;
 pub use sprites::*;
+pub use targets::*;
 pub use textures::*;
 
 mod buffers;
 mod colors;
+mod headless;
 mod images;
 mod materials;
 mod meshes;
@@ -20,6 +23,7 @@ mod palettes;
 mod rendering;
 mod shaders;
 mod sprites;
+mod targets;
 mod textures;
 
 /// An opaque handle to resource in the graphics subsystem.
@@ -73,4 +77,10 @@ pub trait GraphicsBackend {
   fn create_mesh(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
   fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize);
   fn delete_mesh(&self, mesh: GraphicsHandle);
+
+  // render targets
+  fn create_render_target(&self, color_attachment: GraphicsHandle, depth_attachment: Option<GraphicsHandle>, stencil_attachment: Option<GraphicsHandle>) -> GraphicsHandle;
+  fn set_active_render_target(&self, render_target: GraphicsHandle);
+  fn set_default_render_target(&self);
+  fn delete_render_target(&self, render_target: GraphicsHandle);
 }

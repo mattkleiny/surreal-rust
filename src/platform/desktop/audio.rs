@@ -4,7 +4,7 @@ use crate::audio::*;
 pub struct DesktopAudioBackend {}
 
 impl DesktopAudioBackend {
-  pub fn new() -> AudioServer<Self> {
+  pub fn new() -> AudioServer {
     AudioServer::new(Box::new(Self {}))
   }
 }

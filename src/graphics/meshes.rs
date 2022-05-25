@@ -85,7 +85,7 @@ impl Vertex for Vertex3 {
 ///
 /// Meshes are stored on the GPU as vertex/index buffers and can be submitted for rendering at any
 /// time, provided a valid [`Material`] is available.
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub struct Mesh<V> {
   state: Rc<RefCell<MeshState<V>>>,
 }
@@ -98,14 +98,8 @@ struct MeshState<V> {
   indices: Buffer<u32>,
 }
 
-impl<V> PartialEq for MeshState<V> {
-  fn eq(&self, other: &Self) -> bool {
-    self.handle == other.handle
-  }
-}
-
 impl<V> MeshState<V> {
-  /// Borrows the underlying graphics buffers.
+  /// Borrows the underlying graphics buffers from the state at the same time..
   pub fn borrow_buffers(&mut self) -> (&mut Buffer<V>, &mut Buffer<u32>) {
     (&mut self.vertices, &mut self.indices)
   }
@@ -165,9 +159,16 @@ impl<V> Mesh<V> where V: Vertex {
 }
 
 impl<V> HasGraphicsHandle for Mesh<V> {
-  /// Returns the underlying graphics handle of the mesh.
+  /// Returns the underlying graphics handle of the [`Mesh`].
   fn handle(&self) -> GraphicsHandle {
     self.state.borrow().handle
+  }
+}
+
+impl<V> Drop for MeshState<V> {
+  /// Deletes the [`Mesh`] from the GPU.
+  fn drop(&mut self) {
+    self.server.delete_mesh(self.handle);
   }
 }
 
@@ -225,13 +226,6 @@ impl Mesh<Vertex2> {
 
       mesh.add_triangle_fan(&vertices);
     })
-  }
-}
-
-impl<V> Drop for MeshState<V> {
-  /// Deletes the mesh from the GPU.
-  fn drop(&mut self) {
-    self.server.delete_mesh(self.handle);
   }
 }
 

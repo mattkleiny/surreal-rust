@@ -37,12 +37,12 @@ impl Default for SpriteOptions {
 }
 
 impl SpriteBatch {
-  /// Constructs a new `SpriteBatch`.
+  /// Constructs a new [`SpriteBatch`].
   pub fn new(server: &GraphicsServer) -> Self {
     Self::with_capacity(server, DEFAULT_SPRITE_COUNT)
   }
 
-  /// Creates a new `SpriteBatch` with the given sprite capacity.
+  /// Creates a new [`SpriteBatch`] with the given sprite capacity.
   pub fn with_capacity(server: &GraphicsServer, sprite_count: usize) -> Self {
     // build standard quad indices ahead-of-time
     let vertices = Vec::with_capacity(sprite_count * 4);
@@ -75,7 +75,7 @@ impl SpriteBatch {
   pub fn draw(&mut self, region: &TextureRegion, options: SpriteOptions) {
     // flush texture has changed
     if let Some(texture) = &self.texture {
-      if *texture != region.texture {
+      if texture.handle() != region.texture.handle() {
         self.flush();
         self.texture = Some(region.texture.clone());
       }

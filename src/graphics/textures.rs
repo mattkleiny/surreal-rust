@@ -56,13 +56,13 @@ impl Default for TextureOptions {
 }
 
 /// A texture is a set of pixel data that has been uploaded to the GPU.
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub struct Texture {
-  state: Rc<RefCell<TextureState>>,
+  state: Rc<RefCell<TextureInner>>,
 }
 
-/// The inner state of a texture.
-struct TextureState {
+/// The inner state of a [`Texture`].
+struct TextureInner {
   server: GraphicsServer,
   handle: GraphicsHandle,
   options: TextureOptions,
@@ -70,42 +70,36 @@ struct TextureState {
   height: u32,
 }
 
-impl PartialEq for TextureState {
-  fn eq(&self, other: &Self) -> bool {
-    self.handle == other.handle
-  }
-}
-
 impl Texture {
-  /// Creates a new blank texture on the GPU with default options.
+  /// Creates a new blank [`Texture`] on the GPU with default options.
   pub fn new(server: &GraphicsServer) -> Self {
-    Self::with_options(server, TextureOptions::default())
+    Self::with_options(server, &TextureOptions::default())
   }
 
-  /// Creates a new blank texture on the GPU with the given [`TextureOptions`].
-  pub fn with_options(server: &GraphicsServer, options: TextureOptions) -> Self {
+  /// Creates a new blank [`Texture`] on the GPU with the given [`TextureOptions`].
+  pub fn with_options(server: &GraphicsServer, options: &TextureOptions) -> Self {
     Self {
-      state: Rc::new(RefCell::new(TextureState {
+      state: Rc::new(RefCell::new(TextureInner {
         server: server.clone(),
         handle: server.create_texture(&options.sampler),
-        options,
+        options: options.clone(),
         width: 0,
         height: 0,
       }))
     }
   }
 
-  /// Returns the width of the texture.
+  /// Returns the width of the [`Texture`] .
   pub fn width(&self) -> u32 {
     self.state.borrow().width
   }
 
-  /// Returns the width of the texture.
+  /// Returns the width of the [`Texture`] .
   pub fn height(&self) -> u32 {
     self.state.borrow().height
   }
 
-  /// Sets the the texture's options on the GPU.
+  /// Sets the the [`Texture`]'s options on the GPU.
   pub fn set_options(&mut self, options: TextureOptions) {
     let mut state = self.state.borrow_mut();
 
@@ -113,12 +107,12 @@ impl Texture {
     state.server.set_texture_options(state.handle, &options.sampler);
   }
 
-  /// Downloads pixel data from the texture.
+  /// Downloads pixel data from the [`Texture`].
   pub fn read_pixels<P>(&self) -> Vec<P> where P: Pixel {
     todo!()
   }
 
-  /// Uploads pixel data to the texture.
+  /// Uploads pixel data to the [`Texture`].
   pub fn write_pixels<P>(&mut self, width: usize, height: usize, pixels: &[P]) where P: Pixel {
     let mut state = self.state.borrow_mut();
 
@@ -135,31 +129,30 @@ impl Texture {
     );
   }
 
-  /// Uploads a sub-section of pixel data to the texture.
+  /// Uploads a sub-section of pixel data to the [`Texture`].
   pub fn write_sub_pixels<P>(&mut self, _region: &Rectangle<usize>, _pixels: &[P]) where P: Pixel {
     todo!()
   }
 
-  /// Uploads pixel data to the texture from the given image.
+  /// Uploads pixel data to the [`Texture`] from the given [`Image`].
   pub fn write_image(&mut self, image: &Image) {
     self.write_pixels(image.width(), image.height(), &image.as_slice());
   }
 }
 
 impl HasGraphicsHandle for Texture {
-  /// Returns the underlying graphics handle of the texture.
+  /// Returns the underlying graphics handle of the [`Texture`].
   fn handle(&self) -> GraphicsHandle {
     self.state.borrow().handle
   }
 }
 
-impl Drop for TextureState {
-  /// Deletes the texture from the GPU.
+impl Drop for TextureInner {
+  /// Deletes the [`Texture`] from the GPU.
   fn drop(&mut self) {
     self.server.delete_texture(self.handle);
   }
 }
-
 
 /// Represents a sub-region of a `Texture`.
 #[derive(Clone)]

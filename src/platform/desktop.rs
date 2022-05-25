@@ -16,9 +16,9 @@ use crate::utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan};
 
 use super::*;
 
-pub mod audio;
-pub mod graphics;
-pub mod input;
+mod audio;
+mod graphics;
+mod input;
 
 /// Configuration for the [`DesktopPlatform`].
 #[derive(Clone, Debug)]
@@ -103,7 +103,7 @@ impl Platform for DesktopPlatform {
 /// The host for the desktop platform.
 pub struct DesktopPlatformHost {
   // servers
-  pub audio: AudioServer<DesktopAudioBackend>,
+  pub audio: AudioServer,
   pub graphics: GraphicsServer,
   pub input: DesktopInput,
 

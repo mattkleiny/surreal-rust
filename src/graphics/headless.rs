@@ -1,13 +1,16 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::graphics::*;
+use super::*;
 
-/// The graphics server for the headless platform.
+/// A headless [`GraphicsBackend`] implementation.
+///
+/// This backend does nothing (no-ops) and can be used for testing/etc.
 pub struct HeadlessGraphicsBackend {
   next_buffer_id: AtomicU32,
   next_texture_id: AtomicU32,
   next_shader_id: AtomicU32,
   next_mesh_id: AtomicU32,
+  next_render_target_id: AtomicU32,
 }
 
 impl HeadlessGraphicsBackend {
@@ -17,6 +20,7 @@ impl HeadlessGraphicsBackend {
       next_texture_id: AtomicU32::new(1),
       next_shader_id: AtomicU32::new(1),
       next_mesh_id: AtomicU32::new(1),
+      next_render_target_id: AtomicU32::new(1),
     }))
   }
 }
@@ -69,7 +73,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   fn create_texture(&self, _sampler: &TextureSampler) -> GraphicsHandle {
     self.next_texture_id.fetch_add(1, Ordering::Relaxed)
   }
-  
+
   fn set_texture_options(&self, _texture: GraphicsHandle, _sampler: &TextureSampler) {
     // no-op
   }
@@ -115,6 +119,22 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   }
 
   fn delete_mesh(&self, _mesh: GraphicsHandle) {
+    // no-op
+  }
+
+  fn create_render_target(&self, _color_attachment: GraphicsHandle, _depth_attachment: Option<GraphicsHandle>, _stencil_attachment: Option<GraphicsHandle>) -> GraphicsHandle {
+    self.next_render_target_id.fetch_add(1, Ordering::Relaxed)
+  }
+
+  fn set_active_render_target(&self, _render_target: GraphicsHandle) {
+    // no-op
+  }
+
+  fn set_default_render_target(&self) {
+    // no-op
+  }
+
+  fn delete_render_target(&self, _render_target: GraphicsHandle) {
     // no-op
   }
 }

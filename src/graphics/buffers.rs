@@ -20,7 +20,7 @@ pub enum BufferUsage {
 }
 
 /// A buffer implementation that can upload data of type [`T`] to the GPU.
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub struct Buffer<T> {
   state: Rc<RefCell<BufferState>>,
   _type: PhantomData<T>,
@@ -33,12 +33,6 @@ struct BufferState {
   kind: BufferKind,
   usage: BufferUsage,
   length: usize,
-}
-
-impl PartialEq for BufferState {
-  fn eq(&self, other: &Self) -> bool {
-    self.handle == other.handle
-  }
 }
 
 impl<T> Buffer<T> {
@@ -82,16 +76,14 @@ impl<T> Buffer<T> {
 }
 
 impl<T> HasGraphicsHandle for Buffer<T> {
-  /// Retrieves the handle for the given buffer.
+  /// Retrieves the handle for the [`Buffer`].
   fn handle(&self) -> GraphicsHandle {
-    let state = self.state.borrow();
-
-    state.handle
+    self.state.borrow().handle
   }
 }
 
 impl Drop for BufferState {
-  /// Deletes the buffer from the GPU.
+  /// Deletes the [`Buffer`] from the GPU.
   fn drop(&mut self) {
     self.server.delete_buffer(self.handle)
   }

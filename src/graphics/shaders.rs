@@ -37,25 +37,19 @@ pub enum ShaderUniform {
 }
 
 /// Represents a single compiled shader program.
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub struct ShaderProgram {
   state: Rc<ShaderProgramState>,
 }
 
-/// The internal state for a shader program.
+/// The internal state for a [`ShaderProgram`] .
 struct ShaderProgramState {
   server: GraphicsServer,
   handle: GraphicsHandle,
 }
 
-impl PartialEq for ShaderProgramState {
-  fn eq(&self, other: &Self) -> bool {
-    self.handle == other.handle
-  }
-}
-
 impl ShaderProgram {
-  /// Creates a new blank shader program on the GPU.
+  /// Creates a new blank [`ShaderProgram`] on the GPU.
   pub fn new(server: &GraphicsServer) -> Self {
     Self {
       state: Rc::new(ShaderProgramState {
@@ -65,7 +59,7 @@ impl ShaderProgram {
     }
   }
 
-  /// Loads a shader program from the given raw code.
+  /// Loads a [`ShaderProgram`] from the given raw code.
   pub fn from_string(server: &GraphicsServer, code: &str) -> crate::Result<Self> {
     let program = Self::new(server);
 
@@ -84,7 +78,7 @@ impl ShaderProgram {
     self.state.server.set_shader_uniform(self.state.handle, location, value);
   }
 
-  /// Reloads the shader program from the given text.
+  /// Reloads the [`ShaderProgram`] from the given text.
   pub fn load_from_string(&self, text: &str) -> crate::Result<()> {
     let shaders = parse_glsl_source(&text);
 
@@ -93,7 +87,7 @@ impl ShaderProgram {
     Ok(())
   }
 
-  /// Reloads the shader program from a file at the given virtual path.
+  /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
   pub fn load_from_path(&self, path: impl AsVirtualPath) -> crate::Result<()> {
     let source_code = path.as_virtual_path().read_all_text()?;
     let shaders = parse_glsl_source(&source_code);
@@ -105,14 +99,14 @@ impl ShaderProgram {
 }
 
 impl HasGraphicsHandle for ShaderProgram {
-  /// Retrieves the handle for the given shader program.
+  /// Retrieves the handle for the given [`ShaderProgram`].
   fn handle(&self) -> GraphicsHandle {
     self.state.handle
   }
 }
 
 impl Drop for ShaderProgramState {
-  /// Deletes the shader program from the GPU.
+  /// Deletes the [`ShaderProgram`] from the GPU.
   fn drop(&mut self) {
     self.server.delete_shader(self.handle);
   }
