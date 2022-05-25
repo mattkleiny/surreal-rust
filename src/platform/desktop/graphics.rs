@@ -487,7 +487,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn create_render_target(&self, color_attachment: GraphicsHandle, _depth_attachment: Option<GraphicsHandle>, _stencil_attachment: Option<GraphicsHandle>) -> GraphicsHandle {
+  fn create_render_target(&self, color_attachment: GraphicsHandle, depth_attachment: Option<GraphicsHandle>, stencil_attachment: Option<GraphicsHandle>) -> GraphicsHandle {
     unsafe {
       let mut framebuffer = 0;
       gl::CreateFramebuffers(1, &mut framebuffer);
@@ -495,7 +495,13 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer);
       gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, color_attachment, 0);
 
-      // TODO: other attachments
+      if let Some(depth_attachment) = depth_attachment {
+        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::DEPTH_ATTACHMENT, gl::TEXTURE_2D, depth_attachment, 0);
+      }
+
+      if let Some(stencil_attachment) = stencil_attachment {
+        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::STENCIL_ATTACHMENT, gl::TEXTURE_2D, stencil_attachment, 0);
+      }
 
       if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {
         panic!("Failed to create render target");

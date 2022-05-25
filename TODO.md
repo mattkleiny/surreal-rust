@@ -1,0 +1,21 @@
+# TODO
+
+- [ ] Get asset management working
+- [ ] Get hot reload for assets working
+- [ ] Sort out passes in the renderer
+- [ ] Add bitmap fonts
+- [ ] Add true type fonts? (maybe)
+- [ ] Fix virtual file system
+- [ ] Get top-level crash handler working
+- [ ] Get #[derive(Vertex)] working
+- [ ] Allow reads from buffers and textures
+- [ ] Finalize core maths library
+- [ ] Add lots of tests
+- [ ] Add path tessellation for meshes
+- [ ] Get audio working
+- [ ] Reify Grid and add drawing helpers for common shapes (lines, curves, etc)
+- [ ] Add sprite pivots, transforms, etc
+- [ ] Add sprite animations
+- [ ] Add tilemap pivots, transforms, etc
+- [ ] Add tilemap animations
+- [ ] Add texture atlases (automatically baked)?
