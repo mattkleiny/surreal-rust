@@ -13,7 +13,7 @@ fn main() {
   Game::start(platform, |mut game| {
     let graphics = &game.host.graphics;
 
-    let mut renderer = Renderer::new(graphics);
+    let mut renderer = RenderManager::new(graphics);
     let sprite_descriptor = SpriteContextDescriptor::default();
     let palette = load_standard_palette(BuiltInPalette::Hollow4);
 

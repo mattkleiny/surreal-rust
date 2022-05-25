@@ -1,10 +1,12 @@
 //! A simple set of tools for rapid prototyping of game ideas and etc.
 
 pub use pixels::*;
+pub use tiles::*;
 
 use crate::graphics::*;
 
 mod pixels;
+mod tiles;
 
 // built-in shaders
 const SHADER_SPRITE_STANDARD: &'static str = include_str!("../assets/shaders/sprite-standard.glsl");

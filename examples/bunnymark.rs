@@ -46,7 +46,7 @@ fn main() {
     let mut bunnies = Vec::<Bunny>::new();
 
     // prepare renderer
-    let mut renderer = Renderer::new(graphics);
+    let mut renderer = RenderManager::new(graphics);
     let sprite_descriptor = SpriteContextDescriptor::default();
 
     // set-up camera perspective

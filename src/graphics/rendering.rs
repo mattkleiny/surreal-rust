@@ -8,7 +8,7 @@ use crate::graphics::GraphicsServer;
 ///
 /// Each context can be acquired and utilized via the `with`  method. If the context has not been
 /// used before it will be initialized.
-pub struct Renderer {
+pub struct RenderManager {
   server: GraphicsServer,
   contexts: AnyMap,
 }
@@ -34,7 +34,7 @@ pub trait RenderContext: Sized + 'static {
   fn on_after_with(&mut self) {}
 }
 
-impl Renderer {
+impl RenderManager {
   /// Creates a new renderer.
   pub fn new(server: &GraphicsServer) -> Self {
     Self {
@@ -112,9 +112,9 @@ mod tests {
   impl RenderContext for ExampleContext {}
 
   #[test]
-  fn renderer_should_create_and_manage_contexts() {
+  fn render_manager_should_create_and_manage_contexts() {
     let server = HeadlessGraphicsBackend::new();
-    let mut renderer = Renderer::new(&server);
+    let mut renderer = RenderManager::new(&server);
     let descriptor = ExampleDescriptor { tolerance: 0.1 };
 
     renderer.with(&descriptor, |context: &mut ExampleContext| {
