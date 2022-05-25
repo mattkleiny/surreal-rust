@@ -1,7 +1,7 @@
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 
-/// An any-map is a map that can contain any type of value.
+/// An any-map is a map that can contain a single per unique type.
 ///
 /// Entries are provided by the `Any` trait and support a simple `TypeId`-based lookup.
 pub struct AnyMap {

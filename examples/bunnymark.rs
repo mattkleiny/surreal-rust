@@ -2,7 +2,6 @@
 
 #![windows_subsystem = "windows"]
 
-use winit::event::VirtualKeyCode::W;
 use surreal::prelude::*;
 
 const WIDTH: f32 = 1920.;
@@ -43,15 +42,16 @@ fn main() {
 
   Game::start(platform, |mut game| {
     // set-up rendering
-    let shader = load_standard_shader(&game.host.graphics);
-    let mut material = Material::new(&game.host.graphics, &shader);
-    let mut batch = SpriteBatch::new(&game.host.graphics);
-    let mut texture = Texture::new(&game.host.graphics);
+    let graphics = &game.host.graphics;
+
+    let shader = load_standard_shader(graphics);
+    let mut material = Material::new(graphics, &shader);
+    let mut batch = SpriteBatch::new(graphics);
+    let mut texture = Texture::new(graphics);
     let image = Image::from_path("assets/sprites/bunny.png", None).expect("Failed to load sprite image");
 
     texture.write_image(&image);
 
-    // TODO: upside down bunnies?
     let projection_view = Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.);
 
     material.set_uniform("u_projectionView", &projection_view);

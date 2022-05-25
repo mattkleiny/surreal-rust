@@ -20,7 +20,7 @@ pub struct Shader {
 }
 
 /// Representation of a single value that can be used in a shader.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum ShaderUniform {
   Integer(u32),
   Floating(f32),
@@ -33,7 +33,7 @@ pub enum ShaderUniform {
   Matrix2x2(Matrix2x2<f32>),
   Matrix3x3(Matrix3x3<f32>),
   Matrix4x4(Matrix4x4<f32>),
-  Texture(GraphicsHandle, usize, Option<TextureSampler>),
+  Texture(Texture, usize, Option<TextureSampler>),
 }
 
 /// Represents a single compiled shader program.
@@ -143,7 +143,7 @@ implement_uniform!(&Matrix4x4<f32>, Matrix4x4);
 
 impl From<&Texture> for ShaderUniform {
   fn from(texture: &Texture) -> Self {
-    ShaderUniform::Texture(texture.handle(), 0, None)
+    ShaderUniform::Texture(texture.clone(), 0, None)
   }
 }
 

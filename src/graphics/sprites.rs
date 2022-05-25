@@ -88,15 +88,18 @@ impl SpriteBatch {
       self.flush();
     }
 
-    // TODO: apply sprite transform
+    // TODO: apply sprite rotation?
     let position = options.position;
-    let size = options.scale * vec2(region.size.x as f32, region.size.y as f32);
+    let size = vec2(
+      (options.scale.x * region.size.x as f32) * 0.5,
+      (options.scale.y * region.size.y as f32) * 0.5,
+    );
     let uv = region.calculate_uv();
 
-    self.vertices.push(Vertex2 { position: position + vec2(-size.x, -size.y), color: options.color, uv: uv.bottom_left() });
-    self.vertices.push(Vertex2 { position: position + vec2(-size.x, size.y), color: options.color, uv: uv.top_left() });
-    self.vertices.push(Vertex2 { position: position + vec2(size.x, size.y), color: options.color, uv: uv.top_right() });
-    self.vertices.push(Vertex2 { position: position + vec2(size.x, -size.y), color: options.color, uv: uv.bottom_right() });
+    self.vertices.push(Vertex2 { position: position + vec2(-size.x, -size.y), color: options.color, uv: uv.top_left() });
+    self.vertices.push(Vertex2 { position: position + vec2(-size.x, size.y), color: options.color, uv: uv.bottom_left() });
+    self.vertices.push(Vertex2 { position: position + vec2(size.x, size.y), color: options.color, uv: uv.bottom_right() });
+    self.vertices.push(Vertex2 { position: position + vec2(size.x, -size.y), color: options.color, uv: uv.top_right() });
   }
 
   /// Flushes the batch to the GPU.

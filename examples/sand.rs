@@ -11,11 +11,12 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
-    let shader = load_standard_shader(&game.host.graphics);
-    let palette = load_standard_palette(BuiltInPalette::Hollow4);
+    let graphics = &game.host.graphics;
 
-    let mut material = Material::new(&game.host.graphics, &shader);
-    let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);
+    let palette = load_standard_palette(BuiltInPalette::Hollow4);
+    let shader = load_standard_shader(graphics);
+    let mut material = Material::new(graphics, &shader);
+    let mut canvas = PixelCanvas::new(graphics, 256, 144);
     let mut random = Random::new();
 
     material.set_uniform("u_texture", &canvas.texture);

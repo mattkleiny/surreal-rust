@@ -26,7 +26,7 @@ pub enum BlendFactor {
 }
 
 /// A single uniform setting in a `Material`.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 struct MaterialUniform {
   pub location: usize,
   pub value: ShaderUniform,
@@ -65,20 +65,24 @@ impl Material {
   /// Sets the given material uniform.
   pub fn set_uniform(&mut self, name: &str, value: impl Into<ShaderUniform>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
-      self.uniforms.insert(
-        name.to_string(),
-        MaterialUniform { location, value: value.into() },
-      );
+      let uniform = MaterialUniform {
+        location,
+        value: value.into(),
+      };
+
+      self.uniforms.insert(name.to_string(), uniform);
     }
   }
 
   /// Sets the given material texture with texture slot and optional sampler options.
   pub fn set_texture(&mut self, name: &str, texture: &Texture, slot: usize, sampler: Option<TextureSampler>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
-      self.uniforms.insert(
-        name.to_string(),
-        MaterialUniform { location, value: ShaderUniform::Texture(texture.handle(), slot, sampler) },
-      );
+      let uniform = MaterialUniform {
+        location,
+        value: ShaderUniform::Texture(texture.clone(), slot, sampler),
+      };
+
+      self.uniforms.insert(name.to_string(), uniform);
     }
   }
 
