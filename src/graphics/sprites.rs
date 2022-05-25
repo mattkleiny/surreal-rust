@@ -71,7 +71,7 @@ impl SpriteBatch {
     self.vertices.clear();
   }
 
-  /// Draws a sprite to the batch.
+  /// Draws a single sprite to the batch.
   pub fn draw(&mut self, region: &TextureRegion, options: SpriteOptions) {
     // flush texture has changed
     if let Some(texture) = &self.texture {
@@ -88,13 +88,15 @@ impl SpriteBatch {
       self.flush();
     }
 
-    // TODO: sprite transform
+    // TODO: apply sprite transform
+    let position = options.position;
+    let size = options.scale * vec2(region.size.x as f32, region.size.y as f32);
     let uv = region.calculate_uv();
 
-    self.vertices.push(Vertex2 { position: vec2(-0.5, -0.5), color: options.color, uv: uv.bottom_left() });
-    self.vertices.push(Vertex2 { position: vec2(-0.5, 0.5), color: options.color, uv: uv.top_left() });
-    self.vertices.push(Vertex2 { position: vec2(0.5, 0.5), color: options.color, uv: uv.top_right() });
-    self.vertices.push(Vertex2 { position: vec2(0.5, -0.5), color: options.color, uv: uv.bottom_right() });
+    self.vertices.push(Vertex2 { position: position + vec2(-size.x, -size.y), color: options.color, uv: uv.bottom_left() });
+    self.vertices.push(Vertex2 { position: position + vec2(-size.x, size.y), color: options.color, uv: uv.top_left() });
+    self.vertices.push(Vertex2 { position: position + vec2(size.x, size.y), color: options.color, uv: uv.top_right() });
+    self.vertices.push(Vertex2 { position: position + vec2(size.x, -size.y), color: options.color, uv: uv.bottom_right() });
   }
 
   /// Flushes the batch to the GPU.

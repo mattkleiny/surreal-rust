@@ -1,7 +1,7 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 /// Represents a numeric type that allows standard equality and arithmetic.
-pub trait Numeric: Copy + PartialOrd + PartialEq + Add<Output=Self> + Sub<Output=Self> + Mul<Output=Self> + Div<Output=Self> {
+pub trait Numeric: Copy + PartialOrd + PartialEq + Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Mul<Output=Self> + MulAssign + Div<Output=Self> + DivAssign {
   const ZERO: Self;
   const ONE: Self;
 

@@ -76,36 +76,6 @@ impl PartialEq for TextureState {
   }
 }
 
-/// Represents a sub-region of a `Texture`.
-#[derive(Clone)]
-pub struct TextureRegion {
-  pub texture: Texture,
-  pub offset: Vector2<u32>,
-  pub size: Vector2<u32>,
-}
-
-impl TextureRegion {
-  /// Calculates the UV rectangle for the given texture region.
-  pub fn calculate_uv(&self) -> Rectangle<f32> {
-    let left = self.offset.x as f32 / self.texture.width() as f32;
-    let top = self.offset.y as f32 / self.texture.height() as f32;
-    let right = (self.offset.x + self.size.x) as f32 / self.texture.width() as f32;
-    let bottom = (self.offset.y + self.size.y) as f32 / self.texture.height() as f32;
-
-    Rectangle::from_corner_points(left, top, right, bottom)
-  }
-}
-
-impl From<&Texture> for TextureRegion {
-  fn from(texture: &Texture) -> Self {
-    Self {
-      texture: texture.clone(),
-      offset: Vector2::ZERO,
-      size: vec2(texture.width(), texture.height()),
-    }
-  }
-}
-
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
   pub fn new(server: &GraphicsServer) -> Self {
@@ -187,5 +157,36 @@ impl Drop for TextureState {
   /// Deletes the texture from the GPU.
   fn drop(&mut self) {
     self.server.delete_texture(self.handle);
+  }
+}
+
+
+/// Represents a sub-region of a `Texture`.
+#[derive(Clone)]
+pub struct TextureRegion {
+  pub texture: Texture,
+  pub offset: Vector2<u32>,
+  pub size: Vector2<u32>,
+}
+
+impl TextureRegion {
+  /// Calculates the UV rectangle for the given texture region.
+  pub fn calculate_uv(&self) -> Rectangle<f32> {
+    let left = self.offset.x as f32 / self.texture.width() as f32;
+    let top = self.offset.y as f32 / self.texture.height() as f32;
+    let right = (self.offset.x + self.size.x) as f32 / self.texture.width() as f32;
+    let bottom = (self.offset.y + self.size.y) as f32 / self.texture.height() as f32;
+
+    Rectangle::from_corner_points(left, top, right, bottom)
+  }
+}
+
+impl From<&Texture> for TextureRegion {
+  fn from(texture: &Texture) -> Self {
+    Self {
+      texture: texture.clone(),
+      offset: Vector2::ZERO,
+      size: vec2(texture.width(), texture.height()),
+    }
   }
 }

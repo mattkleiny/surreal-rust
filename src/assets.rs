@@ -6,6 +6,10 @@ use std::rc::Rc;
 
 use crate::io::{AsVirtualPath, VirtualPath};
 
+pub trait Loadable {
+  fn from_path(path: impl AsVirtualPath) -> Self;
+}
+
 /// The internal state for an `Asset`.
 enum AssetState<T> {
   NotReady,
