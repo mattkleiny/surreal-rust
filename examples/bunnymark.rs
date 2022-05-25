@@ -14,14 +14,6 @@ struct Bunny {
 }
 
 impl Bunny {
-  /// Creates a new bunny.
-  pub fn new() -> Self {
-    Self {
-      position: Vector2::new(0., 0.),
-      velocity: Vector2::new(0., 0.),
-    }
-  }
-
   /// Updates the bunny's position.
   pub fn update(&mut self, delta_time: f32) {
     self.position += self.velocity * 100. * delta_time;

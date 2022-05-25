@@ -1,3 +1,5 @@
+// Implements a simple shader for sprites.
+
 #version 330 core
 
 #shader_type vertex

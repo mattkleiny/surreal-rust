@@ -1,4 +1,4 @@
-// Implements a simple palette shifting effect for sprites.
+// Implements a simple shader for palette shifted sprites.
 
 #version 330 core
 

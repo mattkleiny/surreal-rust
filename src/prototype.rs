@@ -21,8 +21,14 @@ const PALETTE_SPACE_DUST_9: &'static [u8] = include_bytes!("../assets/palettes/s
 /// Represents one of the embedded shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BuiltInShader {
-  SpriteStandard,
-  SpritePalette,
+  Sprite(BuiltInSpriteShader),
+}
+
+/// Represents one of the sprite shaders.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum BuiltInSpriteShader {
+  Standard,
+  Palette,
 }
 
 /// Represents one of the embedded color palettes.
@@ -39,8 +45,8 @@ pub enum BuiltInPalette {
 /// Loads the standard shader program from embedded resources.
 pub fn load_standard_shader(server: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let shader = match shader {
-    BuiltInShader::SpriteStandard => ShaderProgram::from_string(server, SPRITE_STANDARD_SHADER),
-    BuiltInShader::SpritePalette => ShaderProgram::from_string(server, SPRITE_PALETTE_SHADER),
+    BuiltInShader::Sprite(BuiltInSpriteShader::Standard) => ShaderProgram::from_string(server, SPRITE_STANDARD_SHADER),
+    BuiltInShader::Sprite(BuiltInSpriteShader::Palette) => ShaderProgram::from_string(server, SPRITE_PALETTE_SHADER),
   };
 
   shader.expect("Failed to load standard shader")
@@ -83,8 +89,8 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
   fn create(&self, server: &GraphicsServer) -> Self::Context {
     // determine which shader we're using, prepare material
     let shader = match self.palette {
-      None => BuiltInShader::SpriteStandard,
-      Some(_) => BuiltInShader::SpritePalette,
+      None => BuiltInShader::Sprite(BuiltInSpriteShader::Standard),
+      Some(_) => BuiltInShader::Sprite(BuiltInSpriteShader::Palette),
     };
 
     let mut material = Material::new(server, &load_standard_shader(server, shader));
