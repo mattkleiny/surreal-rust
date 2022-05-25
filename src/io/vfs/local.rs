@@ -45,7 +45,7 @@ impl FileSystem for LocalFileSystem {
     to_path(&self.root, path).is_dir()
   }
 
-  fn open_read(&self, path: &VirtualPath) -> FileResult<Self::InputStream> {
+  fn open_read(&self, path: &VirtualPath) -> crate::Result<Self::InputStream> {
     let file = OpenOptions::new()
       .read(true)
       .write(false)
@@ -56,7 +56,7 @@ impl FileSystem for LocalFileSystem {
     })
   }
 
-  fn open_write(&self, path: &VirtualPath) -> FileResult<Self::OutputStream> {
+  fn open_write(&self, path: &VirtualPath) -> crate::Result<Self::OutputStream> {
     let file = OpenOptions::new()
       .read(false)
       .write(true)

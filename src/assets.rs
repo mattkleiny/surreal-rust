@@ -6,9 +6,6 @@ use std::rc::Rc;
 
 use crate::io::{AsVirtualPath, VirtualPath};
 
-/// Represents a fallible result in the asset subsystem.
-pub type AssetResult<T> = anyhow::Result<T>;
-
 /// The internal state for an `Asset`.
 enum AssetState<T> {
   NotReady,
@@ -57,7 +54,7 @@ impl AssetManager {
   }
 
   /// Attempts to load an asset from the given path.
-  pub fn load_asset<A: 'static>(&mut self, path: impl AsVirtualPath) -> AssetResult<Asset<A>> {
+  pub fn load_asset<A: 'static>(&mut self, path: impl AsVirtualPath) -> crate::Result<Asset<A>> {
     let key = path.as_virtual_path().to_string();
 
     let state = self.assets
@@ -79,7 +76,7 @@ pub trait AssetLoader<A> {
   fn can_load(&self, _context: &AssetLoadContext) -> bool { true }
 
   /// Loads the asset from the given path.
-  fn load(&self, context: &AssetLoadContext) -> AssetResult<A>;
+  fn load(&self, context: &AssetLoadContext) -> crate::Result<A>;
 }
 
 /// A context for asset operations.
@@ -93,7 +90,7 @@ pub struct AssetLoadContext<'a> {
 
 impl<'a> AssetLoadContext<'a> {
   /// Loads a dependent asset from the given path.
-  pub fn load_asset<A>(&self, _path: VirtualPath) -> AssetResult<A> {
+  pub fn load_asset<A>(&self, _path: VirtualPath) -> crate::Result<A> {
     todo!()
   }
 }

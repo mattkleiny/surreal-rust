@@ -2,9 +2,6 @@
 
 use crate::utilities::{Size, TimeSpan};
 
-/// Represents a fallible result in the audio subsystem.
-pub type AudioResult<T> = anyhow::Result<T>;
-
 /// An opaque handle to a resource in the sound system.
 pub type AudioHandle = u32;
 

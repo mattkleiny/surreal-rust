@@ -1,5 +1,5 @@
 use crate::graphics::{GraphicsServer, TextureSampler};
-use crate::io::{AsVirtualPath, FileResult};
+use crate::io::AsVirtualPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 use super::*;
@@ -50,7 +50,7 @@ impl ShaderProgram {
   }
 
   /// Loads a shader program from the given raw code.
-  pub fn from_string(server: &GraphicsServer, code: &str) -> GraphicsResult<Self> {
+  pub fn from_string(server: &GraphicsServer, code: &str) -> crate::Result<Self> {
     let program = Self::new(server);
 
     program.load_from_string(code)?;
@@ -69,7 +69,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the shader program from the given text.
-  pub fn load_from_string(&self, text: &str) -> FileResult<()> {
+  pub fn load_from_string(&self, text: &str) -> crate::Result<()> {
     let shaders = parse_glsl_source(&text);
 
     self.server.link_shaders(self.handle, shaders)?;
@@ -78,7 +78,7 @@ impl ShaderProgram {
   }
   
   /// Reloads the shader program from a file at the given virtual path.
-  pub fn load_from_path(&self, path: impl AsVirtualPath) -> FileResult<()> {
+  pub fn load_from_path(&self, path: impl AsVirtualPath) -> crate::Result<()> {
     let source_code = path.as_virtual_path().read_all_text()?;
     let shaders = parse_glsl_source(&source_code);
 

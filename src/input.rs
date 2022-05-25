@@ -5,9 +5,6 @@ pub use winit::event::VirtualKeyCode as Key;
 
 use crate::maths::Vector2;
 
-/// Represents a fallible result in the input subsystem.
-pub type InputResult<T> = anyhow::Result<T>;
-
 /// A server for the underlying input subsystem.
 ///
 /// Permits interaction with the underlying input API through unsafe lower-level abstraction.

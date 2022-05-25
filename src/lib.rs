@@ -45,3 +45,6 @@ pub mod prelude {
   pub use crate::prototype::*;
   pub use crate::utilities::*;
 }
+
+/// Represents a result type in any part of the engine.
+pub type Result<T> = anyhow::Result<T>;

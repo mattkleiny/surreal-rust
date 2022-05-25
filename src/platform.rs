@@ -10,9 +10,6 @@ pub mod desktop;
 #[cfg(feature = "headless")]
 pub mod headless;
 
-/// Represents a fallible result in the platform subsystem.
-pub type PlatformResult<T> = anyhow::Result<T>;
-
 /// Represents a platform capable of executing the application.
 ///
 /// Platforms implement the core engine servers and provide access to them to user code.

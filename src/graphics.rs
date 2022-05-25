@@ -20,9 +20,6 @@ mod shaders;
 mod sprites;
 mod textures;
 
-/// Represents a fallible result in the graphics subsystem.
-pub type GraphicsResult<T> = anyhow::Result<T>;
-
 /// An opaque handle to resource in the graphics subsystem.
 pub type GraphicsHandle = u32;
 
@@ -58,7 +55,7 @@ pub trait GraphicsBackend {
 
   // shaders
   fn create_shader(&self) -> GraphicsHandle;
-  fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()>;
+  fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> crate::Result<()>;
   fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize>;
   fn set_shader_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform);
   fn set_active_shader(&self, shader: GraphicsHandle);

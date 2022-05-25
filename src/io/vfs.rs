@@ -9,9 +9,6 @@ thread_local! {
   static CURRENT_FILE_SYSTEM: LocalFileSystem = LocalFileSystem::new();
 }
 
-/// Represents a fallible result in the virtual file system.
-pub type FileResult<T> = anyhow::Result<T>;
-
 /// A stream for reading from some [`VirtualPath`].
 pub trait InputStream: std::io::BufRead + std::io::Seek {}
 
@@ -29,8 +26,8 @@ pub trait FileSystem {
   fn is_directory(&self, path: &VirtualPath) -> bool;
 
   // read and write
-  fn open_read(&self, path: &VirtualPath) -> FileResult<Self::InputStream>;
-  fn open_write(&self, path: &VirtualPath) -> FileResult<Self::OutputStream>;
+  fn open_read(&self, path: &VirtualPath) -> crate::Result<Self::InputStream>;
+  fn open_write(&self, path: &VirtualPath) -> crate::Result<Self::OutputStream>;
 }
 
 /// Represents a path in a virtual file system.
@@ -68,7 +65,7 @@ impl<'a> VirtualPath<'a> {
   }
 
   /// Opens a reader for the given path.
-  pub fn open_input_stream(&self) -> FileResult<Box<dyn InputStream>> {
+  pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
     let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
       file_system.open_read(self)
     })?;
@@ -77,7 +74,7 @@ impl<'a> VirtualPath<'a> {
   }
 
   /// Opens a writer for the given path.
-  pub fn open_output_stream(&self) -> FileResult<Box<dyn OutputStream>> {
+  pub fn open_output_stream(&self) -> crate::Result<Box<dyn OutputStream>> {
     let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
       file_system.open_write(self)
     })?;
@@ -86,7 +83,7 @@ impl<'a> VirtualPath<'a> {
   }
 
   /// Attempts to read all bytes from the given path.
-  pub fn read_all_bytes(&self) -> FileResult<Vec<u8>> {
+  pub fn read_all_bytes(&self) -> crate::Result<Vec<u8>> {
     let mut buffer = Vec::new();
     let mut stream = self.open_input_stream()?;
 
@@ -96,7 +93,7 @@ impl<'a> VirtualPath<'a> {
   }
 
   /// Attempts to read all text from the given path.
-  pub fn read_all_text(&self) -> FileResult<String> {
+  pub fn read_all_text(&self) -> crate::Result<String> {
     let mut buffer = String::new();
     let mut stream = self.open_input_stream()?;
 

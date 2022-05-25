@@ -82,7 +82,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_shader_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn link_shaders(&self, _shader: GraphicsHandle, _shaders: Vec<Shader>) -> GraphicsResult<()> {
+  fn link_shaders(&self, _shader: GraphicsHandle, _shaders: Vec<Shader>) -> crate::Result<()> {
     Ok(())
   }
 

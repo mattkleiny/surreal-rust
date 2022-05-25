@@ -207,7 +207,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()> {
+  fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> crate::Result<()> {
     unsafe {
       gl::UseProgram(shader);
 

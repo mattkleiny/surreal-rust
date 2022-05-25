@@ -2,7 +2,7 @@ use std::ops::Index;
 
 use anyhow::anyhow;
 
-use crate::io::{AsVirtualPath, FileResult};
+use crate::io::AsVirtualPath;
 
 use super::*;
 
@@ -28,7 +28,7 @@ impl<P> ColorPalette<P> where P: Pixel {
   }
 
   /// Loads a palette from the given file path.
-  pub fn from_file(path: impl AsVirtualPath) -> FileResult<Self> {
+  pub fn from_file(path: impl AsVirtualPath) -> crate::Result<Self> {
     let path = path.as_virtual_path();
     let stream = path.open_input_stream()?;
 
@@ -36,7 +36,7 @@ impl<P> ColorPalette<P> where P: Pixel {
   }
 
   /// Loads a palette from the given reader.
-  pub fn from_bytes(reader: impl std::io::BufRead) -> FileResult<Self> {
+  pub fn from_bytes(reader: impl std::io::BufRead) -> crate::Result<Self> {
     let lines: Vec<_> = reader.lines().collect::<Result<_, _>>()?;
 
     if lines[0] != "JASC-PAL" {

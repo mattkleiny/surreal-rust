@@ -1,6 +1,6 @@
 pub use image::ImageFormat as ImageFormat;
 
-use crate::io::{AsVirtualPath, FileResult};
+use crate::io::AsVirtualPath;
 
 use super::*;
 
@@ -18,14 +18,14 @@ impl Image {
   }
 
   /// Attempts to load an image from the given path.
-  pub fn from_path(path: impl AsVirtualPath, format: Option<ImageFormat>) -> FileResult<Self> {
+  pub fn from_path(path: impl AsVirtualPath, format: Option<ImageFormat>) -> crate::Result<Self> {
     let stream = path.as_virtual_path().open_input_stream()?;
 
     Ok(Self::from_bytes(stream, format)?)
   }
 
   /// Attempts to load an image from the given reader.
-  pub fn from_bytes(reader: impl std::io::BufRead + std::io::Seek, format: Option<ImageFormat>) -> FileResult<Self> {
+  pub fn from_bytes(reader: impl std::io::BufRead + std::io::Seek, format: Option<ImageFormat>) -> crate::Result<Self> {
     let mut reader = image::io::Reader::new(reader);
 
     if let Some(format) = format {
@@ -69,7 +69,7 @@ impl Image {
   }
 
   /// Saves the image to the given path.
-  pub fn save_to(&self, path: impl AsVirtualPath, format: ImageFormat) -> FileResult<()> {
+  pub fn save_to(&self, path: impl AsVirtualPath, format: ImageFormat) -> crate::Result<()> {
     let mut stream = path.as_virtual_path().open_output_stream()?;
 
     self.buffer.write_to(&mut stream, format)?;
