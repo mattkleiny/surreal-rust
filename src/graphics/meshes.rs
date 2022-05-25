@@ -85,7 +85,7 @@ impl Vertex for Vertex3 {
 ///
 /// Meshes are stored on the GPU as vertex/index buffers and can be submitted for rendering at any
 /// time, provided a valid [`Material`] is available.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Mesh<V> {
   state: Rc<RefCell<MeshState<V>>>,
 }
@@ -98,19 +98,16 @@ struct MeshState<V> {
   indices: Buffer<u32>,
 }
 
+impl<V> PartialEq for MeshState<V> {
+  fn eq(&self, other: &Self) -> bool {
+    self.handle == other.handle
+  }
+}
+
 impl<V> MeshState<V> {
   /// Borrows the underlying graphics buffers.
   pub fn borrow_buffers(&mut self) -> (&mut Buffer<V>, &mut Buffer<u32>) {
     (&mut self.vertices, &mut self.indices)
-  }
-}
-
-impl<V> HasGraphicsHandle for Mesh<V> {
-  /// Returns the underlying graphics handle of the mesh.
-  fn handle(&self) -> GraphicsHandle {
-    let state = self.state.borrow();
-
-    state.handle
   }
 }
 
@@ -164,6 +161,13 @@ impl<V> Mesh<V> where V: Vertex {
     let state = self.state.borrow();
 
     state.server.draw_mesh(state.handle, topology, vertex_count, index_count);
+  }
+}
+
+impl<V> HasGraphicsHandle for Mesh<V> {
+  /// Returns the underlying graphics handle of the mesh.
+  fn handle(&self) -> GraphicsHandle {
+    self.state.borrow().handle
   }
 }
 

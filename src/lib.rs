@@ -10,6 +10,7 @@
 
 #![feature(generic_const_exprs)]
 #![feature(const_refs_to_cell)]
+#![feature(let_else)]
 
 // Re-export the macro crate for consumers.
 pub extern crate surreal_macros as macros;

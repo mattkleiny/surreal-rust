@@ -26,9 +26,6 @@ pub struct GameTick<'a, P> where P: Platform {
 impl<P> Game<P> where P: Platform {
   /// Starts a new game with the given platform.
   pub fn start(platform: P, mut setup: impl FnMut(Game<P>)) {
-    // register default file systems
-    crate::io::register_file_system("local", crate::io::LocalFileSystem::new());
-
     let game = Game {
       host: platform.create_host(),
       assets: AssetManager::new(),

@@ -37,7 +37,7 @@ pub enum ShaderUniform {
 }
 
 /// Represents a single compiled shader program.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct ShaderProgram {
   state: Rc<ShaderProgramState>,
 }
@@ -48,10 +48,9 @@ struct ShaderProgramState {
   handle: GraphicsHandle,
 }
 
-impl HasGraphicsHandle for ShaderProgram {
-  /// Retrieves the handle for the given shader program.
-  fn handle(&self) -> GraphicsHandle {
-    self.state.handle
+impl PartialEq for ShaderProgramState {
+  fn eq(&self, other: &Self) -> bool {
+    self.handle == other.handle
   }
 }
 
@@ -102,6 +101,13 @@ impl ShaderProgram {
     self.state.server.link_shaders(self.state.handle, shaders)?;
 
     Ok(())
+  }
+}
+
+impl HasGraphicsHandle for ShaderProgram {
+  /// Retrieves the handle for the given shader program.
+  fn handle(&self) -> GraphicsHandle {
+    self.state.handle
   }
 }
 

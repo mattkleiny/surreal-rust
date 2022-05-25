@@ -26,55 +26,25 @@ impl<T> Rectangle<T> where T: Numeric {
     Self::new(vec2(left, top), vec2(right, bottom))
   }
 
-  /// Returns the minimum corner point.
-  pub fn min(&self) -> Vector2<T> {
-    self.min
-  }
+  pub fn min(&self) -> Vector2<T> { self.min }
+  pub fn max(&self) -> Vector2<T> { self.max }
 
-  /// Returns the maximum corner point.
-  pub fn max(&self) -> Vector2<T> {
-    self.max
-  }
+  pub fn left(&self) -> T { self.min.x }
+  pub fn right(&self) -> T { self.max.x }
+  pub fn top(&self) -> T { self.min.y }
+  pub fn bottom(&self) -> T { self.max.y }
 
-  /// Returns the left hand X coordinate of the rectangle.
-  pub fn left(&self) -> T {
-    self.min.x
-  }
+  pub fn top_left(&self) -> Vector2<T> { vec2(self.left(), self.top()) }
+  pub fn top_right(&self) -> Vector2<T> { vec2(self.right(), self.top()) }
+  pub fn bottom_left(&self) -> Vector2<T> { vec2(self.left(), self.bottom()) }
+  pub fn bottom_right(&self) -> Vector2<T> { vec2(self.right(), self.bottom()) }
 
-  /// Returns the right hand X coordinate of the rectangle.
-  pub fn right(&self) -> T {
-    self.max.x
-  }
+  pub fn width(&self) -> T { self.right() - self.left() }
+  pub fn height(&self) -> T { self.bottom() - self.top() }
 
-  /// Returns the top Y coordinate of the rectangle.
-  pub fn top(&self) -> T {
-    self.min.y
-  }
+  pub fn area(&self) -> T { self.width() * self.height() }
 
-  /// Returns the bottom Y coordinate of the rectangle.
-  pub fn bottom(&self) -> T {
-    self.max.y
-  }
-
-  /// Returns the width of the rectangle.
-  pub fn width(&self) -> T {
-    self.right() - self.left()
-  }
-
-  /// Returns the height of the rectangle.
-  pub fn height(&self) -> T {
-    self.bottom() - self.top()
-  }
-
-  /// Returns the total area of the rectangle.
-  pub fn area(&self) -> T {
-    self.width() * self.height()
-  }
-
-  /// Returns the size of the rectangle.
-  pub fn size(&self) -> Vector2<T> {
-    vec2(self.width(), self.height())
-  }
+  pub fn size(&self) -> Vector2<T> { vec2(self.width(), self.height()) }
 
   /// Creates a new rectangle clamped to the given (X, Y) bounds.
   pub fn clamp(&self, left: T, top: T, right: T, bottom: T) -> Self {

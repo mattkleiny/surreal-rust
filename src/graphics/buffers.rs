@@ -20,7 +20,7 @@ pub enum BufferUsage {
 }
 
 /// A buffer implementation that can upload data of type [`T`] to the GPU.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Buffer<T> {
   state: Rc<RefCell<BufferState>>,
   _type: PhantomData<T>,
@@ -35,12 +35,9 @@ struct BufferState {
   length: usize,
 }
 
-impl<T> HasGraphicsHandle for Buffer<T> {
-  /// Retrieves the handle for the given buffer.
-  fn handle(&self) -> GraphicsHandle {
-    let state = self.state.borrow();
-
-    state.handle
+impl PartialEq for BufferState {
+  fn eq(&self, other: &Self) -> bool {
+    self.handle == other.handle
   }
 }
 
@@ -61,9 +58,7 @@ impl<T> Buffer<T> {
 
   /// The number of elements in the buffer.
   pub fn len(&self) -> usize {
-    let state = self.state.borrow();
-
-    state.length
+    self.state.borrow().length
   }
 
   /// Reads data from the buffer.
@@ -83,6 +78,15 @@ impl<T> Buffer<T> {
       data.as_ptr() as *const u8,
       data.len() * std::mem::size_of::<T>(),
     );
+  }
+}
+
+impl<T> HasGraphicsHandle for Buffer<T> {
+  /// Retrieves the handle for the given buffer.
+  fn handle(&self) -> GraphicsHandle {
+    let state = self.state.borrow();
+
+    state.handle
   }
 }
 
