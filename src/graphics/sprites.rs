@@ -73,7 +73,7 @@ impl SpriteBatch {
 
   /// Draws a single sprite to the batch.
   pub fn draw(&mut self, region: &TextureRegion, options: SpriteOptions) {
-    // flush texture has changed
+    // flush if the texture has changed
     if let Some(texture) = &self.texture {
       if texture.handle() != region.texture.handle() {
         self.flush();

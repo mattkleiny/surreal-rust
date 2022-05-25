@@ -12,6 +12,9 @@
 #![feature(const_refs_to_cell)]
 #![feature(let_else)]
 
+#[macro_use]
+extern crate serde;
+
 // Re-export the macro crate for consumers.
 pub extern crate surreal_macros as macros;
 

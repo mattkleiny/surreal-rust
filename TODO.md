@@ -1,6 +1,8 @@
 # TODO
 
 - [ ] Get asset management working
+- [ ] Generalized object loading?
+- [ ] Async and await support?
 - [ ] Get hot reload for assets working
 - [ ] Sort out passes in the renderer
 - [ ] Add bitmap fonts
@@ -19,3 +21,5 @@
 - [ ] Add tilemap pivots, transforms, etc
 - [ ] Add tilemap animations
 - [ ] Add texture atlases (automatically baked)?
+- [ ] Fix up lifetimes for core types (graphics, etc)
+- [ ] Give documentation a bit of love

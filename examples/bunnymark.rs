@@ -42,16 +42,17 @@ fn main() {
     texture.write_image(&image);
     let sprite = TextureRegion::from(&texture); // TODO: simplify this
 
-    let mut random = Random::new();
-    let mut bunnies = Vec::<Bunny>::new();
-
-    // prepare renderer manager
+    // set-up rendering
     let mut renderer = RenderManager::new(graphics);
 
-    renderer.configure(SpriteContextDescriptor::default());
+    renderer.configure(SpriteContextDescriptor {
+      projection_view: Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.),
+      ..Default::default()
+    });
 
-    // set-up camera perspective
-    let projection_view = Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.);
+    // set-up state
+    let mut random = Random::new();
+    let mut bunnies = Vec::<Bunny>::new();
 
     game.run_variable_step(move |context| {
       context.host.graphics.clear_color_buffer(Color::BLACK);
@@ -63,8 +64,6 @@ fn main() {
 
       // draw bunnies
       renderer.with(|pass: &mut SpriteContext| {
-        pass.material.set_uniform("u_projectionView", &projection_view);
-
         for bunny in &bunnies {
           pass.batch.draw(&sprite, SpriteOptions {
             position: bunny.position,

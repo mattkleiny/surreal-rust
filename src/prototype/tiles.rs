@@ -6,7 +6,7 @@ use crate::maths::{Grid, Numeric, vec2};
 
 use super::*;
 
-/// Represents a tile that can be used in a [`TileMap`].
+/// Represents a tile that can be used in a tile map.
 pub trait Tile: 'static {
   type Id: Numeric + Hash + Eq;
 
@@ -14,14 +14,13 @@ pub trait Tile: 'static {
   fn to_id(&self) -> Self::Id;
 }
 
-/// A 2d map of [`Tile`]s.
-pub struct TileMap<T> where T: Tile {
+pub struct TileMap<'a, T> where T: Tile {
   tiles: Grid<T::Id>,
-  sprites: HashMap<T::Id, TextureRegion>,
+  sprites: HashMap<T::Id, TextureRegion<'a>>,
 }
 
-impl<T> TileMap<T> where T: Tile {
-  /// Creates a new [`TileMap`] with the given dimensions.
+impl<'a, T> TileMap<'a, T> where T: Tile {
+  /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
       tiles: Grid::new(width, height),
@@ -29,39 +28,39 @@ impl<T> TileMap<T> where T: Tile {
     }
   }
 
-  /// Returns the width of the [`TileMap`].
+  /// Returns the width of the tile map.
   pub fn width(&self) -> usize {
     self.tiles.width()
   }
 
-  /// Returns the height of the [`TileMap`].
+  /// Returns the height of the tile map.
   pub fn height(&self) -> usize {
     self.tiles.height()
   }
 
-  /// Returns the [`Tile`] at the given coordinates.
+  /// Returns the tile at the given coordinates.
   pub fn get_tile(&self, x: usize, y: usize) -> &T {
     T::from_id(self.tiles[(x, y)])
   }
 
-  /// Sets the [`Tile`] at the given coordinates.
+  /// Sets the tile at the given coordinates.
   pub fn set_tile(&mut self, x: usize, y: usize, tile: &T) {
     self.tiles[(x, y)] = tile.to_id();
   }
 
-  /// Sets the [`TextureRegion`] to be used for the given [`Tile`].
-  pub fn set_sprite(&mut self, tile: &T, sprite: &TextureRegion) {
+  /// Sets the sprite to be used for the given tile.
+  pub fn set_sprite(&mut self, tile: &T, sprite: &'a TextureRegion) {
     self.sprites.insert(tile.to_id(), sprite.clone());
   }
 
-  /// Clears the [`TileMap`] of all tiles.
+  /// Clears the tile map of all tiles.
   pub fn clear(&mut self) {
     self.tiles.fill(T::Id::default());
   }
 }
 
-impl<T> Renderable<SpriteContext> for TileMap<T> where T: Tile {
-  /// Renders this [`TileMap`] with to a sprite batch.
+impl<'a, T> Renderable<SpriteContext> for TileMap<'a, T> where T: Tile {
+  /// Renders this tile map with to a sprite batch.
   fn render(&self, context: &mut SpriteContext) {
     let half_width = self.tiles.width() as f32 / 2.;
     let half_height = self.tiles.height() as f32 / 2.;

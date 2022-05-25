@@ -2,12 +2,29 @@
 
 use std::any::Any;
 use std::collections::HashMap;
+use std::io::{BufRead, Seek};
 use std::rc::Rc;
 
 use crate::io::{AsVirtualPath, VirtualPath};
 
-pub trait Loadable {
-  fn from_path(path: impl AsVirtualPath) -> Self;
+// TODO: how to pass options to the loader?
+// TODO: implement all common loading patterns here as a trait
+
+pub trait Loadable: Sized {
+  /// Loads the object from the given raw string.
+  fn from_path(path: impl AsVirtualPath) -> crate::Result<Self> {
+    let stream = path.as_virtual_path().open_input_stream()?;
+
+    Self::from_reader(stream)
+  }
+
+  /// Loads the object from the given raw bytes.
+  fn from_bytes(bytes: &[u8]) -> crate::Result<Self> {
+    Self::from_reader(bytes)
+  }
+
+  /// Loads the item from the given reader.
+  fn from_reader(reader: impl BufRead + Seek) -> crate::Result<Self>;
 }
 
 /// The internal state for an `Asset`.

@@ -2,6 +2,7 @@
 
 pub use buffers::*;
 pub use colors::*;
+pub use fonts::*;
 pub use headless::*;
 pub use images::*;
 pub use materials::*;
@@ -15,6 +16,7 @@ pub use textures::*;
 
 mod buffers;
 mod colors;
+mod fonts;
 mod headless;
 mod images;
 mod materials;
