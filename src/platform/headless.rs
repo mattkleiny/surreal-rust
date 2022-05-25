@@ -1,7 +1,7 @@
 //! A platform implementation for headless environments.
 
-use audio::HeadlessAudio;
-use graphics::HeadlessGraphics;
+use audio::HeadlessAudioBackend;
+use graphics::HeadlessGraphicsBackend;
 use input::HeadlessInput;
 
 use crate::audio::AudioServer;
@@ -18,8 +18,8 @@ pub struct HeadlessPlatform;
 
 /// A host for headless environments.
 pub struct HeadlessPlatformHost {
-  pub audio: AudioServer<HeadlessAudio>,
-  pub graphics: GraphicsServer<HeadlessGraphics>,
+  pub audio: AudioServer<HeadlessAudioBackend>,
+  pub graphics: GraphicsServer,
   pub input: HeadlessInput,
   is_exiting: bool,
 }
@@ -29,8 +29,8 @@ impl Platform for HeadlessPlatform {
 
   fn create_host(&self) -> Self::Host {
     HeadlessPlatformHost {
-      audio: HeadlessAudio::new(),
-      graphics: HeadlessGraphics::new(),
+      audio: HeadlessAudioBackend::new(),
+      graphics: HeadlessGraphicsBackend::new(),
       input: HeadlessInput::new(),
       is_exiting: false,
     }

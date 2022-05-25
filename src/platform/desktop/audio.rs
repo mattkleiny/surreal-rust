@@ -1,26 +1,24 @@
 use crate::audio::*;
 
 /// The audio server for the desktop platform.
-pub struct DesktopAudio {}
+pub struct DesktopAudioBackend {}
 
-impl DesktopAudio {
+impl DesktopAudioBackend {
   pub fn new() -> AudioServer<Self> {
-    AudioServer::new(Self {})
+    AudioServer::new(Box::new(Self {}))
   }
 }
 
-impl AudioImpl for DesktopAudio {
-  type Handle = u32;
-
-  fn create_clip(&self) -> Self::Handle {
+impl AudioBackend for DesktopAudioBackend {
+  fn create_clip(&self) -> AudioHandle {
     todo!()
   }
 
-  fn upload_clip_data(&self, _handle: Self::Handle, _data: &[u8]) {
+  fn upload_clip_data(&self, _handle: AudioHandle, _data: &[u8]) {
     todo!()
   }
 
-  fn delete_clip(&self, _handle: Self::Handle) {
+  fn delete_clip(&self, _handle: AudioHandle) {
     todo!()
   }
 }

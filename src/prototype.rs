@@ -2,7 +2,7 @@
 
 pub use pixels::*;
 
-use crate::graphics::{ColorPalette, GraphicsImpl, GraphicsServer, Pixel, ShaderProgram};
+use crate::graphics::{ColorPalette, GraphicsServer, Pixel, ShaderProgram};
 
 mod pixels;
 
@@ -29,7 +29,7 @@ pub enum EmbeddedPalette {
 }
 
 /// Loads the standard shader program from embedded resources.
-pub fn load_standard_shader<G>(server: &GraphicsServer<G>) -> ShaderProgram<G> where G: GraphicsImpl {
+pub fn load_standard_shader(server: &GraphicsServer) -> ShaderProgram {
   ShaderProgram::from_string(server, STANDARD_SHADER).expect("Failed to load standard shader")
 }
 

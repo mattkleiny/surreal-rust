@@ -18,18 +18,18 @@ pub enum BufferUsage {
 }
 
 /// A buffer implementation that can upload data of type [`T`] to the GPU.
-pub struct Buffer<G, T> where G: GraphicsImpl {
-  server: GraphicsServer<G>,
-  pub handle: G::Handle,
+pub struct Buffer<T> {
+  server: GraphicsServer,
+  pub handle: GraphicsHandle,
   kind: BufferKind,
   usage: BufferUsage,
   length: usize,
   _type: PhantomData<T>,
 }
 
-impl<G, T> Buffer<G, T> where G: GraphicsImpl {
+impl<T> Buffer<T> {
   /// Constructs a new empty buffer on the GPU.
-  pub fn new(server: &GraphicsServer<G>, kind: BufferKind, usage: BufferUsage) -> Self {
+  pub fn new(server: &GraphicsServer, kind: BufferKind, usage: BufferUsage) -> Self {
     Buffer {
       server: server.clone(),
       handle: server.create_buffer(),
@@ -63,7 +63,7 @@ impl<G, T> Buffer<G, T> where G: GraphicsImpl {
   }
 }
 
-impl<G, T> Drop for Buffer<G, T> where G: GraphicsImpl {
+impl<T> Drop for Buffer<T> {
   /// Deletes the buffer from the GPU.
   fn drop(&mut self) {
     self.server.delete_buffer(self.handle)

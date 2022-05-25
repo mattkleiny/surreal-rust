@@ -1,4 +1,4 @@
-use crate::graphics::{GraphicsServer, TextureSampler, GraphicsImpl};
+use crate::graphics::{GraphicsServer, TextureSampler};
 use crate::io::{AsVirtualPath, FileResult};
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
@@ -19,7 +19,7 @@ pub struct Shader {
 
 /// Representation of a single value that can be used in a shader.
 #[derive(Debug)]
-pub enum ShaderUniform<G> where G: GraphicsImpl + ?Sized {
+pub enum ShaderUniform {
   Integer(u32),
   Floating(f32),
   Point2(Vector2<i32>),
@@ -31,18 +31,18 @@ pub enum ShaderUniform<G> where G: GraphicsImpl + ?Sized {
   Matrix2x2(Matrix2x2<f32>),
   Matrix3x3(Matrix3x3<f32>),
   Matrix4x4(Matrix4x4<f32>),
-  Texture(G::Handle, usize, Option<TextureSampler>),
+  Texture(GraphicsHandle, usize, Option<TextureSampler>),
 }
 
 /// Represents a single compiled shader program.
-pub struct ShaderProgram<G> where G: GraphicsImpl {
-  server: GraphicsServer<G>,
-  pub handle: G::Handle,
+pub struct ShaderProgram {
+  server: GraphicsServer,
+  pub handle: GraphicsHandle,
 }
 
-impl<G> ShaderProgram<G> where G: GraphicsImpl {
+impl ShaderProgram {
   /// Creates a new blank shader program on the GPU.
-  pub fn new(server: &GraphicsServer<G>) -> Self {
+  pub fn new(server: &GraphicsServer) -> Self {
     Self {
       server: server.clone(),
       handle: server.create_shader(),
@@ -50,7 +50,7 @@ impl<G> ShaderProgram<G> where G: GraphicsImpl {
   }
 
   /// Loads a shader program from the given raw code.
-  pub fn from_string(server: &GraphicsServer<G>, code: &str) -> GraphicsResult<Self> {
+  pub fn from_string(server: &GraphicsServer, code: &str) -> GraphicsResult<Self> {
     let program = Self::new(server);
 
     program.load_from_string(code)?;
@@ -64,7 +64,7 @@ impl<G> ShaderProgram<G> where G: GraphicsImpl {
   }
 
   /// Sets the given uniform value in the underlying program.
-  pub fn set_uniform(&self, location: usize, value: &ShaderUniform<G>) {
+  pub fn set_uniform(&self, location: usize, value: &ShaderUniform) {
     self.server.set_shader_uniform(self.handle, location, value);
   }
 
@@ -88,7 +88,7 @@ impl<G> ShaderProgram<G> where G: GraphicsImpl {
   }
 }
 
-impl<G> Drop for ShaderProgram<G> where G: GraphicsImpl {
+impl Drop for ShaderProgram {
   /// Deletes the shader program from the GPU.
   fn drop(&mut self) {
     self.server.delete_shader(self.handle);
@@ -98,7 +98,7 @@ impl<G> Drop for ShaderProgram<G> where G: GraphicsImpl {
 /// Implements uniform value transformation for common shader uniforms.
 macro_rules! implement_uniform {
   ($type:ty, $value:ident) => {
-    impl<G> From<$type> for ShaderUniform<G> where G: GraphicsImpl {
+    impl From<$type> for ShaderUniform {
       fn from(value: $type) -> Self {
         ShaderUniform::$value(value.clone())
       }
@@ -118,8 +118,8 @@ implement_uniform!(&Matrix2x2<f32>, Matrix2x2);
 implement_uniform!(&Matrix3x3<f32>, Matrix3x3);
 implement_uniform!(&Matrix4x4<f32>, Matrix4x4);
 
-impl<G> From<&Texture<G>> for ShaderUniform<G> where G: GraphicsImpl {
-  fn from(texture: &Texture<G>) -> Self {
+impl From<&Texture> for ShaderUniform {
+  fn from(texture: &Texture) -> Self {
     ShaderUniform::Texture(texture.handle, 0, None)
   }
 }

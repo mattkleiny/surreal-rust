@@ -3,16 +3,16 @@ use crate::maths::{clamp, Grid, vec2, Vector2};
 use crate::utilities::{IntervalTimer, TimeSpan};
 
 /// A simple canvas of pixels that can be rendered to the screen.
-pub struct PixelCanvas<G> where G: GraphicsImpl {
-  pub texture: Texture<G>,
-  pub mesh: Mesh<G, Vertex2>,
+pub struct PixelCanvas {
+  pub texture: Texture,
+  pub mesh: Mesh<Vertex2>,
   pub pixels: Grid<Color>,
   timer: IntervalTimer,
 }
 
-impl<G> PixelCanvas<G> where G: GraphicsImpl {
+impl PixelCanvas {
   /// Creates a new pixel canvas with the given dimensions.
-  pub fn new(server: &GraphicsServer<G>, width: usize, height: usize) -> Self {
+  pub fn new(server: &GraphicsServer, width: usize, height: usize) -> Self {
     Self {
       texture: Texture::new(server),
       mesh: Mesh::create_quad(server, 1.),
@@ -78,7 +78,7 @@ impl<G> PixelCanvas<G> where G: GraphicsImpl {
   }
 
   /// Draws the canvas to the screen.
-  pub fn draw(&mut self, material: &Material<G>) {
+  pub fn draw(&mut self, material: &Material) {
     // blit pixel data to the GPU
     self.texture.write_pixels(
       self.pixels.width(),

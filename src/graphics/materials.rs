@@ -27,22 +27,22 @@ pub enum BlendFactor {
 
 /// A single uniform setting in a `Material`.
 #[derive(Debug)]
-struct MaterialUniform<G> where G: GraphicsImpl {
+struct MaterialUniform {
   pub location: usize,
-  pub value: ShaderUniform<G>,
+  pub value: ShaderUniform,
 }
 
 /// A material describes how to render a mesh and describes the underlying GPU pipeline state needed.
-pub struct Material<'a, G> where G: GraphicsImpl {
-  server: GraphicsServer<G>,
-  shader: &'a ShaderProgram<G>,
-  uniforms: HashMap<String, MaterialUniform<G>>,
+pub struct Material<'a> {
+  server: GraphicsServer,
+  shader: &'a ShaderProgram,
+  uniforms: HashMap<String, MaterialUniform>,
   blend_state: BlendState,
 }
 
-impl<'a, G> Material<'a, G> where G: GraphicsImpl {
+impl<'a> Material<'a> {
   /// Constructs a new material for the given shader program.
-  pub fn new(server: &GraphicsServer<G>, shader: &'a ShaderProgram<G>) -> Self {
+  pub fn new(server: &GraphicsServer, shader: &'a ShaderProgram) -> Self {
     Self {
       server: server.clone(),
       shader,
@@ -62,7 +62,7 @@ impl<'a, G> Material<'a, G> where G: GraphicsImpl {
   }
 
   /// Sets the given material uniform.
-  pub fn set_uniform(&mut self, name: &str, value: impl Into<ShaderUniform<G>>) {
+  pub fn set_uniform(&mut self, name: &str, value: impl Into<ShaderUniform>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
       self.uniforms.insert(
         name.to_string(),

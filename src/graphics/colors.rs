@@ -181,6 +181,7 @@ impl Pixel for Color32 {
       a: slice[3],
     }
   }
+
   fn channels(&self) -> [Self::Subpixel; Self::CHANNEL_COUNT] {
     [self.r, self.g, self.b, self.a]
   }

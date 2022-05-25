@@ -5,19 +5,20 @@ use crate::utilities::{Size, TimeSpan};
 /// Represents a fallible result in the audio subsystem.
 pub type AudioResult<T> = anyhow::Result<T>;
 
+/// An opaque handle to a resource in the sound system.
+pub type AudioHandle = u32;
+
 /// The audio server implementation.
-pub type AudioServer<A> = std::rc::Rc<A>;
+pub type AudioServer<A> = std::rc::Rc<Box<A>>;
 
 /// Represents a server implementation for the underlying audio subsystem.
 ///
 /// Permits interaction with the underlying audio API through unsafe lower-level abstraction.
-pub trait AudioImpl {
-  type Handle: Copy + std::fmt::Debug;
-
+pub trait AudioBackend {
   // clips
-  fn create_clip(&self) -> Self::Handle;
-  fn upload_clip_data(&self, handle: Self::Handle, data: &[u8]);
-  fn delete_clip(&self, handle: Self::Handle);
+  fn create_clip(&self) -> AudioHandle;
+  fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]);
+  fn delete_clip(&self, handle: AudioHandle);
 }
 
 /// Describes sampling rates for an audio clip.

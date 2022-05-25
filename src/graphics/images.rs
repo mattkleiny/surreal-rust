@@ -17,6 +17,13 @@ impl Image {
     }
   }
 
+  /// Attempts to load an image from the given path.
+  pub fn from_path(path: impl AsVirtualPath, format: Option<ImageFormat>) -> FileResult<Self> {
+    let stream = path.as_virtual_path().open_input_stream()?;
+
+    Ok(Self::from_bytes(stream, format)?)
+  }
+
   /// Attempts to load an image from the given reader.
   pub fn from_bytes(reader: impl std::io::BufRead + std::io::Seek, format: Option<ImageFormat>) -> FileResult<Self> {
     let mut reader = image::io::Reader::new(reader);
@@ -31,13 +38,6 @@ impl Image {
     let buffer = image.to_rgba32f();
 
     Ok(Self { buffer })
-  }
-
-  /// Attempts to load an image from the given path.
-  pub fn from_path(path: impl AsVirtualPath, format: Option<ImageFormat>) -> FileResult<Self> {
-    let stream = path.as_virtual_path().open_input_stream()?;
-
-    Ok(Self::from_bytes(stream, format)?)
   }
 
   /// Returns the width of the image.

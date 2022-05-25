@@ -52,20 +52,20 @@ impl Default for TextureOptions {
 }
 
 /// A texture is a set of pixel data that has been uploaded to the GPU.
-pub struct Texture<G> where G: GraphicsImpl {
-  server: GraphicsServer<G>,
-  pub handle: G::Handle,
+pub struct Texture {
+  server: GraphicsServer,
+  pub handle: GraphicsHandle,
   options: TextureOptions,
 }
 
-impl<G> Texture<G> where G: GraphicsImpl {
+impl Texture {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new(server: &GraphicsServer<G>) -> Self {
+  pub fn new(server: &GraphicsServer) -> Self {
     Self::with_options(server, TextureOptions::default())
   }
 
   /// Creates a new blank texture on the GPU with the given [`TextureOptions`].
-  pub fn with_options(server: &GraphicsServer<G>, options: TextureOptions) -> Self {
+  pub fn with_options(server: &GraphicsServer, options: TextureOptions) -> Self {
     Self {
       server: server.clone(),
       handle: server.create_texture(&options.sampler),
@@ -113,7 +113,7 @@ impl<G> Texture<G> where G: GraphicsImpl {
   }
 }
 
-impl<G> Drop for Texture<G> where G: GraphicsImpl {
+impl Drop for Texture {
   /// Deletes the texture from the GPU.
   fn drop(&mut self) {
     self.server.delete_texture(self.handle);

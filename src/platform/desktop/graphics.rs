@@ -7,12 +7,12 @@ use winit::window::Window;
 use crate::graphics::*;
 
 /// The graphics server for the desktop platform.
-pub struct DesktopGraphics {
+pub struct DesktopGraphicsBackend {
   context: GlContext,
 }
 
-impl DesktopGraphics {
-  pub fn new(window: &Window, vsync_enabled: bool) -> GraphicsServer<Self> {
+impl DesktopGraphicsBackend {
+  pub fn new(window: &Window, vsync_enabled: bool) -> GraphicsServer {
     // prepare and load opengl bindings
     let config = GlConfig {
       vsync: vsync_enabled,
@@ -23,13 +23,11 @@ impl DesktopGraphics {
     context.make_current();
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
-    GraphicsServer::new(Self { context })
+    GraphicsServer::new(Box::new(Self { context }))
   }
 }
 
-impl GraphicsImpl for DesktopGraphics {
-  type Handle = u32;
-
+impl GraphicsBackend for DesktopGraphicsBackend {
   fn begin_frame(&self) {
     self.context.make_current();
   }
@@ -93,7 +91,7 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn create_buffer(&self) -> Self::Handle {
+  fn create_buffer(&self) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
       gl::GenBuffers(1, &mut id);
@@ -101,7 +99,7 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn read_buffer_data(&self, buffer: Self::Handle, kind: BufferKind, offset: usize, length: usize) -> Vec<u8> {
+  fn read_buffer_data(&self, buffer: GraphicsHandle, kind: BufferKind, offset: usize, length: usize) -> Vec<u8> {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -119,7 +117,7 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn write_buffer_data(&self, buffer: Self::Handle, usage: BufferUsage, kind: BufferKind, data: *const u8, length: usize) {
+  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: *const u8, length: usize) {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -137,13 +135,13 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn delete_buffer(&self, buffer: Self::Handle) {
+  fn delete_buffer(&self, buffer: GraphicsHandle) {
     unsafe {
       gl::DeleteBuffers(1, &buffer);
     }
   }
 
-  fn create_texture(&self, sampler: &TextureSampler) -> Self::Handle {
+  fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
 
@@ -176,7 +174,7 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn write_texture_data(&self, texture: Self::Handle, width: usize, height: usize, pixels: *const u8, format: TextureFormat, mip_level: usize) {
+  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, format: TextureFormat, mip_level: usize) {
     unsafe {
       let internal_format = match format {
         TextureFormat::RGBA => gl::RGBA32F,
@@ -197,19 +195,19 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn delete_texture(&self, texture: Self::Handle) {
+  fn delete_texture(&self, texture: GraphicsHandle) {
     unsafe {
       gl::DeleteTextures(1, &texture);
     }
   }
 
-  fn create_shader(&self) -> Self::Handle {
+  fn create_shader(&self) -> GraphicsHandle {
     unsafe {
       gl::CreateProgram()
     }
   }
 
-  fn link_shaders(&self, shader: Self::Handle, shaders: Vec<Shader>) -> GraphicsResult<()> {
+  fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> GraphicsResult<()> {
     unsafe {
       gl::UseProgram(shader);
 
@@ -284,7 +282,7 @@ impl GraphicsImpl for DesktopGraphics {
     Ok(())
   }
 
-  fn get_shader_uniform_location(&self, shader: Self::Handle, name: &str) -> Option<usize> {
+  fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
     unsafe {
       let name: *const i8 = std::mem::transmute(name.as_bytes().as_ptr());
       let location = gl::GetUniformLocation(shader, name);
@@ -296,7 +294,7 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn set_shader_uniform(&self, shader: Self::Handle, location: usize, value: &ShaderUniform<Self>) {
+  fn set_shader_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform) {
     unsafe {
       match value {
         ShaderUniform::Integer(value) => {
@@ -342,19 +340,19 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn set_active_shader(&self, shader: Self::Handle) {
+  fn set_active_shader(&self, shader: GraphicsHandle) {
     unsafe {
       gl::UseProgram(shader);
     }
   }
 
-  fn delete_shader(&self, shader: Self::Handle) {
+  fn delete_shader(&self, shader: GraphicsHandle) {
     unsafe {
       gl::DeleteProgram(shader);
     }
   }
 
-  fn create_mesh(&self, vertex_buffer: Self::Handle, index_buffer: Self::Handle, descriptors: &[VertexDescriptor]) -> Self::Handle {
+  fn create_mesh(&self, vertex_buffer: GraphicsHandle, index_buffer: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
       gl::GenVertexArrays(1, &mut id);
@@ -407,7 +405,7 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn draw_mesh(&self, mesh: Self::Handle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     // TODO: variable index type?
 
     unsafe {
@@ -427,7 +425,7 @@ impl GraphicsImpl for DesktopGraphics {
     }
   }
 
-  fn delete_mesh(&self, mesh: Self::Handle) {
+  fn delete_mesh(&self, mesh: GraphicsHandle) {
     unsafe {
       gl::DeleteVertexArrays(1, &mesh);
     }
