@@ -34,6 +34,12 @@ pub trait RenderContext: Sized + 'static {
   fn on_after_with(&mut self) {}
 }
 
+/// Allows an object to be rendered via a [`RenderManager`].
+pub trait Renderable<C> where C: RenderContext {
+  /// Renders this object via the associated [`RenderContext`].
+  fn render(&self, context: &mut C);
+}
+
 impl RenderManager {
   /// Creates a new renderer.
   pub fn new(server: &GraphicsServer) -> Self {
@@ -43,38 +49,33 @@ impl RenderManager {
     }
   }
 
-  /// Acquires a `RenderContext` for the given descriptor `D` and execute the given body against it.
-  ///
-  /// If the context has not been used before, or has been freed since, the descriptor will be used
-  /// to initialize it anew.
-  pub fn with<D>(&mut self, descriptor: &D, body: impl FnOnce(&mut D::Context) -> ()) where D: RenderContextDescriptor {
-    match self.contexts.get_mut::<D::Context>() {
+  pub fn configure<D>(&mut self, descriptor: D) where D: RenderContextDescriptor {
+    self.contexts.insert(descriptor.create(&self.server));
+  }
+
+  pub fn render<R, C>(&mut self, renderable: &R) where R: Renderable<C>, C: RenderContext {
+    self.with(|context| {
+      renderable.render(context);
+    });
+  }
+
+  // TODO: recursive access to contexts?
+  pub fn with<C>(&mut self, body: impl FnOnce(&mut C) -> ()) where C: RenderContext {
+    match self.contexts.get_mut::<C>() {
       Some(context) => {
-        // already exists? just use it
         context.on_before_with();
         body(context);
         context.on_after_with();
       }
-      None => {
-        // create a new context
-        let mut context = descriptor.create(&self.server);
-
-        context.on_initialize();
-        context.on_before_with();
-        body(&mut context);
-        context.on_after_with();
-
-        self.contexts.insert(context);
-      }
+      // TODO: handle this more elegantly?
+      None => panic!("A render context is not available: {}", std::any::type_name::<C>()),
     }
   }
 
-  /// Removes the given context from the renderer, allowing it's resources to be reclaimed.
-  pub fn release<D>(&mut self) where D: RenderContextDescriptor {
-    self.contexts.remove::<D::Context>();
+  pub fn release<C>(&mut self) where C: RenderContext {
+    self.contexts.remove::<C>();
   }
 
-  /// Removes all contexts from the renderer, allowing all resources to be reclaimed.
   pub fn reset(&mut self) {
     self.contexts.clear();
   }
@@ -115,13 +116,14 @@ mod tests {
   fn render_manager_should_create_and_manage_contexts() {
     let server = HeadlessGraphicsBackend::new();
     let mut renderer = RenderManager::new(&server);
-    let descriptor = ExampleDescriptor { tolerance: 0.1 };
 
-    renderer.with(&descriptor, |context: &mut ExampleContext| {
+    renderer.configure(ExampleDescriptor { tolerance: 0.1 });
+
+    renderer.with(|context: &mut ExampleContext| {
       context.tolerance = 10.;
     });
 
-    renderer.with(&descriptor, |context: &mut ExampleContext| {
+    renderer.with(|context: &mut ExampleContext| {
       assert_eq!(context.tolerance, 10.);
     });
   }

@@ -4,6 +4,7 @@ pub use pixels::*;
 pub use tiles::*;
 
 use crate::graphics::*;
+use crate::maths::Matrix4x4;
 
 mod pixels;
 mod tiles;
@@ -80,6 +81,9 @@ pub fn load_standard_palette<P>(palette: BuiltInPalette) -> ColorPalette<P> wher
 /// A descriptor for the `SpriteContext`.
 #[derive(Default)]
 pub struct SpriteContextDescriptor {
+  /// A default projection-view matrix to apply.
+  pub projection_view: Matrix4x4<f32>,
+
   /// A color palette to use for rendering these sprites.
   ///
   /// If a palette is specified, a special shader variant will be loaded that uses the palette.
@@ -114,8 +118,11 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
       palette_texture.write_pixels(palette.len(), 1, palette.as_slice());
 
       material.set_texture("u_palette", &palette_texture, 1, None);
-      material.set_uniform("u_paletteWidth", palette.len() as f32);
+      material.set_uniform("u_paletteWidth", palette.len() as u32);
     }
+
+    // apply the default projection-view matrix
+    material.set_uniform("u_projectionView", &self.projection_view);
 
     // enable alpha blending
     material.set_blend_state(BlendState::Enabled {
@@ -127,4 +134,12 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
   }
 }
 
-impl RenderContext for SpriteContext {}
+impl RenderContext for SpriteContext {
+  fn on_before_with(&mut self) {
+    self.batch.begin(&self.material);
+  }
+
+  fn on_after_with(&mut self) {
+    self.batch.flush();
+  }
+}

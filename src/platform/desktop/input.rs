@@ -7,80 +7,79 @@ use crate::maths::Vector2;
 
 /// The server for input management.
 pub struct DesktopInput {
-  keyboards: Vec<DesktopKeyboardDevice>,
-  mice: Vec<DesktopMouseDevice>,
+  keyboard: DesktopKeyboardDevice,
+  mouse: DesktopMouseDevice,
 }
 
 impl DesktopInput {
   /// Creates a new input server.
   pub fn new() -> Self {
     Self {
-      keyboards: Vec::from([DesktopKeyboardDevice::new()]),
-      mice: Vec::from([DesktopMouseDevice::new()]),
+      keyboard: DesktopKeyboardDevice::new(),
+      mouse: DesktopMouseDevice::new(),
     }
   }
 
+  /// Ticks the input system, apply state changes.
+  pub fn tick(&mut self) {
+    self.keyboard.tick();
+    self.mouse.tick();
+  }
+
+  /// Notifies of a keyboard event.
   pub fn on_keyboard_event(&mut self, event: winit::event::KeyboardInput) {
-    // TODO: make this support multiple devices?
-    let keyboard = self.keyboards.first_mut().unwrap();
-
-    keyboard.on_keyboard_event(event);
+    self.keyboard.on_keyboard_event(event);
   }
 
+  /// Notifies of a mouse movement event.
   pub fn on_mouse_move(&mut self, position: Vector2<f32>, window_size: Vector2<f32>) {
-    // TODO: make this support multiple devices?
-    let mouse = self.mice.first_mut().unwrap();
-
-    mouse.on_mouse_moved(position, window_size);
+    self.mouse.on_mouse_moved(position, window_size);
   }
 
+  /// Notifies of a mouse button event.
   pub fn on_mouse_event(&mut self, button: MouseButton, state: ElementState) {
-    // TODO: make this support multiple devices?
-    let mouse = self.mice.first_mut().unwrap();
-
-    mouse.on_mouse_event(button, state);
+    self.mouse.on_mouse_event(button, state);
   }
 }
 
 impl InputBackend for DesktopInput {
-  fn keyboard_devices(&self) -> &[&dyn KeyboardDevice] {
-    todo!()
+  fn keyboard_device(&self) -> Option<&dyn KeyboardDevice> {
+    Some(&self.keyboard)
   }
 
-  fn mouse_devices(&self) -> &[&dyn MouseDevice] {
-    todo!()
-  }
-
-  fn primary_keyboard_device(&self) -> Option<&dyn KeyboardDevice> {
-    self
-      .keyboards
-      .first()
-      .map(|device| device as &dyn KeyboardDevice)
-  }
-
-  fn primary_mouse_device(&self) -> Option<&dyn MouseDevice> {
-    self.mice.first().map(|device| device as &dyn MouseDevice)
+  fn mouse_device(&self) -> Option<&dyn MouseDevice> {
+    Some(&self.mouse)
   }
 }
 
 /// A keyboard device for desktop platforms.
 struct DesktopKeyboardDevice {
-  pressed_keys: HashSet<Key>,
+  previous_keys: HashSet<Key>,
+  current_keys: HashSet<Key>,
 }
 
 impl DesktopKeyboardDevice {
+  /// Creates a new keyboard device.
   pub fn new() -> Self {
     Self {
-      pressed_keys: HashSet::new(),
+      previous_keys: HashSet::new(),
+      current_keys: HashSet::new(),
     }
   }
 
+  /// Ticks the keyboard device.
+  pub fn tick(&mut self) {
+    self.previous_keys.clear();
+  }
+
+  /// Handles keyboard events.
   pub fn on_keyboard_event(&mut self, event: winit::event::KeyboardInput) {
     if let Some(virtual_key_code) = event.virtual_keycode {
       if event.state == ElementState::Pressed {
-        self.pressed_keys.insert(virtual_key_code);
+        self.current_keys.insert(virtual_key_code);
+        self.previous_keys.insert(virtual_key_code);
       } else {
-        self.pressed_keys.remove(&virtual_key_code);
+        self.current_keys.remove(&virtual_key_code);
       }
     }
   }
@@ -88,16 +87,15 @@ impl DesktopKeyboardDevice {
 
 impl KeyboardDevice for DesktopKeyboardDevice {
   fn is_key_up(&self, key: Key) -> bool {
-    !self.pressed_keys.contains(&key)
+    !self.current_keys.contains(&key)
   }
 
   fn is_key_down(&self, key: Key) -> bool {
-    self.pressed_keys.contains(&key)
+    self.current_keys.contains(&key)
   }
 
   fn is_key_pressed(&self, key: Key) -> bool {
-    // TODO: implement me properly
-    self.pressed_keys.contains(&key)
+    self.previous_keys.contains(&key)
   }
 }
 
@@ -105,27 +103,42 @@ impl KeyboardDevice for DesktopKeyboardDevice {
 struct DesktopMouseDevice {
   position: Vector2<f32>,
   normalised_position: Vector2<f32>,
-  pressed_buttons: HashSet<MouseButton>,
+  previous_buttons: HashSet<MouseButton>,
+  current_buttons: HashSet<MouseButton>,
 }
 
 impl DesktopMouseDevice {
+  /// Creates a new mouse device.
   pub fn new() -> Self {
     Self {
       position: Vector2::new(0., 0.),
       normalised_position: Vector2::new(0., 0.),
-      pressed_buttons: HashSet::new(),
+      previous_buttons: HashSet::new(),
+      current_buttons: HashSet::new(),
     }
   }
 
+  /// Ticks the mouse.
+  pub fn tick(&mut self) {
+    self.previous_buttons.clear();
+  }
+
+  /// Handles mouse movement.
   pub fn on_mouse_moved(&mut self, new_position: Vector2<f32>, window_size: Vector2<f32>) {
     self.position = new_position;
     self.normalised_position = new_position / window_size;
   }
 
+  /// Handles mouse click events.
   pub fn on_mouse_event(&mut self, button: MouseButton, state: ElementState) {
     match state {
-      ElementState::Pressed => self.pressed_buttons.insert(button),
-      ElementState::Released => self.pressed_buttons.remove(&button),
+      ElementState::Pressed => {
+        self.current_buttons.insert(button);
+        self.previous_buttons.insert(button);
+      },
+      ElementState::Released => {
+        self.current_buttons.remove(&button);
+      },
     };
   }
 }
@@ -140,15 +153,14 @@ impl MouseDevice for DesktopMouseDevice {
   }
 
   fn is_button_up(&self, button: MouseButton) -> bool {
-    !self.pressed_buttons.contains(&button)
+    !self.current_buttons.contains(&button)
   }
 
   fn is_button_down(&self, button: MouseButton) -> bool {
-    self.pressed_buttons.contains(&button)
+    self.current_buttons.contains(&button)
   }
 
   fn is_button_pressed(&self, button: MouseButton) -> bool {
-    // TODO: implement me properly
-    self.pressed_buttons.contains(&button)
+    self.previous_buttons.contains(&button)
   }
 }

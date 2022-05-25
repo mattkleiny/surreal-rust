@@ -13,23 +13,25 @@ fn main() {
   Game::start(platform, |mut game| {
     let graphics = &game.host.graphics;
 
-    let mut renderer = RenderManager::new(graphics);
-    let sprite_descriptor = SpriteContextDescriptor::default();
+    // load assets
     let palette = load_standard_palette(BuiltInPalette::Hollow4);
 
+    // set-up rendering
+    let mut renderer = RenderManager::new(graphics);
     let mut canvas = PixelCanvas::new(graphics, 256, 144);
     let mut random = Random::new();
 
+    renderer.configure(SpriteContextDescriptor::default());
+
     game.run_variable_step(|context| {
-      renderer.with(&sprite_descriptor, |pass| {
+      renderer.with(|pass: &mut SpriteContext| {
         context.host.graphics.clear_color_buffer(palette[0]);
 
-        // TODO: draw to sprite batch, instead?
         canvas.simulate(context.time.delta_time);
-        canvas.draw(&pass.material);
+        canvas.draw(&pass.material); // we're just using the sprite material
       });
 
-      if let Some(keyboard) = context.host.input.primary_keyboard_device() {
+      if let Some(keyboard) = context.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
           context.exit();
         }
@@ -39,7 +41,7 @@ fn main() {
         }
       }
 
-      if let Some(mouse) = context.host.input.primary_mouse_device() {
+      if let Some(mouse) = context.host.input.mouse_device() {
         let position = mouse.normalised_position();
 
         if mouse.is_button_down(MouseButton::Left) {

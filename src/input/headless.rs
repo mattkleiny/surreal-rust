@@ -12,19 +12,11 @@ impl HeadlessInput {
 }
 
 impl InputBackend for HeadlessInput {
-  fn keyboard_devices(&self) -> &[&dyn KeyboardDevice] {
-    &[]
-  }
-
-  fn mouse_devices(&self) -> &[&dyn MouseDevice] {
-    &[]
-  }
-
-  fn primary_keyboard_device(&self) -> Option<&dyn KeyboardDevice> {
+  fn keyboard_device(&self) -> Option<&dyn KeyboardDevice> {
     None
   }
 
-  fn primary_mouse_device(&self) -> Option<&dyn MouseDevice> {
+  fn mouse_device(&self) -> Option<&dyn MouseDevice> {
     None
   }
 }

@@ -163,9 +163,13 @@ impl PlatformHost for DesktopPlatformHost {
       match event {
         Event::RedrawRequested(window_id) => {
           if window_id == self.window.id() {
+            // update graphics and main loop
             self.graphics.begin_frame();
             body(self);
             self.graphics.end_frame();
+
+            // update input devices
+            self.input.tick();
           }
         }
         Event::MainEventsCleared => {

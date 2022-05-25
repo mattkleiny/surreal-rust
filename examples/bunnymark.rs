@@ -45,9 +45,10 @@ fn main() {
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
 
-    // prepare renderer
+    // prepare renderer manager
     let mut renderer = RenderManager::new(graphics);
-    let sprite_descriptor = SpriteContextDescriptor::default();
+
+    renderer.configure(SpriteContextDescriptor::default());
 
     // set-up camera perspective
     let projection_view = Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.);
@@ -61,9 +62,8 @@ fn main() {
       }
 
       // draw bunnies
-      renderer.with(&sprite_descriptor, |pass| {
+      renderer.with(|pass: &mut SpriteContext| {
         pass.material.set_uniform("u_projectionView", &projection_view);
-        pass.batch.begin(&pass.material);
 
         for bunny in &bunnies {
           pass.batch.draw(&sprite, SpriteOptions {
@@ -71,18 +71,16 @@ fn main() {
             ..Default::default()
           });
         }
-
-        pass.batch.flush();
       });
 
       // handle input
-      if let Some(keyboard) = context.host.input.primary_keyboard_device() {
+      if let Some(keyboard) = context.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
           context.exit();
         }
       }
 
-      if let Some(mouse) = context.host.input.primary_mouse_device() {
+      if let Some(mouse) = context.host.input.mouse_device() {
         if mouse.is_button_down(MouseButton::Left) {
           let position = mouse.normalised_position();
 
