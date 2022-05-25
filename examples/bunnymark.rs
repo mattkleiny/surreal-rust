@@ -44,21 +44,14 @@ fn main() {
     // set-up rendering
     let graphics = &game.host.graphics;
 
-    let shader = load_standard_shader(graphics);
-    let mut material = Material::new(graphics, &shader);
-    let mut batch = SpriteBatch::new(graphics);
+    // TODO: asset management
+    let mut renderer = Renderer::new(graphics);
     let mut texture = Texture::new(graphics);
     let image = Image::from_path("assets/sprites/bunny.png", None).expect("Failed to load sprite image");
 
     texture.write_image(&image);
 
     let projection_view = Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.);
-
-    material.set_uniform("u_projectionView", &projection_view);
-    material.set_blend_state(BlendState::Enabled {
-      source: BlendFactor::SrcAlpha,
-      destination: BlendFactor::OneMinusSrcAlpha,
-    });
 
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
@@ -75,27 +68,38 @@ fn main() {
       }
 
       // draw bunnies
-      batch.begin(&material);
+      renderer.with(|SpriteContext { batch, material }| {
+        material.set_uniform("u_projectionView", &projection_view);
 
-      for bunny in &bunnies {
-        batch.draw(&region, SpriteOptions {
-          position: bunny.position,
-          ..Default::default()
-        });
-      }
+        batch.begin(&material);
 
-      batch.flush();
+        for bunny in &bunnies {
+          batch.draw(&region, SpriteOptions {
+            position: bunny.position,
+            ..Default::default()
+          });
+        }
 
+        batch.flush();
+      });
+
+      // handle input
       if let Some(keyboard) = context.host.input.primary_keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
           context.exit();
         }
+      }
 
-        if keyboard.is_key_down(Key::Space) {
-          // add in groups of 64
+      if let Some(mouse) = context.host.input.primary_mouse_device() {
+        if mouse.is_button_down(MouseButton::Left) {
+          let position = mouse.normalised_position();
+
           for _ in 0..128 {
             bunnies.push(Bunny {
-              position: vec2(0., 0.),
+              position: vec2(
+                position.x * WIDTH - WIDTH / 2.,
+                position.y * HEIGHT - HEIGHT / 2.,
+              ),
               velocity: vec2(
                 random.next::<f32>() * 2. - 1.,
                 random.next::<f32>() * 2. - 1.,
@@ -103,6 +107,12 @@ fn main() {
             });
           }
           println!("There are {:?} bunnies", bunnies.len());
+        }
+
+        if mouse.is_button_down(MouseButton::Right) {
+          for _ in 0..128 {
+            bunnies.pop();
+          }
         }
       }
     });

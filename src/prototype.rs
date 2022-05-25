@@ -2,7 +2,7 @@
 
 pub use pixels::*;
 
-use crate::graphics::{ColorPalette, GraphicsServer, Pixel, ShaderProgram};
+use crate::graphics::*;
 
 mod pixels;
 
@@ -40,5 +40,25 @@ pub fn load_standard_palette<P>(palette: BuiltInPalette) -> ColorPalette<P> wher
     BuiltInPalette::Kule16 => ColorPalette::from_bytes(PALETTE_KULE_16).expect("Failed to load standard palette"),
     BuiltInPalette::Low8 => ColorPalette::from_bytes(PALETTE_LOW_8).expect("Failed to load standard palette"),
     BuiltInPalette::SpaceDust9 => ColorPalette::from_bytes(PALETTE_SPACE_DUST_9).expect("Failed to load standard palette"),
+  }
+}
+
+/// A simple render context that allows for sprite rendering using the standard sprite shader.
+pub struct SpriteContext {
+  pub material: Material,
+  pub batch: SpriteBatch,
+}
+
+impl RenderContext for SpriteContext {
+  fn create(server: &GraphicsServer) -> Self {
+    let mut material = Material::new(server, &load_standard_shader(server));
+    let batch = SpriteBatch::new(server);
+
+    material.set_blend_state(BlendState::Enabled {
+      source: BlendFactor::SrcAlpha,
+      destination: BlendFactor::OneMinusSrcAlpha,
+    });
+
+    Self { material, batch }
   }
 }

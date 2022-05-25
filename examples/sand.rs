@@ -41,13 +41,15 @@ fn main() {
       }
 
       if let Some(mouse) = context.host.input.primary_mouse_device() {
+        let position = mouse.normalised_position();
+
         if mouse.is_button_down(MouseButton::Left) {
           let colors = &palette.as_slice()[1..4];
           let color = colors.select_randomly(&mut random);
 
-          canvas.draw_circle(mouse.normalised_position(), 6., *color);
+          canvas.draw_circle(position, 6., *color);
         } else if mouse.is_button_down(MouseButton::Right) {
-          canvas.draw_circle(mouse.normalised_position(), 6., Color::CLEAR);
+          canvas.draw_circle(position, 6., Color::CLEAR);
         }
       }
     });
