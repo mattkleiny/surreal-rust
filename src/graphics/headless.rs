@@ -78,7 +78,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn write_texture_data(&self, _texture: GraphicsHandle, _width: usize, _height: usize, _pixels: *const u8, _format: TextureFormat, _mip_level: usize) {
+  fn write_texture_data(&self, _texture: GraphicsHandle, _width: usize, _height: usize, _pixels: *const u8, _internal_format: TextureFormat, _pixel_format: TextureFormat, _mip_level: usize) {
     // no-op
   }
 

@@ -193,14 +193,26 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, format: TextureFormat, mip_level: usize) {
+  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, internal_format: TextureFormat, pixel_format: TextureFormat, mip_level: usize) {
     unsafe {
-      let internal_format = match format {
-        TextureFormat::RGBA => gl::RGBA32F,
+      let internal_format = match internal_format {
+        TextureFormat::R8 => gl::R8,
+        TextureFormat::RG8 => gl::RG8,
+        TextureFormat::RGB8 => gl::RGB8,
+        TextureFormat::RGBA8 => gl::RGBA8,
+        TextureFormat::RGBA32 => gl::RGBA32F,
+      };
+
+      let (components, kind) = match pixel_format {
+        TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
+        TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
+        TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
+        TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
+        TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
       };
 
       gl::BindTexture(gl::TEXTURE_2D, texture);
-      gl::TexImage2D(gl::TEXTURE_2D, mip_level as i32, internal_format as i32, width as i32, height as i32, 0, gl::RGBA, gl::FLOAT, pixels as *const _);
+      gl::TexImage2D(gl::TEXTURE_2D, mip_level as i32, internal_format as i32, width as i32, height as i32, 0, components, kind, pixels as *const _);
     }
   }
 

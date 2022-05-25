@@ -31,6 +31,7 @@ impl surreal::prelude::Tile for Tile {
 fn main() {
   let platform = DesktopPlatform::new(Configuration {
     title: "Tile Maps",
+    update_continuously: false,
     ..Default::default()
   });
 

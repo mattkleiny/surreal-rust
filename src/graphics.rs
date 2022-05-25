@@ -62,7 +62,7 @@ pub trait GraphicsBackend {
   // textures
   fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle;
   fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler);
-  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, format: TextureFormat, mip_level: usize);
+  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, internal_format: TextureFormat, pixel_format: TextureFormat, mip_level: usize);
   fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders

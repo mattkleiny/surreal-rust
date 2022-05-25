@@ -8,7 +8,11 @@ use super::*;
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TextureFormat {
-  RGBA
+  R8,
+  RG8,
+  RGB8,
+  RGBA8,
+  RGBA32,
 }
 
 /// Texture wrapping modes modes.
@@ -45,7 +49,7 @@ pub struct TextureOptions {
 impl Default for TextureOptions {
   fn default() -> Self {
     Self {
-      format: TextureFormat::RGBA,
+      format: TextureFormat::RGBA8,
       sampler: TextureSampler {
         wrap_mode: TextureWrap::Clamp,
         minify_filter: TextureFilter::Nearest,
@@ -108,12 +112,12 @@ impl Texture {
   }
 
   /// Downloads pixel data from the [`Texture`].
-  pub fn read_pixels<P>(&self) -> Vec<P> where P: Pixel {
+  pub fn read_pixels<T>(&self) -> Vec<T> where T: Texel {
     todo!()
   }
 
   /// Uploads pixel data to the [`Texture`].
-  pub fn write_pixels<P>(&mut self, width: usize, height: usize, pixels: &[P]) where P: Pixel {
+  pub fn write_pixels<T>(&mut self, width: usize, height: usize, pixels: &[T]) where T: Texel {
     let mut state = self.state.borrow_mut();
 
     state.width = width as u32;
@@ -124,11 +128,11 @@ impl Texture {
       _ => pixels.as_ptr() as *const u8
     };
 
-    state.server.write_texture_data(state.handle, width, height, pixels, state.options.format, 0);
+    state.server.write_texture_data(state.handle, width, height, pixels, state.options.format, T::FORMAT, 0);
   }
 
   /// Uploads a sub-section of pixel data to the [`Texture`].
-  pub fn write_sub_pixels<P>(&mut self, _region: &Rectangle<usize>, _pixels: &[P]) where P: Pixel {
+  pub fn write_sub_pixels<T>(&mut self, _region: &Rectangle<usize>, _pixels: &[T]) where T: Texel {
     todo!()
   }
 
@@ -181,3 +185,26 @@ impl From<&Texture> for TextureRegion {
     }
   }
 }
+
+/// Indicates a kind of pixel that can be used in a texture.
+pub trait Texel {
+  const FORMAT: TextureFormat;
+}
+
+/// Implements texel representation common pixel types..
+macro_rules! implement_texel {
+  ($type:ty, $value:ident) => {
+    impl Texel for $type {
+      const FORMAT: TextureFormat = TextureFormat::$value;
+    }
+  };
+}
+
+// TODO: fix names on color types, or make it generic?
+
+implement_texel!(Color, RGBA32);
+implement_texel!(Color32, RGBA8);
+implement_texel!([u8; 1], R8);
+implement_texel!([u8; 2], RG8);
+implement_texel!([u8; 3], RGB8);
+implement_texel!([u8; 4], RGBA8);
