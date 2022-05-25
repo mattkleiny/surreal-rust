@@ -2,6 +2,11 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::maths::{Lerp, Numeric};
 
+/// Shorthand to construct a [`Vector3`].
+pub const fn vec3<T>(x: T, y: T, z: T) -> Vector3<T> where T: Numeric {
+  Vector3::new(x, y, z)
+}
+
 /// A standard purpose 3d vector
 #[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash)]
 pub struct Vector3<T> {
@@ -19,6 +24,54 @@ impl<T> Vector3<T> where T: Numeric {
 
   pub const fn new(x: T, y: T, z: T) -> Self {
     Self { x, y, z }
+  }
+}
+
+impl Vector3<f32> {
+  /// Computes the magnitude of this vector; the length essentially.
+  pub fn magnitude(&self) -> f32 {
+    let x2 = self.x * self.x;
+    let y2 = self.y * self.y;
+    let z2 = self.z * self.z;
+
+    (x2 + y2 + z2).sqrt()
+  }
+
+  /// Normalizes the vector to the range (-1, 1) for all components.
+  pub fn normalize(&self) -> Self {
+    let magnitude = self.magnitude();
+
+    Self {
+      x: self.x / magnitude,
+      y: self.y / magnitude,
+      z: self.z / magnitude,
+    }
+  }
+  /// Computes the dot product of this vector and another.
+  ///
+  /// The dot product represents the 'shadow' of the other vector on this one.
+  pub fn dot(&self, other: Self) -> f32 {
+    let x = self.x * other.x;
+    let y = self.y * other.y;
+    let z = self.z * other.z;
+
+    x + y + z
+  }
+
+  /// Computes the cross product of this vector and another.
+  ///
+  /// The cross product is a vector perpendicular to both vectors.
+  pub fn cross(&self, other: Self) -> Self {
+    let x = self.y * other.z - self.z * other.y;
+    let y = self.z * other.x - self.x * other.z;
+    let z = self.x * other.y - self.y * other.x;
+
+    return vec3(x, y, z);
+  }
+
+  /// Reflects a vector about the given normal.
+  pub fn reflect(self, normal: Self) -> Self {
+    self - normal * 2. * self.dot(normal)
   }
 }
 

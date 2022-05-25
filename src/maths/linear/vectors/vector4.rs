@@ -2,6 +2,11 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::maths::{Lerp, Numeric};
 
+/// Shorthand to construct a [`Vector4`].
+pub const fn vec4<T>(x: T, y: T, z: T, w: T) -> Vector4<T> where T: Numeric {
+  Vector4::new(x, y, z, w)
+}
+
 /// A standard purpose 4d vector
 #[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash)]
 pub struct Vector4<T> {

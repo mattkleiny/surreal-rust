@@ -16,7 +16,7 @@ fn main() {
 
     let mut material = Material::new(&game.host.graphics, &shader);
     let mut canvas = PixelCanvas::new(&game.host.graphics, 256, 144);
-    let mut random = Random::with_random_seed();
+    let mut random = Random::new();
 
     material.set_uniform("u_texture", &canvas.texture);
     material.set_uniform("u_projectionView", &Matrix4x4::identity());

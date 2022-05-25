@@ -2,6 +2,11 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use crate::maths::{Lerp, Numeric};
 
+/// Shorthand to construct a [`Vector2`].
+pub const fn vec2<T>(x: T, y: T) -> Vector2<T> where T: Numeric {
+  Vector2::new(x, y)
+}
+
 /// A standard purpose 2d vector
 #[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash)]
 pub struct Vector2<T> {

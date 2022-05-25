@@ -7,14 +7,14 @@ pub struct Random {
 }
 
 impl Random {
+  /// Constructs a random generator with a random seed.
+  pub fn new() -> Self {
+    Self::with_seed(generate_thread_local())
+  }
+
   /// Constructs a random generator with the given seed.
   pub fn with_seed(seed: u64) -> Self {
     Random { state: seed }
-  }
-
-  /// Constructs a random generator with a random seed.
-  pub fn with_random_seed() -> Self {
-    Self::with_seed(generate_thread_local())
   }
 
   /// Generates a new value of the given [`Random`] type, T.
