@@ -1,4 +1,5 @@
 use crate::maths::Rectangle;
+
 use super::*;
 
 /// Different supported texture formats.
@@ -24,7 +25,7 @@ pub enum TextureFilter {
 /// A sampler describes how a texture should be read from a shader program.
 ///
 /// Sampler allow re-configuring wrap and filter modes on a per-material basis.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct TextureSampler {
   pub wrap_mode: TextureWrap,
   pub minify_filter: TextureFilter,
@@ -32,7 +33,7 @@ pub struct TextureSampler {
 }
 
 /// Options for configuring a `Texture`.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct TextureOptions {
   pub format: TextureFormat,
   pub sampler: TextureSampler,

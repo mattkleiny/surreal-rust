@@ -19,7 +19,7 @@ const PALETTE_SPACE_DUST_9: &'static [u8] = include_bytes!("../assets/palettes/s
 
 /// Represents one of the embedded color palettes.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum EmbeddedPalette {
+pub enum BuiltInPalette {
   Ayy4,
   Demichrome4,
   Hollow4,
@@ -33,14 +33,14 @@ pub fn load_standard_shader(server: &GraphicsServer) -> ShaderProgram {
   ShaderProgram::from_string(server, STANDARD_SHADER).expect("Failed to load standard shader")
 }
 
-/// Loads the given embedded color palette.
-pub fn load_standard_palette<P>(palette: EmbeddedPalette) -> ColorPalette<P> where P: Pixel {
+/// Loads the given built-in color palette.
+pub fn load_standard_palette<P>(palette: BuiltInPalette) -> ColorPalette<P> where P: Pixel {
   match palette {
-    EmbeddedPalette::Ayy4 => ColorPalette::from_bytes(PALETTE_AYY_4).expect("Failed to load standard palette"),
-    EmbeddedPalette::Demichrome4 => ColorPalette::from_bytes(PALETTE_DEMICHROME_4).expect("Failed to load standard palette"),
-    EmbeddedPalette::Hollow4 => ColorPalette::from_bytes(PALETTE_HOLLOW_4).expect("Failed to load standard palette"),
-    EmbeddedPalette::Kule16 => ColorPalette::from_bytes(PALETTE_KULE_16).expect("Failed to load standard palette"),
-    EmbeddedPalette::Low8 => ColorPalette::from_bytes(PALETTE_LOW_8).expect("Failed to load standard palette"),
-    EmbeddedPalette::SpaceDust9 => ColorPalette::from_bytes(PALETTE_SPACE_DUST_9).expect("Failed to load standard palette"),
+    BuiltInPalette::Ayy4 => ColorPalette::from_bytes(PALETTE_AYY_4).expect("Failed to load standard palette"),
+    BuiltInPalette::Demichrome4 => ColorPalette::from_bytes(PALETTE_DEMICHROME_4).expect("Failed to load standard palette"),
+    BuiltInPalette::Hollow4 => ColorPalette::from_bytes(PALETTE_HOLLOW_4).expect("Failed to load standard palette"),
+    BuiltInPalette::Kule16 => ColorPalette::from_bytes(PALETTE_KULE_16).expect("Failed to load standard palette"),
+    BuiltInPalette::Low8 => ColorPalette::from_bytes(PALETTE_LOW_8).expect("Failed to load standard palette"),
+    BuiltInPalette::SpaceDust9 => ColorPalette::from_bytes(PALETTE_SPACE_DUST_9).expect("Failed to load standard palette"),
   }
 }

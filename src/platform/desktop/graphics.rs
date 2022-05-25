@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use std::collections::HashMap;
 use std::ffi::c_void;
 
 use anyhow::anyhow;
@@ -9,6 +11,12 @@ use crate::graphics::*;
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphicsBackend {
   context: GlContext,
+  internal_state: RefCell<InternalState>,
+}
+
+/// Internally managed state for the backend.
+struct InternalState {
+  sampler_cache: HashMap<TextureSampler, u32>,
 }
 
 impl DesktopGraphicsBackend {
@@ -23,7 +31,12 @@ impl DesktopGraphicsBackend {
     context.make_current();
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
-    GraphicsServer::new(Box::new(Self { context }))
+    GraphicsServer::new(Box::new(Self {
+      context,
+      internal_state: RefCell::new(InternalState {
+        sampler_cache: HashMap::new(),
+      }),
+    }))
   }
 }
 
@@ -330,11 +343,30 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         ShaderUniform::Matrix4x4(value) => {
           gl::ProgramUniformMatrix4fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
         }
-        ShaderUniform::Texture(texture, slot, _) => {
-          // TODO: process sampler settings, too
+        ShaderUniform::Texture(texture, slot, sampler) => {
           gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
           gl::BindTexture(gl::TEXTURE_2D, *texture);
           gl::ProgramUniform1i(shader, location as i32, *slot as i32);
+
+          if let Some(sampler) = sampler {
+            // build and cache sampler settings based on hash of options
+            let mut internal_state = self.internal_state.try_borrow_mut().expect("Internal state is already borrowed");
+            let sampler_cache = &mut internal_state.sampler_cache;
+
+            let sampler_id = sampler_cache.entry(*sampler).or_insert_with(|| {
+              let mut sampler_id = 0;
+              gl::CreateSamplers(1, &mut sampler_id);
+
+              gl::SamplerParameteri(sampler_id, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
+              gl::SamplerParameteri(sampler_id, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+              gl::SamplerParameteri(sampler_id, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
+              gl::SamplerParameteri(sampler_id, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
+
+              sampler_id
+            });
+
+            gl::BindSampler(*slot as u32, *sampler_id);
+          }
         }
       }
     }
@@ -362,9 +394,9 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
 
       let stride: usize = descriptors
-        .iter()
-        .map(|descriptor| descriptor.count * descriptor.kind.size())
-        .sum();
+          .iter()
+          .map(|it| it.count * it.kind.size())
+          .sum();
 
       let mut offset = 0;
 
