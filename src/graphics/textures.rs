@@ -119,14 +119,12 @@ impl Texture {
     state.width = width as u32;
     state.height = height as u32;
 
-    state.server.write_texture_data(
-      state.handle,
-      width,
-      height,
-      pixels.as_ptr() as *const u8,
-      state.options.format,
-      0, // mip-level
-    );
+    let pixels = match pixels.len() {
+      0 => std::ptr::null(),
+      _ => pixels.as_ptr() as *const u8
+    };
+
+    state.server.write_texture_data(state.handle, width, height, pixels, state.options.format, 0);
   }
 
   /// Uploads a sub-section of pixel data to the [`Texture`].

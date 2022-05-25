@@ -86,6 +86,20 @@ impl RenderTarget {
   pub fn stencil_attachment(&self) -> Option<Texture> {
     self.state.borrow().stencil_attachment.as_ref().map(|it| it.clone())
   }
+
+  /// Activates the [`RenderTarget`].
+  pub fn activate(&self) {
+    let state = self.state.borrow();
+
+    state.server.set_active_render_target(state.handle);
+  }
+
+  /// Deactivates the [`RenderTarget`].
+  pub fn deactivate(&self) {
+    let state = self.state.borrow();
+
+    state.server.set_default_render_target();
+  }
 }
 
 impl HasGraphicsHandle for RenderTarget {

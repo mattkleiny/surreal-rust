@@ -200,17 +200,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       };
 
       gl::BindTexture(gl::TEXTURE_2D, texture);
-      gl::TexImage2D(
-        gl::TEXTURE_2D,
-        mip_level as i32,
-        internal_format as i32,
-        width as i32,
-        height as i32,
-        0, // border
-        gl::RGBA,
-        gl::FLOAT,
-        pixels as *const _,
-      );
+      gl::TexImage2D(gl::TEXTURE_2D, mip_level as i32, internal_format as i32, width as i32, height as i32, 0, gl::RGBA, gl::FLOAT, pixels as *const _);
     }
   }
 
@@ -498,6 +488,8 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {
         panic!("Failed to create render target");
       }
+
+      gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
 
       framebuffer
     }

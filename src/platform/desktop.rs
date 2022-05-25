@@ -27,6 +27,7 @@ pub struct Configuration {
   pub size: (u32, u32),
   pub vsync_enabled: bool,
   pub update_continuously: bool,
+  pub run_in_background: bool,
   pub show_fps_in_title: bool,
   pub icon: Option<&'static [u8]>,
 }
@@ -38,6 +39,7 @@ impl Default for Configuration {
       size: (1280, 720),
       vsync_enabled: true,
       update_continuously: true,
+      run_in_background: false,
       show_fps_in_title: true,
       icon: Some(include_bytes!("../../surreal.ico")),
     }
@@ -89,7 +91,7 @@ impl Platform for DesktopPlatform {
       window,
       event_loop: Some(event_loop),
       config: self.config.clone(),
-      is_focused: false,
+      is_focused: true,
       is_closing: false,
 
       // timing
@@ -168,7 +170,7 @@ impl PlatformHost for DesktopPlatformHost {
         }
         Event::MainEventsCleared => {
           // update the fps counter, if enabled
-          if self.config.show_fps_in_title {
+          if self.config.show_fps_in_title && self.is_focused {
             let delta_time = self.clock.tick();
 
             self.frame_counter.tick(delta_time);
@@ -182,12 +184,18 @@ impl PlatformHost for DesktopPlatformHost {
 
               self.frame_timer.reset();
             }
+          } else {
+            self.window.set_title(self.config.title);
           }
 
           // main control flow
           if self.is_closing {
             *control_flow = ControlFlow::Exit;
-          } else if self.config.update_continuously {
+          } else if (self.config.update_continuously && self.is_focused) || self.config.run_in_background {
+            *control_flow = ControlFlow::Poll;
+            self.window.request_redraw();
+          } else {
+            *control_flow = ControlFlow::Wait;
             self.window.request_redraw();
           }
         }

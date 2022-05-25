@@ -87,6 +87,8 @@ pub struct SpriteContext {
   pub material: Material,
   /// The sprite batch to use for sprite geometry.
   pub batch: SpriteBatch,
+  /// The render target capturing the output of the sprite pass.
+  pub effect_target: RenderTarget,
 }
 
 impl RenderContextDescriptor for SpriteContextDescriptor {
@@ -118,8 +120,26 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
       destination: BlendFactor::OneMinusSrcAlpha,
     });
 
-    Self::Context { material, batch }
+    let effect_target = RenderTarget::new(server, &RenderTargetDescriptor {
+      color_attachment: RenderTextureDescriptor {
+        width: 1920,
+        height: 1080,
+        options: Default::default()
+      },
+      depth_attachment: None,
+      stencil_attachment: None
+    });
+
+    Self::Context { material, batch, effect_target }
   }
 }
 
-impl RenderContext for SpriteContext {}
+impl RenderContext for SpriteContext {
+  fn on_before_with(&mut self) {
+    // self.effect_target.activate();
+  }
+
+  fn on_after_with(&mut self) {
+    // self.effect_target.deactivate();
+  }
+}
