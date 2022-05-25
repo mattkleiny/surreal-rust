@@ -10,10 +10,11 @@ mod local;
 
 thread_local! {
   /// Top-level registry of all file systems.
+  ///
+  /// Safety guarantee exist if and only if mutable internal access to the registry only results
+  /// in addition of new file system entries, and that each file system is internally immutable.
   static REGISTRY: std::sync::Mutex<UnsafeCell<FileSystemRegistry>> = std::sync::Mutex::new(UnsafeCell::new(FileSystemRegistry::new()));
 }
-
-// TODO: remove this unsafe hackery?
 
 /// Registers a new file system for the given virtual path scheme.
 pub fn register_file_system(scheme: &str, file_system: impl FileSystem + 'static) {
