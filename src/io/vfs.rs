@@ -4,9 +4,8 @@ pub use local::*;
 
 mod local;
 
-// TODO: put a file system registry here
 thread_local! {
-  static CURRENT_FILE_SYSTEM: LocalFileSystem = LocalFileSystem::new();
+  static REGISTRY: Mutex<FileSystemRegistry> = Mutex::new(FileSystemRegistry::new());
 }
 
 /// A stream for reading from some [`VirtualPath`].
@@ -20,6 +19,9 @@ pub trait FileSystem {
   type InputStream: InputStream;
   type OutputStream: OutputStream;
 
+  /// The virtual path scheme for this file system.
+  const SCHEMES: &'static [&'static str];
+
   // basic operations
   fn exists(&self, path: &VirtualPath) -> bool;
   fn is_file(&self, path: &VirtualPath) -> bool;
@@ -28,6 +30,30 @@ pub trait FileSystem {
   // read and write
   fn open_read(&self, path: &VirtualPath) -> crate::Result<Self::InputStream>;
   fn open_write(&self, path: &VirtualPath) -> crate::Result<Self::OutputStream>;
+}
+
+/// Allows registering file systems for different virtual path schemes.
+pub struct FileSystemRegistry {
+  file_systems: HashMap<String, Box<dyn FileSystem>>,
+}
+
+impl FileSystemRegistry {
+  /// Builds a new file system registry.
+  pub fn new() -> Self {
+    Self {
+      file_systems: HashMap::new(),
+    }
+  }
+
+  /// Adds a new file system to the registry.
+  pub fn add_file_system(&mut self, file_system: impl FileSystem + 'static) {
+    todo!()
+  }
+
+  /// Retrieves the file system for the given virtual path scheme.
+  pub fn get_file_system(&self, scheme: &str) -> &dyn FileSystem {
+    todo!()
+  }
 }
 
 /// Represents a path in a virtual file system.

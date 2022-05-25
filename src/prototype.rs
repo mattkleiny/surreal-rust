@@ -6,8 +6,6 @@ use crate::graphics::{ColorPalette, GraphicsServer, Pixel, ShaderProgram};
 
 mod pixels;
 
-// TODO: make this easier to use?
-
 const STANDARD_SHADER: &'static str = include_str!("../assets/shaders/standard.glsl");
 
 const PALETTE_AYY_4: &'static [u8] = include_bytes!("../assets/palettes/ayy-4.pal");
