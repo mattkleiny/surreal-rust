@@ -21,10 +21,10 @@ fn main() {
     let mut canvas = PixelCanvas::new(graphics, 256, 144);
     let mut random = Random::new();
 
-    renderer.configure(SpriteContextDescriptor::default());
+    renderer.configure(SpriteBatchDescriptor::default());
 
     game.run_variable_step(|context| {
-      renderer.with(|pass: &mut SpriteContext| {
+      renderer.with(|pass: &mut SpriteBatchContext| {
         context.host.graphics.clear_color_buffer(palette[0]);
 
         canvas.simulate(context.time.delta_time);

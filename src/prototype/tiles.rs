@@ -59,9 +59,9 @@ impl<'a, T> TileMap<'a, T> where T: Tile {
   }
 }
 
-impl<'a, T> Renderable<SpriteContext> for TileMap<'a, T> where T: Tile {
+impl<'a, T> Renderable<SpriteBatchContext> for TileMap<'a, T> where T: Tile {
   /// Renders this tile map with to a sprite batch.
-  fn render(&self, context: &mut SpriteContext) {
+  fn render(&self, context: &mut SpriteBatchContext) {
     let half_width = self.tiles.width() as f32 / 2.;
     let half_height = self.tiles.height() as f32 / 2.;
 

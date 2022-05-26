@@ -79,26 +79,26 @@ pub fn load_standard_palette<P>(palette: BuiltInPalette) -> ColorPalette<P> wher
 }
 
 /// A descriptor for the `SpriteContext`.
-pub struct SpriteContextDescriptor {
+pub struct SpriteBatchDescriptor {
   /// A default projection-view matrix to apply.
   pub projection_view: Matrix4x4<f32>,
-  /// A color palette to use for rendering these sprites.
-  ///
+
   /// If a palette is specified, a special shader variant will be loaded that uses the palette.
   pub palette: Option<ColorPalette<Color>>,
+
   /// The expected number of sprites to use in the batch; used for pre-sizing the batch vertex buffer.
   pub sprite_count: usize,
 }
 
 /// A simple [`RenderContext`] that allows for sprite rendering using the standard sprite shaders.
-pub struct SpriteContext {
+pub struct SpriteBatchContext {
   /// A material configured to render sprites.
   pub material: Material,
   /// The sprite batch to use for sprite geometry.
   pub batch: SpriteBatch,
 }
 
-impl Default for SpriteContextDescriptor {
+impl Default for SpriteBatchDescriptor {
   fn default() -> Self {
     Self {
       projection_view: Matrix4x4::identity(),
@@ -108,8 +108,8 @@ impl Default for SpriteContextDescriptor {
   }
 }
 
-impl RenderContextDescriptor for SpriteContextDescriptor {
-  type Context = SpriteContext;
+impl RenderContextDescriptor for SpriteBatchDescriptor {
+  type Context = SpriteBatchContext;
 
   fn create(&self, server: &GraphicsServer) -> Self::Context {
     // determine which shader we're using, prepare material
@@ -144,7 +144,7 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
   }
 }
 
-impl RenderContext for SpriteContext {
+impl RenderContext for SpriteBatchContext {
   fn on_before_with(&mut self) {
     self.batch.begin(&self.material);
   }

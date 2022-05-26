@@ -20,7 +20,7 @@ fn main() {
 
     let mut renderer = RenderManager::new(graphics);
 
-    renderer.configure(SpriteContextDescriptor {
+    renderer.configure(SpriteBatchDescriptor {
       projection_view: {
         // TODO: fix up translation matrix multiplication?
         let view = Matrix4x4::IDENTITY;

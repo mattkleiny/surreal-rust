@@ -21,7 +21,7 @@ fn main() {
 
     let mut renderer = RenderManager::new(graphics);
 
-    renderer.configure(SpriteContextDescriptor {
+    renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.),
       ..Default::default()
     });
@@ -39,7 +39,7 @@ fn main() {
       }
 
       // draw bunnies
-      renderer.with(|pass: &mut SpriteContext| {
+      renderer.with(|pass: &mut SpriteBatchContext| {
         for bunny in &bunnies {
           pass.batch.draw(&region, SpriteOptions {
             position: bunny.position,
