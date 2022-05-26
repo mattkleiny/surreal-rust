@@ -5,7 +5,7 @@
 pub use ecs::*;
 
 use crate::assets::AssetManager;
-use crate::graphics::{ImageLoader, MaterialLoader, ShaderProgramLoader, TextureLoader, TextureOptions};
+use crate::graphics::{BitmapFontLoader, ImageLoader, MaterialLoader, ShaderProgramLoader, TextureLoader, TextureOptions};
 use crate::platform::{Platform, PlatformHost};
 use crate::utilities::{Clock, GameTime};
 
@@ -35,6 +35,8 @@ impl<P> Game<P> where P: Platform {
     // set-up default asset loaders
     let host: &P::Host = &game.host;
     let graphics = host.graphics();
+
+    game.assets.add_loader(BitmapFontLoader {});
 
     game.assets.add_loader(ImageLoader {
       format: None
