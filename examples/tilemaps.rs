@@ -29,6 +29,7 @@ fn main() {
         view * projection
       },
       palette: Some(palette.clone()),
+      ..Default::default()
     });
 
     // set-up tile map
