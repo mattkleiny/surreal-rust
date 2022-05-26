@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use winit::event::{ElementState, MouseButton};
 
 use crate::input::*;
-use crate::maths::Vector2;
+use crate::maths::{range, Vector2};
 
 /// The server for input management.
 pub struct DesktopInput {
@@ -149,7 +149,7 @@ impl MouseDevice for DesktopMouseDevice {
   }
 
   fn normalised_position(&self) -> Vector2<f32> {
-    self.normalised_position
+    self.normalised_position.clamp(range(0.01, 0.99))
   }
 
   fn is_button_up(&self, button: MouseButton) -> bool {

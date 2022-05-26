@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
+use crate::collections::Array2D;
 use crate::graphics::Renderable;
-use crate::maths::{Grid, Numeric, vec2};
+use crate::maths::{Grid, GridPoint, Numeric, vec2};
 
 use super::*;
 
@@ -15,7 +16,7 @@ pub trait Tile: 'static {
 }
 
 pub struct TileMap<'a, T> where T: Tile {
-  tiles: Grid<T::Id>,
+  tiles: Array2D<T::Id>,
   sprites: HashMap<T::Id, TextureRegion<'a>>,
 }
 
@@ -23,7 +24,7 @@ impl<'a, T> TileMap<'a, T> where T: Tile {
   /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
-      tiles: Grid::new(width, height),
+      tiles: Array2D::new(width, height),
       sprites: HashMap::new(),
     }
   }
@@ -38,24 +39,27 @@ impl<'a, T> TileMap<'a, T> where T: Tile {
     self.tiles.height()
   }
 
-  /// Returns the tile at the given coordinates.
-  pub fn get_tile(&self, x: usize, y: usize) -> &T {
-    T::from_id(self.tiles[(x, y)])
-  }
-
-  /// Sets the tile at the given coordinates.
-  pub fn set_tile(&mut self, x: usize, y: usize, tile: &T) {
-    self.tiles[(x, y)] = tile.to_id();
-  }
-
   /// Sets the sprite to be used for the given tile.
   pub fn set_sprite(&mut self, tile: &T, sprite: impl Into<TextureRegion<'a>>) {
     self.sprites.insert(tile.to_id(), sprite.into());
   }
+}
 
-  /// Clears the tile map of all tiles.
-  pub fn clear(&mut self) {
-    self.tiles.fill(T::Id::default());
+impl<'a, T> Grid<T> for TileMap<'a, T> where T: Tile {
+  fn stride(&self) -> usize {
+    self.tiles.width()
+  }
+
+  fn length(&self) -> usize {
+    self.tiles.length()
+  }
+
+  fn get(&self, point: impl Into<GridPoint>) -> &T {
+    T::from_id(*self.tiles.get(point))
+  }
+
+  fn set(&mut self, point: impl Into<GridPoint>, value: T) {
+    self.tiles.set(point, value.to_id());
   }
 }
 
@@ -67,7 +71,7 @@ impl<'a, T> Renderable<SpriteBatchContext> for TileMap<'a, T> where T: Tile {
 
     for y in 0..self.tiles.height() {
       for x in 0..self.tiles.width() {
-        let id = self.tiles[(x, y)];
+        let id = self.tiles.get((x, y));
 
         if let Some(region) = self.sprites.get(&id) {
           // TODO: sprite pivots
@@ -124,9 +128,9 @@ mod tests {
   fn tile_map_should_read_and_write() {
     let mut map = TileMap::new(16, 16);
 
-    map.set_tile(0, 0, &ExampleTile::WALL);
+    map.set(0, 0, &ExampleTile::WALL);
 
-    let tile = map.get_tile(0, 0);
+    let tile = map.get(0, 0);
 
     assert_eq!(tile.1, "Wall");
   }

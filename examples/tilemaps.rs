@@ -40,7 +40,7 @@ fn main() {
     for y in 0..tilemap.height() {
       for x in 0..tilemap.width() {
         if bool::random() {
-          tilemap.set_tile(x, y, &Tile::Filled);
+          tilemap.set((x, y), Tile::Filled);
         }
       }
     }
@@ -61,7 +61,7 @@ fn main() {
           for y in 0..tilemap.height() {
             for x in 0..tilemap.width() {
               if bool::random() {
-                tilemap.set_tile(x, y, &Tile::Filled);
+                tilemap.set((x, y), Tile::Filled);
               }
             }
           }
@@ -72,9 +72,16 @@ fn main() {
 }
 
 /// Represents a tile in our simple tile map.
+#[derive(Copy, Clone, Debug)]
 enum Tile {
   Empty,
   Filled,
+}
+
+impl Default for Tile {
+  fn default() -> Self {
+    Self::Empty
+  }
 }
 
 impl surreal::prelude::Tile for Tile {

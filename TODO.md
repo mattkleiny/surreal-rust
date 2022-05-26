@@ -24,3 +24,4 @@
 - [ ] Fix up lifetimes for core types (graphics, etc)
 - [ ] Give documentation a bit of love
 - [ ] Draw lists? (load/store actions, render targets, command buffer and post processing)
+- [ ] Swap to stable (instead of nightly)?

@@ -1,115 +1,113 @@
-use std::ops::{Index, IndexMut};
-
 use super::*;
 
-// TODO: think up a smarter trait for this?
+/// Represents a 2d point in a grid.
+pub type GridPoint = (usize, usize);
 
-/// A simple 2d grid that allows efficient random access.
-pub struct Grid<T> {
-  stride: usize,
-  items: Vec<T>,
-}
-
-impl<T> Grid<T> {
-  /// Creates a new grid with the given dimensions.
-  pub fn new(width: usize, height: usize) -> Self where T: Clone + Default {
-    Self {
-      stride: width,
-      items: vec![T::default(); width * height],
-    }
-  }
-
-  /// Converts the given slice into a grid.
-  pub fn from_slice(stride: usize, slice: &[T]) -> Self where T: Clone {
-    Self {
-      stride,
-      items: slice.to_vec(),
-    }
-  }
-
+/// Represents a 2d grid that allows efficient random access.
+pub trait Grid<T> {
   /// Returns the stride/size between each row of the grid.
-  pub fn stride(&self) -> usize {
-    self.stride
-  }
+  fn stride(&self) -> usize;
 
   /// Returns the total length of the grid (width * height).
-  pub fn length(&self) -> usize {
-    self.items.len()
-  }
+  fn length(&self) -> usize;
 
   /// Returns the width of the grid.
-  pub fn width(&self) -> usize {
-    self.stride
+  fn width(&self) -> usize {
+    self.stride()
   }
 
   /// Returns the height of the grid.
-  pub fn height(&self) -> usize {
+  fn height(&self) -> usize {
     self.length() / self.stride()
   }
 
+  /// Accesses an item from the grid.
+  fn get(&self, point: impl Into<GridPoint>) -> &T;
+
+  /// Sets an item in the grid.
+  fn set(&mut self, point: impl Into<GridPoint>, value: T);
+
   /// Fills the grid with the given value.
-  pub fn fill(&mut self, value: T) where T: Clone {
-    self.items.fill(value);
+  fn fill(&mut self, value: T) where T: Clone {
+    for y in 0..self.height() {
+      for x in 0..self.width() {
+        self.set((x, y), value.clone());
+      }
+    }
   }
 
-  /// Returns the items as a slice.
-  pub fn as_slice(&self) -> &[T] {
-    self.items.as_slice()
+  /// Clears the grid.
+  fn clear(&mut self) where T: Clone + Default {
+    self.fill(T::default());
   }
 
-  /// Returns the items as a mutable slice.
-  pub fn as_mut_slice(&mut self) -> &mut [T] {
-    self.items.as_mut_slice()
+  /// Draws a shape onto the grid.
+  fn draw_shape(&mut self, shape: &impl RasterShape, value: T) where T: Clone {
+    shape.draw_to(self, value);
   }
+}
 
-  /// Draws a circle in the grid.
-  pub fn draw_circle(&mut self, center: Vector2<isize>, radius: isize, value: T) where T: Copy {
+/// Represents a type that can be drawn into a grid.
+pub trait RasterShape {
+  fn draw_to<G, T>(&self, grid: &mut G, value: T) where G: Grid<T> + ?Sized, T: Clone;
+}
+
+/// A simple circle.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct Circle {
+  pub center: Vector2<isize>,
+  pub radius: isize,
+}
+
+impl RasterShape for Circle {
+  fn draw_to<G, T>(&self, grid: &mut G, value: T) where G: Grid<T> + ?Sized, T: Clone {
+    let center = self.center;
+    let radius = self.radius;
+
     let rectangle = Rectangle::from_size(center, vec2(radius, radius))
-      .clamp(0, 0, self.width() as isize - 1, self.height() as isize - 1);
+      .clamp(0, 0, grid.width() as isize - 1, grid.height() as isize - 1);
 
     for y in rectangle.top()..rectangle.bottom() {
       for x in rectangle.left()..rectangle.right() {
         let point = vec2(x, y);
 
         if (point - center).length_squared() <= radius {
-          self[(point.x as usize, point.y as usize)] = value;
+          grid.set(point, value.clone());
         }
       }
     }
   }
 }
 
-impl<T> Index<(usize, usize)> for Grid<T> {
-  type Output = T;
-
-  fn index(&self, (x, y): (usize, usize)) -> &Self::Output {
-    &self.items[x + y * self.stride]
-  }
-}
-
-impl<T> IndexMut<(usize, usize)> for Grid<T> {
-  fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Output {
-    &mut self.items[x + y * self.stride]
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use crate::graphics::Color32;
-  use crate::maths::FromRandom;
-
-  use super::*;
-
-  #[test]
-  fn grid_should_read_and_write_elements() {
-    let mut grid = Grid::new(128, 128);
-
-    grid.fill(Color32::BLACK);
-
-    for y in 0..grid.height() {
-      for x in 0..grid.width() {
-        grid[(x, y)] = Color32::random();
+/// Allows conversion into a GridPoint.
+macro_rules! implement_grid_point {
+  ($type:ty) => {
+    impl From<crate::maths::Vector2<$type>> for GridPoint {
+      fn from(point: Vector2<$type>) -> Self {
+        (point.x as usize, point.y as usize)
       }
     }
+  };
+}
+
+implement_grid_point!(u8);
+implement_grid_point!(u16);
+implement_grid_point!(u32);
+implement_grid_point!(u64);
+implement_grid_point!(usize);
+implement_grid_point!(i16);
+implement_grid_point!(i32);
+implement_grid_point!(i64);
+implement_grid_point!(isize);
+
+impl From<Vector2<f32>> for GridPoint {
+  fn from(point: Vector2<f32>) -> Self {
+    (point.x.floor() as usize, point.y.floor() as usize)
+  }
+}
+
+impl From<Vector2<f64>> for GridPoint {
+  fn from(point: Vector2<f64>) -> Self {
+    (point.x.floor() as usize, point.y.floor() as usize)
   }
 }

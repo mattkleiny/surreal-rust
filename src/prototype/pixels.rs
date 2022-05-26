@@ -1,12 +1,13 @@
+use crate::collections::Array2D;
 use crate::graphics::*;
-use crate::maths::{clamp, Grid, vec2, Vector2};
+use crate::maths::{Circle, Grid, vec2, Vector2};
 use crate::utilities::{IntervalTimer, TimeSpan};
 
 /// A simple canvas of pixels that can be rendered to the screen.
 pub struct PixelCanvas {
   pub texture: Texture,
   pub mesh: Mesh<Vertex2>,
-  pub pixels: Grid<Color>,
+  pub pixels: Array2D<Color>,
   timer: IntervalTimer,
 }
 
@@ -16,23 +17,22 @@ impl PixelCanvas {
     Self {
       texture: Texture::new(server),
       mesh: Mesh::create_quad(server, 1.),
-      pixels: Grid::new(width, height),
+      pixels: Array2D::new(width, height),
       timer: IntervalTimer::new(TimeSpan::from_millis(10.)),
     }
   }
 
   /// Draws a circle of pixels.
-  pub fn draw_circle(&mut self, center: Vector2<f32>, radius: f32, color: Color) {
-    // TODO: clean this up
-    let Vector2 { x, y } = center;
+  pub fn draw_circle(&mut self, Vector2 { x, y }: Vector2<f32>, radius: f32, color: Color) {
+    let shape = Circle {
+      center: vec2(
+        x.floor() as isize,
+        y.floor() as isize
+      ),
+      radius: radius as isize,
+    };
 
-    let x = (x * self.pixels.width() as f32).floor() as usize;
-    let y = (y * self.pixels.height() as f32).floor() as usize;
-
-    let x = clamp(x, 0, self.pixels.width() - 1) as isize;
-    let y = clamp(y, 0, self.pixels.height() - 1) as isize;
-
-    self.pixels.draw_circle(vec2(x, y), radius as isize, color);
+    self.pixels.draw_shape(&shape, color);
   }
 
   /// Updates the pixel simulation.
@@ -42,7 +42,7 @@ impl PixelCanvas {
 
       for y in (0..self.pixels.height()).rev() {
         for x in 0..self.pixels.width() {
-          let pixel = self.pixels[(x, y)];
+          let pixel = self.pixels.get((x, y));
           if pixel.a <= 0. {
             continue;
           }
@@ -65,11 +65,11 @@ impl PixelCanvas {
     let to_x = to_x as usize;
     let to_y = to_y as usize;
 
-    let target = self.pixels[(to_x, to_y)];
+    let target = self.pixels.get((to_x, to_y));
 
     if target.a <= 0. {
-      self.pixels[(to_x, to_y)] = self.pixels[(from_x, from_y)];
-      self.pixels[(from_x, from_y)] = Color::CLEAR;
+      self.pixels.set((to_x, to_y), self.pixels.get((from_x, from_y)).clone());
+      self.pixels.set((from_x, from_y), Color::CLEAR);
 
       return true;
     }

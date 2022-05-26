@@ -42,7 +42,7 @@ fn main() {
       }
 
       if let Some(mouse) = context.host.input.mouse_device() {
-        let position = mouse.normalised_position();
+        let position = mouse.normalised_position() * vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
 
         if mouse.is_button_down(MouseButton::Left) {
           let colors = &palette.as_slice()[1..4];

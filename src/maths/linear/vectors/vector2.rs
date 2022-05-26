@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-use crate::maths::{Lerp, Numeric};
+use crate::maths::{Lerp, Numeric, Range};
 
 /// Shorthand to construct a [`Vector2`].
 pub const fn vec2<T>(x: T, y: T) -> Vector2<T> where T: Numeric {
@@ -23,6 +23,14 @@ impl<T> Vector2<T> where T: Numeric {
   /// Creates a new vector from the given components.
   pub const fn new(x: T, y: T) -> Self {
     Self { x, y }
+  }
+
+  /// Clamps the (x, y) components of the vector to the given range.
+  pub fn clamp(&self, range: Range<T>) -> Self {
+    Self::new(
+      range.clamp(self.x),
+      range.clamp(self.y),
+    )
   }
 }
 

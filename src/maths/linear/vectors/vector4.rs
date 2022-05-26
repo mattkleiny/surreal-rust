@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-use crate::maths::{Lerp, Numeric};
+use crate::maths::{Lerp, Numeric, Range};
 
 /// Shorthand to construct a [`Vector4`].
 pub const fn vec4<T>(x: T, y: T, z: T, w: T) -> Vector4<T> where T: Numeric {
@@ -26,6 +26,16 @@ impl<T> Vector4<T> where T: Numeric {
 
   pub const fn new(x: T, y: T, z: T, w: T) -> Self {
     Self { x, y, z, w }
+  }
+
+  /// Clamps the (x, y, z, w) components of the vector to the given range.
+  pub fn clamp(&self, range: Range<T>) -> Self {
+    Self::new(
+      range.clamp(self.x),
+      range.clamp(self.y),
+      range.clamp(self.z),
+      range.clamp(self.w),
+    )
   }
 }
 
