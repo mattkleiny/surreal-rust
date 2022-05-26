@@ -142,7 +142,7 @@ impl Texture {
   }
 }
 
-impl HasGraphicsHandle for Texture {
+impl GraphicsResource for Texture {
   /// Returns the underlying graphics handle of the texture.
   fn handle(&self) -> GraphicsHandle {
     self.state.borrow().handle

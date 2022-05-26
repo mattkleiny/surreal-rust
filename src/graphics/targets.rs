@@ -108,7 +108,7 @@ impl RenderTarget {
   }
 }
 
-impl HasGraphicsHandle for RenderTarget {
+impl GraphicsResource for RenderTarget {
   /// Returns the underlying graphics handle of the [`RenderTarget`].
   fn handle(&self) -> GraphicsHandle {
     self.state.borrow().handle

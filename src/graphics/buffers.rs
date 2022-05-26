@@ -75,7 +75,7 @@ impl<T> Buffer<T> {
   }
 }
 
-impl<T> HasGraphicsHandle for Buffer<T> {
+impl<T> GraphicsResource for Buffer<T> {
   /// Retrieves the handle for the [`Buffer`].
   fn handle(&self) -> GraphicsHandle {
     self.state.borrow().handle

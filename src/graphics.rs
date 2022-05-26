@@ -34,8 +34,8 @@ pub type GraphicsHandle = u32;
 /// The graphics server implementation.
 pub type GraphicsServer = std::rc::Rc<Box<dyn GraphicsBackend>>;
 
-/// Represents a type that possesses a `GraphicsHandle`.
-pub trait HasGraphicsHandle {
+/// Represents a graphical resource that possesses a `GraphicsHandle`.
+pub trait GraphicsResource {
   fn handle(&self) -> GraphicsHandle;
 }
 

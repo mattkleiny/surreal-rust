@@ -99,7 +99,7 @@ impl ShaderProgram {
   }
 }
 
-impl HasGraphicsHandle for ShaderProgram {
+impl GraphicsResource for ShaderProgram {
   /// Retrieves the handle for the given [`ShaderProgram`].
   fn handle(&self) -> GraphicsHandle {
     self.state.handle

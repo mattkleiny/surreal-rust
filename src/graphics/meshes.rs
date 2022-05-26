@@ -158,7 +158,7 @@ impl<V> Mesh<V> where V: Vertex {
   }
 }
 
-impl<V> HasGraphicsHandle for Mesh<V> {
+impl<V> GraphicsResource for Mesh<V> {
   /// Returns the underlying graphics handle of the [`Mesh`].
   fn handle(&self) -> GraphicsHandle {
     self.state.borrow().handle
