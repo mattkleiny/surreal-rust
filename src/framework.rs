@@ -26,6 +26,7 @@ pub struct GameTick<'a, P> where P: Platform {
 impl<P> Game<P> where P: Platform {
   /// Starts a new game with the given platform.
   pub fn start(platform: P, mut setup: impl FnMut(Game<P>, &AssetManager)) {
+    #[cfg(feature = "profiler")]
     profiling::register_thread!("Main Thread");
 
     // set-up core host
@@ -50,6 +51,7 @@ impl<P> Game<P> where P: Platform {
     let mut timer = Clock::new();
 
     self.host.run(move |host| {
+      #[cfg(feature = "profiler")]
       profiling::scope!("Main Thread");
 
       let mut context = GameTick {
@@ -67,6 +69,7 @@ impl<P> Game<P> where P: Platform {
         host.exit();
       }
 
+      #[cfg(feature = "profiler")]
       profiling::finish_frame!();
     });
   }

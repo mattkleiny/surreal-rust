@@ -25,6 +25,8 @@ surreal-macros = { path = "macros" }
 anyhow = "1.0.57"
 image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
 profiling = { version = "1.0.6", features = ["profile-with-optick"] }
+egui = { version = "0.18.1" }
+puffin_egui = { version = "0.15.0" }
 
 # serialization/deserialization
 serde = { version = "1.0.137", features = ["derive"] }
