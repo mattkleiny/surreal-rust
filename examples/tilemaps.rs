@@ -16,7 +16,7 @@ fn main() {
 
     // set-up assets and rendering
     let sprite: &Texture = assets.load_asset("assets/sprites/example_tile.png").expect("Failed to load sprite image");
-    let palette = load_standard_palette(BuiltInPalette::Demichrome4);
+    let palette = load_built_in_palette(BuiltInPalette::Demichrome4);
 
     let mut renderer = RenderManager::new(graphics);
 
@@ -33,22 +33,15 @@ fn main() {
     });
 
     // set-up tile map
-    let mut tilemap = TileMap::new(16, 9);
+    let mut map = TileMap::new(16, 9);
 
-    tilemap.set_sprite(&Tile::Filled, sprite);
-
-    for y in 0..tilemap.height() {
-      for x in 0..tilemap.width() {
-        if bool::random() {
-          tilemap.set((x, y), Tile::Filled);
-        }
-      }
-    }
+    map.set_sprite(&Tile::Filled, sprite);
+    map.fill(|_, _| if bool::random() { &Tile::Filled } else { &Tile::Empty });
 
     game.run_variable_step(|context| {
       context.host.graphics.clear_color_buffer(palette[0]);
 
-      renderer.render(&tilemap);
+      renderer.render(&map);
 
       if let Some(keyboard) = context.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
@@ -56,15 +49,8 @@ fn main() {
         }
 
         if keyboard.is_key_pressed(Key::Space) {
-          tilemap.clear();
-
-          for y in 0..tilemap.height() {
-            for x in 0..tilemap.width() {
-              if bool::random() {
-                tilemap.set((x, y), Tile::Filled);
-              }
-            }
-          }
+          map.clear();
+          map.fill(|_, _| if bool::random() { &Tile::Filled } else { &Tile::Empty });
         }
       }
     });

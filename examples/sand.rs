@@ -14,7 +14,7 @@ fn main() {
     let graphics = &game.host.graphics;
 
     // load assets
-    let palette = load_standard_palette(BuiltInPalette::Hollow4);
+    let palette = load_built_in_palette(BuiltInPalette::Hollow4);
 
     // set-up rendering
     let mut renderer = RenderManager::new(graphics);

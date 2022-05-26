@@ -39,9 +39,25 @@ impl<'a, T> TileMap<'a, T> where T: Tile {
     self.tiles.height()
   }
 
+  /// Gets the sprite to be used for the given tile.
+  pub fn get_sprite(&self, tile: &T) -> Option<&TextureRegion<'a>> {
+    self.sprites.get(&tile.to_id())
+  }
+
   /// Sets the sprite to be used for the given tile.
   pub fn set_sprite(&mut self, tile: &T, sprite: impl Into<TextureRegion<'a>>) {
     self.sprites.insert(tile.to_id(), sprite.into());
+  }
+
+  /// Fills the map with the given delegate.
+  pub fn fill(&mut self, body: impl Fn(usize, usize) -> &'a T) {
+    for y in 0..self.height() {
+      for x in 0..self.width() {
+        let tile = body(x, y);
+
+        self.tiles.set((x, y), tile.to_id());
+      }
+    }
   }
 }
 

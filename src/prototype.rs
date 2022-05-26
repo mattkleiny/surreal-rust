@@ -54,7 +54,7 @@ pub enum BuiltInPalette {
 }
 
 /// Loads the standard shader program from embedded resources.
-pub fn load_standard_shader(server: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
+pub fn load_built_in_shader(server: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let shader = match shader {
     BuiltInShader::Sprite(BuiltInSpriteShader::Standard) => ShaderProgram::from_string(server, SHADER_SPRITE_STANDARD),
     BuiltInShader::Sprite(BuiltInSpriteShader::Palette) => ShaderProgram::from_string(server, SHADER_SPRITE_PALETTE),
@@ -65,7 +65,7 @@ pub fn load_standard_shader(server: &GraphicsServer, shader: BuiltInShader) -> S
 }
 
 /// Loads the given built-in color palette.
-pub fn load_standard_palette<P>(palette: BuiltInPalette) -> ColorPalette<P> where P: Pixel {
+pub fn load_built_in_palette<P>(palette: BuiltInPalette) -> ColorPalette<P> where P: Pixel {
   let palette = match palette {
     BuiltInPalette::Ayy4 => ColorPalette::from_bytes(PALETTE_AYY_4),
     BuiltInPalette::Demichrome4 => ColorPalette::from_bytes(PALETTE_DEMICHROME_4),
@@ -118,7 +118,7 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
       Some(_) => BuiltInShader::Sprite(BuiltInSpriteShader::Palette),
     };
 
-    let mut material = Material::new(server, &load_standard_shader(server, shader));
+    let mut material = Material::new(server, &load_built_in_shader(server, shader));
     let batch = SpriteBatch::with_capacity(server, self.sprite_count);
 
     // prepare the palette texture, if enabled

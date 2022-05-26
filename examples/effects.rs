@@ -17,8 +17,8 @@ fn main() {
     let sprite: &Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
     let region = TextureRegion::from(sprite);
 
-    let mut sprite_material = Material::new(graphics, &load_standard_shader(graphics, BuiltInShader::Sprite(BuiltInSpriteShader::Standard)));
-    let mut effect_material = Material::new(graphics, &load_standard_shader(graphics, BuiltInShader::Effect(BuiltInEffect::Aberration)));
+    let mut sprite_material = Material::new(graphics, &load_built_in_shader(graphics, BuiltInShader::Sprite(BuiltInSpriteShader::Standard)));
+    let mut effect_material = Material::new(graphics, &load_built_in_shader(graphics, BuiltInShader::Effect(BuiltInEffect::Aberration)));
 
     let render_target = RenderTarget::new(graphics, &RenderTargetDescriptor {
       color_attachment: RenderTextureDescriptor {
