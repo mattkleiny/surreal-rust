@@ -64,6 +64,11 @@ impl<'a> VirtualPath<'a> {
     }
   }
 
+  /// Returns a new path with a different file extension.
+  pub fn change_extension(&self, new_extension: &str) -> Self {
+    todo!()
+  }
+
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
     let stream = CURRENT_FILE_SYSTEM.with(|file_system| {

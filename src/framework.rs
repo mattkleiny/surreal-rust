@@ -26,33 +26,19 @@ pub struct GameTick<'a, P> where P: Platform {
 impl<P> Game<P> where P: Platform {
   /// Starts a new game with the given platform.
   pub fn start(platform: P, mut setup: impl FnMut(Game<P>, &AssetManager)) {
-    let mut game = Game {
-      host: platform.create_host(),
-    };
-
-    // set-up default asset loaders
+    // set-up core host
+    let game = Game { host: platform.create_host() };
     let host: &P::Host = &game.host;
     let graphics = host.graphics();
+
+    // set-up asset manager
     let mut assets = AssetManager::new();
 
     assets.add_loader(BitmapFontLoader {});
-
-    assets.add_loader(ImageLoader {
-      format: None
-    });
-
-    assets.add_loader(TextureLoader {
-      server: graphics.clone(),
-      options: TextureOptions::default(),
-    });
-
-    assets.add_loader(ShaderProgramLoader {
-      server: graphics.clone()
-    });
-
-    assets.add_loader(MaterialLoader {
-      server: graphics.clone()
-    });
+    assets.add_loader(ImageLoader { format: None });
+    assets.add_loader(TextureLoader { server: graphics.clone(), options: TextureOptions::default() });
+    assets.add_loader(ShaderProgramLoader { server: graphics.clone() });
+    assets.add_loader(MaterialLoader { server: graphics.clone() });
 
     setup(game, &assets);
   }
