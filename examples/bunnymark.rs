@@ -1,7 +1,5 @@
 //! A simple sprite benchmark for Surreal.
 
-#![windows_subsystem = "windows"]
-
 use surreal::prelude::*;
 
 const WIDTH: f32 = 1920.;
@@ -73,6 +71,7 @@ fn main() {
               ),
             });
           }
+
           println!("There are {:?} bunnies", bunnies.len());
         }
 
