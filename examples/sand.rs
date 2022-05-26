@@ -13,23 +13,14 @@ fn main() {
   Game::start(platform, |mut game, _| {
     let graphics = &game.host.graphics;
 
-    // load assets
-    let palette = load_built_in_palette(BuiltInPalette::Hollow4);
-
     // set-up rendering
-    let mut renderer = RenderManager::new(graphics);
+    let palette = load_built_in_palette(BuiltInPalette::Hollow4);
     let mut canvas = PixelCanvas::new(graphics, 256, 144);
     let mut random = Random::new();
 
-    renderer.configure(SpriteBatchDescriptor::default());
-
     game.run_variable_step(|context| {
-      renderer.with(|pass: &mut SpriteBatchContext| {
-        context.host.graphics.clear_color_buffer(palette[0]);
-
-        canvas.simulate(context.time.delta_time);
-        canvas.draw(&pass.material); // we're just using the sprite material
-      });
+      canvas.simulate(context.time.delta_time);
+      canvas.draw(); // we're just using the sprite material
 
       if let Some(keyboard) = context.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {

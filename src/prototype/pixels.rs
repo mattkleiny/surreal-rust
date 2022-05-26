@@ -3,21 +3,27 @@ use crate::graphics::*;
 use crate::maths::{Circle, Grid, vec2, Vector2};
 use crate::utilities::{IntervalTimer, TimeSpan};
 
+use super::*;
+
 /// A simple canvas of pixels that can be rendered to the screen.
 pub struct PixelCanvas {
   pub texture: Texture,
   pub mesh: Mesh<Vertex2>,
   pub pixels: Array2D<Color>,
+  material: Material,
   timer: IntervalTimer,
 }
 
 impl PixelCanvas {
   /// Creates a new pixel canvas with the given dimensions.
   pub fn new(server: &GraphicsServer, width: usize, height: usize) -> Self {
+    let shader = load_built_in_shader(server, BuiltInShader::Sprite(BuiltInSpriteShader::Standard));
+
     Self {
       texture: Texture::new(server),
       mesh: Mesh::create_quad(server, 1.),
       pixels: Array2D::new(width, height),
+      material: Material::new(server, &shader),
       timer: IntervalTimer::new(TimeSpan::from_millis(10.)),
     }
   }
@@ -27,7 +33,7 @@ impl PixelCanvas {
     let shape = Circle {
       center: vec2(
         x.floor() as isize,
-        y.floor() as isize
+        y.floor() as isize,
       ),
       radius: radius as isize,
     };
@@ -78,7 +84,7 @@ impl PixelCanvas {
   }
 
   /// Draws the canvas to the screen.
-  pub fn draw(&mut self, material: &Material) {
+  pub fn draw(&mut self) {
     // blit pixel data to the GPU
     self.texture.write_pixels(
       self.pixels.width(),
@@ -87,7 +93,7 @@ impl PixelCanvas {
     );
 
     // render to the screen
-    self.mesh.draw(&material, PrimitiveTopology::Triangles);
+    self.mesh.draw(&self.material, PrimitiveTopology::Triangles);
   }
 
   /// Clears the canvas.
