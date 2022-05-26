@@ -100,7 +100,7 @@ struct MeshState<V> {
 
 impl<V> MeshState<V> {
   /// Borrows the underlying graphics buffers from the state at the same time..
-  pub fn borrow_buffers(&mut self) -> (&mut Buffer<V>, &mut Buffer<u32>) {
+  pub fn borrow_buffers_mut(&mut self) -> (&mut Buffer<V>, &mut Buffer<u32>) {
     (&mut self.vertices, &mut self.indices)
   }
 }
@@ -136,7 +136,7 @@ impl<V> Mesh<V> where V: Vertex {
   /// Acquires mutable write access the mesh buffers.
   pub fn with_buffers(&mut self, body: impl FnOnce(&mut Buffer<V>, &mut Buffer<u32>)) {
     let state = &mut self.state.borrow_mut();
-    let (vertices, indices) = state.borrow_buffers();
+    let (vertices, indices) = state.borrow_buffers_mut();
 
     body(vertices, indices);
   }

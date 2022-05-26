@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::graphics::{GraphicsServer, TextureSampler};
 use crate::io::AsVirtualPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
@@ -109,6 +110,24 @@ impl Drop for ShaderProgramState {
   /// Deletes the [`ShaderProgram`] from the GPU.
   fn drop(&mut self) {
     self.server.delete_shader(self.handle);
+  }
+}
+
+/// An asset loader for shader programs
+pub struct ShaderProgramLoader {
+  pub server: GraphicsServer,
+}
+
+impl Asset for ShaderProgram {
+  type Loader = ShaderProgramLoader;
+}
+
+impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
+  fn load(&self, context: &AssetContext) -> crate::Result<ShaderProgram> {
+    let code = context.path.read_all_text()?;
+    let program = ShaderProgram::from_string(&self.server, &code)?;
+
+    Ok(program)
   }
 }
 

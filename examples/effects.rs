@@ -11,18 +11,14 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
+    let assets = &game.assets;
     let graphics = &game.host.graphics;
 
-    // TODO: asset management
-    let mut texture = Texture::new(graphics);
-    let image = Image::from_path("assets/sprites/bunny.png", None).expect("Failed to load sprite image");
-    texture.write_image(&image);
-    let sprite = TextureRegion::from(&texture); // TODO: simplify this
+    // set-up rendering
+    let sprite: Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
 
     let mut sprite_material = Material::new(graphics, &load_standard_shader(graphics, BuiltInShader::Sprite(BuiltInSpriteShader::Standard)));
     let mut effect_material = Material::new(graphics, &load_standard_shader(graphics, BuiltInShader::Effect(BuiltInEffect::Aberration)));
-
-    let mut batch = SpriteBatch::new(graphics);
 
     let render_target = RenderTarget::new(graphics, &RenderTargetDescriptor {
       color_attachment: RenderTextureDescriptor {
@@ -34,32 +30,39 @@ fn main() {
       stencil_attachment: None,
     });
 
-    // set-up camera perspective
+    let mut batch = SpriteBatch::new(graphics);
+
     let projection_view = Matrix4x4::create_orthographic(1280., 720., 0., 100.);
 
     effect_material.set_uniform("u_projectionView", &projection_view);
     sprite_material.set_uniform("u_projectionView", &projection_view);
+
     sprite_material.set_blend_state(BlendState::Enabled {
       source: BlendFactor::SrcAlpha,
-      destination: BlendFactor::OneMinusSrcAlpha
+      destination: BlendFactor::OneMinusSrcAlpha,
     });
 
     game.run_variable_step(|context| {
       context.host.graphics.clear_color_buffer(Color::BLACK);
 
-      // TODO: simplify this API
-      render_target.activate();
+      // TODO: simplify this API (draw list or something?)
+      // draw the main display
       {
+        render_target.activate();
+
         batch.begin(&sprite_material);
         batch.draw(&sprite, SpriteOptions::default());
         batch.flush();
-      }
-      render_target.deactivate();
 
-      // interpolate intensity over time
+        render_target.deactivate();
+      }
+
+      // render the effect
       {
+        // interpolate intensity over time
         let intensity = (context.time.total_time.sin() + 1. / 2.) * 0.005;
-        let region = TextureRegion::from(&render_target.color_attachment());
+        let color_attachment = render_target.color_attachment();
+        let region = TextureRegion::from(&color_attachment);
 
         effect_material.set_uniform("u_intensity", intensity);
 

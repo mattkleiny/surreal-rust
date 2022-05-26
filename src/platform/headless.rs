@@ -47,6 +47,14 @@ impl PlatformHost for HeadlessPlatformHost {
     false
   }
 
+  fn audio(&self) -> &AudioServer {
+    &self.audio
+  }
+
+  fn graphics(&self) -> &GraphicsServer {
+    &self.graphics
+  }
+
   fn run(&mut self, mut body: impl FnMut(&mut Self)) {
     while !self.is_exiting {
       body(self);

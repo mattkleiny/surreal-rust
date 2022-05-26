@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::maths::{Rectangle, vec2, Vector2};
 
 use super::*;
@@ -152,6 +153,27 @@ impl Drop for TextureState {
   /// Deletes the texture from the GPU.
   fn drop(&mut self) {
     self.server.delete_texture(self.handle);
+  }
+}
+
+/// An asset loader for textures.
+pub struct TextureLoader {
+  pub server: GraphicsServer,
+  pub options: TextureOptions,
+}
+
+impl Asset for Texture {
+  type Loader = TextureLoader;
+}
+
+impl AssetLoader<Texture> for TextureLoader {
+  fn load(&self, context: &AssetContext) -> crate::Result<Texture> {
+    let image = context.load_asset(context.path)?;
+    let mut texture = Texture::new(&self.server);
+
+    texture.write_image(&image);
+
+    Ok(texture)
   }
 }
 

@@ -7,24 +7,6 @@ use surreal::prelude::*;
 const WIDTH: f32 = 1920.;
 const HEIGHT: f32 = 1080.;
 
-/// Represents a bunny in the benchmark.
-struct Bunny {
-  position: Vector2<f32>,
-  velocity: Vector2<f32>,
-}
-
-impl Bunny {
-  /// Updates the bunny's position.
-  pub fn update(&mut self, delta_time: f32) {
-    self.position += self.velocity * 100. * delta_time;
-
-    if self.velocity.x < 0. && self.position.x < -WIDTH / 2. { self.position.x = WIDTH / 2. }
-    if self.velocity.y < 0. && self.position.y < -HEIGHT / 2. { self.position.y = HEIGHT / 2. }
-    if self.velocity.x > 0. && self.position.x > WIDTH / 2. { self.position.x = -WIDTH / 2. }
-    if self.velocity.y > 0. && self.position.y > HEIGHT / 2. { self.position.y = -HEIGHT / 2. }
-  }
-}
-
 fn main() {
   let platform = DesktopPlatform::new(Configuration {
     title: "Bunnymark",
@@ -33,16 +15,11 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
-    // set-up rendering
+    let assets = &game.assets;
     let graphics = &game.host.graphics;
 
-    // TODO: asset management
-    let mut texture = Texture::new(graphics);
-    let image = Image::from_path("assets/sprites/bunny.png", None).expect("Failed to load sprite image");
-    texture.write_image(&image);
-    let sprite = TextureRegion::from(&texture); // TODO: simplify this
-
-    // set-up rendering
+    // set-up assets and rendering
+    let sprite: Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteContextDescriptor {
@@ -106,4 +83,22 @@ fn main() {
       }
     });
   });
+}
+
+/// Represents a bunny in the benchmark.
+struct Bunny {
+  position: Vector2<f32>,
+  velocity: Vector2<f32>,
+}
+
+impl Bunny {
+  /// Updates the bunny's position.
+  pub fn update(&mut self, delta_time: f32) {
+    self.position += self.velocity * 100. * delta_time;
+
+    if self.velocity.x < 0. && self.position.x < -WIDTH / 2. { self.position.x = WIDTH / 2. }
+    if self.velocity.y < 0. && self.position.y < -HEIGHT / 2. { self.position.y = HEIGHT / 2. }
+    if self.velocity.x > 0. && self.position.x > WIDTH / 2. { self.position.x = -WIDTH / 2. }
+    if self.velocity.y > 0. && self.position.y > HEIGHT / 2. { self.position.y = -HEIGHT / 2. }
+  }
 }

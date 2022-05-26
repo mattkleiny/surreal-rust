@@ -49,8 +49,8 @@ impl<'a, T> TileMap<'a, T> where T: Tile {
   }
 
   /// Sets the sprite to be used for the given tile.
-  pub fn set_sprite(&mut self, tile: &T, sprite: &'a TextureRegion) {
-    self.sprites.insert(tile.to_id(), sprite.clone());
+  pub fn set_sprite(&mut self, tile: &T, sprite: impl Into<TextureRegion<'a>>) {
+    self.sprites.insert(tile.to_id(), sprite.into());
   }
 
   /// Clears the tile map of all tiles.
@@ -71,7 +71,9 @@ impl<'a, T> Renderable<SpriteContext> for TileMap<'a, T> where T: Tile {
 
         if let Some(sprite) = self.sprites.get(&id) {
           // TODO: sprite pivots
-          // TODO: transforms for tilemaps and sprites
+          // TODO: transforms for tile maps and sprites
+          // TODO: abstract over sprite instead of texture region?
+
           let position = vec2(
             (x as f32 + 0.5) * sprite.size.x as f32 - half_width * sprite.size.x as f32,
             (y as f32 + 0.5) * sprite.size.y as f32 - half_height * sprite.size.y as f32,

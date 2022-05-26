@@ -68,8 +68,7 @@ impl Platform for DesktopPlatform {
       .with_inner_size(LogicalSize::new(self.config.size.0, self.config.size.1))
       .with_resizable(true)
       .with_window_icon(self.config.icon.map(|buffer| {
-        let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico)
-          .expect("Failed to decode icon data");
+        let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico).expect("Failed to decode icon data");
         let rgba = image.as_rgba8().expect("Image was not in RGBA format");
 
         let pixels = rgba.pixels().flat_map(|pixel| pixel.0).collect();
@@ -151,6 +150,14 @@ impl PlatformHost for DesktopPlatformHost {
     self.is_closing
   }
 
+  fn audio(&self) -> &AudioServer {
+    &self.audio
+  }
+
+  fn graphics(&self) -> &GraphicsServer {
+    &self.graphics
+  }
+
   fn run(&mut self, mut body: impl FnMut(&mut Self)) {
     use winit::event_loop::ControlFlow;
     use winit::platform::desktop::EventLoopExtDesktop;
@@ -174,7 +181,7 @@ impl PlatformHost for DesktopPlatformHost {
         }
         Event::MainEventsCleared => {
           // update the fps counter, if enabled
-          if self.config.show_fps_in_title && self.is_focused {
+          if self.config.update_continuously && self.config.show_fps_in_title && self.is_focused {
             let delta_time = self.clock.tick();
 
             self.frame_counter.tick(delta_time);

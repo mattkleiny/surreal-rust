@@ -4,30 +4,6 @@
 
 use surreal::prelude::*;
 
-enum Tile {
-  Empty,
-  Filled,
-}
-
-impl surreal::prelude::Tile for Tile {
-  type Id = u8;
-
-  fn from_id(id: Self::Id) -> &'static Self {
-    match id {
-      0 => &Self::Empty,
-      1 => &Self::Filled,
-      _ => panic!()
-    }
-  }
-
-  fn to_id(&self) -> Self::Id {
-    match self {
-      Tile::Empty => 0,
-      Tile::Filled => 1,
-    }
-  }
-}
-
 fn main() {
   let platform = DesktopPlatform::new(Configuration {
     title: "Tile Maps",
@@ -36,16 +12,13 @@ fn main() {
   });
 
   Game::start(platform, |mut game| {
+    let assets = &game.assets;
     let graphics = &game.host.graphics;
 
-    // TODO: asset management
-    let mut texture = Texture::new(graphics);
-    let image = Image::from_path("assets/sprites/example_tile.png", None).expect("Failed to load tile image");
-    texture.write_image(&image);
-    let sprite = TextureRegion::from(&texture); // TODO: simplify this
+    // set-up assets and rendering
+    let sprite: Texture = assets.load_asset("assets/sprites/example_tile.png").expect("Failed to load sprite image");
     let palette = load_standard_palette(BuiltInPalette::Demichrome4);
 
-    // set-up rendering
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteContextDescriptor {
@@ -96,4 +69,29 @@ fn main() {
       }
     });
   });
+}
+
+/// Represents a tile in our simple tile map.
+enum Tile {
+  Empty,
+  Filled,
+}
+
+impl surreal::prelude::Tile for Tile {
+  type Id = u8;
+
+  fn from_id(id: Self::Id) -> &'static Self {
+    match id {
+      0 => &Self::Empty,
+      1 => &Self::Filled,
+      _ => panic!()
+    }
+  }
+
+  fn to_id(&self) -> Self::Id {
+    match self {
+      Tile::Empty => 0,
+      Tile::Filled => 1,
+    }
+  }
 }

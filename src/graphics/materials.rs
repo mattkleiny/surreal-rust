@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::assets::{Asset, AssetContext, AssetLoader};
+
 use super::*;
 
 /// Blending states for materials.
@@ -105,5 +107,23 @@ impl Material {
     }
 
     self.server.set_active_shader(self.shader.handle());
+  }
+}
+
+// An asset loader for materials
+pub struct MaterialLoader {
+  pub server: GraphicsServer,
+}
+
+impl Asset for Material {
+  type Loader = MaterialLoader;
+}
+
+impl AssetLoader<Material> for MaterialLoader {
+  fn load(&self, context: &AssetContext) -> crate::Result<Material> {
+    let shader = context.load_asset(context.path)?;
+    let material = Material::new(&self.server, &shader);
+
+    Ok(material)
   }
 }

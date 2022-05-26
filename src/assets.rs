@@ -1,51 +1,36 @@
 //! A simple asset management system with support for hot file reloading.
 
-use std::any::Any;
+use std::any::{Any, TypeId};
+use std::cell::RefCell;
 use std::collections::HashMap;
-use std::io::{BufRead, Seek};
 use std::rc::Rc;
 
 use crate::io::{AsVirtualPath, VirtualPath};
 
-// TODO: how to pass options to the loader?
-// TODO: implement all common loading patterns here as a trait
-
-pub trait Loadable: Sized {
-  /// Loads the object from the given raw string.
-  fn from_path(path: impl AsVirtualPath) -> crate::Result<Self> {
-    let stream = path.as_virtual_path().open_input_stream()?;
-
-    Self::from_reader(stream)
-  }
-
-  /// Loads the object from the given raw bytes.
-  fn from_bytes(bytes: &[u8]) -> crate::Result<Self> {
-    Self::from_reader(bytes)
-  }
-
-  /// Loads the item from the given reader.
-  fn from_reader(reader: impl BufRead + Seek) -> crate::Result<Self>;
+/// A type of asset that can be persisted in the asset manager.
+pub trait Asset: Sized {
+  /// The associated loader for this asset.
+  type Loader: AssetLoader<Self>;
 }
 
-/// The internal state for an `Asset`.
-#[allow(dead_code)]
-enum AssetState<T> {
-  NotReady,
-  Ready(T), // TODO: implement me
+/// Allows loading an asset from the virtual file system.
+pub trait AssetLoader<A> {
+  /// Loads the asset from the given path.
+  fn load(&self, context: &AssetContext) -> crate::Result<A>;
 }
 
-/// An opaque pointer to a shared asset reference in an `AssetManager`.
-pub struct Asset<T> {
-  state: Rc<AssetState<T>>,
+/// A context for asset operations.
+pub struct AssetContext<'a> {
+  /// The path of the asset being loaded.
+  pub path: VirtualPath<'a>,
+  /// The manager that owns this context.
+  pub manager: &'a AssetManager,
 }
 
-impl<T> Asset<T> {
-  /// Accesses the asset's data.
-  pub fn get(&self) -> Option<&T> {
-    match self.state.as_ref() {
-      AssetState::Ready(value) => Some(value),
-      _ => None,
-    }
+impl<'a> AssetContext<'a> {
+  /// Loads a dependent asset from the given path.
+  pub fn load_asset<A: Asset + 'static>(&self, path: VirtualPath) -> crate::Result<A> {
+    self.manager.load_asset(path)
   }
 }
 
@@ -57,80 +42,72 @@ impl<T> Asset<T> {
 /// The manager is also responsible for keeping track of asset dependencies,
 /// and automatically reloading assets when they are modified.
 pub struct AssetManager {
-  loaders: Vec<Box<dyn Any>>,
-  assets: HashMap<String, Box<dyn Any>>,
+  state: Rc<RefCell<AssetManagerState>>,
+}
+
+/// The internal state for the asset manager.
+struct AssetManagerState {
+  loaders: HashMap<TypeId, Box<dyn Any>>,
 }
 
 impl AssetManager {
   /// Creates a new asset manager.
   pub fn new() -> Self {
     Self {
-      loaders: Vec::new(),
-      assets: HashMap::new(),
+      state: Rc::new(RefCell::new(AssetManagerState {
+        loaders: HashMap::new(),
+      })),
     }
   }
 
   /// Adds a new asset loader to the manager.
-  pub fn add_loader<A>(&mut self, loader: impl AssetLoader<A> + 'static) {
-    self.loaders.push(Box::new(loader));
+  pub fn add_loader<A: Asset + 'static, L: AssetLoader<A> + 'static>(&mut self, loader: L) {
+    let mut state = self.state.borrow_mut();
+
+    state.loaders.insert(TypeId::of::<A>(), Box::new(loader));
   }
 
   /// Attempts to load an asset from the given path.
-  pub fn load_asset<A: 'static>(&mut self, path: impl AsVirtualPath) -> crate::Result<Asset<A>> {
-    let key = path.as_virtual_path().to_string();
+  pub fn load_asset<A: Asset + 'static>(&self, path: impl AsVirtualPath) -> crate::Result<A> {
+    let state = self.state.borrow();
 
-    let state = self.assets
-      .entry(key)
-      .or_insert_with(|| {
-        // TODO: kick off loading process for this asset?
-        Box::new(Rc::new(AssetState::<A>::NotReady))
-      })
-      .downcast_ref::<Rc<AssetState<A>>>()
-      .expect("Failed to access asset state");
+    let loader = state.loaders
+      .get(&TypeId::of::<A>())
+      .and_then(|it| it.downcast_ref::<A::Loader>())
+      .ok_or(anyhow::anyhow!("Could not result loader for asset {:?}", std::any::type_name::<A>()))?;
 
-    Ok(Asset { state: state.clone() })
-  }
-}
+    let context = AssetContext {
+      path: path.as_virtual_path(),
+      manager: self,
+    };
 
-/// Allows loading an asset from the virtual file system.
-pub trait AssetLoader<A> {
-  /// Determines if the given path is an asset that can be loaded.
-  fn can_load(&self, _context: &AssetLoadContext) -> bool { true }
-
-  /// Loads the asset from the given path.
-  fn load(&self, context: &AssetLoadContext) -> crate::Result<A>;
-}
-
-/// A context for asset operations.
-///
-/// The context allows other components to refer back to the asset pipeline.
-pub struct AssetLoadContext<'a> {
-  /// The path of the asset being loaded.
-  pub path: VirtualPath<'a>,
-  _manager: &'a AssetManager,
-}
-
-impl<'a> AssetLoadContext<'a> {
-  /// Loads a dependent asset from the given path.
-  pub fn load_asset<A>(&self, _path: VirtualPath) -> crate::Result<A> {
-    todo!()
+    // TODO: persist loaded assets in cache?
+    loader.load(&context)
   }
 }
 
 #[cfg(test)]
 mod tests {
+  use crate::graphics::{ImageLoader, Texture, TextureLoader, TextureOptions};
+  use crate::prelude::HeadlessGraphicsBackend;
+
   use super::*;
 
   #[test]
   fn assets_should_load() {
     let mut manager = AssetManager::new();
 
-    let asset: Asset<String> = manager.load_asset("test.txt").expect("Failed to load asset");
+    manager.add_loader(ImageLoader {
+      format: None
+    });
 
-    if let Some(string) = asset.get() {
-      println!("Ready {:}", string);
-    } else {
-      println!("Not ready");
-    }
+    manager.add_loader(TextureLoader {
+      server: HeadlessGraphicsBackend::new(),
+      options: TextureOptions::default(),
+    });
+
+    let texture: Texture = manager.load_asset("assets/sprites/bunny.png").expect("Failed to load asset");
+
+    println!("Image is {:}x{:} pixels", texture.width(), texture.height());
   }
 }

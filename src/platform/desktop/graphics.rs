@@ -358,7 +358,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
 
           if let Some(sampler) = sampler {
             // build and cache sampler settings based on hash of options
-            let mut internal_state = self.internal_state.try_borrow_mut().expect("Internal state is already borrowed");
+            let mut internal_state = self.internal_state.borrow_mut();
             let sampler_cache = &mut internal_state.sampler_cache;
 
             let sampler_id = sampler_cache.entry(*sampler).or_insert_with(|| {

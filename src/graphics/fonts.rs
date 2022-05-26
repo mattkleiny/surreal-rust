@@ -1,6 +1,3 @@
-use std::io::{BufRead, Seek};
-
-use crate::assets::Loadable;
 use crate::graphics::{SpriteBatch, Texture, TextureRegion};
 use crate::maths::{Rectangle, Vector2};
 
@@ -24,12 +21,6 @@ struct BitmapFontDescriptor {
 
 pub struct BitmapGlyph<'a> {
   region: &'a TextureRegion<'a>,
-}
-
-impl Loadable for BitmapFont {
-  fn from_reader(reader: impl BufRead + Seek) -> crate::Result<Self> {
-    todo!()
-  }
 }
 
 impl BitmapFont {

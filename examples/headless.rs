@@ -3,9 +3,7 @@
 use surreal::prelude::*;
 
 fn main() {
-  let platform = HeadlessPlatform;
-
-  Game::start(platform, |mut game| {
+  Game::start(HeadlessPlatform, |mut game| {
     let mut clock = Clock::new();
     let mut timer = IntervalTimer::new(TimeSpan::from_seconds(1.));
     let mut counter = FrameCounter::new(32);

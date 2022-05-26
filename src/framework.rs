@@ -5,6 +5,7 @@
 pub use ecs::*;
 
 use crate::assets::AssetManager;
+use crate::graphics::{ImageLoader, MaterialLoader, ShaderProgramLoader, TextureLoader, TextureOptions};
 use crate::platform::{Platform, PlatformHost};
 use crate::utilities::{Clock, GameTime};
 
@@ -26,10 +27,31 @@ pub struct GameTick<'a, P> where P: Platform {
 impl<P> Game<P> where P: Platform {
   /// Starts a new game with the given platform.
   pub fn start(platform: P, mut setup: impl FnMut(Game<P>)) {
-    let game = Game {
+    let mut game = Game {
       host: platform.create_host(),
       assets: AssetManager::new(),
     };
+
+    // set-up default asset loaders
+    let host: &P::Host = &game.host;
+    let graphics = host.graphics();
+
+    game.assets.add_loader(ImageLoader {
+      format: None
+    });
+
+    game.assets.add_loader(TextureLoader {
+      server: graphics.clone(),
+      options: TextureOptions::default(),
+    });
+
+    game.assets.add_loader(ShaderProgramLoader {
+      server: graphics.clone()
+    });
+
+    game.assets.add_loader(MaterialLoader {
+      server: graphics.clone()
+    });
 
     setup(game);
   }
