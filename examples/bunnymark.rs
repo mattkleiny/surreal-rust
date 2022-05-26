@@ -20,6 +20,8 @@ fn main() {
 
     // set-up assets and rendering
     let sprite: Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
+    let region = TextureRegion::from(&sprite);
+
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteContextDescriptor {
@@ -41,8 +43,9 @@ fn main() {
 
       // draw bunnies
       renderer.with(|pass: &mut SpriteContext| {
+
         for bunny in &bunnies {
-          pass.batch.draw(&sprite, SpriteOptions {
+          pass.batch.draw(&region, SpriteOptions {
             position: bunny.position,
             ..Default::default()
           });

@@ -69,17 +69,17 @@ impl<'a, T> Renderable<SpriteContext> for TileMap<'a, T> where T: Tile {
       for x in 0..self.tiles.width() {
         let id = self.tiles[(x, y)];
 
-        if let Some(sprite) = self.sprites.get(&id) {
+        if let Some(region) = self.sprites.get(&id) {
           // TODO: sprite pivots
           // TODO: transforms for tile maps and sprites
           // TODO: abstract over sprite instead of texture region?
 
           let position = vec2(
-            (x as f32 + 0.5) * sprite.size.x as f32 - half_width * sprite.size.x as f32,
-            (y as f32 + 0.5) * sprite.size.y as f32 - half_height * sprite.size.y as f32,
+            (x as f32 + 0.5) * region.size.x as f32 - half_width * region.size.x as f32,
+            (y as f32 + 0.5) * region.size.y as f32 - half_height * region.size.y as f32,
           );
 
-          context.batch.draw(sprite, SpriteOptions {
+          context.batch.draw(region, SpriteOptions {
             position,
             ..Default::default()
           });

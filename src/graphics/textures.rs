@@ -199,7 +199,7 @@ impl<'a> TextureRegion<'a> {
 
 impl<'a> From<&'a Texture> for TextureRegion<'a> {
   fn from(texture: &'a Texture) -> Self {
-    Self {
+    TextureRegion {
       texture,
       offset: Vector2::ZERO,
       size: vec2(texture.width(), texture.height()),

@@ -16,6 +16,7 @@ fn main() {
 
     // set-up rendering
     let sprite: Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
+    let region = TextureRegion::from(&sprite);
 
     let mut sprite_material = Material::new(graphics, &load_standard_shader(graphics, BuiltInShader::Sprite(BuiltInSpriteShader::Standard)));
     let mut effect_material = Material::new(graphics, &load_standard_shader(graphics, BuiltInShader::Effect(BuiltInEffect::Aberration)));
@@ -51,7 +52,7 @@ fn main() {
         render_target.activate();
 
         batch.begin(&sprite_material);
-        batch.draw(&sprite, SpriteOptions::default());
+        batch.draw(&region, SpriteOptions::default());
         batch.flush();
 
         render_target.deactivate();

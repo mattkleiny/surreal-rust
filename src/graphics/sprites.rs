@@ -72,9 +72,7 @@ impl SpriteBatch {
   }
 
   /// Draws a single sprite to the batch.
-  pub fn draw<'a>(&mut self, region: impl Into<&'a TextureRegion<'a>>, options: SpriteOptions) {
-    let region = region.into();
-
+  pub fn draw<'a>(&mut self, region: &'a TextureRegion, options: SpriteOptions) {
     // flush if the texture has changed
     if let Some(texture) = &self.texture {
       if texture.handle() != region.texture.handle() {
