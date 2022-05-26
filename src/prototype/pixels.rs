@@ -18,12 +18,18 @@ impl PixelCanvas {
   /// Creates a new pixel canvas with the given dimensions.
   pub fn new(server: &GraphicsServer, width: usize, height: usize) -> Self {
     let shader = load_built_in_shader(server, BuiltInShader::Sprite(BuiltInSpriteShader::Standard));
+    let texture = Texture::new(server);
+
+    let mut material = Material::new(server, &shader);
+
+    material.set_uniform("u_projectionView", &Matrix4x4::identity());
+    material.set_uniform("u_texture", &texture);
 
     Self {
-      texture: Texture::new(server),
+      texture,
       mesh: Mesh::create_quad(server, 1.),
       pixels: Array2D::new(width, height),
-      material: Material::new(server, &shader),
+      material,
       timer: IntervalTimer::new(TimeSpan::from_millis(10.)),
     }
   }
