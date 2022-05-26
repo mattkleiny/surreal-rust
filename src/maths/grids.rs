@@ -3,8 +3,14 @@ use super::*;
 /// Represents a 2d point in a grid.
 pub type GridPoint = (usize, usize);
 
+/// Represents a type that can be rasterized into a grid.
+pub trait GridRaster {
+  /// Rasterizes the given shape into the given grid.
+  fn draw_to<G, T>(&self, grid: &mut G, value: T) where G: Grid<T>, T: Clone;
+}
+
 /// Represents a 2d grid that allows efficient random access.
-pub trait Grid<T> {
+pub trait Grid<T>: Sized {
   /// Returns the stride/size between each row of the grid.
   fn stride(&self) -> usize;
 
@@ -41,41 +47,9 @@ pub trait Grid<T> {
     self.fill(T::default());
   }
 
-  /// Draws a shape onto the grid.
-  fn draw_shape(&mut self, shape: &impl RasterShape, value: T) where T: Clone {
+  /// Rasterizes a shape onto the grid.
+  fn draw_shape(&mut self, shape: &impl GridRaster, value: T) where T: Clone {
     shape.draw_to(self, value);
-  }
-}
-
-/// Represents a type that can be drawn into a grid.
-pub trait RasterShape {
-  fn draw_to<G, T>(&self, grid: &mut G, value: T) where G: Grid<T> + ?Sized, T: Clone;
-}
-
-/// A simple circle.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Circle {
-  pub center: Vector2<isize>,
-  pub radius: isize,
-}
-
-impl RasterShape for Circle {
-  fn draw_to<G, T>(&self, grid: &mut G, value: T) where G: Grid<T> + ?Sized, T: Clone {
-    let center = self.center;
-    let radius = self.radius;
-
-    let rectangle = Rectangle::from_size(center, vec2(radius, radius))
-      .clamp(0, 0, grid.width() as isize - 1, grid.height() as isize - 1);
-
-    for y in rectangle.top()..rectangle.bottom() {
-      for x in rectangle.left()..rectangle.right() {
-        let point = vec2(x, y);
-
-        if (point - center).length_squared() <= radius {
-          grid.set(point, value.clone());
-        }
-      }
-    }
   }
 }
 

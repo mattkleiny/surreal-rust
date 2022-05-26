@@ -5,6 +5,18 @@ pub trait Curve {
   fn sample_at(&self, t: f32) -> Vector2<f32>;
 }
 
+/// Allow curves to be rasterized.
+impl<C> GridRaster for C where C: Curve {
+  fn draw_to<G, T>(&self, grid: &mut G, value: T) where G: Grid<T>, T: Clone {
+    for x in 0..grid.width() {
+      let t = x as f32 / grid.width() as f32;
+      let position = self.sample_at(t);
+
+      grid.set(position, value.clone());
+    }
+  }
+}
+
 /// A linear curve in 2-space.
 #[derive(Copy, Clone, Debug)]
 pub struct Line {
@@ -27,8 +39,11 @@ pub struct QuadraticBezier {
 }
 
 impl Curve for QuadraticBezier {
-  fn sample_at(&self, _normal: f32) -> Vector2<f32> {
-    todo!()
+  fn sample_at(&self, t: f32) -> Vector2<f32> {
+    let x = (1. - t).powf(2.) * self.start.x + 2. * (1. - t) * t * self.control.x + t.powf(2.) * self.end.x;
+    let y = (1. - t).powf(2.) * self.start.y + 2. * (1. - t) * t * self.control.y + t.powf(2.) * self.end.y;
+
+    vec2(x, y)
   }
 }
 
@@ -42,7 +57,7 @@ pub struct CubicBezier {
 }
 
 impl Curve for CubicBezier {
-  fn sample_at(&self, _normal: f32) -> Vector2<f32> {
+  fn sample_at(&self, _t: f32) -> Vector2<f32> {
     todo!()
   }
 }

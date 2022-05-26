@@ -11,6 +11,7 @@ pub use numbers::*;
 pub use paths::*;
 pub use random::*;
 pub use ranges::*;
+pub use shapes::*;
 pub use tessellation::*;
 
 mod bitmap;
@@ -24,13 +25,11 @@ mod numbers;
 mod paths;
 mod random;
 mod ranges;
+mod shapes;
 mod tessellation;
 
 /// Clamps the given value between the given lower and upper bounds.
-pub fn clamp<T>(value: T, lower: T, upper: T) -> T
-where
-  T: Numeric,
-{
+pub fn clamp<T>(value: T, lower: T, upper: T) -> T where T: Numeric {
   match () {
     _ if value > upper => upper,
     _ if value < lower => lower,
