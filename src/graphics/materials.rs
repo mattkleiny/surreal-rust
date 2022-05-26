@@ -110,7 +110,7 @@ impl Material {
   }
 }
 
-// An asset loader for materials
+/// An [`AssetLoader`] for materials
 pub struct MaterialLoader {
   pub server: GraphicsServer,
 }

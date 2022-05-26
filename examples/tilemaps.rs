@@ -16,7 +16,7 @@ fn main() {
     let graphics = &game.host.graphics;
 
     // set-up assets and rendering
-    let sprite: Texture = assets.load_asset("assets/sprites/example_tile.png").expect("Failed to load sprite image");
+    let sprite: &Texture = assets.load_asset("assets/sprites/example_tile.png").expect("Failed to load sprite image");
     let palette = load_standard_palette(BuiltInPalette::Demichrome4);
 
     let mut renderer = RenderManager::new(graphics);
@@ -35,7 +35,7 @@ fn main() {
     // set-up tile map
     let mut tilemap = TileMap::new(16, 9);
 
-    tilemap.set_sprite(&Tile::Filled, &sprite);
+    tilemap.set_sprite(&Tile::Filled, sprite);
 
     for y in 0..tilemap.height() {
       for x in 0..tilemap.width() {

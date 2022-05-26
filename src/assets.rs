@@ -1,20 +1,20 @@
 //! A simple asset management system with support for hot file reloading.
 
 use std::any::{Any, TypeId};
-use std::cell::RefCell;
+use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::io::{AsVirtualPath, VirtualPath};
 
 /// A type of asset that can be persisted in the asset manager.
-pub trait Asset: Sized {
+pub trait Asset: Sized + 'static {
   /// The associated loader for this asset.
   type Loader: AssetLoader<Self>;
 }
 
 /// Allows loading an asset from the virtual file system.
-pub trait AssetLoader<A> {
+pub trait AssetLoader<A>: 'static {
   /// Loads the asset from the given path.
   fn load(&self, context: &AssetContext) -> crate::Result<A>;
 }
@@ -29,9 +29,16 @@ pub struct AssetContext<'a> {
 
 impl<'a> AssetContext<'a> {
   /// Loads a dependent asset from the given path.
-  pub fn load_asset<A: Asset + 'static>(&self, path: VirtualPath) -> crate::Result<A> {
+  pub fn load_asset<A: Asset + 'static>(&self, path: VirtualPath) -> crate::Result<&'a A> {
     self.manager.load_asset(path)
   }
+}
+
+/// An id for an asset in the asset manager.
+#[derive(Clone, Eq, PartialEq, Hash)]
+struct AssetId {
+  path: String,
+  type_id: TypeId,
 }
 
 /// A manager for assets.
@@ -42,34 +49,44 @@ impl<'a> AssetContext<'a> {
 /// The manager is also responsible for keeping track of asset dependencies,
 /// and automatically reloading assets when they are modified.
 pub struct AssetManager {
-  state: Rc<RefCell<AssetManagerState>>,
+  // TODO: use something other than unsafe?
+  state: Rc<UnsafeCell<AssetManagerState>>,
 }
 
 /// The internal state for the asset manager.
 struct AssetManagerState {
   loaders: HashMap<TypeId, Box<dyn Any>>,
+  cache: HashMap<AssetId, Box<dyn Any>>,
 }
 
 impl AssetManager {
   /// Creates a new asset manager.
   pub fn new() -> Self {
     Self {
-      state: Rc::new(RefCell::new(AssetManagerState {
+      state: Rc::new(UnsafeCell::new(AssetManagerState {
         loaders: HashMap::new(),
+        cache: HashMap::new(),
       })),
     }
   }
 
   /// Adds a new asset loader to the manager.
-  pub fn add_loader<A: Asset + 'static, L: AssetLoader<A> + 'static>(&mut self, loader: L) {
-    let mut state = self.state.borrow_mut();
+  pub fn add_loader<A, L>(&mut self, loader: L) where A: Asset, L: AssetLoader<A> {
+    let state = unsafe { &mut *self.state.get() };
 
     state.loaders.insert(TypeId::of::<A>(), Box::new(loader));
   }
 
   /// Attempts to load an asset from the given path.
-  pub fn load_asset<A: Asset + 'static>(&self, path: impl AsVirtualPath) -> crate::Result<A> {
-    let state = self.state.borrow();
+  /// TODO: fix lifetimes on borrowed assets?
+  pub fn load_asset<A>(&self, path: impl AsVirtualPath) -> crate::Result<&'static A> where A: Asset {
+    let state = unsafe { &mut *self.state.get() };
+    let path = path.as_virtual_path();
+
+    let asset_id = AssetId {
+      path: path.to_string(),
+      type_id: TypeId::of::<A>(),
+    };
 
     let loader = state.loaders
       .get(&TypeId::of::<A>())
@@ -77,12 +94,21 @@ impl AssetManager {
       .ok_or(anyhow::anyhow!("Could not result loader for asset {:?}", std::any::type_name::<A>()))?;
 
     let context = AssetContext {
-      path: path.as_virtual_path(),
+      path,
       manager: self,
     };
 
-    // TODO: persist loaded assets in cache?
-    loader.load(&context)
+    // persist loaded assets into cache
+    let asset = loader.load(&context)?;
+
+    state.cache.insert(asset_id.clone(), Box::new(asset));
+
+    let asset = state.cache
+      .get(&asset_id)
+      .and_then(|it| it.downcast_ref::<A>())
+      .expect("Should not be possible");
+
+    Ok(asset)
   }
 }
 
@@ -106,7 +132,7 @@ mod tests {
       options: TextureOptions::default(),
     });
 
-    let texture: Texture = manager.load_asset("assets/sprites/bunny.png").expect("Failed to load asset");
+    let texture: &Texture = manager.load_asset("assets/sprites/bunny.png").expect("Failed to load asset");
 
     println!("Image is {:}x{:} pixels", texture.width(), texture.height());
   }

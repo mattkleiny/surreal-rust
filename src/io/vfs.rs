@@ -104,7 +104,7 @@ impl<'a> VirtualPath<'a> {
 
   /// Deserializes a json value of the given type from the path.
   pub fn deserialize_json<D>(&self) -> crate::Result<D> where D: serde::de::DeserializeOwned {
-    let mut stream = self.open_input_stream()?;
+    let stream = self.open_input_stream()?;
     let result = serde_json::de::from_reader(stream)?;
 
     Ok(result)
@@ -112,7 +112,7 @@ impl<'a> VirtualPath<'a> {
 
   /// Deserializes a Ron value of the given type from the path.
   pub fn deserialize_ron<D>(&self) -> crate::Result<D> where D: serde::de::DeserializeOwned {
-    let mut stream = self.open_input_stream()?;
+    let stream = self.open_input_stream()?;
     let result = ron::de::from_reader(stream)?;
 
     Ok(result)

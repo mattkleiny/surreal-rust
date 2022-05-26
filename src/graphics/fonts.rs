@@ -52,7 +52,7 @@ impl Font for BitmapFont {
   }
 }
 
-/// An asset loader for bitmap fonts.
+/// An [`AssetLoader`] for bitmap fonts.
 pub struct BitmapFontLoader {}
 
 impl Asset for BitmapFont {

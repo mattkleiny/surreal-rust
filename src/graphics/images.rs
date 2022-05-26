@@ -79,6 +79,7 @@ impl Image {
   }
 }
 
+/// An [`AssetLoader`] for images.
 #[derive(Default)]
 pub struct ImageLoader {
   pub format: Option<ImageFormat>

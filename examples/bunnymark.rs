@@ -19,8 +19,8 @@ fn main() {
     let graphics = &game.host.graphics;
 
     // set-up assets and rendering
-    let sprite: Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
-    let region = TextureRegion::from(&sprite);
+    let sprite: &Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
+    let region = TextureRegion::from(sprite);
 
     let mut renderer = RenderManager::new(graphics);
 
@@ -43,7 +43,6 @@ fn main() {
 
       // draw bunnies
       renderer.with(|pass: &mut SpriteContext| {
-
         for bunny in &bunnies {
           pass.batch.draw(&region, SpriteOptions {
             position: bunny.position,

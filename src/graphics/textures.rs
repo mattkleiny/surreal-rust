@@ -156,7 +156,7 @@ impl Drop for TextureState {
   }
 }
 
-/// An asset loader for textures.
+/// An [`AssetLoader`] for textures.
 pub struct TextureLoader {
   pub server: GraphicsServer,
   pub options: TextureOptions,

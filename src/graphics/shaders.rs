@@ -113,7 +113,7 @@ impl Drop for ShaderProgramState {
   }
 }
 
-/// An asset loader for shader programs
+/// An [`AssetLoader`] for shader programs
 pub struct ShaderProgramLoader {
   pub server: GraphicsServer,
 }
