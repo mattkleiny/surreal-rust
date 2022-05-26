@@ -6,7 +6,7 @@ authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
 edition = "2021"
 
 [workspace]
-members = [ "macros" ]
+members = ["macros"]
 
 [profile.dev.package."*"]
 opt-level = 3 # compile third party dependencies by default with some sane optimizations
@@ -24,6 +24,7 @@ surreal-macros = { path = "macros" }
 # core dependencies
 anyhow = "1.0.57"
 image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
+profiling = { version = "1.0.6", features = ["profile-with-optick"] }
 
 # serialization/deserialization
 serde = { version = "1.0.137", features = ["derive"] }
