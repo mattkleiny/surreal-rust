@@ -10,7 +10,7 @@ fn main() {
     ..Default::default()
   });
 
-  Game::start(platform, |mut game| {
+  Game::start(platform, |mut game, _| {
     let color1 = Color::random();
     let color2 = Color::random();
 

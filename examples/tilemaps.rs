@@ -11,8 +11,7 @@ fn main() {
     ..Default::default()
   });
 
-  Game::start(platform, |mut game| {
-    let assets = &game.assets;
+  Game::start(platform, |mut game, assets| {
     let graphics = &game.host.graphics;
 
     // set-up assets and rendering

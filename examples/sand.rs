@@ -10,7 +10,7 @@ fn main() {
     ..Default::default()
   });
 
-  Game::start(platform, |mut game| {
+  Game::start(platform, |mut game, _| {
     let graphics = &game.host.graphics;
 
     // load assets

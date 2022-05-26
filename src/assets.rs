@@ -49,7 +49,6 @@ struct AssetId {
 /// The manager is also responsible for keeping track of asset dependencies,
 /// and automatically reloading assets when they are modified.
 pub struct AssetManager {
-  // TODO: use something other than unsafe?
   state: Rc<UnsafeCell<AssetManagerState>>,
 }
 
@@ -78,8 +77,7 @@ impl AssetManager {
   }
 
   /// Attempts to load an asset from the given path.
-  /// TODO: fix lifetimes on borrowed assets?
-  pub fn load_asset<A>(&self, path: impl AsVirtualPath) -> crate::Result<&'static A> where A: Asset {
+  pub fn load_asset<A>(&self, path: impl AsVirtualPath) -> crate::Result<&A> where A: Asset {
     let state = unsafe { &mut *self.state.get() };
     let path = path.as_virtual_path();
 

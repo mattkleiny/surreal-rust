@@ -19,7 +19,7 @@ pub trait AudioResource {
 
 /// Represents a server implementation for the underlying audio subsystem.
 ///
-/// Permits interaction with the underlying audio API through unsafe lower-level abstraction.
+/// Permits interaction with the underlying audio API through lower-level abstraction.
 pub trait AudioBackend {
   // clips
   fn create_clip(&self) -> AudioHandle;

@@ -1,4 +1,4 @@
-use std::cell::UnsafeCell;
+use std::cell::RefCell;
 
 /// A pseudo-random number generator.
 #[derive(Clone, Debug)]
@@ -41,7 +41,7 @@ impl Random {
 
 thread_local! {
   /// A thread-local instance of the [`Random`].
-  static THREAD_LOCAL_RANDOM: UnsafeCell<Random> = UnsafeCell::new(Random::with_seed({
+  static THREAD_LOCAL_RANDOM: RefCell<Random> = RefCell::new(Random::with_seed({
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
 
@@ -57,8 +57,10 @@ thread_local! {
 
 /// Generates a new f64 using the thread-local generator.
 fn generate_thread_local<T>() -> T where T: FromRandom {
-  THREAD_LOCAL_RANDOM.with(|random| unsafe {
-    T::from_random(&mut *random.get())
+  THREAD_LOCAL_RANDOM.with(|random| {
+    let mut random = random.borrow_mut();
+
+    T::from_random(&mut random)
   })
 }
 

@@ -11,7 +11,7 @@ mod headless;
 
 /// A backend for the underlying input subsystem.
 ///
-/// Permits interaction with the underlying input API through unsafe lower-level abstraction.
+/// Permits interaction with the underlying input API through lower-level abstraction.
 pub trait InputBackend {
   fn keyboard_device(&self) -> Option<&dyn KeyboardDevice>;
   fn mouse_device(&self) -> Option<&dyn MouseDevice>;

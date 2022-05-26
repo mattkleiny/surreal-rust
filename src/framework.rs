@@ -14,7 +14,6 @@ mod ecs;
 /// The context for bootstrapping a game.
 pub struct Game<P> where P: Platform {
   pub host: P::Host,
-  pub assets: AssetManager,
 }
 
 /// The context for a single tick of the game loop.
@@ -26,36 +25,36 @@ pub struct GameTick<'a, P> where P: Platform {
 
 impl<P> Game<P> where P: Platform {
   /// Starts a new game with the given platform.
-  pub fn start(platform: P, mut setup: impl FnMut(Game<P>)) {
+  pub fn start(platform: P, mut setup: impl FnMut(Game<P>, &AssetManager)) {
     let mut game = Game {
       host: platform.create_host(),
-      assets: AssetManager::new(),
     };
 
     // set-up default asset loaders
     let host: &P::Host = &game.host;
     let graphics = host.graphics();
+    let mut assets = AssetManager::new();
 
-    game.assets.add_loader(BitmapFontLoader {});
+    assets.add_loader(BitmapFontLoader {});
 
-    game.assets.add_loader(ImageLoader {
+    assets.add_loader(ImageLoader {
       format: None
     });
 
-    game.assets.add_loader(TextureLoader {
+    assets.add_loader(TextureLoader {
       server: graphics.clone(),
       options: TextureOptions::default(),
     });
 
-    game.assets.add_loader(ShaderProgramLoader {
+    assets.add_loader(ShaderProgramLoader {
       server: graphics.clone()
     });
 
-    game.assets.add_loader(MaterialLoader {
+    assets.add_loader(MaterialLoader {
       server: graphics.clone()
     });
 
-    setup(game);
+    setup(game, &assets);
   }
 
   /// Runs the game loop in a variable step fashion.

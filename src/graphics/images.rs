@@ -7,14 +7,14 @@ use super::*;
 
 /// An image of RGBA pixels, loadable from a variety of different formats.
 pub struct Image {
-  buffer: image::Rgba32FImage,
+  buffer: image::RgbaImage,
 }
 
 impl Image {
   /// Creates a new empty image with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
-      buffer: image::Rgba32FImage::new(width as u32, height as u32),
+      buffer: image::RgbaImage::new(width as u32, height as u32),
     }
   }
 
@@ -36,7 +36,7 @@ impl Image {
     }
 
     let image = reader.decode()?;
-    let buffer = image.to_rgba32f();
+    let buffer = image.to_rgba8();
 
     Ok(Self { buffer })
   }
@@ -51,21 +51,21 @@ impl Image {
     self.buffer.height() as usize
   }
 
-  /// Retrieves the pixels of the image as a slice of [`Color`]s.
-  pub fn as_slice(&self) -> &[Color] {
+  /// Retrieves the pixels of the image as a slice of [`Color32`]s.
+  pub fn as_slice(&self) -> &[Color32] {
     let rgba = self.buffer.as_ref();
 
     unsafe {
-      std::slice::from_raw_parts(rgba.as_ptr() as *const Color, rgba.len() / 4)
+      std::slice::from_raw_parts(rgba.as_ptr() as *const Color32, rgba.len() / 4)
     }
   }
 
-  /// Retrieves the pixels of the image as a mutable slice of [`Color`]s.
-  pub fn as_slice_mut(&mut self) -> &mut [Color] {
+  /// Retrieves the pixels of the image as a mutable slice of [`Color32`]s.
+  pub fn as_slice_mut(&mut self) -> &mut [Color32] {
     let rgba = self.buffer.as_mut();
 
     unsafe {
-      std::slice::from_raw_parts_mut(rgba.as_ptr() as *mut Color, rgba.len() / 4)
+      std::slice::from_raw_parts_mut(rgba.as_ptr() as *mut Color32, rgba.len() / 4)
     }
   }
 

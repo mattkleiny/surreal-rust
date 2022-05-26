@@ -42,7 +42,7 @@ pub trait GraphicsResource {
 /// Represents a server implementation for the underlying graphics subsystem.
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
-/// details. The server is intended to be a low-level unsafe implementation abstraction.
+/// details. The server is intended to be a low-level implementation abstraction.
 pub trait GraphicsBackend {
   // frame operations
   fn begin_frame(&self);
