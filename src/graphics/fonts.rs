@@ -1,5 +1,5 @@
 use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::graphics::{SpriteBatch, Texture, TextureRegion};
+use crate::graphics::{Color, SpriteBatch, Texture, TextureRegion};
 use crate::io::VirtualPath;
 use crate::maths::{Rectangle, Vector2};
 
@@ -17,6 +17,7 @@ pub struct BitmapFont {
 
 /// Describes the metrics for a bitmap font.
 #[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
 struct BitmapFontDescriptor {
   file_path: String,
   glyph_width: u16,
@@ -35,9 +36,8 @@ impl BitmapFont {
   }
 
   /// Draws the given text on the given sprite batch.
-  pub fn draw_text(&self, batch: &mut SpriteBatch, text: &str, position: Vector2<f32>) {
-    // TODO: invert this arrangement?
-    todo!()
+  // TODO: invert this arrangement?
+  pub fn draw_text(&self, batch: &mut SpriteBatch, text: &str, position: Vector2<f32>, color: Color) {
   }
 
   /// Gets the glyph for the given character.
@@ -62,6 +62,8 @@ impl Asset for BitmapFont {
 impl AssetLoader<BitmapFont> for BitmapFontLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<BitmapFont> {
     let descriptor: BitmapFontDescriptor = context.path.deserialize_json()?;
+
+    // TODO: convert path to a relative path?
     let image_path = VirtualPath::parse(&descriptor.file_path);
     let texture = context.load_asset(image_path)?;
     let font = BitmapFont::new(&texture, descriptor);
