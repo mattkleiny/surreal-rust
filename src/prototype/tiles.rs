@@ -127,10 +127,11 @@ mod tests {
   #[test]
   fn tile_map_should_read_and_write() {
     let mut map = TileMap::new(16, 16);
+    let position = vec2(0, 0);
 
-    map.set(0, 0, &ExampleTile::WALL);
+    map.set(position, ExampleTile::WALL);
 
-    let tile = map.get(0, 0);
+    let tile = map.get(position);
 
     assert_eq!(tile.1, "Wall");
   }

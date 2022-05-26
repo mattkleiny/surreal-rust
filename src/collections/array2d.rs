@@ -75,7 +75,7 @@ mod tests {
 
     for y in 0..array.height() {
       for x in 0..array.width() {
-        array.set(x, y, Color32::random());
+        array.set((x, y), Color32::random());
       }
     }
   }
