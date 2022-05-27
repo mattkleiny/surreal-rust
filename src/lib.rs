@@ -14,7 +14,6 @@
 
 #[macro_use]
 extern crate serde;
-
 // Re-export the macro crate for consumers.
 pub extern crate surreal_macros as macros;
 
@@ -29,6 +28,7 @@ pub mod maths;
 pub mod platform;
 #[cfg(feature = "prototype")]
 pub mod prototype;
+pub mod scripting;
 pub mod ui;
 pub mod utilities;
 
@@ -48,6 +48,7 @@ pub mod prelude {
   pub use crate::platform::*;
   #[cfg(feature = "prototype")]
   pub use crate::prototype::*;
+  pub use crate::scripting::*;
   pub use crate::ui::*;
   pub use crate::utilities::*;
 }

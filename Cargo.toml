@@ -26,7 +26,6 @@ anyhow = "1.0.57"
 image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
 profiling = { version = "1.0.6", features = ["profile-with-optick"] }
 egui = { version = "0.18.1" }
-puffin_egui = { version = "0.15.0" }
 
 # serialization/deserialization
 serde = { version = "1.0.137", features = ["derive"] }
@@ -37,3 +36,6 @@ ron = "0.7"
 gl = "0.14.0"
 raw-gl-context = "0.1.2"
 winit = { version = "0.22.2", default-features = false }
+
+# scripting dependencies
+mlua = { version = "0.7.4", features = ["lua54", "vendored"] }

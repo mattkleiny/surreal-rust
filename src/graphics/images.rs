@@ -53,7 +53,7 @@ impl Image {
 
   /// Retrieves the pixels of the image as a slice of [`Color32`]s.
   pub fn as_slice(&self) -> &[Color32] {
-    let rgba = self.buffer.as_ref();
+    let rgba = &self.buffer;
 
     unsafe {
       std::slice::from_raw_parts(rgba.as_ptr() as *const Color32, rgba.len() / 4)
@@ -62,7 +62,7 @@ impl Image {
 
   /// Retrieves the pixels of the image as a mutable slice of [`Color32`]s.
   pub fn as_slice_mut(&mut self) -> &mut [Color32] {
-    let rgba = self.buffer.as_mut();
+    let rgba = &mut self.buffer;
 
     unsafe {
       std::slice::from_raw_parts_mut(rgba.as_ptr() as *mut Color32, rgba.len() / 4)
