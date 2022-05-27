@@ -38,14 +38,14 @@ fn main() {
     map.set_sprite(&Tile::Filled, sprite);
     map.fill(|_, _| if bool::random() { &Tile::Filled } else { &Tile::Empty });
 
-    game.run_variable_step(|context| {
-      context.host.graphics.clear_color_buffer(palette[0]);
+    game.run_variable_step(|game| {
+      game.host.graphics.clear_color_buffer(palette[0]);
 
       renderer.render(&map);
 
-      if let Some(keyboard) = context.host.input.keyboard_device() {
+      if let Some(keyboard) = game.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          context.exit();
+          game.exit();
         }
 
         if keyboard.is_key_pressed(Key::Space) {

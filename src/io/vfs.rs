@@ -65,7 +65,7 @@ impl<'a> VirtualPath<'a> {
   }
 
   /// Returns a new path with a different file extension.
-  pub fn change_extension(&self, new_extension: &str) -> Self {
+  pub fn change_extension(&self, _new_extension: &str) -> Self {
     todo!()
   }
 

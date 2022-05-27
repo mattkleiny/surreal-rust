@@ -1,14 +1,17 @@
 use std::collections::HashSet;
 
+use egui::RawInput;
 use winit::event::{ElementState, MouseButton};
 
 use crate::input::*;
 use crate::maths::{range, Vector2};
+use crate::ui::RawInputProvider;
 
 /// The server for input management.
 pub struct DesktopInput {
   keyboard: DesktopKeyboardDevice,
   mouse: DesktopMouseDevice,
+  raw_input: RawInput,
 }
 
 impl DesktopInput {
@@ -17,6 +20,7 @@ impl DesktopInput {
     Self {
       keyboard: DesktopKeyboardDevice::new(),
       mouse: DesktopMouseDevice::new(),
+      raw_input: Default::default(),
     }
   }
 
@@ -49,6 +53,12 @@ impl InputBackend for DesktopInput {
 
   fn mouse_device(&self) -> Option<&dyn MouseDevice> {
     Some(&self.mouse)
+  }
+}
+
+impl RawInputProvider for DesktopInput {
+  fn get_raw_input(&self) -> &RawInput {
+    &self.raw_input
   }
 }
 
@@ -135,10 +145,10 @@ impl DesktopMouseDevice {
       ElementState::Pressed => {
         self.current_buttons.insert(button);
         self.previous_buttons.insert(button);
-      },
+      }
       ElementState::Released => {
         self.current_buttons.remove(&button);
-      },
+      }
     };
   }
 }

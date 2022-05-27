@@ -6,37 +6,51 @@ use std::collections::HashMap;
 
 use crate::graphics::*;
 
-const SHADER_UI_STANDARD: &'static str = include_str!("../assets/shaders/sprite-standard.glsl");
+/// A shader program to use for egui UI rendering.
+const SHADER_UI_STANDARD: &'static str = include_str!("../assets/shaders/ui-standard.glsl");
 
-pub struct EguiContextDescriptor;
+/// A provider for egui raw input.
+pub trait RawInputProvider {
+  /// Retrieves raw input for this frame.
+  fn get_raw_input(&self) -> &egui::RawInput;
+}
 
-impl RenderContextDescriptor for EguiContextDescriptor {
-  type Context = EguiContext;
+/// Describes how to set-up a `UserInterfaceContext` for egui.
+pub struct UserInterfaceContextDescriptor;
 
-  fn create(&self, server: &GraphicsServer) -> Self::Context {
-    let shader = ShaderProgram::from_string(&server, SHADER_UI_STANDARD).unwrap();
+impl RenderContextDescriptor for UserInterfaceContextDescriptor {
+  type Context = UserInterfaceContext;
+
+  fn create(&self, graphics: &GraphicsServer) -> Self::Context {
+    let shader = ShaderProgram::from_string(&graphics, SHADER_UI_STANDARD).unwrap();
 
     Self::Context {
-      server: server.clone(),
-      material: Material::new(server, &shader),
+      graphics: graphics.clone(),
+      material: Material::new(graphics, &shader),
       textures: HashMap::new(),
+      context: egui::Context::default(),
     }
   }
 }
 
-pub struct EguiContext {
-  server: GraphicsServer,
+/// A context for immediate mode user interface rendering via `egui`.
+pub struct UserInterfaceContext {
+  graphics: GraphicsServer,
   material: Material,
   textures: HashMap<egui::TextureId, Texture>,
+  context: egui::Context,
 }
 
-impl EguiContext {
-  pub fn run(&mut self, body: impl FnMut(&egui::Context)) {
-    todo!()
+impl UserInterfaceContext {
+  pub fn run(&mut self, input: &impl RawInputProvider, body: impl FnMut(&egui::Context)) {
+    // TODO: apply full output from egui to the graphics server
+
+    let raw_input = input.get_raw_input().clone();
+    let full_output = self.context.run(raw_input, body);
   }
 }
 
-impl RenderContext for EguiContext {
+impl RenderContext for UserInterfaceContext {
   fn on_before_with(&mut self) {}
   fn on_after_with(&mut self) {}
 }

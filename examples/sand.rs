@@ -18,13 +18,13 @@ fn main() {
     let mut canvas = PixelCanvas::new(graphics, 256, 144);
     let mut random = Random::new();
 
-    game.run_variable_step(|context| {
-      canvas.simulate(context.time.delta_time);
+    game.run_variable_step(|game| {
+      canvas.simulate(game.time.delta_time);
       canvas.draw(); // we're just using the sprite material
 
-      if let Some(keyboard) = context.host.input.keyboard_device() {
+      if let Some(keyboard) = game.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          context.exit();
+          game.exit();
         }
 
         if keyboard.is_key_pressed(Key::Space) {
@@ -32,7 +32,7 @@ fn main() {
         }
       }
 
-      if let Some(mouse) = context.host.input.mouse_device() {
+      if let Some(mouse) = game.host.input.mouse_device() {
         let position = mouse.normalised_position() * vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
 
         if mouse.is_button_down(MouseButton::Left) {

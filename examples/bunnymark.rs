@@ -30,12 +30,12 @@ fn main() {
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
 
-    game.run_variable_step(move |context| {
-      context.host.graphics.clear_color_buffer(Color::BLACK);
+    game.run_variable_step(move |game| {
+      game.host.graphics.clear_color_buffer(Color::BLACK);
 
       // update bunnies
       for bunny in &mut bunnies {
-        bunny.update(context.time.delta_time);
+        bunny.update(game.time.delta_time);
       }
 
       // draw bunnies
@@ -49,13 +49,13 @@ fn main() {
       });
 
       // handle input
-      if let Some(keyboard) = context.host.input.keyboard_device() {
+      if let Some(keyboard) = game.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          context.exit();
+          game.exit();
         }
       }
 
-      if let Some(mouse) = context.host.input.mouse_device() {
+      if let Some(mouse) = game.host.input.mouse_device() {
         if mouse.is_button_down(MouseButton::Left) {
           let position = mouse.normalised_position();
 

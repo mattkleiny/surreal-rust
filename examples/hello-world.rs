@@ -26,19 +26,19 @@ fn main() {
       ..Default::default()
     });
 
-    game.run_variable_step(|context| {
-      let total_time = context.time.total_time as f32;
+    game.run_variable_step(|game| {
+      let total_time = game.time.total_time as f32;
       let color = Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.);
 
-      context.host.graphics.clear_color_buffer(color);
+      game.host.graphics.clear_color_buffer(color);
 
       renderer.with(|pass: &mut SpriteBatchContext| {
         font.draw_text(&mut pass.batch, "Hello, World!", vec2(WIDTH / 2., HEIGHT / 2.), Color::WHITE);
       });
 
-      if let Some(keyboard) = context.host.input.keyboard_device() {
+      if let Some(keyboard) = game.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          context.exit();
+          game.exit();
         }
       }
     });

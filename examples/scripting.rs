@@ -17,14 +17,14 @@ fn main() {
 
     let script: &Script = assets.load_asset("assets/scripts/test.lua").expect("Failed to load script");
 
-    game.run_variable_step(|context| {
-      context.host.graphics.clear_color_buffer(Color::BLACK);
+    game.run_variable_step(|game| {
+      game.host.graphics.clear_color_buffer(Color::BLACK);
 
       script.execute();
 
-      if let Some(keyboard) = context.host.input.keyboard_device() {
+      if let Some(keyboard) = game.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          context.exit();
+          game.exit();
         }
       }
     });
