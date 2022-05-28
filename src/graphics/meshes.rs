@@ -54,14 +54,14 @@ impl VertexKind {
 pub struct Vertex2 {
   pub position: Vector2<f32>,
   pub uv: Vector2<f32>,
-  pub color: Color,
+  pub color: Color32,
 }
 
 impl Vertex for Vertex2 {
   const DESCRIPTORS: &'static [VertexDescriptor] = &[
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::F32, should_normalize: false },
+    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
   ];
 }
 
@@ -70,14 +70,14 @@ impl Vertex for Vertex2 {
 pub struct Vertex3 {
   pub position: Vector3<f32>,
   pub uv: Vector2<f32>,
-  pub color: Color,
+  pub color: Color32,
 }
 
 impl Vertex for Vertex3 {
   const DESCRIPTORS: &'static [VertexDescriptor] = &[
     VertexDescriptor { count: 3, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::F32, should_normalize: false },
+    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
   ];
 }
 
@@ -107,9 +107,9 @@ impl<V> MeshState<V> {
 
 impl<V> Mesh<V> where V: Vertex {
   /// Constructs a new blank mesh on the GPU.
-  pub fn new(server: &GraphicsServer) -> Self {
-    let vertices = Buffer::new(server, BufferKind::Element, BufferUsage::Static);
-    let indices = Buffer::new(server, BufferKind::Index, BufferUsage::Static);
+  pub fn new(server: &GraphicsServer, usage: BufferUsage) -> Self {
+    let vertices = Buffer::new(server, BufferKind::Element, usage);
+    let indices = Buffer::new(server, BufferKind::Index, usage);
 
     Self {
       state: Rc::new(RefCell::new(MeshState {
@@ -123,7 +123,7 @@ impl<V> Mesh<V> where V: Vertex {
 
   /// Constructs a mesh with the given factory method.
   pub fn create(server: &GraphicsServer, factory: impl Fn(&mut Tessellator<V>)) -> Self {
-    let mut mesh = Self::new(server);
+    let mut mesh = Self::new(server, BufferUsage::Static);
     let mut tessellator = Tessellator::new();
 
     factory(&mut tessellator);
@@ -179,9 +179,9 @@ impl Mesh<Vertex2> {
   pub fn create_triangle(server: &GraphicsServer, size: f32) -> Self {
     Self::create(server, |mesh| {
       mesh.add_triangle(&[
-        Vertex2 { position: vec2(-size, -size), color: Color::WHITE, uv: vec2(0., 0.) },
-        Vertex2 { position: vec2(0., size), color: Color::WHITE, uv: vec2(0.5, 1.) },
-        Vertex2 { position: vec2(size, -size), color: Color::WHITE, uv: vec2(1., 0.) },
+        Vertex2 { position: vec2(-size, -size), color: Color32::WHITE, uv: vec2(0., 0.) },
+        Vertex2 { position: vec2(0., size), color: Color32::WHITE, uv: vec2(0.5, 1.) },
+        Vertex2 { position: vec2(size, -size), color: Color32::WHITE, uv: vec2(1., 0.) },
       ]);
     })
   }
@@ -190,10 +190,10 @@ impl Mesh<Vertex2> {
   pub fn create_quad(server: &GraphicsServer, size: f32) -> Self {
     Self::create(server, |mesh| {
       mesh.add_quad(&[
-        Vertex2 { position: vec2(-size, -size), color: Color::WHITE, uv: vec2(0., 1.) },
-        Vertex2 { position: vec2(-size, size), color: Color::WHITE, uv: vec2(0., 0.) },
-        Vertex2 { position: vec2(size, size), color: Color::WHITE, uv: vec2(1., 0.) },
-        Vertex2 { position: vec2(size, -size), color: Color::WHITE, uv: vec2(1., 1.) },
+        Vertex2 { position: vec2(-size, -size), color: Color32::WHITE, uv: vec2(0., 1.) },
+        Vertex2 { position: vec2(-size, size), color: Color32::WHITE, uv: vec2(0., 0.) },
+        Vertex2 { position: vec2(size, size), color: Color32::WHITE, uv: vec2(1., 0.) },
+        Vertex2 { position: vec2(size, -size), color: Color32::WHITE, uv: vec2(1., 1.) },
       ]);
     })
   }
@@ -220,7 +220,7 @@ impl Mesh<Vertex2> {
 
         vertices.push(Vertex2 {
           position: vec2(x, y),
-          color: Color::WHITE,
+          color: Color32::WHITE,
           uv: vec2(u, v),
         })
       }

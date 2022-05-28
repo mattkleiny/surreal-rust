@@ -23,7 +23,7 @@ pub struct SpriteBatch {
 pub struct SpriteOptions {
   pub position: Vector2<f32>,
   pub scale: Vector2<f32>,
-  pub color: Color,
+  pub color: Color32,
 }
 
 impl Default for SpriteOptions {
@@ -31,7 +31,7 @@ impl Default for SpriteOptions {
     Self {
       position: Vector2::ZERO,
       scale: Vector2::ONE,
-      color: Color::WHITE,
+      color: Color32::WHITE,
     }
   }
 }
@@ -49,7 +49,7 @@ impl SpriteBatch {
     let indices = build_quad_indices(sprite_count * 6);
 
     // create mesh, upload quad indices immediately
-    let mut mesh = Mesh::new(server);
+    let mut mesh = Mesh::new(server, BufferUsage::Static);
 
     mesh.with_buffers(|_, buffer| {
       buffer.write_data(&indices);

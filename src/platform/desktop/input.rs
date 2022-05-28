@@ -28,21 +28,53 @@ impl DesktopInput {
   pub fn tick(&mut self) {
     self.keyboard.tick();
     self.mouse.tick();
+
+    // reset egui events
+    self.raw_input.events.clear();
   }
 
   /// Notifies of a keyboard event.
   pub fn on_keyboard_event(&mut self, event: winit::event::KeyboardInput) {
     self.keyboard.on_keyboard_event(event);
+
+    self.raw_input.events.push(egui::Event::Key {
+      key: egui::Key::Space, // TODO: implement me
+      pressed: event.state == ElementState::Pressed,
+      modifiers: Default::default(),
+    })
   }
 
   /// Notifies of a mouse movement event.
   pub fn on_mouse_move(&mut self, position: Vector2<f32>, window_size: Vector2<f32>) {
     self.mouse.on_mouse_moved(position, window_size);
+
+    // TODO: clean this up
+    self.raw_input.events.push(egui::Event::PointerMoved(egui::Pos2 {
+      x: position.x,
+      y: position.y,
+    }));
   }
 
   /// Notifies of a mouse button event.
   pub fn on_mouse_event(&mut self, button: MouseButton, state: ElementState) {
     self.mouse.on_mouse_event(button, state);
+
+    // TODO: clean this up
+    let position = self.mouse.position();
+
+    self.raw_input.events.push(egui::Event::PointerButton {
+      pos: egui::Pos2 {
+        x: position.x,
+        y: position.y,
+      },
+      button: match button {
+        MouseButton::Left => egui::PointerButton::Primary,
+        MouseButton::Right => egui::PointerButton::Secondary,
+        _ => egui::PointerButton::Middle
+      },
+      pressed: state == ElementState::Pressed,
+      modifiers: Default::default(),
+    })
   }
 }
 

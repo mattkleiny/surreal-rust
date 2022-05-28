@@ -7,13 +7,16 @@ use surreal::prelude::*;
 fn main() {
   let platform = DesktopPlatform::new(Configuration {
     title: "Surreal <3 egui",
+    size: (1920, 1080),
     ..Default::default()
   });
 
   Game::start(platform, |mut game, _| {
     let mut renderer = RenderManager::new(&game.host.graphics);
 
-    renderer.configure(UserInterfaceContextDescriptor);
+    renderer.configure(UserInterfaceContextDescriptor {
+      projection_view: Matrix4x4::create_orthographic(1920., 1080., 0., 100.),
+    });
 
     let mut name = "Matt".to_string();
     let mut age = 33;
