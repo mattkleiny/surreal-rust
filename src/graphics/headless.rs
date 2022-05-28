@@ -64,10 +64,6 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn flush_commands(&self) {
-    // no-op
-  }
-
   fn create_buffer(&self) -> GraphicsHandle {
     self.next_buffer_id.fetch_add(1, Ordering::Relaxed)
   }

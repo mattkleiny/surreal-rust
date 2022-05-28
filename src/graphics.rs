@@ -58,7 +58,6 @@ pub trait GraphicsBackend {
   fn set_scissor_mode(&self, scissor_mode: ScissorMode);
   fn clear_color_buffer(&self, color: Color);
   fn clear_depth_buffer(&self);
-  fn flush_commands(&self);
 
   // buffers
   fn create_buffer(&self) -> GraphicsHandle;

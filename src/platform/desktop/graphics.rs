@@ -42,11 +42,17 @@ impl DesktopGraphicsBackend {
 }
 
 impl GraphicsBackend for DesktopGraphicsBackend {
+  #[crate::diagnostics::profile_function]
   fn begin_frame(&self) {
     self.context.make_current();
   }
 
+  #[crate::diagnostics::profile_function]
   fn end_frame(&self) {
+    unsafe {
+      gl::Flush();
+    }
+
     self.context.swap_buffers();
     self.context.make_not_current();
   }
@@ -142,12 +148,6 @@ impl GraphicsBackend for DesktopGraphicsBackend {
   fn clear_depth_buffer(&self) {
     unsafe {
       gl::Clear(gl::DEPTH_BUFFER_BIT);
-    }
-  }
-
-  fn flush_commands(&self) {
-    unsafe {
-      gl::Flush();
     }
   }
 
