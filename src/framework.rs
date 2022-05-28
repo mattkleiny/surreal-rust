@@ -51,13 +51,13 @@ impl<P> Game<P> where P: Platform {
   }
 
   /// Runs the game loop in a variable step fashion.
-  pub fn run_variable_step(&mut self, mut tick: impl FnMut(&mut GameTick<P>)) {
+  pub fn run_variable_step(&mut self, mut main_loop: impl FnMut(&mut GameTick<P>)) {
     let mut timer = Clock::new();
 
     self.host.run(move |host| {
       profiling::scope!("Main Thread");
 
-      let mut context = GameTick {
+      let mut tick = GameTick {
         host,
         time: GameTime {
           delta_time: timer.tick(),
@@ -66,9 +66,9 @@ impl<P> Game<P> where P: Platform {
         is_running: true,
       };
 
-      tick(&mut context);
+      main_loop(&mut tick);
 
-      if !context.is_running {
+      if !tick.is_running {
         host.exit();
       }
 

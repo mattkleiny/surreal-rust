@@ -40,7 +40,7 @@ pub trait PlatformHost {
   fn graphics(&self) -> &crate::graphics::GraphicsServer;
 
   /// Runs the given body function on the platform.
-  fn run(&mut self, body: impl FnMut(&mut Self));
+  fn run(&mut self, main_loop: impl FnMut(&mut Self));
 
   /// Exits the platform.
   fn exit(&mut self);
