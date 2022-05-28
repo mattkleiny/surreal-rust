@@ -10,7 +10,7 @@
 - [ ] Fix virtual file system
 - [ ] Get top-level crash handler working
 - [ ] Get #[derive(Vertex)] working
-- [ ] Allow reads from buffers and textures
+- [x] Allow reads from buffers and textures
 - [ ] Finalize core maths library
 - [ ] Add lots of tests
 - [ ] Add path tessellation for meshes

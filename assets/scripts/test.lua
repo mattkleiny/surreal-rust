@@ -6,4 +6,4 @@ function fibonacci(n)
     end
 end
 
-print('Fibonacci of 5: ' .. fibonacci(10))
+print('Fibonacci of 10: ' .. fibonacci(10))

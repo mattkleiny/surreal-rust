@@ -20,7 +20,7 @@ void main()
   gl_Position = vec4(a_position.x, -a_position.y, 0.0, 1.0) * u_projectionView;
 }
 
-  #shader_type fragment
+#shader_type fragment
 
 uniform sampler2D u_texture;
 uniform float u_intensity;

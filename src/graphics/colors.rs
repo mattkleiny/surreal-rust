@@ -17,12 +17,6 @@ pub trait Pixel: Copy {
 
   /// Converts this pixel type from a raw slice of 0-255 byte values.
   fn from_bytes(slice: &[u8; 4]) -> Self;
-
-  /// Constructs this pixel type from raw subpixel values.
-  fn from_slice(slice: &[Self::Subpixel; Self::CHANNEL_COUNT]) -> Self;
-
-  /// Gets an array of the pixel's channels.
-  fn channels(&self) -> [Self::Subpixel; Self::CHANNEL_COUNT];
 }
 
 /// A simple floating point color value with 4 channels (RGBA).
@@ -68,18 +62,16 @@ impl Pixel for Color {
       a: slice[3] as f32 / 255.,
     }
   }
+}
 
-  fn from_slice(slice: &[Self::Subpixel; Self::CHANNEL_COUNT]) -> Self {
-    Self {
-      r: slice[0],
-      g: slice[1],
-      b: slice[2],
-      a: slice[3],
-    }
-  }
-
-  fn channels(&self) -> [Self::Subpixel; Self::CHANNEL_COUNT] {
-    [self.r, self.g, self.b, self.a]
+impl From<Color32> for Color {
+  fn from(color: Color32) -> Self {
+    Self::rgba(
+      color.r as f32 / 255.0,
+      color.g as f32 / 255.0,
+      color.r as f32 / 255.0,
+      color.a as f32 / 255.0,
+    )
   }
 }
 
@@ -172,18 +164,16 @@ impl Pixel for Color32 {
       a: slice[3],
     }
   }
+}
 
-  fn from_slice(slice: &[Self::Subpixel; Self::CHANNEL_COUNT]) -> Self {
-    Self {
-      r: slice[0],
-      g: slice[1],
-      b: slice[2],
-      a: slice[3],
-    }
-  }
-
-  fn channels(&self) -> [Self::Subpixel; Self::CHANNEL_COUNT] {
-    [self.r, self.g, self.b, self.a]
+impl From<Color> for Color32 {
+  fn from(color: Color) -> Self {
+    Self::rgba(
+      (color.r * 255.0) as u8,
+      (color.g * 255.0) as u8,
+      (color.b * 255.0) as u8,
+      (color.a * 255.0) as u8,
+    )
   }
 }
 
@@ -236,26 +226,6 @@ impl FromRandom for Color32 {
 #[cfg(test)]
 mod tests {
   use super::*;
-
-  #[test]
-  fn color_should_be_convertible_from_slice() {
-    let color = Color::from_slice(&[1., 1., 0., 0.]);
-
-    assert_eq!(color.r, 1.);
-    assert_eq!(color.g, 1.);
-    assert_eq!(color.b, 0.);
-    assert_eq!(color.a, 0.);
-  }
-
-  #[test]
-  fn color_should_be_convertible_to_channels() {
-    let channels = Color::RED.channels();
-
-    assert_eq!(channels[0], 1.);
-    assert_eq!(channels[1], 0.);
-    assert_eq!(channels[2], 0.);
-    assert_eq!(channels[3], 1.);
-  }
 
   #[test]
   fn color_should_be_equatable() {

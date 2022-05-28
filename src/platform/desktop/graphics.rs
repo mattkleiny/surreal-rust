@@ -42,12 +42,12 @@ impl DesktopGraphicsBackend {
 }
 
 impl GraphicsBackend for DesktopGraphicsBackend {
-  #[crate::diagnostics::profile_function]
+  #[macros::profile_function]
   fn begin_frame(&self) {
     self.context.make_current();
   }
 
-  #[crate::diagnostics::profile_function]
+  #[macros::profile_function]
   fn end_frame(&self) {
     unsafe {
       gl::Flush();
@@ -159,25 +159,13 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn read_buffer_data(&self, buffer: GraphicsHandle, kind: BufferKind, offset: usize, length: usize) -> Vec<u8> {
+  fn read_buffer_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8) {
     unsafe {
-      let kind = match kind {
-        BufferKind::Element => gl::ARRAY_BUFFER,
-        BufferKind::Index => gl::ELEMENT_ARRAY_BUFFER,
-        BufferKind::Uniform => gl::UNIFORM_BUFFER,
-      };
-
-      let mut data = Vec::with_capacity(length);
-      let pointer = data.as_mut_ptr() as *mut c_void;
-
-      gl::BindBuffer(kind, buffer);
-      gl::BufferSubData(kind, offset as isize, length as isize, pointer);
-
-      data
+      gl::GetNamedBufferSubData(buffer, offset as isize, length as isize, pointer as *mut c_void);
     }
   }
 
-  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, data: *const u8, length: usize) {
+  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -191,7 +179,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       };
 
       gl::BindBuffer(kind, buffer);
-      gl::BufferData(kind, length as isize, data as *const _, usage);
+      gl::BufferData(kind, length as isize, pointer as *const _, usage);
     }
   }
 
@@ -237,6 +225,28 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrap_mode as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrap_mode as i32);
+    }
+  }
+
+  fn read_texture_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
+    unsafe {
+      let (components, kind) = match pixel_format {
+        TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
+        TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
+        TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
+        TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
+        TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
+      };
+
+      gl::BindTexture(gl::TEXTURE_2D, texture);
+      gl::GetnTexImage(
+        gl::TEXTURE_2D,
+        mip_level as i32,
+        components,
+        kind,
+        length as i32,
+        pixels as *mut c_void,
+      );
     }
   }
 
@@ -546,8 +556,6 @@ impl GraphicsBackend for DesktopGraphicsBackend {
   }
 
   fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
-    // TODO: variable index type?
-
     unsafe {
       gl::BindVertexArray(mesh);
 

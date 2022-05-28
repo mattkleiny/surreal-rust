@@ -55,14 +55,29 @@ impl<T> Buffer<T> {
     self.state.borrow().length
   }
 
-  /// Reads data from the buffer.
-  #[crate::diagnostics::profile_function]
-  pub fn read_data(&self, _offset: usize, _length: usize) -> Vec<T> where T: Clone {
-    todo!()
+  /// Reads all data from the buffer.
+  pub fn read_data(&self) -> Vec<T> {
+    let state = self.state.borrow();
+    let length = state.length;
+
+    let mut buffer = Vec::with_capacity(length);
+
+    unsafe {
+      buffer.set_len(length);
+
+      state.server.read_buffer_data(
+        state.handle,
+        0, // offset
+        length * std::mem::size_of::<T>(),
+        buffer.as_mut_ptr() as *mut u8,
+      );
+    }
+
+    buffer
   }
 
   /// Uploads the given data to the buffer.
-  #[crate::diagnostics::profile_function]
+  #[macros::profile_function]
   pub fn write_data(&mut self, data: &[T]) {
     let mut state = self.state.borrow_mut();
 
@@ -71,8 +86,8 @@ impl<T> Buffer<T> {
       state.handle,
       state.usage,
       state.kind,
-      data.as_ptr() as *const u8,
       data.len() * std::mem::size_of::<T>(),
+      data.as_ptr() as *const u8,
     );
   }
 }

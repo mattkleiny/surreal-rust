@@ -22,6 +22,9 @@ pub trait Vertex: Copy {
   const DESCRIPTORS: &'static [VertexDescriptor];
 }
 
+/// Describes a kind of index.
+pub type Index = u32;
+
 /// Describes a single vertex field in a `Vertex` type.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct VertexDescriptor {
@@ -95,12 +98,12 @@ struct MeshState<V> {
   server: GraphicsServer,
   handle: GraphicsHandle,
   vertices: Buffer<V>,
-  indices: Buffer<u32>,
+  indices: Buffer<Index>,
 }
 
 impl<V> MeshState<V> {
   /// Borrows the underlying graphics buffers from the state at the same time..
-  pub fn borrow_buffers_mut(&mut self) -> (&mut Buffer<V>, &mut Buffer<u32>) {
+  pub fn borrow_buffers_mut(&mut self) -> (&mut Buffer<V>, &mut Buffer<Index>) {
     (&mut self.vertices, &mut self.indices)
   }
 }
@@ -134,7 +137,7 @@ impl<V> Mesh<V> where V: Vertex {
   }
 
   /// Acquires mutable write access the mesh buffers.
-  pub fn with_buffers(&mut self, body: impl FnOnce(&mut Buffer<V>, &mut Buffer<u32>)) {
+  pub fn with_buffers(&mut self, body: impl FnOnce(&mut Buffer<V>, &mut Buffer<Index>)) {
     let state = &mut self.state.borrow_mut();
     let (vertices, indices) = state.borrow_buffers_mut();
 
@@ -149,7 +152,7 @@ impl<V> Mesh<V> where V: Vertex {
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
-  #[crate::diagnostics::profile_function]
+  #[macros::profile_function]
   pub fn draw_sub_mesh(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     material.bind();
 
@@ -233,7 +236,7 @@ impl Mesh<Vertex2> {
 /// A simple tessellator for mesh shapes.
 pub struct Tessellator<V> {
   vertices: Vec<V>,
-  indices: Vec<u32>,
+  indices: Vec<Index>,
 }
 
 impl<V> Tessellator<V> {
@@ -257,8 +260,8 @@ impl<V> Tessellator<V> {
 impl<V> Tessellation for Tessellator<V> where V: Vertex {
   type Vertex = V;
 
-  fn vertex_count(&self) -> u32 {
-    self.vertices.len() as u32
+  fn vertex_count(&self) -> Index {
+    self.vertices.len() as Index
   }
 
   fn index_count(&self) -> usize {
@@ -269,7 +272,7 @@ impl<V> Tessellation for Tessellator<V> where V: Vertex {
     self.vertices.push(vertex);
   }
 
-  fn add_index(&mut self, index: u32) {
+  fn add_index(&mut self, index: Index) {
     self.indices.push(index);
   }
 }

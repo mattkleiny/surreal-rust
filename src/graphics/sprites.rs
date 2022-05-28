@@ -64,7 +64,7 @@ impl SpriteBatch {
   }
 
   /// Starts a new batch run with the given `Material`.
-  #[crate::diagnostics::profile_function]
+  #[macros::profile_function]
   pub fn begin(&mut self, material: &Material) {
     self.material = Some(material.clone());
     self.texture = None;
@@ -73,7 +73,7 @@ impl SpriteBatch {
   }
 
   /// Draws a single sprite to the batch.
-  #[crate::diagnostics::profile_function]
+  #[macros::profile_function]
   pub fn draw<'a>(&mut self, region: &'a TextureRegion, options: SpriteOptions) {
     // flush if the texture has changed
     if let Some(texture) = &self.texture {
@@ -105,7 +105,7 @@ impl SpriteBatch {
   }
 
   /// Flushes the batch to the GPU.
-  #[crate::diagnostics::profile_function]
+  #[macros::profile_function]
   pub fn flush(&mut self) {
     if self.vertices.len() == 0 {
       return; // no vertices? no problem
