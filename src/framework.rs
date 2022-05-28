@@ -7,6 +7,7 @@ pub use ecs::*;
 use crate::assets::AssetManager;
 use crate::graphics::{BitmapFontLoader, ImageLoader, MaterialLoader, ShaderProgramLoader, TextureLoader, TextureOptions};
 use crate::platform::{Platform, PlatformHost};
+use crate::scripting::{LuaScriptBackend, ScriptLoader};
 use crate::utilities::{Clock, GameTime};
 
 mod ecs;
@@ -33,6 +34,9 @@ impl<P> Game<P> where P: Platform {
     let host: &P::Host = &game.host;
     let graphics = host.graphics();
 
+    // set-up scripting
+    let scripting = LuaScriptBackend::new();
+
     // set-up asset manager
     let mut assets = AssetManager::new();
 
@@ -41,6 +45,7 @@ impl<P> Game<P> where P: Platform {
     assets.add_loader(TextureLoader { server: graphics.clone(), options: TextureOptions::default() });
     assets.add_loader(ShaderProgramLoader { server: graphics.clone() });
     assets.add_loader(MaterialLoader { server: graphics.clone() });
+    assets.add_loader(ScriptLoader { server: scripting.clone() });
 
     setup(game, &mut assets);
   }

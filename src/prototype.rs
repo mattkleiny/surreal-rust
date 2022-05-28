@@ -1,12 +1,12 @@
 //! A simple set of tools for rapid prototyping of game ideas and etc.
 
-pub use pixels::*;
+pub use canvas::*;
 pub use tiles::*;
 
 use crate::graphics::*;
 use crate::maths::Matrix4x4;
 
-mod pixels;
+mod canvas;
 mod tiles;
 
 // built-in shaders

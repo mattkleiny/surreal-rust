@@ -41,10 +41,12 @@ impl DesktopGraphicsBackend {
 }
 
 impl GraphicsBackend for DesktopGraphicsBackend {
+  #[profiling::function]
   fn begin_frame(&self) {
     self.context.make_current();
   }
 
+  #[profiling::function]
   fn end_frame(&self) {
     self.context.swap_buffers();
     self.context.make_not_current();
@@ -411,6 +413,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
   fn create_mesh(&self, vertex_buffer: GraphicsHandle, index_buffer: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
+
       gl::GenVertexArrays(1, &mut id);
 
       gl::BindVertexArray(id);

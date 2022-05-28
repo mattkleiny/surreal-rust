@@ -75,16 +75,7 @@ impl Drop for Script {
 
 /// An asset loader for scripts.
 pub struct ScriptLoader {
-  server: ScriptServer,
-}
-
-impl ScriptLoader {
-  /// Creates a new script loader.
-  pub fn new(server: &ScriptServer) -> Self {
-    Self {
-      server: server.clone()
-    }
-  }
+  pub server: ScriptServer,
 }
 
 impl Asset for Script {

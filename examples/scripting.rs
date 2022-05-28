@@ -11,10 +11,6 @@ fn main() {
   });
 
   Game::start(platform, |mut game, assets| {
-    let scripting = LuaScriptBackend::new();
-
-    assets.add_loader(ScriptLoader::new(&scripting));
-
     let script: &Script = assets.load_asset("assets/scripts/test.lua").expect("Failed to load script");
 
     game.run_variable_step(|game| {

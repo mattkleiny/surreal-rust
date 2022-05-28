@@ -86,27 +86,29 @@ impl AssetManager {
       type_id: TypeId::of::<A>(),
     };
 
-    let loader = state.loaders
-      .get(&TypeId::of::<A>())
-      .and_then(|it| it.downcast_ref::<A::Loader>())
-      .ok_or(anyhow::anyhow!("Could not result loader for asset {:?}", std::any::type_name::<A>()))?;
+    match state.cache.get(&asset_id) {
+      None => {
+        let state = unsafe { &mut *self.state.get() };
+        let loader = state.loaders
+          .get(&TypeId::of::<A>())
+          .and_then(|it| it.downcast_ref::<A::Loader>())
+          .ok_or(anyhow::anyhow!("Could not result loader for asset {:?}", std::any::type_name::<A>()))?;
 
-    let context = AssetContext {
-      path,
-      manager: self,
-    };
+        // persist loaded assets into cache
+        let context = AssetContext { path, manager: self };
+        let asset = loader.load(&context)?;
 
-    // persist loaded assets into cache
-    let asset = loader.load(&context)?;
+        state.cache.insert(asset_id.clone(), Box::new(asset));
 
-    state.cache.insert(asset_id.clone(), Box::new(asset));
+        let asset = state.cache
+          .get(&asset_id)
+          .and_then(|it| it.downcast_ref::<A>())
+          .expect("Should not be possible");
 
-    let asset = state.cache
-      .get(&asset_id)
-      .and_then(|it| it.downcast_ref::<A>())
-      .expect("Should not be possible");
-
-    Ok(asset)
+        Ok(asset)
+      }
+      Some(asset) => Ok(asset.downcast_ref().expect("Should not be possible")),
+    }
   }
 }
 
