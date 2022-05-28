@@ -44,13 +44,13 @@ fn main() {
       renderer.render(&map);
 
       if let Some(keyboard) = game.host.input.keyboard_device() {
-        if keyboard.is_key_pressed(Key::Escape) {
-          game.exit();
-        }
-
         if keyboard.is_key_pressed(Key::Space) {
           map.clear();
           map.fill(|_, _| if bool::random() { &Tile::Filled } else { &Tile::Empty });
+        }
+
+        if keyboard.is_key_pressed(Key::Escape) {
+          game.exit();
         }
       }
     });

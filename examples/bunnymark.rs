@@ -16,6 +16,7 @@ fn main() {
     let graphics = &game.host.graphics;
 
     // set-up assets and rendering
+    let mut canvas = UserInterfaceCanvas::new(&game.host.graphics);
     let sprite: &Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
     let region = TextureRegion::from(sprite);
 
@@ -23,9 +24,7 @@ fn main() {
 
     // TODO: make this easier to use
     game.host.input.pixels_per_point = 1.2;
-    renderer.configure(UserInterfaceContextDescriptor {
-      pixels_per_point: 1.2
-    });
+    canvas.set_pixels_per_point(1.2);
 
     renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.),
@@ -55,12 +54,10 @@ fn main() {
         }
       });
 
-      renderer.with(|context: &mut UserInterfaceContext| {
-        context.run(&game.host.input, |egui| {
-          if profiler {
-            profiler = puffin_egui::profiler_window(egui);
-          }
-        });
+      canvas.run(&game.host.input, |egui| {
+        if profiler {
+          profiler = display_profiler_window(egui);
+        }
       });
 
       // handle input

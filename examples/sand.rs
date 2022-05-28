@@ -20,17 +20,7 @@ fn main() {
 
     game.run_variable_step(|game| {
       canvas.simulate(game.time.delta_time);
-      canvas.draw(); // we're just using the sprite material
-
-      if let Some(keyboard) = game.host.input.keyboard_device() {
-        if keyboard.is_key_pressed(Key::Escape) {
-          game.exit();
-        }
-
-        if keyboard.is_key_pressed(Key::Space) {
-          canvas.clear();
-        }
-      }
+      canvas.draw();
 
       if let Some(mouse) = game.host.input.mouse_device() {
         let position = mouse.normalised_position() * vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
@@ -42,6 +32,16 @@ fn main() {
           canvas.draw_circle(position, 6., *color);
         } else if mouse.is_button_down(MouseButton::Right) {
           canvas.draw_circle(position, 6., Color::CLEAR);
+        }
+      }
+
+      if let Some(keyboard) = game.host.input.keyboard_device() {
+        if keyboard.is_key_pressed(Key::Space) {
+          canvas.clear();
+        }
+
+        if keyboard.is_key_pressed(Key::Escape) {
+          game.exit();
         }
       }
     });

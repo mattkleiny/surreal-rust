@@ -1,6 +1,4 @@
-//! User interface support.
-//!
-//! Internally we integrate the excellent egui library into the core engine.
+//! User interface rendering and widgets.
 
 use std::collections::HashMap;
 
@@ -8,7 +6,7 @@ use crate::graphics::*;
 use crate::maths::{Rectangle, vec2};
 
 /// A shader program to use for egui UI rendering.
-const SHADER_UI_STANDARD: &'static str = include_str!("../assets/shaders/ui-standard.glsl");
+const SHADER_CANVAS_STANDARD: &'static str = include_str!("../assets/shaders/canvas-standard.glsl");
 
 /// A provider for [`egui::RawInput`] .
 pub trait RawInputProvider {
@@ -16,17 +14,20 @@ pub trait RawInputProvider {
   fn get_raw_input(&self) -> &egui::RawInput;
 }
 
-/// Describes how to set-up a `UserInterfaceContext` for egui.
-pub struct UserInterfaceContextDescriptor {
-  pub pixels_per_point: f32,
+/// A canvas for immediate mode user interface rendering via `egui`.
+pub struct UserInterfaceCanvas {
+  graphics: GraphicsServer,
+  context: egui::Context,
+  material: Material,
+  mesh: Mesh<Vertex2>,
+  textures: HashMap<egui::TextureId, Texture>,
 }
 
-impl RenderContextDescriptor for UserInterfaceContextDescriptor {
-  type Context = UserInterfaceContext;
-
-  fn create(&self, server: &GraphicsServer) -> Self::Context {
+impl UserInterfaceCanvas {
+  /// Creates a new user interface canvas.
+  pub fn new(server: &GraphicsServer) -> Self {
     // load and configure material
-    let shader = ShaderProgram::from_string(&server, SHADER_UI_STANDARD).unwrap();
+    let shader = ShaderProgram::from_string(&server, SHADER_CANVAS_STANDARD).unwrap();
     let mut material = Material::new(server, &shader);
 
     material.set_culling_mode(CullingMode::Disabled);
@@ -35,30 +36,26 @@ impl RenderContextDescriptor for UserInterfaceContextDescriptor {
       destination: BlendFactor::OneMinusSrcAlpha,
     });
 
-    // configure egui
-    let context = egui::Context::default();
-    context.set_pixels_per_point(self.pixels_per_point);
-
-    Self::Context {
+    Self {
       graphics: server.clone(),
-      context,
+      context: egui::Context::default(),
       material,
       mesh: Mesh::new(server, BufferUsage::Dynamic),
       textures: HashMap::new(),
     }
   }
-}
 
-/// A context for immediate mode user interface rendering via `egui`.
-pub struct UserInterfaceContext {
-  graphics: GraphicsServer,
-  context: egui::Context,
-  material: Material,
-  mesh: Mesh<Vertex2>,
-  textures: HashMap<egui::TextureId, Texture>,
-}
+  /// Gets the pixels per point for this canvas.
+  pub fn pixels_per_point(&self) -> f32 {
+    self.context.pixels_per_point()
+  }
 
-impl UserInterfaceContext {
+  /// Sets the pixels per point for this canvas.
+  pub fn set_pixels_per_point(&mut self, pixels_per_point: f32) {
+    self.context.set_pixels_per_point(pixels_per_point);
+  }
+
+  /// Propagates input into the canvas and runs the given body against the canvas output.
   pub fn run(&mut self, input: &impl RawInputProvider, body: impl FnMut(&egui::Context)) {
     let raw_input = input.get_raw_input().clone();
     let full_output = self.context.run(raw_input, body);
@@ -190,5 +187,3 @@ impl UserInterfaceContext {
     let _needs_repaint = full_output.needs_repaint;
   }
 }
-
-impl RenderContext for UserInterfaceContext {}

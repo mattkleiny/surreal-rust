@@ -68,11 +68,11 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_buffer_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn read_buffer_data(&self, _buffer: GraphicsHandle, _kind: BufferKind, _offset: usize, _length: usize) -> Vec<u8> {
-    Vec::new()
+  fn read_buffer_data(&self, _buffer: GraphicsHandle, _offset: usize, _length: usize, _pointer: *mut u8) {
+    // no-op
   }
 
-  fn write_buffer_data(&self, _buffer: GraphicsHandle, _usage: BufferUsage, _kind: BufferKind, _data: *const u8, _length: usize) {
+  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
     // no-op
   }
 
@@ -85,6 +85,10 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   }
 
   fn set_texture_options(&self, _texture: GraphicsHandle, _sampler: &TextureSampler) {
+    // no-op
+  }
+
+  fn read_texture_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
     // no-op
   }
 

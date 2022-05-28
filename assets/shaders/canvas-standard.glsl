@@ -1,4 +1,4 @@
-// Implements a simple shader for UI rendering.
+// Implements a simple shader for screen-space canvas rendering.
 
 #version 330 core
 

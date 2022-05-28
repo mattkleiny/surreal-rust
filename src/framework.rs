@@ -11,6 +11,10 @@ use crate::utilities::{Clock, GameTime};
 
 mod ecs;
 
+// TODO: screen management
+// TODO: plugin management (profiler, console, etc)
+// TODO: better rendering pipeline support
+
 /// The context for bootstrapping a game.
 pub struct Game<P> where P: Platform {
   pub host: P::Host,
