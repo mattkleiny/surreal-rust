@@ -54,8 +54,6 @@ impl ScriptBackend for LuaScriptBackend {
 
     if let Some(script) = state.scripts.get_mut(script) {
       if let Some(code) = &script.code {
-        profiling::scope!("LuaScriptBackend::execute_script");
-
         script.lua.load(code).exec().expect("Failed to execute script")
       }
     }

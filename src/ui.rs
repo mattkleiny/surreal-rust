@@ -62,11 +62,11 @@ impl UserInterfaceContext {
   pub fn run(&mut self, input: &impl RawInputProvider, body: impl FnMut(&egui::Context)) {
     let raw_input = input.get_raw_input().clone();
     let full_output = self.context.run(raw_input, body);
+    let textures_delta = full_output.textures_delta;
 
     // apply textures delta
-    for (id, image_delta) in full_output.textures_delta.set {
-      // convert image representations to our color format
-      // collect desired image width and height
+    for (id, image_delta) in textures_delta.set {
+      // convert image representations to our color format and collect width and height
       let (pixels, [width, height]) = match image_delta.image {
         egui::ImageData::Color(image) => {
           let pixels = image.pixels
@@ -117,7 +117,7 @@ impl UserInterfaceContext {
     }
 
     // free textures that are no longer in use
-    for id in full_output.textures_delta.free {
+    for id in textures_delta.free {
       self.textures.remove(&id);
     }
 
@@ -133,7 +133,6 @@ impl UserInterfaceContext {
     for clipped_primitive in self.context.tessellate(full_output.shapes) {
       match clipped_primitive.primitive {
         egui::epaint::Primitive::Mesh(mesh) => {
-          let clip_rect = clipped_primitive.clip_rect;
           let vertices = mesh.vertices;
           let indices = mesh.indices;
           let texture = self.textures.get(&mesh.texture_id).unwrap();
@@ -150,6 +149,8 @@ impl UserInterfaceContext {
           });
 
           // compute scissor rect based on clip position
+          let clip_rect = clipped_primitive.clip_rect;
+
           let clip_min_x = pixels_per_point * clip_rect.min.x;
           let clip_min_y = pixels_per_point * clip_rect.min.y;
           let clip_max_x = pixels_per_point * clip_rect.max.x;
@@ -176,6 +177,7 @@ impl UserInterfaceContext {
           self.material.set_uniform("u_screen_size", vec2(width_in_points, height_in_points));
           self.material.set_uniform("u_texture", texture);
 
+          // TODO: consider using a geometry batch for this, instead?
           // render mesh using material
           self.mesh.draw(&self.material, PrimitiveTopology::Triangles);
         }
@@ -183,7 +185,7 @@ impl UserInterfaceContext {
       }
     }
 
-    // TODO: apply platform output somehow?
+    // TODO: apply platform input and output somehow?
     let _platform_output = full_output.platform_output;
     let _needs_repaint = full_output.needs_repaint;
   }

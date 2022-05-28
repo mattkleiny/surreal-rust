@@ -1,12 +1,10 @@
 //! Scripting support for the engine.
 
-#[cfg(feature = "scripting-lua")]
 pub use lua::*;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::io::AsVirtualPath;
 
-#[cfg(feature = "scripting-lua")]
 mod lua;
 
 /// An opaque handle to resource in the scripting subsystem.

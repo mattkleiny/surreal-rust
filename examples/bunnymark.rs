@@ -21,6 +21,12 @@ fn main() {
 
     let mut renderer = RenderManager::new(graphics);
 
+    // TODO: make this easier to use
+    game.host.input.pixels_per_point = 1.2;
+    renderer.configure(UserInterfaceContextDescriptor {
+      pixels_per_point: 1.2
+    });
+
     renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.),
       ..Default::default()
@@ -46,6 +52,12 @@ fn main() {
             ..Default::default()
           });
         }
+      });
+
+      renderer.with(|context: &mut UserInterfaceContext| {
+        context.run(&game.host.input, |egui| {
+          puffin_egui::profiler_window(egui);
+        });
       });
 
       // handle input

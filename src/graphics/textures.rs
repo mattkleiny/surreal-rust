@@ -112,13 +112,13 @@ impl Texture {
   }
 
   /// Downloads pixel data from the texture.
-  #[profiling::function]
+  #[crate::diagnostics::profile_function]
   pub fn read_pixels<T>(&self) -> Vec<T> where T: Texel {
     todo!()
   }
 
   /// Uploads pixel data to the texture.
-  #[profiling::function]
+  #[crate::diagnostics::profile_function]
   pub fn write_pixels<T>(&mut self, width: usize, height: usize, pixels: &[T]) where T: Texel {
     let mut state = self.state.borrow_mut();
 
@@ -134,9 +134,11 @@ impl Texture {
   }
 
   /// Uploads a sub-section of pixel data to the texture.
-  #[profiling::function]
-  pub fn write_sub_pixels<T>(&mut self, _region: &Rectangle<usize>, _pixels: &[T]) where T: Texel {
-    todo!()
+  #[crate::diagnostics::profile_function]
+  pub fn write_sub_pixels<T>(&self, region: &Rectangle<usize>, pixels: &[T]) where T: Texel {
+    let state = self.state.borrow();
+
+    state.server.write_texture_sub_data(state.handle, region, pixels.as_ptr() as *const u8, T::FORMAT, 0);
   }
 
   /// Uploads pixel data to the texture from the given [`Image`].

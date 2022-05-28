@@ -12,13 +12,12 @@ members = ["macros"]
 opt-level = 3 # compile third party dependencies by default with some sane optimizations
 
 [features]
-default = ["desktop", "headless", "prototype", "scripting-lua", "profile-with-optick"]
+default = ["desktop", "headless", "prototype", "profiling", "scripting"]
 desktop = []
 headless = []
 prototype = []
-scripting-lua = ["mlua"]
-profile-with-optick = ["profiling/profile-with-optick"]
-profile-with-puffin = ["profiling/profile-with-puffin", "puffin_egui"]
+scripting = ["mlua"]
+profiling = ["puffin", "puffin_egui"]
 
 [dependencies]
 # internal dependencies
@@ -27,14 +26,12 @@ surreal-macros = { path = "macros" }
 # core dependencies
 anyhow = "1.0.57"
 image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
-profiling = { version = "1.0.6" }
 egui = { version = "0.18.1" }
+puffin = { version = "0.13.2", optional = true }
 puffin_egui = { version = "0.15.0", optional = true }
-
-# serialization/deserialization
+ron = "0.7"
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
-ron = "0.7"
 
 # platform dependencies
 gl = "0.14.0"

@@ -18,7 +18,7 @@ pub struct Game<P> where P: Platform {
 
 /// The context for a single tick of the game loop.
 pub struct GameTick<'a, P> where P: Platform {
-  pub host: &'a P::Host,
+  pub host: &'a mut P::Host,
   pub time: GameTime,
   is_running: bool,
 }
@@ -26,7 +26,9 @@ pub struct GameTick<'a, P> where P: Platform {
 impl<P> Game<P> where P: Platform {
   /// Starts a new game with the given platform.
   pub fn start(platform: P, mut setup: impl FnMut(Game<P>, &mut AssetManager)) {
-    profiling::register_thread!("Main Thread");
+    #[cfg(feature = "profiling")] {
+      puffin::set_scopes_on(true);
+    }
 
     // set-up core host
     let game = Game { host: platform.create_host() };
@@ -43,12 +45,11 @@ impl<P> Game<P> where P: Platform {
     assets.add_loader(MaterialLoader { server: graphics.clone() });
 
     // set-up lua scripting
-    #[cfg(feature = "scripting-lua")]
-    {
+    #[cfg(feature = "scripting")] {
       use crate::scripting::*;
 
+      // configure lua script backend and default script loader
       let scripting = LuaScriptBackend::new();
-
       assets.add_loader(ScriptLoader { server: scripting.clone() });
     }
 
@@ -60,7 +61,7 @@ impl<P> Game<P> where P: Platform {
     let mut timer = Clock::new();
 
     self.host.run(move |host| {
-      profiling::scope!("Main Thread");
+      puffin::GlobalProfiler::lock().new_frame();
 
       let mut tick = GameTick {
         host,
@@ -76,8 +77,6 @@ impl<P> Game<P> where P: Platform {
       if !tick.is_running {
         host.exit();
       }
-
-      profiling::finish_frame!();
     });
   }
 }

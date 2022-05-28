@@ -7,6 +7,7 @@ use raw_gl_context::{GlConfig, GlContext};
 use winit::window::Window;
 
 use crate::graphics::*;
+use crate::maths::Rectangle;
 
 /// The graphics server for the desktop platform.
 pub struct DesktopGraphicsBackend {
@@ -41,12 +42,10 @@ impl DesktopGraphicsBackend {
 }
 
 impl GraphicsBackend for DesktopGraphicsBackend {
-  #[profiling::function]
   fn begin_frame(&self) {
     self.context.make_current();
   }
 
-  #[profiling::function]
   fn end_frame(&self) {
     self.context.swap_buffers();
     self.context.make_not_current();
@@ -260,7 +259,42 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       };
 
       gl::BindTexture(gl::TEXTURE_2D, texture);
-      gl::TexImage2D(gl::TEXTURE_2D, mip_level as i32, internal_format as i32, width as i32, height as i32, 0, components, kind, pixels as *const _);
+      gl::TexImage2D(
+        gl::TEXTURE_2D,
+        mip_level as i32,
+        internal_format as i32,
+        width as i32,
+        height as i32,
+        0, // border
+        components,
+        kind,
+        pixels as *const _
+      );
+    }
+  }
+
+  fn write_texture_sub_data(&self, texture: GraphicsHandle, region: &Rectangle<usize>, pixels: *const u8, pixel_format: TextureFormat, mip_level: usize) {
+    unsafe {
+      let (components, kind) = match pixel_format {
+        TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
+        TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
+        TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
+        TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
+        TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
+      };
+
+      gl::BindTexture(gl::TEXTURE_2D, texture);
+      gl::TexSubImage2D(
+        gl::TEXTURE_2D,
+        mip_level as i32,
+        region.left() as i32,
+        region.top() as i32,
+        region.width() as i32,
+        region.height() as i32,
+        components,
+        kind,
+        pixels as *const _
+      );
     }
   }
 

@@ -122,6 +122,11 @@ pub struct DesktopPlatformHost {
 }
 
 impl DesktopPlatformHost {
+  /// Requests a re-paint of the window.
+  pub fn request_repaint(&mut self) {
+    self.window.request_redraw();
+  }
+
   /// Sets the title of the platform's main window.
   pub fn set_title(&mut self, title: impl AsRef<str>) {
     self.window.set_title(title.as_ref());
@@ -211,9 +216,6 @@ impl PlatformHost for DesktopPlatformHost {
           }
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
-          WindowEvent::ModifiersChanged(modifiers) => {
-            self.input.on_modifiers_changed(modifiers);
-          }
           WindowEvent::CursorMoved { position, .. } => {
             let size = self.window.inner_size();
 
@@ -231,8 +233,12 @@ impl PlatformHost for DesktopPlatformHost {
           WindowEvent::KeyboardInput { input, .. } => {
             self.input.on_keyboard_event(input);
           }
+          WindowEvent::ModifiersChanged(modifiers) => {
+            self.input.on_modifiers_changed(modifiers);
+          }
           WindowEvent::Focused(focused) => {
             self.is_focused = focused;
+            self.input.on_modifiers_changed(ModifiersState::default());
           }
           WindowEvent::Resized(size) => {
             let size = (size.width as usize, size.height as usize);

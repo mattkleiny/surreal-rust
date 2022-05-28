@@ -1,5 +1,7 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 
+use crate::maths::Rectangle;
+
 use super::*;
 
 /// A headless [`GraphicsBackend`] implementation.
@@ -91,6 +93,10 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   }
 
   fn write_texture_data(&self, _texture: GraphicsHandle, _width: usize, _height: usize, _pixels: *const u8, _internal_format: TextureFormat, _pixel_format: TextureFormat, _mip_level: usize) {
+    // no-op
+  }
+
+  fn write_texture_sub_data(&self, _texture: GraphicsHandle, _region: &Rectangle<usize>, _pixels: *const u8, _pixel_format: TextureFormat, _mip_level: usize) {
     // no-op
   }
 

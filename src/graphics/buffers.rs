@@ -56,13 +56,13 @@ impl<T> Buffer<T> {
   }
 
   /// Reads data from the buffer.
-  #[profiling::function]
+  #[crate::diagnostics::profile_function]
   pub fn read_data(&self, _offset: usize, _length: usize) -> Vec<T> where T: Clone {
     todo!()
   }
 
   /// Uploads the given data to the buffer.
-  #[profiling::function]
+  #[crate::diagnostics::profile_function]
   pub fn write_data(&mut self, data: &[T]) {
     let mut state = self.state.borrow_mut();
 

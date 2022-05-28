@@ -70,6 +70,7 @@ pub trait GraphicsBackend {
   fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle;
   fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler);
   fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, internal_format: TextureFormat, pixel_format: TextureFormat, mip_level: usize);
+  fn write_texture_sub_data(&self, texture: GraphicsHandle, region: &crate::maths::Rectangle<usize>, pixels: *const u8, pixel_format: TextureFormat, mip_level: usize);
   fn delete_texture(&self, texture: GraphicsHandle);
 
   // shaders

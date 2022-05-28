@@ -149,7 +149,7 @@ impl<V> Mesh<V> where V: Vertex {
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
-  #[profiling::function]
+  #[crate::diagnostics::profile_function]
   pub fn draw_sub_mesh(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     material.bind();
 
