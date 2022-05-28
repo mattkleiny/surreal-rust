@@ -497,6 +497,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       gl::GenVertexArrays(1, &mut id);
 
       gl::BindVertexArray(id);
+
       gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
       gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
 
@@ -561,6 +562,8 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       } else {
         gl::DrawArrays(topology, 0, vertex_count as i32);
       }
+
+      gl::BindVertexArray(0);
     }
   }
 

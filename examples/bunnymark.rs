@@ -35,6 +35,7 @@ fn main() {
     // set-up state
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
+    let mut profiler = false;
 
     game.run_variable_step(move |game| {
       game.host.graphics.clear_color_buffer(Color::BLACK);
@@ -56,12 +57,18 @@ fn main() {
 
       renderer.with(|context: &mut UserInterfaceContext| {
         context.run(&game.host.input, |egui| {
-          puffin_egui::profiler_window(egui);
+          if profiler {
+            profiler = puffin_egui::profiler_window(egui);
+          }
         });
       });
 
       // handle input
       if let Some(keyboard) = game.host.input.keyboard_device() {
+        if keyboard.is_key_pressed(Key::F8) {
+          profiler = !profiler;
+        }
+
         if keyboard.is_key_pressed(Key::Escape) {
           game.exit();
         }
