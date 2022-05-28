@@ -1,7 +1,7 @@
 use super::*;
 
 /// A bounded space in 2 dimensions formed from the two corner points.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Rectangle<T> {
   min: Vector2<T>,
   max: Vector2<T>,

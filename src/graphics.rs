@@ -51,8 +51,11 @@ pub trait GraphicsBackend {
   fn end_frame(&self);
 
   // intrinsics
+  fn get_viewport_size(&self) -> (usize, usize);
   fn set_viewport_size(&self, viewport: (usize, usize));
   fn set_blend_state(&self, blend_state: BlendState);
+  fn set_culling_mode(&self, culling_mode: CullingMode);
+  fn set_scissor_mode(&self, scissor_mode: ScissorMode);
   fn clear_color_buffer(&self, color: Color);
   fn clear_depth_buffer(&self);
   fn flush_commands(&self);

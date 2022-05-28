@@ -17,6 +17,7 @@ pub enum BlendState {
 /// Blending factors for materials.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum BlendFactor {
+  One,
   SrcAlpha,
   SrcColor,
   DstAlpha,
@@ -25,6 +26,27 @@ pub enum BlendFactor {
   OneMinusSrcColor,
   OneMinusDstAlpha,
   OneMinusDstColor,
+}
+
+/// Culling modes for materials.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum CullingMode {
+  Disabled,
+  Front,
+  Back,
+  Both,
+}
+
+/// Scissor modes for materials.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum ScissorMode {
+  Disabled,
+  Enabled {
+    left: i32,
+    bottom: i32,
+    width: i32,
+    height: i32,
+  }
 }
 
 /// A single uniform setting in a `Material`.
@@ -41,6 +63,8 @@ pub struct Material {
   shader: ShaderProgram,
   uniforms: HashMap<String, MaterialUniform>,
   blend_state: BlendState,
+  culling_mode: CullingMode,
+  scissor_mode: ScissorMode,
 }
 
 impl Material {
@@ -51,6 +75,8 @@ impl Material {
       shader: shader.clone(),
       uniforms: HashMap::new(),
       blend_state: BlendState::Disabled,
+      culling_mode: CullingMode::Disabled,
+      scissor_mode: ScissorMode::Disabled,
     }
   }
 
@@ -62,6 +88,26 @@ impl Material {
   /// Sets the blend state of the material.
   pub fn set_blend_state(&mut self, state: BlendState) {
     self.blend_state = state;
+  }
+
+  /// Gets the culling mode of the material.
+  pub fn culling_mode(&self) -> CullingMode {
+    self.culling_mode
+  }
+
+  /// Sets the culling mode of the material.
+  pub fn set_culling_mode(&mut self, mode: CullingMode) {
+    self.culling_mode = mode;
+  }
+
+  /// Gets the scissor mode of the material.
+  pub fn scissor_mode(&self) -> ScissorMode {
+    self.scissor_mode
+  }
+
+  /// Sets the scissor mode of the material.
+  pub fn set_scissor_mode(&mut self, mode: ScissorMode) {
+    self.scissor_mode = mode;
   }
 
   /// Sets the given material uniform.
@@ -101,6 +147,8 @@ impl Material {
   /// Binds the material as the active shader and uploads it's uniforms.
   pub fn bind(&self) {
     self.server.set_blend_state(self.blend_state);
+    self.server.set_culling_mode(self.culling_mode);
+    self.server.set_scissor_mode(self.scissor_mode);
 
     for (_, uniform) in &self.uniforms {
       self.shader.set_uniform(uniform.location, &uniform.value);

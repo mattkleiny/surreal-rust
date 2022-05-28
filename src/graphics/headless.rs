@@ -34,11 +34,23 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
+  fn get_viewport_size(&self) -> (usize, usize) {
+    (1920, 1080)
+  }
+
   fn set_viewport_size(&self, _viewport: (usize, usize)) {
     // no-op
   }
 
   fn set_blend_state(&self, _blend_state: BlendState) {
+    // no-op
+  }
+
+  fn set_culling_mode(&self, _culling_mode: CullingMode) {
+    // no-op
+  }
+
+  fn set_scissor_mode(&self, _scissor_mode: ScissorMode) {
     // no-op
   }
 

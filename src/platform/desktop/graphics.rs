@@ -52,6 +52,15 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     self.context.make_not_current();
   }
 
+  fn get_viewport_size(&self) -> (usize, usize) {
+    unsafe {
+      let mut size = [0i32; 4];
+      gl::GetIntegerv(gl::VIEWPORT, size.as_mut_ptr());
+
+      (size[2] as usize, size[3] as usize)
+    }
+  }
+
   fn set_viewport_size(&self, (width, height): (usize, usize)) {
     unsafe {
       self.context.make_current();
@@ -62,6 +71,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
   fn set_blend_state(&self, blend_state: BlendState) {
     fn convert_blend_factor(factor: BlendFactor) -> u32 {
       match factor {
+        BlendFactor::One => gl::ONE,
         BlendFactor::SrcAlpha => gl::SRC_ALPHA,
         BlendFactor::SrcColor => gl::SRC_COLOR,
         BlendFactor::DstAlpha => gl::DST_ALPHA,
@@ -82,6 +92,42 @@ impl GraphicsBackend for DesktopGraphicsBackend {
 
           gl::Enable(gl::BLEND);
           gl::BlendFunc(source, dest);
+        }
+      }
+    }
+  }
+
+  fn set_culling_mode(&self, culling_mode: CullingMode) {
+    unsafe {
+      match culling_mode {
+        CullingMode::Disabled => {
+          gl::Disable(gl::CULL_FACE)
+        }
+        CullingMode::Front => {
+          gl::Enable(gl::CULL_FACE);
+          gl::CullFace(gl::FRONT);
+        }
+        CullingMode::Back => {
+          gl::Enable(gl::CULL_FACE);
+          gl::CullFace(gl::BACK);
+        }
+        CullingMode::Both => {
+          gl::Enable(gl::CULL_FACE);
+          gl::CullFace(gl::FRONT_AND_BACK);
+        }
+      }
+    }
+  }
+
+  fn set_scissor_mode(&self, scissor_mode: ScissorMode) {
+    unsafe {
+      match scissor_mode {
+        ScissorMode::Disabled => {
+          gl::Disable(gl::SCISSOR_TEST);
+        }
+        ScissorMode::Enabled { left, bottom: top, width, height } => {
+          gl::Enable(gl::SCISSOR_TEST);
+          gl::Scissor(left, top, width, height);
         }
       }
     }

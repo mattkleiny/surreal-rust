@@ -211,6 +211,9 @@ impl PlatformHost for DesktopPlatformHost {
           }
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
+          WindowEvent::ModifiersChanged(modifiers) => {
+            self.input.on_modifiers_changed(modifiers);
+          }
           WindowEvent::CursorMoved { position, .. } => {
             let size = self.window.inner_size();
 
@@ -219,8 +222,11 @@ impl PlatformHost for DesktopPlatformHost {
               vec2(size.width as f32, size.height as f32),
             );
           }
+          WindowEvent::MouseWheel { delta, .. } => {
+            self.input.on_mouse_wheel(delta);
+          }
           WindowEvent::MouseInput { button, state, .. } => {
-            self.input.on_mouse_event(button, state);
+            self.input.on_mouse_button(button, state);
           }
           WindowEvent::KeyboardInput { input, .. } => {
             self.input.on_keyboard_event(input);

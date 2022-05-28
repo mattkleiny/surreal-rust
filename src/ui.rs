@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 
 use crate::graphics::*;
-use crate::maths::{Matrix4x4, Rectangle};
+use crate::maths::{Rectangle, vec2};
 
 /// A shader program to use for egui UI rendering.
 const SHADER_UI_STANDARD: &'static str = include_str!("../assets/shaders/ui-standard.glsl");
@@ -18,21 +18,30 @@ pub trait RawInputProvider {
 
 /// Describes how to set-up a `UserInterfaceContext` for egui.
 pub struct UserInterfaceContextDescriptor {
-  pub projection_view: Matrix4x4<f32>
+  pub pixels_per_point: f32,
 }
 
 impl RenderContextDescriptor for UserInterfaceContextDescriptor {
   type Context = UserInterfaceContext;
 
   fn create(&self, server: &GraphicsServer) -> Self::Context {
+    // load and configure material
     let shader = ShaderProgram::from_string(&server, SHADER_UI_STANDARD).unwrap();
     let mut material = Material::new(server, &shader);
 
-    material.set_uniform("u_projectionView", &self.projection_view);
+    material.set_culling_mode(CullingMode::Disabled);
+    material.set_blend_state(BlendState::Enabled {
+      source: BlendFactor::One,
+      destination: BlendFactor::OneMinusSrcAlpha,
+    });
+
+    // configure egui
+    let context = egui::Context::default();
+    context.set_pixels_per_point(self.pixels_per_point);
 
     Self::Context {
       graphics: server.clone(),
-      context: egui::Context::default(),
+      context,
       material,
       mesh: Mesh::new(server, BufferUsage::Dynamic),
       textures: HashMap::new(),
@@ -112,17 +121,26 @@ impl UserInterfaceContext {
       self.textures.remove(&id);
     }
 
+    // compute display size
+    let pixels_per_point = self.context.pixels_per_point();
+    let (width_in_pixels, height_in_pixels) = self.graphics.get_viewport_size();
+    let (width_in_points, height_in_points) = (
+      width_in_pixels as f32 / pixels_per_point,
+      height_in_pixels as f32 / pixels_per_point,
+    );
+
     // create meshes from shapes
     for clipped_primitive in self.context.tessellate(full_output.shapes) {
       match clipped_primitive.primitive {
         egui::epaint::Primitive::Mesh(mesh) => {
-          let _clip_rect = clipped_primitive.clip_rect;
+          let clip_rect = clipped_primitive.clip_rect;
           let vertices = mesh.vertices;
           let indices = mesh.indices;
-          let _texture_id = mesh.texture_id;
+          let texture = self.textures.get(&mesh.texture_id).unwrap();
 
           // update our single mesh shape and re-render it
           self.mesh.with_buffers(|vertex_buffer, index_buffer| {
+            // our vertices are blitably the same as what egui gives us, so just cast the slice.
             let vertices = unsafe {
               std::slice::from_raw_parts(vertices.as_ptr() as *const Vertex2, vertices.len())
             };
@@ -131,10 +149,32 @@ impl UserInterfaceContext {
             index_buffer.write_data(&indices);
           });
 
-          // TODO: set up blending state for material
-          // TODO: set up texture and screen size uniforms
-          // TODO: set up back-face culling on material
-          // TODO: bind clip rect as uniforms
+          // compute scissor rect based on clip position
+          let clip_min_x = pixels_per_point * clip_rect.min.x;
+          let clip_min_y = pixels_per_point * clip_rect.min.y;
+          let clip_max_x = pixels_per_point * clip_rect.max.x;
+          let clip_max_y = pixels_per_point * clip_rect.max.y;
+
+          let clip_min_x = clip_min_x.clamp(0.0, width_in_pixels as f32);
+          let clip_min_y = clip_min_y.clamp(0.0, height_in_pixels as f32);
+          let clip_max_x = clip_max_x.clamp(clip_min_x, width_in_pixels as f32);
+          let clip_max_y = clip_max_y.clamp(clip_min_y, height_in_pixels as f32);
+
+          let clip_min_x = clip_min_x.round() as i32;
+          let clip_min_y = clip_min_y.round() as i32;
+          let clip_max_x = clip_max_x.round() as i32;
+          let clip_max_y = clip_max_y.round() as i32;
+
+          // configure material properties
+          self.material.set_scissor_mode(ScissorMode::Enabled {
+            left: clip_min_x,
+            bottom: height_in_pixels as i32 - clip_max_y,
+            width: clip_max_x - clip_min_x,
+            height: clip_max_y - clip_min_y,
+          });
+
+          self.material.set_uniform("u_screen_size", vec2(width_in_points, height_in_points));
+          self.material.set_uniform("u_texture", texture);
 
           // render mesh using material
           self.mesh.draw(&self.material, PrimitiveTopology::Triangles);

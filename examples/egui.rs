@@ -14,8 +14,10 @@ fn main() {
   Game::start(platform, |mut game, _| {
     let mut renderer = RenderManager::new(&game.host.graphics);
 
+    // TODO: make this easier to use
+    game.host.input.pixels_per_point = 2.0;
     renderer.configure(UserInterfaceContextDescriptor {
-      projection_view: Matrix4x4::create_orthographic(1920., 1080., 0., 100.),
+      pixels_per_point: 2.0
     });
 
     let mut name = "Matt".to_string();
@@ -41,6 +43,16 @@ fn main() {
             }
 
             ui.label(format!("Hello '{}', age {}", name, age));
+
+            use egui::plot::{Line, Plot, Value, Values};
+
+            let sin = (0..1000).map(|i| {
+              let x = i as f64 * 0.01;
+              Value::new(x, x.sin())
+            });
+            let line = Line::new(Values::from_values_iter(sin));
+
+            Plot::new("my_plot").view_aspect(2.0).show(ui, |plot_ui| plot_ui.line(line));
           });
         });
       });
