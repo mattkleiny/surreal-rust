@@ -100,8 +100,7 @@ impl ShaderProgram {
       self.state.server.link_shaders(self.state.handle, shaders)?;
     } else {
       // otherwise parse our custom shading language
-      let declaration = parser::parse_shader_declaration(&source_code)?;
-      let shaders = parser::transpile_to_glsl(&declaration)?;
+      let shaders = parser::transpile_to_glsl(&source_code)?;
 
       self.state.server.link_shaders(self.state.handle, shaders)?;
     }
@@ -213,6 +212,21 @@ mod parser {
   //! 
   //! The language itself is transpiled to GLSL via a transformation stage.
 
+  struct TokenPosition {
+    line: usize,
+    column: usize,
+  }
+
+  struct Token<'a> {
+    span: &'a str,
+    position: TokenPosition,
+    kind: TokenKind,
+  }
+
+  enum TokenKind {
+    Number,
+  }
+
   enum UnaryOperator {
     Neg,
     Not,
@@ -232,41 +246,209 @@ mod parser {
     String(String),
   }
 
+  struct UnaryExpression {
+    operator: UnaryOperator,
+    operand: Box<Expression>,
+  }
+
+  struct BinaryExpression {
+    operator: BinaryOperator,
+    left: Box<Expression>,
+    right: Box<Expression>,
+  }
+
   enum Expression {
-    Unary(UnaryOperator, Box<Expression>),
-    Binary(BinaryOperator, Box<Expression>, Box<Expression>),
+    Unary(UnaryExpression),
+    Binary(BinaryExpression),
     Constant(Literal),
     Symbol(String),
   }
 
+  impl Expression {
+    fn accept(&self, visitor: &mut impl Visitor) {
+      match self {
+        Expression::Unary(e) => visitor.visit_unary_expression(e),
+        Expression::Binary(e) => visitor.visit_binary_expression(e),
+        Expression::Constant(e) => visitor.visit_constant_expression(e),
+        Expression::Symbol(e) => visitor.visit_symbol_expression(e),
+      }
+    }
+  }
+
+  struct UniformDeclaration {
+    name: String,
+  }
+
+  struct AttributeDeclaration {
+    name: String,
+  }
+
   enum Statement {
+    UniformDeclaration(UniformDeclaration),
+    AttributeDeclaration(AttributeDeclaration),
     Expression(Expression),
   }
 
-  enum Stage {
-    Vertex,
-    Fragment,
+  impl Statement {
+    fn accept(&self, visitor: &mut impl Visitor) {
+      match self {
+        Statement::UniformDeclaration(s) => visitor.visit_uniform_declaration(s),
+        Statement::AttributeDeclaration(s) => visitor.visit_attribute_declaration(s),
+        Statement::Expression(s) => visitor.visit_expression_statement(s),
+      }
+    }
   }
 
-  pub struct ShaderDeclaration {
-    stage: Stage,
-    name: String,
+  trait Visitor {
+    fn visit_uniform_declaration(&mut self, statement: &UniformDeclaration) {}
+    fn visit_attribute_declaration(&mut self, statement: &AttributeDeclaration) {}
+    fn visit_expression_statement(&mut self, statement: &Expression) {}
+    fn visit_unary_expression(&mut self, expression: &UnaryExpression) {}
+    fn visit_binary_expression(&mut self, expression: &BinaryExpression) {}
+    fn visit_constant_expression(&mut self, expression: &Literal) {}
+    fn visit_symbol_expression(&mut self, expression: &String) {}
+  }
+
+  struct ShaderStage {
+    shader_kind: super::ShaderKind,
     statements: Vec<Statement>,
+  }
+
+  struct ShaderDeclaration {
+    stages: Vec<ShaderStage>,
+  }
+
+  /// Tokenizes the given shader source code.
+  fn tokenize(code: &str) -> crate::Result<Vec<Token>> {
+    let mut tokens = Vec::new();
+    let mut iterator = code.chars().peekable();
+
+    let mut line = 1;
+    let mut column = 1;
+
+    while let Some(&character) = iterator.peek() {
+      match character {
+        '0'..='9' => {
+          iterator.next().expect("Expected peekable character");
+
+          tokens.push(Token { 
+            span: &code[..], // TODO: put the right span, here
+            position: TokenPosition { line, column },
+            kind: TokenKind::Number,
+          });
+        },
+        '+' | '-' | '*' | '/' => {
+          todo!()
+        },
+        ' ' => {
+          // skip whitespace
+          iterator.next();
+        },
+        '\n' => {
+          column = 1;
+          line += 1;
+        },
+        _ => anyhow::bail!("An unexpected token was encountered: {}", character),
+      }
+      
+      column += 1;
+    }
+
+    todo!()
   }
 
   /// Parses a shader declaration from the given raw source.
   /// 
   /// The resultant shader code is not guaranteed to be correct (not type checked or sanity checked),
   /// it's expected that a later transformation stage will convert the shader and perform type checking.
-  pub fn parse_shader_declaration(code: &str) -> crate::Result<ShaderDeclaration> {
-    todo!()
+  fn parse(code: &str) -> crate::Result<ShaderDeclaration> {
+    /// Recursive descent style parser for our simple shading language.
+    struct ParseContext<'a> {
+      tokens: Vec<Token<'a>>,
+    }
+
+    impl<'a> ParseContext<'a> {
+      fn new(code: &'a str) -> crate::Result<ParseContext<'a>> {
+        let tokens = tokenize(code)?;
+
+        Ok(ParseContext { tokens })
+      }
+
+      fn parse_declaration(&mut self) -> crate::Result<ShaderDeclaration> {
+        todo!()
+      }
+
+      fn parse_stage(&mut self) -> crate::Result<ShaderStage> {
+        todo!()
+      }
+
+      fn next_token(&mut self) -> crate::Result<Token> {
+        if self.tokens.is_empty() {
+          anyhow::bail!("Unexpected end of input");
+        }
+
+        Ok(self.tokens.remove(0))
+      }
+
+      fn peek_token(&mut self) -> crate::Result<&Token> {
+        if self.tokens.is_empty() {
+          anyhow::bail!("Unexpected end of input");
+        }
+
+        Ok(&self.tokens[0])
+      }
+    }
+
+    // parse declaration and recursively consume all tokens
+    let mut context = ParseContext::new(code)?;
+    let declaration = context.parse_declaration()?;
+
+    Ok(declaration)
   }
 
   /// Transpiles the given shader declaration down into standrad GLSL code.
   /// 
   /// This is a fallible process, as some minor type checking will occur.
-  pub fn transpile_to_glsl(declaration: &ShaderDeclaration) -> crate::Result<Vec<super::Shader>> {
-    todo!()
+  pub fn transpile_to_glsl(code: &str) -> crate::Result<Vec<super::Shader>> {
+    /// A transpiling visitor for shader programs.
+    struct Transpiler {
+      output: String,
+    }
+
+    impl Visitor for Transpiler {}
+
+    // parse declaration and turn each stage into a discrete GLSL shader.
+    let declaration = parse(code)?;
+    let mut results = Vec::new();
+
+    for stage in &declaration.stages {
+      let mut transpiler = Transpiler {
+        output: String::new(),
+      };
+
+      for statement in &stage.statements {
+        statement.accept(&mut transpiler);
+      }
+
+      results.push(super::Shader {
+        kind: stage.shader_kind,
+        code: transpiler.output,
+      });
+    }
+
+    Ok(results)
+  }
+
+  #[cfg(test)]
+  mod tests {
+    use super::*;
+
+    #[test]
+    fn tokenize_should_recognize_basic_program() {
+      let tokens = tokenize("1 + 2 / 3").expect("Failed to tokenize");
+
+      assert_eq!(tokens.len(), 5);
+    }
   }
 }
 
