@@ -80,6 +80,16 @@ impl Texture {
     Self::with_options(server, &TextureOptions::default())
   }
 
+  /// Builds a new colored texture of the given size.
+  pub fn create_colored(server: &GraphicsServer, width: usize, height: usize, color: Color32) -> Self {
+    let mut texture = Self::new(server);
+    let colors = vec![color; width * height];
+
+    texture.write_pixels(width, height, &colors);
+
+    texture
+  }
+
   /// Creates a new blank texture on the GPU with the given options.
   pub fn with_options(server: &GraphicsServer, options: &TextureOptions) -> Self {
     Self {

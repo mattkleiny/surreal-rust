@@ -4,37 +4,28 @@
 
 use surreal::prelude::*;
 
-const WIDTH: f32 = 1920.;
-const HEIGHT: f32 = 1080.;
-
 fn main() {
   let platform = DesktopPlatform::new(Configuration {
     title: "Hello, World!",
-    size: (WIDTH as u32, HEIGHT as u32),
     ..Default::default()
   });
 
-  Game::start(platform, |mut game, assets| {
-    let color1 = Color::random();
-    let color2 = Color::random();
+  Game::start(platform, |mut game, _| {
+    let graphics = &game.host.graphics;
 
-    let font: &BitmapFont = assets.load_asset("assets/fonts/IBM.font").expect("Failed to load font");
-    let mut renderer = RenderManager::new(&game.host.graphics);
+    let mut batch = GeometryBatch::new(graphics);
+    let shader = load_built_in_shader(graphics, BuiltInShader::Sprite(BuiltInSpriteShader::Standard));
+    let mut material = Material::new(graphics, &shader);
+    let texture = Texture::create_colored(graphics, 1, 1, Color32::WHITE);
 
-    renderer.configure(SpriteBatchDescriptor {
-      projection_view: Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.),
-      ..Default::default()
-    });
+    material.set_uniform("u_texture", &texture);
 
     game.run_variable_step(|game| {
-      let total_time = game.time.total_time as f32;
-      let color = Color::lerp(color1, color2, (total_time.sin() + 1.) / 2.);
+      game.host.graphics.clear_color_buffer(Color::BLACK);
 
-      game.host.graphics.clear_color_buffer(color);
-
-      renderer.with(|pass: &mut SpriteBatchContext| {
-        font.draw_text(&mut pass.batch, "Hello, World!", vec2(WIDTH / 2., HEIGHT / 2.), Color32::WHITE);
-      });
+      batch.begin(&material);
+      batch.draw_line(vec2(-0.5, -0.5), vec2(0.5, 0.5), Color32::WHITE, 4.);
+      batch.flush();
 
       if let Some(keyboard) = game.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
