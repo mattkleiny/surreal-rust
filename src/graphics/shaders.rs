@@ -90,10 +90,21 @@ impl ShaderProgram {
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
   pub fn load_from_path(&self, path: impl AsVirtualPath) -> crate::Result<()> {
-    let source_code = path.as_virtual_path().read_all_text()?;
-    let shaders = parse_glsl_source(&source_code);
+    let path = path.as_virtual_path();
+    let source_code = path.read_all_text()?;
 
-    self.state.server.link_shaders(self.state.handle, shaders)?;
+    if path.extension().ends_with("glsl") {
+      // support GLSL shaders natively
+      let shaders = parse_glsl_source(&source_code);
+
+      self.state.server.link_shaders(self.state.handle, shaders)?;
+    } else {
+      // otherwise parse our custom shading language
+      let declaration = parser::parse_shader_declaration(&source_code)?;
+      let shaders = parser::transpile_to_glsl(&declaration)?;
+
+      self.state.server.link_shaders(self.state.handle, shaders)?;
+    }
 
     Ok(())
   }
@@ -192,6 +203,71 @@ fn parse_glsl_source(source: &str) -> Vec<Shader> {
   }
 
   result
+}
+
+mod parser {
+  //! Parser for a simple shading language used to make cross-platform shaders.
+  //! 
+  //! This language is similar to Godot's shading language and offers a subset of features
+  //! from GLSL that makes it simple to build straightforward shader programs productively.
+  //! 
+  //! The language itself is transpiled to GLSL via a transformation stage.
+
+  enum UnaryOperator {
+    Neg,
+    Not,
+  }
+
+  enum BinaryOperator {
+    Add,
+    Sub,
+    Mul,
+    Div,
+  }
+
+  enum Literal {
+    U32(u32),
+    I32(i32),
+    F32(f32),
+    String(String),
+  }
+
+  enum Expression {
+    Unary(UnaryOperator, Box<Expression>),
+    Binary(BinaryOperator, Box<Expression>, Box<Expression>),
+    Constant(Literal),
+    Symbol(String),
+  }
+
+  enum Statement {
+    Expression(Expression),
+  }
+
+  enum Stage {
+    Vertex,
+    Fragment,
+  }
+
+  pub struct ShaderDeclaration {
+    stage: Stage,
+    name: String,
+    statements: Vec<Statement>,
+  }
+
+  /// Parses a shader declaration from the given raw source.
+  /// 
+  /// The resultant shader code is not guaranteed to be correct (not type checked or sanity checked),
+  /// it's expected that a later transformation stage will convert the shader and perform type checking.
+  pub fn parse_shader_declaration(code: &str) -> crate::Result<ShaderDeclaration> {
+    todo!()
+  }
+
+  /// Transpiles the given shader declaration down into standrad GLSL code.
+  /// 
+  /// This is a fallible process, as some minor type checking will occur.
+  pub fn transpile_to_glsl(declaration: &ShaderDeclaration) -> crate::Result<Vec<super::Shader>> {
+    todo!()
+  }
 }
 
 #[cfg(test)]
