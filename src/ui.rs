@@ -27,7 +27,7 @@ impl UserInterfaceCanvas {
   /// Creates a new user interface canvas.
   pub fn new(server: &GraphicsServer) -> Self {
     // load and configure material
-    let shader = ShaderProgram::from_string(&server, SHADER_CANVAS_STANDARD).unwrap();
+    let shader = ShaderProgram::from_glsl(&server, SHADER_CANVAS_STANDARD).unwrap();
     let mut material = Material::new(server, &shader);
 
     material.set_culling_mode(CullingMode::Disabled);

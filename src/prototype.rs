@@ -56,9 +56,9 @@ pub enum BuiltInPalette {
 /// Loads the standard shader program from embedded resources.
 pub fn load_built_in_shader(server: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let shader = match shader {
-    BuiltInShader::Sprite(BuiltInSpriteShader::Standard) => ShaderProgram::from_string(server, SHADER_SPRITE_STANDARD),
-    BuiltInShader::Sprite(BuiltInSpriteShader::Palette) => ShaderProgram::from_string(server, SHADER_SPRITE_PALETTE),
-    BuiltInShader::Effect(BuiltInEffect::Aberration) => ShaderProgram::from_string(server, SHADER_EFFECT_ABERRATION),
+    BuiltInShader::Sprite(BuiltInSpriteShader::Standard) => ShaderProgram::from_glsl(server, SHADER_SPRITE_STANDARD),
+    BuiltInShader::Sprite(BuiltInSpriteShader::Palette) => ShaderProgram::from_glsl(server, SHADER_SPRITE_PALETTE),
+    BuiltInShader::Effect(BuiltInEffect::Aberration) => ShaderProgram::from_glsl(server, SHADER_EFFECT_ABERRATION),
   };
 
   shader.expect("Failed to load standard shader")

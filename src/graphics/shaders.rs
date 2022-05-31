@@ -60,11 +60,20 @@ impl ShaderProgram {
     }
   }
 
-  /// Loads a [`ShaderProgram`] from the given raw code.
-  pub fn from_string(server: &GraphicsServer, code: &str) -> crate::Result<Self> {
+  /// Loads a [`ShaderProgram`] from the given raw 'glsl' code.
+  pub fn from_glsl(server: &GraphicsServer, code: &str) -> crate::Result<Self> {
     let program = Self::new(server);
 
-    program.load_from_string(code)?;
+    program.load_glsl(code)?;
+
+    Ok(program)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given raw 'shade' code.
+  pub fn from_shade(server: &GraphicsServer, code: &str) -> crate::Result<Self> {
+    let program = Self::new(server);
+
+    program.load_shade(code)?;
 
     Ok(program)
   }
@@ -79,9 +88,18 @@ impl ShaderProgram {
     self.state.server.set_shader_uniform(self.state.handle, location, value);
   }
 
-  /// Reloads the [`ShaderProgram`] from the given text.
-  pub fn load_from_string(&self, text: &str) -> crate::Result<()> {
+  /// Reloads the [`ShaderProgram`] from the given 'glsl' program code.
+  pub fn load_glsl(&self, text: &str) -> crate::Result<()> {
     let shaders = parse_glsl_source(&text);
+
+    self.state.server.link_shaders(self.state.handle, shaders)?;
+
+    Ok(())
+  }
+
+  /// Reloads the [`ShaderProgram`] from the given 'shade' program code.
+  pub fn load_shade(&self, text: &str) -> crate::Result<()> {
+    let shaders = parser::transpile_to_glsl(text)?;
 
     self.state.server.link_shaders(self.state.handle, shaders)?;
 
@@ -94,15 +112,9 @@ impl ShaderProgram {
     let source_code = path.read_all_text()?;
 
     if path.extension().ends_with("glsl") {
-      // support GLSL shaders natively
-      let shaders = parse_glsl_source(&source_code);
-
-      self.state.server.link_shaders(self.state.handle, shaders)?;
+      self.load_glsl(&source_code)?;
     } else {
-      // otherwise parse our custom shading language
-      let shaders = parser::transpile_to_glsl(&source_code)?;
-
-      self.state.server.link_shaders(self.state.handle, shaders)?;
+      self.load_shade(&source_code)?;
     }
 
     Ok(())
@@ -134,8 +146,14 @@ impl Asset for ShaderProgram {
 
 impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<ShaderProgram> {
-    let code = context.path.read_all_text()?;
-    let program = ShaderProgram::from_string(&self.server, &code)?;
+    let program = ShaderProgram::new(&self.server);
+    let source_code = context.path.read_all_text()?;
+
+    if context.path.extension().ends_with("glsl") {
+      program.load_glsl(&source_code)?;
+    } else {
+      program.load_shade(&source_code)?;
+    }
 
     Ok(program)
   }
