@@ -146,6 +146,8 @@ impl Material {
 
   /// Binds the material as the active shader and uploads it's uniforms.
   pub fn bind(&self) {
+    // TODO: minimize state changes in the underlying platform?
+    // TODO: material batching or sorting in a render pipeline?
     self.server.set_blend_state(self.blend_state);
     self.server.set_culling_mode(self.culling_mode);
     self.server.set_scissor_mode(self.scissor_mode);

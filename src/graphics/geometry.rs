@@ -12,27 +12,33 @@ pub trait Shape {
 }
 
 /// A single command in the geometry batch
-enum Command {
+enum Command<'a> {
   DrawLine(Point, Point),
   DrawTriangle(Point, Point, Point),
   DrawTriangleStrip(Vec<Point>),
   DrawQuad(Point, Point, Point, Point),
   DrawCircle(Point, f32, u16),
   DrawShape(Box<dyn Shape>),
+  DrawSprite {
+    texture: &'a TextureRegion<'a>,
+    tint: Color32,
+    position: Point,
+    rotation: f32,
+  },
 }
 
 /// A fast and lightweight geometry batch renderer.
 ///
 /// This batch pre-allocates an array of vertices and re-uses it to tessellate shapes and polygons.
-pub struct GeometryBatch {
+pub struct GeometryBatch<'a> {
   mesh: Mesh<Vertex2>,
-  commands: Vec<Command>,
+  commands: Vec<Command<'a>>,
   vertices: Vec<Vertex2>,
   indices: Vec<Index>,
   material: Option<Material>,
 }
 
-impl GeometryBatch {
+impl<'a> GeometryBatch<'a> {
   /// Creates a new geometry batch.
   pub fn new(server: &GraphicsServer) -> Self {
     Self {
@@ -79,6 +85,11 @@ impl GeometryBatch {
   /// Draws a shape in the batch.
   pub fn draw_shape(&mut self, shape: impl Shape + 'static) {
     self.commands.push(Command::DrawShape(Box::new(shape)));
+  }
+  
+  /// Draws a sprite in the batch.
+  pub fn draw_sprite(&mut self, texture: &'a TextureRegion<'a>, position: Point, rotation: f32, tint: Color32) {
+    self.commands.push(Command::DrawSprite { texture, tint, position, rotation });
   }
 
   /// Flushes the batch content to the GPU.
@@ -154,6 +165,9 @@ impl GeometryBatch {
       Command::DrawShape(shape) => {
         shape.emit(self)
       },
+      Command::DrawSprite { texture, tint, position, rotation } => {
+        todo!()
+      }
     }
   }
 }

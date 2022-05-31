@@ -33,7 +33,7 @@ fn main() {
       game.host.graphics.clear_color_buffer(color);
 
       renderer.with(|pass: &mut SpriteBatchContext| {
-        font.draw_text(&mut pass.batch, "Hello, World!", vec2(WIDTH / 2., HEIGHT / 2.), Color::WHITE);
+        font.draw_text(&mut pass.batch, "Hello, World!", vec2(WIDTH / 2., HEIGHT / 2.), Color32::WHITE);
       });
 
       if let Some(keyboard) = game.host.input.keyboard_device() {
