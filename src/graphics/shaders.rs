@@ -284,18 +284,26 @@ mod parser {
 
   use std::collections::VecDeque;
 
+  #[derive(Copy, Clone, Debug)]
   struct TokenPosition {
+    index: usize,
     line: usize,
     column: usize,
   }
 
+  #[derive(Debug)]
   struct Token<'a> {
     span: &'a str,
     position: TokenPosition,
-    kind: TokenKind,
+    value: TokenValue,
   }
 
-  enum TokenKind {
+  #[derive(Debug)]
+  enum TokenValue {
+    Plus,
+    Minus,
+    Times,
+    Divide,
     Number,
   }
 
@@ -451,39 +459,74 @@ mod parser {
     let mut tokens = VecDeque::new();
     let mut iterator = code.chars().peekable();
 
-    let mut line = 1;
-    let mut column = 1;
+    let mut position = TokenPosition {
+      index: 0,
+      line: 1,
+      column: 1,
+    };
 
     while let Some(&character) = iterator.peek() {
-      match character {
-        '0'..='9' => {
-          iterator.next().expect("Expected peekable character");
+      // emits a single token into the output, and advances the iterator
+      let mut emit = |token, length| {
+        let start_index = position.index;
 
-          tokens.push_back(Token { 
-            span: &code[..], // TODO: put the right span, here
-            position: TokenPosition { line, column },
-            kind: TokenKind::Number,
+        position.index += length;
+        position.column += length;
+        
+        for _ in 0..length {
+          iterator.next().expect("Expected a valid token");
+        }
+        
+        tokens.push_back(Token {
+          span: &code[start_index..length],
+          position,
+          value: token,
+        });
+      };
+
+      match character {
+        // single-line values
+        '+' => emit(TokenValue::Plus, 1),
+        '-' => emit(TokenValue::Minus, 1),
+        '*' => emit(TokenValue::Times, 1),
+        '/' => emit(TokenValue::Divide, 1),
+        
+        // numerical values
+        '0'..='9' => {
+          let start_index = position.index;
+        
+          while let Some(true) = iterator.next().map(|c| c.is_numeric()) {
+            position.index += 1;
+            position.column += 1;
+          }
+
+          tokens.push_back(Token {
+            span: &code[start_index..(position.index - start_index)],
+            position,
+            value: TokenValue::Number,
           });
-        },
-        '+' | '-' | '*' | '/' => {
-          todo!()
-        },
+        }
+
+        // white space and new lines
         ' ' => {
           // skip whitespace
           iterator.next();
+
+          // track line position
+          position.index += 1;
+          position.column += 1;
         },
         '\n' => {
-          // track line position
-          column = 1;
-          line += 1;
-          
           iterator.next();
+          
+          // track line position
+          position.index += 1;
+          position.column = 1;
+          position.line += 1;
+          
         },
         _ => anyhow::bail!("An unexpected token was encountered: {}", character),
       }
-      
-      // track column position
-      column += 1;
     }
 
     Ok(tokens)
@@ -598,7 +641,11 @@ mod parser {
 
     #[test]
     fn it_should_tokenize_example_program() {
-      tokenize(EXAMPLE_PROGRAM).expect("Failed to tokenize");
+      // tokenize(EXAMPLE_PROGRAM).expect("Failed to tokenize");
+
+      let tokens = tokenize("1 + 2 / 3 * 4").expect("Failed to parse simple expression");
+
+      assert_eq!(tokens.len(), 7);
     }
 
     #[test]
