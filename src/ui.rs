@@ -174,7 +174,6 @@ impl UserInterfaceCanvas {
           self.material.set_uniform("u_screen_size", vec2(width_in_points, height_in_points));
           self.material.set_uniform("u_texture", texture);
 
-          // TODO: consider using a geometry batch for this, instead?
           // render mesh using material
           self.mesh.draw(&self.material, PrimitiveTopology::Triangles);
         }

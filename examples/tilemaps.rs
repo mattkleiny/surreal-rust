@@ -5,6 +5,38 @@
 use surreal::prelude::*;
 
 fn main() {
+  /// Represents a tile in our simple tile map.
+  #[derive(Copy, Clone, Debug)]
+  enum Tile {
+    Empty,
+    Filled,
+  }
+
+  impl Default for Tile {
+    fn default() -> Self {
+      Self::Empty
+    }
+  }
+
+  impl surreal::prelude::Tile for Tile {
+    type Id = u8;
+
+    fn from_id(id: Self::Id) -> &'static Self {
+      match id {
+        0 => &Self::Empty,
+        1 => &Self::Filled,
+        _ => panic!(),
+      }
+    }
+
+    fn to_id(&self) -> Self::Id {
+      match self {
+        Tile::Empty => 0,
+        Tile::Filled => 1,
+      }
+    }
+  }
+
   let platform = DesktopPlatform::new(Configuration {
     title: "Tile Maps",
     update_continuously: false,
@@ -21,13 +53,7 @@ fn main() {
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
-      projection_view: {
-        // TODO: fix up translation matrix multiplication?
-        let view = Matrix4x4::IDENTITY;
-        let projection = Matrix4x4::create_orthographic(256., 144., 0., 100.);
-
-        view * projection
-      },
+      projection_view: Matrix4x4::create_orthographic(256., 144., 0., 100.),
       palette: Some(palette.clone()),
       ..Default::default()
     });
@@ -55,36 +81,4 @@ fn main() {
       }
     });
   });
-}
-
-/// Represents a tile in our simple tile map.
-#[derive(Copy, Clone, Debug)]
-enum Tile {
-  Empty,
-  Filled,
-}
-
-impl Default for Tile {
-  fn default() -> Self {
-    Self::Empty
-  }
-}
-
-impl surreal::prelude::Tile for Tile {
-  type Id = u8;
-
-  fn from_id(id: Self::Id) -> &'static Self {
-    match id {
-      0 => &Self::Empty,
-      1 => &Self::Filled,
-      _ => panic!()
-    }
-  }
-
-  fn to_id(&self) -> Self::Id {
-    match self {
-      Tile::Empty => 0,
-      Tile::Filled => 1,
-    }
-  }
 }

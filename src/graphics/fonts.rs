@@ -34,7 +34,6 @@ impl BitmapFont {
   }
 
   /// Draws the given text on the given sprite batch.
-  // TODO: invert this arrangement?
   pub fn draw_text(&self, batch: &mut SpriteBatch, text: &str, mut position: Vector2<f32>, color: Color32) {
     for character in text.chars() {
       if let Some(glyph) = self.get_glyph(character) {

@@ -1,5 +1,3 @@
-// TODO: change this to use a path stream instead?
-
 /// Represents type that supports procedural construction of geometry.
 pub trait Tessellation {
   /// The type of vertex that we're emitting.

@@ -297,11 +297,11 @@ mod parser {
   struct Token<'a> {
     span: &'a str,
     position: TokenPosition,
-    value: TokenValue,
+    kind: TokenKind,
   }
 
   #[derive(Debug)]
-  enum TokenValue {
+  enum TokenKind {
     Plus,
     Minus,
     Times,
@@ -476,16 +476,16 @@ mod parser {
         tokens.push_back(Token {
           span: &code[..],
           position,
-          value: token,
+          kind: token,
         });
       };
 
       match character {
         // single-line values
-        '+' => emit(TokenValue::Plus, 1),
-        '-' => emit(TokenValue::Minus, 1),
-        '*' => emit(TokenValue::Times, 1),
-        '/' => emit(TokenValue::Divide, 1),
+        '+' => emit(TokenKind::Plus, 1),
+        '-' => emit(TokenKind::Minus, 1),
+        '*' => emit(TokenKind::Times, 1),
+        '/' => emit(TokenKind::Divide, 1),
 
         // numerical values
         '0'..='9' => {
@@ -497,7 +497,7 @@ mod parser {
           tokens.push_back(Token {
             span: &code[..],
             position,
-            value: TokenValue::Number,
+            kind: TokenKind::Number,
           });
         }
 

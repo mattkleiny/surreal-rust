@@ -12,9 +12,9 @@ fn main() {
   });
 
   Game::start(platform, |mut game, _| {
-    // TODO: make this easier to use
     let mut canvas = UserInterfaceCanvas::new(&game.host.graphics);
 
+    // TODO: make this easier to use
     game.host.input.pixels_per_point = 2.0;
     canvas.set_pixels_per_point(2.0);
 

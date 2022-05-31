@@ -1,6 +1,5 @@
 //! Mathematical utilities.
 
-pub use bitmap::*;
 pub use bounds::*;
 pub use curves::*;
 pub use grids::*;
@@ -14,7 +13,6 @@ pub use ranges::*;
 pub use shapes::*;
 pub use tessellation::*;
 
-mod bitmap;
 mod bounds;
 mod curves;
 mod grids;
