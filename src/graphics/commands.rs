@@ -45,15 +45,15 @@ impl CommandBuffer {
 }
 
 pub struct Renderer {
-  server: GraphicsServer,
   passes: Vec<Box<dyn RenderPass>>,
+  commands: CommandBuffer,
 }
 
 impl Renderer {
   pub fn new(server: &GraphicsServer) -> Self {
     Self {
-      server: server.clone(),
       passes: Vec::new(),
+      commands: CommandBuffer::new(server),
     }
   }
 
@@ -63,18 +63,18 @@ impl Renderer {
   }
 
   pub fn render(&mut self) {
-    let mut commands = CommandBuffer::new(&self.server);
+    let commands = &mut self.commands;
 
     for pass in &mut self.passes {
-      pass.begin_frame(&mut commands);
+      pass.begin_frame(commands);
     }
 
     for pass in &mut self.passes {
-      pass.render(&mut commands);
+      pass.render(commands);
     }
 
     for pass in &mut self.passes {
-      pass.end_frame(&mut commands);
+      pass.end_frame(commands);
     }
 
     commands.flush();
