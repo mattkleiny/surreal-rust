@@ -2,6 +2,7 @@
 
 pub use buffers::*;
 pub use colors::*;
+pub use commands::*;
 pub use fonts::*;
 pub use geometry::*;
 pub use headless::*;
@@ -9,7 +10,6 @@ pub use images::*;
 pub use materials::*;
 pub use meshes::*;
 pub use palettes::*;
-pub use pipelines::*;
 pub use rendering::*;
 pub use shaders::*;
 pub use sprites::*;
@@ -18,6 +18,7 @@ pub use textures::*;
 
 mod buffers;
 mod colors;
+mod commands;
 mod fonts;
 mod geometry;
 mod headless;
@@ -25,7 +26,6 @@ mod images;
 mod materials;
 mod meshes;
 mod palettes;
-mod pipelines;
 mod rendering;
 mod shaders;
 mod sprites;
