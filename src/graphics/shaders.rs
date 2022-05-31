@@ -339,10 +339,10 @@ mod parser {
   impl Expression {
     fn accept(&self, visitor: &mut impl Visitor) {
       match self {
-        Expression::Unary(e) => visitor.visit_unary_expression(e),
-        Expression::Binary(e) => visitor.visit_binary_expression(e),
-        Expression::Constant(e) => visitor.visit_constant_expression(e),
-        Expression::Symbol(e) => visitor.visit_symbol_expression(e),
+        Expression::Unary(expression) => visitor.visit_unary_expression(expression),
+        Expression::Binary(expression) => visitor.visit_binary_expression(expression),
+        Expression::Constant(constant) => visitor.visit_constant_expression(constant),
+        Expression::Symbol(symbol) => visitor.visit_symbol_expression(symbol),
       }
     }
   }
@@ -375,15 +375,18 @@ mod parser {
   impl Statement {
     fn accept(&self, visitor: &mut impl Visitor) {
       match self {
-        Statement::UniformDeclaration(s) => visitor.visit_uniform_declaration(s),
-        Statement::AttributeDeclaration(s) => visitor.visit_attribute_declaration(s),
-        Statement::ConstantDeclaration(s) => visitor.visit_constant_declaration(s),
-        Statement::FunctionDeclaration(s) => visitor.visit_function_declaration(s),
-        Statement::Expression(s) => visitor.visit_expression_statement(s),
+        Statement::UniformDeclaration(declaration) => visitor.visit_uniform_declaration(declaration),
+        Statement::AttributeDeclaration(declaration) => visitor.visit_attribute_declaration(declaration),
+        Statement::ConstantDeclaration(declaration) => visitor.visit_constant_declaration(declaration),
+        Statement::FunctionDeclaration(function) => visitor.visit_function_declaration(function),
+        Statement::Expression(expression) => visitor.visit_expression_statement(expression),
       }
     }
   }
 
+  /// A visitor pattern for shader AST nodes.
+  /// 
+  /// The base implementation will walk down the tree recursively.
   trait Visitor: Sized {
     fn visit_uniform_declaration(&mut self, _declaration: &UniformDeclaration) {
       // no-op
@@ -425,12 +428,21 @@ mod parser {
     }
   }
 
+  /// Indicates a discrete shader stage in a single shader program.
+  /// 
+  /// Since we're abstracting over OpenGL, this usually implies a single shader kind 'vertex', 'fragment', etc.
+  /// However, for more advanced shader pipelines this stage could represent something else (such as lighting or SDF).
   struct ShaderStage {
     shader_kind: super::ShaderKind,
     statements: Vec<Statement>,
   }
 
+  /// A declaration for a whole shader program, with it's independent stages.
+  /// 
+  /// A top-level 'kind' parameter is used to indicate to consumers which type of shader this is, and allow it's
+  /// transformation for use in specific circumstances.
   struct ShaderDeclaration {
+    kind: String,
     stages: Vec<ShaderStage>,
   }
 
@@ -461,16 +473,20 @@ mod parser {
           iterator.next();
         },
         '\n' => {
+          // track line position
           column = 1;
           line += 1;
+          
+          iterator.next();
         },
         _ => anyhow::bail!("An unexpected token was encountered: {}", character),
       }
       
+      // track column position
       column += 1;
     }
 
-    todo!()
+    Ok(tokens)
   }
 
   /// Parses a shader declaration from the given raw source.
@@ -527,7 +543,13 @@ mod parser {
       output: String,
     }
 
-    impl Visitor for Transpiler {}
+    impl Visitor for Transpiler {
+      fn visit_uniform_declaration(&mut self, declaration: &UniformDeclaration) {
+        self.output += "uniform ";
+        self.output += &declaration.name;
+        self.output += "\n";
+      } 
+    }
 
     // parse declaration and turn each stage into a discrete GLSL shader.
     let declaration = parse(code)?;
@@ -555,11 +577,33 @@ mod parser {
   mod tests {
     use super::*;
 
-    #[test]
-    fn tokenize_should_recognize_basic_program() {
-      let tokens = tokenize("1 + 2 / 3").expect("Failed to tokenize");
+    const EXAMPLE_PROGRAM: &'static str = r"
+      #shader_type sprite
 
-      assert_eq!(tokens.len(), 5);
+      uniform mat4 projectionView = mat4(1.0);
+      uniform sampler2d texture;
+
+      attribute vec2 position;
+      attribute vec2 uv;
+      attribute vec4 color;
+
+      void vertex() {
+        VERTEX = vec4(position, 0.0, 1.0) * projectionView;
+      }
+
+      void fragment() {
+        COLOR = TEXTURE(texture, uv) * color;
+      }
+    ";
+
+    #[test]
+    fn it_should_tokenize_example_program() {
+      tokenize(EXAMPLE_PROGRAM).expect("Failed to tokenize");
+    }
+
+    #[test]
+    fn it_should_parse_and_transpile_example_program() {
+      transpile_to_glsl(EXAMPLE_PROGRAM).expect("Failed to transpile");
     }
   }
 }
