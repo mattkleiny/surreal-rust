@@ -468,8 +468,6 @@ mod parser {
     while let Some(&character) = iterator.peek() {
       // emits a single token into the output, and advances the iterator
       let mut emit = |token, length| {
-        let start_index = position.index;
-
         position.index += length;
         position.column += length;
         
@@ -478,7 +476,7 @@ mod parser {
         }
         
         tokens.push_back(Token {
-          span: &code[start_index..length],
+          span: &code[..],
           position,
           value: token,
         });
@@ -493,15 +491,13 @@ mod parser {
         
         // numerical values
         '0'..='9' => {
-          let start_index = position.index;
-        
           while let Some(true) = iterator.next().map(|c| c.is_numeric()) {
             position.index += 1;
             position.column += 1;
           }
 
           tokens.push_back(Token {
-            span: &code[start_index..(position.index - start_index)],
+            span: &code[..],
             position,
             value: TokenValue::Number,
           });

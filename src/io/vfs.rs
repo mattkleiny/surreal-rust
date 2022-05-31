@@ -114,14 +114,6 @@ impl<'a> VirtualPath<'a> {
 
     Ok(result)
   }
-
-  /// Deserializes a Ron value of the given type from the path.
-  pub fn deserialize_ron<D>(&self) -> crate::Result<D> where D: serde::de::DeserializeOwned {
-    let stream = self.open_input_stream()?;
-    let result = ron::de::from_reader(stream)?;
-
-    Ok(result)
-  }
 }
 
 impl<'a> std::fmt::Debug for VirtualPath<'a> {
