@@ -257,8 +257,6 @@ macro_rules! implement_texel {
   };
 }
 
-// TODO: fix names on color types, or make it generic?
-
 implement_texel!(Color, RGBA32);
 implement_texel!(Color32, RGBA8);
 implement_texel!([u8; 1], R8);

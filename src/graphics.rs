@@ -2,7 +2,6 @@
 
 pub use buffers::*;
 pub use colors::*;
-pub use commands::*;
 pub use fonts::*;
 pub use geometry::*;
 pub use headless::*;
@@ -18,7 +17,6 @@ pub use textures::*;
 
 mod buffers;
 mod colors;
-mod commands;
 mod fonts;
 mod geometry;
 mod headless;
@@ -32,7 +30,7 @@ mod sprites;
 mod targets;
 mod textures;
 
-/// An opaque handle to resource in the graphics subsystem.
+/// An opaque handle to a resource in the graphics subsystem.
 pub type GraphicsHandle = u32;
 
 /// The graphics server implementation.

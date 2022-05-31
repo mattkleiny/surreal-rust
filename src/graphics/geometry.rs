@@ -11,9 +11,19 @@ pub trait Shape {
   fn emit(&self, batch: &mut GeometryBatch);
 }
 
+/// Describes the width and color of a line.
+pub struct Stroke {
+    pub width: f32,
+    pub color: Color32,
+}
+
 /// A single command in the geometry batch
 enum Command<'a> {
-  DrawLine(Point, Point),
+  DrawLine {
+    from: Point,
+    to: Point,
+    stroke: Stroke,
+  },
   DrawTriangle(Point, Point, Point),
   DrawTriangleStrip(Vec<Point>),
   DrawQuad(Point, Point, Point, Point),
@@ -58,8 +68,8 @@ impl<'a> GeometryBatch<'a> {
   }
 
   /// Draws a line in the batch.
-  pub fn draw_line(&mut self, a: Point, b: Point) {
-    self.commands.push(Command::DrawLine(a, b));
+  pub fn draw_line(&mut self, a: Point, b: Point, stroke: Stroke) {
+    self.commands.push(Command::DrawLine { from: a, to: b, stroke });
   }
   
   /// Draws a triangle in the batch.
@@ -125,10 +135,10 @@ impl<'a> GeometryBatch<'a> {
     let offset = self.vertices.len() as Index;
  
     match command {
-      Command::DrawLine(a, b) => {
+      Command::DrawLine { from, to, stroke } => {
         // TODO: get the winding order correct?
-        self.vertices.push(Vertex2 { position: a, uv: vec2(0., 0.), color: Color32::WHITE });
-        self.vertices.push(Vertex2 { position: b, uv: vec2(1., 1.), color: Color32::WHITE });
+        self.vertices.push(Vertex2 { position: from, uv: vec2(0., 0.), color: Color32::WHITE });
+        self.vertices.push(Vertex2 { position: to, uv: vec2(1., 1.), color: Color32::WHITE });
         
         self.indices.push(offset + 0);
         self.indices.push(offset + 1);
