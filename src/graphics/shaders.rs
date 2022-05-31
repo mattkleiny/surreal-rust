@@ -228,7 +228,8 @@ mod tests {
 
   #[test]
   fn parse_should_process_valid_program() {
-    let result = parse_glsl_source(r"
+    let result = parse_glsl_source(
+      r"
       #version 330 core
 
       // shared code
@@ -262,7 +263,8 @@ mod tests {
       void main() {
         gl_FragColor = texture(u_texture, v_uv) * v_color;
       }
-    ");
+    ",
+    );
 
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].kind, ShaderKind::Vertex);
@@ -276,10 +278,10 @@ mod tests {
 
 mod parser {
   //! Parser for a simple shading language used to make cross-platform shaders.
-  //! 
+  //!
   //! This language is similar to Godot's shading language and offers a subset of features
   //! from GLSL that makes it simple to build straightforward shader programs productively.
-  //! 
+  //!
   //! The language itself is transpiled to GLSL via a transformation stage.
 
   use std::collections::VecDeque;
@@ -393,7 +395,7 @@ mod parser {
   }
 
   /// A visitor pattern for shader AST nodes.
-  /// 
+  ///
   /// The base implementation will walk down the tree recursively.
   trait Visitor: Sized {
     fn visit_uniform_declaration(&mut self, _declaration: &UniformDeclaration) {
@@ -403,17 +405,17 @@ mod parser {
     fn visit_attribute_declaration(&mut self, _declaration: &AttributeDeclaration) {
       // no-op
     }
-    
+
     fn visit_constant_declaration(&mut self, _declaration: &ConstantDeclaration) {
       // no-op
     }
-    
+
     fn visit_function_declaration(&mut self, function: &FunctionDeclaration) {
       for statement in &function.body {
-         statement.accept(self);
+        statement.accept(self);
       }
     }
-        
+
     fn visit_expression_statement(&mut self, expression: &Expression) {
       expression.accept(self);
     }
@@ -421,7 +423,7 @@ mod parser {
     fn visit_unary_expression(&mut self, expression: &UnaryExpression) {
       expression.operand.accept(self);
     }
-    
+
     fn visit_binary_expression(&mut self, expression: &BinaryExpression) {
       expression.left.accept(self);
       expression.right.accept(self);
@@ -430,14 +432,14 @@ mod parser {
     fn visit_constant_expression(&mut self, _expression: &Literal) {
       // no-op
     }
-    
+
     fn visit_symbol_expression(&mut self, _expression: &String) {
       // no-op
     }
   }
 
   /// Indicates a discrete shader stage in a single shader program.
-  /// 
+  ///
   /// Since we're abstracting over OpenGL, this usually implies a single shader kind 'vertex', 'fragment', etc.
   /// However, for more advanced shader pipelines this stage could represent something else (such as lighting or SDF).
   struct ShaderStage {
@@ -446,7 +448,7 @@ mod parser {
   }
 
   /// A declaration for a whole shader program, with it's independent stages.
-  /// 
+  ///
   /// A top-level 'kind' parameter is used to indicate to consumers which type of shader this is, and allow it's
   /// transformation for use in specific circumstances.
   struct ShaderDeclaration {
@@ -459,22 +461,18 @@ mod parser {
     let mut tokens = VecDeque::new();
     let mut iterator = code.chars().peekable();
 
-    let mut position = TokenPosition {
-      index: 0,
-      line: 1,
-      column: 1,
-    };
+    let mut position = TokenPosition { index: 0, line: 1, column: 1 };
 
     while let Some(&character) = iterator.peek() {
       // emits a single token into the output, and advances the iterator
       let mut emit = |token, length| {
         position.index += length;
         position.column += length;
-        
+
         for _ in 0..length {
           iterator.next().expect("Expected a valid token");
         }
-        
+
         tokens.push_back(Token {
           span: &code[..],
           position,
@@ -488,7 +486,7 @@ mod parser {
         '-' => emit(TokenValue::Minus, 1),
         '*' => emit(TokenValue::Times, 1),
         '/' => emit(TokenValue::Divide, 1),
-        
+
         // numerical values
         '0'..='9' => {
           while let Some(true) = iterator.next().map(|c| c.is_numeric()) {
@@ -511,16 +509,15 @@ mod parser {
           // track line position
           position.index += 1;
           position.column += 1;
-        },
+        }
         '\n' => {
           iterator.next();
-          
+
           // track line position
           position.index += 1;
           position.column = 1;
           position.line += 1;
-          
-        },
+        }
         _ => anyhow::bail!("An unexpected token was encountered: {}", character),
       }
     }
@@ -529,7 +526,7 @@ mod parser {
   }
 
   /// Parses a shader declaration from the given raw source.
-  /// 
+  ///
   /// The resultant shader code is not guaranteed to be correct (not type checked or sanity checked),
   /// it's expected that a later transformation stage will convert the shader and perform type checking.
   fn parse(code: &str) -> crate::Result<ShaderDeclaration> {
@@ -574,7 +571,7 @@ mod parser {
   }
 
   /// Transpiles the given shader declaration down into standrad GLSL code.
-  /// 
+  ///
   /// This is a fallible process, as some minor type checking will occur.
   pub fn transpile_to_glsl(code: &str) -> crate::Result<Vec<super::Shader>> {
     /// A transpiling visitor for shader programs.
@@ -587,7 +584,7 @@ mod parser {
         self.output += "uniform ";
         self.output += &declaration.name;
         self.output += "\n";
-      } 
+      }
     }
 
     // parse declaration and turn each stage into a discrete GLSL shader.
@@ -595,9 +592,7 @@ mod parser {
     let mut results = Vec::new();
 
     for stage in &declaration.stages {
-      let mut transpiler = Transpiler {
-        output: String::new(),
-      };
+      let mut transpiler = Transpiler { output: String::new() };
 
       for statement in &stage.statements {
         statement.accept(&mut transpiler);

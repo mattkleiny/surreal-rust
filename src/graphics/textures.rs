@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::maths::{Rectangle, vec2, Vector2};
+use crate::maths::{vec2, Rectangle, Vector2};
 
 use super::*;
 
@@ -99,7 +99,7 @@ impl Texture {
         options: options.clone(),
         width: 0,
         height: 0,
-      }))
+      })),
     }
   }
 
@@ -154,7 +154,7 @@ impl Texture {
 
     let pixels = match pixels.len() {
       0 => std::ptr::null(),
-      _ => pixels.as_ptr() as *const u8
+      _ => pixels.as_ptr() as *const u8,
     };
 
     state.server.write_texture_data(
@@ -249,6 +249,40 @@ impl<'a> From<&'a Texture> for TextureRegion<'a> {
       texture,
       offset: Vector2::ZERO,
       size: vec2(texture.width(), texture.height()),
+    }
+  }
+}
+
+/// An atlas of textures, which is a rectangular subdivison of some parent
+/// textures into a smaller grid of [`TextureRegion`]s.
+pub struct TextureAtlas<'a> {
+  texture: &'a Texture,
+  width: u32,
+  height: u32,
+}
+
+impl<'a> TextureAtlas<'a> {
+  /// Creates a new texture atlas from the given texture.
+  pub fn new(width: u32, height: u32, texture: &'a Texture) -> Self {
+    Self { texture, width, height }
+  }
+
+  /// The width of the atlas, in sub-regions.
+  pub fn width(&self) -> u32 {
+    self.texture.width() / self.width
+  }
+
+  /// The height of the atlas, in sub-regions.
+  pub fn height(&self) -> u32 {
+    self.texture.width() / self.height
+  }
+
+  /// Gets a sub-region of the texture atlas at the given position.
+  pub fn get_region(&self, x: u32, y: u32) -> TextureRegion<'a> {
+    TextureRegion {
+      texture: self.texture,
+      offset: vec2(x * self.width, y * self.height),
+      size: vec2(self.width, self.height),
     }
   }
 }
