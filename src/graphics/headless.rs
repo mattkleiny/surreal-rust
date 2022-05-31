@@ -72,7 +72,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
+  fn write_buffer_data(&self, _buffer: GraphicsHandle, _usage: BufferUsage, _kind: BufferKind, _length: usize, _pointer: *const u8) {
     // no-op
   }
 
@@ -88,7 +88,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn read_texture_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
+  fn read_texture_data(&self, _texture: GraphicsHandle, _length: usize, _pixel_format: TextureFormat, _pixels: *mut u8, _mip_level: usize) {
     // no-op
   }
 

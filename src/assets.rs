@@ -132,6 +132,8 @@ mod tests {
       options: TextureOptions::default(),
     });
 
-    let texture: &Texture = manager.load_asset("assets/sprites/bunny.png").expect("Failed to load asset");
+    let _texture: &Texture = manager
+      .load_asset("assets/sprites/bunny.png")
+      .expect("Failed to load asset");
   }
 }
