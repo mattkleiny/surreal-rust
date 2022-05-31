@@ -222,6 +222,58 @@ fn parse_glsl_source(source: &str) -> Vec<Shader> {
   result
 }
 
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn parse_should_process_valid_program() {
+    let result = parse_glsl_source(r"
+      #version 330 core
+
+      // shared code
+      uniform mat4 u_projectionView;
+      uniform vec2 u_resolution;
+      uniform vec4 u_color;
+
+      #shader_type vertex
+
+      layout(location = 0) in vec2 a_position;
+      layout(location = 1) in vec2 a_tex_coord;
+      layout(location = 2) in vec4 a_color;
+
+      out vec2 v_uv;
+      out vec4 v_color;
+
+      void main() {
+        v_uv    = a_uv;
+        v_color = a_color * u_color;
+
+        gl_Position = vec4(a_position, 0.0, 1.0) * u_projectionView;
+      }
+
+      #shader_type fragment
+
+      uniform sampler2d u_texture;
+
+      in vec2 v_uv;
+      in vec4 v_color;
+
+      void main() {
+        gl_FragColor = texture(u_texture, v_uv) * v_color;
+      }
+    ");
+
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0].kind, ShaderKind::Vertex);
+    assert!(result[0].code.trim().starts_with("#version 330 core"));
+    assert!(result[0].code.contains("gl_Position"));
+    assert_eq!(result[1].kind, ShaderKind::Fragment);
+    assert!(result[1].code.trim().starts_with("#version 330 core"));
+    assert!(result[1].code.contains("gl_Frag"));
+  }
+}
+
 mod parser {
   //! Parser for a simple shading language used to make cross-platform shaders.
   //! 
@@ -229,6 +281,8 @@ mod parser {
   //! from GLSL that makes it simple to build straightforward shader programs productively.
   //! 
   //! The language itself is transpiled to GLSL via a transformation stage.
+
+  use std::collections::VecDeque;
 
   struct TokenPosition {
     line: usize,
@@ -301,9 +355,20 @@ mod parser {
     name: String,
   }
 
+  struct ConstantDeclaration {
+    name: String,
+  }
+
+  struct FunctionDeclaration {
+    name: String,
+    body: Vec<Statement>,
+  }
+
   enum Statement {
     UniformDeclaration(UniformDeclaration),
     AttributeDeclaration(AttributeDeclaration),
+    ConstantDeclaration(ConstantDeclaration),
+    FunctionDeclaration(FunctionDeclaration),
     Expression(Expression),
   }
 
@@ -312,19 +377,52 @@ mod parser {
       match self {
         Statement::UniformDeclaration(s) => visitor.visit_uniform_declaration(s),
         Statement::AttributeDeclaration(s) => visitor.visit_attribute_declaration(s),
+        Statement::ConstantDeclaration(s) => visitor.visit_constant_declaration(s),
+        Statement::FunctionDeclaration(s) => visitor.visit_function_declaration(s),
         Statement::Expression(s) => visitor.visit_expression_statement(s),
       }
     }
   }
 
-  trait Visitor {
-    fn visit_uniform_declaration(&mut self, statement: &UniformDeclaration) {}
-    fn visit_attribute_declaration(&mut self, statement: &AttributeDeclaration) {}
-    fn visit_expression_statement(&mut self, statement: &Expression) {}
-    fn visit_unary_expression(&mut self, expression: &UnaryExpression) {}
-    fn visit_binary_expression(&mut self, expression: &BinaryExpression) {}
-    fn visit_constant_expression(&mut self, expression: &Literal) {}
-    fn visit_symbol_expression(&mut self, expression: &String) {}
+  trait Visitor: Sized {
+    fn visit_uniform_declaration(&mut self, _declaration: &UniformDeclaration) {
+      // no-op
+    }
+
+    fn visit_attribute_declaration(&mut self, _declaration: &AttributeDeclaration) {
+      // no-op
+    }
+    
+    fn visit_constant_declaration(&mut self, _declaration: &ConstantDeclaration) {
+      // no-op
+    }
+    
+    fn visit_function_declaration(&mut self, function: &FunctionDeclaration) {
+      for statement in &function.body {
+         statement.accept(self);
+      }
+    }
+        
+    fn visit_expression_statement(&mut self, expression: &Expression) {
+      expression.accept(self);
+    }
+
+    fn visit_unary_expression(&mut self, expression: &UnaryExpression) {
+      expression.operand.accept(self);
+    }
+    
+    fn visit_binary_expression(&mut self, expression: &BinaryExpression) {
+      expression.left.accept(self);
+      expression.right.accept(self);
+    }
+
+    fn visit_constant_expression(&mut self, _expression: &Literal) {
+      // no-op
+    }
+    
+    fn visit_symbol_expression(&mut self, _expression: &String) {
+      // no-op
+    }
   }
 
   struct ShaderStage {
@@ -337,8 +435,8 @@ mod parser {
   }
 
   /// Tokenizes the given shader source code.
-  fn tokenize(code: &str) -> crate::Result<Vec<Token>> {
-    let mut tokens = Vec::new();
+  fn tokenize(code: &str) -> crate::Result<VecDeque<Token>> {
+    let mut tokens = VecDeque::new();
     let mut iterator = code.chars().peekable();
 
     let mut line = 1;
@@ -349,7 +447,7 @@ mod parser {
         '0'..='9' => {
           iterator.next().expect("Expected peekable character");
 
-          tokens.push(Token { 
+          tokens.push_back(Token { 
             span: &code[..], // TODO: put the right span, here
             position: TokenPosition { line, column },
             kind: TokenKind::Number,
@@ -382,7 +480,7 @@ mod parser {
   fn parse(code: &str) -> crate::Result<ShaderDeclaration> {
     /// Recursive descent style parser for our simple shading language.
     struct ParseContext<'a> {
-      tokens: Vec<Token<'a>>,
+      tokens: VecDeque<Token<'a>>,
     }
 
     impl<'a> ParseContext<'a> {
@@ -396,16 +494,12 @@ mod parser {
         todo!()
       }
 
-      fn parse_stage(&mut self) -> crate::Result<ShaderStage> {
-        todo!()
-      }
-
       fn next_token(&mut self) -> crate::Result<Token> {
-        if self.tokens.is_empty() {
-          anyhow::bail!("Unexpected end of input");
+        if let Some(token) = self.tokens.pop_front() {
+          Ok(token)
+        } else {
+          anyhow::bail!("Unexpected end of input")
         }
-
-        Ok(self.tokens.remove(0))
       }
 
       fn peek_token(&mut self) -> crate::Result<&Token> {
@@ -467,57 +561,5 @@ mod parser {
 
       assert_eq!(tokens.len(), 5);
     }
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn parse_should_process_valid_program() {
-    let result = parse_glsl_source(r"
-      #version 330 core
-
-      // shared code
-      uniform mat4 u_projectionView;
-      uniform vec2 u_resolution;
-      uniform vec4 u_color;
-
-      #shader_type vertex
-
-      layout(location = 0) in vec2 a_position;
-      layout(location = 1) in vec2 a_tex_coord;
-      layout(location = 2) in vec4 a_color;
-
-      out vec2 v_uv;
-      out vec4 v_color;
-
-      void main() {
-        v_uv    = a_uv;
-        v_color = a_color * u_color;
-
-        gl_Position = vec4(a_position, 0.0, 1.0) * u_projectionView;
-      }
-
-      #shader_type fragment
-
-      uniform sampler2d u_texture;
-
-      in vec2 v_uv;
-      in vec4 v_color;
-
-      void main() {
-        gl_FragColor = texture(u_texture, v_uv) * v_color;
-      }
-    ");
-
-    assert_eq!(result.len(), 2);
-    assert_eq!(result[0].kind, ShaderKind::Vertex);
-    assert!(result[0].code.trim().starts_with("#version 330 core"));
-    assert!(result[0].code.contains("gl_Position"));
-    assert_eq!(result[1].kind, ShaderKind::Fragment);
-    assert!(result[1].code.trim().starts_with("#version 330 core"));
-    assert!(result[1].code.contains("gl_Frag"));
   }
 }
