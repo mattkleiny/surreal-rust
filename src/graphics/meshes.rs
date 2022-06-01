@@ -1,3 +1,8 @@
+//! Mesh creation and management.
+//! 
+//! Meshes abstract over vertex and index data on the GPU as well, and
+//! provide utilities for constructing data from pieces.
+
 use std::cell::RefCell;
 use std::rc::Rc;
 

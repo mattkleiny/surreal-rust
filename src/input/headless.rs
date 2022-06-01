@@ -1,3 +1,5 @@
+//! A headless input backend for testing and etc.
+
 use crate::input::*;
 
 /// A headless [`InputBackend`] implementation.

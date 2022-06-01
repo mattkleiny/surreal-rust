@@ -16,6 +16,10 @@ layout(location = 2) in float a_emission;
 out vec4  v_color;
 out float v_emission;
 
+// Main vertex output
+//
+// Pre-computes the lighting data for this vertex, allowing smooth interpolation
+// over in the fragment shader.
 void main() {
   v_color    = a_color * u_color;
   v_emission = a_emission;
@@ -28,6 +32,9 @@ void main() {
 in vec4 v_color;
 in smooth float v_emission;
 
+// Main fragment output
+//
+// We do small amounts of per-pixel interpolation for lighting.
 void main() {
   gl_FragColor = v_color * v_emission;
 }

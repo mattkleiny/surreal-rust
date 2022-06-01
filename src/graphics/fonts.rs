@@ -1,3 +1,7 @@
+//! Font loading, management and rendering.
+//! 
+//! We currently support bitmap fonts, with a planned future change to support TrueType fonts.
+
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::graphics::{Color32, SpriteBatch, SpriteOptions, Texture, TextureRegion};
 use crate::maths::{Rectangle, Vector2};

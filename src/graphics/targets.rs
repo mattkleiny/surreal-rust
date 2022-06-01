@@ -1,3 +1,8 @@
+//! Render target management and abstractions.
+//! 
+//! Render targets allow for off-screen processing and rendering to a texture, and form
+//! the basis of more complex render pipelines (deferred pipelines, post-processing, etc).
+
 use std::cell::RefCell;
 use std::rc::Rc;
 

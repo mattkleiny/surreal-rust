@@ -1,3 +1,5 @@
+//! Geometry batching for common shapes and polygon rendering.
+
 use crate::maths::{Rectangle, vec2, Vector2};
 
 use super::*;

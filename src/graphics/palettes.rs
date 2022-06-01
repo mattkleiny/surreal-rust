@@ -1,3 +1,10 @@
+//! Color palette loading and managements.
+//! 
+//! Color palettes are so frequently used in projects that we've built-in
+//! support for basic palette operations and slicing.
+//! 
+//! JASC-PAL files can be loaded from disc, as well.
+
 use std::ops::Index;
 
 use anyhow::anyhow;

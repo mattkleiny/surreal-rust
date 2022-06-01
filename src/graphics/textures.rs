@@ -1,3 +1,5 @@
+//! Texture management and loading.
+
 use std::cell::RefCell;
 use std::rc::Rc;
 

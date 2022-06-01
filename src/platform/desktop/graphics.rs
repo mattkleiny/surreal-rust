@@ -170,7 +170,6 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
         BufferKind::Index => gl::ELEMENT_ARRAY_BUFFER,
-        BufferKind::Uniform => gl::UNIFORM_BUFFER,
       };
 
       let usage = match usage {

@@ -1,3 +1,6 @@
+//! Image loading and management from various formats.
+
+/// The different kinds of image format we support.
 pub use image::ImageFormat as ImageFormat;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};

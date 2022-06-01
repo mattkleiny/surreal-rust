@@ -1,3 +1,8 @@
+//! Material management and configuration.
+//! 
+//! Materials define all data required to perform some rendering step, from
+//! pipeline state changes through to shader programs and uniforms.
+
 use std::collections::HashMap;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};

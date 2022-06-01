@@ -1,3 +1,10 @@
+//! Shader loading and management.
+//! 
+//! Shader programs form the programmable part of the GPU pipeline, outside of state changes,
+//! and are managed through this module.
+//! 
+//! For higher-level shader control see the material module instead.
+
 use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};

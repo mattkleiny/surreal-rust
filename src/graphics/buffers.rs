@@ -1,3 +1,8 @@
+//! Graphics buffer management and abstractions.
+//! 
+//! Buffers typically contain vertex or index data used in mesh rendering, however
+//! they can also be used as an in intermediate store for compute shaders.
+
 use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::rc::Rc;
@@ -9,7 +14,6 @@ use super::*;
 pub enum BufferKind {
   Element,
   Index,
-  Uniform,
 }
 
 /// The usage pattern of the buffer.

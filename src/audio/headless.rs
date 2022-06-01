@@ -1,3 +1,5 @@
+//! A headless audio backend for testing and etc.
+
 use std::sync::atomic::{AtomicU32, Ordering};
 
 use super::*;
