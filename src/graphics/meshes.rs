@@ -18,7 +18,7 @@ pub enum PrimitiveTopology {
 /// Describes a kind of vertex.
 ///
 /// Vertices provide a set of [`VertexDescriptor`]s which are used for binding vertex data to a mesh.
-pub trait Vertex: Copy {
+pub trait Vertex: Clone {
   const DESCRIPTORS: &'static [VertexDescriptor];
 }
 
@@ -31,6 +31,13 @@ pub struct VertexDescriptor {
   pub count: usize,
   pub kind: VertexKind,
   pub should_normalize: bool,
+}
+
+impl VertexDescriptor {
+  /// Calculates the size of this vertex element.
+  pub fn size(&self) -> usize {
+    self.count * self.kind.size()
+  }
 }
 
 /// Different kinds of vertex primitives.
@@ -53,7 +60,8 @@ impl VertexKind {
 }
 
 /// A simple vertex in 2-space.
-#[derive(Copy, Clone, Debug)]
+#[repr(C)]
+#[derive(Clone, Debug)]
 pub struct Vertex2 {
   pub position: Vector2<f32>,
   pub uv: Vector2<f32>,
@@ -69,7 +77,8 @@ impl Vertex for Vertex2 {
 }
 
 /// A simple vertex in 3-space.
-#[derive(Copy, Clone, Debug)]
+#[repr(C)]
+#[derive(Clone, Debug)]
 pub struct Vertex3 {
   pub position: Vector3<f32>,
   pub uv: Vector2<f32>,

@@ -546,7 +546,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         );
         gl::EnableVertexAttribArray(index as u32);
 
-        offset += descriptor.count * descriptor.kind.size();
+        offset += descriptor.size();
       }
 
       gl::BindVertexArray(0);

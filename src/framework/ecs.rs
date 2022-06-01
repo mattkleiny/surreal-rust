@@ -125,7 +125,7 @@ impl World {
 
   /// De-spawns an existing entity from the world.
   pub fn despawn(&mut self, entity: Entity) {
-    if let Some(state) = self.entities.remove(entity) {
+    if let Some(_state) = self.entities.remove(entity) {
       // TODO: iterate all storages and remove components
     }
   }

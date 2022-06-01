@@ -7,6 +7,7 @@
 //! to the author as to how they'd like to glue things together.
 
 #![allow(incomplete_features)]
+#![allow(dead_code)]
 
 #![feature(generic_const_exprs)]
 #![feature(const_refs_to_cell)]

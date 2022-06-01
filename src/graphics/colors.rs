@@ -132,12 +132,12 @@ pub struct Color32 {
 
 impl Color32 {
   pub const CLEAR: Self = Self::rgba(0, 0, 0, 0);
-  pub const WHITE: Self = Self::rgb(225, 225, 225);
+  pub const WHITE: Self = Self::rgb(255, 255, 255);
   pub const BLACK: Self = Self::rgb(0, 0, 0);
-  pub const RED: Self = Self::rgb(225, 0, 0);
-  pub const GREEN: Self = Self::rgb(0, 225, 0);
-  pub const BLUE: Self = Self::rgb(0, 0, 225);
-  pub const MAGENTA: Self = Self::rgb(225, 0, 225);
+  pub const RED: Self = Self::rgb(255, 0, 0);
+  pub const GREEN: Self = Self::rgb(0, 255, 0);
+  pub const BLUE: Self = Self::rgb(0, 0, 255);
+  pub const MAGENTA: Self = Self::rgb(255, 0, 255);
 
   /// Creates a new color with the given components.
   pub const fn rgb(r: u8, g: u8, b: u8) -> Self {

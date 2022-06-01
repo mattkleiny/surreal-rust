@@ -3,7 +3,6 @@
 use std::any::{Any, TypeId};
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
-use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::io::{AsVirtualPath, VirtualPath};

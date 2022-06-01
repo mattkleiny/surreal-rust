@@ -1,7 +1,7 @@
 /// Represents type that supports procedural construction of geometry.
 pub trait Tessellation {
   /// The type of vertex that we're emitting.
-  type Vertex: Copy;
+  type Vertex: Clone;
 
   /// Returns the number of vertices in the tessellator.
   fn vertex_count(&self) -> u32;
