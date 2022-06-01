@@ -14,7 +14,7 @@ layout(location = 2) in float a_emission;
 out vec4 v_color;
 
 void main() {
-  v_color = a_color * u_color * a_emission;
+  v_color = a_color * u_color;
 
   gl_Position = vec4(a_position, 0.0, 1.0) * u_projectionView;
 }
