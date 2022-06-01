@@ -9,7 +9,8 @@ fn main() {
   #[derive(Copy, Clone, Debug)]
   enum Tile {
     Empty,
-    Filled,
+    Cactus,
+    Rock,
   }
 
   impl Default for Tile {
@@ -24,7 +25,8 @@ fn main() {
     fn from_id(id: Self::Id) -> &'static Self {
       match id {
         0 => &Self::Empty,
-        1 => &Self::Filled,
+        1 => &Self::Cactus,
+        2 => &Self::Rock,
         _ => panic!(),
       }
     }
@@ -32,7 +34,8 @@ fn main() {
     fn to_id(&self) -> Self::Id {
       match self {
         Tile::Empty => 0,
-        Tile::Filled => 1,
+        Tile::Cactus => 1,
+        Tile::Rock => 2,
       }
     }
   }
@@ -47,7 +50,11 @@ fn main() {
     let graphics = &game.host.graphics;
 
     // set-up assets and rendering
-    let sprite: &Texture = assets.load_asset("assets/sprites/example_tile.png").expect("Failed to load sprite image");
+    let sprite: &Texture = assets
+      .load_asset("assets/sprites/tiles_desert.png")
+      .expect("Failed to load sprite image");
+
+    let atlas = TextureAtlas::new(16, 16, sprite);
     let palette = load_built_in_palette(BuiltInPalette::Demichrome4);
 
     let mut renderer = RenderManager::new(graphics);
@@ -61,8 +68,21 @@ fn main() {
     // set-up tile map
     let mut map = TileMap::new(16, 9);
 
-    map.set_sprite(&Tile::Filled, sprite);
-    map.fill(|_, _| if bool::random() { &Tile::Filled } else { &Tile::Empty });
+    map.set_sprite(&Tile::Empty, atlas.get_region(0, 3));
+    map.set_sprite(&Tile::Cactus, atlas.get_region(3, 0));
+    map.set_sprite(&Tile::Rock, atlas.get_region(2, 2));
+
+    map.fill(|_, _| {
+      if bool::random() {
+        if bool::random() {
+          &Tile::Rock
+        } else {
+          &Tile::Cactus
+        }
+      } else {
+        &Tile::Empty
+      }
+    });
 
     game.run_variable_step(|game| {
       game.host.graphics.clear_color_buffer(palette[0]);
@@ -72,7 +92,17 @@ fn main() {
       if let Some(keyboard) = game.host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Space) {
           map.clear();
-          map.fill(|_, _| if bool::random() { &Tile::Filled } else { &Tile::Empty });
+          map.fill(|_, _| {
+            if bool::random() {
+              if bool::random() {
+                &Tile::Rock
+              } else {
+                &Tile::Cactus
+              }
+            } else {
+              &Tile::Empty
+            }
+          });
         }
 
         if keyboard.is_key_pressed(Key::Escape) {

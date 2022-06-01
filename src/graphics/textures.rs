@@ -273,8 +273,7 @@ impl<'a> From<&'a Texture> for TextureRegion<'a> {
   }
 }
 
-/// An atlas of textures, which is a rectangular subdivison of some parent
-/// textures into a smaller grid of [`TextureRegion`]s.
+/// An atlas of textures, which is a subdivison of a texture into a smaller grid of [`TextureRegion`]s.
 pub struct TextureAtlas<'a> {
   texture: &'a Texture,
   width: u32,

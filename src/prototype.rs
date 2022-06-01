@@ -90,14 +90,6 @@ pub struct SpriteBatchDescriptor {
   pub sprite_count: usize,
 }
 
-/// A simple [`RenderContext`] that allows for sprite rendering using the standard sprite shaders.
-pub struct SpriteBatchContext {
-  /// A material configured to render sprites.
-  pub material: Material,
-  /// The sprite batch to use for sprite geometry.
-  pub batch: SpriteBatch,
-}
-
 impl Default for SpriteBatchDescriptor {
   fn default() -> Self {
     Self {
@@ -143,6 +135,16 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
     Self::Context { material, batch }
   }
 }
+
+/// A simple [`RenderContext`] that allows for sprite rendering using the standard sprite shaders.
+pub struct SpriteBatchContext {
+  /// A material configured to render sprites.
+  pub material: Material,
+
+  /// The sprite batch to use for sprite geometry.
+  pub batch: SpriteBatch,
+}
+
 
 impl RenderContext for SpriteBatchContext {
   fn on_before_with(&mut self) {
