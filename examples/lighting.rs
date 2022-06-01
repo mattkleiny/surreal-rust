@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"]
 
 use surreal::prelude::*;
 
@@ -21,23 +21,24 @@ fn main() {
         LitVertex {
           position: vec2(-0.5, -0.5),
           color: Color32::RED,
-          emission: 0.2,
+          emission: 1.0,
         },
         LitVertex {
           position: vec2(0.0, 0.5),
           color: Color32::GREEN,
-          emission: 0.2,
+          emission: 0.5,
         },
         LitVertex {
           position: vec2(0.5, -0.5),
           color: Color32::BLUE,
-          emission: 0.2,
+          emission: 0.25,
         },
       ])
     });
 
     game.run_variable_step(|game| {
       game.host.graphics.clear_color_buffer(Color::BLACK);
+
       mesh.draw(&material, PrimitiveTopology::Triangles);
 
       if let Some(keyboard) = game.host.input.keyboard_device() {

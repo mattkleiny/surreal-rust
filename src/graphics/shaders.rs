@@ -94,7 +94,7 @@ impl ShaderProgram {
   /// Reloads the [`ShaderProgram`] from the given 'glsl' program code.
   pub fn load_glsl(&self, text: &str) -> crate::Result<()> {
     let server = &self.state.server;
-    let shaders = parse_glsl_source(&text);
+    let shaders = parse_glsl_source(&text)?;
 
     server.link_shaders(self.state.handle, shaders)?;
 
@@ -199,7 +199,10 @@ impl From<&Texture> for ShaderUniform {
 ///
 /// * Multiple shader types per file (separated with #shader_type directives).
 /// * Shared code amongst each shader definition by placing it prior to the #shader_type directives.
-fn parse_glsl_source(source: &str) -> Vec<Shader> {
+/// * Allows #include directives to fetch other files.
+fn parse_glsl_source(source: &str) -> crate::Result<Vec<Shader>> {
+  use crate::io::*;
+
   let mut result = Vec::with_capacity(2); // usually 2 shaders per file
   let mut shared_code = String::new();
 
@@ -212,10 +215,22 @@ fn parse_glsl_source(source: &str) -> Vec<Shader> {
         _ => continue,
       };
 
-      result.push(Shader {
-        kind,
-        code: shared_code.clone(),
-      });
+      result.push(Shader { kind, code: shared_code.clone() });
+    } else if line.trim().starts_with("#include") {
+      if let Some(path) = line.split_whitespace().nth(1) {
+        // trim the fat from the include path
+        let path = path.replace("<", "").replace(">", "").replace(";", "");
+        
+        // fetch and splat the dependent shader
+        let dependent_file = VirtualPath::parse(&path);
+        let dependent_code = dependent_file.read_all_text()?;
+
+        if let Some(shader) = result.last_mut() {
+          shader.code.push_str(&dependent_code);
+        } else {
+          shared_code.push_str(&dependent_code);
+        }
+      }
     } else if let Some(shader) = result.last_mut() {
       // build up the active shader unit
       shader.code.push_str(line);
@@ -227,7 +242,7 @@ fn parse_glsl_source(source: &str) -> Vec<Shader> {
     };
   }
 
-  result
+  Ok(result)
 }
 
 #[cfg(test)]
@@ -272,7 +287,7 @@ mod tests {
         gl_FragColor = texture(u_texture, v_uv) * v_color;
       }
     ",
-    );
+    ).expect("Failed to parse simple program");
 
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].kind, ShaderKind::Vertex);
@@ -317,12 +332,12 @@ mod parser {
     Number,
   }
 
-  enum UnaryOp {
+  enum UnaryOperator {
     Neg,
     Not,
   }
 
-  enum BinaryOp {
+  enum BinaryOperator {
     Add,
     Sub,
     Mul,
@@ -336,20 +351,20 @@ mod parser {
     String(String),
   }
 
-  struct UnaryExpr {
-    operator: UnaryOp,
+  struct UnaryExpression {
+    operator: UnaryOperator,
     operand: Box<Expression>,
   }
 
-  struct BinaryExpr {
-    operator: BinaryOp,
+  struct BinaryExpression {
+    operator: BinaryOperator,
     left: Box<Expression>,
     right: Box<Expression>,
   }
 
   enum Expression {
-    Unary(UnaryExpr),
-    Binary(BinaryExpr),
+    Unary(UnaryExpression),
+    Binary(BinaryExpression),
     Constant(Literal),
     Symbol(String),
   }
@@ -365,38 +380,49 @@ mod parser {
     }
   }
 
-  struct UniformDecl {
+  struct UniformDeclaration {
     name: String,
   }
 
-  struct AttributeDecl {
+  struct AttributeDeclaration {
     name: String,
   }
 
-  struct ConstantDecl {
+  struct ConstantDeclaration {
     name: String,
   }
 
-  struct FunctionDecl {
+  struct FunctionDeclaration {
     name: String,
     body: Vec<Statement>,
   }
 
+  struct StructDeclaration {
+    name: String,
+    fields: Vec<FieldDeclaration>,
+  }
+
+  struct FieldDeclaration {
+    name: String,
+  }
+
   enum Statement {
-    UniformDecl(UniformDecl),
-    AttributeDecl(AttributeDecl),
-    ConstantDecl(ConstantDecl),
-    FunctionDecl(FunctionDecl),
+    UniformDeclaration(UniformDeclaration),
+    AttributeDeclaration(AttributeDeclaration),
+    ConstantDeclaration(ConstantDeclaration),
+    FunctionDeclaration(FunctionDeclaration),
+    StructDeclaration(StructDeclaration),
     Expression(Expression),
   }
 
   impl Statement {
     fn accept(&self, visitor: &mut impl Visitor) {
       match self {
-        Statement::UniformDecl(declaration) => visitor.visit_uniform_decl(declaration),
-        Statement::AttributeDecl(declaration) => visitor.visit_attribute_decl(declaration),
-        Statement::ConstantDecl(declaration) => visitor.visit_constant_decl(declaration),
-        Statement::FunctionDecl(function) => visitor.visit_function_declaration(function),
+        Statement::UniformDeclaration(declaration) => visitor.visit_uniform_decl(declaration),
+        Statement::AttributeDeclaration(declaration) => visitor.visit_attribute_decl(declaration),
+        Statement::ConstantDeclaration(declaration) => visitor.visit_constant_decl(declaration),
+        Statement::FunctionDeclaration(declaration) => visitor.visit_function_declaration(declaration),
+        Statement::StructDeclaration(declaration) => visitor.visit_struct_declaration(declaration),
         Statement::Expression(expression) => visitor.visit_expression_statement(expression),
       }
     }
@@ -406,33 +432,43 @@ mod parser {
   ///
   /// The base implementation will walk down the tree recursively.
   trait Visitor: Sized {
-    fn visit_uniform_decl(&mut self, _declaration: &UniformDecl) {
+    fn visit_uniform_decl(&mut self, _declaration: &UniformDeclaration) {
       // no-op
     }
 
-    fn visit_attribute_decl(&mut self, _declaration: &AttributeDecl) {
+    fn visit_attribute_decl(&mut self, _declaration: &AttributeDeclaration) {
       // no-op
     }
 
-    fn visit_constant_decl(&mut self, _declaration: &ConstantDecl) {
+    fn visit_constant_decl(&mut self, _declaration: &ConstantDeclaration) {
       // no-op
     }
 
-    fn visit_function_declaration(&mut self, function: &FunctionDecl) {
-      for statement in &function.body {
+    fn visit_function_declaration(&mut self, declaration: &FunctionDeclaration) {
+      for statement in &declaration.body {
         statement.accept(self);
       }
+    }
+    
+    fn visit_struct_declaration(&mut self, declaration: &StructDeclaration) {
+      for field in &declaration.fields {
+        self.visit_field_declaration(field);
+      }
+    }
+
+    fn visit_field_declaration(&mut self, _declaration: &FieldDeclaration) {
+      // no-op
     }
 
     fn visit_expression_statement(&mut self, expression: &Expression) {
       expression.accept(self);
     }
 
-    fn visit_unary_expression(&mut self, expression: &UnaryExpr) {
+    fn visit_unary_expression(&mut self, expression: &UnaryExpression) {
       expression.operand.accept(self);
     }
 
-    fn visit_binary_expression(&mut self, expression: &BinaryExpr) {
+    fn visit_binary_expression(&mut self, expression: &BinaryExpression) {
       expression.left.accept(self);
       expression.right.accept(self);
     }
@@ -592,7 +628,7 @@ mod parser {
     }
 
     impl Visitor for Transpiler {
-      fn visit_uniform_decl(&mut self, declaration: &UniformDecl) {
+      fn visit_uniform_decl(&mut self, declaration: &UniformDeclaration) {
         self.output += "uniform ";
         self.output += &declaration.name;
         self.output += "\n";
