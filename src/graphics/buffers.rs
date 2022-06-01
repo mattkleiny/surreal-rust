@@ -81,7 +81,7 @@ impl<T> Buffer<T> {
   }
 
   /// Uploads the given data to the buffer.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn write_data(&mut self, data: &[T]) {
     let mut state = self.state.borrow_mut();
 

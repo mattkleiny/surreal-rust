@@ -166,7 +166,7 @@ impl<V> Mesh<V> where V: Vertex {
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn draw_sub_mesh(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     material.bind();
 

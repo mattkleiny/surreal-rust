@@ -10,11 +10,13 @@ fn main() {
 
   Game::start(platform, |mut game, assets| {
     let graphics = &game.host.graphics;
-    
+
     // TODO: emissive map from a single pass of all materials?
     // TODO: combine emissive map with a bloom sample?
 
-    let material: &Material = assets.load_asset("assets/shaders/sprite-lit.glsl").expect("Failed to load shader");
+    let material: &Material = assets
+      .load_asset("assets/shaders/sprite-lit.glsl")
+      .expect("Failed to load shader");
 
     let mesh = Mesh::create(graphics, |tessellator| {
       tessellator.add_triangle(&[

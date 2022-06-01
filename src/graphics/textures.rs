@@ -142,7 +142,7 @@ impl Texture {
   }
 
   /// Downloads pixel data from the texture.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn read_pixels<T>(&self) -> Vec<T> where T: Texel {
     let state = self.state.borrow();
     let size = state.width as usize * state.height as usize;
@@ -165,7 +165,7 @@ impl Texture {
   }
 
   /// Uploads pixel data to the texture.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn write_pixels<T>(&mut self, width: usize, height: usize, pixels: &[T]) where T: Texel {
     let mut state = self.state.borrow_mut();
 
@@ -189,7 +189,7 @@ impl Texture {
   }
 
   /// Uploads a sub-section of pixel data to the texture.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn write_sub_pixels<T>(&self, region: &Rectangle<usize>, pixels: &[T]) where T: Texel {
     let state = self.state.borrow();
 

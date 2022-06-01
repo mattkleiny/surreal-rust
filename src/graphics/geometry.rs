@@ -32,7 +32,7 @@ impl GeometryBatch {
   }
 
   /// Draws a line in the batch.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn draw_line(&mut self, a: Vector2<f32>, b: Vector2<f32>, color: Color32, _thickness: f32) {
     let base_offset = self.vertices.len() as Index;
 
@@ -45,7 +45,7 @@ impl GeometryBatch {
   }
 
   /// Draws a triangle in the batch.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn draw_triangle(&mut self, a: Vector2<f32>, b: Vector2<f32>, c: Vector2<f32>, color: Color32) {
     let base_offset = self.vertices.len() as Index;
 
@@ -59,7 +59,7 @@ impl GeometryBatch {
   }
 
   /// Draws a strip of triangles in the batch.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn draw_triangle_strip(&mut self, points: &[Vector2<f32>], color: Color32) {
     if points.len() < 3 { return; }
 
@@ -80,7 +80,7 @@ impl GeometryBatch {
   }
 
   /// Draws a rectangle in the batch.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn draw_rectangle(&mut self, rectangle: Rectangle<f32>, color: Color32) {
     let base_offset = self.vertices.len() as Index;
 
@@ -99,7 +99,7 @@ impl GeometryBatch {
   }
 
   /// Draws a circle in the batch.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn draw_circle(&mut self, center: Vector2<f32>, radius: f32, segments: u16, color: Color32) {
     let mut points = Vec::with_capacity(segments as usize);
 
@@ -116,7 +116,7 @@ impl GeometryBatch {
   }
 
   /// Draws a sprite in the batch.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn draw_sprite(&mut self, texture: &TextureRegion, position: Vector2<f32>, scale: Vector2<f32>, color: Color32) {
     let base_offset = self.vertices.len() as Index;
 
@@ -139,7 +139,7 @@ impl GeometryBatch {
   }
 
   /// Flushes the batch content to the GPU.
-  #[macros::profile_function]
+  #[profiling::function]
   pub fn flush(&mut self) {
     // ensure we're in a valid state to render something
     if self.vertices.len() == 0 { return; };

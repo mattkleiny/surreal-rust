@@ -5,7 +5,7 @@
 use proc_macro::TokenStream;
 
 use quote::{quote, quote_spanned};
-use syn::{Attribute, Data, DeriveInput, Fields, ItemFn, parse_macro_input, parse_quote, spanned::Spanned};
+use syn::{Attribute, Data, DeriveInput, Fields, parse_macro_input, spanned::Spanned};
 
 /// Builds a [`Vertex`] trait implementation for the associated struct.
 ///
@@ -16,24 +16,6 @@ pub fn derive_vertex(input: TokenStream) -> TokenStream {
   let result = impl_vertex_trait(&input);
 
   TokenStream::from(result)
-}
-
-/// Denotes the associated method should be wrapped in a profiling scope.
-#[proc_macro_attribute]
-pub fn profile_function(_attr: TokenStream, item: TokenStream) -> TokenStream {
-  let mut function = parse_macro_input!(item as ItemFn);
-  let body = &function.block;
-  let new_body: syn::Block = parse_quote! {
-    {
-      puffin::profile_function!();
-
-      #body
-    }
-  };
-
-  function.block = Box::new(new_body);
-
-  (quote! { #function }).into()
 }
 
 /// Implements the `Vertex` trait for the associated struct.

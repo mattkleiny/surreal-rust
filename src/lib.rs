@@ -24,7 +24,6 @@ pub extern crate surreal_macros as macros;
 pub mod assets;
 pub mod audio;
 pub mod collections;
-pub mod diagnostics;
 pub mod framework;
 pub mod graphics;
 pub mod input;
@@ -46,7 +45,6 @@ pub mod prelude {
   pub use crate::assets::*;
   pub use crate::audio::*;
   pub use crate::collections::*;
-  pub use crate::diagnostics::*;
   pub use crate::framework::*;
   pub use crate::graphics::*;
   pub use crate::input::*;

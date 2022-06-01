@@ -42,12 +42,12 @@ impl DesktopGraphicsBackend {
 }
 
 impl GraphicsBackend for DesktopGraphicsBackend {
-  #[macros::profile_function]
+  #[profiling::function]
   fn begin_frame(&self) {
     self.context.make_current();
   }
 
-  #[macros::profile_function]
+  #[profiling::function]
   fn end_frame(&self) {
     unsafe {
       gl::Flush();

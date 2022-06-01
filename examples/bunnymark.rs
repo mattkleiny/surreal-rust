@@ -16,15 +16,10 @@ fn main() {
     let graphics = &game.host.graphics;
 
     // set-up assets and rendering
-    let mut canvas = UserInterfaceCanvas::new(&game.host.graphics);
     let sprite: &Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
     let region = TextureRegion::from(sprite);
 
     let mut renderer = RenderManager::new(graphics);
-
-    // TODO: make this easier to use
-    game.host.input.pixels_per_point = 1.2;
-    canvas.set_pixels_per_point(1.2);
 
     renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.),
@@ -34,7 +29,6 @@ fn main() {
     // set-up state
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
-    let mut profiler = false;
 
     game.run_variable_step(move |game| {
       game.host.graphics.clear_color_buffer(Color::BLACK);
@@ -53,19 +47,9 @@ fn main() {
           });
         }
       });
-
-      canvas.run(&game.host.input, |egui| {
-        if profiler {
-          profiler = display_profiler_window(egui);
-        }
-      });
-
+      
       // handle input
       if let Some(keyboard) = game.host.input.keyboard_device() {
-        if keyboard.is_key_pressed(Key::F8) {
-          profiler = !profiler;
-        }
-
         if keyboard.is_key_pressed(Key::Escape) {
           game.exit();
         }

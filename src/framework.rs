@@ -30,9 +30,7 @@ pub struct GameTick<'a, P> where P: Platform {
 impl<P> Game<P> where P: Platform {
   /// Starts a new game with the given platform.
   pub fn start(platform: P, mut setup: impl FnMut(Game<P>, &mut AssetManager)) {
-    #[cfg(feature = "profiling")] {
-      puffin::set_scopes_on(true);
-    }
+    profiling::register_thread!("Main Thread");
 
     // set-up core host
     let game = Game { host: platform.create_host() };
@@ -65,8 +63,6 @@ impl<P> Game<P> where P: Platform {
     let mut timer = Clock::new();
 
     self.host.run(move |host| {
-      puffin::GlobalProfiler::lock().new_frame();
-
       let mut tick = GameTick {
         host,
         time: GameTime {
@@ -81,6 +77,8 @@ impl<P> Game<P> where P: Platform {
       if !tick.is_running {
         host.exit();
       }
+
+      profiling::finish_frame!();
     });
   }
 }
