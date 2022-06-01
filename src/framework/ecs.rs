@@ -1,14 +1,21 @@
-use std::any::{Any, type_name, TypeId};
-use std::collections::HashMap;
+use std::any::{type_name, TypeId};
 use std::fmt::{Debug, Formatter};
 
 use crate::collections::{Arena, ArenaIndex};
+use crate::prelude::AnyMap;
 
 /// Represents an entity in the ECS.
 pub type Entity = ArenaIndex;
 
+/// Internally managed state for a single entity.
+#[derive(Default)]
+struct EntityState {
+  /// Indicates which components are present on this entity.
+  masks: ComponentMask,
+}
+
 /// A mask for a component.
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Default, Copy, Clone, Eq, PartialEq, BitOr, BitOrAssign, BitAnd, BitAndAssign)]
 pub struct ComponentMask(u64);
 
 impl Debug for ComponentMask {
@@ -27,7 +34,10 @@ pub struct ComponentType {
 
 impl ComponentType {
   /// Constructs a new component type for the given [`T`].
-  pub fn from<T>() -> Self where T: 'static {
+  pub fn from<T>() -> Self
+  where
+    T: 'static,
+  {
     Self {
       type_id: TypeId::of::<T>(),
       name: type_name::<T>(),
@@ -36,7 +46,7 @@ impl ComponentType {
   }
 
   /// Returns all [`ComponentType`] indicated by the given mask.
-  pub fn for_mask(_mask: ComponentMask) -> Self {
+  pub fn for_mask(_mask: ComponentMask) -> Vec<Self> {
     todo!()
   }
 }
@@ -44,18 +54,23 @@ impl ComponentType {
 /// Represents a component in the ECS.
 pub trait Component: Sized + 'static {
   type Storage: ComponentStorage<Self>;
+
+  /// Gets the type for this component.
+  fn component_type() -> ComponentType {
+    ComponentType::from::<Self>()
+  }
 }
 
 /// Blanket [`Component`] implementation for all standard types.
-impl<C> Component for C where C: Copy + Sized + 'static {
+impl<C> Component for C
+where
+  C: Copy + Sized + 'static,
+{
   type Storage = DefaultStorage<C>;
 }
 
 /// Provides a means of storing entity [`Component`]s.
-pub trait ComponentStorage<C> {
-  /// Constructs a new instance of this storage.
-  fn new() -> Self;
-
+pub trait ComponentStorage<C>: Default {
   fn add_component(&mut self, entity: Entity, component: C);
   fn get_component(&self, entity: Entity) -> Option<&C>;
   fn get_component_mut(&mut self, entity: Entity) -> Option<&mut C>;
@@ -65,11 +80,10 @@ pub trait ComponentStorage<C> {
 /// A simple internal storage type for testing purposes.
 type DefaultStorage<C> = [Option<C>; 32];
 
-impl<C> ComponentStorage<C> for DefaultStorage<C> where C: Copy {
-  fn new() -> Self {
-    [None; 32]
-  }
-
+impl<C> ComponentStorage<C> for DefaultStorage<C>
+where
+  C: Copy,
+{
   fn add_component(&mut self, entity: Entity, component: C) {
     self[entity.index] = Some(component)
   }
@@ -89,8 +103,10 @@ impl<C> ComponentStorage<C> for DefaultStorage<C> where C: Copy {
 
 /// A simple entity component system world.
 pub struct World {
-  entities: Arena<()>,
-  components: HashMap<TypeId, Box<dyn Any>>,
+  /// Each individual entity in the world.
+  entities: Arena<EntityState>,
+  /// Storage for each unique component type.
+  components: AnyMap,
 }
 
 impl World {
@@ -98,65 +114,67 @@ impl World {
   pub fn new() -> Self {
     Self {
       entities: Arena::new(),
-      components: HashMap::new(),
+      components: AnyMap::new(),
     }
   }
 
   /// Spawns a new entity into the world.
   pub fn spawn(&mut self) -> Entity {
-    self.entities.add(())
+    self.entities.add(EntityState::default())
   }
 
   /// De-spawns an existing entity from the world.
   pub fn despawn(&mut self, entity: Entity) {
-    if self.entities.remove(entity) {
-      // TODO: destroy components as well?
+    if let Some(state) = self.entities.remove(entity) {
+      // TODO: iterate all storages and remove components
     }
   }
 
   /// Adds a component to the given entity.
-  pub fn add_component<C>(&mut self, entity: Entity, component: C) where C: Component {
-    let type_id = TypeId::of::<C>();
+  pub fn add_component<C>(&mut self, entity: Entity, component: C)
+  where
+    C: Component,
+  {
+    if let Some(state) = self.entities.get_mut(entity) {
+      let storage = self.components.get_or_create::<C::Storage>();
 
-    let storage = self.components
-      .entry(type_id)
-      .or_insert_with(|| Box::new(C::Storage::new()))
-      .downcast_mut::<C::Storage>()
-      .expect(format!("Failed to access component storage for {:?}", type_id).as_str());
-
-    storage.add_component(entity, component);
+      storage.add_component(entity, component);
+      state.masks |= C::component_type().mask;
+    }
   }
 
   /// Retrieves a component for the given entity.
-  pub fn get_component<C>(&self, entity: Entity) -> Option<&C> where C: Component {
-    let type_id = TypeId::of::<C>();
-
-    let storage = self.components
-      .get(&type_id)?
-      .downcast_ref::<C::Storage>()?;
+  pub fn get_component<C>(&self, entity: Entity) -> Option<&C>
+  where
+    C: Component,
+  {
+    let _ = self.entities.get(entity)?;
+    let storage = self.components.get::<C::Storage>()?;
 
     storage.get_component(entity)
   }
 
   /// Retrieves a component mutably for the given entity.
-  pub fn get_component_mut<C>(&mut self, entity: Entity) -> Option<&mut C> where C: Component {
-    let type_id = TypeId::of::<C>();
-
-    let storage = self.components
-      .get_mut(&type_id)?
-      .downcast_mut::<C::Storage>()?;
+  pub fn get_component_mut<C>(&mut self, entity: Entity) -> Option<&mut C>
+  where
+    C: Component,
+  {
+    let _ = self.entities.get(entity)?;
+    let storage = self.components.get_mut::<C::Storage>()?;
 
     return storage.get_component_mut(entity);
   }
 
   /// Removes a component for the given entity.
-  pub fn remove_component<C>(&mut self, entity: Entity) where C: Component {
-    let type_id = TypeId::of::<C>();
-
-    if let Some(storage) = self.components
-      .get_mut(&type_id)
-      .and_then(|storage| storage.downcast_mut::<C::Storage>()) {
-      storage.remove_component(entity);
+  pub fn remove_component<C>(&mut self, entity: Entity)
+  where
+    C: Component,
+  {
+    if let Some(state) = self.entities.get_mut(entity) {
+      if let Some(storage) = self.components.get_mut::<C::Storage>() {
+        storage.remove_component(entity);
+        state.masks &= C::component_type().mask;
+      }
     }
   }
 }
@@ -185,13 +203,9 @@ mod tests {
     world.add_component(entity, vec2(0f32, 10f32));
     world.add_component(entity, 2. * std::f32::consts::PI);
 
-    let position = world
-      .get_component::<Vector2<f32>>(entity)
-      .expect("Failed to get component");
+    let position = world.get_component::<Vector2<f32>>(entity).expect("Failed to get component");
 
-    let rotation = world
-      .get_component::<f32>(entity)
-      .expect("Failed to get component");
+    let rotation = world.get_component::<f32>(entity).expect("Failed to get component");
 
     assert_eq!(*position, vec2(0., 10.));
     assert_eq!(*rotation, 2. * std::f32::consts::PI);
@@ -204,9 +218,7 @@ mod tests {
 
     world.add_component(entity, vec2(0f32, 10f32));
 
-    let position = world
-      .get_component_mut::<Vector2<f32>>(entity)
-      .expect("Failed to get component");
+    let position = world.get_component_mut::<Vector2<f32>>(entity).expect("Failed to get component");
 
     position.x += 10.;
     position.y += 10.;

@@ -97,23 +97,23 @@ impl<T> Arena<T> {
   }
 
   /// Removes an item from the arena.
-  pub fn remove(&mut self, ArenaIndex { index, generation }: ArenaIndex) -> bool {
+  pub fn remove(&mut self, ArenaIndex { index, generation }: ArenaIndex) -> Option<T> {
     // sanity check external index
     if index >= self.entries.len() {
-      return false;
+      return None;
     }
 
     // if this is the relevant entry and the generation matches
     if let Some(entry) = &self.entries[index] {
       if generation == entry.generation {
-        self.entries[index] = None;
+        let entry = self.entries[index].take().unwrap();
         self.is_generation_dirty = true;
 
-        return true;
+        return Some(entry.value);
       }
     }
 
-    return false;
+    return None;
   }
 
   /// Clears all entries from the arena.

@@ -3,6 +3,7 @@
 use std::any::{Any, TypeId};
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
+use std::ops::Deref;
 use std::rc::Rc;
 
 use crate::io::{AsVirtualPath, VirtualPath};
@@ -29,7 +30,7 @@ pub struct AssetContext<'a> {
 
 impl<'a> AssetContext<'a> {
   /// Loads a dependent asset from the given path.
-  pub fn load_asset<A: Asset + 'static>(&self, path: VirtualPath) -> crate::Result<&'a A> {
+  pub fn load_asset<A: Asset>(&self, path: VirtualPath) -> crate::Result<&'a A> {
     self.manager.load_asset(path)
   }
 }
@@ -49,6 +50,7 @@ struct AssetId {
 /// The manager is also responsible for keeping track of asset dependencies,
 /// and automatically reloading assets when they are modified.
 pub struct AssetManager {
+  // TODO: use RefCell for this instead and return asset handles to callers to manage lifetimes.
   state: Rc<UnsafeCell<AssetManagerState>>,
 }
 
@@ -77,7 +79,7 @@ impl AssetManager {
   }
 
   /// Attempts to load an asset from the given path.
-  pub fn load_asset<A>(&self, path: impl AsVirtualPath) -> crate::Result<&A> where A: Asset {
+  pub fn load_asset<A: Asset>(&self, path: impl AsVirtualPath) -> crate::Result<&A> {
     let state = unsafe { &mut *self.state.get() };
     let path = path.as_virtual_path();
 

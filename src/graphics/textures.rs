@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::maths::{vec2, Rectangle, Vector2};
+use crate::maths::{vec2, Rectangle, Vector2, FromRandom};
 
 use super::*;
 
@@ -84,6 +84,24 @@ impl Texture {
   pub fn create_colored(server: &GraphicsServer, width: usize, height: usize, color: Color32) -> Self {
     let mut texture = Self::new(server);
     let colors = vec![color; width * height];
+
+    texture.write_pixels(width, height, &colors);
+
+    texture
+  }
+
+  /// Builds a new texture with random grayscale noise.
+  pub fn create_noise(server: &GraphicsServer, width: usize, height: usize) -> Self {
+    let mut texture = Self::new(server);
+    let mut colors = vec![Color32::CLEAR; width * height];
+
+    for y in 0..height {
+      for x in 0..width {
+        let intensity = u8::random();
+
+        colors[x + y * width] = Color32::rgb(intensity, intensity, intensity);
+      }
+    }
 
     texture.write_pixels(width, height, &colors);
 

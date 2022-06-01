@@ -1,7 +1,6 @@
 use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::graphics::{GraphicsServer, TextureSampler};
 use crate::io::AsVirtualPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
@@ -80,28 +79,34 @@ impl ShaderProgram {
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
-    self.state.server.get_shader_uniform_location(self.state.handle, name)
+    let server = &self.state.server;
+
+    server.get_shader_uniform_location(self.state.handle, name)
   }
 
   /// Sets the given uniform value in the underlying program.
   pub fn set_uniform(&self, location: usize, value: &ShaderUniform) {
-    self.state.server.set_shader_uniform(self.state.handle, location, value);
+    let server = &self.state.server;
+
+    server.set_shader_uniform(self.state.handle, location, value);
   }
 
   /// Reloads the [`ShaderProgram`] from the given 'glsl' program code.
   pub fn load_glsl(&self, text: &str) -> crate::Result<()> {
+    let server = &self.state.server;
     let shaders = parse_glsl_source(&text);
 
-    self.state.server.link_shaders(self.state.handle, shaders)?;
+    server.link_shaders(self.state.handle, shaders)?;
 
     Ok(())
   }
 
   /// Reloads the [`ShaderProgram`] from the given 'shade' program code.
   pub fn load_shade(&self, text: &str) -> crate::Result<()> {
+    let server = &self.state.server;
     let shaders = parser::transpile_to_glsl(text)?;
 
-    self.state.server.link_shaders(self.state.handle, shaders)?;
+    server.link_shaders(self.state.handle, shaders)?;
 
     Ok(())
   }
@@ -207,7 +212,10 @@ fn parse_glsl_source(source: &str) -> Vec<Shader> {
         _ => continue,
       };
 
-      result.push(Shader { kind, code: shared_code.clone() });
+      result.push(Shader {
+        kind,
+        code: shared_code.clone(),
+      });
     } else if let Some(shader) = result.last_mut() {
       // build up the active shader unit
       shader.code.push_str(line);
@@ -309,12 +317,12 @@ mod parser {
     Number,
   }
 
-  enum UnaryOperator {
+  enum UnaryOp {
     Neg,
     Not,
   }
 
-  enum BinaryOperator {
+  enum BinaryOp {
     Add,
     Sub,
     Mul,
@@ -328,20 +336,20 @@ mod parser {
     String(String),
   }
 
-  struct UnaryExpression {
-    operator: UnaryOperator,
+  struct UnaryExpr {
+    operator: UnaryOp,
     operand: Box<Expression>,
   }
 
-  struct BinaryExpression {
-    operator: BinaryOperator,
+  struct BinaryExpr {
+    operator: BinaryOp,
     left: Box<Expression>,
     right: Box<Expression>,
   }
 
   enum Expression {
-    Unary(UnaryExpression),
-    Binary(BinaryExpression),
+    Unary(UnaryExpr),
+    Binary(BinaryExpr),
     Constant(Literal),
     Symbol(String),
   }
@@ -357,38 +365,38 @@ mod parser {
     }
   }
 
-  struct UniformDeclaration {
+  struct UniformDecl {
     name: String,
   }
 
-  struct AttributeDeclaration {
+  struct AttributeDecl {
     name: String,
   }
 
-  struct ConstantDeclaration {
+  struct ConstantDecl {
     name: String,
   }
 
-  struct FunctionDeclaration {
+  struct FunctionDecl {
     name: String,
     body: Vec<Statement>,
   }
 
   enum Statement {
-    UniformDeclaration(UniformDeclaration),
-    AttributeDeclaration(AttributeDeclaration),
-    ConstantDeclaration(ConstantDeclaration),
-    FunctionDeclaration(FunctionDeclaration),
+    UniformDecl(UniformDecl),
+    AttributeDecl(AttributeDecl),
+    ConstantDecl(ConstantDecl),
+    FunctionDecl(FunctionDecl),
     Expression(Expression),
   }
 
   impl Statement {
     fn accept(&self, visitor: &mut impl Visitor) {
       match self {
-        Statement::UniformDeclaration(declaration) => visitor.visit_uniform_declaration(declaration),
-        Statement::AttributeDeclaration(declaration) => visitor.visit_attribute_declaration(declaration),
-        Statement::ConstantDeclaration(declaration) => visitor.visit_constant_declaration(declaration),
-        Statement::FunctionDeclaration(function) => visitor.visit_function_declaration(function),
+        Statement::UniformDecl(declaration) => visitor.visit_uniform_decl(declaration),
+        Statement::AttributeDecl(declaration) => visitor.visit_attribute_decl(declaration),
+        Statement::ConstantDecl(declaration) => visitor.visit_constant_decl(declaration),
+        Statement::FunctionDecl(function) => visitor.visit_function_declaration(function),
         Statement::Expression(expression) => visitor.visit_expression_statement(expression),
       }
     }
@@ -398,19 +406,19 @@ mod parser {
   ///
   /// The base implementation will walk down the tree recursively.
   trait Visitor: Sized {
-    fn visit_uniform_declaration(&mut self, _declaration: &UniformDeclaration) {
+    fn visit_uniform_decl(&mut self, _declaration: &UniformDecl) {
       // no-op
     }
 
-    fn visit_attribute_declaration(&mut self, _declaration: &AttributeDeclaration) {
+    fn visit_attribute_decl(&mut self, _declaration: &AttributeDecl) {
       // no-op
     }
 
-    fn visit_constant_declaration(&mut self, _declaration: &ConstantDeclaration) {
+    fn visit_constant_decl(&mut self, _declaration: &ConstantDecl) {
       // no-op
     }
 
-    fn visit_function_declaration(&mut self, function: &FunctionDeclaration) {
+    fn visit_function_declaration(&mut self, function: &FunctionDecl) {
       for statement in &function.body {
         statement.accept(self);
       }
@@ -420,11 +428,11 @@ mod parser {
       expression.accept(self);
     }
 
-    fn visit_unary_expression(&mut self, expression: &UnaryExpression) {
+    fn visit_unary_expression(&mut self, expression: &UnaryExpr) {
       expression.operand.accept(self);
     }
 
-    fn visit_binary_expression(&mut self, expression: &BinaryExpression) {
+    fn visit_binary_expression(&mut self, expression: &BinaryExpr) {
       expression.left.accept(self);
       expression.right.accept(self);
     }
@@ -461,7 +469,11 @@ mod parser {
     let mut tokens = VecDeque::new();
     let mut iterator = code.chars().peekable();
 
-    let mut position = TokenPosition { index: 0, line: 1, column: 1 };
+    let mut position = TokenPosition {
+      index: 0,
+      line: 1,
+      column: 1,
+    };
 
     while let Some(&character) = iterator.peek() {
       // emits a single token into the output, and advances the iterator
@@ -580,7 +592,7 @@ mod parser {
     }
 
     impl Visitor for Transpiler {
-      fn visit_uniform_declaration(&mut self, declaration: &UniformDeclaration) {
+      fn visit_uniform_decl(&mut self, declaration: &UniformDecl) {
         self.output += "uniform ";
         self.output += &declaration.name;
         self.output += "\n";
@@ -592,7 +604,9 @@ mod parser {
     let mut results = Vec::new();
 
     for stage in &declaration.stages {
-      let mut transpiler = Transpiler { output: String::new() };
+      let mut transpiler = Transpiler {
+        output: String::new(),
+      };
 
       for statement in &stage.statements {
         statement.accept(&mut transpiler);
