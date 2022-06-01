@@ -2,16 +2,14 @@
 #define SURREAL_LIGHTS_H_
 
 // A light source in our 2d lighting pipeline.
-//
-// Lights are positioned in world space and expose basic intensity and color properties.
 struct Light {
-  vec3 position;
-  vec3 color;
-  float intensity;
+  vec3 position; // world space position
+  vec3 color; // ambient color
+  float intensity; // normalised intensity
 }
 
-uniform Light u_lights[16];    // The active scene lights.
-uniform int   u_active_lights; // The number of active scene lights.
+uniform Light u_lights[16]; // The active scene lights.
+uniform int u_active_lights; // The number of active scene lights.
 
 // Samples lighting information from the given world position.
 vec3 sample_light(vec2 world_position) {
