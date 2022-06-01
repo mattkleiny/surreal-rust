@@ -410,6 +410,9 @@ impl GraphicsBackend for DesktopGraphicsBackend {
   fn set_shader_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform) {
     unsafe {
       match value {
+        ShaderUniform::Bool(value) => {
+          gl::ProgramUniform1i(shader, location as i32, *value as i32);
+        }
         ShaderUniform::Integer(value) => {
           gl::ProgramUniform1i(shader, location as i32, *value as i32);
         }
