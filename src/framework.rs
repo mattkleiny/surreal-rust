@@ -75,18 +75,6 @@ impl Game<DesktopPlatform> {
       server: graphics.clone(),
     });
 
-    // set-up lua scripting
-    #[cfg(feature = "scripting")]
-    {
-      use crate::scripting::*;
-
-      // configure lua script backend and default script loader
-      let scripting = LuaScriptBackend::new();
-      assets.add_loader(ScriptLoader {
-        server: scripting.clone(),
-      });
-    }
-
     setup(game, &mut assets);
   }
 

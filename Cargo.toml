@@ -12,11 +12,10 @@ members = ["macros"]
 opt-level = 3 # compile third party dependencies by default with some sane optimizations
 
 [features]
-default = ["desktop", "headless", "prototype", "scripting"]
+default = ["desktop", "headless", "prototype"]
 desktop = []
 headless = []
 prototype = []
-scripting = ["mlua"]
 
 [dependencies]
 # internal dependencies
@@ -35,6 +34,3 @@ serde_json = "1.0.81"
 gl = "0.14.0"
 raw-gl-context = "0.1.2"
 winit = { version = "0.22.2", default-features = false }
-
-# scripting dependencies
-mlua = { version = "0.7.4", features = ["lua54", "vendored"], optional = true }

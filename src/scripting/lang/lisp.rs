@@ -4,11 +4,10 @@
 
 use super::*;
 
-/// A Lisp language implementation for the scripting backend.
 struct LispLanguage {}
 
 impl ScriptLanguage for LispLanguage {
-  fn compile(&self, _program: &str) -> crate::Result<BytecodeProgram> {
+  fn compile(&self, _program: &str) -> crate::Result<BytecodeChunk> {
     todo!()
   }
 }

@@ -4,10 +4,10 @@
 //! to allow unification in the scripting system.
 
 pub use lisp::*;
-pub use lua::*;
+pub use lox::*;
 
 mod lisp;
-mod lua;
+mod lox;
 
 use super::*;
 
@@ -17,5 +17,5 @@ use super::*;
 /// Internally the scripting system will lower the IR to a shared stack-based runtime.
 pub trait ScriptLanguage {
   /// Compiles the given raw program code into a bytecode program.
-  fn compile(&self, program: &str) -> crate::Result<BytecodeProgram>;
+  fn compile(&self, program: &str) -> crate::Result<BytecodeChunk>;
 }
