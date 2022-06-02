@@ -57,8 +57,8 @@ impl PlatformHost for HeadlessPlatformHost {
     use crate::framework::*;
 
     while !self.is_exiting {
-      event_bus.publish(PlatformTickEvent());
-      event_bus.publish(PlatformRenderEvent());
+      event_bus.publish(&PlatformTickEvent());
+      event_bus.publish(&PlatformRenderEvent());
     }
   }
 

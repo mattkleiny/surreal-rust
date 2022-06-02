@@ -1,65 +1,67 @@
 //! A dynamic event bus implementation that permits multiple dispatch
 //! per unique event type.
 
-use std::{any::Any, cell::RefCell, marker::PhantomData};
-
-use super::{AnyMap, Event, EventListener};
-
-/// This event is raised in lieue of another event going unhandled in the system.
-pub struct DeadLetterEvent(Box<dyn Any>);
+use std::{
+  any::{Any, TypeId},
+  collections::HashMap,
+};
 
 /// A bus for forwarding events between different handlers of the same type.
 ///
 /// This is used to allow handlers to communicate with each other without
 /// having to know about each other.
-pub struct EventBus<'a> {
-  events: RefCell<AnyMap>,
-  _lifetime: std::marker::PhantomData<&'a ()>,
+pub struct EventBus {
+  handlers: HashMap<TypeId, Box<dyn Fn(&dyn Any)>>,
 }
 
-impl<'a> EventBus<'a> {
+impl EventBus {
   /// Creates a new event bus.
   pub fn new() -> Self {
     EventBus {
-      events: RefCell::new(AnyMap::new()),
-      _lifetime: PhantomData,
+      handlers: HashMap::new(),
     }
   }
 
-  /// Registers a handler for the given event `E`.
-  pub fn register<E: 'static>(&mut self, listener: impl EventListener<E> + 'static) {
-    let mut events = self.events.borrow_mut();
-    let event = events.get_or_create::<Event<E>>();
-
-    event.add_listener(listener);
+  /// Determines if a handler exists for the given event type.
+  pub fn is_registered<E: 'static>(&self) -> bool {
+    self.handlers.contains_key(&TypeId::of::<E>())
   }
 
-  /// Unregisters all handlers for the given event `E`.
-  pub fn unregister_all<E: 'static>(&mut self) {
-    let mut events = self.events.borrow_mut();
-    let event = events.get_or_create::<Event<E>>();
-
-    event.clear_listeners();
+  /// Registers an event handler in the bus.
+  pub fn register<E: 'static, F: Fn(&E) + 'static>(&mut self, callback: F) {
+    self.handlers.insert(
+      TypeId::of::<E>(),
+      Box::new(move |event| callback(event.downcast_ref().unwrap())),
+    );
   }
 
-  /// Publishes the given event to the event bus.
-  ///
-  /// If the event is unhandled a `DeadLetterEvent` will be raised.
-  pub fn publish<E: Any>(&self, data: E) {
-    if !self.dispatch(&data) {
-      self.dispatch(&DeadLetterEvent(Box::new(data)));
+  /// Unregisters an event handler from the bus.
+  pub fn unregister<E: 'static>(&mut self) {
+    self.handlers.remove(&TypeId::of::<E>());
+  }
+
+  /// Publishes an event to the bus.
+  pub fn publish<E: 'static>(&self, event: &E) {
+    if let Some(handler) = self.handlers.get(&event.type_id()) {
+      handler(event);
     }
   }
+}
 
-  /// Dispatches the given event internall to all handlers that will accept it.
-  fn dispatch<E: 'static>(&self, data: &E) -> bool {
-    let events = self.events.borrow();
+#[cfg(test)]
+mod tests {
+  use crate::prelude::PlatformTickEvent;
 
-    if let Some(event) = events.get::<Event<E>>() {
-      event.notify(data);
-      true
-    } else {
-      false
-    }
+  use super::*;
+
+  #[test]
+  fn it_should_work() {
+    let mut bus = EventBus::new();
+
+    bus.register(|_: &PlatformTickEvent| {
+      println!("It worked!");
+    });
+
+    bus.publish(&PlatformTickEvent());
   }
 }

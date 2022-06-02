@@ -260,7 +260,7 @@ impl PlatformHost for DesktopPlatformHost {
           if window_id == self.window.id() {
             // update graphics and run main loop
             self.graphics.begin_frame();
-            event_bus.publish(PlatformRenderEvent());
+            event_bus.publish(&PlatformRenderEvent());
             self.graphics.end_frame();
 
             // update input devices
@@ -330,7 +330,7 @@ impl PlatformHost for DesktopPlatformHost {
 
             self.graphics.set_viewport_size(size);
 
-            event_bus.publish(PlatformResizedEvent(size.0, size.1));
+            event_bus.publish(&PlatformResizedEvent(size.0, size.1));
           }
           WindowEvent::CloseRequested => {
             *control_flow = ControlFlow::Exit;
