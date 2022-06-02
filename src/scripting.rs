@@ -10,13 +10,13 @@
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::io::AsVirtualPath;
 
-pub use compiler::*;
-pub use languages::*;
-pub use virtualmachine::*;
+pub use lang::*;
+pub use vm::*;
 
-mod compiler;
-mod languages;
-mod virtualmachine;
+mod lang;
+mod vm;
+
+// TODO: implement MIR?
 
 /// An opaque handle to resource in the scripting subsystem.
 pub type ScriptHandle = crate::collections::ArenaIndex;

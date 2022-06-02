@@ -8,7 +8,7 @@ This project is in active development.
 
 ## Design goals
 
-### Modern and performant 2d rendering with support
+### Modern and performant 2d rendering
 
 Some example features:
 * Easy to use OpenGL bindings with support for advanced shader programs.
@@ -19,7 +19,7 @@ Some example features:
 
 Whilst 3d rendering is not a goal of the project, it's of course possible with some tweaks to the core pipelines. The intent however is to not introduce rendering complexity by implying structure about lighting, shadowing, model management, bone management, etc.
 
-### Modern and scalable scripting support
+### Pluggable and flexible scripting
 
 Writing games is hard, writing games in a highly rigid language like C/C++/Rust/etc is even harder.
 

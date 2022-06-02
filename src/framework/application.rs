@@ -77,10 +77,7 @@ pub trait EventHandler<E> {
 }
 
 /// Allow arbitrary function handlers to be registered with the event bus.
-impl<E, F> EventHandler<E> for F
-where
-  F: FnMut(&E) -> (),
-{
+impl<E, F: FnMut(&E) -> ()> EventHandler<E> for F {
   fn handle_event(&mut self, event: &E) {
     self(event);
   }
