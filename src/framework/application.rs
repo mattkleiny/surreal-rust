@@ -3,16 +3,18 @@
 //! Applications are entry points for more complex engine usages, and
 //! form the core of the engine and foundation for event plumbing.
 
+use std::any::{Any, TypeId};
+
 use crate::{
-  collections::AnyMultiMap,
+  collections::MultiMap,
   maths::Vector2,
   platform::{Platform, PlatformHost},
 };
 
 /// Entry point for a Surreal-based application.
 pub struct Application<P: Platform> {
+  host: P::Host,
   event_bus: EventBus,
-  platform_host: P::Host,
 }
 
 /// Represents a listener that can receive events from an application.
@@ -24,8 +26,8 @@ impl<P: Platform> Application<P> {
   /// Creates a new application on the given platform.
   pub fn new(platform: P) -> Self {
     Self {
+      host: platform.create_host(),
       event_bus: EventBus::new(),
-      platform_host: platform.create_host(),
     }
   }
 
@@ -33,7 +35,7 @@ impl<P: Platform> Application<P> {
   pub fn run(&mut self, mut _listener: impl ApplicationListener<P>) {
     // TODO: handle listener invocations
 
-    self.platform_host.pump(&self.event_bus);
+    self.host.pump(&self.event_bus);
   }
 }
 
@@ -42,19 +44,19 @@ impl<P: Platform> Application<P> {
 /// This is used to allow handlers to communicate with each other without
 /// having to know about each other.
 pub struct EventBus {
-  handlers: AnyMultiMap,
+  handlers: MultiMap<TypeId, Box<dyn Any>>,
 }
 
 impl EventBus {
   /// Creates a new event bus.
   pub fn new() -> Self {
     Self {
-      handlers: AnyMultiMap::new(),
+      handlers: MultiMap::new(),
     }
   }
 
   /// Registers a new handler in the event bus.
-  pub fn add_handler<'a, E>(&mut self, _handler: impl EventHandler<E> + 'a) {
+  pub fn add_handler<'a, E>(&mut self, handler: impl EventHandler<E> + 'a) {
     todo!();
   }
 
@@ -77,7 +79,10 @@ pub trait EventHandler<E> {
 }
 
 /// Allow arbitrary function handlers to be registered with the event bus.
-impl<E, F: FnMut(&E) -> ()> EventHandler<E> for F {
+impl<E, F> EventHandler<E> for F
+where
+  F: FnMut(&E) -> (),
+{
   fn handle_event(&mut self, event: &E) {
     self(event);
   }
@@ -111,7 +116,7 @@ mod tests {
   #[test]
   fn application_should_work() {
     let application = Application::new(HeadlessPlatform);
-    let platform = &application.platform_host;
+    let platform = &application.host;
 
     application.event_bus.publish(PlatformTickEvent());
     application.event_bus.publish(PlatformRenderEvent());

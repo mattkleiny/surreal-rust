@@ -57,6 +57,7 @@ pub struct AssetManager {
 
 /// The internal state for the asset manager.
 struct AssetManagerState {
+  // TODO: use AnyMap here, instead, have it parameterize the key type?
   loaders: HashMap<TypeId, Box<dyn Any>>,
   cache: HashMap<AssetId, Box<dyn Any>>,
 }
