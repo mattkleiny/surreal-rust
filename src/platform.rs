@@ -35,8 +35,8 @@ pub trait PlatformHost {
   fn is_focused(&self) -> bool;
   fn is_closing(&self) -> bool;
 
-  /// Runs the given body function on the platform.
   fn run(&mut self, main_loop: impl FnMut(&mut Self));
+  fn pump(&mut self, event_bus: &crate::framework::EventBus);
 
   /// Exits the platform.
   fn exit(&mut self);
