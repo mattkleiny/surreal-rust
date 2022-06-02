@@ -34,7 +34,7 @@ impl<'a, P: Platform> Application<'a, P> {
   }
 
   /// Runs the application with the given main body.
-  pub fn run(&mut self, _listener: impl ApplicationListener<P> + 'static) {
+  pub fn run(&mut self, listener: impl ApplicationListener<P> + 'static) {
     // TODO: handle listener invocations
     self.host.pump(&self.event_bus);
   }

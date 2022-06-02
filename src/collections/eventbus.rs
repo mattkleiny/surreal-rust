@@ -27,34 +27,17 @@ impl<'a> EventBus<'a> {
   }
 
   /// Registers a handler for the given event `E`.
-  pub fn register<E: 'static>(&mut self, listener: &'a dyn EventListener<E>) {
+  pub fn register<E: 'static>(&mut self, listener: impl EventListener<E> + 'static) {
     let mut events = self.events.borrow_mut();
-
-    // HACK: downgrade lifetime from 'static to 'a for this event listener.
-    let event: &mut Event<'a, E> =
-      unsafe { std::mem::transmute(events.get_or_create::<Event<E>>()) };
+    let event = events.get_or_create::<Event<E>>();
 
     event.add_listener(listener);
-  }
-
-  /// Unregisters a handler for the given event `E`.
-  pub fn unregister<E: 'static>(&mut self, listener: &'a dyn EventListener<E>) {
-    let mut events = self.events.borrow_mut();
-
-    // HACK: downgrade lifetime from 'static to 'a for this event listener.
-    let event: &mut Event<'a, E> =
-      unsafe { std::mem::transmute(events.get_or_create::<Event<E>>()) };
-
-    event.remove_listener(listener);
   }
 
   /// Unregisters all handlers for the given event `E`.
   pub fn unregister_all<E: 'static>(&mut self) {
     let mut events = self.events.borrow_mut();
-
-    // HACK: downgrade lifetime from 'static to 'a for this event listener.
-    let event: &mut Event<'a, E> =
-      unsafe { std::mem::transmute(events.get_or_create::<Event<E>>()) };
+    let event = events.get_or_create::<Event<E>>();
 
     event.clear_listeners();
   }
@@ -78,35 +61,5 @@ impl<'a> EventBus<'a> {
     } else {
       false
     }
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use std::sync::atomic::AtomicUsize;
-
-  use super::*;
-
-  #[test]
-  fn it_should_register_and_notify_events() {
-    let mut bus = EventBus::new();
-    let mut counter = AtomicUsize::new(0);
-
-    let listener = |event: &usize| {
-      counter.fetch_add(*event, std::sync::atomic::Ordering::Relaxed);
-    };
-
-    bus.register(&listener);
-
-    bus.dispatch(&1usize);
-    bus.dispatch(&2usize);
-    bus.unregister_all::<usize>();
-    bus.dispatch(&3usize);
-    bus.dispatch(&false);
-    bus.dispatch(&"Hello, World!");
-
-    let value = *counter.get_mut();
-
-    assert_eq!(value, 3);
   }
 }

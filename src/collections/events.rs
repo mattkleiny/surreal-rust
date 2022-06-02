@@ -1,36 +1,28 @@
 //! C# style event observation system for Rust with simple ownership rules.
 
-/// An event that can register listeners and notify them at a later time.
-pub struct Event<'a, E> {
-  listeners: Vec<&'a dyn EventListener<E>>,
-}
-
 /// A listener receives events from an `Event` source.
 pub trait EventListener<E> {
-  fn on_event(&self, event: &E);
-}
-
-/// Compare listener references by pointer equality.
-impl<E> PartialEq for &dyn EventListener<E> {
-  fn eq(&self, other: &Self) -> bool {
-    std::ptr::eq(self as *const _, other as *const _)
-  }
+  fn on_event(&mut self, event: &E);
 }
 
 /// Allow delegates to be used as listeners.
-impl<E, F: Fn(&E)> EventListener<E> for F {
-  fn on_event(&self, event: &E) {
+impl<E, F: FnMut(&E)> EventListener<E> for F {
+  fn on_event(&mut self, event: &E) {
     self(event);
   }
 }
+/// An event that can register listeners and notify them at a later time.
+pub struct Event<E> {
+  listeners: Vec<Box<dyn EventListener<E>>>,
+}
 
-impl<'a, E> Default for Event<'a, E> {
+impl<E> Default for Event<E> {
   fn default() -> Self {
     Self::new()
   }
 }
 
-impl<'a, E> Event<'a, E> {
+impl<E> Event<E> {
   /// Creates a new event.
   pub fn new() -> Self {
     Self {
@@ -39,13 +31,8 @@ impl<'a, E> Event<'a, E> {
   }
 
   /// Adds a new listener to the event.
-  pub fn add_listener(&mut self, listener: &'a dyn EventListener<E>) {
-    self.listeners.push(listener);
-  }
-
-  /// Removes a listener from the event.
-  pub fn remove_listener(&mut self, listener: &'a dyn EventListener<E>) {
-    self.listeners.retain(|it| *it != listener);
+  pub fn add_listener(&mut self, listener: impl EventListener<E> + 'static) {
+    self.listeners.push(Box::new(listener));
   }
 
   /// Removes all listeners from the event.
@@ -56,9 +43,17 @@ impl<'a, E> Event<'a, E> {
   /// Notifies event listeners.
   pub fn notify(&self, event: &E) {
     for listener in &self.listeners {
+      let listener = unsafe { very_bad_function(listener) };
+
       listener.on_event(event);
     }
   }
+}
+
+unsafe fn very_bad_function<T>(reference: &T) -> &mut T {
+  let const_ptr = reference as *const T;
+  let mut_ptr = const_ptr as *mut T;
+  &mut *mut_ptr
 }
 
 #[cfg(test)]
@@ -79,7 +74,6 @@ mod tests {
 
     event.add_listener(listener1);
     event.add_listener(listener2);
-    event.remove_listener(listener1);
 
     event.notify(&42);
   }
