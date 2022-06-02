@@ -12,10 +12,7 @@ mod lox;
 use super::*;
 
 /// Represents a potential scripting language in the scripting system.
-///
-/// A language provides it's own front-end for the common scripting IR.
-/// Internally the scripting system will lower the IR to a shared stack-based runtime.
 pub trait ScriptLanguage {
-  /// Compiles the given raw program code into a bytecode program.
-  fn compile(&self, program: &str) -> crate::Result<BytecodeChunk>;
+  /// Compiles the given raw code into a `BytecodeChunk`.
+  fn compile(&self, code: &str) -> crate::Result<BytecodeChunk>;
 }

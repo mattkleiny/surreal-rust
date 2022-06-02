@@ -3,7 +3,7 @@
 //! This virtual machine is a stack-based bytecode interpreter with support
 //! for the superset of all languages that might be used in the scripting system.
 
-use std::fmt::Display;
+use std::fmt::Debug;
 
 /// A virtual machine that can execute `BytecodeChunk`s.
 pub struct VirtualMachine {}
@@ -75,15 +75,21 @@ impl VirtualMachine {
 
 /// Represents a line:column position in a source file.
 #[derive(Copy, Clone)]
-pub struct LinePos {
+pub struct TokenPos {
   pub line: u16,
   pub column: u16,
+}
+
+impl Debug for TokenPos {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}:{}", self.line, self.column)
+  }
 }
 
 /// Represents a chunk of bytecode that can be executed in the `VirtualMachine`.
 #[derive(Default)]
 pub struct BytecodeChunk {
-  opcodes: Vec<(OpCode, LinePos)>,
+  opcodes: Vec<(OpCode, TokenPos)>,
 }
 
 impl BytecodeChunk {
@@ -105,17 +111,17 @@ impl BytecodeChunk {
   }
 
   /// Borrows the opcode at the given index.
-  pub fn get(&self, index: usize) -> Option<&(OpCode, LinePos)> {
+  pub fn get(&self, index: usize) -> Option<&(OpCode, TokenPos)> {
     self.opcodes.get(index)
   }
 
   /// Pushes a new opcode onto the chunk.
-  pub fn push(&mut self, opcode: OpCode, position: LinePos) {
+  pub fn push(&mut self, opcode: OpCode, position: TokenPos) {
     self.opcodes.push((opcode, position));
   }
 }
 
-impl Display for BytecodeChunk {
+impl Debug for BytecodeChunk {
   fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     for (index, (opcode, pos)) in self.opcodes.iter().enumerate() {
       writeln!(
@@ -135,6 +141,7 @@ pub enum OpCode {
   // variables and control flow
   Return,
   Constant(f64),
+
   // basic math
   Negate,
   Add,
@@ -150,7 +157,7 @@ mod tests {
   #[test]
   fn virtual_machine_should_execute_simple_bytecode_chunk() {
     let mut chunk = BytecodeChunk::new();
-    let position = LinePos { line: 1, column: 1 };
+    let position = TokenPos { line: 1, column: 1 };
 
     chunk.push(OpCode::Constant(2.), position);
     chunk.push(OpCode::Negate, position);
