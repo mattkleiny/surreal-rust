@@ -12,10 +12,10 @@ pub struct HeadlessAudioBackend {
 }
 
 impl HeadlessAudioBackend {
-  pub fn new() -> AudioServer {
-    AudioServer::new(Box::new(Self {
+  pub fn new() -> Self {
+    Self {
       next_clip_id: AtomicU32::new(0),
-    }))
+    }
   }
 }
 

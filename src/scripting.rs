@@ -1,10 +1,10 @@
 //! Scripting support for the engine.
-//! 
+//!
 //! The eventual goal for scripting in Surreal is to provide a common runtime
 //! for all manner of different scripting languages, each with a unified API.
-//! 
+//!
 //! Allowing interoperation between different languages allows for the application
-//! of the best tool for a particular job whilst still allowing the engine to 
+//! of the best tool for a particular job whilst still allowing the engine to
 //! take care of optimization and management.
 
 pub use lua::*;
@@ -24,6 +24,14 @@ pub type ScriptServer = std::rc::Rc<Box<dyn ScriptBackend>>;
 pub trait ScriptResource {
   fn handle(&self) -> ScriptHandle;
 }
+
+/// Represents a potential scripting language in the scripting system.
+///
+/// A language provides it's own front-end for the common scripting IR.
+/// Internally the scripting system will lower the IR to a shared stack-based runtime.
+///
+/// This trait needs to be object safe.
+pub trait ScriptLanguage {}
 
 /// Represents a server implementation for the underlying scripting subsystem.
 ///
@@ -80,7 +88,7 @@ impl Drop for Script {
   }
 }
 
-/// An asset loader for scripts.
+/// An `AssetLoader` for `Script`s.
 pub struct ScriptLoader {
   pub server: ScriptServer,
 }

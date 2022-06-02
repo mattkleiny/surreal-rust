@@ -18,14 +18,14 @@ pub struct HeadlessGraphicsBackend {
 }
 
 impl HeadlessGraphicsBackend {
-  pub fn new() -> GraphicsServer {
-    GraphicsServer::new(Box::new(Self {
+  pub fn new() -> Self {
+    Self {
       next_buffer_id: AtomicU32::new(1),
       next_texture_id: AtomicU32::new(1),
       next_shader_id: AtomicU32::new(1),
       next_mesh_id: AtomicU32::new(1),
       next_render_target_id: AtomicU32::new(1),
-    }))
+    }
   }
 }
 

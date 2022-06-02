@@ -5,61 +5,93 @@
 pub use ecs::*;
 
 use crate::assets::AssetManager;
-use crate::graphics::{BitmapFontLoader, ImageLoader, MaterialLoader, ShaderProgramLoader, TextureLoader, TextureOptions};
-use crate::platform::{Platform, PlatformHost};
+use crate::graphics::{
+  BitmapFontLoader, ImageLoader, MaterialLoader, ShaderProgramLoader, TextureLoader, TextureOptions,
+};
+use crate::platform::{DesktopPlatform, DesktopPlatformHost, Platform, PlatformHost};
 use crate::utilities::{Clock, GameTime};
 
+pub use application::*;
+
+mod application;
 mod ecs;
 
 // TODO: screen management
 // TODO: plugin management (profiler, console, etc)
 // TODO: better rendering pipeline support
+// TODO: remove `Game` in favour of a better system
 
 /// The context for bootstrapping a game.
-pub struct Game<P> where P: Platform {
+pub struct Game<P: Platform> {
   pub host: P::Host,
 }
 
 /// The context for a single tick of the game loop.
-pub struct GameTick<'a, P> where P: Platform {
+pub struct GameTick<'a, P: Platform> {
   pub host: &'a mut P::Host,
   pub time: GameTime,
   is_running: bool,
 }
 
-impl<P> Game<P> where P: Platform {
+impl<'a, P: Platform> GameTick<'a, P> {
+  /// Exits the game at the end of the frame.
+  pub fn exit(&mut self) {
+    self.is_running = false;
+  }
+}
+
+impl Game<DesktopPlatform> {
   /// Starts a new game with the given platform.
-  pub fn start(platform: P, mut setup: impl FnMut(Game<P>, &mut AssetManager)) {
+  pub fn start(
+    platform: DesktopPlatform,
+    mut setup: impl FnMut(Game<DesktopPlatform>, &mut AssetManager),
+  ) {
     profiling::register_thread!("Main Thread");
 
     // set-up core host
-    let game = Game { host: platform.create_host() };
-    let host: &P::Host = &game.host;
-    let graphics = host.graphics();
+    let game = Game {
+      host: platform.create_host(),
+    };
+
+    let host: &DesktopPlatformHost = &game.host;
+    let graphics = &host.graphics;
 
     // set-up asset manager
     let mut assets = AssetManager::new();
 
     assets.add_loader(BitmapFontLoader {});
     assets.add_loader(ImageLoader { format: None });
-    assets.add_loader(TextureLoader { server: graphics.clone(), options: TextureOptions::default() });
-    assets.add_loader(ShaderProgramLoader { server: graphics.clone() });
-    assets.add_loader(MaterialLoader { server: graphics.clone() });
+
+    assets.add_loader(TextureLoader {
+      server: graphics.clone(),
+      options: TextureOptions::default(),
+    });
+
+    assets.add_loader(ShaderProgramLoader {
+      server: graphics.clone(),
+    });
+
+    assets.add_loader(MaterialLoader {
+      server: graphics.clone(),
+    });
 
     // set-up lua scripting
-    #[cfg(feature = "scripting")] {
+    #[cfg(feature = "scripting")]
+    {
       use crate::scripting::*;
 
       // configure lua script backend and default script loader
       let scripting = LuaScriptBackend::new();
-      assets.add_loader(ScriptLoader { server: scripting.clone() });
+      assets.add_loader(ScriptLoader {
+        server: scripting.clone(),
+      });
     }
 
     setup(game, &mut assets);
   }
 
   /// Runs the game loop in a variable step fashion.
-  pub fn run_variable_step(&mut self, mut main_loop: impl FnMut(&mut GameTick<P>)) {
+  pub fn run_variable_step(&mut self, mut main_loop: impl FnMut(&mut GameTick<DesktopPlatform>)) {
     let mut timer = Clock::new();
 
     self.host.run(move |host| {
@@ -80,12 +112,5 @@ impl<P> Game<P> where P: Platform {
 
       profiling::finish_frame!();
     });
-  }
-}
-
-impl<'a, P> GameTick<'a, P> where P: Platform {
-  /// Exits the game at the end of the frame.
-  pub fn exit(&mut self) {
-    self.is_running = false;
   }
 }

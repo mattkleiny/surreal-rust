@@ -35,10 +35,6 @@ pub trait PlatformHost {
   fn is_focused(&self) -> bool;
   fn is_closing(&self) -> bool;
 
-  // core systems
-  fn audio(&self) -> &crate::audio::AudioServer;
-  fn graphics(&self) -> &crate::graphics::GraphicsServer;
-
   /// Runs the given body function on the platform.
   fn run(&mut self, main_loop: impl FnMut(&mut Self));
 

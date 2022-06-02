@@ -6,6 +6,10 @@ use crate::maths::{vec2, Vector2};
 
 use super::*;
 
+// TODO: sprite pivots
+// TODO: transforms for tile maps and sprites
+// TODO: abstract over sprite instead of texture region?
+
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
 
@@ -50,7 +54,7 @@ impl SpriteBatch {
   pub fn with_capacity(server: &GraphicsServer, sprite_count: usize) -> Self {
     // build standard quad indices ahead-of-time
     let vertices = Vec::with_capacity(sprite_count * 4);
-    let indices = build_quad_indices(sprite_count * 6);
+    let indices = build_quad_indices(sprite_count);
 
     // create mesh, upload quad indices immediately
     let mut mesh = Mesh::new(server, BufferUsage::Static);
@@ -94,9 +98,11 @@ impl SpriteBatch {
       self.flush();
     }
 
-    // TODO: apply sprite rotation?
     let position = options.position;
-    let size = vec2((options.scale.x * region.size.x as f32) * 0.5, (options.scale.y * region.size.y as f32) * 0.5);
+    let size = vec2(
+      (options.scale.x * region.size.x as f32) * 0.5,
+      (options.scale.y * region.size.y as f32) * 0.5,
+    );
     let uv = region.calculate_uv();
 
     self.vertices.push(Vertex2 {
@@ -143,18 +149,23 @@ impl SpriteBatch {
       vertices.write_data(&self.vertices);
     });
 
-    self.mesh.draw_sub_mesh(&material, PrimitiveTopology::Triangles, vertex_count, index_count);
+    self.mesh.draw_sub_mesh(
+      &material,
+      PrimitiveTopology::Triangles,
+      vertex_count,
+      index_count,
+    );
 
     self.vertices.clear();
   }
 }
 
-/// Fills the given buffer with standard quad indices.
-fn build_quad_indices(index_count: usize) -> Vec<u32> {
-  let mut indices = Vec::with_capacity(index_count);
+/// Fills a new buffer with standard quad indices.
+fn build_quad_indices(sprite_count: usize) -> Vec<u32> {
+  let mut indices = Vec::with_capacity(sprite_count * 6);
   let mut index = 0;
 
-  for _ in 0..indices.capacity() / 6 {
+  for _ in 0..sprite_count {
     indices.push(index + 0);
     indices.push(index + 1);
     indices.push(index + 2);

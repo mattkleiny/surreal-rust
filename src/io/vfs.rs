@@ -71,18 +71,14 @@ impl<'a> VirtualPath<'a> {
 
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
-    let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
-      file_system.open_read(self)
-    })?;
+    let stream = CURRENT_FILE_SYSTEM.with(|file_system| file_system.open_read(self))?;
 
     Ok(Box::new(stream))
   }
 
   /// Opens a writer for the given path.
   pub fn open_output_stream(&self) -> crate::Result<Box<dyn OutputStream>> {
-    let stream = CURRENT_FILE_SYSTEM.with(|file_system| {
-      file_system.open_write(self)
-    })?;
+    let stream = CURRENT_FILE_SYSTEM.with(|file_system| file_system.open_write(self))?;
 
     Ok(Box::new(stream))
   }
@@ -108,7 +104,10 @@ impl<'a> VirtualPath<'a> {
   }
 
   /// Deserializes a json value of the given type from the path.
-  pub fn deserialize_json<D>(&self) -> crate::Result<D> where D: serde::de::DeserializeOwned {
+  pub fn deserialize_json<T>(&self) -> crate::Result<T>
+  where
+    T: serde::de::DeserializeOwned,
+  {
     let stream = self.open_input_stream()?;
     let result = serde_json::de::from_reader(stream)?;
 

@@ -73,14 +73,21 @@ impl AssetManager {
   }
 
   /// Adds a new asset loader to the manager.
-  pub fn add_loader<A, L>(&mut self, loader: L) where A: Asset, L: AssetLoader<A> {
+  pub fn add_loader<A, L>(&mut self, loader: L)
+  where
+    A: Asset,
+    L: AssetLoader<A>,
+  {
     let state = unsafe { &mut *self.state.get() };
 
     state.loaders.insert(TypeId::of::<A>(), Box::new(loader));
   }
 
   /// Attempts to load an asset from the given path.
-  pub fn load_asset<A: Asset>(&self, path: impl AsVirtualPath) -> crate::Result<&A> {
+  pub fn load_asset<A>(&self, path: impl AsVirtualPath) -> crate::Result<&A>
+  where
+    A: Asset,
+  {
     let state = unsafe { &mut *self.state.get() };
     let path = path.as_virtual_path();
 
@@ -92,18 +99,27 @@ impl AssetManager {
     match state.cache.get(&asset_id) {
       None => {
         let state = unsafe { &mut *self.state.get() };
-        let loader = state.loaders
+
+        let loader = state
+          .loaders
           .get(&TypeId::of::<A>())
           .and_then(|it| it.downcast_ref::<A::Loader>())
-          .ok_or(anyhow::anyhow!("Could not result loader for asset {:?}", std::any::type_name::<A>()))?;
+          .ok_or(anyhow::anyhow!(
+            "Could not result loader for asset {:?}",
+            std::any::type_name::<A>()
+          ))?;
 
         // persist loaded assets into cache
-        let context = AssetContext { path, manager: self };
+        let context = AssetContext {
+          path,
+          manager: self,
+        };
         let asset = loader.load(&context)?;
 
         state.cache.insert(asset_id.clone(), Box::new(asset));
 
-        let asset = state.cache
+        let asset = state
+          .cache
           .get(&asset_id)
           .and_then(|it| it.downcast_ref::<A>())
           .expect("Should not be possible");
@@ -112,31 +128,5 @@ impl AssetManager {
       }
       Some(asset) => Ok(asset.downcast_ref().expect("Should not be possible")),
     }
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use crate::graphics::{ImageLoader, Texture, TextureLoader, TextureOptions};
-  use crate::prelude::HeadlessGraphicsBackend;
-
-  use super::*;
-
-  #[test]
-  fn assets_should_load() {
-    let mut manager = AssetManager::new();
-
-    manager.add_loader(ImageLoader {
-      format: None
-    });
-
-    manager.add_loader(TextureLoader {
-      server: HeadlessGraphicsBackend::new(),
-      options: TextureOptions::default(),
-    });
-
-    let _texture: &Texture = manager
-      .load_asset("assets/sprites/bunny.png")
-      .expect("Failed to load asset");
   }
 }
