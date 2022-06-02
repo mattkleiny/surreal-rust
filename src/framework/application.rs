@@ -3,10 +3,8 @@
 //! Applications are entry points for more complex engine usages, and
 //! form the core of the engine and foundation for event plumbing.
 
-use std::any::{Any, TypeId};
-
+use crate::collections::EventBus;
 use crate::{
-  collections::MultiMap,
   maths::Vector2,
   platform::{Platform, PlatformHost},
 };
@@ -36,55 +34,6 @@ impl<P: Platform> Application<P> {
     // TODO: handle listener invocations
 
     self.host.pump(&self.event_bus);
-  }
-}
-
-/// A bus for forwarding events between different handlers of the same type.
-///
-/// This is used to allow handlers to communicate with each other without
-/// having to know about each other.
-pub struct EventBus {
-  handlers: MultiMap<TypeId, Box<dyn Any>>,
-}
-
-impl EventBus {
-  /// Creates a new event bus.
-  pub fn new() -> Self {
-    Self {
-      handlers: MultiMap::new(),
-    }
-  }
-
-  /// Registers a new handler in the event bus.
-  pub fn add_handler<'a, E>(&mut self, handler: impl EventHandler<E> + 'a) {
-    todo!();
-  }
-
-  /// Removes a handler from the event bus.
-  pub fn remove_handler<'a, E>(&mut self, _handler: impl EventHandler<E> + 'a) {
-    todo!();
-  }
-
-  /// Publishes an event on the event bus, notifying all handlers immediately.
-  pub fn publish<E>(&self, _event: E) {
-    todo!()
-  }
-}
-
-/// Represents a handler for a particular kind of event, `E`.
-///
-/// This handler can either be a structured type, or a function.
-pub trait EventHandler<E> {
-  fn handle_event(&mut self, _event: &E);
-}
-
-/// Allow arbitrary function handlers to be registered with the event bus.
-impl<E, F> EventHandler<E> for F
-where
-  F: FnMut(&E) -> (),
-{
-  fn handle_event(&mut self, event: &E) {
-    self(event);
   }
 }
 
@@ -124,20 +73,5 @@ mod tests {
     platform.graphics.clear_color_buffer(Color::WHITE);
 
     todo!();
-  }
-
-  #[test]
-  fn event_bus_should_notify_listeners() {
-    let mut bus = EventBus::new();
-    let mut invoked = false;
-
-    bus.add_handler(|_event: &PlatformTickEvent| {
-      invoked = true;
-    });
-
-    bus.publish(PlatformTickEvent());
-    bus.publish(PlatformRenderEvent());
-
-    assert!(invoked);
   }
 }

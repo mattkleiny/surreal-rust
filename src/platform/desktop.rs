@@ -245,7 +245,7 @@ impl PlatformHost for DesktopPlatformHost {
     });
   }
 
-  fn pump(&mut self, event_bus: &crate::framework::EventBus) {
+  fn pump(&mut self, event_bus: &crate::collections::EventBus) {
     use winit::event_loop::ControlFlow;
     use winit::platform::desktop::EventLoopExtDesktop;
     use crate::framework::*;

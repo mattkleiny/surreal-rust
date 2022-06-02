@@ -53,7 +53,7 @@ impl PlatformHost for HeadlessPlatformHost {
     }
   }
 
-  fn pump(&mut self, event_bus: &crate::framework::EventBus) {
+  fn pump(&mut self, event_bus: &crate::collections::EventBus) {
     use crate::framework::*;
 
     while !self.is_exiting {

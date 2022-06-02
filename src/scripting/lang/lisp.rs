@@ -15,8 +15,6 @@ impl ScriptLanguage for LispLanguage {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-
   #[test]
   fn it_should_lex_a_simple_lisp_program() {
     todo!()

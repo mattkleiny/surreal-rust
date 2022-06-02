@@ -15,8 +15,8 @@ fn main() {
     let mut canvas = UserInterfaceCanvas::new(&game.host.graphics);
 
     // TODO: make this easier to use
-    game.host.input.pixels_per_point = 2.0;
-    canvas.set_pixels_per_point(2.0);
+    game.host.input.pixels_per_point = 1.2;
+    canvas.set_pixels_per_point(1.2);
 
     let mut name = "Matt".to_string();
     let mut age = 33;

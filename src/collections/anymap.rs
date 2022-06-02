@@ -1,8 +1,6 @@
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 
-use super::MultiMap;
-
 /// An any-map is a map that can contain a single per unique type.
 ///
 /// This is a variant of `AnyMultiMap` that supports single values per key.
@@ -62,72 +60,6 @@ impl AnyMap {
   /// Removes a value from the map.
   pub fn remove<T: Any>(&mut self) {
     self.entries.remove(&TypeId::of::<T>());
-  }
-
-  /// Clears the map.
-  pub fn clear(&mut self) {
-    self.entries.clear();
-  }
-}
-
-/// An any-multi-map is a map that can contain multiple values per unique type.
-///
-/// This is a variant of `AnyMap` that supports multiple values per key.
-pub struct AnyMultiMap {
-  entries: MultiMap<TypeId, Box<dyn Any>>,
-}
-
-impl AnyMultiMap {
-  /// Creates a new any-multi-map.
-  pub fn new() -> Self {
-    Self {
-      entries: MultiMap::new(),
-    }
-  }
-
-  /// Is the map empty?
-  pub fn is_empty(&self) -> bool {
-    self.entries.is_empty()
-  }
-
-  /// The number of keys in the map.
-  pub fn len(&self) -> usize {
-    self.entries.len()
-  }
-
-  /// The total number of values in the map.
-  pub fn total_len(&self) -> usize {
-    self.entries.total_len()
-  }
-
-  /// Gets all values for the given key.
-  pub fn get<K: Any, V: Any>(&self) -> Option<&[V]> {
-    // self.entries.get(&TypeId::of::<K>()).and_then(|values| {
-    //   values
-    //     .iter()
-    //     .flat(|value| value.downcast_ref())
-    //     .collect::<Vec<_>>()
-    //     .as_slice()
-    // })
-    todo!();
-  }
-
-  /// Mutably gets all values for the given key.
-  pub fn get_mut<K: Any, V: Any>(&mut self) -> Option<&mut [V]> {
-    self
-      .entries
-      .get_mut(&TypeId::of::<K>())
-      .map(|slice| todo!())
-  }
-
-  /// Inserts a value into the map.
-  pub fn insert<K: Any, V: Any>(&mut self, value: V) {
-    self.entries.insert(TypeId::of::<K>(), Box::new(value));
-  }
-
-  /// Removes all values for the given key from the map.
-  pub fn remove_all<K: Any>(&mut self) {
-    self.entries.remove_all(&TypeId::of::<K>());
   }
 
   /// Clears the map.
