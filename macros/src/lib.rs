@@ -1,7 +1,5 @@
 //! Macros and compiler magic for the Surreal project.
 
-#![feature(proc_macro_quote)]
-
 use proc_macro::TokenStream;
 
 use quote::{quote, quote_spanned};

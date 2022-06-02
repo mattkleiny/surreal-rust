@@ -125,7 +125,7 @@ impl FromRandom for Color {
 }
 
 /// A simple 32-bit color value with 4 channels (RGBA).
-#[derive(Copy, Clone, Default, Debug)]
+#[derive(Copy, Clone, Default, Debug, Eq)]
 pub struct Color32 {
   pub r: u8,
   pub g: u8,

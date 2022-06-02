@@ -1,6 +1,7 @@
 use crate::maths::{Grid, GridPoint};
 
 /// A simple 2d array of [`T`]s.
+#[derive(Clone, Debug)]
 pub struct Array2D<T> {
   stride: usize,
   items: Vec<T>,
