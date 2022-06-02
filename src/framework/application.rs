@@ -10,17 +10,21 @@ use crate::{
 };
 
 /// Entry point for a Surreal-based application.
-pub struct Application<P: Platform> {
+pub struct Application<'a, P: Platform> {
   host: P::Host,
-  event_bus: EventBus,
+  event_bus: EventBus<'a>,
 }
 
 /// Represents a listener that can receive events from an application.
 pub trait ApplicationListener<P: Platform> {
-  fn run(&mut self);
+  /// Invoked when the application should tick.
+  fn tick(&mut self);
+
+  /// Invoked when the application should render.
+  fn render(&mut self);
 }
 
-impl<P: Platform> Application<P> {
+impl<'a, P: Platform> Application<'a, P> {
   /// Creates a new application on the given platform.
   pub fn new(platform: P) -> Self {
     Self {
@@ -30,9 +34,8 @@ impl<P: Platform> Application<P> {
   }
 
   /// Runs the application with the given main body.
-  pub fn run(&mut self, mut _listener: impl ApplicationListener<P>) {
+  pub fn run(&mut self, _listener: impl ApplicationListener<P> + 'static) {
     // TODO: handle listener invocations
-
     self.host.pump(&self.event_bus);
   }
 }
@@ -50,8 +53,6 @@ pub struct MouseMovedEvent(pub Vector2<usize>);
 pub struct MouseScrolledEvent(pub Vector2<usize>);
 pub struct MousePressedEvent(pub crate::input::MouseButton);
 pub struct MouseReleasedEvent(pub crate::input::MouseButton);
-
-// TODO: platform specific events
 
 #[cfg(test)]
 mod tests {
@@ -71,7 +72,5 @@ mod tests {
     application.event_bus.publish(PlatformRenderEvent());
 
     platform.graphics.clear_color_buffer(Color::WHITE);
-
-    todo!();
   }
 }

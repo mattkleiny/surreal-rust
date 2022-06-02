@@ -1,9 +1,9 @@
 //! A dynamic event bus implementation that permits multiple dispatch
 //! per unique event type.
 
-use std::any::{Any, TypeId};
+use std::{any::Any, cell::RefCell, marker::PhantomData};
 
-use super::MultiMap;
+use super::{AnyMap, Event, EventListener};
 
 /// This event is raised in lieue of another event going unhandled in the system.
 pub struct DeadLetterEvent(Box<dyn Any>);
@@ -12,85 +12,101 @@ pub struct DeadLetterEvent(Box<dyn Any>);
 ///
 /// This is used to allow handlers to communicate with each other without
 /// having to know about each other.
-pub struct EventBus {
-  handlers: MultiMap<TypeId, Box<dyn Any>>,
+pub struct EventBus<'a> {
+  events: RefCell<AnyMap>,
+  _lifetime: std::marker::PhantomData<&'a ()>,
 }
 
-/// An event handler for a particular event type.
-type EventHandler<E> = Box<dyn Fn(&mut E) + 'static>;
-
-/// A set of handlers for a particular event type.
-type EventHandlers<E> = Vec<EventHandler<E>>;
-
-impl EventBus {
-  pub fn new() -> EventBus {
+impl<'a> EventBus<'a> {
+  /// Creates a new event bus.
+  pub fn new() -> Self {
     EventBus {
-      handlers: MultiMap::new(),
+      events: RefCell::new(AnyMap::new()),
+      _lifetime: PhantomData,
     }
   }
 
-  /// Registers a handler for the given event type.
-  pub fn register<E: Any>(&mut self, _handler: impl Fn(&E) + 'static) {
-    todo!();
+  /// Registers a handler for the given event `E`.
+  pub fn register<E: 'static>(&mut self, listener: &'a dyn EventListener<E>) {
+    let mut events = self.events.borrow_mut();
+
+    // HACK: downgrade lifetime from 'static to 'a for this event listener.
+    let event: &mut Event<'a, E> =
+      unsafe { std::mem::transmute(events.get_or_create::<Event<E>>()) };
+
+    event.add_listener(listener);
   }
 
-  /// Unregisters a handler for the given event type.
-  pub fn unregister<E: Any>(&mut self, _handler: impl Fn(&E) + 'static) {
-    todo!();
+  /// Unregisters a handler for the given event `E`.
+  pub fn unregister<E: 'static>(&mut self, listener: &'a dyn EventListener<E>) {
+    let mut events = self.events.borrow_mut();
+
+    // HACK: downgrade lifetime from 'static to 'a for this event listener.
+    let event: &mut Event<'a, E> =
+      unsafe { std::mem::transmute(events.get_or_create::<Event<E>>()) };
+
+    event.remove_listener(listener);
   }
 
-  /// Unregisters all handlers for the given event type.
-  pub fn unregister_all<E: Any>(&mut self) {
-    todo!();
+  /// Unregisters all handlers for the given event `E`.
+  pub fn unregister_all<E: 'static>(&mut self) {
+    let mut events = self.events.borrow_mut();
+
+    // HACK: downgrade lifetime from 'static to 'a for this event listener.
+    let event: &mut Event<'a, E> =
+      unsafe { std::mem::transmute(events.get_or_create::<Event<E>>()) };
+
+    event.clear_listeners();
   }
 
   /// Publishes the given event to the event bus.
   ///
   /// If the event is unhandled a `DeadLetterEvent` will be raised.
-  pub fn publish<E: Any>(&self, event: E) {
-    if !self.dispatch(&event) {
-      self.dispatch(&DeadLetterEvent(Box::new(event)));
+  pub fn publish<E: Any>(&self, data: E) {
+    if !self.dispatch(&data) {
+      self.dispatch(&DeadLetterEvent(Box::new(data)));
     }
   }
 
   /// Dispatches the given event internall to all handlers that will accept it.
-  fn dispatch<E: Any>(&self, _event: &E) -> bool {
-    todo!();
+  fn dispatch<E: 'static>(&self, data: &E) -> bool {
+    let events = self.events.borrow();
+
+    if let Some(event) = events.get::<Event<E>>() {
+      event.notify(data);
+      true
+    } else {
+      false
+    }
   }
 }
 
 #[cfg(test)]
 mod tests {
+  use std::sync::atomic::AtomicUsize;
+
   use super::*;
 
   #[test]
-  fn eventbus_works() {
-    fn handler_1(event: &String) {
-      println!("my_handler {:?}", event);
-    }
-
-    fn handler_2(event: &String) {
-      println!("my_handler2 {:?}", event);
-    }
-
-    fn dead_event_handler(event: &DeadLetterEvent) {
-      match event.0.downcast_ref::<u64>() {
-        Some(value) => println!("dead_event_handler: {}", value),
-        None => println!("dead_event_handler: this wasn't for me"),
-      }
-    }
-
+  fn it_should_register_and_notify_events() {
     let mut bus = EventBus::new();
+    let mut counter = AtomicUsize::new(0);
 
-    bus.register(handler_1);
-    bus.register(handler_1);
-    bus.register(handler_2);
-    bus.register(|event: &i32| println!("my_closure_handler {:?}", event));
-    bus.register(dead_event_handler);
+    let listener = |event: &usize| {
+      counter.fetch_add(*event, std::sync::atomic::Ordering::Relaxed);
+    };
 
-    bus.publish("Hello World".to_string());
-    bus.publish("Hello World");
-    bus.publish(123 as i32);
-    bus.publish(123123123 as u64);
+    bus.register(&listener);
+
+    bus.dispatch(&1usize);
+    bus.dispatch(&2usize);
+    bus.unregister_all::<usize>();
+    bus.dispatch(&3usize);
+    bus.dispatch(&false);
+    bus.dispatch(&"Hello, World!");
+
+    let value = *counter.get_mut();
+
+    assert_eq!(value, 3);
   }
 }
