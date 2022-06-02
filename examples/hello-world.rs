@@ -38,8 +38,6 @@ fn main() {
         64,
         Color32::lerp(color1, color2, (game.time.total_time.sin() + 1.) / 2.),
       );
-      // TODO: line geometry?
-      // batch.draw_line(vec2(-0.5, -0.5), vec2(0.5, 0.5), Color32::WHITE, 4.);
       batch.flush();
 
       if let Some(keyboard) = game.host.input.keyboard_device() {

@@ -160,5 +160,6 @@ impl GeometryBatch {
     );
 
     self.vertices.clear();
+    self.indices.clear();
   }
 }

@@ -1,5 +1,5 @@
 //! Material management and configuration.
-//! 
+//!
 //! Materials define all data required to perform some rendering step, from
 //! pipeline state changes through to shader programs and uniforms.
 
@@ -51,7 +51,7 @@ pub enum ScissorMode {
     bottom: i32,
     width: i32,
     height: i32,
-  }
+  },
 }
 
 /// A single uniform setting in a `Material`.
@@ -128,7 +128,13 @@ impl Material {
   }
 
   /// Sets the given material texture with texture slot and optional sampler options.
-  pub fn set_texture(&mut self, name: &str, texture: &Texture, slot: usize, sampler: Option<TextureSampler>) {
+  pub fn set_texture(
+    &mut self,
+    name: &str,
+    texture: &Texture,
+    slot: usize,
+    sampler: Option<TextureSampler>,
+  ) {
     if let Some(location) = self.shader.get_uniform_location(name) {
       let uniform = MaterialUniform {
         location,
