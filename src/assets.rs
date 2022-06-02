@@ -7,6 +7,9 @@ use std::rc::Rc;
 
 use crate::io::{AsVirtualPath, VirtualPath};
 
+// TODO: use RefCell for this instead and return asset handles to callers to manage lifetimes.
+// TODO: asset hot loading and dependent asset reloads (shader program includes, for example)
+
 /// A type of asset that can be persisted in the asset manager.
 pub trait Asset: Sized + 'static {
   /// The associated loader for this asset.
@@ -49,7 +52,6 @@ struct AssetId {
 /// The manager is also responsible for keeping track of asset dependencies,
 /// and automatically reloading assets when they are modified.
 pub struct AssetManager {
-  // TODO: use RefCell for this instead and return asset handles to callers to manage lifetimes.
   state: Rc<UnsafeCell<AssetManagerState>>,
 }
 

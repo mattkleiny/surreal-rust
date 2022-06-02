@@ -1,5 +1,5 @@
 //! Graphics buffer management and abstractions.
-//! 
+//!
 //! Buffers typically contain vertex or index data used in mesh rendering, however
 //! they can also be used as an in intermediate store for compute shaders.
 
@@ -60,6 +60,7 @@ impl<T> Buffer<T> {
   }
 
   /// Reads all data from the buffer.
+  #[profiling::function]
   pub fn read_data(&self) -> Vec<T> {
     let state = self.state.borrow();
     let length = state.length;

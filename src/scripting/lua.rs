@@ -1,8 +1,15 @@
+//! Lua scripting integration for Surreal.
+//!
+//! We export the `mlua` crate as a dependency and provide a simple backend
+//! that manages the lua script states.
+
 use std::cell::RefCell;
 
 use crate::collections::Arena;
 
 use super::*;
+
+pub use mlua::prelude::*;
 
 /// A script backend implementation for Lua.
 pub struct LuaScriptBackend {
@@ -24,8 +31,8 @@ impl LuaScriptBackend {
   /// Creates a new lua backend.
   pub fn new() -> ScriptServer {
     ScriptServer::new(Box::new(Self {
-      internal_state: RefCell::new(InternalState {
-        scripts: Arena::new(),
+      internal_state: RefCell::new(InternalState { 
+        scripts: Arena::new() 
       }),
     }))
   }
@@ -34,10 +41,10 @@ impl LuaScriptBackend {
 impl ScriptBackend for LuaScriptBackend {
   fn create_script(&self) -> ScriptHandle {
     let mut state = self.internal_state.borrow_mut();
-    
+
     state.scripts.add(LuaScriptState {
-      lua: mlua::Lua::new(),
-      code: None
+      lua: mlua::Lua::new(), 
+      code: None 
     })
   }
 

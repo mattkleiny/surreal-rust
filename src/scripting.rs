@@ -1,4 +1,11 @@
 //! Scripting support for the engine.
+//! 
+//! The eventual goal for scripting in Surreal is to provide a common runtime
+//! for all manner of different scripting languages, each with a unified API.
+//! 
+//! Allowing interoperation between different languages allows for the application
+//! of the best tool for a particular job whilst still allowing the engine to 
+//! take care of optimization and management.
 
 pub use lua::*;
 

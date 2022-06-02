@@ -1,6 +1,5 @@
 //! Image loading and management from various formats.
 
-/// The different kinds of image format we support.
 pub use image::ImageFormat as ImageFormat;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
@@ -24,8 +23,9 @@ impl Image {
   /// Attempts to load an image from the given path.
   pub fn from_path(path: impl AsVirtualPath, format: Option<ImageFormat>) -> crate::Result<Self> {
     let stream = path.as_virtual_path().open_input_stream()?;
+    let image = Self::from_bytes(stream, format)?;
 
-    Ok(Self::from_bytes(stream, format)?)
+    Ok(image)
   }
 
   /// Attempts to load an image from the given reader.
