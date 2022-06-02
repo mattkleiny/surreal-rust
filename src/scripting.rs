@@ -7,12 +7,16 @@
 //! of the best tool for a particular job whilst still allowing the engine to
 //! take care of optimization and management.
 
-pub use lua::*;
-
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::io::AsVirtualPath;
 
-mod lua;
+pub use compiler::*;
+pub use languages::*;
+pub use virtualmachine::*;
+
+mod compiler;
+mod languages;
+mod virtualmachine;
 
 /// An opaque handle to resource in the scripting subsystem.
 pub type ScriptHandle = crate::collections::ArenaIndex;
@@ -24,14 +28,6 @@ pub type ScriptServer = std::rc::Rc<Box<dyn ScriptBackend>>;
 pub trait ScriptResource {
   fn handle(&self) -> ScriptHandle;
 }
-
-/// Represents a potential scripting language in the scripting system.
-///
-/// A language provides it's own front-end for the common scripting IR.
-/// Internally the scripting system will lower the IR to a shared stack-based runtime.
-///
-/// This trait needs to be object safe.
-pub trait ScriptLanguage {}
 
 /// Represents a server implementation for the underlying scripting subsystem.
 ///
