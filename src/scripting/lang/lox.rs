@@ -53,7 +53,7 @@ mod parser {
   }
 
   /// Keywords supported by Lox.
-  #[derive(Debug)]
+  #[derive(Copy, Clone, Debug)]
   pub enum Keyword {
     And,
     Class,
@@ -72,6 +72,25 @@ mod parser {
     Var,
     While,
   }
+
+  static KEYWORDS: phf::Map<&'static str, Keyword> = phf::phf_map! {
+    "and" => Keyword::And,
+    "class" => Keyword::Class,
+    "else" => Keyword::Else,
+    "false" => Keyword::False,
+    "for" => Keyword::For,
+    "fun" => Keyword::Fun,
+    "if" => Keyword::If,
+    "nil" => Keyword::Nil,
+    "or" => Keyword::Or,
+    "print" => Keyword::Print,
+    "return" => Keyword::Return,
+    "super" => Keyword::Super,
+    "this" => Keyword::This,
+    "true" => Keyword::True,
+    "var" => Keyword::Var,
+    "while" => Keyword::While,
+  };
 
   /// Tokenizes the given string into a list of `Token`.
   pub fn tokenize(code: &str) -> crate::Result<Vec<(Token, TokenPos)>> {
@@ -171,7 +190,7 @@ mod parser {
           emit!(Token::Number(number.parse()?));
         }
 
-        // identifiers
+        // identifiers and keywords
         'a'..='z' | 'A'..='Z' | '_' => {
           let mut identifier = String::new();
 
@@ -185,7 +204,11 @@ mod parser {
             }
           }
 
-          emit!(Token::Identifier(identifier));
+          if let Some(keyword) = KEYWORDS.get(&identifier) {
+            emit!(Token::Keyword(*keyword));
+          } else {
+            emit!(Token::Identifier(identifier));
+          }
         }
 
         ' ' | '\t' | '\n' => {} // ignore whitespace

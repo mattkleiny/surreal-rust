@@ -8,7 +8,6 @@
 
 #![allow(incomplete_features)]
 #![allow(dead_code)]
-
 #![feature(generic_const_exprs)]
 #![feature(const_refs_to_cell)]
 #![feature(let_else)]
