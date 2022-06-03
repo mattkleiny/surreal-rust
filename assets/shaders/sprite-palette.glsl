@@ -23,7 +23,7 @@ void main() {
 
 #shader_type fragment
 
-#include <assets/shaders/common/palettes.glsl>
+#include "assets/shaders/common/palettes.glsl"
 
 uniform sampler2D u_texture;
 

@@ -230,7 +230,7 @@ fn parse_glsl_source(source: &str) -> crate::Result<Vec<Shader>> {
     } else if line.trim().starts_with("#include") {
       if let Some(path) = line.split_whitespace().nth(1) {
         // trim the fat from the include path
-        let path = path.replace("<", "").replace(">", "").replace(";", "");
+        let path = path.replace("\"", "").replace("\"", "").replace(";", "");
         
         // fetch and splat the dependent shader
         let dependent_file = VirtualPath::parse(&path);
