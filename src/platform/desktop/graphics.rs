@@ -330,6 +330,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         let shader_id = gl::CreateShader(match kind {
           ShaderKind::Vertex => gl::VERTEX_SHADER,
           ShaderKind::Fragment => gl::FRAGMENT_SHADER,
+          ShaderKind::Compute => gl::COMPUTE_SHADER,
         });
 
         let code_length = code.len() as i32;
@@ -500,6 +501,21 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     unsafe {
       gl::DeleteProgram(shader);
     }
+  }
+
+  fn dispatch_compute(&self, shader: GraphicsHandle, x: usize, y: usize, z: usize) {
+    unsafe {
+      gl::UseProgram(shader);
+      gl::DispatchCompute(x as u32, y as u32, z as u32);
+    }
+  }
+
+  fn wait_compute_barrier(&self, barrier: ComputeBarrier) {
+    unsafe {
+      gl::MemoryBarrier(match barrier {
+        ComputeBarrier::ImageAccess => gl::SHADER_IMAGE_ACCESS_BARRIER_BIT,
+      });
+    }      
   }
 
   fn create_mesh(&self, vertex_buffer: GraphicsHandle, index_buffer: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {

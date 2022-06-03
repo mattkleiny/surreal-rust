@@ -130,6 +130,14 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
+  fn dispatch_compute(&self, _shader: GraphicsHandle, _x: usize, _y: usize, _z: usize) {
+    // no-op      
+  }
+
+  fn wait_compute_barrier(&self, _barrier: ComputeBarrier) {
+    // no-op
+  }
+
   fn create_mesh(&self, _vertices: GraphicsHandle, _indices: GraphicsHandle, _descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     self.next_mesh_id.fetch_add(1, Ordering::Relaxed)
   }

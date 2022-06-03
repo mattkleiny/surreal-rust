@@ -20,6 +20,7 @@ mod parser;
 pub enum ShaderKind {
   Vertex,
   Fragment,
+  Compute,
 }
 
 /// Defines a single shader kernel in a shader program.
@@ -223,6 +224,7 @@ fn parse_glsl_source(source: &str) -> crate::Result<Vec<Shader>> {
       let kind = match line.split_whitespace().nth(1) {
         Some("vertex") => ShaderKind::Vertex,
         Some("fragment") => ShaderKind::Fragment,
+        Some("compute") => ShaderKind::Compute,
         _ => continue,
       };
 

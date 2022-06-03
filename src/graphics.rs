@@ -2,6 +2,7 @@
 
 pub use buffers::*;
 pub use colors::*;
+pub use compute::*;
 pub use fonts::*;
 pub use geometry::*;
 pub use headless::*;
@@ -17,6 +18,7 @@ pub use textures::*;
 
 mod buffers;
 mod colors;
+mod compute;
 mod fonts;
 mod geometry;
 mod headless;
@@ -80,6 +82,10 @@ pub trait GraphicsBackend {
   fn set_shader_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform);
   fn set_active_shader(&self, shader: GraphicsHandle);
   fn delete_shader(&self, shader: GraphicsHandle);
+
+  // compute 
+  fn dispatch_compute(&self, shader: GraphicsHandle, x: usize, y: usize, z: usize);
+  fn wait_compute_barrier(&self, barrier: ComputeBarrier);
 
   // meshes
   fn create_mesh(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
