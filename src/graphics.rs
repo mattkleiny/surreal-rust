@@ -84,7 +84,7 @@ pub trait GraphicsBackend {
   fn delete_shader(&self, shader: GraphicsHandle);
 
   // compute 
-  fn dispatch_compute(&self, shader: GraphicsHandle, x: usize, y: usize, z: usize);
+  fn dispatch_compute(&self, shader: GraphicsHandle, x: u32, y: u32, z: u32);
   fn wait_compute_barrier(&self, barrier: ComputeBarrier);
 
   // meshes

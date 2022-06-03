@@ -17,7 +17,7 @@ pub struct PixelCanvas {
 impl PixelCanvas {
   /// Creates a new pixel canvas with the given dimensions.
   pub fn new(server: &GraphicsServer, width: usize, height: usize) -> Self {
-    let shader = load_built_in_shader(server, BuiltInShader::Sprite(BuiltInSpriteShader::Standard));
+    let shader = load_built_in_shader(server, BuiltInShader::SpriteStandard);
     let texture = Texture::new(server);
 
     let mut material = Material::new(server, &shader);

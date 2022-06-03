@@ -130,7 +130,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn dispatch_compute(&self, _shader: GraphicsHandle, _x: usize, _y: usize, _z: usize) {
+  fn dispatch_compute(&self, _shader: GraphicsHandle, _x: u32, _y: u32, _z: u32) {
     // no-op      
   }
 

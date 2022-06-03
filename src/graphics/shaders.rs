@@ -45,6 +45,7 @@ pub enum ShaderUniform {
   Matrix3x3(Matrix3x3<f32>),
   Matrix4x4(Matrix4x4<f32>),
   Texture(Texture, usize, Option<TextureSampler>),
+  ComputeImage(Texture, usize, ComputeMode, TextureFormat),
 }
 
 /// Represents a single compiled shader program.
@@ -96,10 +97,26 @@ impl ShaderProgram {
   }
 
   /// Sets the given uniform value in the underlying program.
-  pub fn set_uniform(&self, location: usize, value: &ShaderUniform) {
+  pub fn set_uniform(&self, name: &str, value: &ShaderUniform) {
+    if let Some(location) = self.get_uniform_location(name) {
+      let server = &self.state.server;
+
+      server.set_shader_uniform(self.state.handle, location, value);
+    }
+  }
+
+  /// Sets the given uniform value in the underlying program.
+  pub fn set_uniform_at_location(&self, location: usize, value: &ShaderUniform) {
     let server = &self.state.server;
 
     server.set_shader_uniform(self.state.handle, location, value);
+  }
+
+  /// Dispatches compute work to the GPU for this shader program.
+  pub fn dispatch_compute(&self, x: u32, y: u32, z: u32) {
+    let server = &self.state.server;
+
+    server.dispatch_compute(self.state.handle, x, y, z);
   }
 
   /// Reloads the [`ShaderProgram`] from the given 'glsl' program code.

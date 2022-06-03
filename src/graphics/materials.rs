@@ -164,7 +164,7 @@ impl Material {
     self.server.set_scissor_mode(self.scissor_mode);
 
     for uniform in self.uniforms.values() {
-      self.shader.set_uniform(uniform.location, &uniform.value);
+      self.shader.set_uniform_at_location(uniform.location, &uniform.value);
     }
 
     self.server.set_active_shader(self.shader.handle());

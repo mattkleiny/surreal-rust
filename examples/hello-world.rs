@@ -13,11 +13,7 @@ fn main() {
   Game::start(platform, |mut game, _| {
     let graphics = &game.host.graphics;
 
-    let shader = load_built_in_shader(
-      graphics,
-      BuiltInShader::Sprite(BuiltInSpriteShader::Standard),
-    );
-
+    let shader = load_built_in_shader(graphics, BuiltInShader::SpriteStandard);
     let mut material = Material::new(graphics, &shader);
     let texture = Texture::create_colored(graphics, 1, 1, Color32::WHITE);
 

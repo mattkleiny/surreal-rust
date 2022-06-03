@@ -25,21 +25,9 @@ const PALETTE_SPACE_DUST_9: &[u8] = include_bytes!("../assets/palettes/space-dus
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BuiltInShader {
-  Sprite(BuiltInSpriteShader),
-  Effect(BuiltInEffect),
-}
-
-/// Represents one of the built-in sprite shaders.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum BuiltInSpriteShader {
-  Standard,
-  Palette,
-}
-
-/// Represents one of the built-in sprite shaders.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum BuiltInEffect {
-  Aberration,
+  SpriteStandard,
+  SpritePalette,
+  AberrationEffect,
 }
 
 /// Represents one of the built-in color palettes.
@@ -56,9 +44,9 @@ pub enum BuiltInPalette {
 /// Loads the standard shader program from embedded resources.
 pub fn load_built_in_shader(server: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let shader = match shader {
-    BuiltInShader::Sprite(BuiltInSpriteShader::Standard) => ShaderProgram::from_glsl(server, SHADER_SPRITE_STANDARD),
-    BuiltInShader::Sprite(BuiltInSpriteShader::Palette) => ShaderProgram::from_glsl(server, SHADER_SPRITE_PALETTE),
-    BuiltInShader::Effect(BuiltInEffect::Aberration) => ShaderProgram::from_glsl(server, SHADER_EFFECT_ABERRATION),
+    BuiltInShader::SpriteStandard => ShaderProgram::from_glsl(server, SHADER_SPRITE_STANDARD),
+    BuiltInShader::SpritePalette => ShaderProgram::from_glsl(server, SHADER_SPRITE_PALETTE),
+    BuiltInShader::AberrationEffect => ShaderProgram::from_glsl(server, SHADER_EFFECT_ABERRATION),
   };
 
   shader.expect("Failed to load standard shader")
@@ -106,8 +94,8 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
   fn create(&self, server: &GraphicsServer) -> Self::Context {
     // determine which shader we're using, prepare material
     let shader = match self.palette {
-      None => BuiltInShader::Sprite(BuiltInSpriteShader::Standard),
-      Some(_) => BuiltInShader::Sprite(BuiltInSpriteShader::Palette),
+      None => BuiltInShader::SpriteStandard,
+      Some(_) => BuiltInShader::SpritePalette,
     };
 
     let mut material = Material::new(server, &load_built_in_shader(server, shader));

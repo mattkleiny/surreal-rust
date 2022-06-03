@@ -487,6 +487,31 @@ impl GraphicsBackend for DesktopGraphicsBackend {
             gl::BindSampler(*slot as u32, *sampler_id);
           }
         }
+        ShaderUniform::ComputeImage(texture, slot, mode, format) => {
+          let mode = match mode {
+            ComputeMode::ReadOnly => gl::READ_ONLY,
+            ComputeMode::WriteOnly => gl::WRITE_ONLY,
+            ComputeMode::ReadWrite => gl::READ_WRITE,
+          };
+
+          let format = match format {
+            TextureFormat::R8 => gl::R8,
+            TextureFormat::RG8 => gl::RG8,
+            TextureFormat::RGB8 => gl::RGB8,
+            TextureFormat::RGBA8 => gl::RGBA8,
+            TextureFormat::RGBA32 => gl::RGBA32F,
+          };
+
+          gl::BindImageTexture(
+            *slot as u32, 
+            texture.handle(), 
+            0, // mip level
+            gl::FALSE, // layered
+            0, // layer
+            mode as u32,
+            format as u32,
+          );
+        },
       }
     }
   }
@@ -503,7 +528,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn dispatch_compute(&self, shader: GraphicsHandle, x: usize, y: usize, z: usize) {
+  fn dispatch_compute(&self, shader: GraphicsHandle, x: u32, y: u32, z: u32) {
     unsafe {
       gl::UseProgram(shader);
       gl::DispatchCompute(x as u32, y as u32, z as u32);
