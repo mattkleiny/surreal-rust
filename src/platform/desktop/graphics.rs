@@ -487,11 +487,11 @@ impl GraphicsBackend for DesktopGraphicsBackend {
             gl::BindSampler(*slot as u32, *sampler_id);
           }
         }
-        ShaderUniform::ComputeImage(texture, slot, mode, format) => {
+        ShaderUniform::TextureBinding(texture, slot, mode, format) => {
           let mode = match mode {
-            ComputeMode::ReadOnly => gl::READ_ONLY,
-            ComputeMode::WriteOnly => gl::WRITE_ONLY,
-            ComputeMode::ReadWrite => gl::READ_WRITE,
+            ReadWriteMode::ReadOnly => gl::READ_ONLY,
+            ReadWriteMode::WriteOnly => gl::WRITE_ONLY,
+            ReadWriteMode::ReadWrite => gl::READ_WRITE,
           };
 
           let format = match format {

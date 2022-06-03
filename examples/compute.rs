@@ -23,10 +23,10 @@ fn main() {
     // bind the texture to the compute shader, write-only access, RGBA8
     shader.set_uniform(
       "u_image",
-      &ShaderUniform::ComputeImage(
+      &ShaderUniform::TextureBinding(
         texture.clone(),
         0, // texture slot
-        ComputeMode::WriteOnly,
+        ReadWriteMode::WriteOnly,
         TextureFormat::RGBA8,
       ),
     );

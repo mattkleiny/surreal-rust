@@ -12,7 +12,7 @@ pub enum ComputeBarrier {
 
 /// Different read/write modes for compute operations.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum ComputeMode {
+pub enum ReadWriteMode {
   ReadOnly,
   WriteOnly,
   ReadWrite,
@@ -20,14 +20,14 @@ pub enum ComputeMode {
 
 /// A compute image allows bound access to a texture image from compute shaders.
 #[derive(Clone)]
-pub struct ComputeImage {
+pub struct TextureBinding {
   pub texture: Texture,
-  pub mode: ComputeMode,
+  pub mode: ReadWriteMode,
   pub format: TextureFormat,
 }
 
-impl From<ComputeImage> for ShaderUniform {
-  fn from(image: ComputeImage) -> Self {
-    ShaderUniform::ComputeImage(image.texture, 0, image.mode, image.format)
+impl From<TextureBinding> for ShaderUniform {
+  fn from(image: TextureBinding) -> Self {
+    ShaderUniform::TextureBinding(image.texture, 0, image.mode, image.format)
   }
 }

@@ -45,7 +45,7 @@ pub enum ShaderUniform {
   Matrix3x3(Matrix3x3<f32>),
   Matrix4x4(Matrix4x4<f32>),
   Texture(Texture, usize, Option<TextureSampler>),
-  ComputeImage(Texture, usize, ComputeMode, TextureFormat),
+  TextureBinding(Texture, usize, ReadWriteMode, TextureFormat),
 }
 
 /// Represents a single compiled shader program.
