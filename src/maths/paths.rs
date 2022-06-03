@@ -15,18 +15,6 @@ pub type Heuristic = fn(&Point, &Point) -> Cost;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Path(Vec<Point>);
 
-impl Path {
-  /// The start point of the path.
-  pub fn start(&self) -> Option<Point> {
-    self.0.first().map(|value| *value)
-  }
-
-  /// The goal point of the path.
-  pub fn goal(&self) -> Option<Point> {
-    self.0.last().map(|value| *value)
-  }
-}
-
 impl Deref for Path {
   type Target = [Point];
 

@@ -163,7 +163,7 @@ impl Material {
     self.server.set_culling_mode(self.culling_mode);
     self.server.set_scissor_mode(self.scissor_mode);
 
-    for (_, uniform) in &self.uniforms {
+    for uniform in self.uniforms.values() {
       self.shader.set_uniform(uniform.location, &uniform.value);
     }
 
@@ -183,7 +183,7 @@ impl Asset for Material {
 impl AssetLoader<Material> for MaterialLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Material> {
     let shader = context.load_asset(context.path)?;
-    let material = Material::new(&self.server, &shader);
+    let material = Material::new(&self.server, shader);
 
     Ok(material)
   }

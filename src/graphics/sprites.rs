@@ -130,7 +130,7 @@ impl SpriteBatch {
   /// Flushes the batch to the GPU.
   #[profiling::function]
   pub fn flush(&mut self) {
-    if self.vertices.len() == 0 {
+    if self.vertices.is_empty() {
       return; // no vertices? no problem
     }
 
@@ -150,7 +150,7 @@ impl SpriteBatch {
     });
 
     self.mesh.draw_sub_mesh(
-      &material,
+      material,
       PrimitiveTopology::Triangles,
       vertex_count,
       index_count,

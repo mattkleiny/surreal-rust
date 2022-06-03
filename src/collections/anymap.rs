@@ -2,8 +2,7 @@ use std::any::{Any, TypeId};
 use std::collections::HashMap;
 
 /// An any-map is a map that can contain a single per unique type.
-///
-/// This is a variant of `AnyMultiMap` that supports single values per key.
+#[derive(Default)]
 pub struct AnyMap {
   entries: HashMap<TypeId, Box<dyn Any>>,
 }

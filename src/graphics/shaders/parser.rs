@@ -292,7 +292,7 @@ trait Visitor: Sized {
     // no-op
   }
 
-  fn visit_symbol_expression(&mut self, _expression: &String) {
+  fn visit_symbol_expression(&mut self, _expression: &str) {
     // no-op
   }
 }

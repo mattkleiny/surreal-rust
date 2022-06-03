@@ -6,6 +6,7 @@
 use std::fmt::Debug;
 
 /// A virtual machine that can execute `BytecodeChunk`s.
+#[derive(Default)]
 pub struct VirtualMachine {}
 
 impl VirtualMachine {

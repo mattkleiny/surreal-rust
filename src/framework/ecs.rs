@@ -102,6 +102,7 @@ where
 }
 
 /// A simple entity component system world.
+#[derive(Default)]
 pub struct World {
   /// Each individual entity in the world.
   entities: Arena<EntityState>,
@@ -162,7 +163,7 @@ impl World {
     let _ = self.entities.get(entity)?;
     let storage = self.components.get_mut::<C::Storage>()?;
 
-    return storage.get_component_mut(entity);
+    storage.get_component_mut(entity)
   }
 
   /// Removes a component for the given entity.

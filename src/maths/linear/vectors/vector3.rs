@@ -75,7 +75,7 @@ impl Vector3<f32> {
     let y = self.z * other.x - self.x * other.z;
     let z = self.x * other.y - self.y * other.x;
 
-    return vec3(x, y, z);
+    vec3(x, y, z)
   }
 
   /// Reflects a vector about the given normal.

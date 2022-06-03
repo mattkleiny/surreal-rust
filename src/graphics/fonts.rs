@@ -49,7 +49,7 @@ impl AssetLoader<BitmapFont> for BitmapFontLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<BitmapFont> {
     let descriptor: BitmapFontMetrics = context.path.deserialize_json()?;
     let texture = context.load_asset(context.path.change_extension("png"))?;
-    let font = BitmapFont::new(&texture, descriptor);
+    let font = BitmapFont::new(texture, descriptor);
 
     Ok(font)
   }

@@ -225,7 +225,7 @@ impl<T, const S: usize, const L: usize> Debug for Matrix<T, S, L> where T: Displ
         write!(formatter, "{: >5.2} ", self.elements[x + y * S])?;
       }
 
-      write!(formatter, "]\n")?
+      writeln!(formatter, "]")?
     }
 
     Ok(())

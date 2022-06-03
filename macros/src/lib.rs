@@ -11,9 +11,8 @@ use syn::{Attribute, Data, DeriveInput, Fields, parse_macro_input, spanned::Span
 #[proc_macro_derive(Vertex, attributes(vertex))]
 pub fn derive_vertex(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
-  let result = impl_vertex_trait(&input);
 
-  TokenStream::from(result)
+  impl_vertex_trait(&input)
 }
 
 /// Implements the `Vertex` trait for the associated struct.
@@ -43,13 +42,13 @@ fn impl_vertex_trait(input: &DeriveInput) -> TokenStream {
     _ => panic!("Only structs are supported"),
   };
 
-  return quote! {
+  quote! {
     impl Vertex for #name {
       const DESCRIPTORS: &'static [VertexDescriptor] = &[
         #(#descriptors),*
       ];
     }
-  }.into();
+  }.into()
 }
 
 /// Parses a `#[vertex(count, kind)]` attribute from the given list of attributes on the field.

@@ -6,6 +6,12 @@ pub struct Random {
   state: u64,
 }
 
+impl Default for Random {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl Random {
   /// Constructs a random generator with a random seed.
   pub fn new() -> Self {

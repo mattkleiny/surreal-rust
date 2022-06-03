@@ -43,7 +43,7 @@ pub struct TextureSampler {
 }
 
 /// Options for configuring a `Texture`.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct TextureOptions {
   pub format: TextureFormat,
   pub sampler: TextureSampler,
@@ -138,7 +138,7 @@ impl Texture {
     let mut state = self.state.borrow_mut();
 
     state.options = options;
-    state.server.set_texture_options(state.handle, &options.sampler);
+    state.server.set_texture_options(state.handle, &state.options.sampler);
   }
 
   /// Downloads pixel data from the texture.

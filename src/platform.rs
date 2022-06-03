@@ -36,7 +36,6 @@ pub trait PlatformHost {
   fn is_closing(&self) -> bool;
 
   fn run(&mut self, main_loop: impl FnMut(&mut Self));
-  fn pump(&mut self, event_bus: &crate::collections::EventBus);
 
   /// Exits the platform.
   fn exit(&mut self);

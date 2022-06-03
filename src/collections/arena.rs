@@ -15,7 +15,7 @@ struct ArenaEntry<T> {
 /// A simple generational arena of elements of type [`T`] .
 ///
 /// An arena exposes safe externalized indices in the form of [`ArenaIndex`]es.
-#[derive(Debug)]
+#[derive(Default, Debug)]
 pub struct Arena<T> {
   entries: Vec<Option<ArenaEntry<T>>>,
   current_generation: u16,
@@ -30,6 +30,11 @@ impl<T> Arena<T> {
       current_generation: 1,
       is_generation_dirty: false,
     }
+  }
+
+  /// Is the arena empty?
+  pub fn is_empty(&self) -> bool {
+    self.entries.is_empty()
   }
 
   /// Returns the number of elements in the arena.
@@ -64,7 +69,7 @@ impl<T> Arena<T> {
       }
     }
 
-    return None;
+    None
   }
 
   /// Returns a mutable reference to the item at the given index.
@@ -81,7 +86,7 @@ impl<T> Arena<T> {
       }
     }
 
-    return None;
+    None
   }
 
   /// Adds an entry to the arena and returns it's index.
@@ -113,7 +118,7 @@ impl<T> Arena<T> {
       }
     }
 
-    return None;
+    None
   }
 
   /// Clears all entries from the arena.
@@ -126,13 +131,13 @@ impl<T> Arena<T> {
   fn allocate_index(&mut self) -> ArenaIndex {
     // increment the generation if necessary
     if self.is_generation_dirty {
-      self.current_generation = self.current_generation + 1;
+      self.current_generation += 1;
       self.is_generation_dirty = false;
     }
 
     // scan through existing entries and find an empty slot
     for i in 0..self.entries.len() {
-      if let None = self.entries[i] {
+      if self.entries[i].is_none() {
         return ArenaIndex {
           index: i,
           generation: self.current_generation,

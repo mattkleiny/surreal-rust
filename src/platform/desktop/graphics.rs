@@ -21,7 +21,7 @@ struct InternalState {
 }
 
 impl DesktopGraphicsBackend {
-  pub fn new(window: &Window, vsync_enabled: bool) -> GraphicsServer {
+  pub fn new(window: &Window, vsync_enabled: bool) -> Self {
     // prepare and load opengl bindings
     let config = GlConfig {
       vsync: vsync_enabled,
@@ -32,12 +32,12 @@ impl DesktopGraphicsBackend {
     context.make_current();
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
-    GraphicsServer::new(Box::new(Self {
+    Self {
       context,
       internal_state: RefCell::new(InternalState {
         sampler_cache: HashMap::new(),
       }),
-    }))
+    }
   }
 }
 
@@ -520,9 +520,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
 
       let mut offset = 0;
 
-      for index in 0..descriptors.len() {
-        let descriptor = descriptors[index];
-
+      for (index, descriptor) in descriptors.iter().enumerate() {
         let kind = match descriptor.kind {
           VertexKind::U8 => gl::UNSIGNED_BYTE,
           VertexKind::U16 => gl::UNSIGNED_SHORT,

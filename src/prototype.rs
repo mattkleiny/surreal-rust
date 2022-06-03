@@ -10,17 +10,17 @@ mod canvas;
 mod tiles;
 
 // built-in shaders
-const SHADER_SPRITE_STANDARD: &'static str = include_str!("../assets/shaders/sprite-standard.glsl");
-const SHADER_SPRITE_PALETTE: &'static str = include_str!("../assets/shaders/sprite-palette.glsl");
-const SHADER_EFFECT_ABERRATION: &'static str = include_str!("../assets/shaders/effect-aberration.glsl");
+const SHADER_SPRITE_STANDARD: &str = include_str!("../assets/shaders/sprite-standard.glsl");
+const SHADER_SPRITE_PALETTE: &str = include_str!("../assets/shaders/sprite-palette.glsl");
+const SHADER_EFFECT_ABERRATION: &str = include_str!("../assets/shaders/effect-aberration.glsl");
 
 // built-in palettes
-const PALETTE_AYY_4: &'static [u8] = include_bytes!("../assets/palettes/ayy-4.pal");
-const PALETTE_DEMICHROME_4: &'static [u8] = include_bytes!("../assets/palettes/demichrome-4.pal");
-const PALETTE_HOLLOW_4: &'static [u8] = include_bytes!("../assets/palettes/hollow-4.pal");
-const PALETTE_KULE_16: &'static [u8] = include_bytes!("../assets/palettes/kule-16.pal");
-const PALETTE_LOW_8: &'static [u8] = include_bytes!("../assets/palettes/low-8.pal");
-const PALETTE_SPACE_DUST_9: &'static [u8] = include_bytes!("../assets/palettes/space-dust-9.pal");
+const PALETTE_AYY_4: &[u8] = include_bytes!("../assets/palettes/ayy-4.pal");
+const PALETTE_DEMICHROME_4: &[u8] = include_bytes!("../assets/palettes/demichrome-4.pal");
+const PALETTE_HOLLOW_4: &[u8] = include_bytes!("../assets/palettes/hollow-4.pal");
+const PALETTE_KULE_16: &[u8] = include_bytes!("../assets/palettes/kule-16.pal");
+const PALETTE_LOW_8: &[u8] = include_bytes!("../assets/palettes/low-8.pal");
+const PALETTE_SPACE_DUST_9: &[u8] = include_bytes!("../assets/palettes/space-dust-9.pal");
 
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

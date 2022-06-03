@@ -54,6 +54,11 @@ impl<T> Buffer<T> {
     }
   }
 
+  /// Is the buffer empty?
+  pub fn is_empty(&self) -> bool {
+    self.state.borrow().length == 0
+  }
+
   /// The number of elements in the buffer.
   pub fn len(&self) -> usize {
     self.state.borrow().length

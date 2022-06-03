@@ -248,6 +248,7 @@ impl Mesh<Vertex2> {
 }
 
 /// A simple tessellator for mesh shapes.
+#[derive(Default)]
 pub struct Tessellator<V> {
   vertices: Vec<V>,
   indices: Vec<Index>,

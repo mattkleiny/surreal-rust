@@ -1,6 +1,7 @@
 use std::{collections::HashMap, hash::Hash};
 
 /// A hash map with multiple values per key.
+#[derive(Default, Debug)]
 pub struct MultiMap<K, V> {
   entries: HashMap<K, Vec<V>>,
 }
@@ -68,10 +69,10 @@ where
   where
     V: PartialEq,
   {
-    if let Some(vec) = self.entries.get_mut(key) {
-      vec.retain(|v| v != &value);
+    if let Some(entries) = self.entries.get_mut(key) {
+      entries.retain(|v| v != &value);
 
-      if vec.len() == 0 {
+      if entries.is_empty() {
         self.entries.remove(key);
       }
     }

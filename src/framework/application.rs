@@ -3,16 +3,11 @@
 //! Applications are entry points for more complex engine usages, and
 //! form the core of the engine and foundation for event plumbing.
 
-use crate::collections::EventBus;
-use crate::{
-  maths::Vector2,
-  platform::{Platform, PlatformHost},
-};
+use crate::{maths::Vector2, platform::Platform};
 
 /// Entry point for a Surreal-based application.
 pub struct Application<P: Platform> {
   host: P::Host,
-  event_bus: EventBus,
 }
 
 /// Represents a listener that can receive events from an application.
@@ -29,15 +24,12 @@ impl<P: Platform> Application<P> {
   pub fn new(platform: P) -> Self {
     Self {
       host: platform.create_host(),
-      event_bus: EventBus::new(),
     }
   }
 
   /// Runs the application with the given main body.
   pub fn run(&mut self, _listener: impl ApplicationListener<P> + 'static) {
     // TODO: handle listener invocations
-
-    self.host.pump(&self.event_bus);
   }
 }
 
@@ -54,24 +46,3 @@ pub struct MouseMovedEvent(pub Vector2<usize>);
 pub struct MouseScrolledEvent(pub Vector2<usize>);
 pub struct MousePressedEvent(pub crate::input::MouseButton);
 pub struct MouseReleasedEvent(pub crate::input::MouseButton);
-
-#[cfg(test)]
-mod tests {
-  use crate::{
-    graphics::{Color, GraphicsBackend},
-    platform::HeadlessPlatform,
-  };
-
-  use super::*;
-
-  #[test]
-  fn application_should_work() {
-    let application = Application::new(HeadlessPlatform);
-    let platform = &application.host;
-
-    application.event_bus.publish(&PlatformTickEvent());
-    application.event_bus.publish(&PlatformRenderEvent());
-
-    platform.graphics.clear_color_buffer(Color::WHITE);
-  }
-}

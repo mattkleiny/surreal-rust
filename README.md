@@ -35,17 +35,3 @@ Scripting allows for DSL to take the brunt of the work required in game developm
 A goal of this project is to implement a shared virtual machine for executable scripts and offer a variety of different front-ends for different scripting languages; the goal is to allow the best tool for the job.
 
 Metadata about scripts can also be provided for reflection, dynamic code generation, etc, allowing different DSLs for different use cases.
-
-## Architecture
-
-### Application framework
-
-The application framework is the entry point for the system, with a centralized event bus for forwarding events out of the underlying platform and vice versa.
-
-![Application Framework Overview](docs/application.svg) 
-
-### Scripting framework
-
-The scripting framework provides a central stack-based virtual machine which executes compiled script bytecode. Bytecode is produced from either a shared Intermediate Representation (IR) or from manually emitted instructions in an individual language.
-
-![Scripting Framework Overview](docs/scripting.svg)

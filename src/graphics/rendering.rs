@@ -190,7 +190,7 @@ impl RenderManager {
   /// Acquires a context for the given descriptor.
   ///
   /// If the context cannot be acquired, the body will not be run.
-  pub fn with<C>(&mut self, body: impl FnOnce(&mut C) -> ())
+  pub fn with<C>(&mut self, body: impl FnOnce(&mut C))
   where
     C: RenderContext,
   {

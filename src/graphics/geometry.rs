@@ -142,8 +142,8 @@ impl GeometryBatch {
   #[profiling::function]
   pub fn flush(&mut self) {
     // ensure we're in a valid state to render something
-    if self.vertices.len() == 0 { return; };
-    if self.indices.len() == 0 { return; };
+    if self.vertices.is_empty() { return; };
+    if self.indices.is_empty() { return; };
     let Some(material) = &self.material else { return; };
 
     // upload and draw the mesh

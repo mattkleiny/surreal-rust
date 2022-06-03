@@ -6,7 +6,7 @@ use crate::graphics::*;
 use crate::maths::{Rectangle, vec2};
 
 /// A shader program to use for egui UI rendering.
-const SHADER_CANVAS_STANDARD: &'static str = include_str!("../assets/shaders/canvas-standard.glsl");
+const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
 
 /// A provider for [`egui::RawInput`] .
 pub trait RawInputProvider {
@@ -27,7 +27,7 @@ impl UserInterfaceCanvas {
   /// Creates a new user interface canvas.
   pub fn new(server: &GraphicsServer) -> Self {
     // load and configure material
-    let shader = ShaderProgram::from_glsl(&server, SHADER_CANVAS_STANDARD).unwrap();
+    let shader = ShaderProgram::from_glsl(server, SHADER_CANVAS_STANDARD).unwrap();
     let mut material = Material::new(server, &shader);
 
     material.set_culling_mode(CullingMode::Disabled);

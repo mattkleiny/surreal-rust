@@ -80,13 +80,13 @@ impl PixelCanvas {
     let target = self.pixels.get((to_x, to_y));
 
     if target.a <= 0. {
-      self.pixels.set((to_x, to_y), self.pixels.get((from_x, from_y)).clone());
+      self.pixels.set((to_x, to_y), *self.pixels.get((from_x, from_y)));
       self.pixels.set((from_x, from_y), Color::CLEAR);
 
       return true;
     }
 
-    return false;
+    false
   }
 
   /// Draws the canvas to the screen.

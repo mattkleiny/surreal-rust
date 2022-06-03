@@ -14,7 +14,7 @@ use crate::io::AsVirtualPath;
 use super::*;
 
 /// A palette of colors of type [`P`].
-#[derive(Clone)]
+#[derive(Default, Clone)]
 pub struct ColorPalette<P> {
   colors: Vec<P>,
 }
@@ -40,7 +40,7 @@ impl<P> ColorPalette<P> where P: Pixel {
     let path = path.as_virtual_path();
     let stream = path.open_input_stream()?;
 
-    Ok(Self::from_bytes(stream)?)
+    Self::from_bytes(stream)
   }
 
   /// Loads a palette from the given reader.
@@ -59,15 +59,15 @@ impl<P> ColorPalette<P> where P: Pixel {
     let count: usize = lines[2].parse()?;
     let mut colors = vec![P::EMPTY; count];
 
-    for i in 0..colors.len() {
-      let index = (3 + i) % lines.len();
+    for (index, color) in colors.iter_mut().enumerate() {
+      let index = (3 + index) % lines.len();
       let components = lines[index].split(' ').collect::<Vec<_>>();
 
       if components.len() != 3 {
         return Err(anyhow!("Expected 3 color components on line {}", index + 1));
       }
 
-      colors[i] = P::from_bytes(&[
+      *color = P::from_bytes(&[
         components[0].parse()?,
         components[1].parse()?,
         components[2].parse()?,
@@ -76,6 +76,11 @@ impl<P> ColorPalette<P> where P: Pixel {
     }
 
     Ok(Self::from_vec(colors))
+  }
+
+  /// Is the palette empt?
+  pub fn is_empty(&self) -> bool {
+    self.colors.is_empty()
   }
 
   /// Gets the number of colors in this palette.
