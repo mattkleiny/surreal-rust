@@ -1,8 +1,8 @@
 //! Color palette loading and managements.
-//! 
+//!
 //! Color palettes are so frequently used in projects that we've built-in
 //! support for basic palette operations and slicing.
-//! 
+//!
 //! JASC-PAL files can be loaded from disc, as well.
 
 use std::ops::Index;
@@ -19,7 +19,9 @@ pub struct ColorPalette<P> {
   colors: Vec<P>,
 }
 
-impl<P> ColorPalette<P> where P: Pixel {
+impl<P> ColorPalette<P>
+where P: Pixel
+{
   /// Creates a new empty palette.
   pub fn new() -> Self {
     Self { colors: Vec::new() }
@@ -32,7 +34,9 @@ impl<P> ColorPalette<P> where P: Pixel {
 
   /// Creates a color palette from the given slice of pixels.
   pub fn from_slice(slice: &[P]) -> Self {
-    Self { colors: slice.to_vec() }
+    Self {
+      colors: slice.to_vec(),
+    }
   }
 
   /// Loads a palette from the given file path.

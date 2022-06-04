@@ -105,9 +105,7 @@ impl<'a> VirtualPath<'a> {
 
   /// Deserializes a json value of the given type from the path.
   pub fn deserialize_json<T>(&self) -> crate::Result<T>
-  where
-    T: serde::de::DeserializeOwned,
-  {
+  where T: serde::de::DeserializeOwned {
     let stream = self.open_input_stream()?;
     let result = serde_json::de::from_reader(stream)?;
 

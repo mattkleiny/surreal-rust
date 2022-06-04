@@ -27,7 +27,7 @@ mod shapes;
 mod tessellation;
 
 /// Clamps the given value between the given lower and upper bounds.
-pub fn clamp<T>(value: T, lower: T, upper: T) -> T where T: Numeric {
+pub fn clamp<T: Numeric>(value: T, lower: T, upper: T) -> T {
   match () {
     _ if value > upper => upper,
     _ if value < lower => lower,

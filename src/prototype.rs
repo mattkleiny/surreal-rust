@@ -53,7 +53,7 @@ pub fn load_built_in_shader(server: &GraphicsServer, shader: BuiltInShader) -> S
 }
 
 /// Loads the given built-in color palette.
-pub fn load_built_in_palette<P>(palette: BuiltInPalette) -> ColorPalette<P> where P: Pixel {
+pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<P> {
   let palette = match palette {
     BuiltInPalette::Ayy4 => ColorPalette::from_bytes(PALETTE_AYY_4),
     BuiltInPalette::Demichrome4 => ColorPalette::from_bytes(PALETTE_DEMICHROME_4),
@@ -132,7 +132,6 @@ pub struct SpriteBatchContext {
   /// The sprite batch to use for sprite geometry.
   pub batch: SpriteBatch,
 }
-
 
 impl RenderContext for SpriteBatchContext {
   fn on_before_with(&mut self) {

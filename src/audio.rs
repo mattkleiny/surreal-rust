@@ -12,7 +12,7 @@ mod openal;
 pub type AudioHandle = u32;
 
 /// A pointer to the core [`AudioBackend`] implementation.
-/// 
+///
 /// This pointer is safe to pass around the application.
 pub type AudioServer = std::rc::Rc<Box<dyn AudioBackend>>;
 

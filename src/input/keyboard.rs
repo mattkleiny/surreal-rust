@@ -52,4 +52,3 @@ impl KeyboardDevice {
     self.previous_keys.contains(&key)
   }
 }
-

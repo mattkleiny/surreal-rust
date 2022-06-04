@@ -3,7 +3,7 @@
 use proc_macro::TokenStream;
 
 use quote::{quote, quote_spanned};
-use syn::{Attribute, Data, DeriveInput, Fields, parse_macro_input, spanned::Spanned};
+use syn::{parse_macro_input, spanned::Spanned, Attribute, Data, DeriveInput, Fields};
 
 /// Builds a [`Vertex`] trait implementation for the associated struct.
 ///
@@ -36,7 +36,7 @@ fn impl_vertex_trait(input: &DeriveInput) -> TokenStream {
             }
           })
         }
-        _ => panic!("Only named struct fields are supported")
+        _ => panic!("Only named struct fields are supported"),
       }
     }
     _ => panic!("Only structs are supported"),
@@ -48,7 +48,8 @@ fn impl_vertex_trait(input: &DeriveInput) -> TokenStream {
         #(#descriptors),*
       ];
     }
-  }.into()
+  }
+  .into()
 }
 
 /// Parses a `#[vertex(count, kind)]` attribute from the given list of attributes on the field.
@@ -93,7 +94,7 @@ fn parse_vertex_attributes(attributes: &Vec<Attribute>) -> (usize, proc_macro2::
         return (
           count.expect("`#[vertex(count)]` is missing or invalid"),
           kind.expect("`#[vertex(kind)]` is missing or invalid"),
-          normalize.expect("`#[vertex(normalize)]` is missing or invalid")
+          normalize.expect("`#[vertex(normalize)]` is missing or invalid"),
         );
       }
     };

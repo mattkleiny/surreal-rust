@@ -4,9 +4,9 @@ use super::*;
 pub type GridPoint = (usize, usize);
 
 /// Represents a type that can be rasterized into a grid.
-pub trait GridRaster {
+pub trait Raster {
   /// Rasterizes the given shape into the given grid.
-  fn draw_to<G, T>(&self, grid: &mut G, value: T) where G: Grid<T>, T: Clone;
+  fn draw_to<G: Grid<T>, T: Clone>(&self, grid: &mut G, value: T);
 }
 
 /// Represents a 2d grid that allows efficient random access.
@@ -34,7 +34,8 @@ pub trait Grid<T>: Sized {
   fn set(&mut self, point: impl Into<GridPoint>, value: T);
 
   /// Fills the grid with the given value.
-  fn fill(&mut self, value: T) where T: Clone {
+  fn fill(&mut self, value: T)
+  where T: Clone {
     for y in 0..self.height() {
       for x in 0..self.width() {
         self.set((x, y), value.clone());
@@ -43,12 +44,14 @@ pub trait Grid<T>: Sized {
   }
 
   /// Clears the grid.
-  fn clear(&mut self) where T: Clone + Default {
+  fn clear(&mut self)
+  where T: Clone + Default {
     self.fill(T::default());
   }
 
   /// Rasterizes a shape onto the grid.
-  fn draw_shape(&mut self, shape: &impl GridRaster, value: T) where T: Clone {
+  fn draw_shape(&mut self, shape: &impl Raster, value: T)
+  where T: Clone {
     shape.draw_to(self, value);
   }
 }

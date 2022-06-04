@@ -24,8 +24,8 @@ fn main() {
       canvas.simulate(tick.time.delta_time);
       canvas.draw();
 
-      let position = mouse.normalised_position()
-        * vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
+      let size = vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
+      let position = mouse.normalised_position() * size;
 
       if mouse.is_button_down(MouseButton::Left) {
         let colors = &palette.as_slice()[1..4];

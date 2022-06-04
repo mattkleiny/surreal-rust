@@ -1,6 +1,6 @@
 use crate::collections::Array2D;
 use crate::graphics::*;
-use crate::maths::{Circle, Grid, vec2, Vector2};
+use crate::maths::{vec2, Circle, Grid, Vector2};
 use crate::utilities::{IntervalTimer, TimeSpan};
 
 use super::*;
@@ -37,10 +37,7 @@ impl PixelCanvas {
   /// Draws a circle of pixels.
   pub fn draw_circle(&mut self, Vector2 { x, y }: Vector2<f32>, radius: f32, color: Color) {
     let shape = Circle {
-      center: vec2(
-        x.floor() as isize,
-        y.floor() as isize,
-      ),
+      center: vec2(x.floor() as isize, y.floor() as isize),
       radius: radius as isize,
     };
 
@@ -70,9 +67,18 @@ impl PixelCanvas {
     }
   }
 
-  fn simulate_sand(&mut self, (from_x, from_y): (usize, usize), (to_x, to_y): (isize, isize)) -> bool {
-    if to_x < 0 || to_x > (self.pixels.width() - 1) as isize { return false; }
-    if to_y < 0 || to_y > (self.pixels.height() - 1) as isize { return false; }
+  fn simulate_sand(
+    &mut self,
+    (from_x, from_y): (usize, usize),
+    (to_x, to_y): (isize, isize),
+  ) -> bool {
+    if to_x < 0 || to_x > (self.pixels.width() - 1) as isize {
+      return false;
+    }
+
+    if to_y < 0 || to_y > (self.pixels.height() - 1) as isize {
+      return false;
+    }
 
     let to_x = to_x as usize;
     let to_y = to_y as usize;
@@ -80,7 +86,9 @@ impl PixelCanvas {
     let target = self.pixels.get((to_x, to_y));
 
     if target.a <= 0. {
-      self.pixels.set((to_x, to_y), *self.pixels.get((from_x, from_y)));
+      self
+        .pixels
+        .set((to_x, to_y), *self.pixels.get((from_x, from_y)));
       self.pixels.set((from_x, from_y), Color::CLEAR);
 
       return true;

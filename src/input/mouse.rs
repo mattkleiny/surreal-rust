@@ -50,7 +50,7 @@ impl MouseDevice {
     };
   }
 
-   /// Gets the screen position of the mouse, origin (0, 0) in the top-left corner.
+  /// Gets the screen position of the mouse, origin (0, 0) in the top-left corner.
   pub fn position(&self) -> Vector2<f32> {
     self.position
   }

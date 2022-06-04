@@ -1,6 +1,6 @@
 //! Image loading and management from various formats.
 
-pub use image::ImageFormat as ImageFormat;
+pub use image::ImageFormat;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::io::AsVirtualPath;
@@ -29,7 +29,10 @@ impl Image {
   }
 
   /// Attempts to load an image from the given reader.
-  pub fn from_bytes(reader: impl std::io::BufRead + std::io::Seek, format: Option<ImageFormat>) -> crate::Result<Self> {
+  pub fn from_bytes(
+    reader: impl std::io::BufRead + std::io::Seek,
+    format: Option<ImageFormat>,
+  ) -> crate::Result<Self> {
     let mut reader = image::io::Reader::new(reader);
 
     if let Some(format) = format {
@@ -58,18 +61,14 @@ impl Image {
   pub fn as_slice(&self) -> &[Color32] {
     let rgba = &self.buffer;
 
-    unsafe {
-      std::slice::from_raw_parts(rgba.as_ptr() as *const Color32, rgba.len() / 4)
-    }
+    unsafe { std::slice::from_raw_parts(rgba.as_ptr() as *const Color32, rgba.len() / 4) }
   }
 
   /// Retrieves the pixels of the image as a mutable slice of [`Color32`]s.
   pub fn as_slice_mut(&mut self) -> &mut [Color32] {
     let rgba = &mut self.buffer;
 
-    unsafe {
-      std::slice::from_raw_parts_mut(rgba.as_ptr() as *mut Color32, rgba.len() / 4)
-    }
+    unsafe { std::slice::from_raw_parts_mut(rgba.as_ptr() as *mut Color32, rgba.len() / 4) }
   }
 
   /// Saves the image to the given path.
@@ -85,7 +84,7 @@ impl Image {
 /// An [`AssetLoader`] for images.
 #[derive(Default)]
 pub struct ImageLoader {
-  pub format: Option<ImageFormat>
+  pub format: Option<ImageFormat>,
 }
 
 impl Asset for Image {
@@ -104,7 +103,8 @@ mod tests {
 
   #[test]
   fn image_should_load_from_path() {
-    let image = Image::from_path("local://surreal.ico", Some(ImageFormat::Ico)).expect("Failed to load image");
+    let image = Image::from_path("local://surreal.ico", Some(ImageFormat::Ico))
+      .expect("Failed to load image");
 
     assert_eq!(image.width(), 32);
     assert_eq!(image.height(), 32);

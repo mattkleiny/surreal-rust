@@ -7,7 +7,9 @@ pub trait VonNeumannNeighbourhood<T> {
   fn get_von_neumann_neighbours(&self) -> Self::Output;
 }
 
-impl<T> VonNeumannNeighbourhood<T> for Vector2<T> where T: Numeric {
+impl<T> VonNeumannNeighbourhood<T> for Vector2<T>
+where T: Numeric
+{
   type Output = [Vector2<T>; 4];
 
   fn get_von_neumann_neighbours(&self) -> Self::Output {
@@ -27,19 +29,21 @@ pub trait MooreNeighbourhood<T> {
   fn get_moore_neighbours(&self) -> Self::Output;
 }
 
-impl<T> MooreNeighbourhood<T> for Vector2<T> where T: Numeric {
+impl<T> MooreNeighbourhood<T> for Vector2<T>
+where T: Numeric
+{
   type Output = [Vector2<T>; 8];
 
   fn get_moore_neighbours(&self) -> Self::Output {
     [
       vec2(self.x - T::ONE, self.y - T::ONE), // bottom left
-      vec2(self.x - T::ONE, self.y), // left
+      vec2(self.x - T::ONE, self.y),          // left
       vec2(self.x - T::ONE, self.y + T::ONE), // top left
-      vec2(self.x, self.y + T::ONE), // top
+      vec2(self.x, self.y + T::ONE),          // top
       vec2(self.x + T::ONE, self.y + T::ONE), // top right
-      vec2(self.x + T::ONE, self.y), // right
+      vec2(self.x + T::ONE, self.y),          // right
       vec2(self.x + T::ONE, self.y - T::ONE), // bottom right
-      vec2(self.x, self.y - T::ONE), // bottom
+      vec2(self.x, self.y - T::ONE),          // bottom
     ]
   }
 }

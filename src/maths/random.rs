@@ -24,7 +24,8 @@ impl Random {
   }
 
   /// Generates a new value of the given [`Random`] type, T.
-  pub fn next<T>(&mut self) -> T where T: FromRandom {
+  pub fn next<T>(&mut self) -> T
+  where T: FromRandom {
     T::from_random(self)
   }
 
@@ -62,7 +63,8 @@ thread_local! {
 }
 
 /// Generates a new f64 using the thread-local generator.
-fn generate_thread_local<T>() -> T where T: FromRandom {
+fn generate_thread_local<T>() -> T
+where T: FromRandom {
   THREAD_LOCAL_RANDOM.with(|random| {
     let mut random = random.borrow_mut();
 

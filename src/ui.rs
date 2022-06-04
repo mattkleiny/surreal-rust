@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use crate::graphics::*;
-use crate::maths::{Rectangle, vec2};
+use crate::maths::{vec2, Rectangle};
 
 /// A shader program to use for egui UI rendering.
 const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
@@ -66,28 +66,27 @@ impl UserInterfaceCanvas {
       // convert image representations to our color format and collect width and height
       let (pixels, [width, height]) = match image_delta.image {
         egui::ImageData::Color(image) => {
-          let pixels = image.pixels
+          let pixels = image
+            .pixels
             .iter()
-            .map(|pixel| Color32::rgba(
-              pixel.r(),
-              pixel.g(),
-              pixel.b(),
-              pixel.a(),
-            ))
+            .map(|pixel| Color32::rgba(pixel.r(), pixel.g(), pixel.b(), pixel.a()))
             .collect::<Vec<_>>();
 
           (pixels, image.size)
         }
         egui::ImageData::Font(image) => {
           // TODO: gamma correction?
-          let pixels = image.pixels
+          let pixels = image
+            .pixels
             .iter()
-            .map(|pixel| Color32::rgba(
-              (*pixel * 255.0) as u8,
-              (*pixel * 255.0) as u8,
-              (*pixel * 255.0) as u8,
-              (*pixel * 255.0) as u8,
-            ))
+            .map(|pixel| {
+              Color32::rgba(
+                (*pixel * 255.0) as u8,
+                (*pixel * 255.0) as u8,
+                (*pixel * 255.0) as u8,
+                (*pixel * 255.0) as u8,
+              )
+            })
             .collect::<Vec<_>>();
 
           (pixels, image.size)
@@ -171,13 +170,18 @@ impl UserInterfaceCanvas {
             height: clip_max_y - clip_min_y,
           });
 
-          self.material.set_uniform("u_screen_size", vec2(width_in_points, height_in_points));
+          self
+            .material
+            .set_uniform("u_screen_size", vec2(width_in_points, height_in_points));
+
           self.material.set_uniform("u_texture", texture);
 
           // render mesh using material
           self.mesh.draw(&self.material, PrimitiveTopology::Triangles);
         }
-        egui::epaint::Primitive::Callback(_) => panic!("Custom rendering callbacks not yet supported"),
+        egui::epaint::Primitive::Callback(_) => {
+          panic!("Custom rendering callbacks not yet supported")
+        }
       }
     }
 

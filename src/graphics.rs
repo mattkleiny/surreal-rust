@@ -36,7 +36,7 @@ mod textures;
 pub type GraphicsHandle = u32;
 
 /// A pointer to the core [`GraphicsBackend`] implementation.
-/// 
+///
 /// This pointer is safe to pass around the application.
 pub type GraphicsServer = std::rc::Rc<Box<dyn GraphicsBackend>>;
 
@@ -55,7 +55,7 @@ pub enum GraphicsBarrier {
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level implementation abstraction.
-/// 
+///
 /// Theoeretically different backends could be supported; though it's unlikely to be anything other
 /// than OpenGL. We do provide a headless backend to facilitate testing and related, however.
 pub trait GraphicsBackend {

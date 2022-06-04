@@ -16,7 +16,9 @@ impl<T> Quaternion<T> {
   }
 }
 
-impl<T> Lerp for Quaternion<T> where T: Numeric {
+impl<T> Lerp for Quaternion<T>
+where T: Numeric
+{
   fn lerp(a: Self, b: Self, t: f32) -> Self {
     Self::new(
       T::lerp(a.x, b.x, t),

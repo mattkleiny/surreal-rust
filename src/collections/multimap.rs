@@ -7,8 +7,7 @@ pub struct MultiMap<K, V> {
 }
 
 impl<K, V> MultiMap<K, V>
-where
-  K: Eq + Hash,
+where K: Eq + Hash
 {
   /// Creates a new multi-map.
   pub fn new() -> Self {
@@ -39,9 +38,7 @@ where
 
   /// Determines if the given key-value pair is contained in the map.
   pub fn contains_value(&self, key: &K, value: &V) -> bool
-  where
-    V: PartialEq,
-  {
+  where V: PartialEq {
     self
       .entries
       .get(key)
@@ -66,9 +63,7 @@ where
 
   /// Removes the given key-value pair from the map.
   pub fn remove(&mut self, key: &K, value: V)
-  where
-    V: PartialEq,
-  {
+  where V: PartialEq {
     if let Some(entries) = self.entries.get_mut(key) {
       entries.retain(|v| v != &value);
 

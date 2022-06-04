@@ -36,9 +36,7 @@ pub struct ComponentType {
 impl ComponentType {
   /// Constructs a new component type for the given [`T`].
   pub fn from<T>() -> Self
-  where
-    T: 'static,
-  {
+  where T: 'static {
     Self {
       type_id: TypeId::of::<T>(),
       name: type_name::<T>(),
@@ -64,8 +62,7 @@ pub trait Component: Sized + 'static {
 
 /// Blanket [`Component`] implementation for all standard types.
 impl<C> Component for C
-where
-  C: Copy + Sized + 'static,
+where C: Copy + Sized + 'static
 {
   type Storage = DefaultStorage<C>;
 }
@@ -82,8 +79,7 @@ pub trait ComponentStorage<C>: Default {
 type DefaultStorage<C> = [Option<C>; 32];
 
 impl<C> ComponentStorage<C> for DefaultStorage<C>
-where
-  C: Copy,
+where C: Copy
 {
   fn add_component(&mut self, entity: Entity, component: C) {
     self[entity.index] = Some(component)
@@ -159,8 +155,7 @@ impl World {
   }
 
   /// Removes a component for the given entity.
-  pub fn remove_component<C: Component>(&mut self, entity: Entity)
-  {
+  pub fn remove_component<C: Component>(&mut self, entity: Entity) {
     if let Some(_state) = self.entities.get_mut(entity) {
       if let Some(storage) = self.components.get_mut::<C::Storage>() {
         storage.remove_component(entity);

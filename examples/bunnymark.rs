@@ -84,7 +84,7 @@ fn main() {
         for _ in 0..128 {
           bunnies.pop();
         }
-        
+
         println!("There are {:?} bunnies", bunnies.len());
       }
     });

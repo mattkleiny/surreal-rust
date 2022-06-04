@@ -1,5 +1,5 @@
 //! Rendering abstractions and pipelines.
-//! 
+//!
 //! This is a series of components designed to make it simpler to build more complex render
 //! pipelines than using the 'material', 'mesh', 'render targets' etc do alone.
 
@@ -119,8 +119,7 @@ impl Renderer {
 ///
 /// Requires that the manager is configured for the associated context.
 pub trait Renderable<C>
-where
-  C: RenderContext,
+where C: RenderContext
 {
   /// Renders this object via the associated [`RenderContext`].
   fn render(&self, context: &mut C);
@@ -170,9 +169,7 @@ impl RenderManager {
 
   /// Configures the manager with the given context.
   pub fn configure<D>(&mut self, descriptor: D)
-  where
-    D: RenderContextDescriptor,
-  {
+  where D: RenderContextDescriptor {
     self.contexts.insert(descriptor.create(&self.server));
   }
 
@@ -191,9 +188,7 @@ impl RenderManager {
   ///
   /// If the context cannot be acquired, the body will not be run.
   pub fn with<C>(&mut self, body: impl FnOnce(&mut C))
-  where
-    C: RenderContext,
-  {
+  where C: RenderContext {
     if let Some(context) = self.contexts.get_mut::<C>() {
       context.on_before_with();
       body(context);
@@ -203,9 +198,7 @@ impl RenderManager {
 
   /// Releases the given context from the manager.
   pub fn release<C>(&mut self)
-  where
-    C: RenderContext,
-  {
+  where C: RenderContext {
     self.contexts.remove::<C>();
   }
 

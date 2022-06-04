@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::maths::{vec2, Rectangle, Vector2, FromRandom};
+use crate::maths::{vec2, FromRandom, Rectangle, Vector2};
 
 use super::*;
 
@@ -83,7 +83,12 @@ impl Texture {
   }
 
   /// Builds a new colored texture of the given size.
-  pub fn create_colored(server: &GraphicsServer, width: usize, height: usize, color: Color32) -> Self {
+  pub fn create_colored(
+    server: &GraphicsServer,
+    width: usize,
+    height: usize,
+    color: Color32,
+  ) -> Self {
     let mut texture = Self::new(server);
     let colors = vec![color; width * height];
 
@@ -138,12 +143,15 @@ impl Texture {
     let mut state = self.state.borrow_mut();
 
     state.options = options;
-    state.server.set_texture_options(state.handle, &state.options.sampler);
+    state
+      .server
+      .set_texture_options(state.handle, &state.options.sampler);
   }
 
   /// Downloads pixel data from the texture.
   #[profiling::function]
-  pub fn read_pixels<T>(&self) -> Vec<T> where T: Texel {
+  pub fn read_pixels<T>(&self) -> Vec<T>
+  where T: Texel {
     let state = self.state.borrow();
     let size = state.width as usize * state.height as usize;
 
@@ -166,7 +174,8 @@ impl Texture {
 
   /// Uploads pixel data to the texture.
   #[profiling::function]
-  pub fn write_pixels<T>(&mut self, width: usize, height: usize, pixels: &[T]) where T: Texel {
+  pub fn write_pixels<T>(&mut self, width: usize, height: usize, pixels: &[T])
+  where T: Texel {
     let mut state = self.state.borrow_mut();
 
     state.width = width as u32;
@@ -190,7 +199,8 @@ impl Texture {
 
   /// Uploads a sub-section of pixel data to the texture.
   #[profiling::function]
-  pub fn write_sub_pixels<T>(&self, region: &Rectangle<usize>, pixels: &[T]) where T: Texel {
+  pub fn write_sub_pixels<T>(&self, region: &Rectangle<usize>, pixels: &[T])
+  where T: Texel {
     let state = self.state.borrow();
 
     state.server.write_texture_sub_data(
@@ -283,7 +293,11 @@ pub struct TextureAtlas<'a> {
 impl<'a> TextureAtlas<'a> {
   /// Creates a new texture atlas from the given texture.
   pub fn new(width: u32, height: u32, texture: &'a Texture) -> Self {
-    Self { texture, width, height }
+    Self {
+      texture,
+      width,
+      height,
+    }
   }
 
   /// The width of the atlas, in sub-regions.

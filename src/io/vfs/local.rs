@@ -24,7 +24,7 @@ pub struct LocalFileSystem {
 impl LocalFileSystem {
   pub fn new() -> Self {
     Self {
-      root: std::env::current_dir().expect("Unable to get current directory")
+      root: std::env::current_dir().expect("Unable to get current directory"),
     }
   }
 }
@@ -52,7 +52,7 @@ impl FileSystem for LocalFileSystem {
       .open(to_path(&self.root, path))?;
 
     Ok(Self::InputStream {
-      reader: BufReader::new(file)
+      reader: BufReader::new(file),
     })
   }
 
@@ -63,7 +63,7 @@ impl FileSystem for LocalFileSystem {
       .open(to_path(&self.root, path))?;
 
     Ok(Self::OutputStream {
-      writer: BufWriter::new(file)
+      writer: BufWriter::new(file),
     })
   }
 }

@@ -1,5 +1,5 @@
 //! Mesh creation and management.
-//! 
+//!
 //! Meshes abstract over vertex and index data on the GPU as well, and
 //! provide utilities for constructing data from pieces.
 
@@ -8,7 +8,7 @@ use std::rc::Rc;
 
 pub use surreal_macros::Vertex;
 
-use crate::maths::{Tessellation, vec2, Vector2, Vector3};
+use crate::maths::{vec2, Tessellation, Vector2, Vector3};
 
 use super::*;
 
@@ -47,7 +47,15 @@ impl VertexDescriptor {
 
 /// Different kinds of vertex primitives.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum VertexKind { U8, U16, U32, I16, I32, F32, F64 }
+pub enum VertexKind {
+  U8,
+  U16,
+  U32,
+  I16,
+  I32,
+  F32,
+  F64,
+}
 
 impl VertexKind {
   /// Returns the size of this element type, in bytes.
@@ -74,6 +82,7 @@ pub struct Vertex2 {
 }
 
 impl Vertex for Vertex2 {
+  #[rustfmt::skip]
   const DESCRIPTORS: &'static [VertexDescriptor] = &[
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
@@ -91,6 +100,7 @@ pub struct Vertex3 {
 }
 
 impl Vertex for Vertex3 {
+  #[rustfmt::skip]
   const DESCRIPTORS: &'static [VertexDescriptor] = &[
     VertexDescriptor { count: 3, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
@@ -122,7 +132,9 @@ impl<V> MeshState<V> {
   }
 }
 
-impl<V> Mesh<V> where V: Vertex {
+impl<V> Mesh<V>
+where V: Vertex
+{
   /// Constructs a new blank mesh on the GPU.
   pub fn new(server: &GraphicsServer, usage: BufferUsage) -> Self {
     let vertices = Buffer::new(server, BufferKind::Element, usage);
@@ -162,17 +174,30 @@ impl<V> Mesh<V> where V: Vertex {
   pub fn draw(&self, material: &Material, topology: PrimitiveTopology) {
     let state = self.state.borrow();
 
-    self.draw_sub_mesh(material, topology, state.vertices.len(), state.indices.len());
+    self.draw_sub_mesh(
+      material,
+      topology,
+      state.vertices.len(),
+      state.indices.len(),
+    );
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
   #[profiling::function]
-  pub fn draw_sub_mesh(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  pub fn draw_sub_mesh(
+    &self,
+    material: &Material,
+    topology: PrimitiveTopology,
+    vertex_count: usize,
+    index_count: usize,
+  ) {
     material.bind();
 
     let state = self.state.borrow();
 
-    state.server.draw_mesh(state.handle, topology, vertex_count, index_count);
+    state
+      .server
+      .draw_mesh(state.handle, topology, vertex_count, index_count);
   }
 }
 
@@ -196,9 +221,21 @@ impl Mesh<Vertex2> {
   pub fn create_triangle(server: &GraphicsServer, size: f32) -> Self {
     Self::create(server, |mesh| {
       mesh.add_triangle(&[
-        Vertex2 { position: vec2(-size, -size), color: Color32::WHITE, uv: vec2(0., 0.) },
-        Vertex2 { position: vec2(0., size), color: Color32::WHITE, uv: vec2(0.5, 1.) },
-        Vertex2 { position: vec2(size, -size), color: Color32::WHITE, uv: vec2(1., 0.) },
+        Vertex2 {
+          position: vec2(-size, -size),
+          color: Color32::WHITE,
+          uv: vec2(0., 0.),
+        },
+        Vertex2 {
+          position: vec2(0., size),
+          color: Color32::WHITE,
+          uv: vec2(0.5, 1.),
+        },
+        Vertex2 {
+          position: vec2(size, -size),
+          color: Color32::WHITE,
+          uv: vec2(1., 0.),
+        },
       ]);
     })
   }
@@ -207,10 +244,26 @@ impl Mesh<Vertex2> {
   pub fn create_quad(server: &GraphicsServer, size: f32) -> Self {
     Self::create(server, |mesh| {
       mesh.add_quad(&[
-        Vertex2 { position: vec2(-size, -size), color: Color32::WHITE, uv: vec2(0., 1.) },
-        Vertex2 { position: vec2(-size, size), color: Color32::WHITE, uv: vec2(0., 0.) },
-        Vertex2 { position: vec2(size, size), color: Color32::WHITE, uv: vec2(1., 0.) },
-        Vertex2 { position: vec2(size, -size), color: Color32::WHITE, uv: vec2(1., 1.) },
+        Vertex2 {
+          position: vec2(-size, -size),
+          color: Color32::WHITE,
+          uv: vec2(0., 1.),
+        },
+        Vertex2 {
+          position: vec2(-size, size),
+          color: Color32::WHITE,
+          uv: vec2(0., 0.),
+        },
+        Vertex2 {
+          position: vec2(size, size),
+          color: Color32::WHITE,
+          uv: vec2(1., 0.),
+        },
+        Vertex2 {
+          position: vec2(size, -size),
+          color: Color32::WHITE,
+          uv: vec2(1., 1.),
+        },
       ]);
     })
   }
@@ -264,7 +317,8 @@ impl<V> Tessellator<V> {
   }
 
   /// Uploads the contents of the tessellator to the given [`Mesh`].
-  pub fn upload_to(&self, mesh: &mut Mesh<V>) where V: Vertex {
+  pub fn upload_to(&self, mesh: &mut Mesh<V>)
+  where V: Vertex {
     mesh.with_buffers(|vertices, indices| {
       vertices.write_data(self.vertices.as_slice());
       indices.write_data(self.indices.as_slice());
@@ -272,7 +326,9 @@ impl<V> Tessellator<V> {
   }
 }
 
-impl<V> Tessellation for Tessellator<V> where V: Vertex {
+impl<V> Tessellation for Tessellator<V>
+where V: Vertex
+{
   type Vertex = V;
 
   fn vertex_count(&self) -> Index {

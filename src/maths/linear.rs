@@ -13,4 +13,3 @@ mod planes;
 mod quaternions;
 mod rays;
 mod vectors;
-

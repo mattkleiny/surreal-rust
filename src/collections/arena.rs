@@ -190,7 +190,11 @@ mod tests {
 
     let index1 = arena.add("Item 1");
     let index2 = arena.add("Item 2");
-    let index3 = ArenaIndex { index: 23, generation: 0 };
+
+    let index3 = ArenaIndex {
+      index: 23,
+      generation: 0,
+    };
 
     assert!(arena.get(index1).is_some());
     assert!(arena.get_mut(index2).is_some());

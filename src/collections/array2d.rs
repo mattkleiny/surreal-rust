@@ -9,7 +9,8 @@ pub struct Array2D<T> {
 
 impl<T> Array2D<T> {
   /// Creates a new grid with the given dimensions.
-  pub fn new(width: usize, height: usize) -> Self where T: Clone + Default {
+  pub fn new(width: usize, height: usize) -> Self
+  where T: Clone + Default {
     Self {
       stride: width,
       items: vec![T::default(); width * height],
@@ -17,7 +18,8 @@ impl<T> Array2D<T> {
   }
 
   /// Converts the given slice into a grid.
-  pub fn from_slice(stride: usize, slice: &[T]) -> Self where T: Clone {
+  pub fn from_slice(stride: usize, slice: &[T]) -> Self
+  where T: Clone {
     Self {
       stride,
       items: slice.to_vec(),
@@ -56,7 +58,8 @@ impl<T> Grid<T> for Array2D<T> {
     self.items[x + y * self.stride] = value
   }
 
-  fn fill(&mut self, value: T) where T: Clone {
+  fn fill(&mut self, value: T)
+  where T: Clone {
     self.items.fill(value);
   }
 }

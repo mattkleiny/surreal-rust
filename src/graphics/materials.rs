@@ -62,22 +62,6 @@ struct MaterialUniform {
   pub value: ShaderUniform,
 }
 
-/// A strongly typed property key for use in [`Material`] binding.
-pub struct MaterialKey<T> where T: Into<ShaderUniform> {
-  pub name: &'static str,
-  _type: PhantomData<T>,
-}
-
-impl<T> MaterialKey<T> where T: Into<ShaderUniform> {
-  /// Creates a new material property.
-  pub const fn new(name: &'static str) -> Self {
-    Self {
-      name,
-      _type: PhantomData,
-    }
-  }
-}
-
 /// A material describes how to render a mesh and describes the underlying GPU pipeline state needed.
 #[derive(Clone)]
 pub struct Material {
@@ -131,12 +115,6 @@ impl Material {
   pub fn set_scissor_mode(&mut self, mode: ScissorMode) {
     self.scissor_mode = mode;
   }
-
-  /// Sets the given material property.
-  pub fn set_property<T>(&mut self, key: MaterialKey<T>, value: T) where T: Into<ShaderUniform> {
-    self.set_uniform(key.name, value);
-  }
-
   /// Sets the given material uniform.
   pub fn set_uniform(&mut self, name: &str, value: impl Into<ShaderUniform>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
@@ -186,7 +164,7 @@ impl Material {
     self.server.set_scissor_mode(self.scissor_mode);
 
     for uniform in self.uniforms.values() {
-      self.shader.set_uniform_at_location(uniform.location, &uniform.value);
+      self.shader.set_uniform_at(uniform.location, &uniform.value);
     }
 
     self.server.set_active_shader(self.shader.handle());

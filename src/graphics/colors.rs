@@ -1,5 +1,5 @@
 //! Pixel types and abstractions for color manipulation.
-//! 
+//!
 //! We support the two most common color types, a 32-bit integral RGBA color,
 //! and a 32-bit floating point per-chanenl representation for more precise rendering.
 
@@ -80,10 +80,10 @@ impl From<Color32> for Color {
 
 impl PartialEq for Color {
   fn eq(&self, other: &Self) -> bool {
-    self.r.approx_eq(other.r) &&
-      self.g.approx_eq(other.g) &&
-      self.b.approx_eq(other.b) &&
-      self.a.approx_eq(other.a)
+    self.r.approx_eq(other.r)
+      && self.g.approx_eq(other.g)
+      && self.b.approx_eq(other.b)
+      && self.a.approx_eq(other.a)
   }
 }
 
@@ -91,7 +91,12 @@ impl Add for Color {
   type Output = Color;
 
   fn add(self, rhs: Self) -> Self::Output {
-    Color::rgba(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
+    Color::rgba(
+      self.r + rhs.r,
+      self.g + rhs.g,
+      self.b + rhs.b,
+      self.a + rhs.a,
+    )
   }
 }
 
@@ -99,7 +104,12 @@ impl Sub for Color {
   type Output = Color;
 
   fn sub(self, rhs: Self) -> Self::Output {
-    Color::rgba(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
+    Color::rgba(
+      self.r - rhs.r,
+      self.g - rhs.g,
+      self.b - rhs.b,
+      self.a - rhs.a,
+    )
   }
 }
 
@@ -116,11 +126,7 @@ impl Lerp for Color {
 
 impl FromRandom for Color {
   fn from_random(random: &mut Random) -> Self {
-    Color::rgb(
-      random.next(),
-      random.next(),
-      random.next(),
-    )
+    Color::rgb(random.next(), random.next(), random.next())
   }
 }
 
@@ -182,10 +188,7 @@ impl From<Color> for Color32 {
 
 impl PartialEq for Color32 {
   fn eq(&self, other: &Self) -> bool {
-    self.r == other.r &&
-      self.g == other.g &&
-      self.b == other.b &&
-      self.a == other.a
+    self.r == other.r && self.g == other.g && self.b == other.b && self.a == other.a
   }
 }
 
@@ -193,7 +196,12 @@ impl Add for Color32 {
   type Output = Color32;
 
   fn add(self, rhs: Self) -> Self::Output {
-    Color32::rgba(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
+    Color32::rgba(
+      self.r + rhs.r,
+      self.g + rhs.g,
+      self.b + rhs.b,
+      self.a + rhs.a,
+    )
   }
 }
 
@@ -201,7 +209,12 @@ impl Sub for Color32 {
   type Output = Color32;
 
   fn sub(self, rhs: Self) -> Self::Output {
-    Color32::rgba(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
+    Color32::rgba(
+      self.r - rhs.r,
+      self.g - rhs.g,
+      self.b - rhs.b,
+      self.a - rhs.a,
+    )
   }
 }
 
@@ -218,11 +231,7 @@ impl Lerp for Color32 {
 
 impl FromRandom for Color32 {
   fn from_random(random: &mut Random) -> Self {
-    Color32::rgb(
-      random.next(),
-      random.next(),
-      random.next(),
-    )
+    Color32::rgb(random.next(), random.next(), random.next())
   }
 }
 

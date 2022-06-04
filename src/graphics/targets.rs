@@ -1,5 +1,5 @@
 //! Render target management and abstractions.
-//! 
+//!
 //! Render targets allow for off-screen processing and rendering to a texture, and form
 //! the basis of more complex render pipelines (deferred pipelines, post-processing, etc).
 
@@ -32,7 +32,13 @@ impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
   pub fn to_texture(&self, server: &GraphicsServer) -> Texture {
     let mut texture = Texture::with_options(server, &self.options);
-    texture.write_pixels(self.width as usize, self.height as usize, &[Color32::CLEAR; 0]);
+
+    // allocate the memory ahead of time; RGBA8 format
+    texture.write_pixels(
+      self.width as usize,
+      self.height as usize,
+      &[Color32::CLEAR; 0],
+    );
     texture
   }
 }
@@ -57,8 +63,16 @@ impl RenderTarget {
   pub fn new(server: &GraphicsServer, descriptor: &RenderTargetDescriptor) -> Self {
     // prepare attachments
     let color_attachment = descriptor.color_attachment.to_texture(server);
-    let depth_attachment = descriptor.depth_attachment.as_ref().map(|it| it.to_texture(server));
-    let stencil_attachment = descriptor.stencil_attachment.as_ref().map(|it| it.to_texture(server));
+
+    let depth_attachment = descriptor
+      .depth_attachment
+      .as_ref()
+      .map(|it| it.to_texture(server));
+
+    let stencil_attachment = descriptor
+      .stencil_attachment
+      .as_ref()
+      .map(|it| it.to_texture(server));
 
     let handle = server.create_render_target(
       color_attachment.handle(),
@@ -73,7 +87,7 @@ impl RenderTarget {
         color_attachment,
         depth_attachment,
         stencil_attachment,
-      }))
+      })),
     }
   }
 

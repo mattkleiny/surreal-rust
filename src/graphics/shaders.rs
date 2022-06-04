@@ -98,7 +98,7 @@ impl ShaderProgram {
   }
 
   /// Sets the given uniform value in the underlying program.
-  pub fn set_uniform_at_location(&self, location: usize, value: &ShaderUniform) {
+  pub fn set_uniform_at(&self, location: usize, value: &ShaderUniform) {
     let server = &self.state.server;
 
     server.set_shader_uniform(self.state.handle, location, value);

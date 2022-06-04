@@ -70,11 +70,24 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_buffer_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn read_buffer_data(&self, _buffer: GraphicsHandle, _offset: usize, _length: usize, _pointer: *mut u8) {
+  fn read_buffer_data(
+    &self,
+    _buffer: GraphicsHandle,
+    _offset: usize,
+    _length: usize,
+    _pointer: *mut u8,
+  ) {
     // no-op
   }
 
-  fn write_buffer_data(&self, _buffer: GraphicsHandle, _usage: BufferUsage, _kind: BufferKind, _length: usize, _pointer: *const u8) {
+  fn write_buffer_data(
+    &self,
+    _buffer: GraphicsHandle,
+    _usage: BufferUsage,
+    _kind: BufferKind,
+    _length: usize,
+    _pointer: *const u8,
+  ) {
     // no-op
   }
 
@@ -90,15 +103,38 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn read_texture_data(&self, _texture: GraphicsHandle, _length: usize, _pixel_format: TextureFormat, _pixels: *mut u8, _mip_level: usize) {
+  fn read_texture_data(
+    &self,
+    _texture: GraphicsHandle,
+    _length: usize,
+    _pixel_format: TextureFormat,
+    _pixels: *mut u8,
+    _mip_level: usize,
+  ) {
     // no-op
   }
 
-  fn write_texture_data(&self, _texture: GraphicsHandle, _width: usize, _height: usize, _pixels: *const u8, _internal_format: TextureFormat, _pixel_format: TextureFormat, _mip_level: usize) {
+  fn write_texture_data(
+    &self,
+    _texture: GraphicsHandle,
+    _width: usize,
+    _height: usize,
+    _pixels: *const u8,
+    _internal_format: TextureFormat,
+    _pixel_format: TextureFormat,
+    _mip_level: usize,
+  ) {
     // no-op
   }
 
-  fn write_texture_sub_data(&self, _texture: GraphicsHandle, _region: &Rectangle<usize>, _pixels: *const u8, _pixel_format: TextureFormat, _mip_level: usize) {
+  fn write_texture_sub_data(
+    &self,
+    _texture: GraphicsHandle,
+    _region: &Rectangle<usize>,
+    _pixels: *const u8,
+    _pixel_format: TextureFormat,
+    _mip_level: usize,
+  ) {
     // no-op
   }
 
@@ -131,18 +167,29 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   }
 
   fn dispatch_compute(&self, _shader: GraphicsHandle, _x: u32, _y: u32, _z: u32) {
-    // no-op      
+    // no-op
   }
 
   fn wait_compute_barrier(&self, _barrier: GraphicsBarrier) {
     // no-op
   }
 
-  fn create_mesh(&self, _vertices: GraphicsHandle, _indices: GraphicsHandle, _descriptors: &[VertexDescriptor]) -> GraphicsHandle {
+  fn create_mesh(
+    &self,
+    _vertices: GraphicsHandle,
+    _indices: GraphicsHandle,
+    _descriptors: &[VertexDescriptor],
+  ) -> GraphicsHandle {
     self.next_mesh_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn draw_mesh(&self, _mesh: GraphicsHandle, _topology: PrimitiveTopology, _vertex_count: usize, _index_count: usize) {
+  fn draw_mesh(
+    &self,
+    _mesh: GraphicsHandle,
+    _topology: PrimitiveTopology,
+    _vertex_count: usize,
+    _index_count: usize,
+  ) {
     // no-op
   }
 
@@ -150,7 +197,12 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn create_render_target(&self, _color_attachment: GraphicsHandle, _depth_attachment: Option<GraphicsHandle>, _stencil_attachment: Option<GraphicsHandle>) -> GraphicsHandle {
+  fn create_render_target(
+    &self,
+    _color_attachment: GraphicsHandle,
+    _depth_attachment: Option<GraphicsHandle>,
+    _stencil_attachment: Option<GraphicsHandle>,
+  ) -> GraphicsHandle {
     self.next_render_target_id.fetch_add(1, Ordering::Relaxed)
   }
 

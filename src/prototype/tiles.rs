@@ -3,7 +3,7 @@ use std::hash::Hash;
 
 use crate::collections::Array2D;
 use crate::graphics::Renderable;
-use crate::maths::{Grid, GridPoint, Numeric, vec2};
+use crate::maths::{vec2, Grid, GridPoint, Numeric};
 
 use super::*;
 
@@ -15,12 +15,16 @@ pub trait Tile: 'static {
   fn to_id(&self) -> Self::Id;
 }
 
-pub struct TileMap<'a, T> where T: Tile {
+pub struct TileMap<'a, T>
+where T: Tile
+{
   tiles: Array2D<T::Id>,
   sprites: HashMap<T::Id, TextureRegion<'a>>,
 }
 
-impl<'a, T> TileMap<'a, T> where T: Tile {
+impl<'a, T> TileMap<'a, T>
+where T: Tile
+{
   /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
@@ -61,7 +65,9 @@ impl<'a, T> TileMap<'a, T> where T: Tile {
   }
 }
 
-impl<'a, T> Grid<T> for TileMap<'a, T> where T: Tile {
+impl<'a, T> Grid<T> for TileMap<'a, T>
+where T: Tile
+{
   fn stride(&self) -> usize {
     self.tiles.width()
   }
@@ -79,7 +85,7 @@ impl<'a, T> Grid<T> for TileMap<'a, T> where T: Tile {
   }
 }
 
-impl<'a, T> Renderable<SpriteBatchContext> for TileMap<'a, T> where T: Tile {
+impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
   /// Renders this tile map with to a sprite batch.
   fn render(&self, context: &mut SpriteBatchContext) {
     let half_width = self.tiles.width() as f32 / 2.;
@@ -95,10 +101,13 @@ impl<'a, T> Renderable<SpriteBatchContext> for TileMap<'a, T> where T: Tile {
             (y as f32 + 0.5) * region.size.y as f32 - half_height * region.size.y as f32,
           );
 
-          context.batch.draw(region, SpriteOptions {
-            position,
-            ..Default::default()
-          });
+          context.batch.draw(
+            region,
+            SpriteOptions {
+              position,
+              ..Default::default()
+            },
+          );
         }
       }
     }
@@ -127,7 +136,7 @@ mod tests {
         1 => &Self::WALL,
         2 => &Self::FLOOR,
         3 => &Self::DOOR,
-        _ => panic!("Just experimenting: {:?}", id)
+        _ => panic!("Just experimenting: {:?}", id),
       }
     }
 
