@@ -194,10 +194,11 @@ where V: Vertex
     material.bind();
 
     let state = self.state.borrow();
+    let server = &state.server;
 
-    state
-      .server
-      .draw_mesh(state.handle, topology, vertex_count, index_count);
+    server.draw_mesh(state.handle, topology, vertex_count, index_count);
+
+    material.unbind();
   }
 }
 

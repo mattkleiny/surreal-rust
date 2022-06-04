@@ -47,10 +47,12 @@ impl UserInterface {
 
   /// Propagates input into the canvas and runs the given body against the canvas output.
   pub fn run(&mut self, input: &impl RawInputProvider, body: impl FnMut(&egui::Context)) {
+    // transfer pixels-per-point from the graphics server
     let pixels_per_point = self.graphics.get_pixels_per_point();
 
     self.context.set_pixels_per_point(pixels_per_point);
 
+    // run update, passing input and collecting output
     let raw_input = input.get_raw_input().clone();
     let full_output = self.context.run(raw_input, body);
     let textures_delta = full_output.textures_delta;

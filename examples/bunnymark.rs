@@ -9,8 +9,6 @@ fn main() {
   let configuration = Configuration {
     title: "Bunnymark",
     size: (WIDTH as u32, HEIGHT as u32),
-    samples: 4,
-    log_level: LevelFilter::Trace,
     ..Default::default()
   };
 
@@ -77,7 +75,7 @@ fn main() {
           });
         }
 
-        trace!("There are {:?} bunnies", bunnies.len());
+        info!("There are {:?} bunnies", bunnies.len());
       }
 
       if engine.input.mouse.is_button_down(MouseButton::Right) {
@@ -85,7 +83,7 @@ fn main() {
           bunnies.pop();
         }
 
-        trace!("There are {:?} bunnies", bunnies.len());
+        info!("There are {:?} bunnies", bunnies.len());
       }
     });
   });

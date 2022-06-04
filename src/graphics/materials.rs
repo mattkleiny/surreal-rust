@@ -154,10 +154,11 @@ impl Material {
     self.uniforms.clear();
   }
 
-  /// Binds the material as the active shader and uploads it's uniforms.
+  /// Binds this material to the graphics server.
   pub fn bind(&self) {
     // TODO: minimize state changes in the underlying platform?
     // TODO: material batching or sorting in a render pipeline?
+    
     self.server.set_blend_state(self.blend_state);
     self.server.set_culling_mode(self.culling_mode);
     self.server.set_scissor_mode(self.scissor_mode);
@@ -167,6 +168,13 @@ impl Material {
     }
 
     self.server.set_active_shader(self.shader.handle());
+  }
+
+  /// Unbinds this material from the graphics server.
+  pub fn unbind(&self) {
+    self.server.set_blend_state(BlendState::Disabled);
+    self.server.set_culling_mode(CullingMode::Disabled);
+    self.server.set_scissor_mode(ScissorMode::Disabled);
   }
 }
 

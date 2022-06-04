@@ -11,17 +11,17 @@ fn main() {
   };
 
   Engine::start(configuration, |engine| {
-    let mut canvas = UserInterface::new(&engine.graphics);
+    let mut interface = UserInterface::new(&engine.graphics);
 
     let mut name = "Matt".to_string();
     let mut age = 33;
 
     engine.run_variable_step(|engine, tick| {
-      engine
-        .graphics
-        .clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
+      let graphics = &engine.graphics;
 
-      canvas.run(&engine.input, |egui| {
+      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
+
+      interface.run(&engine.input, |egui| {
         egui::Window::new("Surreal ❤ egui").show(egui, |ui| {
           ui.heading("My egui Application");
 
