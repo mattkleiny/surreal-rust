@@ -29,13 +29,6 @@ impl Sub for TimeStamp {
   }
 }
 
-/// Contains information on the game's timing state.
-#[derive(Copy, Clone, Debug)]
-pub struct GameTime {
-  pub delta_time: f32,
-  pub total_time: f32,
-}
-
 /// A simple clock for measuring the time between ticks.
 #[derive(Debug)]
 pub struct Clock {

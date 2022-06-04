@@ -3,15 +3,14 @@
 //! Bootstrapping and other framework systems for common projects.
 
 pub use ecs::*;
-pub use events::*;
 
 mod ecs;
-mod events;
 
 // TODO: screen management
 // TODO: plugin management (profiler, console, etc)
 // TODO: better rendering pipeline support
 
+use glutin::{window::Window, ContextBuilder};
 use winit::{
   dpi::LogicalSize,
   event_loop::{ControlFlow, EventLoop},
@@ -24,7 +23,7 @@ use crate::{
   graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend},
   input::InputBackend,
   maths::vec2,
-  utilities::{Clock, FrameCounter, GameTime, IntervalTimer, TimeSpan},
+  utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
 /// Configuration for the `Engine`.
@@ -35,6 +34,7 @@ pub struct Configuration {
   pub title: &'static str,
   pub size: (u32, u32),
   pub vsync_enabled: bool,
+  pub samples: u16,
   pub update_continuously: bool,
   pub run_in_background: bool,
   pub show_fps_in_title: bool,
@@ -47,6 +47,7 @@ impl Default for Configuration {
       title: "Surreal",
       size: (1280, 720),
       vsync_enabled: true,
+      samples: 0,
       update_continuously: true,
       run_in_background: false,
       show_fps_in_title: true,
@@ -55,13 +56,20 @@ impl Default for Configuration {
   }
 }
 
+/// Contains information on the game's timing state.
+#[derive(Copy, Clone, Debug)]
+pub struct GameTime {
+  pub delta_time: f32,
+  pub total_time: f32,
+}
+
 /// The context for a single tick of the main loop.
-pub struct Tick {
+pub struct GameTick {
   pub time: GameTime,
   is_exiting: bool,
 }
 
-impl Tick {
+impl GameTick {
   /// Exits the engine at the end of the current tick.
   pub fn exit(&mut self) {
     self.is_exiting = true;
@@ -80,7 +88,7 @@ pub struct Engine {
 
   // window management
   config: Configuration,
-  window: winit::window::Window,
+  window: Window,
   event_loop: Option<EventLoop<()>>,
   is_focused: bool,
 
@@ -123,13 +131,66 @@ impl Engine {
     setup(engine);
   }
 
-  /// Runs the game loop in a variable step fashion.
-  pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, &mut Tick)) {
+  /// Creates a new engine, bootstrapping all core systems and opening the main display.
+  pub fn new(config: Configuration) -> Self {
+    // prepare the main window and event loop
+    let event_loop = EventLoop::new();
+
+    let window = WindowBuilder::new()
+      .with_title(config.title)
+      .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
+      .with_resizable(true)
+      .with_window_icon(config.icon.map(|buffer| {
+        let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico)
+          .expect("Failed to decode icon data");
+
+        let rgba = image.as_rgba8().expect("Image was not in RGBA format");
+
+        let pixels = rgba.pixels().flat_map(|pixel| pixel.0).collect();
+        let width = rgba.width();
+        let height = rgba.height();
+
+        Icon::from_rgba(pixels, width, height).expect("Failed to convert icon from raw image")
+      }));
+
+    // glutin tries to be safe via the type system, what a mess.
+    let context = ContextBuilder::new()
+      .with_vsync(config.vsync_enabled)
+      .with_multisampling(config.samples)
+      .build_windowed(window, &event_loop)
+      .unwrap();
+
+    let (context, window) = unsafe { context.make_current().unwrap().split() };
+
+    Self {
+      // servers
+      assets: AssetManager::new(),
+      audio: AudioServer::new(Box::new(OpenALAudioBackend::new())),
+      graphics: GraphicsServer::new(Box::new(OpenGLGraphicsBackend::new(context))),
+      input: InputBackend::new(),
+
+      // window management
+      config,
+      window,
+      event_loop: Some(event_loop),
+      is_focused: true,
+
+      // timing
+      clock: Clock::new(),
+      frame_timer: IntervalTimer::new(TimeSpan::from_seconds(1.)),
+      frame_counter: FrameCounter::new(32),
+    }
+  }
+
+  /// Runs a variable step game loop against the engine.
+  ///
+  /// This method will block until the game is closed.
+  pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, &mut GameTick)) {
     let mut timer = Clock::new();
 
     self.run(move |engine, control_flow| {
       // capture timing information
-      let mut tick = Tick {
+      let mut tick = GameTick {
         time: GameTime {
           delta_time: timer.tick(),
           total_time: timer.total_time(),
@@ -148,57 +209,12 @@ impl Engine {
     });
   }
 
-  /// Creates a new engine, bootstrapping all core systems and opening the main display.
-  pub fn new(config: Configuration) -> Self {
-    // prepare the main window and event loop
-    let event_loop = EventLoop::new();
-    let window = WindowBuilder::new()
-      .with_title(config.title)
-      .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
-      .with_resizable(true)
-      .with_window_icon(config.icon.map(|buffer| {
-        let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico)
-          .expect("Failed to decode icon data");
-        let rgba = image.as_rgba8().expect("Image was not in RGBA format");
-
-        let pixels = rgba.pixels().flat_map(|pixel| pixel.0).collect();
-        let width = rgba.width();
-        let height = rgba.height();
-
-        Icon::from_rgba(pixels, width, height).expect("Failed to convert icon from raw image")
-      }))
-      .build(&event_loop)
-      .unwrap();
-
-    Self {
-      // servers
-      assets: AssetManager::new(),
-      audio: AudioServer::new(Box::new(OpenALAudioBackend::new())),
-      graphics: GraphicsServer::new(Box::new(OpenGLGraphicsBackend::new(
-        &window,
-        config.vsync_enabled,
-      ))),
-      input: InputBackend::new(),
-
-      // window management
-      config,
-      window,
-      event_loop: Some(event_loop),
-      is_focused: true,
-
-      // timing
-      clock: Clock::new(),
-      frame_timer: IntervalTimer::new(TimeSpan::from_seconds(1.)),
-      frame_counter: FrameCounter::new(32),
-    }
-  }
-
-  /// Runs the given delegate as the main loop for this engine.
+  /// Runs the given delegate as the main loop for the engine.
   ///
   /// This method will block until the game is closed.
   pub fn run(mut self, mut body: impl FnMut(&mut Self, &mut ControlFlow)) {
     use winit::event::*;
-    use winit::platform::desktop::EventLoopExtDesktop;
+    use winit::platform::run_return::EventLoopExtRunReturn;
 
     // use this hack to unpack the event loop out of 'self' and then remove the 'static
     // lifetime bound on run_return so that body can access things in self without lifetime woes.
@@ -246,41 +262,43 @@ impl Engine {
             self.window.request_redraw();
           }
         }
-        Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
-          WindowEvent::CursorMoved { position, .. } => {
+        Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
+          match event {
+            WindowEvent::CursorMoved { position, .. } => {
             let size = self.window.inner_size();
 
-            self.input.on_mouse_move(
-              vec2(position.x as f32, position.y as f32),
-              vec2(size.width as f32, size.height as f32),
-            );
-          }
-          WindowEvent::MouseWheel { delta, .. } => {
-            self.input.on_mouse_wheel(&delta);
-          }
-          WindowEvent::MouseInput { button, state, .. } => {
-            self.input.on_mouse_button(button, state);
-          }
-          WindowEvent::KeyboardInput { input, .. } => {
-            self.input.on_keyboard_event(&input);
-          }
-          WindowEvent::ModifiersChanged(modifiers) => {
-            self.input.on_modifiers_changed(modifiers);
-          }
-          WindowEvent::Focused(focused) => {
-            self.is_focused = focused;
-            self.input.on_modifiers_changed(ModifiersState::default());
-          }
-          WindowEvent::Resized(size) => {
-            let size = (size.width as usize, size.height as usize);
+              self.input.on_mouse_move(
+                vec2(position.x as f32, position.y as f32),
+                vec2(size.width as f32, size.height as f32),
+              );
+            }
+            WindowEvent::MouseWheel { delta, .. } => {
+              self.input.on_mouse_wheel(&delta);
+            }
+            WindowEvent::MouseInput { button, state, .. } => {
+              self.input.on_mouse_button(button, state);
+            }
+            WindowEvent::KeyboardInput { input, .. } => {
+              self.input.on_keyboard_event(&input);
+            }
+            WindowEvent::ModifiersChanged(modifiers) => {
+              self.input.on_modifiers_changed(modifiers);
+            }
+            WindowEvent::Focused(focused) => {
+              self.is_focused = focused;
+              self.input.on_modifiers_changed(ModifiersState::default());
+            }
+            WindowEvent::Resized(size) => {
+              let size = (size.width as usize, size.height as usize);
 
-            self.graphics.set_viewport_size(size);
+              self.graphics.set_viewport_size(size);
+            }
+            WindowEvent::CloseRequested => {
+              *control_flow = ControlFlow::Exit;
+            }
+            _ => {}
           }
-          WindowEvent::CloseRequested => {
-            *control_flow = ControlFlow::Exit;
-          }
-          _ => {}
-        },
+        }
         _ => {}
       }
     });

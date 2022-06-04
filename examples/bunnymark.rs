@@ -9,6 +9,7 @@ fn main() {
   let configuration = Configuration {
     title: "Bunnymark",
     size: (WIDTH as u32, HEIGHT as u32),
+    samples: 4,
     ..Default::default()
   };
 
@@ -83,6 +84,8 @@ fn main() {
         for _ in 0..128 {
           bunnies.pop();
         }
+        
+        println!("There are {:?} bunnies", bunnies.len());
       }
     });
   });

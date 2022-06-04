@@ -5,8 +5,7 @@ use std::collections::HashMap;
 use std::ffi::c_void;
 
 use anyhow::anyhow;
-use raw_gl_context::{GlConfig, GlContext};
-use winit::window::Window;
+use glutin::{ContextWrapper, PossiblyCurrent};
 
 use super::*;
 
@@ -14,7 +13,7 @@ use crate::maths::Rectangle;
 
 /// A [`GraphicsBackend`] implementation for OpenGL.
 pub struct OpenGLGraphicsBackend {
-  context: GlContext,
+  pub context: ContextWrapper<PossiblyCurrent, ()>,
   internal_state: RefCell<InternalState>,
 }
 
@@ -24,15 +23,9 @@ struct InternalState {
 }
 
 impl OpenGLGraphicsBackend {
-  pub fn new(window: &Window, vsync_enabled: bool) -> Self {
-    // prepare and load opengl bindings
-    let config = GlConfig {
-      vsync: vsync_enabled,
-      ..Default::default()
-    };
-
-    let context = GlContext::create(window, config).unwrap();
-    context.make_current();
+  /// Creates a new OpenGL backend.
+  pub fn new(context: ContextWrapper<PossiblyCurrent, ()>) -> Self {
+    // load our opengl bindings
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
     Self {
@@ -47,7 +40,7 @@ impl OpenGLGraphicsBackend {
 impl GraphicsBackend for OpenGLGraphicsBackend {
   #[profiling::function]
   fn begin_frame(&self) {
-    self.context.make_current();
+    // no-op
   }
 
   #[profiling::function]
@@ -56,8 +49,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       gl::Flush();
     }
 
-    self.context.swap_buffers();
-    self.context.make_not_current();
+    self.context.swap_buffers().expect("Failed to swap buffers");
   }
 
   fn get_viewport_size(&self) -> (usize, usize) {
@@ -71,7 +63,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
   fn set_viewport_size(&self, (width, height): (usize, usize)) {
     unsafe {
-      self.context.make_current();
       gl::Viewport(0, 0, width as i32, height as i32);
     }
   }
