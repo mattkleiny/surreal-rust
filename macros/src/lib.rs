@@ -7,7 +7,7 @@ use syn::{parse_macro_input, spanned::Spanned, Attribute, Data, DeriveInput, Fie
 
 /// Builds a [`Vertex`] trait implementation for the associated struct.
 ///
-/// Defines a series of [`VertexDescriptor`]s which define the layout of the vertex on the GPU.
+/// Defines a series of VertexDescriptors which define the layout of the vertex on the GPU.
 #[proc_macro_derive(Vertex, attributes(vertex))]
 pub fn derive_vertex(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);

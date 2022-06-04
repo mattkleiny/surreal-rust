@@ -8,7 +8,6 @@ use winit::event::ElementState;
 pub use winit::event::MouseButton;
 
 /// Represents a mouse device on the system.
-#[derive(Default)]
 pub struct MouseDevice {
   position: Vector2<f32>,
   normalised_position: Vector2<f32>,

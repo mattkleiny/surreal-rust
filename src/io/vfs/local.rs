@@ -21,12 +21,6 @@ pub struct LocalFileSystem {
   root: PathBuf,
 }
 
-impl Default for LocalFileSystem {
-  fn default() -> Self {
-    Self::new()
-  }
-}
-
 impl LocalFileSystem {
   pub fn new() -> Self {
     Self {

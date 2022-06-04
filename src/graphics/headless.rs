@@ -9,7 +9,6 @@ use super::*;
 /// A headless [`GraphicsBackend`] implementation.
 ///
 /// This backend does nothing (no-ops) and can be used for testing/etc.
-#[derive(Default)]
 pub struct HeadlessGraphicsBackend {
   next_buffer_id: AtomicU32,
   next_texture_id: AtomicU32,

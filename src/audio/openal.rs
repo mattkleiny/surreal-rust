@@ -2,11 +2,11 @@
 
 use super::*;
 
-/// An [`AudioBackend`] implementation for OpenAL.
-#[derive(Default)]
+/// An OpenAL [`AudioBackend`] implementation.
 pub struct OpenALAudioBackend {}
 
 impl OpenALAudioBackend {
+  /// Creates a new OpenAL backend.
   pub fn new() -> Self {
     Self {}
   }

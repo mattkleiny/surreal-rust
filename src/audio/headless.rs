@@ -7,7 +7,6 @@ use super::*;
 /// A headless [`AudioBackend`] implementation.
 ///
 /// This backend does nothing (no-ops) and can be used for testing/etc.
-#[derive(Default)]
 pub struct HeadlessAudioBackend {
   next_clip_id: AtomicU32,
 }

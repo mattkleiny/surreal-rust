@@ -36,12 +36,6 @@ pub struct Clock {
   last_time: TimeStamp,
 }
 
-impl Default for Clock {
-  fn default() -> Self {
-    Self::new()
-  }
-}
-
 impl Clock {
   /// Creates a new clock.
   pub fn new() -> Self {
