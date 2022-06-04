@@ -3,7 +3,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::assets::{AssetContext, AssetLoader};
+use crate::assets::{AssetContext, AssetLoader, AssetManager};
+use crate::io::AsVirtualPath;
 use crate::maths::{vec2, FromRandom, Rectangle, Vector2};
 use crate::prelude::Grid;
 
@@ -318,6 +319,18 @@ impl<'a> TextureAtlas<'a> {
       width,
       height,
     }
+  }
+
+  /// Loads a texture atlas from the given virtual path.
+  pub fn load(
+    assets: &'a AssetManager,
+    width: u32,
+    height: u32,
+    path: impl AsVirtualPath,
+  ) -> crate::Result<Self> {
+    let texture = assets.load_asset(path)?;
+
+    Ok(Self::new(width, height, &texture))
   }
 
   /// The width of the atlas, in sub-regions.

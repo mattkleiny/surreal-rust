@@ -41,11 +41,7 @@ fn main() {
     let graphics = &engine.graphics;
 
     // set-up assets and rendering
-    let sprite: &Texture = assets
-      .load_asset("assets/sprites/tiles_desert.png")
-      .expect("Failed to load sprite image");
-
-    let atlas = TextureAtlas::new(16, 16, sprite);
+    let sprites = TextureAtlas::load(&assets, 16, 16, "assets/sprites/tiles_desert.png").unwrap();
     let palette = load_built_in_palette(BuiltInPalette::Demichrome4);
 
     let mut renderer = RenderManager::new(graphics);
@@ -59,9 +55,9 @@ fn main() {
     // set-up tile map
     let mut map = TileMap::new(16, 9);
 
-    map.set_sprite(&MapTile::Empty, atlas.get_region(0, 3));
-    map.set_sprite(&MapTile::Cactus, atlas.get_region(3, 0));
-    map.set_sprite(&MapTile::Rock, atlas.get_region(2, 2));
+    map.set_sprite(&MapTile::Empty, sprites.get_region(0, 3));
+    map.set_sprite(&MapTile::Cactus, sprites.get_region(3, 0));
+    map.set_sprite(&MapTile::Rock, sprites.get_region(2, 2));
 
     map.fill(|_, _| {
       if bool::random() {
