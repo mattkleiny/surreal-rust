@@ -7,7 +7,7 @@
 
 use std::rc::Rc;
 
-use crate::assets::{Asset, AssetContext, AssetLoader};
+use crate::assets::{AssetContext, AssetLoader};
 use crate::io::AsVirtualPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
@@ -151,11 +151,9 @@ pub struct ShaderProgramLoader {
   pub server: GraphicsServer,
 }
 
-impl Asset for ShaderProgram {
-  type Loader = ShaderProgramLoader;
-}
+impl AssetLoader for ShaderProgramLoader {
+  type Output = ShaderProgram;
 
-impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<ShaderProgram> {
     let program = ShaderProgram::new(&self.server);
     let source_code = context.path.read_all_text()?;

@@ -3,7 +3,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::assets::{Asset, AssetContext, AssetLoader};
+use crate::assets::{AssetContext, AssetLoader};
 use crate::maths::{vec2, FromRandom, Rectangle, Vector2};
 use crate::prelude::Grid;
 
@@ -260,11 +260,9 @@ pub struct TextureLoader {
   pub options: TextureOptions,
 }
 
-impl Asset for Texture {
-  type Loader = TextureLoader;
-}
+impl AssetLoader for TextureLoader {
+  type Output = Texture;
 
-impl AssetLoader<Texture> for TextureLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Texture> {
     let image = context.load_asset(context.path)?;
     let mut texture = Texture::new(&self.server);

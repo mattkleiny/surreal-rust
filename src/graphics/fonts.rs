@@ -2,7 +2,7 @@
 //!
 //! We currently support bitmap fonts, with a planned future change to support TrueType fonts.
 
-use crate::assets::{Asset, AssetContext, AssetLoader};
+use crate::assets::{AssetContext, AssetLoader};
 use crate::graphics::{Texture, TextureRegion};
 
 /// A font comprised of bitmap images for each glyph.
@@ -41,11 +41,9 @@ impl BitmapFont {
 /// An `AssetLoader` for `BitmapFont`s.
 pub struct BitmapFontLoader {}
 
-impl Asset for BitmapFont {
-  type Loader = BitmapFontLoader;
-}
+impl AssetLoader for BitmapFontLoader {
+  type Output = BitmapFont;
 
-impl AssetLoader<BitmapFont> for BitmapFontLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<BitmapFont> {
     let descriptor: BitmapFontMetrics = context.path.deserialize_json()?;
     let texture = context.load_asset(context.path.change_extension("png"))?;

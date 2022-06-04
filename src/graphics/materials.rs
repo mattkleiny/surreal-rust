@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use crate::assets::{Asset, AssetContext, AssetLoader};
+use crate::assets::{AssetContext, AssetLoader};
 
 use super::*;
 
@@ -158,7 +158,7 @@ impl Material {
   pub fn bind(&self) {
     // TODO: minimize state changes in the underlying platform?
     // TODO: material batching or sorting in a render pipeline?
-    
+
     self.server.set_blend_state(self.blend_state);
     self.server.set_culling_mode(self.culling_mode);
     self.server.set_scissor_mode(self.scissor_mode);
@@ -183,11 +183,9 @@ pub struct MaterialLoader {
   pub server: GraphicsServer,
 }
 
-impl Asset for Material {
-  type Loader = MaterialLoader;
-}
+impl AssetLoader for MaterialLoader {
+  type Output = Material;
 
-impl AssetLoader<Material> for MaterialLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Material> {
     let shader = context.load_asset(context.path)?;
     let material = Material::new(&self.server, &shader);
