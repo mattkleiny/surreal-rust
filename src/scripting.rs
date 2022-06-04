@@ -30,6 +30,7 @@ pub trait ScriptResource {
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level implementation abstraction.
+#[derive(Default)]
 pub struct ScriptBackend {}
 
 impl ScriptBackend {

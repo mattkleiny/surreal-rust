@@ -93,7 +93,7 @@ impl AssetManager {
       .loaders
       .get(&TypeId::of::<A>())
       .and_then(|it| it.downcast_ref::<A::Loader>())
-      .ok_or(anyhow::anyhow!(
+      .ok_or_else(|| anyhow::anyhow!(
         "Could not result loader for asset {:?}",
         std::any::type_name::<A>()
       ))?;

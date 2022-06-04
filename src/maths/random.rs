@@ -24,8 +24,7 @@ impl Random {
   }
 
   /// Generates a new value of the given [`Random`] type, T.
-  pub fn next<T>(&mut self) -> T
-  where T: FromRandom {
+  pub fn next<T: FromRandom>(&mut self) -> T {
     T::from_random(self)
   }
 

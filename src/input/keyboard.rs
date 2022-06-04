@@ -6,6 +6,7 @@ use winit::event::ElementState;
 pub use winit::event::VirtualKeyCode as Key;
 
 /// Represents a keyboard device in the system.
+#[derive(Default)]
 pub struct KeyboardDevice {
   previous_keys: HashSet<Key>,
   current_keys: HashSet<Key>,

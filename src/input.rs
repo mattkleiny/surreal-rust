@@ -12,6 +12,7 @@ mod keyboard;
 mod mouse;
 
 /// The input management backend implementation for the underlying input API.
+#[derive(Default)]
 pub struct InputBackend {
   pub keyboard: KeyboardDevice,
   pub mouse: MouseDevice,

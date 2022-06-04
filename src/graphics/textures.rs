@@ -214,7 +214,7 @@ impl Texture {
 
   /// Uploads pixel data to the texture from the given [`Image`].
   pub fn write_image(&mut self, image: &Image) {
-    self.write_pixels(image.width(), image.height(), &image.as_slice());
+    self.write_pixels(image.width(), image.height(), image.as_slice());
   }
 }
 

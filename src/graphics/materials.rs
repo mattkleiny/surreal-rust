@@ -4,7 +4,6 @@
 //! pipeline state changes through to shader programs and uniforms.
 
 use std::collections::HashMap;
-use std::marker::PhantomData;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
 

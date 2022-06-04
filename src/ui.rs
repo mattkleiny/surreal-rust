@@ -140,7 +140,7 @@ impl UserInterfaceCanvas {
               std::slice::from_raw_parts(vertices.as_ptr() as *const Vertex2, vertices.len())
             };
 
-            vertex_buffer.write_data(&vertices);
+            vertex_buffer.write_data(vertices);
             index_buffer.write_data(&indices);
           });
 

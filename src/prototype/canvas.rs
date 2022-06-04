@@ -103,7 +103,7 @@ impl PixelCanvas {
     self.texture.write_pixels(
       self.pixels.width(),
       self.pixels.height(),
-      &self.pixels.as_slice(),
+      self.pixels.as_slice(),
     );
 
     // render to the screen
