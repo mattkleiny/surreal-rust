@@ -19,18 +19,20 @@ fn main() {
     let mut random = Random::new();
 
     engine.run_variable_step(|engine, tick| {
+      let mouse = &engine.input.mouse;
+
       canvas.simulate(tick.time.delta_time);
       canvas.draw();
 
-      let position = engine.input.mouse.normalised_position()
+      let position = mouse.normalised_position()
         * vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
 
-      if engine.input.mouse.is_button_down(MouseButton::Left) {
+      if mouse.is_button_down(MouseButton::Left) {
         let colors = &palette.as_slice()[1..4];
         let color = colors.select_randomly(&mut random);
 
         canvas.draw_circle(position, 6., *color);
-      } else if engine.input.mouse.is_button_down(MouseButton::Right) {
+      } else if mouse.is_button_down(MouseButton::Right) {
         canvas.draw_circle(position, 6., Color::CLEAR);
       }
 

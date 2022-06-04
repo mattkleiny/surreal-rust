@@ -6,8 +6,9 @@ use surreal::prelude::*;
 
 fn main() {
   let configuration = Configuration {
-    title: "Surreal <3 egui",
+    title: "Hello, egui",
     size: (1920, 1080),
+    transparent_window: true,
     ..Default::default()
   };
 
@@ -22,10 +23,12 @@ fn main() {
     let mut age = 33;
 
     engine.run_variable_step(|engine, tick| {
-      engine.graphics.clear_color_buffer(Color::BLACK);
+      engine
+        .graphics
+        .clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       canvas.run(&engine.input, |egui| {
-        egui::CentralPanel::default().show(egui, |ui| {
+        egui::Window::new("Surreal ❤ egui").show(egui, |ui| {
           ui.heading("My egui Application");
 
           ui.horizontal(|ui| {
@@ -40,18 +43,6 @@ fn main() {
           }
 
           ui.label(format!("Hello '{}', age {}", name, age));
-
-          use egui::plot::{Line, Plot, Value, Values};
-
-          let sin = (0..1000).map(|i| {
-            let x = i as f64 * 0.01;
-            Value::new(x, x.sin())
-          });
-          let line = Line::new(Values::from_values_iter(sin));
-
-          Plot::new("my_plot")
-            .view_aspect(2.0)
-            .show(ui, |plot_ui| plot_ui.line(line));
         });
       });
 

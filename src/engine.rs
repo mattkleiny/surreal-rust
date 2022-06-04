@@ -6,10 +6,6 @@ pub use ecs::*;
 
 mod ecs;
 
-// TODO: screen management
-// TODO: plugin management (profiler, console, etc)
-// TODO: better rendering pipeline support
-
 use glutin::{window::Window, ContextBuilder};
 use winit::{
   dpi::LogicalSize,
@@ -26,6 +22,10 @@ use crate::{
   utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
+// TODO: scene management
+// TODO: plugin management (profiler, console, etc)
+// TODO: better rendering pipeline support
+
 /// Configuration for the `Engine`.
 ///
 /// This struct defines how to set-up the game and initial settings.
@@ -37,6 +37,7 @@ pub struct Configuration {
   pub samples: u16,
   pub update_continuously: bool,
   pub run_in_background: bool,
+  pub transparent_window: bool,
   pub show_fps_in_title: bool,
   pub icon: Option<&'static [u8]>,
 }
@@ -50,6 +51,7 @@ impl Default for Configuration {
       samples: 0,
       update_continuously: true,
       run_in_background: false,
+      transparent_window: false,
       show_fps_in_title: true,
       icon: Some(include_bytes!("../surreal.ico")),
     }
@@ -57,7 +59,6 @@ impl Default for Configuration {
 }
 
 /// Contains information on the game's timing state.
-#[derive(Copy, Clone, Debug)]
 pub struct GameTime {
   pub delta_time: f32,
   pub total_time: f32,
@@ -140,6 +141,7 @@ impl Engine {
       .with_title(config.title)
       .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
       .with_resizable(true)
+      .with_transparent(config.transparent_window)
       .with_window_icon(config.icon.map(|buffer| {
         let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico)
           .expect("Failed to decode icon data");
@@ -262,43 +264,41 @@ impl Engine {
             self.window.request_redraw();
           }
         }
-        Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
-          match event {
-            WindowEvent::CursorMoved { position, .. } => {
+        Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
+          WindowEvent::CursorMoved { position, .. } => {
             let size = self.window.inner_size();
 
-              self.input.on_mouse_move(
-                vec2(position.x as f32, position.y as f32),
-                vec2(size.width as f32, size.height as f32),
-              );
-            }
-            WindowEvent::MouseWheel { delta, .. } => {
-              self.input.on_mouse_wheel(&delta);
-            }
-            WindowEvent::MouseInput { button, state, .. } => {
-              self.input.on_mouse_button(button, state);
-            }
-            WindowEvent::KeyboardInput { input, .. } => {
-              self.input.on_keyboard_event(&input);
-            }
-            WindowEvent::ModifiersChanged(modifiers) => {
-              self.input.on_modifiers_changed(modifiers);
-            }
-            WindowEvent::Focused(focused) => {
-              self.is_focused = focused;
-              self.input.on_modifiers_changed(ModifiersState::default());
-            }
-            WindowEvent::Resized(size) => {
-              let size = (size.width as usize, size.height as usize);
-
-              self.graphics.set_viewport_size(size);
-            }
-            WindowEvent::CloseRequested => {
-              *control_flow = ControlFlow::Exit;
-            }
-            _ => {}
+            self.input.on_mouse_move(
+              vec2(position.x as f32, position.y as f32),
+              vec2(size.width as f32, size.height as f32),
+            );
           }
-        }
+          WindowEvent::MouseWheel { delta, .. } => {
+            self.input.on_mouse_wheel(&delta);
+          }
+          WindowEvent::MouseInput { button, state, .. } => {
+            self.input.on_mouse_button(button, state);
+          }
+          WindowEvent::KeyboardInput { input, .. } => {
+            self.input.on_keyboard_event(&input);
+          }
+          WindowEvent::ModifiersChanged(modifiers) => {
+            self.input.on_modifiers_changed(modifiers);
+          }
+          WindowEvent::Focused(focused) => {
+            self.is_focused = focused;
+            self.input.on_modifiers_changed(ModifiersState::default());
+          }
+          WindowEvent::Resized(size) => {
+            let size = (size.width as usize, size.height as usize);
+
+            self.graphics.set_viewport_size(size);
+          }
+          WindowEvent::CloseRequested => {
+            *control_flow = ControlFlow::Exit;
+          }
+          _ => {}
+        },
         _ => {}
       }
     });
