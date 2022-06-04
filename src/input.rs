@@ -19,8 +19,8 @@ pub struct InputBackend {
   pub pixels_per_point: f32,
 
   // input tracking for UI purposes
-  raw_input: RawInput,
   actual_mouse_pos: Vector2<f32>,
+  pub raw_input: RawInput,
   pub exclusive_keyboard_input: bool,
   pub exclusive_pointer_input: bool,
 }
@@ -121,7 +121,7 @@ impl InputBackend {
         _ => egui::PointerButton::Middle,
       },
       pressed: state == ElementState::Pressed,
-      modifiers: Default::default(), // TODO: implement modifiers
+      modifiers: self.raw_input.modifiers,
     };
 
     self.raw_input.events.push(event);
@@ -138,8 +138,9 @@ impl InputBackend {
         let event = egui::Event::Key {
           key,
           pressed: event.state == ElementState::Pressed,
-          modifiers: Default::default(), // TODO: implement modifiers
+          modifiers: self.raw_input.modifiers,
         };
+
         self.raw_input.events.push(event)
       }
     }
@@ -148,25 +149,27 @@ impl InputBackend {
       self.keyboard.on_keyboard_event(event);
     }
   }
+
+  /// Notifies of a character event.
+  pub fn on_character_received(&mut self, character: char) {
+    if is_printable_char(character) {
+      let event = egui::Event::Text(character.to_string());
+
+      self.raw_input.events.push(event);
+    }
+  }
 }
 
-/// Allow this input backend to be used in egui rendering.
-impl crate::ui::RawInputProvider for InputBackend {
-  fn pixels_per_point(&self) -> f32 {
-    self.pixels_per_point
-  }
+/// Winit sends special keys (backspace, delete, F1, …) as characters.
+/// Ignore those.
+/// We also ignore '\r', '\n', '\t'.
+/// Newlines are handled by the `Key::Enter` event.
+fn is_printable_char(chr: char) -> bool {
+  let is_in_private_use_area = '\u{e000}' <= chr && chr <= '\u{f8ff}'
+    || '\u{f0000}' <= chr && chr <= '\u{ffffd}'
+    || '\u{100000}' <= chr && chr <= '\u{10fffd}';
 
-  fn set_exclusive_keyboard_input(&mut self, exclusive: bool) {
-    self.exclusive_keyboard_input = exclusive;
-  }
-
-  fn set_exclusive_pointer_input(&mut self, exclusive: bool) {
-    self.exclusive_pointer_input = exclusive;
-  }
-
-  fn get_raw_input(&self) -> &RawInput {
-    &self.raw_input
-  }
+  !is_in_private_use_area && !chr.is_ascii_control()
 }
 
 /// Translates a virtual key code from winit to an egui key.

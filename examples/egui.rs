@@ -7,6 +7,8 @@ fn main() {
     title: "Hello, egui",
     size: (1920, 1080),
     transparent_window: true,
+    update_continuously: false,
+    log_level: LevelFilter::Trace,
     ..Default::default()
   };
 
@@ -21,7 +23,7 @@ fn main() {
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
-      interface.run(&mut engine.input, |egui| {
+      interface.run(engine, |egui| {
         egui::Window::new("Surreal ❤ egui").show(egui, |ui| {
           ui.heading("My egui Application");
 

@@ -312,6 +312,9 @@ impl Engine {
           WindowEvent::KeyboardInput { input, .. } => {
             self.input.on_keyboard_event(&input);
           }
+          WindowEvent::ReceivedCharacter(character) => {
+            self.input.on_character_received(character);
+          }
           WindowEvent::ModifiersChanged(modifiers) => {
             self.input.on_modifiers_changed(modifiers);
           }
@@ -342,5 +345,28 @@ impl Engine {
     });
 
     log::trace!("Exiting main event loop")
+  }
+}
+
+/// Allow the engine to be used in egui rendering.
+impl crate::ui::UserInterfaceHost for Engine {
+  fn pixels_per_point(&self) -> f32 {
+    self.window.scale_factor() as f32
+  }
+
+  fn set_exclusive_keyboard_input(&mut self, exclusive: bool) {
+    self.input.exclusive_keyboard_input = exclusive;
+  }
+
+  fn set_exclusive_pointer_input(&mut self, exclusive: bool) {
+    self.input.exclusive_pointer_input = exclusive;
+  }
+
+  fn raw_input(&self) -> &egui::RawInput {
+    &self.input.raw_input
+  }
+
+  fn request_redraw(&self) {
+    self.window.request_redraw();
   }
 }
