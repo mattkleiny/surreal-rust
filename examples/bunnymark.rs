@@ -9,11 +9,13 @@ fn main() {
   let configuration = Configuration {
     title: "Bunnymark",
     size: (WIDTH as u32, HEIGHT as u32),
+    transparent_window: true,
     ..Default::default()
   };
 
   Engine::start(configuration, |engine| {
     let graphics = &engine.graphics;
+    let mut interface = UserInterface::new(graphics);
 
     // set-up assets and rendering
     let sprite: Texture = engine
@@ -34,7 +36,7 @@ fn main() {
     let mut bunnies = Vec::<Bunny>::new();
 
     engine.run_variable_step(move |engine, tick| {
-      engine.graphics.clear_color_buffer(Color::BLACK);
+      engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       // update bunnies
       for bunny in &mut bunnies {
@@ -52,6 +54,13 @@ fn main() {
             },
           );
         }
+      });
+
+      interface.run(engine, |egui| {
+        egui::Window::new("Bunnymark").show(egui, |ui| {
+          ui.heading("Statistics");
+          ui.label(format!("There are {} bunnies on screen", bunnies.len()));
+        });
       });
 
       // handle input

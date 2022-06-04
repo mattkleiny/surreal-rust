@@ -9,7 +9,7 @@ use super::*;
 pub struct PixelCanvas {
   pub texture: Texture,
   pub mesh: Mesh<Vertex2>,
-  pub pixels: Grid<Color>,
+  pub pixels: Grid<Color32>,
   material: Material,
   timer: IntervalTimer,
 }
@@ -25,6 +25,11 @@ impl PixelCanvas {
     material.set_uniform("u_projectionView", &Matrix4x4::identity());
     material.set_uniform("u_texture", &texture);
 
+    material.set_blend_state(BlendState::Enabled {
+      source: BlendFactor::SrcAlpha,
+      destination: BlendFactor::OneMinusSrcAlpha,
+    });
+
     Self {
       texture,
       mesh: Mesh::create_quad(server, 1.),
@@ -35,7 +40,7 @@ impl PixelCanvas {
   }
 
   /// Draws a circle of pixels.
-  pub fn draw_circle(&mut self, Vector2 { x, y }: Vector2<f32>, radius: f32, color: Color) {
+  pub fn draw_circle(&mut self, Vector2 { x, y }: Vector2<f32>, radius: f32, color: Color32) {
     let shape = Circle {
       center: vec2(x.floor() as isize, y.floor() as isize),
       radius: radius as isize,
@@ -52,7 +57,7 @@ impl PixelCanvas {
       for y in (0..self.pixels.height()).rev() {
         for x in 0..self.pixels.width() {
           let pixel = self.pixels.get((x, y));
-          if pixel.a <= 0. {
+          if pixel.a <= 0 {
             continue;
           }
 
@@ -67,12 +72,10 @@ impl PixelCanvas {
     }
   }
 
-  // TODO: clean this up
-  fn simulate_sand(
-    &mut self,
-    (from_x, from_y): (usize, usize),
-    (to_x, to_y): (isize, isize),
-  ) -> bool {
+  fn simulate_sand(&mut self, from_pos: (usize, usize), to_pos: (isize, isize)) -> bool {
+    let (from_x, from_y) = from_pos;
+    let (to_x, to_y) = to_pos;
+
     if to_x < 0 || to_x > (self.pixels.width() - 1) as isize {
       return false;
     }
@@ -86,11 +89,11 @@ impl PixelCanvas {
 
     let target = self.pixels.get((to_x, to_y));
 
-    if target.a <= 0. {
-      self
-        .pixels
-        .set((to_x, to_y), *self.pixels.get((from_x, from_y)));
-      self.pixels.set((from_x, from_y), Color::CLEAR);
+    if target.a == 0 {
+      let source = *self.pixels.get((from_x, from_y));
+
+      self.pixels.set((to_x, to_y), source);
+      self.pixels.set((from_x, from_y), Color32::CLEAR);
 
       return true;
     }
@@ -113,6 +116,6 @@ impl PixelCanvas {
 
   /// Clears the canvas.
   pub fn clear(&mut self) {
-    self.pixels.fill(Color::CLEAR)
+    self.pixels.fill(Color32::CLEAR);
   }
 }

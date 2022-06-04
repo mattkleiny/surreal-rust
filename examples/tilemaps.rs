@@ -32,6 +32,8 @@ fn main() {
   let configuration = Configuration {
     title: "Tile Maps",
     update_continuously: false,
+    transparent_window: true,
+    log_level: LevelFilter::Trace,
     ..Default::default()
   };
 
@@ -75,7 +77,8 @@ fn main() {
     });
 
     engine.run_variable_step(|engine, tick| {
-      engine.graphics.clear_color_buffer(palette[0]);
+      engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
+      //engine.graphics.clear_color_buffer(palette[0]);
 
       renderer.render(&map);
 

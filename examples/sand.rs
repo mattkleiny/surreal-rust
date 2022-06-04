@@ -6,6 +6,7 @@ fn main() {
   let configuration = Configuration {
     title: "Falling Sand",
     log_level: LevelFilter::Trace,
+    transparent_window: true,
     ..Default::default()
   };
 
@@ -18,7 +19,10 @@ fn main() {
     let mut random = Random::new();
 
     engine.run_variable_step(|engine, tick| {
+      let graphics = &engine.graphics;
       let mouse = &engine.input.mouse;
+
+      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       canvas.simulate(tick.time.delta_time);
       canvas.draw();
@@ -32,7 +36,7 @@ fn main() {
 
         canvas.draw_circle(position, 6., *color);
       } else if mouse.is_button_down(MouseButton::Right) {
-        canvas.draw_circle(position, 6., Color::CLEAR);
+        canvas.draw_circle(position, 6., Color32::CLEAR);
       }
 
       if engine.input.keyboard.is_key_pressed(Key::Space) {

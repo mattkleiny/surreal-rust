@@ -5,6 +5,7 @@ use surreal::prelude::*;
 fn main() {
   let configuration = Configuration {
     title: "Hello, World!",
+    transparent_window: true,
     ..Default::default()
   };
 
@@ -12,8 +13,8 @@ fn main() {
     let graphics = &engine.graphics;
 
     let shader = load_built_in_shader(graphics, BuiltInShader::SpriteStandard);
-    let mut material = Material::new(graphics, &shader);
     let texture = Texture::create_colored(graphics, 1, 1, Color32::WHITE);
+    let mut material = Material::new(graphics, &shader);
 
     material.set_uniform("u_texture", &texture);
 
@@ -23,7 +24,9 @@ fn main() {
     let color2 = Color32::random();
 
     engine.run_variable_step(|engine, tick| {
-      engine.graphics.clear_color_buffer(Color::BLACK);
+      let graphics = &engine.graphics;
+
+      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       batch.begin(&material);
       batch.draw_circle(
