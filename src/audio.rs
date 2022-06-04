@@ -1,10 +1,12 @@
 //! A lightweight cross-platform audio engine.
 
 pub use headless::*;
+pub use openal::*;
 
 use crate::utilities::{Size, TimeSpan};
 
 mod headless;
+mod openal;
 
 /// An opaque handle to a resource in the sound system.
 pub type AudioHandle = u32;

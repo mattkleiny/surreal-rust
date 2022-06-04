@@ -1,3 +1,5 @@
+//! The OpenGL backend implementation for the graphics subsystem.
+
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ffi::c_void;
@@ -6,11 +8,12 @@ use anyhow::anyhow;
 use raw_gl_context::{GlConfig, GlContext};
 use winit::window::Window;
 
-use crate::graphics::*;
+use super::*;
+
 use crate::maths::Rectangle;
 
-/// The graphics server for the desktop platform.
-pub struct DesktopGraphicsBackend {
+/// The graphics backend implementation for OpenGL.
+pub struct OpenGLGraphicsBackend {
   context: GlContext,
   internal_state: RefCell<InternalState>,
 }
@@ -20,7 +23,7 @@ struct InternalState {
   sampler_cache: HashMap<TextureSampler, u32>,
 }
 
-impl DesktopGraphicsBackend {
+impl OpenGLGraphicsBackend {
   pub fn new(window: &Window, vsync_enabled: bool) -> Self {
     // prepare and load opengl bindings
     let config = GlConfig {
@@ -41,7 +44,7 @@ impl DesktopGraphicsBackend {
   }
 }
 
-impl GraphicsBackend for DesktopGraphicsBackend {
+impl GraphicsBackend for OpenGLGraphicsBackend {
   #[profiling::function]
   fn begin_frame(&self) {
     self.context.make_current();
@@ -91,7 +94,10 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     unsafe {
       match blend_state {
         BlendState::Disabled => gl::Disable(gl::BLEND),
-        BlendState::Enabled { source, destination: dest } => {
+        BlendState::Enabled {
+          source,
+          destination: dest,
+        } => {
           let source = convert_blend_factor(source);
           let dest = convert_blend_factor(dest);
 
@@ -105,9 +111,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
   fn set_culling_mode(&self, culling_mode: CullingMode) {
     unsafe {
       match culling_mode {
-        CullingMode::Disabled => {
-          gl::Disable(gl::CULL_FACE)
-        }
+        CullingMode::Disabled => gl::Disable(gl::CULL_FACE),
         CullingMode::Front => {
           gl::Enable(gl::CULL_FACE);
           gl::CullFace(gl::FRONT);
@@ -130,7 +134,12 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         ScissorMode::Disabled => {
           gl::Disable(gl::SCISSOR_TEST);
         }
-        ScissorMode::Enabled { left, bottom: top, width, height } => {
+        ScissorMode::Enabled {
+          left,
+          bottom: top,
+          width,
+          height,
+        } => {
           gl::Enable(gl::SCISSOR_TEST);
           gl::Scissor(left, top, width, height);
         }
@@ -159,13 +168,31 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn read_buffer_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8) {
+  fn read_buffer_data(
+    &self,
+    buffer: GraphicsHandle,
+    offset: usize,
+    length: usize,
+    pointer: *mut u8,
+  ) {
     unsafe {
-      gl::GetNamedBufferSubData(buffer, offset as isize, length as isize, pointer as *mut c_void);
+      gl::GetNamedBufferSubData(
+        buffer,
+        offset as isize,
+        length as isize,
+        pointer as *mut c_void,
+      );
     }
   }
 
-  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
+  fn write_buffer_data(
+    &self,
+    buffer: GraphicsHandle,
+    usage: BufferUsage,
+    kind: BufferKind,
+    length: usize,
+    pointer: *const u8,
+  ) {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -227,7 +254,14 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn read_texture_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
+  fn read_texture_data(
+    &self,
+    texture: GraphicsHandle,
+    length: usize,
+    pixel_format: TextureFormat,
+    pixels: *mut u8,
+    mip_level: usize,
+  ) {
     unsafe {
       let (components, kind) = match pixel_format {
         TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
@@ -249,7 +283,16 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn write_texture_data(&self, texture: GraphicsHandle, width: usize, height: usize, pixels: *const u8, internal_format: TextureFormat, pixel_format: TextureFormat, mip_level: usize) {
+  fn write_texture_data(
+    &self,
+    texture: GraphicsHandle,
+    width: usize,
+    height: usize,
+    pixels: *const u8,
+    internal_format: TextureFormat,
+    pixel_format: TextureFormat,
+    mip_level: usize,
+  ) {
     unsafe {
       let internal_format = match internal_format {
         TextureFormat::R8 => gl::R8,
@@ -277,12 +320,19 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         0, // border
         components,
         kind,
-        pixels as *const _
+        pixels as *const _,
       );
     }
   }
 
-  fn write_texture_sub_data(&self, texture: GraphicsHandle, region: &Rectangle<usize>, pixels: *const u8, pixel_format: TextureFormat, mip_level: usize) {
+  fn write_texture_sub_data(
+    &self,
+    texture: GraphicsHandle,
+    region: &Rectangle<usize>,
+    pixels: *const u8,
+    pixel_format: TextureFormat,
+    mip_level: usize,
+  ) {
     unsafe {
       let (components, kind) = match pixel_format {
         TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
@@ -302,7 +352,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         region.height() as i32,
         components,
         kind,
-        pixels as *const _
+        pixels as *const _,
       );
     }
   }
@@ -314,9 +364,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
   }
 
   fn create_shader(&self) -> GraphicsHandle {
-    unsafe {
-      gl::CreateProgram()
-    }
+    unsafe { gl::CreateProgram() }
   }
 
   fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> crate::Result<()> {
@@ -438,13 +486,31 @@ impl GraphicsBackend for DesktopGraphicsBackend {
           gl::ProgramUniform4f(shader, location as i32, value.x, value.y, value.z, value.w);
         }
         ShaderUniform::Matrix2x2(value) => {
-          gl::ProgramUniformMatrix2fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+          gl::ProgramUniformMatrix2fv(
+            shader,
+            location as i32,
+            1,
+            gl::TRUE,
+            value.as_slice().as_ptr(),
+          );
         }
         ShaderUniform::Matrix3x3(value) => {
-          gl::ProgramUniformMatrix3fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+          gl::ProgramUniformMatrix3fv(
+            shader,
+            location as i32,
+            1,
+            gl::TRUE,
+            value.as_slice().as_ptr(),
+          );
         }
         ShaderUniform::Matrix4x4(value) => {
-          gl::ProgramUniformMatrix4fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+          gl::ProgramUniformMatrix4fv(
+            shader,
+            location as i32,
+            1,
+            gl::TRUE,
+            value.as_slice().as_ptr(),
+          );
         }
         ShaderUniform::Texture(texture, slot, sampler) => {
           gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
@@ -489,9 +555,9 @@ impl GraphicsBackend for DesktopGraphicsBackend {
         }
         ShaderUniform::TextureBinding(texture, slot, mode, format) => {
           let mode = match mode {
-            ReadWriteMode::ReadOnly => gl::READ_ONLY,
-            ReadWriteMode::WriteOnly => gl::WRITE_ONLY,
-            ReadWriteMode::ReadWrite => gl::READ_WRITE,
+            TextureBindingMode::ReadOnly => gl::READ_ONLY,
+            TextureBindingMode::WriteOnly => gl::WRITE_ONLY,
+            TextureBindingMode::ReadWrite => gl::READ_WRITE,
           };
 
           let format = match format {
@@ -503,15 +569,15 @@ impl GraphicsBackend for DesktopGraphicsBackend {
           };
 
           gl::BindImageTexture(
-            *slot as u32, 
-            texture.handle(), 
-            0, // mip level
+            *slot as u32,
+            texture.handle(),
+            0,         // mip level
             gl::FALSE, // layered
-            0, // layer
+            0,         // layer
             mode as u32,
             format as u32,
           );
-        },
+        }
       }
     }
   }
@@ -535,15 +601,20 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn wait_compute_barrier(&self, barrier: ComputeBarrier) {
+  fn wait_compute_barrier(&self, barrier: GraphicsBarrier) {
     unsafe {
       gl::MemoryBarrier(match barrier {
-        ComputeBarrier::ImageAccess => gl::SHADER_IMAGE_ACCESS_BARRIER_BIT,
+        GraphicsBarrier::ImageAccess => gl::SHADER_IMAGE_ACCESS_BARRIER_BIT,
       });
-    }      
+    }
   }
 
-  fn create_mesh(&self, vertex_buffer: GraphicsHandle, index_buffer: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
+  fn create_mesh(
+    &self,
+    vertex_buffer: GraphicsHandle,
+    index_buffer: GraphicsHandle,
+    descriptors: &[VertexDescriptor],
+  ) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
 
@@ -554,10 +625,7 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
       gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
 
-      let stride: usize = descriptors
-        .iter()
-        .map(|it| it.count * it.kind.size())
-        .sum();
+      let stride: usize = descriptors.iter().map(|it| it.count * it.kind.size()).sum();
 
       let mut offset = 0;
 
@@ -596,7 +664,13 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  fn draw_mesh(
+    &self,
+    mesh: GraphicsHandle,
+    topology: PrimitiveTopology,
+    vertex_count: usize,
+    index_count: usize,
+  ) {
     unsafe {
       gl::BindVertexArray(mesh);
 
@@ -607,7 +681,12 @@ impl GraphicsBackend for DesktopGraphicsBackend {
       };
 
       if index_count > 0 {
-        gl::DrawElements(topology, index_count as i32, gl::UNSIGNED_INT, std::ptr::null());
+        gl::DrawElements(
+          topology,
+          index_count as i32,
+          gl::UNSIGNED_INT,
+          std::ptr::null(),
+        );
       } else {
         gl::DrawArrays(topology, 0, vertex_count as i32);
       }
@@ -622,20 +701,43 @@ impl GraphicsBackend for DesktopGraphicsBackend {
     }
   }
 
-  fn create_render_target(&self, color_attachment: GraphicsHandle, depth_attachment: Option<GraphicsHandle>, stencil_attachment: Option<GraphicsHandle>) -> GraphicsHandle {
+  fn create_render_target(
+    &self,
+    color_attachment: GraphicsHandle,
+    depth_attachment: Option<GraphicsHandle>,
+    stencil_attachment: Option<GraphicsHandle>,
+  ) -> GraphicsHandle {
     unsafe {
       let mut framebuffer = 0;
       gl::CreateFramebuffers(1, &mut framebuffer);
 
       gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer);
-      gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, color_attachment, 0);
+      gl::FramebufferTexture2D(
+        gl::FRAMEBUFFER,
+        gl::COLOR_ATTACHMENT0,
+        gl::TEXTURE_2D,
+        color_attachment,
+        0,
+      );
 
       if let Some(depth_attachment) = depth_attachment {
-        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::DEPTH_ATTACHMENT, gl::TEXTURE_2D, depth_attachment, 0);
+        gl::FramebufferTexture2D(
+          gl::FRAMEBUFFER,
+          gl::DEPTH_ATTACHMENT,
+          gl::TEXTURE_2D,
+          depth_attachment,
+          0,
+        );
       }
 
       if let Some(stencil_attachment) = stencil_attachment {
-        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::STENCIL_ATTACHMENT, gl::TEXTURE_2D, stencil_attachment, 0);
+        gl::FramebufferTexture2D(
+          gl::FRAMEBUFFER,
+          gl::STENCIL_ATTACHMENT,
+          gl::TEXTURE_2D,
+          stencil_attachment,
+          0,
+        );
       }
 
       if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {

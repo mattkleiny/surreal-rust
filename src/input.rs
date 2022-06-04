@@ -1,13 +1,15 @@
 //! A lightweight and cross-platform input engine.
 
-pub use winit::event::MouseButton as MouseButton;
+pub use winit::event::MouseButton;
 pub use winit::event::VirtualKeyCode as Key;
 
 pub use headless::*;
+pub use standard::*;
 
 use crate::maths::Vector2;
 
 mod headless;
+mod standard;
 
 /// A backend for the underlying input subsystem.
 ///

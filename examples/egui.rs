@@ -5,26 +5,27 @@
 use surreal::prelude::*;
 
 fn main() {
-  let platform = DesktopPlatform::new(Configuration {
+  let configuration = Configuration {
     title: "Surreal <3 egui",
     size: (1920, 1080),
     ..Default::default()
-  });
+  };
 
-  Game::start(platform, |mut game, _| {
-    let mut canvas = UserInterfaceCanvas::new(game.host.graphics());
+
+  Engine::start(configuration, |mut engine| {
+    let mut canvas = UserInterfaceCanvas::new(&engine.graphics);
 
     // TODO: make this easier to use
-    game.host.input.pixels_per_point = 1.2;
+    engine.input.pixels_per_point = 1.2;
     canvas.set_pixels_per_point(1.2);
 
     let mut name = "Matt".to_string();
     let mut age = 33;
 
-    game.run_variable_step(|host, tick| {
-      host.graphics().clear_color_buffer(Color::BLACK);
+    engine.run_variable_step(|engine, tick| {
+      engine.graphics.clear_color_buffer(Color::BLACK);
 
-      canvas.run(&host.input, |egui| {
+      canvas.run(&engine.input, |egui| {
         egui::CentralPanel::default().show(egui, |ui| {
           ui.heading("My egui Application");
 
@@ -53,7 +54,7 @@ fn main() {
         });
       });
 
-      if let Some(keyboard) = host.input.keyboard_device() {
+      if let Some(keyboard) = engine.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
           tick.exit();
         }

@@ -1,3 +1,5 @@
+//! A lightweight entity component system.
+
 use std::any::{type_name, TypeId};
 use std::fmt::{Debug, Formatter};
 

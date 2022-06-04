@@ -1,28 +1,35 @@
-//! A platform implementation for desktop PCs.
+//! Game framework for Surreal.
+//!
+//! Bootstrapping and other framework systems for common projects.
 
-use image::ImageFormat;
-use winit::dpi::LogicalSize;
-use winit::event::{Event, ModifiersState, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit::platform::desktop::EventLoopExtDesktop;
-use winit::window::{Icon, Window, WindowBuilder};
+pub use ecs::*;
+pub use events::*;
 
-use audio::DesktopAudioBackend;
-use graphics::DesktopGraphicsBackend;
-use input::DesktopInput;
+mod ecs;
+mod events;
 
-use crate::audio::AudioServer;
-use crate::graphics::GraphicsServer;
-use crate::maths::vec2;
-use crate::utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan};
+// TODO: screen management
+// TODO: plugin management (profiler, console, etc)
+// TODO: better rendering pipeline support
 
-use super::*;
+use winit::{
+  dpi::LogicalSize,
+  event_loop::{ControlFlow, EventLoop},
+  window::{Icon, WindowBuilder},
+};
 
-mod audio;
-mod graphics;
-mod input;
+use crate::{
+  assets::AssetManager,
+  audio::{AudioServer, OpenALAudioBackend},
+  graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend},
+  input::StandardInput,
+  maths::vec2,
+  utilities::{Clock, FrameCounter, GameTime, IntervalTimer, TimeSpan},
+};
 
-/// Configuration for the [`DesktopPlatform`].
+/// Configuration for the `Engine`.
+///
+/// This struct defines how to set-up the game and initial settings.
 #[derive(Clone, Debug)]
 pub struct Configuration {
   pub title: &'static str,
@@ -43,33 +50,113 @@ impl Default for Configuration {
       update_continuously: true,
       run_in_background: false,
       show_fps_in_title: true,
-      icon: Some(include_bytes!("../../surreal.ico")),
+      icon: Some(include_bytes!("../surreal.ico")),
     }
   }
 }
 
-/// A [`Platform`] implementation for desktop PCs.
-pub struct DesktopPlatform {
-  config: Configuration,
+/// The context for a single tick of the main loop.
+pub struct Tick {
+  pub time: GameTime,
+  is_exiting: bool,
 }
 
-impl DesktopPlatform {
-  pub fn new(config: Configuration) -> Self {
-    Self { config }
+impl Tick {
+  /// Exits the engine at the end of the current tick.
+  pub fn exit(&mut self) {
+    self.is_exiting = true;
   }
 }
 
-impl Platform for DesktopPlatform {
-  type Host = DesktopPlatformHost;
+/// The core engine for Surreal.
+///
+/// This struct manages core systems and facilitates the main game loop.
+pub struct Engine {
+  // core systems
+  pub assets: AssetManager,
+  pub audio: AudioServer,
+  pub graphics: GraphicsServer,
+  pub input: StandardInput,
 
-  fn create_host(&self) -> Self::Host {
+  // window management
+  config: Configuration,
+  window: winit::window::Window,
+  event_loop: Option<EventLoop<()>>,
+  is_focused: bool,
+
+  // timing
+  clock: Clock,
+  frame_timer: IntervalTimer,
+  frame_counter: FrameCounter,
+}
+
+impl Engine {
+  /// Starts the engine with the given configuration.
+  pub fn start(configuration: Configuration, mut setup: impl FnMut(Engine)) {
+    use crate::graphics::*;
+
+    profiling::register_thread!("Main Thread");
+
+    // set-up core engine
+    let mut engine = Engine::new(configuration);
+
+    let graphics = &engine.graphics;
+    let assets = &mut engine.assets;
+
+    // set-up asset manager
+    assets.add_loader(BitmapFontLoader {});
+    assets.add_loader(ImageLoader { format: None });
+
+    assets.add_loader(TextureLoader {
+      server: graphics.clone(),
+      options: TextureOptions::default(),
+    });
+
+    assets.add_loader(ShaderProgramLoader {
+      server: graphics.clone(),
+    });
+
+    assets.add_loader(MaterialLoader {
+      server: graphics.clone(),
+    });
+
+    setup(engine);
+  }
+
+  /// Runs the game loop in a variable step fashion.
+  pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, &mut Tick)) {
+    let mut timer = Clock::new();
+
+    self.run(move |engine, control_flow| {
+      // capture timing information
+      let mut tick = Tick {
+        time: GameTime {
+          delta_time: timer.tick(),
+          total_time: timer.total_time(),
+        },
+        is_exiting: false,
+      };
+
+      // run main loop
+      body(engine, &mut tick);
+
+      if tick.is_exiting {
+        *control_flow = ControlFlow::Exit;
+      }
+
+      profiling::finish_frame!();
+    });
+  }
+
+  /// Creates a new engine, bootstrapping all core systems and opening the main display.
+  pub fn new(config: Configuration) -> Self {
     // prepare the main window and event loop
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
-      .with_title(self.config.title)
-      .with_inner_size(LogicalSize::new(self.config.size.0, self.config.size.1))
+      .with_title(config.title)
+      .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
       .with_resizable(true)
-      .with_window_icon(self.config.icon.map(|buffer| {
+      .with_window_icon(config.icon.map(|buffer| {
         let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico)
           .expect("Failed to decode icon data");
         let rgba = image.as_rgba8().expect("Image was not in RGBA format");
@@ -83,19 +170,20 @@ impl Platform for DesktopPlatform {
       .build(&event_loop)
       .unwrap();
 
-    Self::Host {
+    Self {
       // servers
-      audio: AudioServer::new(Box::new(DesktopAudioBackend::new())),
-      graphics: GraphicsServer::new(Box::new(DesktopGraphicsBackend::new(
+      assets: AssetManager::new(),
+      audio: AudioServer::new(Box::new(OpenALAudioBackend::new())),
+      graphics: GraphicsServer::new(Box::new(OpenGLGraphicsBackend::new(
         &window,
-        self.config.vsync_enabled,
+        config.vsync_enabled,
       ))),
-      input: DesktopInput::new(),
+      input: StandardInput::new(),
 
-      // core
+      // window management
+      config,
       window,
       event_loop: Some(event_loop),
-      config: self.config.clone(),
       is_focused: true,
 
       // timing
@@ -104,53 +192,18 @@ impl Platform for DesktopPlatform {
       frame_counter: FrameCounter::new(32),
     }
   }
-}
 
-/// The host for the desktop platform.
-pub struct DesktopPlatformHost {
-  // servers
-  audio: AudioServer,
-  graphics: GraphicsServer,
-  pub input: DesktopInput,
-
-  // core
-  window: Window,
-  event_loop: Option<EventLoop<()>>,
-  config: Configuration,
-  is_focused: bool,
-
-  // timing
-  clock: Clock,
-  frame_timer: IntervalTimer,
-  frame_counter: FrameCounter,
-}
-
-impl DesktopPlatformHost {
-  /// Requests a re-paint of the window.
-  pub fn request_repaint(&mut self) {
-    self.window.request_redraw();
-  }
-
-  /// Sets the title of the platform's main window.
-  pub fn set_title(&mut self, title: impl AsRef<str>) {
-    self.window.set_title(title.as_ref());
-  }
-}
-
-impl PlatformHost for DesktopPlatformHost {
-  fn audio(&self) -> &AudioServer {
-    &self.audio
-  }
-
-  fn graphics(&self) -> &GraphicsServer {
-    &self.graphics
-  }
-
-  fn run(mut self, mut body: impl FnMut(&mut Self, &mut ControlFlow)) {
-    let mut event_loop = self.event_loop.take().unwrap();
+  /// Runs the given delegate as the main loop for this engine.
+  ///
+  /// This method will block until the game is closed.
+  pub fn run(mut self, mut body: impl FnMut(&mut Self, &mut ControlFlow)) {
+    use winit::event::*;
+    use winit::platform::desktop::EventLoopExtDesktop;
 
     // use this hack to unpack the event loop out of 'self' and then remove the 'static
     // lifetime bound on run_return so that body can access things in self without lifetime woes.
+    let mut event_loop = self.event_loop.take().unwrap();
+
     event_loop.run_return(move |event, _, control_flow| {
       match event {
         Event::RedrawRequested(window_id) => {

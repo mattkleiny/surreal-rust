@@ -40,21 +40,21 @@ fn main() {
     }
   }
 
-  let platform = DesktopPlatform::new(Configuration {
+  let configuration = Configuration {
     title: "Tile Maps",
     update_continuously: false,
     ..Default::default()
-  });
+  };
 
-  Game::start(platform, |game, assets| {
-    let graphics = game.host.graphics();
+  Engine::start(configuration, |engine| {
+    let graphics = &engine.graphics;
 
     // set-up assets and rendering
-    let sprite: &Texture = assets
+    let sprite: Texture = engine.assets
       .load_asset("assets/sprites/tiles_desert.png")
       .expect("Failed to load sprite image");
 
-    let atlas = TextureAtlas::new(16, 16, sprite);
+    let atlas = TextureAtlas::new(16, 16, &sprite);
     let palette = load_built_in_palette(BuiltInPalette::Demichrome4);
 
     let mut renderer = RenderManager::new(graphics);
@@ -84,12 +84,12 @@ fn main() {
       }
     });
 
-    game.run_variable_step(|host, tick| {
-      host.graphics().clear_color_buffer(palette[0]);
+    engine.run_variable_step(|engine, tick| {
+      engine.graphics.clear_color_buffer(palette[0]);
 
       renderer.render(&map);
 
-      if let Some(keyboard) = host.input.keyboard_device() {
+      if let Some(keyboard) = engine.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Space) {
           map.clear();
           map.fill(|_, _| {

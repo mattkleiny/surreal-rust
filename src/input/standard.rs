@@ -1,3 +1,5 @@
+//! The standard input backend for Surreal.
+
 use std::collections::HashSet;
 
 use egui::RawInput;
@@ -7,20 +9,22 @@ use crate::input::*;
 use crate::maths::{range, Vector2};
 use crate::ui::RawInputProvider;
 
+// TODO: break this upinto more discrete modules.
+
 /// The server for input management.
-pub struct DesktopInput {
-  keyboard: DesktopKeyboardDevice,
-  mouse: DesktopMouseDevice,
+pub struct StandardInput {
+  keyboard: StandardKeyboardDevice,
+  mouse: StandardMouseDevice,
   raw_input: RawInput,
   pub pixels_per_point: f32,
 }
 
-impl DesktopInput {
+impl StandardInput {
   /// Creates a new input server.
   pub fn new() -> Self {
     Self {
-      keyboard: DesktopKeyboardDevice::new(),
-      mouse: DesktopMouseDevice::new(),
+      keyboard: StandardKeyboardDevice::new(),
+      mouse: StandardMouseDevice::new(),
       raw_input: Default::default(),
       pixels_per_point: 1.0,
     }
@@ -114,7 +118,7 @@ impl DesktopInput {
   }
 }
 
-impl InputBackend for DesktopInput {
+impl InputBackend for StandardInput {
   fn keyboard_device(&self) -> Option<&dyn KeyboardDevice> {
     Some(&self.keyboard)
   }
@@ -124,19 +128,19 @@ impl InputBackend for DesktopInput {
   }
 }
 
-impl RawInputProvider for DesktopInput {
+impl RawInputProvider for StandardInput {
   fn get_raw_input(&self) -> &RawInput {
     &self.raw_input
   }
 }
 
 /// A keyboard device for desktop platforms.
-struct DesktopKeyboardDevice {
+struct StandardKeyboardDevice {
   previous_keys: HashSet<Key>,
   current_keys: HashSet<Key>,
 }
 
-impl DesktopKeyboardDevice {
+impl StandardKeyboardDevice {
   /// Creates a new keyboard device.
   pub fn new() -> Self {
     Self {
@@ -163,7 +167,7 @@ impl DesktopKeyboardDevice {
   }
 }
 
-impl KeyboardDevice for DesktopKeyboardDevice {
+impl KeyboardDevice for StandardKeyboardDevice {
   fn is_key_up(&self, key: Key) -> bool {
     !self.current_keys.contains(&key)
   }
@@ -178,14 +182,14 @@ impl KeyboardDevice for DesktopKeyboardDevice {
 }
 
 /// A mouse device for desktop platforms.
-struct DesktopMouseDevice {
+struct StandardMouseDevice {
   position: Vector2<f32>,
   normalised_position: Vector2<f32>,
   previous_buttons: HashSet<MouseButton>,
   current_buttons: HashSet<MouseButton>,
 }
 
-impl DesktopMouseDevice {
+impl StandardMouseDevice {
   /// Creates a new mouse device.
   pub fn new() -> Self {
     Self {
@@ -221,7 +225,7 @@ impl DesktopMouseDevice {
   }
 }
 
-impl MouseDevice for DesktopMouseDevice {
+impl MouseDevice for StandardMouseDevice {
   fn position(&self) -> Vector2<f32> {
     self.position
   }

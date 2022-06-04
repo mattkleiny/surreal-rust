@@ -5,13 +5,13 @@
 use surreal::prelude::*;
 
 fn main() {
-  let platform = DesktopPlatform::new(Configuration {
+  let configuration = Configuration {
     title: "Hello, World!",
     ..Default::default()
-  });
+  };
 
-  Game::start(platform, |game, _| {
-    let graphics = &game.host.graphics();
+  Engine::start(configuration, |engine| {
+    let graphics = &engine.graphics;
 
     let shader = load_built_in_shader(graphics, BuiltInShader::SpriteStandard);
     let mut material = Material::new(graphics, &shader);
@@ -24,8 +24,8 @@ fn main() {
     let color1 = Color32::random();
     let color2 = Color32::random();
 
-    game.run_variable_step(|host, tick| {
-      host.graphics().clear_color_buffer(Color::BLACK);
+    engine.run_variable_step(|engine, tick| {
+      engine.graphics.clear_color_buffer(Color::BLACK);
 
       batch.begin(&material);
       batch.draw_circle(
@@ -36,7 +36,7 @@ fn main() {
       );
       batch.flush();
 
-      if let Some(keyboard) = host.input.keyboard_device() {
+      if let Some(keyboard) = engine.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
           tick.exit();
         }

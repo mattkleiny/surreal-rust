@@ -12,9 +12,7 @@ members = ["macros"]
 opt-level = 3 # compile third party dependencies by default with some sane optimizations
 
 [features]
-default = ["desktop", "headless", "prototype"]
-desktop = []
-headless = []
+default = ["prototype"]
 prototype = []
 
 [dependencies]

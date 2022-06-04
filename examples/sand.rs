@@ -5,24 +5,25 @@
 use surreal::prelude::*;
 
 fn main() {
-  let platform = DesktopPlatform::new(Configuration {
+  let configuration = Configuration {
     title: "Falling Sand",
     ..Default::default()
-  });
+  };
 
-  Game::start(platform, |game, _| {
-    let graphics = &game.host.graphics();
+
+  Engine::start(configuration, |engine| {
+    let graphics = &engine.graphics;
 
     // set-up rendering
     let palette = load_built_in_palette(BuiltInPalette::Hollow4);
     let mut canvas = PixelCanvas::new(graphics, 256, 144);
     let mut random = Random::new();
 
-    game.run_variable_step(|host, tick| {
+    engine.run_variable_step(|engine, tick| {
       canvas.simulate(tick.time.delta_time);
       canvas.draw();
 
-      if let Some(mouse) = host.input.mouse_device() {
+      if let Some(mouse) = engine.input.mouse_device() {
         let position = mouse.normalised_position() * vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
 
         if mouse.is_button_down(MouseButton::Left) {
@@ -35,7 +36,7 @@ fn main() {
         }
       }
 
-      if let Some(keyboard) = host.input.keyboard_device() {
+      if let Some(keyboard) = engine.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Space) {
           canvas.clear();
         }

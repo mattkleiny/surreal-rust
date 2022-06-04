@@ -1,15 +1,17 @@
-use crate::audio::*;
+//! The OpenAL backend implementation for the audio subsystem.
 
-/// The audio server for the desktop platform.
-pub struct DesktopAudioBackend {}
+use super::*;
 
-impl DesktopAudioBackend {
+/// The audio backend implementation for OpenAL.
+pub struct OpenALAudioBackend {}
+
+impl OpenALAudioBackend {
   pub fn new() -> Self {
     Self {}
   }
 }
 
-impl AudioBackend for DesktopAudioBackend {
+impl AudioBackend for OpenALAudioBackend {
   fn create_clip(&self) -> AudioHandle {
     todo!()
   }
@@ -22,3 +24,4 @@ impl AudioBackend for DesktopAudioBackend {
     todo!()
   }
 }
+

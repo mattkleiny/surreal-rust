@@ -134,7 +134,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op      
   }
 
-  fn wait_compute_barrier(&self, _barrier: ComputeBarrier) {
+  fn wait_compute_barrier(&self, _barrier: GraphicsBarrier) {
     // no-op
   }
 

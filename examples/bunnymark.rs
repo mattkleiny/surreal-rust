@@ -6,18 +6,22 @@ const WIDTH: f32 = 1920.;
 const HEIGHT: f32 = 1080.;
 
 fn main() {
-  let platform = DesktopPlatform::new(Configuration {
+  let configuration = Configuration {
     title: "Bunnymark",
     size: (WIDTH as u32, HEIGHT as u32),
     ..Default::default()
-  });
+  };
 
-  Game::start(platform, |game, assets| {
-    let graphics = game.host.graphics();
+  Engine::start(configuration, |engine| {
+    let graphics = &engine.graphics;
 
     // set-up assets and rendering
-    let sprite: &Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
-    let region = TextureRegion::from(sprite);
+    let sprite: Texture = engine
+      .assets
+      .load_asset("assets/sprites/bunny.png")
+      .expect("Failed to load sprite image");
+
+    let region = TextureRegion::from(&sprite);
 
     let mut renderer = RenderManager::new(graphics);
 
@@ -30,8 +34,8 @@ fn main() {
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
 
-    game.run_variable_step(move |host, tick| {
-      host.graphics().clear_color_buffer(Color::BLACK);
+    engine.run_variable_step(move |engine, tick| {
+      engine.graphics.clear_color_buffer(Color::BLACK);
 
       // update bunnies
       for bunny in &mut bunnies {
@@ -41,21 +45,24 @@ fn main() {
       // draw bunnies
       renderer.with(|pass: &mut SpriteBatchContext| {
         for bunny in &bunnies {
-          pass.batch.draw(&region, SpriteOptions {
-            position: bunny.position,
-            ..Default::default()
-          });
+          pass.batch.draw(
+            &region,
+            SpriteOptions {
+              position: bunny.position,
+              ..Default::default()
+            },
+          );
         }
       });
-      
+
       // handle input
-      if let Some(keyboard) = host.input.keyboard_device() {
+      if let Some(keyboard) = engine.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
           tick.exit();
         }
       }
 
-      if let Some(mouse) = host.input.mouse_device() {
+      if let Some(mouse) = engine.input.mouse_device() {
         if mouse.is_button_down(MouseButton::Left) {
           let position = mouse.normalised_position();
 
@@ -96,9 +103,17 @@ impl Bunny {
   pub fn update(&mut self, delta_time: f32) {
     self.position += self.velocity * 100. * delta_time;
 
-    if self.velocity.x < 0. && self.position.x < -WIDTH / 2. { self.position.x = WIDTH / 2. }
-    if self.velocity.y < 0. && self.position.y < -HEIGHT / 2. { self.position.y = HEIGHT / 2. }
-    if self.velocity.x > 0. && self.position.x > WIDTH / 2. { self.position.x = -WIDTH / 2. }
-    if self.velocity.y > 0. && self.position.y > HEIGHT / 2. { self.position.y = -HEIGHT / 2. }
+    if self.velocity.x < 0. && self.position.x < -WIDTH / 2. {
+      self.position.x = WIDTH / 2.
+    }
+    if self.velocity.y < 0. && self.position.y < -HEIGHT / 2. {
+      self.position.y = HEIGHT / 2.
+    }
+    if self.velocity.x > 0. && self.position.x > WIDTH / 2. {
+      self.position.x = -WIDTH / 2.
+    }
+    if self.velocity.y > 0. && self.position.y > HEIGHT / 2. {
+      self.position.y = -HEIGHT / 2.
+    }
   }
 }

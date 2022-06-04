@@ -9,6 +9,7 @@ use crate::io::{AsVirtualPath, VirtualPath};
 
 // TODO: use RefCell for this instead and return asset handles to callers to manage lifetimes.
 // TODO: asset hot loading and dependent asset reloads (shader program includes, for example)
+// TODO: cache assets between invocations?
 
 /// A type of asset that can be persisted in the asset manager.
 pub trait Asset: Sized + 'static {
@@ -26,13 +27,13 @@ pub trait AssetLoader<A>: 'static {
 pub struct AssetContext<'a> {
   /// The path of the asset being loaded.
   pub path: VirtualPath<'a>,
-  /// The manager that owns this context.
-  pub manager: &'a AssetManager,
+
+  manager: &'a AssetManager,
 }
 
 impl<'a> AssetContext<'a> {
   /// Loads a dependent asset from the given path.
-  pub fn load_asset<A: Asset>(&self, path: VirtualPath) -> crate::Result<&'a A> {
+  pub fn load_asset<A: Asset>(&self, path: VirtualPath) -> crate::Result<A> {
     self.manager.load_asset(path)
   }
 }
@@ -57,9 +58,7 @@ pub struct AssetManager {
 
 /// The internal state for the asset manager.
 struct AssetManagerState {
-  // TODO: use AnyMap here, instead, have it parameterize the key type?
   loaders: HashMap<TypeId, Box<dyn Any>>,
-  cache: HashMap<AssetId, Box<dyn Any>>,
 }
 
 impl Default for AssetManager {
@@ -74,66 +73,36 @@ impl AssetManager {
     Self {
       state: Rc::new(UnsafeCell::new(AssetManagerState {
         loaders: HashMap::new(),
-        cache: HashMap::new(),
       })),
     }
   }
 
   /// Adds a new asset loader to the manager.
-  pub fn add_loader<A, L>(&mut self, loader: L)
-  where
-    A: Asset,
-    L: AssetLoader<A>,
-  {
+  pub fn add_loader<A: Asset, L: AssetLoader<A>>(&mut self, loader: L) {
     let state = unsafe { &mut *self.state.get() };
 
     state.loaders.insert(TypeId::of::<A>(), Box::new(loader));
   }
 
   /// Attempts to load an asset from the given path.
-  pub fn load_asset<A>(&self, path: impl AsVirtualPath) -> crate::Result<&A>
-  where
-    A: Asset,
-  {
+  pub fn load_asset<A: Asset>(&self, path: impl AsVirtualPath) -> crate::Result<A> {
     let state = unsafe { &mut *self.state.get() };
     let path = path.as_virtual_path();
 
-    let asset_id = AssetId {
-      path: path.to_string(),
-      type_id: TypeId::of::<A>(),
+    let loader = state
+      .loaders
+      .get(&TypeId::of::<A>())
+      .and_then(|it| it.downcast_ref::<A::Loader>())
+      .ok_or(anyhow::anyhow!(
+        "Could not result loader for asset {:?}",
+        std::any::type_name::<A>()
+      ))?;
+
+    let context = AssetContext {
+      path,
+      manager: self,
     };
 
-    match state.cache.get(&asset_id) {
-      None => {
-        let state = unsafe { &mut *self.state.get() };
-
-        let loader = state
-          .loaders
-          .get(&TypeId::of::<A>())
-          .and_then(|it| it.downcast_ref::<A::Loader>())
-          .ok_or(anyhow::anyhow!(
-            "Could not result loader for asset {:?}",
-            std::any::type_name::<A>()
-          ))?;
-
-        // persist loaded assets into cache
-        let context = AssetContext {
-          path,
-          manager: self,
-        };
-        let asset = loader.load(&context)?;
-
-        state.cache.insert(asset_id.clone(), Box::new(asset));
-
-        let asset = state
-          .cache
-          .get(&asset_id)
-          .and_then(|it| it.downcast_ref::<A>())
-          .expect("Should not be possible");
-
-        Ok(asset)
-      }
-      Some(asset) => Ok(asset.downcast_ref().expect("Should not be possible")),
-    }
+    loader.load(&context)
   }
 }
