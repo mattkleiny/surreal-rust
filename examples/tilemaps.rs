@@ -4,42 +4,33 @@
 
 use surreal::prelude::*;
 
+/// Represents a tile in our simple tile map.
+#[derive(Default, Copy, Clone, Debug)]
+enum MapTile {
+  #[default]
+  Empty,
+  Cactus,
+  Rock,
+}
+
+impl Tile for MapTile {
+  type Id = u8;
+
+  fn from_id(id: Self::Id) -> &'static Self {
+    match id {
+      0 => &Self::Empty,
+      1 => &Self::Cactus,
+      2 => &Self::Rock,
+      _ => panic!(),
+    }
+  }
+
+  fn to_id(&self) -> Self::Id {
+    *self as Self::Id
+  }
+}
+
 fn main() {
-  /// Represents a tile in our simple tile map.
-  #[derive(Copy, Clone, Debug)]
-  enum Tile {
-    Empty,
-    Cactus,
-    Rock,
-  }
-
-  impl Default for Tile {
-    fn default() -> Self {
-      Self::Empty
-    }
-  }
-
-  impl surreal::prelude::Tile for Tile {
-    type Id = u8;
-
-    fn from_id(id: Self::Id) -> &'static Self {
-      match id {
-        0 => &Self::Empty,
-        1 => &Self::Cactus,
-        2 => &Self::Rock,
-        _ => panic!(),
-      }
-    }
-
-    fn to_id(&self) -> Self::Id {
-      match self {
-        Tile::Empty => 0,
-        Tile::Cactus => 1,
-        Tile::Rock => 2,
-      }
-    }
-  }
-
   let configuration = Configuration {
     title: "Tile Maps",
     update_continuously: false,
@@ -50,7 +41,8 @@ fn main() {
     let graphics = &engine.graphics;
 
     // set-up assets and rendering
-    let sprite: Texture = engine.assets
+    let sprite: Texture = engine
+      .assets
       .load_asset("assets/sprites/tiles_desert.png")
       .expect("Failed to load sprite image");
 
@@ -68,19 +60,19 @@ fn main() {
     // set-up tile map
     let mut map = TileMap::new(16, 9);
 
-    map.set_sprite(&Tile::Empty, atlas.get_region(0, 3));
-    map.set_sprite(&Tile::Cactus, atlas.get_region(3, 0));
-    map.set_sprite(&Tile::Rock, atlas.get_region(2, 2));
+    map.set_sprite(&MapTile::Empty, atlas.get_region(0, 3));
+    map.set_sprite(&MapTile::Cactus, atlas.get_region(3, 0));
+    map.set_sprite(&MapTile::Rock, atlas.get_region(2, 2));
 
     map.fill(|_, _| {
       if bool::random() {
         if bool::random() {
-          &Tile::Rock
+          &MapTile::Rock
         } else {
-          &Tile::Cactus
+          &MapTile::Cactus
         }
       } else {
-        &Tile::Empty
+        &MapTile::Empty
       }
     });
 
@@ -89,25 +81,23 @@ fn main() {
 
       renderer.render(&map);
 
-      if let Some(keyboard) = engine.input.keyboard_device() {
-        if keyboard.is_key_pressed(Key::Space) {
-          map.clear();
-          map.fill(|_, _| {
+      if engine.input.keyboard.is_key_pressed(Key::Space) {
+        map.clear();
+        map.fill(|_, _| {
+          if bool::random() {
             if bool::random() {
-              if bool::random() {
-                &Tile::Rock
-              } else {
-                &Tile::Cactus
-              }
+              &MapTile::Rock
             } else {
-              &Tile::Empty
+              &MapTile::Cactus
             }
-          });
-        }
+          } else {
+            &MapTile::Empty
+          }
+        });
+      }
 
-        if keyboard.is_key_pressed(Key::Escape) {
-          tick.exit();
-        }
+      if engine.input.keyboard.is_key_pressed(Key::Escape) {
+        tick.exit();
       }
     });
   });

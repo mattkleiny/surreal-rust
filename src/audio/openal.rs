@@ -2,7 +2,7 @@
 
 use super::*;
 
-/// The audio backend implementation for OpenAL.
+/// An [`AudioBackend`] implementation for OpenAL.
 pub struct OpenALAudioBackend {}
 
 impl OpenALAudioBackend {

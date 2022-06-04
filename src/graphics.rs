@@ -35,24 +35,29 @@ mod textures;
 /// An opaque handle to a resource in the graphics subsystem.
 pub type GraphicsHandle = u32;
 
-/// The graphics server implementation.
+/// A pointer to the core [`GraphicsBackend`] implementation.
+/// 
+/// This pointer is safe to pass around the application.
 pub type GraphicsServer = std::rc::Rc<Box<dyn GraphicsBackend>>;
 
-/// Represents a graphical resource that possesses a `GraphicsHandle`.
+/// Represents a resource that possesses a `GraphicsHandle`.
 pub trait GraphicsResource {
   fn handle(&self) -> GraphicsHandle;
 }
 
-/// Indicates the kinds of barriers that can be synchronized in the GPU compute system.
+/// Indicates the kinds of barriers that can be synchronized in the GPU.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum GraphicsBarrier {
   ImageAccess,
 }
 
-/// Represents a server implementation for the underlying graphics subsystem.
+/// Represents a backend implementation for the underlying graphics API.
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level implementation abstraction.
+/// 
+/// Theoeretically different backends could be supported; though it's unlikely to be anything other
+/// than OpenGL. We do provide a headless backend to facilitate testing and related, however.
 pub trait GraphicsBackend {
   // frame operations
   fn begin_frame(&self);

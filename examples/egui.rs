@@ -11,7 +11,6 @@ fn main() {
     ..Default::default()
   };
 
-
   Engine::start(configuration, |mut engine| {
     let mut canvas = UserInterfaceCanvas::new(&engine.graphics);
 
@@ -50,14 +49,14 @@ fn main() {
           });
           let line = Line::new(Values::from_values_iter(sin));
 
-          Plot::new("my_plot").view_aspect(2.0).show(ui, |plot_ui| plot_ui.line(line));
+          Plot::new("my_plot")
+            .view_aspect(2.0)
+            .show(ui, |plot_ui| plot_ui.line(line));
         });
       });
 
-      if let Some(keyboard) = engine.input.keyboard_device() {
-        if keyboard.is_key_pressed(Key::Escape) {
-          tick.exit();
-        }
+      if engine.input.keyboard.is_key_pressed(Key::Escape) {
+        tick.exit();
       }
     });
   });

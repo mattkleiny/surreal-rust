@@ -12,7 +12,7 @@ use super::*;
 
 use crate::maths::Rectangle;
 
-/// The graphics backend implementation for OpenGL.
+/// A [`GraphicsBackend`] implementation for OpenGL.
 pub struct OpenGLGraphicsBackend {
   context: GlContext,
   internal_state: RefCell<InternalState>,

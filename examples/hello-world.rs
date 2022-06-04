@@ -36,10 +36,8 @@ fn main() {
       );
       batch.flush();
 
-      if let Some(keyboard) = engine.input.keyboard_device() {
-        if keyboard.is_key_pressed(Key::Escape) {
-          tick.exit();
-        }
+      if engine.input.keyboard.is_key_pressed(Key::Escape) {
+        tick.exit();
       }
     });
   });

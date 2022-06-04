@@ -10,7 +10,6 @@ fn main() {
     ..Default::default()
   };
 
-
   Engine::start(configuration, |engine| {
     let graphics = &engine.graphics;
 
@@ -23,27 +22,24 @@ fn main() {
       canvas.simulate(tick.time.delta_time);
       canvas.draw();
 
-      if let Some(mouse) = engine.input.mouse_device() {
-        let position = mouse.normalised_position() * vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
+      let position = engine.input.mouse.normalised_position()
+        * vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
 
-        if mouse.is_button_down(MouseButton::Left) {
-          let colors = &palette.as_slice()[1..4];
-          let color = colors.select_randomly(&mut random);
+      if engine.input.mouse.is_button_down(MouseButton::Left) {
+        let colors = &palette.as_slice()[1..4];
+        let color = colors.select_randomly(&mut random);
 
-          canvas.draw_circle(position, 6., *color);
-        } else if mouse.is_button_down(MouseButton::Right) {
-          canvas.draw_circle(position, 6., Color::CLEAR);
-        }
+        canvas.draw_circle(position, 6., *color);
+      } else if engine.input.mouse.is_button_down(MouseButton::Right) {
+        canvas.draw_circle(position, 6., Color::CLEAR);
       }
 
-      if let Some(keyboard) = engine.input.keyboard_device() {
-        if keyboard.is_key_pressed(Key::Space) {
-          canvas.clear();
-        }
+      if engine.input.keyboard.is_key_pressed(Key::Space) {
+        canvas.clear();
+      }
 
-        if keyboard.is_key_pressed(Key::Escape) {
-          tick.exit();
-        }
+      if engine.input.keyboard.is_key_pressed(Key::Escape) {
+        tick.exit();
       }
     });
   });

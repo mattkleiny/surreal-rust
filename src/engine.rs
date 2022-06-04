@@ -22,7 +22,7 @@ use crate::{
   assets::AssetManager,
   audio::{AudioServer, OpenALAudioBackend},
   graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend},
-  input::StandardInput,
+  input::InputBackend,
   maths::vec2,
   utilities::{Clock, FrameCounter, GameTime, IntervalTimer, TimeSpan},
 };
@@ -76,7 +76,7 @@ pub struct Engine {
   pub assets: AssetManager,
   pub audio: AudioServer,
   pub graphics: GraphicsServer,
-  pub input: StandardInput,
+  pub input: InputBackend,
 
   // window management
   config: Configuration,
@@ -178,7 +178,7 @@ impl Engine {
         &window,
         config.vsync_enabled,
       ))),
-      input: StandardInput::new(),
+      input: InputBackend::new(),
 
       // window management
       config,
