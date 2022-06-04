@@ -46,8 +46,8 @@ fn main() {
     ..Default::default()
   });
 
-  Game::start(platform, |mut game, assets| {
-    let graphics = &game.host.graphics;
+  Game::start(platform, |game, assets| {
+    let graphics = game.host.graphics();
 
     // set-up assets and rendering
     let sprite: &Texture = assets
@@ -84,12 +84,12 @@ fn main() {
       }
     });
 
-    game.run_variable_step(|game| {
-      game.host.graphics.clear_color_buffer(palette[0]);
+    game.run_variable_step(|host, tick| {
+      host.graphics().clear_color_buffer(palette[0]);
 
       renderer.render(&map);
 
-      if let Some(keyboard) = game.host.input.keyboard_device() {
+      if let Some(keyboard) = host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Space) {
           map.clear();
           map.fill(|_, _| {
@@ -106,7 +106,7 @@ fn main() {
         }
 
         if keyboard.is_key_pressed(Key::Escape) {
-          game.exit();
+          tick.exit();
         }
       }
     });

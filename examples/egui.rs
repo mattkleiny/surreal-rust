@@ -12,7 +12,7 @@ fn main() {
   });
 
   Game::start(platform, |mut game, _| {
-    let mut canvas = UserInterfaceCanvas::new(&game.host.graphics);
+    let mut canvas = UserInterfaceCanvas::new(game.host.graphics());
 
     // TODO: make this easier to use
     game.host.input.pixels_per_point = 1.2;
@@ -21,10 +21,10 @@ fn main() {
     let mut name = "Matt".to_string();
     let mut age = 33;
 
-    game.run_variable_step(|game| {
-      game.host.graphics.clear_color_buffer(Color::BLACK);
+    game.run_variable_step(|host, tick| {
+      host.graphics().clear_color_buffer(Color::BLACK);
 
-      canvas.run(&game.host.input, |egui| {
+      canvas.run(&host.input, |egui| {
         egui::CentralPanel::default().show(egui, |ui| {
           ui.heading("My egui Application");
 
@@ -53,9 +53,9 @@ fn main() {
         });
       });
 
-      if let Some(keyboard) = game.host.input.keyboard_device() {
+      if let Some(keyboard) = host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          game.exit();
+          tick.exit();
         }
       }
     });

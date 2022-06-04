@@ -8,8 +8,8 @@ fn main() {
     ..Default::default()
   });
 
-  Game::start(platform, |mut game, assets| {
-    let graphics = &game.host.graphics;
+  Game::start(platform, |game, assets| {
+    let graphics = &game.host.graphics();
 
     // build an empty texture, we'll write into it from the GPU.
     let mut texture = Texture::new(graphics);
@@ -49,17 +49,17 @@ fn main() {
 
     material.set_uniform("u_texture", &texture);
 
-    game.run_variable_step(|game| {
-      game.host.graphics.clear_color_buffer(Color::BLACK);
+    game.run_variable_step(|host, tick| {
+      host.graphics().clear_color_buffer(Color::BLACK);
 
       // draw what we computed
       batch.begin(&material);
       batch.draw(&TextureRegion::from(&texture), SpriteOptions::default());
       batch.flush();
 
-      if let Some(keyboard) = game.host.input.keyboard_device() {
+      if let Some(keyboard) = host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          game.exit();
+          tick.exit();
         }
       }
     });

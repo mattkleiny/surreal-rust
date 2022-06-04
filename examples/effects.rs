@@ -10,8 +10,8 @@ fn main() {
     ..Default::default()
   });
 
-  Game::start(platform, |mut game, assets| {
-    let graphics = &game.host.graphics;
+  Game::start(platform, |game, assets| {
+    let graphics = &game.host.graphics();
 
     // set-up rendering
     let sprite: &Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
@@ -45,8 +45,8 @@ fn main() {
       destination: BlendFactor::OneMinusSrcAlpha,
     });
 
-    game.run_variable_step(|game| {
-      game.host.graphics.clear_color_buffer(Color::BLACK);
+    game.run_variable_step(|host, tick| {
+      host.graphics().clear_color_buffer(Color::BLACK);
 
       // TODO: simplify this API (draw list or something?)
       // draw the main display
@@ -63,7 +63,7 @@ fn main() {
       // render the effect
       {
         // interpolate intensity over time
-        let intensity = (game.time.total_time.sin() + 1. / 2.) * 0.005;
+        let intensity = (tick.time.total_time.sin() + 1. / 2.) * 0.005;
         let color_attachment = render_target.color_attachment();
         let region = TextureRegion::from(&color_attachment);
 
@@ -74,9 +74,9 @@ fn main() {
         batch.flush();
       }
 
-      if let Some(keyboard) = game.host.input.keyboard_device() {
+      if let Some(keyboard) = host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          game.exit();
+          tick.exit();
         }
       }
     });

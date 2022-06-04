@@ -8,18 +8,17 @@ use crate::assets::AssetManager;
 use crate::graphics::{
   BitmapFontLoader, ImageLoader, MaterialLoader, ShaderProgramLoader, TextureLoader, TextureOptions,
 };
-use crate::platform::{DesktopPlatform, DesktopPlatformHost, Platform, PlatformHost};
+use crate::platform::{Platform, PlatformHost};
 use crate::utilities::{Clock, GameTime};
 
-pub use application::*;
+pub use events::*;
 
-mod application;
+mod events;
 mod ecs;
 
 // TODO: screen management
 // TODO: plugin management (profiler, console, etc)
 // TODO: better rendering pipeline support
-// TODO: remove `Game` in favour of a better system
 
 /// The context for bootstrapping a game.
 pub struct Game<P: Platform> {
@@ -27,25 +26,21 @@ pub struct Game<P: Platform> {
 }
 
 /// The context for a single tick of the game loop.
-pub struct GameTick<'a, P: Platform> {
-  pub host: &'a mut P::Host,
+pub struct GameTick {
   pub time: GameTime,
-  is_running: bool,
+  is_exiting: bool,
 }
 
-impl<'a, P: Platform> GameTick<'a, P> {
+impl GameTick {
   /// Exits the game at the end of the frame.
   pub fn exit(&mut self) {
-    self.is_running = false;
+    self.is_exiting = true;
   }
 }
 
-impl Game<DesktopPlatform> {
+impl<P: Platform> Game<P> {
   /// Starts a new game with the given platform.
-  pub fn start(
-    platform: DesktopPlatform,
-    mut setup: impl FnMut(Game<DesktopPlatform>, &mut AssetManager),
-  ) {
+  pub fn start(platform: P, mut setup: impl FnMut(Game<P>, &mut AssetManager)) {
     profiling::register_thread!("Main Thread");
 
     // set-up core host
@@ -53,8 +48,8 @@ impl Game<DesktopPlatform> {
       host: platform.create_host(),
     };
 
-    let host: &DesktopPlatformHost = &game.host;
-    let graphics = &host.graphics;
+    let host: &P::Host = &game.host;
+    let graphics = host.graphics();
 
     // set-up asset manager
     let mut assets = AssetManager::new();
@@ -79,22 +74,23 @@ impl Game<DesktopPlatform> {
   }
 
   /// Runs the game loop in a variable step fashion.
-  pub fn run_variable_step(&mut self, mut main_loop: impl FnMut(&mut GameTick<DesktopPlatform>)) {
+  pub fn run_variable_step(mut self, mut main_loop: impl FnMut(&mut P::Host, &mut GameTick)) {
     let mut timer = Clock::new();
 
     self.host.run(move |host| {
+      // capture timing information
       let mut tick = GameTick {
-        host,
         time: GameTime {
           delta_time: timer.tick(),
           total_time: timer.total_time(),
         },
-        is_running: true,
+        is_exiting: false,
       };
 
-      main_loop(&mut tick);
+      // run main loop
+      main_loop(host, &mut tick);
 
-      if !tick.is_running {
+      if tick.is_exiting {
         host.exit();
       }
 

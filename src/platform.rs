@@ -29,6 +29,10 @@ pub trait Platform {
 ///
 /// An example host is the main window for a game in desktop environments.
 pub trait PlatformHost {
+  // core services
+  fn audio(&self) -> &crate::audio::AudioServer;
+  fn graphics(&self) -> &crate::graphics::GraphicsServer;
+
   // basic state queries
   fn width(&self) -> usize;
   fn height(&self) -> usize;
@@ -37,9 +41,10 @@ pub trait PlatformHost {
 
   /// Runs the given main loop imperatively against the host.
   fn run(&mut self, main_loop: impl FnMut(&mut Self));
+  // fn pump(&mut self, main_loop: impl FnMut(&mut Self, winit::event::Event<()>, &mut winit::event_loop::ControlFlow));
 
   /// Pumps the given event loop declaratively against the host.
-  fn pump(self, listener: impl crate::framework::EventListener + 'static);
+  fn pump(&mut self, listener: impl crate::framework::EventListener + 'static);
 
   /// Exits the platform.
   fn exit(&mut self);

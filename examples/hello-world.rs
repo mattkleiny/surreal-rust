@@ -10,8 +10,8 @@ fn main() {
     ..Default::default()
   });
 
-  Game::start(platform, |mut game, _| {
-    let graphics = &game.host.graphics;
+  Game::start(platform, |game, _| {
+    let graphics = &game.host.graphics();
 
     let shader = load_built_in_shader(graphics, BuiltInShader::SpriteStandard);
     let mut material = Material::new(graphics, &shader);
@@ -24,21 +24,21 @@ fn main() {
     let color1 = Color32::random();
     let color2 = Color32::random();
 
-    game.run_variable_step(|game| {
-      game.host.graphics.clear_color_buffer(Color::BLACK);
+    game.run_variable_step(|host, tick| {
+      host.graphics().clear_color_buffer(Color::BLACK);
 
       batch.begin(&material);
       batch.draw_circle(
         vec2(0., 0.),
         0.75,
         64,
-        Color32::lerp(color1, color2, (game.time.total_time.sin() + 1.) / 2.),
+        Color32::lerp(color1, color2, (tick.time.total_time.sin() + 1.) / 2.),
       );
       batch.flush();
 
-      if let Some(keyboard) = game.host.input.keyboard_device() {
+      if let Some(keyboard) = host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          game.exit();
+          tick.exit();
         }
       }
     });

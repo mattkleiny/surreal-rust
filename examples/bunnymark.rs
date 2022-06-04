@@ -12,8 +12,8 @@ fn main() {
     ..Default::default()
   });
 
-  Game::start(platform, |mut game, assets| {
-    let graphics = &game.host.graphics;
+  Game::start(platform, |game, assets| {
+    let graphics = game.host.graphics();
 
     // set-up assets and rendering
     let sprite: &Texture = assets.load_asset("assets/sprites/bunny.png").expect("Failed to load sprite image");
@@ -30,12 +30,12 @@ fn main() {
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
 
-    game.run_variable_step(move |game| {
-      game.host.graphics.clear_color_buffer(Color::BLACK);
+    game.run_variable_step(move |host, tick| {
+      host.graphics().clear_color_buffer(Color::BLACK);
 
       // update bunnies
       for bunny in &mut bunnies {
-        bunny.update(game.time.delta_time);
+        bunny.update(tick.time.delta_time);
       }
 
       // draw bunnies
@@ -49,13 +49,13 @@ fn main() {
       });
       
       // handle input
-      if let Some(keyboard) = game.host.input.keyboard_device() {
+      if let Some(keyboard) = host.input.keyboard_device() {
         if keyboard.is_key_pressed(Key::Escape) {
-          game.exit();
+          tick.exit();
         }
       }
 
-      if let Some(mouse) = game.host.input.mouse_device() {
+      if let Some(mouse) = host.input.mouse_device() {
         if mouse.is_button_down(MouseButton::Left) {
           let position = mouse.normalised_position();
 

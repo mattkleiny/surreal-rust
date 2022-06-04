@@ -1,8 +1,8 @@
 //! A platform implementation for headless environments.
 
-use crate::audio::HeadlessAudioBackend;
+use crate::audio::{AudioServer, HeadlessAudioBackend};
 use crate::framework::EventListener;
-use crate::graphics::HeadlessGraphicsBackend;
+use crate::graphics::{GraphicsServer, HeadlessGraphicsBackend};
 use crate::input::HeadlessInputBackend;
 
 use super::*;
@@ -12,9 +12,9 @@ pub struct HeadlessPlatform;
 
 /// A host for headless environments.
 pub struct HeadlessPlatformHost {
-  pub audio: HeadlessAudioBackend,
-  pub graphics: HeadlessGraphicsBackend,
-  pub input: HeadlessInputBackend,
+  audio: AudioServer,
+  graphics: GraphicsServer,
+  input: HeadlessInputBackend,
   is_exiting: bool,
 }
 
@@ -23,8 +23,8 @@ impl Platform for HeadlessPlatform {
 
   fn create_host(&self) -> Self::Host {
     HeadlessPlatformHost {
-      audio: HeadlessAudioBackend::new(),
-      graphics: HeadlessGraphicsBackend::new(),
+      audio: AudioServer::new(Box::new(HeadlessAudioBackend::new())),
+      graphics: GraphicsServer::new(Box::new(HeadlessGraphicsBackend::new())),
       input: HeadlessInputBackend::new(),
       is_exiting: false,
     }
@@ -32,6 +32,14 @@ impl Platform for HeadlessPlatform {
 }
 
 impl PlatformHost for HeadlessPlatformHost {
+  fn audio(&self) -> &AudioServer {
+    &self.audio
+  }
+
+  fn graphics(&self) -> &GraphicsServer {
+    &self.graphics
+  }
+
   fn width(&self) -> usize {
     1920
   }
@@ -54,7 +62,7 @@ impl PlatformHost for HeadlessPlatformHost {
     }
   }
 
-  fn pump(self, mut listener: impl EventListener + 'static) {
+  fn pump(&mut self, mut listener: impl EventListener + 'static) {
     use crate::framework::*;
 
     while !self.is_exiting {

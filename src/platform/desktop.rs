@@ -109,8 +109,8 @@ impl Platform for DesktopPlatform {
 /// The host for the desktop platform.
 pub struct DesktopPlatformHost {
   // servers
-  pub audio: AudioServer,
-  pub graphics: GraphicsServer,
+  audio: AudioServer,
+  graphics: GraphicsServer,
   pub input: DesktopInput,
 
   // core
@@ -139,6 +139,14 @@ impl DesktopPlatformHost {
 }
 
 impl PlatformHost for DesktopPlatformHost {
+  fn audio(&self) -> &AudioServer {
+    &self.audio
+  }
+
+  fn graphics(&self) -> &GraphicsServer {
+    &self.graphics
+  }
+
   fn width(&self) -> usize {
     self.window.inner_size().width as usize
   }
@@ -249,13 +257,14 @@ impl PlatformHost for DesktopPlatformHost {
     });
   }
 
-  fn pump(mut self, mut listener: impl EventListener + 'static) {
+  fn pump(&mut self, mut listener: impl EventListener + 'static) {
     use crate::framework::*;
     use winit::event_loop::ControlFlow;
+    use winit::platform::desktop::EventLoopExtDesktop;
 
-    // take ownership of the main event loop and start flowing events
-    // back out to the event listener.
-    self.event_loop.unwrap().run(move |event, _, control_flow| {
+    let mut event_loop = self.event_loop.take().unwrap();
+
+    event_loop.run_return(|event, _, control_flow| {
       use winit::event::*;
 
       match event {
@@ -310,25 +319,45 @@ impl PlatformHost for DesktopPlatformHost {
           WindowEvent::CursorMoved { position, .. } => {
             let size = self.window.inner_size();
 
-            self.input.on_mouse_move(
-              vec2(position.x as f32, position.y as f32),
-              vec2(size.width as f32, size.height as f32),
-            );
+            let position = vec2(position.x as f32, position.y as f32);
+            let size = vec2(size.width as f32, size.height as f32);
+
+            self.input.on_mouse_move(position, size);
+
+            listener.on_event(&MouseMoveEvent(position));
           }
           WindowEvent::MouseWheel { delta, .. } => {
             self.input.on_mouse_wheel(&delta);
+
+            let mut delta = match delta {
+              MouseScrollDelta::LineDelta(x, y) => {
+                let points_per_scroll_line = 50.0;
+
+                vec2(x, y) * points_per_scroll_line
+              }
+              MouseScrollDelta::PixelDelta(delta) => vec2(delta.x as f32, delta.y as f32),
+            };
+
+            delta.x *= -1.0;
+
+            listener.on_event(&MouseScrollEvent(delta));
           }
           WindowEvent::MouseInput { button, state, .. } => {
             self.input.on_mouse_button(button, state);
+
+            match state {
+              ElementState::Pressed => listener.on_event(&MousePressEvent(button)),
+              ElementState::Released => listener.on_event(&MouseReleaseEvent(button)),
+            }
           }
           WindowEvent::KeyboardInput { input, .. } => {
             self.input.on_keyboard_event(&input);
 
             if let Some(key) = input.virtual_keycode {
               match input.state {
-                ElementState::Pressed => listener.on_event(&KeyPressedEvent(key)),
-                ElementState::Released => listener.on_event(&KeyReleasedEvent(key)),
-              }
+                ElementState::Pressed => listener.on_event(&KeyPressEvent(key)),
+                ElementState::Released => listener.on_event(&KeyReleaseEvent(key)),
+              };
             }
           }
           WindowEvent::ModifiersChanged(modifiers) => {
@@ -337,14 +366,20 @@ impl PlatformHost for DesktopPlatformHost {
           WindowEvent::Focused(focused) => {
             self.is_focused = focused;
             self.input.on_modifiers_changed(ModifiersState::default());
+
+            listener.on_event(&PlatformFocusEvent(focused));
           }
           WindowEvent::Resized(size) => {
             let size = (size.width as usize, size.height as usize);
 
             self.graphics.set_viewport_size(size);
+
+            listener.on_event(&PlatformResizeEvent(size.0, size.1));
           }
           WindowEvent::CloseRequested => {
             *control_flow = ControlFlow::Exit;
+
+            listener.on_event(&PlatformCloseEvent());
           }
           _ => {}
         },
