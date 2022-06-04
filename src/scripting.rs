@@ -13,18 +13,8 @@ pub use vm::*;
 mod lang;
 mod vm;
 
-// TODO: implement MIR?
-
 /// An opaque handle to resource in the scripting subsystem.
 pub type ScriptHandle = crate::collections::ArenaIndex;
-
-/// The scripting server implementation.
-pub type ScriptServer = std::rc::Rc<Box<ScriptBackend>>;
-
-/// Represents a graphical resource that possesses a `ScriptHandle`.
-pub trait ScriptResource {
-  fn handle(&self) -> ScriptHandle;
-}
 
 /// The script backend implementation for the underlying scripting subsystem.
 ///
