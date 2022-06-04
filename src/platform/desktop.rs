@@ -10,6 +10,7 @@ use graphics::DesktopGraphicsBackend;
 use input::DesktopInput;
 
 use crate::audio::AudioServer;
+use crate::framework::EventListener;
 use crate::graphics::GraphicsServer;
 use crate::maths::vec2;
 use crate::utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan};
@@ -218,13 +219,117 @@ impl PlatformHost for DesktopPlatformHost {
             );
           }
           WindowEvent::MouseWheel { delta, .. } => {
-            self.input.on_mouse_wheel(delta);
+            self.input.on_mouse_wheel(&delta);
           }
           WindowEvent::MouseInput { button, state, .. } => {
             self.input.on_mouse_button(button, state);
           }
           WindowEvent::KeyboardInput { input, .. } => {
-            self.input.on_keyboard_event(input);
+            self.input.on_keyboard_event(&input);
+          }
+          WindowEvent::ModifiersChanged(modifiers) => {
+            self.input.on_modifiers_changed(modifiers);
+          }
+          WindowEvent::Focused(focused) => {
+            self.is_focused = focused;
+            self.input.on_modifiers_changed(ModifiersState::default());
+          }
+          WindowEvent::Resized(size) => {
+            let size = (size.width as usize, size.height as usize);
+
+            self.graphics.set_viewport_size(size);
+          }
+          WindowEvent::CloseRequested => {
+            *control_flow = ControlFlow::Exit;
+          }
+          _ => {}
+        },
+        _ => {}
+      }
+    });
+  }
+
+  fn pump(mut self, mut listener: impl EventListener + 'static) {
+    use crate::framework::*;
+    use winit::event_loop::ControlFlow;
+
+    // take ownership of the main event loop and start flowing events
+    // back out to the event listener.
+    self.event_loop.unwrap().run(move |event, _, control_flow| {
+      use winit::event::*;
+
+      match event {
+        Event::RedrawRequested(window_id) => {
+          if window_id == self.window.id() {
+            // update graphics
+            self.graphics.begin_frame();
+            listener.on_event(&PlatformRenderEvent());
+            self.graphics.end_frame();
+          }
+        }
+        Event::MainEventsCleared => {
+          // update application logic
+          listener.on_event(&PlatformTickEvent());
+
+          // update input devices
+          self.input.tick();
+
+          // update the fps counter, if enabled
+          if self.config.update_continuously && self.config.show_fps_in_title && self.is_focused {
+            let delta_time = self.clock.tick();
+
+            self.frame_counter.tick(delta_time);
+
+            if self.frame_timer.tick(delta_time) {
+              self.window.set_title(&format!(
+                "{} - FPS: {:.2}",
+                self.config.title,
+                self.frame_counter.fps()
+              ));
+
+              self.frame_timer.reset();
+            }
+          } else {
+            self.window.set_title(self.config.title);
+          }
+
+          // main control flow
+          if self.is_closing {
+            *control_flow = ControlFlow::Exit;
+          } else if (self.config.update_continuously && self.is_focused)
+            || self.config.run_in_background
+          {
+            *control_flow = ControlFlow::Poll;
+            self.window.request_redraw();
+          } else {
+            *control_flow = ControlFlow::Wait;
+            self.window.request_redraw();
+          }
+        }
+        Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
+          WindowEvent::CursorMoved { position, .. } => {
+            let size = self.window.inner_size();
+
+            self.input.on_mouse_move(
+              vec2(position.x as f32, position.y as f32),
+              vec2(size.width as f32, size.height as f32),
+            );
+          }
+          WindowEvent::MouseWheel { delta, .. } => {
+            self.input.on_mouse_wheel(&delta);
+          }
+          WindowEvent::MouseInput { button, state, .. } => {
+            self.input.on_mouse_button(button, state);
+          }
+          WindowEvent::KeyboardInput { input, .. } => {
+            self.input.on_keyboard_event(&input);
+
+            if let Some(key) = input.virtual_keycode {
+              match input.state {
+                ElementState::Pressed => listener.on_event(&KeyPressedEvent(key)),
+                ElementState::Released => listener.on_event(&KeyReleasedEvent(key)),
+              }
+            }
           }
           WindowEvent::ModifiersChanged(modifiers) => {
             self.input.on_modifiers_changed(modifiers);

@@ -1,8 +1,8 @@
 //! Shader loading and management.
-//! 
+//!
 //! Shader programs form the programmable part of the GPU pipeline, outside of state changes,
 //! and are managed through this module.
-//! 
+//!
 //! For higher-level shader control see the material module instead.
 
 use std::rc::Rc;
@@ -45,6 +45,9 @@ pub enum ShaderUniform {
   Matrix3x3(Matrix3x3<f32>),
   Matrix4x4(Matrix4x4<f32>),
   Texture(Texture, usize, Option<TextureSampler>),
+
+  /// A special case of a texture uniform,
+  /// used for binding a texture to a compute shader.
   TextureBinding(Texture, usize, ReadWriteMode, TextureFormat),
 }
 
@@ -245,12 +248,15 @@ fn parse_glsl_source(source: &str) -> crate::Result<Vec<Shader>> {
         _ => continue,
       };
 
-      result.push(Shader { kind, code: shared_code.clone() });
+      result.push(Shader {
+        kind,
+        code: shared_code.clone(),
+      });
     } else if line.trim().starts_with("#include") {
       if let Some(path) = line.split_whitespace().nth(1) {
         // trim the fat from the include path
         let path = path.replace('"', "").replace('"', "").replace(';', "");
-        
+
         // fetch and splat the dependent shader
         let dependent_file = VirtualPath::parse(&path);
         let dependent_code = dependent_file.read_all_text()?;
@@ -317,7 +323,8 @@ mod tests {
         gl_FragColor = texture(u_texture, v_uv) * v_color;
       }
     ",
-    ).expect("Failed to parse simple program");
+    )
+    .expect("Failed to parse simple program");
 
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].kind, ShaderKind::Vertex);

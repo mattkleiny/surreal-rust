@@ -11,6 +11,7 @@
 #![feature(generic_const_exprs)]
 #![feature(const_refs_to_cell)]
 #![feature(let_else)]
+#![feature(trait_upcasting)]
 
 #[macro_use]
 extern crate derive_more;

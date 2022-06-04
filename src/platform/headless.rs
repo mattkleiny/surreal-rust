@@ -1,6 +1,7 @@
 //! A platform implementation for headless environments.
 
 use crate::audio::HeadlessAudioBackend;
+use crate::framework::EventListener;
 use crate::graphics::HeadlessGraphicsBackend;
 use crate::input::HeadlessInputBackend;
 
@@ -50,6 +51,15 @@ impl PlatformHost for HeadlessPlatformHost {
   fn run(&mut self, mut body: impl FnMut(&mut Self)) {
     while !self.is_exiting {
       body(self);
+    }
+  }
+
+  fn pump(self, mut listener: impl EventListener + 'static) {
+    use crate::framework::*;
+
+    while !self.is_exiting {
+      listener.on_event(&PlatformTickEvent());
+      listener.on_event(&PlatformRenderEvent());
     }
   }
 

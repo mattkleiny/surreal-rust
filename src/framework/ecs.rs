@@ -1,8 +1,7 @@
 use std::any::{type_name, TypeId};
 use std::fmt::{Debug, Formatter};
 
-use crate::collections::{Arena, ArenaIndex};
-use crate::prelude::AnyMap;
+use crate::collections::{AnyMap, Arena, ArenaIndex};
 
 /// Represents an entity in the ECS.
 pub type Entity = ArenaIndex;
@@ -204,9 +203,13 @@ mod tests {
     world.add_component(entity, vec2(0f32, 10f32));
     world.add_component(entity, 2. * std::f32::consts::PI);
 
-    let position = world.get_component::<Vector2<f32>>(entity).expect("Failed to get component");
+    let position = world
+      .get_component::<Vector2<f32>>(entity)
+      .expect("Failed to get component");
 
-    let rotation = world.get_component::<f32>(entity).expect("Failed to get component");
+    let rotation = world
+      .get_component::<f32>(entity)
+      .expect("Failed to get component");
 
     assert_eq!(*position, vec2(0., 10.));
     assert_eq!(*rotation, 2. * std::f32::consts::PI);
@@ -219,7 +222,9 @@ mod tests {
 
     world.add_component(entity, vec2(0f32, 10f32));
 
-    let position = world.get_component_mut::<Vector2<f32>>(entity).expect("Failed to get component");
+    let position = world
+      .get_component_mut::<Vector2<f32>>(entity)
+      .expect("Failed to get component");
 
     position.x += 10.;
     position.y += 10.;

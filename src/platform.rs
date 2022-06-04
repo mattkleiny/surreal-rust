@@ -35,7 +35,11 @@ pub trait PlatformHost {
   fn is_focused(&self) -> bool;
   fn is_closing(&self) -> bool;
 
+  /// Runs the given main loop imperatively against the host.
   fn run(&mut self, main_loop: impl FnMut(&mut Self));
+
+  /// Pumps the given event loop declaratively against the host.
+  fn pump(self, listener: impl crate::framework::EventListener + 'static);
 
   /// Exits the platform.
   fn exit(&mut self);

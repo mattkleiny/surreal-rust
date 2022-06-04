@@ -54,12 +54,12 @@ impl DesktopInput {
   }
 
   /// Notifies of a mouse wheel event.
-  pub fn on_mouse_wheel(&mut self, delta: MouseScrollDelta) {
+  pub fn on_mouse_wheel(&mut self, delta: &MouseScrollDelta) {
     let mut delta = match delta {
       MouseScrollDelta::LineDelta(x, y) => {
         let points_per_scroll_line = 50.0;
 
-        egui::vec2(x, y) * points_per_scroll_line
+        egui::vec2(*x, *y) * points_per_scroll_line
       }
       MouseScrollDelta::PixelDelta(delta) => {
         egui::vec2(delta.x as f32, delta.y as f32) / self.pixels_per_point
@@ -99,7 +99,7 @@ impl DesktopInput {
   }
 
   /// Notifies of a keyboard event.
-  pub fn on_keyboard_event(&mut self, event: winit::event::KeyboardInput) {
+  pub fn on_keyboard_event(&mut self, event: &winit::event::KeyboardInput) {
     self.keyboard.on_keyboard_event(event);
 
     if let Some(virtual_key) = event.virtual_keycode {
@@ -151,7 +151,7 @@ impl DesktopKeyboardDevice {
   }
 
   /// Handles keyboard events.
-  pub fn on_keyboard_event(&mut self, event: winit::event::KeyboardInput) {
+  pub fn on_keyboard_event(&mut self, event: &winit::event::KeyboardInput) {
     if let Some(virtual_key_code) = event.virtual_keycode {
       if event.state == ElementState::Pressed {
         self.current_keys.insert(virtual_key_code);
