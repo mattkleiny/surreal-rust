@@ -1,6 +1,6 @@
 //! Diagnostic utilities for the engine.
 
-use log::LevelFilter;
+pub use log::{debug, error, info, trace, warn, Level, LevelFilter};
 
 /// A simple `log` that logs to the console.
 pub struct ConsoleLogger {}

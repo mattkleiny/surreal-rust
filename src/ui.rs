@@ -15,7 +15,7 @@ pub trait RawInputProvider {
 }
 
 /// A canvas for immediate mode user interface rendering via `egui`.
-pub struct UserInterfaceCanvas {
+pub struct UserInterface {
   graphics: GraphicsServer,
   context: egui::Context,
   material: Material,
@@ -23,7 +23,7 @@ pub struct UserInterfaceCanvas {
   textures: HashMap<egui::TextureId, Texture>,
 }
 
-impl UserInterfaceCanvas {
+impl UserInterface {
   /// Creates a new user interface canvas.
   pub fn new(server: &GraphicsServer) -> Self {
     // load and configure material
@@ -45,18 +45,12 @@ impl UserInterfaceCanvas {
     }
   }
 
-  /// Gets the pixels per point for this canvas.
-  pub fn pixels_per_point(&self) -> f32 {
-    self.context.pixels_per_point()
-  }
-
-  /// Sets the pixels per point for this canvas.
-  pub fn set_pixels_per_point(&mut self, pixels_per_point: f32) {
-    self.context.set_pixels_per_point(pixels_per_point);
-  }
-
   /// Propagates input into the canvas and runs the given body against the canvas output.
   pub fn run(&mut self, input: &impl RawInputProvider, body: impl FnMut(&egui::Context)) {
+    let pixels_per_point = self.graphics.get_pixels_per_point();
+
+    self.context.set_pixels_per_point(pixels_per_point);
+
     let raw_input = input.get_raw_input().clone();
     let full_output = self.context.run(raw_input, body);
     let textures_delta = full_output.textures_delta;
@@ -118,7 +112,6 @@ impl UserInterfaceCanvas {
     }
 
     // compute display size
-    let pixels_per_point = self.context.pixels_per_point();
     let (width_in_pixels, height_in_pixels) = self.graphics.get_viewport_size();
     let (width_in_points, height_in_points) = (
       width_in_pixels as f32 / pixels_per_point,

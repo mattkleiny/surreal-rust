@@ -7,6 +7,7 @@ pub use ecs::*;
 mod ecs;
 
 use glutin::{window::Window, ContextBuilder};
+use log::LevelFilter;
 use winit::{
   dpi::LogicalSize,
   event_loop::{ControlFlow, EventLoop},
@@ -16,10 +17,11 @@ use winit::{
 use crate::{
   assets::AssetManager,
   audio::{AudioServer, OpenALAudioBackend},
+  diagnostics::ConsoleLogger,
   graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend},
   input::InputBackend,
   maths::vec2,
-  utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan}, diagnostics::ConsoleLogger,
+  utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
 // TODO: scene management
@@ -39,6 +41,7 @@ pub struct Configuration {
   pub run_in_background: bool,
   pub transparent_window: bool,
   pub show_fps_in_title: bool,
+  pub log_level: LevelFilter,
   pub icon: Option<&'static [u8]>,
 }
 
@@ -53,6 +56,7 @@ impl Default for Configuration {
       run_in_background: false,
       transparent_window: false,
       show_fps_in_title: true,
+      log_level: LevelFilter::Info,
       icon: Some(include_bytes!("../surreal.ico")),
     }
   }
@@ -104,18 +108,21 @@ impl Engine {
   pub fn start(configuration: Configuration, mut setup: impl FnMut(Engine)) {
     use crate::graphics::*;
 
-    ConsoleLogger::install(log::LevelFilter::Trace);
-
-    log::trace!("It's working!");
+    // set-up diagnostics
+    ConsoleLogger::install(configuration.log_level);
     profiling::register_thread!("Main Thread");
 
     // set-up core engine
+    log::trace!("Starting engine");
+
     let mut engine = Engine::new(configuration);
 
     let graphics = &engine.graphics;
     let assets = &mut engine.assets;
 
     // set-up asset manager
+    log::trace!("Registering asset loaders");
+
     assets.add_loader(BitmapFontLoader {});
     assets.add_loader(ImageLoader { format: None });
 
@@ -131,6 +138,8 @@ impl Engine {
     assets.add_loader(MaterialLoader {
       server: graphics.clone(),
     });
+
+    log::trace!("Running engine setup");
 
     setup(engine);
   }
@@ -167,11 +176,14 @@ impl Engine {
 
     let (context, window) = unsafe { context.make_current().unwrap().split() };
 
+    let audio = OpenALAudioBackend::new();
+    let graphics = OpenGLGraphicsBackend::new(context, window.scale_factor() as f32);
+
     Self {
       // servers
       assets: AssetManager::new(),
-      audio: AudioServer::new(Box::new(OpenALAudioBackend::new())),
-      graphics: GraphicsServer::new(Box::new(OpenGLGraphicsBackend::new(context))),
+      audio: AudioServer::new(Box::new(audio)),
+      graphics: GraphicsServer::new(Box::new(graphics)),
       input: InputBackend::new(),
 
       // window management
@@ -221,6 +233,8 @@ impl Engine {
     use winit::event::*;
     use winit::platform::run_return::EventLoopExtRunReturn;
 
+    log::trace!("Entering main event loop");
+
     // use this hack to unpack the event loop out of 'self' and then remove the 'static
     // lifetime bound on run_return so that body can access things in self without lifetime woes.
     let mut event_loop = self.event_loop.take().unwrap();
@@ -268,6 +282,12 @@ impl Engine {
           }
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
+          WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
+            log::trace!("Window scale factor changed to {}", scale_factor);
+
+            self.graphics.set_pixels_per_point(scale_factor as f32);
+            self.input.pixels_per_point = scale_factor as f32;
+          }
           WindowEvent::CursorMoved { position, .. } => {
             let size = self.window.inner_size();
 
@@ -291,11 +311,19 @@ impl Engine {
           WindowEvent::Focused(focused) => {
             self.is_focused = focused;
             self.input.on_modifiers_changed(ModifiersState::default());
+
+            if focused {
+              log::trace!("Window gained focus");
+            } else {
+              log::trace!("Window lost focus");
+            }
           }
           WindowEvent::Resized(size) => {
             let size = (size.width as usize, size.height as usize);
 
             self.graphics.set_viewport_size(size);
+
+            log::trace!("Window resized to {}x{}", size.0, size.1);
           }
           WindowEvent::CloseRequested => {
             *control_flow = ControlFlow::Exit;
@@ -305,5 +333,7 @@ impl Engine {
         _ => {}
       }
     });
+
+    log::trace!("Exiting main event loop")
   }
 }

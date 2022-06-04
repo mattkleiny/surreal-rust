@@ -5,6 +5,7 @@ use surreal::prelude::*;
 fn main() {
   let configuration = Configuration {
     title: "Falling Sand",
+    log_level: LevelFilter::Trace,
     ..Default::default()
   };
 

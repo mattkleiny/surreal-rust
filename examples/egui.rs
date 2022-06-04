@@ -10,12 +10,8 @@ fn main() {
     ..Default::default()
   };
 
-  Engine::start(configuration, |mut engine| {
-    let mut canvas = UserInterfaceCanvas::new(&engine.graphics);
-
-    // TODO: make this easier to use
-    engine.input.pixels_per_point = 1.2;
-    canvas.set_pixels_per_point(1.2);
+  Engine::start(configuration, |engine| {
+    let mut canvas = UserInterface::new(&engine.graphics);
 
     let mut name = "Matt".to_string();
     let mut age = 33;

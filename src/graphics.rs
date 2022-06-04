@@ -64,6 +64,8 @@ pub trait GraphicsBackend {
   fn end_frame(&self);
 
   // intrinsics
+  fn get_pixels_per_point(&self) -> f32;
+  fn set_pixels_per_point(&self, pixels_per_point: f32);
   fn get_viewport_size(&self) -> (usize, usize);
   fn set_viewport_size(&self, viewport: (usize, usize));
   fn set_blend_state(&self, blend_state: BlendState);
