@@ -1,6 +1,6 @@
-use crate::collections::Array2D;
+use crate::collections::Grid;
 use crate::graphics::*;
-use crate::maths::{vec2, Circle, Grid, Vector2};
+use crate::maths::{vec2, Circle, Vector2};
 use crate::utilities::{IntervalTimer, TimeSpan};
 
 use super::*;
@@ -9,7 +9,7 @@ use super::*;
 pub struct PixelCanvas {
   pub texture: Texture,
   pub mesh: Mesh<Vertex2>,
-  pub pixels: Array2D<Color>,
+  pub pixels: Grid<Color>,
   material: Material,
   timer: IntervalTimer,
 }
@@ -28,7 +28,7 @@ impl PixelCanvas {
     Self {
       texture,
       mesh: Mesh::create_quad(server, 1.),
-      pixels: Array2D::new(width, height),
+      pixels: Grid::new(width, height),
       material,
       timer: IntervalTimer::new(TimeSpan::from_millis(10.)),
     }
@@ -67,6 +67,7 @@ impl PixelCanvas {
     }
   }
 
+  // TODO: clean this up
   fn simulate_sand(
     &mut self,
     (from_x, from_y): (usize, usize),
@@ -103,7 +104,7 @@ impl PixelCanvas {
     self.texture.write_pixels(
       self.pixels.width(),
       self.pixels.height(),
-      self.pixels.as_slice(),
+      &self.pixels.as_slice(),
     );
 
     // render to the screen

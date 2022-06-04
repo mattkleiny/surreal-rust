@@ -1,10 +1,9 @@
 # TODO
 
-- [ ] Get asset management working
-- [ ] Generalized object loading?
-- [ ] Async and await support?
+- [x] Get asset management loading working
 - [ ] Get hot reload for assets working
-- [ ] Sort out passes in the renderer
+- [ ] Get asset hot re
+- [x] Generalized object loading?
 - [ ] Add bitmap fonts
 - [ ] Add true type fonts? (maybe)
 - [ ] Fix virtual file system
@@ -21,7 +20,8 @@
 - [ ] Add tilemap pivots, transforms, etc
 - [ ] Add tilemap animations
 - [ ] Add texture atlases (automatically baked)?
-- [ ] Fix up lifetimes for core types (graphics, etc)
+- [x] Fix up lifetimes for core types (graphics, etc)
 - [ ] Give documentation a bit of love
+- [ ] Get egui text input working (and platform output handled)
 - [ ] Draw lists? (load/store actions, render targets, command buffer and post processing)
 - [ ] Swap to stable (instead of nightly)?

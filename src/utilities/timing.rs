@@ -86,7 +86,7 @@ impl FrameCounter {
       total_frame_time += sample;
     }
 
-    total_frame_time / self.samples.occupied() as f32
+    total_frame_time / self.samples.len() as f32
   }
 
   pub fn fps(&self) -> f32 {

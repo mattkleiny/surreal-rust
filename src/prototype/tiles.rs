@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use crate::collections::Array2D;
+use crate::collections::{Grid, GridPoint};
 use crate::graphics::Renderable;
-use crate::maths::{vec2, Grid, GridPoint, Numeric};
+use crate::maths::{vec2, Numeric};
 
 use super::*;
 
-/// Represents a tile that can be used in a tile map.
+/// Represents a tile that can be used in a [`TileMap`].
 pub trait Tile: 'static {
   type Id: Numeric + Hash + Eq;
 
@@ -15,10 +15,14 @@ pub trait Tile: 'static {
   fn to_id(&self) -> Self::Id;
 }
 
+/// A densely packed 2d map of [`Tile`]s.
+///
+/// Internally tiles are represented by their [`Tile::Id`], but the public
+/// API allows for direct access via the [`T`] abstraction.
 pub struct TileMap<'a, T>
 where T: Tile
 {
-  tiles: Array2D<T::Id>,
+  tiles: Grid<T::Id>,
   sprites: HashMap<T::Id, TextureRegion<'a>>,
 }
 
@@ -28,7 +32,7 @@ where T: Tile
   /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
-      tiles: Array2D::new(width, height),
+      tiles: Grid::new(width, height),
       sprites: HashMap::new(),
     }
   }
@@ -41,6 +45,16 @@ where T: Tile
   /// Returns the height of the tile map.
   pub fn height(&self) -> usize {
     self.tiles.height()
+  }
+
+  /// Gets a tile in the grid.
+  pub fn get(&self, point: impl Into<GridPoint>) -> &T {
+    T::from_id(*self.tiles.get(point))
+  }
+
+  /// Sets a tile in the grid.
+  pub fn set(&mut self, point: impl Into<GridPoint>, value: T) {
+    self.tiles.set(point, value.to_id());
   }
 
   /// Gets the sprite to be used for the given tile.
@@ -63,25 +77,10 @@ where T: Tile
       }
     }
   }
-}
 
-impl<'a, T> Grid<T> for TileMap<'a, T>
-where T: Tile
-{
-  fn stride(&self) -> usize {
-    self.tiles.width()
-  }
-
-  fn length(&self) -> usize {
-    self.tiles.length()
-  }
-
-  fn get(&self, point: impl Into<GridPoint>) -> &T {
-    T::from_id(*self.tiles.get(point))
-  }
-
-  fn set(&mut self, point: impl Into<GridPoint>, value: T) {
-    self.tiles.set(point, value.to_id());
+  /// Clears the map of all tiles.
+  pub fn clear(&mut self) {
+    self.tiles.clear();
   }
 }
 

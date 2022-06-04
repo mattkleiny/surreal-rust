@@ -5,8 +5,30 @@ use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::maths::{vec2, FromRandom, Rectangle, Vector2};
+use crate::prelude::Grid;
 
 use super::*;
+
+/// Indicates a kind of pixel that can be used in a texture.
+pub trait Texel {
+  const FORMAT: TextureFormat;
+}
+
+/// Implements texel representation common pixel types..
+macro_rules! implement_texel {
+  ($type:ty, $value:ident) => {
+    impl Texel for $type {
+      const FORMAT: TextureFormat = TextureFormat::$value;
+    }
+  };
+}
+
+implement_texel!(Color, RGBA32);
+implement_texel!(Color32, RGBA8);
+implement_texel!([u8; 1], R8);
+implement_texel!([u8; 2], RG8);
+implement_texel!([u8; 3], RGB8);
+implement_texel!([u8; 4], RGBA8);
 
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -320,23 +342,26 @@ impl<'a> TextureAtlas<'a> {
   }
 }
 
-/// Indicates a kind of pixel that can be used in a texture.
-pub trait Texel {
-  const FORMAT: TextureFormat;
+/// Constructs [`TextureAtlas`]s procedurally.
+pub struct TextureAtlasBuilder<P> {
+  size: (usize, usize),
+  cells: Vec<Grid<P>>,
 }
 
-/// Implements texel representation common pixel types..
-macro_rules! implement_texel {
-  ($type:ty, $value:ident) => {
-    impl Texel for $type {
-      const FORMAT: TextureFormat = TextureFormat::$value;
+impl<P: Pixel + Clone + Default> TextureAtlasBuilder<P> {
+  /// Builds a new texture atlas builder.
+  pub fn new(width: usize, height: usize) -> Self {
+    Self {
+      cells: Vec::new(),
+      size: (width, height),
     }
-  };
-}
+  }
 
-implement_texel!(Color, RGBA32);
-implement_texel!(Color32, RGBA8);
-implement_texel!([u8; 1], R8);
-implement_texel!([u8; 2], RG8);
-implement_texel!([u8; 3], RGB8);
-implement_texel!([u8; 4], RGBA8);
+  /// Adds a single cell to the builder.
+  pub fn add_cell(&mut self) -> &mut Grid<P> {
+    let cell = Grid::new(self.size.0, self.size.1);
+
+    self.cells.push(cell);
+    self.cells.last_mut().unwrap()
+  }
+}

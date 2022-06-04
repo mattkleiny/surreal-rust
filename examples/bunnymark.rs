@@ -23,7 +23,6 @@ fn main() {
       .expect("Failed to load sprite image");
 
     let region = TextureRegion::from(&sprite);
-
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
@@ -44,9 +43,9 @@ fn main() {
       }
 
       // draw bunnies
-      renderer.with(|pass: &mut SpriteBatchContext| {
+      renderer.with(|context: &mut SpriteBatchContext| {
         for bunny in &bunnies {
-          pass.batch.draw(
+          context.batch.draw(
             &region,
             SpriteOptions {
               position: bunny.position,

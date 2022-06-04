@@ -17,14 +17,19 @@ impl<T> RingBuffer<T> {
     }
   }
 
+  /// Is the buffer empty?
+  pub fn is_empty(&self) -> bool {
+    self.elements.is_empty()
+  }
+
+  /// The number of elements in the buffer.
+  pub fn len(&self) -> usize {
+    self.elements.len()
+  }
+
   /// Returns the maximum number of elements in the buffer.
   pub fn capacity(&self) -> usize {
     self.elements.capacity()
-  }
-
-  /// Returns the current number of elements in the buffer.
-  pub fn occupied(&self) -> usize {
-    self.elements.len()
   }
 
   /// Appends an element to the buffer.
@@ -77,12 +82,12 @@ impl<'a, T> Iterator for RingBufferIterator<'a, T> {
   fn next(&mut self) -> Option<Self::Item> {
     // wrap around walking backwards
     if self.index == 0 {
-      self.index = self.buffer.occupied() - 1;
+      self.index = self.buffer.len() - 1;
     } else {
       self.index -= 1;
     }
 
-    if self.touched < self.buffer.occupied() {
+    if self.touched < self.buffer.len() {
       self.touched += 1;
 
       match &self.buffer.elements[self.index] {
@@ -107,7 +112,7 @@ mod tests {
       buffer.append(i);
     }
 
-    assert_eq!(buffer.occupied(), 16);
+    assert_eq!(buffer.len(), 16);
   }
 
   #[test]
@@ -120,7 +125,7 @@ mod tests {
 
     buffer.clear();
 
-    assert_eq!(buffer.occupied(), 0);
+    assert_eq!(buffer.len(), 0);
   }
 
   #[test]

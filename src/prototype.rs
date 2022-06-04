@@ -10,6 +10,7 @@ mod canvas;
 mod tiles;
 
 // built-in shaders
+const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
 const SHADER_SPRITE_STANDARD: &str = include_str!("../assets/shaders/sprite-standard.glsl");
 const SHADER_SPRITE_PALETTE: &str = include_str!("../assets/shaders/sprite-palette.glsl");
 const SHADER_EFFECT_ABERRATION: &str = include_str!("../assets/shaders/effect-aberration.glsl");
@@ -25,8 +26,13 @@ const PALETTE_SPACE_DUST_9: &[u8] = include_bytes!("../assets/palettes/space-dus
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BuiltInShader {
+  /// Standard purpose screen-size sprite shader.
+  Canvas,
+  /// Standard purpose projected sprite shader.
   SpriteStandard,
+  /// Palette-shifted sprite shader.
   SpritePalette,
+  /// A simple screen-space aberration effect.
   AberrationEffect,
 }
 
@@ -41,9 +47,10 @@ pub enum BuiltInPalette {
   SpaceDust9,
 }
 
-/// Loads the standard shader program from embedded resources.
+/// Loads a built-in shader.
 pub fn load_built_in_shader(server: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let shader = match shader {
+    BuiltInShader::Canvas => ShaderProgram::from_glsl(server, SHADER_CANVAS_STANDARD),
     BuiltInShader::SpriteStandard => ShaderProgram::from_glsl(server, SHADER_SPRITE_STANDARD),
     BuiltInShader::SpritePalette => ShaderProgram::from_glsl(server, SHADER_SPRITE_PALETTE),
     BuiltInShader::AberrationEffect => ShaderProgram::from_glsl(server, SHADER_EFFECT_ABERRATION),
@@ -52,7 +59,7 @@ pub fn load_built_in_shader(server: &GraphicsServer, shader: BuiltInShader) -> S
   shader.expect("Failed to load standard shader")
 }
 
-/// Loads the given built-in color palette.
+/// Loads a built-in color palette.
 pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<P> {
   let palette = match palette {
     BuiltInPalette::Ayy4 => ColorPalette::from_bytes(PALETTE_AYY_4),

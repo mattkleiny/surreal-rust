@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::graphics::*;
 use crate::maths::{vec2, Rectangle};
 
-/// A shader program to use for egui UI rendering.
+/// A shader program to use for egui canvas rendering.
 const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
 
 /// A provider for [`egui::RawInput`] .

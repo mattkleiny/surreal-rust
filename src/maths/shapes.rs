@@ -1,4 +1,7 @@
-use crate::maths::{vec2, Grid, Raster, Rectangle, Vector2};
+use crate::{
+  collections::Grid,
+  maths::{vec2, Raster, Rectangle, Vector2},
+};
 
 /// A simple circle in 2-space.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -8,17 +11,13 @@ pub struct Circle {
 }
 
 impl Raster for Circle {
-  fn draw_to<G: Grid<T>, T: Clone>(&self, grid: &mut G, value: T) {
+  fn draw_to<T: Clone>(&self, grid: &mut Grid<T>, value: T) {
     let center = self.center;
     let radius = self.radius;
 
     let size = vec2(radius, radius);
-    let rectangle = Rectangle::from_size(center, size).clamp(
-      0,
-      0,
-      grid.width() as isize - 1,
-      grid.height() as isize - 1,
-    );
+    let rectangle = Rectangle::from_size(center, size);
+    let rectangle = rectangle.clamp(0, 0, grid.width() as isize - 1, grid.height() as isize - 1);
 
     for y in rectangle.top()..rectangle.bottom() {
       for x in rectangle.left()..rectangle.right() {
