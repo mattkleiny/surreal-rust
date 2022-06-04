@@ -2,12 +2,12 @@
 
 pub use anymap::*;
 pub use arena::*;
-pub use array2d::*;
+pub use grid::*;
 pub use multimap::*;
 pub use ringbuffer::*;
 
 mod anymap;
 mod arena;
-mod array2d;
+mod grid;
 mod multimap;
 mod ringbuffer;

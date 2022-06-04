@@ -1,7 +1,5 @@
 //! A simple tilemap example for Surreal.
 
-#![windows_subsystem = "windows"]
-
 use surreal::prelude::*;
 
 /// Represents a tile in our simple tile map.

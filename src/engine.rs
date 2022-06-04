@@ -19,7 +19,7 @@ use crate::{
   graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend},
   input::InputBackend,
   maths::vec2,
-  utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
+  utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan}, diagnostics::ConsoleLogger,
 };
 
 // TODO: scene management
@@ -104,6 +104,9 @@ impl Engine {
   pub fn start(configuration: Configuration, mut setup: impl FnMut(Engine)) {
     use crate::graphics::*;
 
+    ConsoleLogger::install(log::LevelFilter::Trace);
+
+    log::trace!("It's working!");
     profiling::register_thread!("Main Thread");
 
     // set-up core engine

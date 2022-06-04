@@ -1,7 +1,5 @@
 //! A fun little falling sand simulation for Surreal.
 
-#![windows_subsystem = "windows"]
-
 use surreal::prelude::*;
 
 fn main() {

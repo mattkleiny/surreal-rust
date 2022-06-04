@@ -1,7 +1,5 @@
 //! An example of using egui in Surreal.
 
-#![windows_subsystem = "windows"]
-
 use surreal::prelude::*;
 
 fn main() {

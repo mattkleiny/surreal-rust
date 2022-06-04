@@ -1,7 +1,5 @@
 //! A simple Hello, World for Surreal.
 
-#![windows_subsystem = "windows"]
-
 use surreal::prelude::*;
 
 fn main() {
