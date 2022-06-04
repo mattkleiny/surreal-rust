@@ -12,7 +12,7 @@ fn main() {
     ..Default::default()
   };
 
-  Engine::start(configuration, |engine| {
+  Engine::start(configuration, |engine, _| {
     let mut interface = UserInterface::new(&engine.graphics);
 
     let mut name = "Matt".to_string();

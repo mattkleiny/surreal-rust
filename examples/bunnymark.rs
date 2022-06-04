@@ -13,17 +13,16 @@ fn main() {
     ..Default::default()
   };
 
-  Engine::start(configuration, |engine| {
+  Engine::start(configuration, |engine, assets| {
     let graphics = &engine.graphics;
     let mut interface = UserInterface::new(graphics);
 
     // set-up assets and rendering
-    let sprite: Texture = engine
-      .assets
+    let sprite: &Texture = assets
       .load_asset("assets/sprites/bunny.png")
       .expect("Failed to load sprite image");
 
-    let region = TextureRegion::from(&sprite);
+    let region = TextureRegion::from(sprite);
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
@@ -36,7 +35,9 @@ fn main() {
     let mut bunnies = Vec::<Bunny>::new();
 
     engine.run_variable_step(move |engine, tick| {
-      engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
+      engine
+        .graphics
+        .clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       // update bunnies
       for bunny in &mut bunnies {

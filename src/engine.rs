@@ -86,7 +86,6 @@ impl GameTick {
 /// This struct manages core systems and facilitates the main game loop.
 pub struct Engine {
   // core systems
-  pub assets: AssetManager,
   pub audio: AudioServer,
   pub graphics: GraphicsServer,
   pub input: InputBackend,
@@ -106,7 +105,7 @@ pub struct Engine {
 
 impl Engine {
   /// Starts the engine with the given configuration.
-  pub fn start(configuration: Configuration, mut setup: impl FnMut(Engine)) {
+  pub fn start(configuration: Configuration, mut setup: impl FnMut(Engine, AssetManager)) {
     use crate::graphics::*;
 
     // set-up diagnostics
@@ -114,15 +113,15 @@ impl Engine {
     profiling::register_thread!("Main Thread");
 
     // set-up core engine
-    log::trace!("Starting engine");
+    log::trace!("Configuring engine");
 
-    let mut engine = Engine::new(configuration);
-
+    let engine = Engine::new(configuration);
     let graphics = &engine.graphics;
-    let assets = &mut engine.assets;
 
     // set-up asset manager
-    log::trace!("Registering asset loaders");
+    log::trace!("Configuration asset manager");
+
+    let mut assets = AssetManager::new();
 
     assets.add_loader(BitmapFontLoader {});
     assets.add_loader(ImageLoader { format: None });
@@ -142,7 +141,7 @@ impl Engine {
 
     log::trace!("Running engine setup");
 
-    setup(engine);
+    setup(engine, assets);
   }
 
   /// Creates a new engine, bootstrapping all core systems and opening the main display.
@@ -188,7 +187,6 @@ impl Engine {
 
     Self {
       // servers
-      assets: AssetManager::new(),
       audio: AudioServer::new(Box::new(audio)),
       graphics: GraphicsServer::new(Box::new(graphics)),
       input: InputBackend::new(pixels_per_point),
@@ -369,7 +367,7 @@ impl crate::ui::UserInterfaceHost for Engine {
     if self.cursor_icon == cursor_icon {
       return;
     }
-    
+
     self.cursor_icon = cursor_icon;
 
     if let Some(cursor_icon) = translate_cursor(cursor_icon) {

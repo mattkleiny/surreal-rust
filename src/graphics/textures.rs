@@ -357,6 +357,7 @@ impl<P: Pixel + Clone + Default> TextureAtlasBuilder<P> {
 
   /// Adds a single cell to the builder.
   pub fn add_cell(&mut self) -> &mut Grid<P> {
+    // TODO: implement me
     let cell = Grid::new(self.size.0, self.size.1);
 
     self.cells.push(cell);

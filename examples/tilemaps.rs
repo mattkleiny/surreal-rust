@@ -37,16 +37,15 @@ fn main() {
     ..Default::default()
   };
 
-  Engine::start(configuration, |engine| {
+  Engine::start(configuration, |engine, assets| {
     let graphics = &engine.graphics;
 
     // set-up assets and rendering
-    let sprite: Texture = engine
-      .assets
+    let sprite: &Texture = assets
       .load_asset("assets/sprites/tiles_desert.png")
       .expect("Failed to load sprite image");
 
-    let atlas = TextureAtlas::new(16, 16, &sprite);
+    let atlas = TextureAtlas::new(16, 16, sprite);
     let palette = load_built_in_palette(BuiltInPalette::Demichrome4);
 
     let mut renderer = RenderManager::new(graphics);
@@ -77,7 +76,9 @@ fn main() {
     });
 
     engine.run_variable_step(|engine, tick| {
-      engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
+      engine
+        .graphics
+        .clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
       //engine.graphics.clear_color_buffer(palette[0]);
 
       renderer.render(&map);

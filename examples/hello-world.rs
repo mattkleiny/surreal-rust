@@ -9,7 +9,7 @@ fn main() {
     ..Default::default()
   };
 
-  Engine::start(configuration, |engine| {
+  Engine::start(configuration, |engine, _| {
     let graphics = &engine.graphics;
 
     let shader = load_built_in_shader(graphics, BuiltInShader::SpriteStandard);

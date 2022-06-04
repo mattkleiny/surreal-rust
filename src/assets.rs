@@ -22,6 +22,21 @@ pub trait AssetLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Self::Output>;
 }
 
+/// A box to an asset loader in our asset manager.
+///
+/// This is a hacky redirection to allow downcasting to the concrete asset loader type.
+struct AssetLoaderBox<A> {
+  loader: Box<dyn AssetLoader<Output = A>>,
+}
+
+impl<A> Deref for AssetLoaderBox<A> {
+  type Target = dyn AssetLoader<Output = A>;
+
+  fn deref(&self) -> &Self::Target {
+    self.loader.deref()
+  }
+}
+
 /// A context for [`AssetLoader`] operations.
 ///
 /// The context contains information about the asset being loaded and allows a loader to
@@ -34,10 +49,14 @@ pub struct AssetContext<'a> {
 
 impl<'a> AssetContext<'a> {
   /// Loads a dependent asset from the given path.
-  pub fn load_asset<A: Any>(&self, path: VirtualPath) -> crate::Result<A> {
+  pub fn load_asset<A: Any>(&self, path: VirtualPath) -> crate::Result<&A> {
     self.manager.load_asset(path)
   }
 }
+
+/// An key for an asset in the asset manager cache.
+#[derive(Clone, Eq, PartialEq, Hash)]
+struct AssetKey(TypeId, String);
 
 /// A manager for assets.
 ///
@@ -51,11 +70,12 @@ pub struct AssetManager {
 }
 
 /// The internal state for the asset manager.
-/// 
+///
 /// We hide some complexities with lifetimes by dynamically borrowing the asset manager
 /// state on a per-request basis.
 struct AssetManagerState {
   loaders: HashMap<TypeId, Box<dyn Any>>,
+  cache: HashMap<AssetKey, Box<dyn Any>>,
 }
 
 impl AssetManager {
@@ -64,6 +84,7 @@ impl AssetManager {
     Self {
       state: Rc::new(UnsafeCell::new(AssetManagerState {
         loaders: HashMap::new(),
+        cache: HashMap::new(),
       })),
     }
   }
@@ -83,52 +104,62 @@ impl AssetManager {
   }
 
   /// Attempts to load an asset from the given path.
-  /// 
+  ///
   /// * If the asset is not found, or if the loader for the asset type is not registered,
   /// then an error is returned.
   /// * If the asset is found, but the loader is not registered, then an error is returned.
   /// * If the asset is found and the loader is registered, then the asset is loaded and returned.
-  pub fn load_asset<A: Any>(&self, path: impl AsVirtualPath) -> crate::Result<A> {
-    log::trace!(
-      "Loading asset {} from {}",
-      std::any::type_name::<A>(),
-      path.as_virtual_path()
-    );
-
+  pub fn load_asset<A: Any>(&self, path: impl AsVirtualPath) -> crate::Result<&A> {
     let state = unsafe { &mut *self.state.get() };
+
     let path = path.as_virtual_path();
+    let asset_key = AssetKey(TypeId::of::<A>(), path.to_string());
 
-    let loader = state
-      .loaders
-      .get(&TypeId::of::<A>())
-      .and_then(|it| it.downcast_ref::<AssetLoaderBox<A>>())
-      .ok_or_else(|| {
-        anyhow::anyhow!(
-          "Could not result loader for asset {:?}",
-          std::any::type_name::<A>()
-        )
-      })?;
+    match state.cache.get(&asset_key) {
+      None => {
+        log::trace!(
+          "Loading asset {} from {}",
+          std::any::type_name::<A>(),
+          path.as_virtual_path()
+        );
 
-    let context = AssetContext {
-      path,
-      manager: self,
-    };
+        let state = unsafe { &mut *self.state.get() };
 
-    loader.load(&context)
-  }
-}
+        let loader = state
+          .loaders
+          .get(&TypeId::of::<A>())
+          .and_then(|it| it.downcast_ref::<AssetLoaderBox<A>>())
+          .ok_or_else(|| anyhow::anyhow!(
+            "Could not result loader for asset {:?}",
+            std::any::type_name::<A>()
+          ))?;
 
-/// A box to an asset loader in our asset manager.
-///
-/// This is a hacky redirection to allow downcasting to the concrete asset loader type.
-struct AssetLoaderBox<A> {
-  loader: Box<dyn AssetLoader<Output = A>>,
-}
+        // persist loaded assets into cache
+        let context = AssetContext {
+          path,
+          manager: self,
+        };
+        let asset = loader.load(&context)?;
 
-impl<A> Deref for AssetLoaderBox<A> {
-  type Target = dyn AssetLoader<Output = A>;
+        state.cache.insert(asset_key.clone(), Box::new(asset));
 
-  fn deref(&self) -> &Self::Target {
-    self.loader.deref()
+        let asset = state
+          .cache
+          .get(&asset_key)
+          .and_then(|it| it.downcast_ref::<A>())
+          .expect("Should not be possible");
+
+        Ok(asset)
+      }
+      Some(asset) => {
+        log::trace!(
+          "Using cached asset {} from {}",
+          std::any::type_name::<A>(),
+          path.as_virtual_path()
+        );
+
+        Ok(asset.downcast_ref().expect("Should not be possible"))
+      }
+    }
   }
 }

@@ -12,11 +12,14 @@ const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-stan
 ///
 /// This provider adapts some source host to allow platform control and queries.
 pub trait UserInterfaceHost {
+  // ui input
   fn pixels_per_point(&self) -> f32;
+  fn raw_input(&self) -> &egui::RawInput;
+
+  // control and platform output
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool);
   fn set_exclusive_pointer_input(&mut self, exclusive: bool);
   fn set_cursor_icon(&mut self, cursor_icon: egui::CursorIcon);
-  fn raw_input(&self) -> &egui::RawInput;
   fn request_redraw(&self);
 }
 
@@ -30,7 +33,7 @@ pub struct UserInterface {
 }
 
 impl UserInterface {
-  /// Creates a new user interface canvas.
+  /// Creates a new user interface.
   pub fn new(server: &GraphicsServer) -> Self {
     // load and configure material
     let shader = ShaderProgram::from_glsl(server, SHADER_CANVAS_STANDARD).unwrap();
@@ -51,7 +54,11 @@ impl UserInterface {
     }
   }
 
-  /// Propagates input into the canvas and runs the given body against the canvas output.
+  /// Propagates input into the user interface and runs the given body against the UI.
+  ///
+  /// Note: this is a fairly expensive operation and should ideally be done once per frame,
+  ///       with as much UI work as possible within a single call.
+  #[profiling::function]
   pub fn run(&mut self, provider: &mut impl UserInterfaceHost, body: impl FnMut(&egui::Context)) {
     // transfer pixels-per-point to the UI
     let pixels_per_point = provider.pixels_per_point();
@@ -171,10 +178,9 @@ impl UserInterface {
             height: clip_max_y - clip_min_y,
           });
 
-          self
-            .material
-            .set_uniform("u_screen_size", vec2(width_in_points, height_in_points));
+          let screen_size = vec2(width_in_points, height_in_points);
 
+          self.material.set_uniform("u_screen_size", screen_size);
           self.material.set_uniform("u_texture", texture);
 
           // render mesh using material
