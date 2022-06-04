@@ -16,7 +16,7 @@ struct EntityState {
 }
 
 /// A mask for a component.
-#[derive(Default, Copy, Clone, Eq, PartialEq, BitOr, BitOrAssign, BitAnd, BitAndAssign)]
+#[derive(Default, Copy, Clone, Eq, PartialEq)]
 pub struct ComponentMask(u64);
 
 impl Debug for ComponentMask {
@@ -133,23 +133,17 @@ impl World {
   }
 
   /// Adds a component to the given entity.
-  pub fn add_component<C>(&mut self, entity: Entity, component: C)
-  where
-    C: Component,
-  {
-    if let Some(state) = self.entities.get_mut(entity) {
+  pub fn add_component<C: Component>(&mut self, entity: Entity, component: C) {
+    if let Some(_state) = self.entities.get_mut(entity) {
       let storage = self.components.get_or_create::<C::Storage>();
 
       storage.add_component(entity, component);
-      state.masks |= C::component_type().mask;
+      // state.masks |= C::component_type().mask;
     }
   }
 
   /// Retrieves a component for the given entity.
-  pub fn get_component<C>(&self, entity: Entity) -> Option<&C>
-  where
-    C: Component,
-  {
+  pub fn get_component<C: Component>(&self, entity: Entity) -> Option<&C> {
     let _ = self.entities.get(entity)?;
     let storage = self.components.get::<C::Storage>()?;
 
@@ -157,10 +151,7 @@ impl World {
   }
 
   /// Retrieves a component mutably for the given entity.
-  pub fn get_component_mut<C>(&mut self, entity: Entity) -> Option<&mut C>
-  where
-    C: Component,
-  {
+  pub fn get_component_mut<C: Component>(&mut self, entity: Entity) -> Option<&mut C> {
     let _ = self.entities.get(entity)?;
     let storage = self.components.get_mut::<C::Storage>()?;
 
@@ -168,14 +159,12 @@ impl World {
   }
 
   /// Removes a component for the given entity.
-  pub fn remove_component<C>(&mut self, entity: Entity)
-  where
-    C: Component,
+  pub fn remove_component<C: Component>(&mut self, entity: Entity)
   {
-    if let Some(state) = self.entities.get_mut(entity) {
+    if let Some(_state) = self.entities.get_mut(entity) {
       if let Some(storage) = self.components.get_mut::<C::Storage>() {
         storage.remove_component(entity);
-        state.masks &= C::component_type().mask;
+        // state.masks &= C::component_type().mask;
       }
     }
   }

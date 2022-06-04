@@ -14,8 +14,6 @@
 #![feature(trait_upcasting)]
 
 #[macro_use]
-extern crate derive_more;
-#[macro_use]
 extern crate serde;
 
 // Re-export the macro crate for consumers.

@@ -13,8 +13,6 @@ use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 use super::*;
 
-mod parser;
-
 /// Different types of shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ShaderKind {
@@ -83,15 +81,6 @@ impl ShaderProgram {
     Ok(program)
   }
 
-  /// Loads a [`ShaderProgram`] from the given raw 'shade' code.
-  pub fn from_shade(server: &GraphicsServer, code: &str) -> crate::Result<Self> {
-    let program = Self::new(server);
-
-    program.load_shade(code)?;
-
-    Ok(program)
-  }
-
   /// Retrieves the binding location of the given shader uniform in the underlying program.
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
     let server = &self.state.server;
@@ -132,26 +121,12 @@ impl ShaderProgram {
     Ok(())
   }
 
-  /// Reloads the [`ShaderProgram`] from the given 'shade' program code.
-  pub fn load_shade(&self, text: &str) -> crate::Result<()> {
-    let server = &self.state.server;
-    let shaders = parser::transpile_to_glsl(text)?;
-
-    server.link_shaders(self.state.handle, shaders)?;
-
-    Ok(())
-  }
-
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
   pub fn load_from_path(&self, path: impl AsVirtualPath) -> crate::Result<()> {
     let path = path.as_virtual_path();
     let source_code = path.read_all_text()?;
 
-    if path.extension().ends_with("glsl") {
-      self.load_glsl(&source_code)?;
-    } else {
-      self.load_shade(&source_code)?;
-    }
+    self.load_glsl(&source_code)?;
 
     Ok(())
   }
@@ -185,11 +160,7 @@ impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
     let program = ShaderProgram::new(&self.server);
     let source_code = context.path.read_all_text()?;
 
-    if context.path.extension().ends_with("glsl") {
-      program.load_glsl(&source_code)?;
-    } else {
-      program.load_shade(&source_code)?;
-    }
+    program.load_glsl(&source_code)?;
 
     Ok(program)
   }

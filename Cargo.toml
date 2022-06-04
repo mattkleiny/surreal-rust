@@ -21,7 +21,6 @@ surreal-macros = { path = "macros" }
 
 # core dependencies
 anyhow = "1.0.57"
-derive_more = "0.99.17"
 image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
 egui = { version = "0.18.1" }
 profiling = { version = "1.0.6", features = ["profile-with-optick"] }
