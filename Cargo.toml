@@ -31,6 +31,6 @@ log = "0.4.17"
 
 # platform dependencies
 gl = "0.14.0"
-glutin = { version = "0.28.0", default-features = false }
+glutin = { version = "0.28.0", default-features = false, features = [ "x11" ] }
 winit = { version = "0.26.1", default-features = false, features = [ "x11" ] }
 
