@@ -91,7 +91,7 @@ where T: Numeric
 impl Matrix4x4<f32> {
   /// Creates a new translation matrix.
   #[rustfmt::skip]
-  pub fn create_translation(x: f32, y: f32, z: f32) -> Self {
+  pub fn translate(x: f32, y: f32, z: f32) -> Self {
     Self::create(&[
       1.0, 0.0, 0.0, x,
       0.0, 1.0, 0.0, y,
@@ -102,7 +102,7 @@ impl Matrix4x4<f32> {
 
   /// Creates a new scale matrix.
   #[rustfmt::skip]
-  pub fn create_scale(x: f32, y: f32, z: f32) -> Self {
+  pub fn scale(x: f32, y: f32, z: f32) -> Self {
     Self::create(&[
       x, 0.0, 0.0, 0.0,
       0.0, y, 0.0, 0.0,
@@ -113,7 +113,7 @@ impl Matrix4x4<f32> {
 
   /// Creates a new rotation matrix about the X axis.
   #[rustfmt::skip]
-  pub fn create_rotate_x(r: f32) -> Self {
+  pub fn rotate_x(r: f32) -> Self {
     Self::create(&[
       1.0, 0.0, 0.0, 0.0,
       0.0, r.cos(), -r.sin(), 0.0,
@@ -124,7 +124,7 @@ impl Matrix4x4<f32> {
 
   /// Creates a new rotation matrix about the Y axis.
   #[rustfmt::skip]
-  pub fn create_rotate_y(r: f32) -> Self {
+  pub fn rotate_y(r: f32) -> Self {
     Self::create(&[
       r.cos(), 0.0, r.sin(), 0.0,
       0.0, 1.0, 0.0, 0.0,
@@ -135,7 +135,7 @@ impl Matrix4x4<f32> {
 
   /// Creates a new rotation matrix about the Z axis.
   #[rustfmt::skip]
-  pub fn create_rotate_z(r: f32) -> Self {
+  pub fn rotate_z(r: f32) -> Self {
     Self::create(&[
       r.cos(), -r.sin(), 0.0, 0.0,
       r.sin(), r.cos(), 0.0, 0.0,
@@ -146,7 +146,7 @@ impl Matrix4x4<f32> {
 
   /// Creates a new shearing matrix with the given proportions.
   #[rustfmt::skip]
-  pub fn create_shear(x1: f32, x2: f32, y1: f32, y2: f32, z1: f32, z2: f32) -> Self {
+  pub fn shear(x1: f32, x2: f32, y1: f32, y2: f32, z1: f32, z2: f32) -> Self {
     Self::create(&[
       1.0, x1, x2, 0.0,
       y1, 1.0, y2, 0.0,
@@ -157,7 +157,7 @@ impl Matrix4x4<f32> {
 
   /// Creates a new view transformation that looks at the given point.
   #[rustfmt::skip]
-  pub fn create_look_at(from: Vector3<f32>, to: Vector3<f32>, up: Vector3<f32>) -> Self {
+  pub fn look_at(from: Vector3<f32>, to: Vector3<f32>, up: Vector3<f32>) -> Self {
     let forward = (to - from).normalize();
     let left = forward.cross(up.normalize());
     let true_up = left.cross(forward);
@@ -169,18 +169,18 @@ impl Matrix4x4<f32> {
       0.0, 0.0, 0.0, 1.0,
     ]);
 
-    orientation * Self::create_translation(-from.x, -from.y, -from.z)
+    orientation * Self::translate(-from.x, -from.y, -from.z)
   }
 
   /// Creates a new orthographic projection matrix.
   #[rustfmt::skip]
-  pub fn create_orthographic(width: f32, height: f32, near: f32, far: f32) -> Self {
-    Self::create_orthographic_off_center(-width / 2., width / 2., -height / 2., height / 2., near, far)
+  pub fn orthographic(width: f32, height: f32, near: f32, far: f32) -> Self {
+    Self::orthographic_off_center(-width / 2., width / 2., -height / 2., height / 2., near, far)
   }
 
   /// Creates a new orthographic projection matrix.
   #[rustfmt::skip]
-  pub fn create_orthographic_off_center(left: f32, right: f32, top: f32, bottom: f32, near: f32, far: f32) -> Self {
+  pub fn orthographic_off_center(left: f32, right: f32, top: f32, bottom: f32, near: f32, far: f32) -> Self {
     let dx = right - left;
     let dy = top - bottom;
     let dz = far - near;

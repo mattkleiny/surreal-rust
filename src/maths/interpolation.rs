@@ -1,6 +1,6 @@
 use super::*;
 
-/// Allows interpolation of arbitrary values.
+/// Allows linear interpolation of arbitrary values.
 pub trait Lerp {
   fn lerp(a: Self, b: Self, t: f32) -> Self;
 }

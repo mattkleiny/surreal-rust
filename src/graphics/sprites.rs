@@ -110,16 +110,19 @@ impl SpriteBatch {
       color: options.color,
       uv: uv.top_left(),
     });
+
     self.vertices.push(Vertex2 {
       position: position + vec2(-size.x, size.y),
       color: options.color,
       uv: uv.bottom_left(),
     });
+
     self.vertices.push(Vertex2 {
       position: position + vec2(size.x, size.y),
       color: options.color,
       uv: uv.bottom_right(),
     });
+
     self.vertices.push(Vertex2 {
       position: position + vec2(size.x, -size.y),
       color: options.color,

@@ -26,7 +26,7 @@ fn main() {
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
-      projection_view: Matrix4x4::create_orthographic(WIDTH, HEIGHT, 0., 100.),
+      projection_view: Matrix4x4::orthographic(WIDTH, HEIGHT, 0., 100.),
       ..Default::default()
     });
 

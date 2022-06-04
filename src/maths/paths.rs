@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::ops::Index;
 
 use super::*;
 
@@ -15,11 +15,24 @@ pub type Heuristic = fn(&Point, &Point) -> Cost;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Path(Vec<Point>);
 
-impl Deref for Path {
-  type Target = [Point];
+impl Path {
+  /// Gets the start of the path.
+  pub fn start(&self) -> Point {
+    *self.0.first().unwrap()
+  }
 
-  fn deref(&self) -> &Self::Target {
-    &self.0
+  /// Gets the goal of the path.
+  pub fn goal(&self) -> Point {
+    *self.0.last().unwrap()
+  }
+}
+
+/// Allow direct indexing into a path.
+impl Index<usize> for Path {
+  type Output = Point;
+
+  fn index(&self, index: usize) -> &Self::Output {
+    &self.0[index]
   }
 }
 

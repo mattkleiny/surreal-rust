@@ -14,7 +14,7 @@
 - [ ] Add lots of tests
 - [ ] Add path tessellation for meshes
 - [ ] Get audio working
-- [ ] Reify Grid and add drawing helpers for common shapes (lines, curves, etc)
+- [x] Reify Grid and add drawing helpers for common shapes (lines, curves, etc)
 - [ ] Add sprite pivots, transforms, etc
 - [ ] Add sprite animations
 - [ ] Add tilemap pivots, transforms, etc

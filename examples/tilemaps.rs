@@ -52,7 +52,7 @@ fn main() {
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
-      projection_view: Matrix4x4::create_orthographic(256., 144., 0., 100.),
+      projection_view: Matrix4x4::orthographic(256., 144., 0., 100.),
       palette: Some(palette.clone()),
       ..Default::default()
     });
