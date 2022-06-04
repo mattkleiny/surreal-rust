@@ -94,6 +94,7 @@ pub struct Engine {
   // window management
   config: Configuration,
   window: Window,
+  cursor_icon: egui::CursorIcon,
   event_loop: Option<EventLoop<()>>,
   is_focused: bool,
 
@@ -195,6 +196,7 @@ impl Engine {
       // window management
       config,
       window,
+      cursor_icon: egui::CursorIcon::None,
       event_loop: Some(event_loop),
       is_focused: true,
 
@@ -362,11 +364,73 @@ impl crate::ui::UserInterfaceHost for Engine {
     self.input.exclusive_pointer_input = exclusive;
   }
 
+  fn set_cursor_icon(&mut self, cursor_icon: egui::CursorIcon) {
+    // prevent flickering near frame boundary when Windows OS tries to control cursor icon for window resizing
+    if self.cursor_icon == cursor_icon {
+      return;
+    }
+    
+    self.cursor_icon = cursor_icon;
+
+    if let Some(cursor_icon) = translate_cursor(cursor_icon) {
+      // TODO: if cursor in window?
+      self.window.set_cursor_visible(true);
+      self.window.set_cursor_icon(cursor_icon);
+    } else {
+      self.window.set_cursor_visible(false);
+    }
+  }
+
   fn raw_input(&self) -> &egui::RawInput {
     &self.input.raw_input
   }
 
   fn request_redraw(&self) {
     self.window.request_redraw();
+  }
+}
+
+/// Converts an egui cursor to a winit cursor.
+fn translate_cursor(cursor_icon: egui::CursorIcon) -> Option<winit::window::CursorIcon> {
+  match cursor_icon {
+    egui::CursorIcon::None => None,
+
+    egui::CursorIcon::Alias => Some(winit::window::CursorIcon::Alias),
+    egui::CursorIcon::AllScroll => Some(winit::window::CursorIcon::AllScroll),
+    egui::CursorIcon::Cell => Some(winit::window::CursorIcon::Cell),
+    egui::CursorIcon::ContextMenu => Some(winit::window::CursorIcon::ContextMenu),
+    egui::CursorIcon::Copy => Some(winit::window::CursorIcon::Copy),
+    egui::CursorIcon::Crosshair => Some(winit::window::CursorIcon::Crosshair),
+    egui::CursorIcon::Default => Some(winit::window::CursorIcon::Default),
+    egui::CursorIcon::Grab => Some(winit::window::CursorIcon::Grab),
+    egui::CursorIcon::Grabbing => Some(winit::window::CursorIcon::Grabbing),
+    egui::CursorIcon::Help => Some(winit::window::CursorIcon::Help),
+    egui::CursorIcon::Move => Some(winit::window::CursorIcon::Move),
+    egui::CursorIcon::NoDrop => Some(winit::window::CursorIcon::NoDrop),
+    egui::CursorIcon::NotAllowed => Some(winit::window::CursorIcon::NotAllowed),
+    egui::CursorIcon::PointingHand => Some(winit::window::CursorIcon::Hand),
+    egui::CursorIcon::Progress => Some(winit::window::CursorIcon::Progress),
+
+    egui::CursorIcon::ResizeHorizontal => Some(winit::window::CursorIcon::EwResize),
+    egui::CursorIcon::ResizeNeSw => Some(winit::window::CursorIcon::NeswResize),
+    egui::CursorIcon::ResizeNwSe => Some(winit::window::CursorIcon::NwseResize),
+    egui::CursorIcon::ResizeVertical => Some(winit::window::CursorIcon::NsResize),
+
+    egui::CursorIcon::ResizeEast => Some(winit::window::CursorIcon::EResize),
+    egui::CursorIcon::ResizeSouthEast => Some(winit::window::CursorIcon::SeResize),
+    egui::CursorIcon::ResizeSouth => Some(winit::window::CursorIcon::SResize),
+    egui::CursorIcon::ResizeSouthWest => Some(winit::window::CursorIcon::SwResize),
+    egui::CursorIcon::ResizeWest => Some(winit::window::CursorIcon::WResize),
+    egui::CursorIcon::ResizeNorthWest => Some(winit::window::CursorIcon::NwResize),
+    egui::CursorIcon::ResizeNorth => Some(winit::window::CursorIcon::NResize),
+    egui::CursorIcon::ResizeNorthEast => Some(winit::window::CursorIcon::NeResize),
+    egui::CursorIcon::ResizeColumn => Some(winit::window::CursorIcon::ColResize),
+    egui::CursorIcon::ResizeRow => Some(winit::window::CursorIcon::RowResize),
+
+    egui::CursorIcon::Text => Some(winit::window::CursorIcon::Text),
+    egui::CursorIcon::VerticalText => Some(winit::window::CursorIcon::VerticalText),
+    egui::CursorIcon::Wait => Some(winit::window::CursorIcon::Wait),
+    egui::CursorIcon::ZoomIn => Some(winit::window::CursorIcon::ZoomIn),
+    egui::CursorIcon::ZoomOut => Some(winit::window::CursorIcon::ZoomOut),
   }
 }

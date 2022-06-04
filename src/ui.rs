@@ -9,12 +9,13 @@ use crate::maths::{vec2, Rectangle};
 const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
 
 /// A host for the [`UserInterface`] and provider for [`egui::RawInput`] .
-/// 
+///
 /// This provider adapts some source host to allow platform control and queries.
 pub trait UserInterfaceHost {
   fn pixels_per_point(&self) -> f32;
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool);
   fn set_exclusive_pointer_input(&mut self, exclusive: bool);
+  fn set_cursor_icon(&mut self, cursor_icon: egui::CursorIcon);
   fn raw_input(&self) -> &egui::RawInput;
   fn request_redraw(&self);
 }
@@ -185,12 +186,14 @@ impl UserInterface {
       }
     }
 
-    // TODO: apply platform input and output somehow?
-    let _platform_output = full_output.platform_output;
+    let platform_output = full_output.platform_output;
     let needs_repaint = full_output.needs_repaint;
 
     provider.set_exclusive_keyboard_input(self.context.wants_keyboard_input());
     provider.set_exclusive_pointer_input(self.context.wants_pointer_input());
+    provider.set_cursor_icon(platform_output.cursor_icon);
+
+    // TODO: handle clipboard, too
 
     if needs_repaint {
       provider.request_redraw();
