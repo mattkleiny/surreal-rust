@@ -1,7 +1,8 @@
 //! A platform implementation for headless environments.
 
+use winit::event_loop::ControlFlow;
+
 use crate::audio::{AudioServer, HeadlessAudioBackend};
-use crate::framework::EventListener;
 use crate::graphics::{GraphicsServer, HeadlessGraphicsBackend};
 use crate::input::HeadlessInputBackend;
 
@@ -15,7 +16,6 @@ pub struct HeadlessPlatformHost {
   audio: AudioServer,
   graphics: GraphicsServer,
   input: HeadlessInputBackend,
-  is_exiting: bool,
 }
 
 impl Platform for HeadlessPlatform {
@@ -26,7 +26,6 @@ impl Platform for HeadlessPlatform {
       audio: AudioServer::new(Box::new(HeadlessAudioBackend::new())),
       graphics: GraphicsServer::new(Box::new(HeadlessGraphicsBackend::new())),
       input: HeadlessInputBackend::new(),
-      is_exiting: false,
     }
   }
 }
@@ -40,38 +39,11 @@ impl PlatformHost for HeadlessPlatformHost {
     &self.graphics
   }
 
-  fn width(&self) -> usize {
-    1920
-  }
+  fn run(mut self, mut body: impl FnMut(&mut Self, &mut ControlFlow)) {
+    let mut control_flow = ControlFlow::Poll;
 
-  fn height(&self) -> usize {
-    1080
-  }
-
-  fn is_focused(&self) -> bool {
-    true
-  }
-
-  fn is_closing(&self) -> bool {
-    false
-  }
-
-  fn run(&mut self, mut body: impl FnMut(&mut Self)) {
-    while !self.is_exiting {
-      body(self);
+    while control_flow != ControlFlow::Exit {
+      body(&mut self, &mut control_flow);
     }
-  }
-
-  fn pump(&mut self, mut listener: impl EventListener + 'static) {
-    use crate::framework::*;
-
-    while !self.is_exiting {
-      listener.on_event(&PlatformTickEvent());
-      listener.on_event(&PlatformRenderEvent());
-    }
-  }
-
-  fn exit(&mut self) {
-    self.is_exiting = true;
   }
 }

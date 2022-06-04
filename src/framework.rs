@@ -13,8 +13,8 @@ use crate::utilities::{Clock, GameTime};
 
 pub use events::*;
 
-mod events;
 mod ecs;
+mod events;
 
 // TODO: screen management
 // TODO: plugin management (profiler, console, etc)
@@ -74,10 +74,12 @@ impl<P: Platform> Game<P> {
   }
 
   /// Runs the game loop in a variable step fashion.
-  pub fn run_variable_step(mut self, mut main_loop: impl FnMut(&mut P::Host, &mut GameTick)) {
+  pub fn run_variable_step(self, mut body: impl FnMut(&mut P::Host, &mut GameTick)) {
+    use winit::event_loop::ControlFlow;
+
     let mut timer = Clock::new();
 
-    self.host.run(move |host| {
+    self.host.run(move |host, control_flow| {
       // capture timing information
       let mut tick = GameTick {
         time: GameTime {
@@ -88,10 +90,10 @@ impl<P: Platform> Game<P> {
       };
 
       // run main loop
-      main_loop(host, &mut tick);
+      body(host, &mut tick);
 
       if tick.is_exiting {
-        host.exit();
+        *control_flow = ControlFlow::Exit;
       }
 
       profiling::finish_frame!();

@@ -2,7 +2,9 @@
 
 use image::ImageFormat;
 use winit::dpi::LogicalSize;
-use winit::event_loop::EventLoop;
+use winit::event::{Event, ModifiersState, WindowEvent};
+use winit::event_loop::{ControlFlow, EventLoop};
+use winit::platform::desktop::EventLoopExtDesktop;
 use winit::window::{Icon, Window, WindowBuilder};
 
 use audio::DesktopAudioBackend;
@@ -10,7 +12,6 @@ use graphics::DesktopGraphicsBackend;
 use input::DesktopInput;
 
 use crate::audio::AudioServer;
-use crate::framework::EventListener;
 use crate::graphics::GraphicsServer;
 use crate::maths::vec2;
 use crate::utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan};
@@ -96,7 +97,6 @@ impl Platform for DesktopPlatform {
       event_loop: Some(event_loop),
       config: self.config.clone(),
       is_focused: true,
-      is_closing: false,
 
       // timing
       clock: Clock::new(),
@@ -118,7 +118,6 @@ pub struct DesktopPlatformHost {
   event_loop: Option<EventLoop<()>>,
   config: Configuration,
   is_focused: bool,
-  is_closing: bool,
 
   // timing
   clock: Clock,
@@ -147,37 +146,18 @@ impl PlatformHost for DesktopPlatformHost {
     &self.graphics
   }
 
-  fn width(&self) -> usize {
-    self.window.inner_size().width as usize
-  }
-
-  fn height(&self) -> usize {
-    self.window.inner_size().height as usize
-  }
-
-  fn is_focused(&self) -> bool {
-    self.is_focused
-  }
-
-  fn is_closing(&self) -> bool {
-    self.is_closing
-  }
-
-  fn run(&mut self, mut main_loop: impl FnMut(&mut Self)) {
-    use winit::event_loop::ControlFlow;
-    use winit::platform::desktop::EventLoopExtDesktop;
-
+  fn run(mut self, mut body: impl FnMut(&mut Self, &mut ControlFlow)) {
     let mut event_loop = self.event_loop.take().unwrap();
 
-    event_loop.run_return(|event, _, control_flow| {
-      use winit::event::*;
-
+    // use this hack to unpack the event loop out of 'self' and then remove the 'static
+    // lifetime bound on run_return so that body can access things in self without lifetime woes.
+    event_loop.run_return(move |event, _, control_flow| {
       match event {
         Event::RedrawRequested(window_id) => {
           if window_id == self.window.id() {
             // update graphics and run main loop
             self.graphics.begin_frame();
-            main_loop(self);
+            body(&mut self, control_flow);
             self.graphics.end_frame();
 
             // update input devices
@@ -205,11 +185,7 @@ impl PlatformHost for DesktopPlatformHost {
           }
 
           // main control flow
-          if self.is_closing {
-            *control_flow = ControlFlow::Exit;
-          } else if (self.config.update_continuously && self.is_focused)
-            || self.config.run_in_background
-          {
+          if (self.config.update_continuously && self.is_focused) || self.config.run_in_background {
             *control_flow = ControlFlow::Poll;
             self.window.request_redraw();
           } else {
@@ -255,140 +231,5 @@ impl PlatformHost for DesktopPlatformHost {
         _ => {}
       }
     });
-  }
-
-  fn pump(&mut self, mut listener: impl EventListener + 'static) {
-    use crate::framework::*;
-    use winit::event_loop::ControlFlow;
-    use winit::platform::desktop::EventLoopExtDesktop;
-
-    let mut event_loop = self.event_loop.take().unwrap();
-
-    event_loop.run_return(|event, _, control_flow| {
-      use winit::event::*;
-
-      match event {
-        Event::RedrawRequested(window_id) => {
-          if window_id == self.window.id() {
-            // update graphics
-            self.graphics.begin_frame();
-            listener.on_event(&PlatformRenderEvent());
-            self.graphics.end_frame();
-          }
-        }
-        Event::MainEventsCleared => {
-          // update application logic
-          listener.on_event(&PlatformTickEvent());
-
-          // update input devices
-          self.input.tick();
-
-          // update the fps counter, if enabled
-          if self.config.update_continuously && self.config.show_fps_in_title && self.is_focused {
-            let delta_time = self.clock.tick();
-
-            self.frame_counter.tick(delta_time);
-
-            if self.frame_timer.tick(delta_time) {
-              self.window.set_title(&format!(
-                "{} - FPS: {:.2}",
-                self.config.title,
-                self.frame_counter.fps()
-              ));
-
-              self.frame_timer.reset();
-            }
-          } else {
-            self.window.set_title(self.config.title);
-          }
-
-          // main control flow
-          if self.is_closing {
-            *control_flow = ControlFlow::Exit;
-          } else if (self.config.update_continuously && self.is_focused)
-            || self.config.run_in_background
-          {
-            *control_flow = ControlFlow::Poll;
-            self.window.request_redraw();
-          } else {
-            *control_flow = ControlFlow::Wait;
-            self.window.request_redraw();
-          }
-        }
-        Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
-          WindowEvent::CursorMoved { position, .. } => {
-            let size = self.window.inner_size();
-
-            let position = vec2(position.x as f32, position.y as f32);
-            let size = vec2(size.width as f32, size.height as f32);
-
-            self.input.on_mouse_move(position, size);
-
-            listener.on_event(&MouseMoveEvent(position));
-          }
-          WindowEvent::MouseWheel { delta, .. } => {
-            self.input.on_mouse_wheel(&delta);
-
-            let mut delta = match delta {
-              MouseScrollDelta::LineDelta(x, y) => {
-                let points_per_scroll_line = 50.0;
-
-                vec2(x, y) * points_per_scroll_line
-              }
-              MouseScrollDelta::PixelDelta(delta) => vec2(delta.x as f32, delta.y as f32),
-            };
-
-            delta.x *= -1.0;
-
-            listener.on_event(&MouseScrollEvent(delta));
-          }
-          WindowEvent::MouseInput { button, state, .. } => {
-            self.input.on_mouse_button(button, state);
-
-            match state {
-              ElementState::Pressed => listener.on_event(&MousePressEvent(button)),
-              ElementState::Released => listener.on_event(&MouseReleaseEvent(button)),
-            }
-          }
-          WindowEvent::KeyboardInput { input, .. } => {
-            self.input.on_keyboard_event(&input);
-
-            if let Some(key) = input.virtual_keycode {
-              match input.state {
-                ElementState::Pressed => listener.on_event(&KeyPressEvent(key)),
-                ElementState::Released => listener.on_event(&KeyReleaseEvent(key)),
-              };
-            }
-          }
-          WindowEvent::ModifiersChanged(modifiers) => {
-            self.input.on_modifiers_changed(modifiers);
-          }
-          WindowEvent::Focused(focused) => {
-            self.is_focused = focused;
-            self.input.on_modifiers_changed(ModifiersState::default());
-
-            listener.on_event(&PlatformFocusEvent(focused));
-          }
-          WindowEvent::Resized(size) => {
-            let size = (size.width as usize, size.height as usize);
-
-            self.graphics.set_viewport_size(size);
-
-            listener.on_event(&PlatformResizeEvent(size.0, size.1));
-          }
-          WindowEvent::CloseRequested => {
-            *control_flow = ControlFlow::Exit;
-
-            listener.on_event(&PlatformCloseEvent());
-          }
-          _ => {}
-        },
-        _ => {}
-      }
-    });
-  }
-
-  fn exit(&mut self) {
-    self.is_closing = true;
   }
 }

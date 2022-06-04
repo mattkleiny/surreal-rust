@@ -33,19 +33,6 @@ pub trait PlatformHost {
   fn audio(&self) -> &crate::audio::AudioServer;
   fn graphics(&self) -> &crate::graphics::GraphicsServer;
 
-  // basic state queries
-  fn width(&self) -> usize;
-  fn height(&self) -> usize;
-  fn is_focused(&self) -> bool;
-  fn is_closing(&self) -> bool;
-
   /// Runs the given main loop imperatively against the host.
-  fn run(&mut self, main_loop: impl FnMut(&mut Self));
-  // fn pump(&mut self, main_loop: impl FnMut(&mut Self, winit::event::Event<()>, &mut winit::event_loop::ControlFlow));
-
-  /// Pumps the given event loop declaratively against the host.
-  fn pump(&mut self, listener: impl crate::framework::EventListener + 'static);
-
-  /// Exits the platform.
-  fn exit(&mut self);
+  fn run(self, body: impl FnMut(&mut Self, &mut winit::event_loop::ControlFlow));
 }
