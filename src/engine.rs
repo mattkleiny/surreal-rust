@@ -149,6 +149,8 @@ impl Engine {
     // prepare the main window and event loop
     let event_loop = EventLoop::new();
 
+    log::trace!("Building main window");
+
     let window = WindowBuilder::new()
       .with_title(config.title)
       .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
@@ -167,6 +169,8 @@ impl Engine {
         Icon::from_rgba(pixels, width, height).expect("Failed to convert icon from raw image")
       }));
 
+    log::trace!("Building OpenGL context");
+
     // glutin tries to be safe via the type system, what a mess.
     let context = ContextBuilder::new()
       .with_vsync(config.vsync_enabled)
@@ -174,17 +178,19 @@ impl Engine {
       .build_windowed(window, &event_loop)
       .unwrap();
 
+    // HACK: unpick the window from glutin so we can manage it ourselves
     let (context, window) = unsafe { context.make_current().unwrap().split() };
 
+    let pixels_per_point = window.scale_factor() as f32;
     let audio = OpenALAudioBackend::new();
-    let graphics = OpenGLGraphicsBackend::new(context, window.scale_factor() as f32);
+    let graphics = OpenGLGraphicsBackend::new(context);
 
     Self {
       // servers
       assets: AssetManager::new(),
       audio: AudioServer::new(Box::new(audio)),
       graphics: GraphicsServer::new(Box::new(graphics)),
-      input: InputBackend::new(),
+      input: InputBackend::new(pixels_per_point),
 
       // window management
       config,
@@ -245,7 +251,9 @@ impl Engine {
           if window_id == self.window.id() {
             // update graphics and run main loop
             self.graphics.begin_frame();
-            body(&mut self, control_flow);
+            {
+              body(&mut self, control_flow);
+            }
             self.graphics.end_frame();
 
             // update input devices
@@ -283,10 +291,9 @@ impl Engine {
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
           WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
-            log::trace!("Window scale factor changed to {}", scale_factor);
-
-            self.graphics.set_pixels_per_point(scale_factor as f32);
             self.input.pixels_per_point = scale_factor as f32;
+
+            log::trace!("Window scale factor changed to {}", scale_factor);
           }
           WindowEvent::CursorMoved { position, .. } => {
             let size = self.window.inner_size();

@@ -8,12 +8,6 @@ use crate::maths::{vec2, Rectangle};
 /// A shader program to use for egui canvas rendering.
 const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
 
-/// A provider for [`egui::RawInput`] .
-pub trait RawInputProvider {
-  /// Retrieves raw input for this frame.
-  fn get_raw_input(&self) -> &egui::RawInput;
-}
-
 /// A canvas for immediate mode user interface rendering via `egui`.
 pub struct UserInterface {
   graphics: GraphicsServer,
@@ -46,11 +40,9 @@ impl UserInterface {
   }
 
   /// Propagates input into the canvas and runs the given body against the canvas output.
-  pub fn run(&mut self, input: &impl RawInputProvider, body: impl FnMut(&egui::Context)) {
-    // transfer pixels-per-point from the graphics server
-    let pixels_per_point = self.graphics.get_pixels_per_point();
-
-    self.context.set_pixels_per_point(pixels_per_point);
+  pub fn run(&mut self, input: &mut impl RawInputProvider, body: impl FnMut(&egui::Context)) {
+    // transfer pixels-per-point to the UI
+    self.context.set_pixels_per_point(input.pixels_per_point());
 
     // run update, passing input and collecting output
     let raw_input = input.get_raw_input().clone();
@@ -114,6 +106,7 @@ impl UserInterface {
     }
 
     // compute display size
+    let pixels_per_point = self.context.pixels_per_point();
     let (width_in_pixels, height_in_pixels) = self.graphics.get_viewport_size();
     let (width_in_points, height_in_points) = (
       width_in_pixels as f32 / pixels_per_point,
@@ -183,5 +176,23 @@ impl UserInterface {
     // TODO: apply platform input and output somehow?
     let _platform_output = full_output.platform_output;
     let _needs_repaint = full_output.needs_repaint;
+
+    input.set_exclusive_keyboard_input(self.context.wants_keyboard_input());
+    input.set_exclusive_pointer_input(self.context.wants_pointer_input());
   }
+}
+
+/// A provider for [`egui::RawInput`] .
+pub trait RawInputProvider {
+  /// Returns the pixels-per-point of the source display.
+  fn pixels_per_point(&self) -> f32;
+
+  /// Notifies the provider that the UI wants keyboard input.
+  fn set_exclusive_keyboard_input(&mut self, exclusive: bool);
+
+  /// Notifies the provider that the UI wants pointer input.
+  fn set_exclusive_pointer_input(&mut self, exclusive: bool);
+
+  /// Retrieves raw input for this frame.
+  fn get_raw_input(&self) -> &egui::RawInput;
 }

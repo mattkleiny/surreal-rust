@@ -21,7 +21,7 @@ fn main() {
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
-      interface.run(&engine.input, |egui| {
+      interface.run(&mut engine.input, |egui| {
         egui::Window::new("Surreal ❤ egui").show(egui, |ui| {
           ui.heading("My egui Application");
 

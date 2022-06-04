@@ -15,6 +15,8 @@ fn main() {
   Engine::start(configuration, |engine| {
     let graphics = &engine.graphics;
 
+    let mut interface = UserInterface::new(graphics);
+
     // set-up assets and rendering
     let sprite: Texture = engine
       .assets
@@ -32,6 +34,9 @@ fn main() {
     // set-up state
     let mut random = Random::new();
     let mut bunnies = Vec::<Bunny>::new();
+
+    let mut name = "Matt".to_string();
+    let mut age = 33;
 
     engine.run_variable_step(move |engine, tick| {
       engine.graphics.clear_color_buffer(Color::BLACK);
@@ -52,6 +57,25 @@ fn main() {
             },
           );
         }
+      });
+
+      interface.run(&mut engine.input, |egui| {
+        egui::Window::new("Surreal ❤ egui").show(egui, |ui| {
+          ui.heading("My egui Application");
+
+          ui.horizontal(|ui| {
+            ui.label("Your name: ");
+            ui.text_edit_singleline(&mut name);
+          });
+
+          ui.add(egui::Slider::new(&mut age, 0..=120).text("age"));
+
+          if ui.button("Click each year").clicked() {
+            age += 1;
+          }
+
+          ui.label(format!("Hello '{}', age {}", name, age));
+        });
       });
 
       // handle input

@@ -38,14 +38,6 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn get_pixels_per_point(&self) -> f32 {
-    1.0
-  }
-
-  fn set_pixels_per_point(&self, _pixels_per_point: f32) {
-    // no-op
-  }
-
   fn get_viewport_size(&self) -> (usize, usize) {
     (1920, 1080)
   }

@@ -6,34 +6,49 @@ pub use keyboard::*;
 pub use mouse::*;
 use winit::event::{ElementState, ModifiersState, MouseScrollDelta};
 
-use crate::maths::Vector2;
+use crate::maths::{vec2, Vector2};
 
 mod keyboard;
 mod mouse;
 
 /// The input management backend implementation for the underlying input API.
 pub struct InputBackend {
+  // devices
   pub keyboard: KeyboardDevice,
   pub mouse: MouseDevice,
-  raw_input: RawInput,
   pub pixels_per_point: f32,
+
+  // input tracking for UI purposes
+  raw_input: RawInput,
+  actual_mouse_pos: Vector2<f32>,
+  pub exclusive_keyboard_input: bool,
+  pub exclusive_pointer_input: bool,
 }
 
 impl InputBackend {
   /// Creates a new input backend.
-  pub fn new() -> Self {
+  pub fn new(pixels_per_point: f32) -> Self {
     Self {
       keyboard: KeyboardDevice::new(),
       mouse: MouseDevice::new(),
+      pixels_per_point,
+
       raw_input: Default::default(),
-      pixels_per_point: 1.0,
+      actual_mouse_pos: vec2(0., 0.),
+      exclusive_keyboard_input: false,
+      exclusive_pointer_input: false,
     }
   }
 
   /// Ticks the input system, apply state changes.
   pub fn tick(&mut self) {
-    self.keyboard.tick();
-    self.mouse.tick();
+    if !self.exclusive_keyboard_input {
+      self.keyboard.tick();
+    }
+
+    if !self.exclusive_pointer_input {
+      self.mouse.tick();
+    }
 
     // reset egui events
     self.raw_input.events.clear();
@@ -49,15 +64,17 @@ impl InputBackend {
 
   /// Notifies of a mouse movement event.
   pub fn on_mouse_move(&mut self, position: Vector2<f32>, window_size: Vector2<f32>) {
-    self.mouse.on_mouse_moved(position, window_size);
+    let event = egui::Event::PointerMoved(egui::Pos2 {
+      x: position.x as f32 / self.pixels_per_point,
+      y: position.y as f32 / self.pixels_per_point,
+    });
 
-    self
-      .raw_input
-      .events
-      .push(egui::Event::PointerMoved(egui::Pos2 {
-        x: position.x as f32 / self.pixels_per_point,
-        y: position.y as f32 / self.pixels_per_point,
-      }));
+    self.raw_input.events.push(event);
+    self.actual_mouse_pos = position;
+
+    if !self.exclusive_pointer_input {
+      self.mouse.on_mouse_moved(position, window_size);
+    }
   }
 
   /// Notifies of a mouse wheel event.
@@ -76,27 +93,24 @@ impl InputBackend {
     delta.x *= -1.0;
 
     if self.raw_input.modifiers.ctrl || self.raw_input.modifiers.command {
-      self
-        .raw_input
-        .events
-        .push(egui::Event::Zoom((delta.y / 200.0).exp()));
+      let event = egui::Event::Zoom((delta.y / 200.0).exp());
+
+      self.raw_input.events.push(event);
     } else if self.raw_input.modifiers.shift {
-      self
-        .raw_input
-        .events
-        .push(egui::Event::Scroll(egui::vec2(delta.x + delta.y, 0.0)));
+      let event = egui::Event::Scroll(egui::vec2(delta.x + delta.y, 0.0));
+
+      self.raw_input.events.push(event);
     } else {
-      self.raw_input.events.push(egui::Event::Scroll(delta));
+      let event = egui::Event::Scroll(delta);
+
+      self.raw_input.events.push(event);
     }
   }
 
   /// Notifies of a mouse button event.
   pub fn on_mouse_button(&mut self, button: MouseButton, state: ElementState) {
-    self.mouse.on_mouse_button(button, state);
-
-    let position = self.mouse.position();
-
-    self.raw_input.events.push(egui::Event::PointerButton {
+    let position = self.actual_mouse_pos;
+    let event = egui::Event::PointerButton {
       pos: egui::Pos2 {
         x: position.x as f32 / self.pixels_per_point,
         y: position.y as f32 / self.pixels_per_point,
@@ -108,27 +122,48 @@ impl InputBackend {
       },
       pressed: state == ElementState::Pressed,
       modifiers: Default::default(), // TODO: implement modifiers
-    })
+    };
+
+    self.raw_input.events.push(event);
+
+    if !self.exclusive_pointer_input {
+      self.mouse.on_mouse_button(button, state);
+    }
   }
 
   /// Notifies of a keyboard event.
   pub fn on_keyboard_event(&mut self, event: &winit::event::KeyboardInput) {
-    self.keyboard.on_keyboard_event(event);
-
     if let Some(virtual_key) = event.virtual_keycode {
       if let Some(key) = translate_virtual_key_code_to_egui(virtual_key) {
-        self.raw_input.events.push(egui::Event::Key {
+        let event = egui::Event::Key {
           key,
           pressed: event.state == ElementState::Pressed,
           modifiers: Default::default(), // TODO: implement modifiers
-        })
+        };
+        self.raw_input.events.push(event)
       }
+    }
+
+    if !self.exclusive_keyboard_input {
+      self.keyboard.on_keyboard_event(event);
     }
   }
 }
 
 /// Allow this input backend to be used in egui rendering.
 impl crate::ui::RawInputProvider for InputBackend {
+  fn pixels_per_point(&self) -> f32 {
+    self.pixels_per_point
+  }
+
+  fn set_exclusive_keyboard_input(&mut self, exclusive: bool) {
+    self.exclusive_keyboard_input = exclusive;
+  }
+
+  fn set_exclusive_pointer_input(&mut self, exclusive: bool) {
+    self.exclusive_pointer_input = exclusive;
+  }
+
   fn get_raw_input(&self) -> &RawInput {
     &self.raw_input
   }

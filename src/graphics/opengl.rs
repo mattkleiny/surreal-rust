@@ -19,20 +19,18 @@ pub struct OpenGLGraphicsBackend {
 
 /// Internally managed state for the backend.
 struct InternalState {
-  pixels_per_point: f32,
   sampler_cache: HashMap<TextureSampler, u32>,
 }
 
 impl OpenGLGraphicsBackend {
   /// Creates a new OpenGL backend.
-  pub fn new(context: ContextWrapper<PossiblyCurrent, ()>, pixels_per_point: f32) -> Self {
+  pub fn new(context: ContextWrapper<PossiblyCurrent, ()>) -> Self {
     // load our opengl bindings
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
     Self {
       context,
       internal_state: RefCell::new(InternalState {
-        pixels_per_point,
         sampler_cache: HashMap::new(),
       }),
     }
@@ -52,14 +50,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
 
     self.context.swap_buffers().expect("Failed to swap buffers");
-  }
-
-  fn get_pixels_per_point(&self) -> f32 {
-    self.internal_state.borrow().pixels_per_point
-  }
-
-  fn set_pixels_per_point(&self, pixels_per_point: f32) {
-    self.internal_state.borrow_mut().pixels_per_point = pixels_per_point;
   }
 
   fn get_viewport_size(&self) -> (usize, usize) {
