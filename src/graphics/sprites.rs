@@ -80,10 +80,11 @@ impl SpriteBatch {
     self.vertices.clear();
   }
 
-  /// Draws a single sprite to the batch.
+  /// Draws a single sprite texture to the batch with the given options.
   #[profiling::function]
-  pub fn draw<'a>(&mut self, region: &'a TextureRegion, options: SpriteOptions) {
+  pub fn draw<'a>(&mut self, region: &'a TextureRegion, options: &SpriteOptions) {
     // flush if the texture has changed
+    // TODO: support multiple textures per batch (e.g. for tile maps)
     if let Some(texture) = &self.texture {
       if texture.handle() != region.texture.handle() {
         self.flush();
@@ -145,7 +146,12 @@ impl SpriteBatch {
     let index_count = sprite_count * 6;
 
     if let Some(texture) = &self.texture {
-      material.set_uniform("u_texture", texture);
+      material.set_uniform("u_texture[0]", texture);
+      material.set_uniform("u_texture[1]", texture);
+      material.set_uniform("u_texture[2]", texture);
+      material.set_uniform("u_texture[3]", texture);
+      material.set_uniform("u_texture[4]", texture);
+      material.set_uniform("u_texture[5]", texture);
     }
 
     self.mesh.with_buffers(|vertices, _| {

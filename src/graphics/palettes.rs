@@ -19,9 +19,7 @@ pub struct ColorPalette<P> {
   colors: Vec<P>,
 }
 
-impl<P> ColorPalette<P>
-where P: Pixel
-{
+impl<P: Pixel> ColorPalette<P> {
   /// Creates a new empty palette.
   pub fn new() -> Self {
     Self { colors: Vec::new() }

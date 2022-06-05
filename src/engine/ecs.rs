@@ -100,14 +100,14 @@ where C: Copy
 
 /// A simple entity component system world.
 #[derive(Default)]
-pub struct World {
+pub struct EntityWorld {
   /// Each individual entity in the world.
   entities: Arena<EntityState>,
   /// Storage for each unique component type.
   components: AnyMap,
 }
 
-impl World {
+impl EntityWorld {
   /// Creates a new blank world.
   pub fn new() -> Self {
     Self {
@@ -173,7 +173,7 @@ mod tests {
 
   #[test]
   fn world_should_insert_entity() {
-    let mut world = World::new();
+    let mut world = EntityWorld::new();
 
     let entity1 = world.spawn();
     let entity2 = world.spawn();
@@ -183,7 +183,7 @@ mod tests {
 
   #[test]
   fn world_should_add_and_get_component() {
-    let mut world = World::new();
+    let mut world = EntityWorld::new();
     let entity = world.spawn();
 
     world.add_component(entity, vec2(0f32, 10f32));
@@ -203,7 +203,7 @@ mod tests {
 
   #[test]
   fn world_should_get_component_mutably() {
-    let mut world = World::new();
+    let mut world = EntityWorld::new();
     let entity = world.spawn();
 
     world.add_component(entity, vec2(0f32, 10f32));
@@ -220,7 +220,7 @@ mod tests {
 
   #[test]
   fn world_should_remove_component() {
-    let mut world = World::new();
+    let mut world = EntityWorld::new();
     let entity = world.spawn();
 
     world.add_component(entity, vec2(0f32, 10f32));

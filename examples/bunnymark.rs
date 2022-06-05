@@ -49,7 +49,7 @@ fn main() {
         for bunny in &bunnies {
           context.batch.draw(
             &region,
-            SpriteOptions {
+            &SpriteOptions {
               position: bunny.position,
               ..Default::default()
             },

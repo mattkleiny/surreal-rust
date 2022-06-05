@@ -79,7 +79,11 @@ pub struct SpriteBatchDescriptor {
   pub projection_view: Matrix4x4<f32>,
 
   /// If a palette is specified, a special shader variant will be loaded that uses the palette.
+  /// The palette will be bound to u_palette with u_paletteWidth texels wide.
   pub palette: Option<ColorPalette<Color>>,
+
+  /// A custom shader program to use for rendering.
+  pub shader: Option<ShaderProgram>,
 
   /// The expected number of sprites to use in the batch; used for pre-sizing the batch vertex buffer.
   pub sprite_count: usize,
@@ -90,6 +94,7 @@ impl Default for SpriteBatchDescriptor {
     Self {
       projection_view: Matrix4x4::identity(),
       palette: None,
+      shader: None,
       sprite_count: 1024,
     }
   }
@@ -100,12 +105,15 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
 
   fn create(&self, server: &GraphicsServer) -> Self::Context {
     // determine which shader we're using, prepare material
-    let shader = match self.palette {
-      None => BuiltInShader::SpriteStandard,
-      Some(_) => BuiltInShader::SpritePalette,
-    };
+    let shader = match &self.shader {
+        Some(shader) => shader.clone(),
+        None => match self.palette {
+          None => load_built_in_shader(server, BuiltInShader::SpriteStandard),
+          Some(_) => load_built_in_shader(server, BuiltInShader::SpritePalette),
+        }
+    }; 
 
-    let mut material = Material::new(server, &load_built_in_shader(server, shader));
+    let mut material = Material::new(server, &shader);
     let batch = SpriteBatch::with_capacity(server, self.sprite_count);
 
     // prepare the palette texture, if enabled
@@ -121,7 +129,7 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
     // apply the default projection-view matrix
     material.set_uniform("u_projectionView", &self.projection_view);
 
-    // enable alpha blending
+    // enable default material state
     material.set_blend_state(BlendState::Enabled {
       source: BlendFactor::SrcAlpha,
       destination: BlendFactor::OneMinusSrcAlpha,

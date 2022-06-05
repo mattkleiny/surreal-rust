@@ -19,16 +19,12 @@ pub trait Tile: 'static {
 ///
 /// Internally tiles are represented by their [`Tile::Id`], but the public
 /// API allows for direct access via the [`T`] abstraction.
-pub struct TileMap<'a, T>
-where T: Tile
-{
+pub struct TileMap<'a, T: Tile> {
   tiles: Grid<T::Id>,
   sprites: HashMap<T::Id, TextureRegion<'a>>,
 }
 
-impl<'a, T> TileMap<'a, T>
-where T: Tile
-{
+impl<'a, T: Tile> TileMap<'a, T> {
   /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
@@ -90,6 +86,7 @@ impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
     let half_width = self.tiles.width() as f32 / 2.;
     let half_height = self.tiles.height() as f32 / 2.;
 
+    // TODO: batch tiles by sprite?
     for y in 0..self.tiles.height() {
       for x in 0..self.tiles.width() {
         let id = self.tiles.get((x, y));
@@ -102,7 +99,7 @@ impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
 
           context.batch.draw(
             region,
-            SpriteOptions {
+            &SpriteOptions {
               position,
               ..Default::default()
             },

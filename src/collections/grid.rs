@@ -49,6 +49,13 @@ impl<T> Grid<T> {
     self.len() / self.stride()
   }
 
+  /// Is the given point a valid index into the grid?
+  pub fn is_valid(&self, point: impl Into<GridPoint>) -> bool {
+    let point = point.into();
+
+    point.0 > 0 && point.0 < self.width() && point.1 > 0 && point.1 < self.height()
+  }
+
   /// Accesses an item from the grid.
   pub fn get(&self, point: impl Into<GridPoint>) -> &T {
     let (x, y) = point.into();

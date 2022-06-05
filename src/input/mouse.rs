@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-use crate::maths::{range, Vector2};
+use crate::maths::{range, Vector2, vec2};
 use winit::event::ElementState;
 
 pub use winit::event::MouseButton;
@@ -57,7 +57,12 @@ impl MouseDevice {
 
   /// Gets the normalised screen position of the mouse, origin (0, 0) in the top-left corner.
   pub fn normalised_position(&self) -> Vector2<f32> {
-    self.normalised_position.clamp(range(0.01, 0.99))
+    self.normalised_position.clamp(range(0., 1.))
+  }
+
+  /// Gets the normalised screen position of the mouse, origin (0, 0) in the top-left corner.
+  pub fn normalised_position_rescaled(&self) -> Vector2<f32> {
+    (self.normalised_position.clamp(range(0., 1.)) * 2. - vec2(1., 1.)) / 2.
   }
 
   /// Is the given mouse button currently up?

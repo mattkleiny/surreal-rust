@@ -6,7 +6,6 @@ use std::rc::Rc;
 use crate::assets::{AssetContext, AssetLoader, AssetManager};
 use crate::io::AsVirtualPath;
 use crate::maths::{vec2, FromRandom, Rectangle, Vector2};
-use crate::prelude::Grid;
 
 use super::*;
 
@@ -350,30 +349,5 @@ impl<'a> TextureAtlas<'a> {
       offset: vec2(x * self.width, y * self.height),
       size: vec2(self.width, self.height),
     }
-  }
-}
-
-/// Constructs [`TextureAtlas`]s procedurally.
-pub struct TextureAtlasBuilder<P> {
-  size: (usize, usize),
-  cells: Vec<Grid<P>>,
-}
-
-impl<P: Pixel + Clone + Default> TextureAtlasBuilder<P> {
-  /// Builds a new texture atlas builder.
-  pub fn new(width: usize, height: usize) -> Self {
-    Self {
-      cells: Vec::new(),
-      size: (width, height),
-    }
-  }
-
-  /// Adds a single cell to the builder.
-  pub fn add_cell(&mut self) -> &mut Grid<P> {
-    // TODO: implement me
-    let cell = Grid::new(self.size.0, self.size.1);
-
-    self.cells.push(cell);
-    self.cells.last_mut().unwrap()
   }
 }
