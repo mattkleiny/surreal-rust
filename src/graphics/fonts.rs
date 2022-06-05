@@ -2,8 +2,9 @@
 //!
 //! We currently support bitmap fonts, with a planned future change to support TrueType fonts.
 
-use crate::assets::{AssetContext, AssetLoader};
+use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::graphics::{Texture, TextureRegion};
+use crate::maths::vec2;
 
 /// A font comprised of bitmap images for each glyph.
 pub struct BitmapFont {
@@ -31,19 +32,31 @@ impl BitmapFont {
   }
 
   /// Gets the glyph for the given character.
-  pub fn get_glyph(&self, _character: char) -> Option<&TextureRegion> {
-    todo!()
-  }
+  pub fn get_glyph(&self, character: char) -> Option<TextureRegion> {
+    let metrics = &self.metrics;
 
-  // TODO: implement text rendering in dedicated render pipeline?
+    let x = (character as u16 % metrics.columns) * metrics.glyph_width + metrics.glyph_padding;
+    let y = (character as u16 / metrics.columns) * metrics.glyph_width + metrics.glyph_padding;
+
+    let offset = vec2(x as u32, y as u32);
+    let size = vec2(metrics.glyph_width as u32, metrics.glyph_height as u32);
+
+    Some(TextureRegion {
+      texture: &self.texture,
+      offset,
+      size,
+    })
+  }
 }
 
 /// An `AssetLoader` for `BitmapFont`s.
 pub struct BitmapFontLoader {}
 
-impl AssetLoader for BitmapFontLoader {
-  type Output = BitmapFont;
+impl Asset for BitmapFont {
+  type Loader = BitmapFontLoader;
+}
 
+impl AssetLoader<BitmapFont> for BitmapFontLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<BitmapFont> {
     let descriptor: BitmapFontMetrics = context.path.deserialize_json()?;
     let texture = context.load_asset(context.path.change_extension("png"))?;

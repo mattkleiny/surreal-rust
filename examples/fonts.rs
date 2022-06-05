@@ -13,7 +13,7 @@ fn main() {
     let graphics = &engine.graphics;
 
     // set-up rendering
-    let font: &BitmapFont = assets.load_asset("assets/fonts/IBM.font").unwrap();
+    let font: Handle<BitmapFont> = assets.load_asset("assets/fonts/IBM.font").unwrap();
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
@@ -25,7 +25,7 @@ fn main() {
       let graphics = &engine.graphics;
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
-      
+
       // render some text
       renderer.with(|context: &mut SpriteBatchContext| {
         context.batch.draw(

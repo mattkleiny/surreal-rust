@@ -1,5 +1,7 @@
 //! A simple sprite benchmark for Surreal.
 
+use std::ops::Deref;
+
 use surreal::prelude::*;
 
 const WIDTH: f32 = 1920.;
@@ -18,11 +20,11 @@ fn main() {
     let mut interface = UserInterface::new(graphics);
 
     // set-up assets and rendering
-    let sprite: &Texture = assets
+    let sprite: Handle<Texture> = assets
       .load_asset("assets/sprites/bunny.png")
       .expect("Failed to load sprite image");
 
-    let region = TextureRegion::from(sprite);
+    let region = TextureRegion::from(sprite.deref());
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {

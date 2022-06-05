@@ -2,7 +2,7 @@
 
 pub use image::ImageFormat;
 
-use crate::assets::{AssetContext, AssetLoader};
+use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::io::AsVirtualPath;
 
 use super::*;
@@ -87,9 +87,11 @@ pub struct ImageLoader {
   pub format: Option<ImageFormat>,
 }
 
-impl AssetLoader for ImageLoader {
-  type Output = Image;
+impl Asset for Image {
+  type Loader = ImageLoader;
+}
 
+impl AssetLoader<Image> for ImageLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Image> {
     Image::from_path(context.path, self.format)
   }

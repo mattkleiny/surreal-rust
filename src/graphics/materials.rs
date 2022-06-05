@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use crate::assets::{AssetContext, AssetLoader};
+use crate::assets::{AssetContext, AssetLoader, Asset};
 
 use super::*;
 
@@ -183,9 +183,11 @@ pub struct MaterialLoader {
   pub server: GraphicsServer,
 }
 
-impl AssetLoader for MaterialLoader {
-  type Output = Material;
+impl Asset for Material {
+  type Loader = MaterialLoader;
+}
 
+impl AssetLoader<Material> for MaterialLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Material> {
     let shader = context.load_asset(context.path)?;
     let material = Material::new(&self.server, &shader);

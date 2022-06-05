@@ -3,9 +3,9 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::assets::{AssetContext, AssetLoader, AssetManager};
-use crate::io::AsVirtualPath;
+use crate::assets::{AssetContext, AssetLoader};
 use crate::maths::{vec2, FromRandom, Rectangle, Vector2};
+use crate::prelude::Asset;
 
 use super::*;
 
@@ -260,9 +260,11 @@ pub struct TextureLoader {
   pub options: TextureOptions,
 }
 
-impl AssetLoader for TextureLoader {
-  type Output = Texture;
+impl Asset for Texture {
+  type Loader = TextureLoader;
+}
 
+impl AssetLoader<Texture> for TextureLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Texture> {
     let image = context.load_asset(context.path)?;
     let mut texture = Texture::new(&self.server);
@@ -318,18 +320,6 @@ impl<'a> TextureAtlas<'a> {
       width,
       height,
     }
-  }
-
-  /// Loads a texture atlas from the given virtual path.
-  pub fn load(
-    assets: &'a AssetManager,
-    width: u32,
-    height: u32,
-    path: impl AsVirtualPath,
-  ) -> crate::Result<Self> {
-    let texture = assets.load_asset(path)?;
-
-    Ok(Self::new(width, height, &texture))
   }
 
   /// The width of the atlas, in sub-regions.

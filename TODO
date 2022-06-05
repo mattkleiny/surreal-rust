@@ -1,4 +1,3 @@
-
 Todo:
   [✔] Get asset management loading working @done(22-06-05 14:12)
   [ ] Get hot reload for assets working
@@ -21,8 +20,7 @@ Todo:
   [ ] Add texture atlases (automatically baked)?
   [✔] Fix up lifetimes for core types (graphics, etc) @done(22-06-05 14:12)
   [ ] Give documentation a bit of love
-  [ ] Get egui text input working (and platform output handled)
+  [✔] Get egui text input working (and platform output handled) @done(22-06-05 23:46)
   [ ] Draw lists? (load/store actions, render targets, command buffer and post processing)
   [ ] Swap to stable (instead of nightly)?
   
-   

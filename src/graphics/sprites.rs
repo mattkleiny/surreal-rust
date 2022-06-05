@@ -146,12 +146,7 @@ impl SpriteBatch {
     let index_count = sprite_count * 6;
 
     if let Some(texture) = &self.texture {
-      material.set_uniform("u_texture[0]", texture);
-      material.set_uniform("u_texture[1]", texture);
-      material.set_uniform("u_texture[2]", texture);
-      material.set_uniform("u_texture[3]", texture);
-      material.set_uniform("u_texture[4]", texture);
-      material.set_uniform("u_texture[5]", texture);
+      material.set_uniform("u_texture", texture);
     }
 
     self.mesh.with_buffers(|vertices, _| {
