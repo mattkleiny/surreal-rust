@@ -28,13 +28,10 @@ fn main() {
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
+      let color = Color32::lerp(color1, color2, (tick.time.total_time.sin() + 1.) / 2.);
+
       batch.begin(&material);
-      batch.draw_circle(
-        vec2(0., 0.),
-        0.75,
-        64,
-        Color32::lerp(color1, color2, (tick.time.total_time.sin() + 1.) / 2.),
-      );
+      batch.draw_circle(vec2(0., 0.), 0.75, 64, color);
       batch.flush();
 
       if engine.input.keyboard.is_key_pressed(Key::Escape) {

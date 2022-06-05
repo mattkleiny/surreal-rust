@@ -72,11 +72,9 @@ fn main() {
     });
 
     engine.run_variable_step(|engine, tick| {
-      engine
-        .graphics
-        .clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
-      //engine.graphics.clear_color_buffer(palette[0]);
+      let graphics = &engine.graphics;
 
+      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
       renderer.render(&map);
 
       if engine.input.keyboard.is_key_pressed(Key::Space) {

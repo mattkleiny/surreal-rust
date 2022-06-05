@@ -3,8 +3,10 @@
 //! Bootstrapping and other framework systems for common projects.
 
 pub use ecs::*;
+pub use scenes::*;
 
 mod ecs;
+mod scenes;
 
 use glutin::{window::Window, ContextBuilder};
 use log::LevelFilter;

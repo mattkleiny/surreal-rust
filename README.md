@@ -6,6 +6,18 @@ A sweet little game engine built with Rust.
 
 This project is in active development.
 
+## Features
+
+* Minimal third-party dependencies.
+* Cross-platform (Windows/Mac/Linux) OpenGL abstractions.
+* Cross-platform input (Mouse, Keyboard).
+* A simple and generic built-in math library.
+* A pluggable virtual file system for various asset providres.
+* `egui` integration for immediate-mode UI rendering.
+* `log` and `profiling` integration for profiling and logging.
+* Asset management with managed ownership and hot-reloading.
+* 2d sprite batch rendering with variable shader and vertex formats.
+
 ## Design goals
 
 ### Modern and performant 2d rendering
