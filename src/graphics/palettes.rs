@@ -10,7 +10,7 @@ use std::{marker::PhantomData, ops::Index};
 use anyhow::anyhow;
 
 use crate::{
-  io::AsVirtualPath,
+  io::AsPath,
   assets::{Asset, AssetLoader, AssetContext},
 };
 
@@ -41,8 +41,8 @@ impl<P: Pixel> ColorPalette<P> {
   }
 
   /// Loads a palette from the given file path.
-  pub fn from_file(path: impl AsVirtualPath) -> crate::Result<Self> {
-    let path = path.as_virtual_path();
+  pub fn from_file(path: impl AsPath) -> crate::Result<Self> {
+    let path = path.as_path();
     let stream = path.open_input_stream()?;
 
     Self::from_bytes(stream)

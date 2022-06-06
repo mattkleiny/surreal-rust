@@ -126,18 +126,18 @@ impl<'a> std::fmt::Display for VirtualPath<'a> {
 }
 
 /// Allows a type to be converted to a [`VirtualPath`].
-pub trait AsVirtualPath {
-  fn as_virtual_path(&self) -> VirtualPath;
+pub trait AsPath {
+  fn as_path(&self) -> VirtualPath;
 }
 
-impl<'a> AsVirtualPath for VirtualPath<'a> {
-  fn as_virtual_path(&self) -> VirtualPath<'a> {
+impl<'a> AsPath for VirtualPath<'a> {
+  fn as_path(&self) -> VirtualPath<'a> {
     *self
   }
 }
 
-impl AsVirtualPath for &str {
-  fn as_virtual_path(&self) -> VirtualPath {
+impl AsPath for &str {
+  fn as_path(&self) -> VirtualPath {
     VirtualPath::parse(self)
   }
 }

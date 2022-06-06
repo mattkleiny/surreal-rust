@@ -13,7 +13,7 @@ fn main() {
     let graphics = &engine.graphics;
 
     // set-up rendering
-    let font: Handle<BitmapFont> = assets.load_asset("assets/fonts/IBM.font").unwrap();
+    let font = BitmapFont::load(&assets, "assets/fonts/IBM.font").unwrap();
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {

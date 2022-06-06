@@ -8,7 +8,7 @@
 use std::rc::Rc;
 
 use crate::assets::{AssetContext, AssetLoader, Asset};
-use crate::io::AsVirtualPath;
+use crate::io::AsPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 use super::*;
@@ -122,8 +122,8 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path(&self, path: impl AsVirtualPath) -> crate::Result<()> {
-    let path = path.as_virtual_path();
+  pub fn load_from_path(&self, path: impl AsPath) -> crate::Result<()> {
+    let path = path.as_path();
     let source_code = path.read_all_text()?;
 
     self.load_glsl(&source_code)?;

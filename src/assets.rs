@@ -8,7 +8,7 @@ use std::rc::Rc;
 
 use anyhow::Ok;
 
-use crate::io::{AsVirtualPath, VirtualPath};
+use crate::io::{AsPath, VirtualPath};
 
 // TODO: asset hot loading and dependent asset reloads (shader program includes, for example)
 
@@ -65,7 +65,7 @@ pub struct AssetContext<'a> {
 
 impl<'a> AssetContext<'a> {
   /// Loads a dependent asset from the given path.
-  pub fn load_asset<A: Asset>(&self, path: VirtualPath) -> crate::Result<Handle<A>> {
+  pub fn load_asset<A: Asset>(&self, path: impl AsPath) -> crate::Result<Handle<A>> {
     self.manager.load_asset(path)
   }
 }
@@ -114,9 +114,10 @@ impl AssetManager {
   /// then an error is returned.
   /// * If the asset is found, but the loader is not registered, then an error is returned.
   /// * If the asset is found and the loader is registered, then the asset is loaded and returned.
-  pub fn load_asset<A: Asset>(&self, path: impl AsVirtualPath) -> crate::Result<Handle<A>> {
+  pub fn load_asset<A: Asset>(&self, path: impl AsPath) -> crate::Result<Handle<A>> {
     let state = unsafe { &mut *self.state.get() };
-    let path = path.as_virtual_path();
+    
+    let path = path.as_path();
     let id = AssetId(TypeId::of::<A>(), path.to_string());
 
     match state.cache.get(&id) {
@@ -124,7 +125,7 @@ impl AssetManager {
         log::trace!(
           "Using cached asset {} from {}",
           std::any::type_name::<A>(),
-          path.as_virtual_path()
+          path.as_path()
         );
 
         let handle = asset
@@ -138,7 +139,7 @@ impl AssetManager {
         log::trace!(
           "Loading asset {} from {}",
           std::any::type_name::<A>(),
-          path.as_virtual_path()
+          path.as_path()
         );
 
         let state = unsafe { &mut *self.state.get() };
