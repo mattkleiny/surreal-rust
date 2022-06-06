@@ -37,9 +37,9 @@ fn main() {
     let mut bunnies = Vec::<Bunny>::new();
 
     engine.run_variable_step(move |engine, tick| {
-      engine
-        .graphics
-        .clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
+      let graphics = &engine.graphics;
+
+      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       // update bunnies
       for bunny in &mut bunnies {
