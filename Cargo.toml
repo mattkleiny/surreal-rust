@@ -13,6 +13,7 @@ opt-level = 3 # compile third party dependencies by default with some sane optim
 
 [features]
 default = ["prototype"]
+profiling = ["profiling/profile-with-optick"]
 prototype = []
 
 [dependencies]
@@ -23,7 +24,7 @@ surreal-macros = { path = "macros" }
 anyhow = "1.0.57"
 image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
 egui = { version = "0.18.1" }
-profiling = { version = "1.0.6", features = ["profile-with-optick"] }
+profiling = { version = "1.0.6" }
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
 phf = { version = "0.10.1", features = ["macros"] }
