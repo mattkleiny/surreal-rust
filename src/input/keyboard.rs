@@ -2,8 +2,8 @@
 
 use std::collections::HashSet;
 
-use winit::event::ElementState;
-pub use winit::event::VirtualKeyCode as Key;
+use glutin::event::{ElementState, KeyboardInput};
+pub use glutin::event::VirtualKeyCode as Key;
 
 /// Represents a keyboard device in the system.
 pub struct KeyboardDevice {
@@ -26,7 +26,7 @@ impl KeyboardDevice {
   }
 
   /// Handles keyboard events.
-  pub fn on_keyboard_event(&mut self, event: &winit::event::KeyboardInput) {
+  pub fn on_keyboard_event(&mut self, event: &KeyboardInput) {
     if let Some(virtual_key_code) = event.virtual_keycode {
       if event.state == ElementState::Pressed {
         self.current_keys.insert(virtual_key_code);

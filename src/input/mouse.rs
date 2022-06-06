@@ -3,9 +3,9 @@
 use std::collections::HashSet;
 
 use crate::maths::{range, Vector2, vec2};
-use winit::event::ElementState;
+use glutin::event::ElementState;
 
-pub use winit::event::MouseButton;
+pub use glutin::event::MouseButton;
 
 /// Represents a mouse device on the system.
 pub struct MouseDevice {

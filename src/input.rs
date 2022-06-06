@@ -4,7 +4,7 @@ use egui::RawInput;
 
 pub use keyboard::*;
 pub use mouse::*;
-use winit::event::{ElementState, ModifiersState, MouseScrollDelta};
+use glutin::event::{ElementState, ModifiersState, MouseScrollDelta, KeyboardInput};
 
 use crate::maths::{vec2, Vector2};
 
@@ -132,7 +132,7 @@ impl InputBackend {
   }
 
   /// Notifies of a keyboard event.
-  pub fn on_keyboard_event(&mut self, event: &winit::event::KeyboardInput) {
+  pub fn on_keyboard_event(&mut self, event: &KeyboardInput) {
     if let Some(virtual_key) = event.virtual_keycode {
       if let Some(key) = translate_virtual_key_code_to_egui(virtual_key) {
         let event = egui::Event::Key {
@@ -175,7 +175,7 @@ fn is_printable_char(chr: char) -> bool {
 /// Translates a virtual key code from winit to an egui key.
 fn translate_virtual_key_code_to_egui(key: Key) -> Option<egui::Key> {
   use egui::Key;
-  use winit::event::VirtualKeyCode;
+  use glutin::event::VirtualKeyCode;
 
   Some(match key {
     VirtualKeyCode::Down => Key::ArrowDown,

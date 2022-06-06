@@ -19,6 +19,8 @@ mod parser {
 
   use super::*;
 
+  use std::collections::HashMap;
+
   /// Represents a token in the Lox language.
   #[derive(Debug)]
   pub enum Token {
@@ -73,24 +75,29 @@ mod parser {
     While,
   }
 
-  static KEYWORDS: phf::Map<&'static str, Keyword> = phf::phf_map! {
-    "and" => Keyword::And,
-    "class" => Keyword::Class,
-    "else" => Keyword::Else,
-    "false" => Keyword::False,
-    "for" => Keyword::For,
-    "fun" => Keyword::Fun,
-    "if" => Keyword::If,
-    "nil" => Keyword::Nil,
-    "or" => Keyword::Or,
-    "print" => Keyword::Print,
-    "return" => Keyword::Return,
-    "super" => Keyword::Super,
-    "this" => Keyword::This,
-    "true" => Keyword::True,
-    "var" => Keyword::Var,
-    "while" => Keyword::While,
-  };
+  lazy_static::lazy_static! {
+    /// A look-up table of keywords.
+    static ref KEYWORDS: HashMap<&'static str, Keyword> = {
+      let mut m = HashMap::new();
+      m.insert("and", Keyword::And);
+      m.insert("class", Keyword::Class);
+      m.insert("else", Keyword::Else);
+      m.insert("false", Keyword::False);
+      m.insert("for", Keyword::For);
+      m.insert("fun", Keyword::Fun);
+      m.insert("if", Keyword::If);
+      m.insert("nil", Keyword::Nil);
+      m.insert("or", Keyword::Or);
+      m.insert("print", Keyword::Print);
+      m.insert("return", Keyword::Return);
+      m.insert("super", Keyword::Super);
+      m.insert("this", Keyword::This);
+      m.insert("true", Keyword::True);
+      m.insert("var", Keyword::Var);
+      m.insert("while", Keyword::While);
+      m
+    };
+  }
 
   /// Tokenizes the given string into a list of `Token`.
   pub fn tokenize(code: &str) -> crate::Result<Vec<(Token, TokenPos)>> {
@@ -204,7 +211,7 @@ mod parser {
             }
           }
 
-          if let Some(keyword) = KEYWORDS.get(&identifier) {
+          if let Some(keyword) = KEYWORDS.get(identifier.as_str()) {
             emit!(Token::Keyword(*keyword));
           } else {
             emit!(Token::Identifier(identifier));
