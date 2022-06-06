@@ -39,3 +39,4 @@ Scripting:
 Editor:
   [ ] Tauri-based editor with web frontend technologies
   [ ] How to integrate render target output from UI into Tauri/Canvas?
+  [ ] Integrate the editor into VSCode and use it to provide basic scene editing/etc?
