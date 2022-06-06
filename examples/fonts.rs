@@ -21,17 +21,23 @@ fn main() {
       ..Default::default()
     });
 
+    let color1 = Color32::random();
+    let color2 = Color32::random();
+
     engine.run_variable_step(|engine, tick| {
       let graphics = &engine.graphics;
+      let time_step = (tick.time.total_time.sin() + 1.) / 2.;
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       // render some text
       renderer.with(|context: &mut SpriteBatchContext| {
-        context.batch.draw(
-          &font.get_glyph('A').unwrap(),
+        context.batch.draw_text(
+          &font,
+          "HELLO, SURREAL!",
           &SpriteOptions {
             position: vec2(0., 0.),
+            color: Color32::lerp(color1, color2, time_step),
             ..Default::default()
           },
         );

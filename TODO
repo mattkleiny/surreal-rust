@@ -14,10 +14,18 @@ Core:
   [ ] Swap to stable (instead of nightly)?
   [ ] Scene management and loading
 
+AI:
+  [ ] Basic automata
+    [ ] Behaviour trees?
+    [ ] Decision trees?
+    [ ] State machines?
+  [ ] Navigation meshes and path-finding?
+
 Graphics:
-  [ ] Add bitmap fonts
+  [✔] Add bitmap fonts @done(22-06-06 18:57)
   [ ] Get #[derive(Vertex)] working
   [ ] Add true type fonts? (maybe)
+  [ ] Font layout/galley system
   [ ] Add sprite pivots, transforms, etc
   [ ] Add sprite animations
   [ ] Add tilemap pivots, transforms, etc

@@ -65,7 +65,7 @@ impl<'a> VirtualPath<'a> {
   }
 
   /// Returns a new path with a different file extension.
-  pub fn change_extension(&self, _new_extension: &str) -> Self {
+  pub fn change_extension(&self, _new_extension: &'a str) -> Self {
     todo!()
   }
 
@@ -137,6 +137,12 @@ impl<'a> AsPath for VirtualPath<'a> {
 }
 
 impl AsPath for &str {
+  fn as_path(&self) -> VirtualPath {
+    VirtualPath::parse(self)
+  }
+}
+
+impl AsPath for &String {
   fn as_path(&self) -> VirtualPath {
     VirtualPath::parse(self)
   }

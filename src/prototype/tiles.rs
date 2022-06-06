@@ -97,7 +97,7 @@ impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
             (y as f32 + 0.5) * region.size.y as f32 - half_height * region.size.y as f32,
           );
 
-          context.batch.draw(
+          context.batch.draw_sprite(
             region,
             &SpriteOptions {
               position,

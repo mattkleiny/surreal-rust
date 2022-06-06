@@ -46,7 +46,7 @@ fn main() {
       // draw bunnies
       renderer.with(|context: &mut SpriteBatchContext| {
         for bunny in &bunnies {
-          context.batch.draw(
+          context.batch.draw_sprite(
             &region,
             &SpriteOptions {
               position: bunny.position,

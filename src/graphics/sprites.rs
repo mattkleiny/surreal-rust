@@ -80,9 +80,35 @@ impl SpriteBatch {
     self.vertices.clear();
   }
 
+  /// Draws a line of text to the batch with the given options
+  #[profiling::function]
+  pub fn draw_text(&mut self, font: &BitmapFont, text: &str, options: &SpriteOptions) {
+    let size = font.measure_size(text);
+    let mut position = options.position;
+
+    // TODO: fix centering when scale is applied
+    position.x -= size.0 as f32 * options.scale.x / 2.;
+    position.y -= size.1 as f32 * options.scale.y / 2.;
+
+    for character in text.chars() {
+      if let Some(glyph) = font.get_glyph(character) {
+        self.draw_sprite(
+          &glyph,
+          &SpriteOptions {
+            position,
+            scale: options.scale,
+            color: options.color,
+          },
+        );
+
+        position.x += glyph.size.x as f32 * options.scale.x;
+      }
+    }
+  }
+
   /// Draws a single sprite texture to the batch with the given options.
   #[profiling::function]
-  pub fn draw<'a>(&mut self, region: &'a TextureRegion, options: &SpriteOptions) {
+  pub fn draw_sprite<'a>(&mut self, region: &'a TextureRegion, options: &SpriteOptions) {
     // flush if the texture has changed
     // TODO: support multiple textures per batch (e.g. for tile maps)
     if let Some(texture) = &self.texture {
