@@ -43,10 +43,7 @@ fn main() {
     let graphics = &engine.graphics;
 
     // set-up assets and rendering
-    let texture: Handle<Texture> = assets
-      .load_asset("assets/sprites/tiles_desert.png")
-      .unwrap();
-
+    let texture = Texture::load(&assets, "assets/sprites/tiles_desert.png").unwrap();
     let sprites = TextureAtlas::new(16, 16, texture.deref());
     let palette = load_built_in_palette(BuiltInPalette::Demichrome4);
 
