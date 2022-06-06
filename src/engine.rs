@@ -9,11 +9,11 @@ mod ecs;
 mod scenes;
 
 use glutin::{
+  ContextBuilder,
   dpi::LogicalSize,
   event_loop::{ControlFlow, EventLoop},
-  window::{Icon, WindowBuilder},
+  window::{Icon, Window, WindowBuilder},
 };
-use glutin::{window::Window, ContextBuilder};
 use log::LevelFilter;
 
 use crate::{
@@ -26,8 +26,6 @@ use crate::{
   utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
-// TODO: scene management
-// TODO: plugin management (profiler, console, etc)
 // TODO: better rendering pipeline support
 
 /// Configuration for the `Engine`.
