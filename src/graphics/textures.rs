@@ -9,27 +9,6 @@ use crate::prelude::Asset;
 
 use super::*;
 
-/// Indicates a kind of pixel that can be used in a texture.
-pub trait Texel {
-  const FORMAT: TextureFormat;
-}
-
-/// Implements texel representation common pixel types..
-macro_rules! implement_texel {
-  ($type:ty, $value:ident) => {
-    impl Texel for $type {
-      const FORMAT: TextureFormat = TextureFormat::$value;
-    }
-  };
-}
-
-implement_texel!(Color, RGBA32);
-implement_texel!(Color32, RGBA8);
-implement_texel!([u8; 1], R8);
-implement_texel!([u8; 2], RG8);
-implement_texel!([u8; 3], RGB8);
-implement_texel!([u8; 4], RGBA8);
-
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TextureFormat {
@@ -37,6 +16,9 @@ pub enum TextureFormat {
   RG8,
   RGB8,
   RGBA8,
+  R32,
+  RG32,
+  RGB32,
   RGBA32,
 }
 
@@ -341,3 +323,36 @@ impl<'a> TextureAtlas<'a> {
     }
   }
 }
+
+/// Indicates a kind of pixel that can be used in a texture.
+pub trait Texel {
+  const FORMAT: TextureFormat;
+}
+
+/// Implements texel representation common pixel types..
+macro_rules! implement_texel {
+  ($type:ty, $value:ident) => {
+    impl Texel for $type {
+      const FORMAT: TextureFormat = TextureFormat::$value;
+    }
+  };
+}
+
+implement_texel!(Color, RGBA32);
+implement_texel!(Color32, RGBA8);
+implement_texel!([u8; 1], R8);
+implement_texel!([u8; 2], RG8);
+implement_texel!([u8; 3], RGB8);
+implement_texel!([u8; 4], RGBA8);
+implement_texel!((u8,), R8);
+implement_texel!((u8, u8), RG8);
+implement_texel!((u8, u8, u8), RGB8);
+implement_texel!((u8, u8, u8, u8), RGBA8);
+implement_texel!([f32; 1], R8);
+implement_texel!([f32; 2], RG8);
+implement_texel!([f32; 3], RGB8);
+implement_texel!([f32; 4], RGBA8);
+implement_texel!((f32,), R32);
+implement_texel!((f32, f32), RG32);
+implement_texel!((f32, f32, f32), RGB32);
+implement_texel!((f32, f32, f32, f32), RGBA32);

@@ -259,6 +259,9 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
         TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
         TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
+        TextureFormat::R32 => (gl::RED, gl::FLOAT),
+        TextureFormat::RG32 => (gl::RG, gl::FLOAT),
+        TextureFormat::RGB32 => (gl::RGB, gl::FLOAT),
         TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
       };
 
@@ -290,6 +293,9 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         TextureFormat::RG8 => gl::RG8,
         TextureFormat::RGB8 => gl::RGB8,
         TextureFormat::RGBA8 => gl::RGBA8,
+        TextureFormat::R32 => gl::R32F,
+        TextureFormat::RG32 => gl::RG32F,
+        TextureFormat::RGB32 => gl::RGB32F,
         TextureFormat::RGBA32 => gl::RGBA32F,
       };
 
@@ -298,6 +304,9 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
         TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
         TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
+        TextureFormat::R32 => (gl::RED, gl::FLOAT),
+        TextureFormat::RG32 => (gl::RG, gl::FLOAT),
+        TextureFormat::RGB32 => (gl::RGB, gl::FLOAT),
         TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
       };
 
@@ -330,6 +339,9 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
         TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
         TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
+        TextureFormat::R32 => (gl::RED, gl::FLOAT),
+        TextureFormat::RG32 => (gl::RG, gl::FLOAT),
+        TextureFormat::RGB32 => (gl::RGB, gl::FLOAT),
         TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
       };
 
@@ -556,6 +568,9 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             TextureFormat::RG8 => gl::RG8,
             TextureFormat::RGB8 => gl::RGB8,
             TextureFormat::RGBA8 => gl::RGBA8,
+            TextureFormat::R32 => gl::R32F,
+            TextureFormat::RG32 => gl::RG32F,
+            TextureFormat::RGB32 => gl::RGB32F,
             TextureFormat::RGBA32 => gl::RGBA32F,
           };
 
