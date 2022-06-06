@@ -12,7 +12,7 @@ This project is in active development.
 * Cross-platform (Windows/Mac/Linux) OpenGL abstractions.
 * Cross-platform input (Mouse, Keyboard).
 * A simple and generic built-in math library.
-* A pluggable virtual file system for various asset providres.
+* A pluggable virtual file system for various asset providers.
 * `egui` integration for immediate-mode UI rendering.
 * `log` and `profiling` integration for profiling and logging.
 * Asset management with managed ownership and hot-reloading.
