@@ -6,6 +6,15 @@ use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::graphics::{Texture, TextureRegion};
 use crate::maths::vec2;
 
+/// Represents different kinds of fonts and permits rendering.
+pub trait Font {
+  /// Measures the size of the given text in the font.
+  fn measure_size(&self, text: &str) -> (usize, usize);
+
+  /// Retrieves a texture region representing the given glyph in the font.
+  fn get_glyph(&self, character: char) -> Option<TextureRegion>;
+}
+
 /// A font comprised of bitmap images for each glyph.
 pub struct BitmapFont {
   texture: Texture,
@@ -31,9 +40,10 @@ impl BitmapFont {
       metrics,
     }
   }
+}
 
-  /// Measures the size of the given text in the font.
-  pub fn measure_size(&self, text: &str) -> (usize, usize) {
+impl Font for BitmapFont {
+  fn measure_size(&self, text: &str) -> (usize, usize) {
     let mut line_count = 0;
     let mut longest_line = 0;
     let mut current_line = 0;
@@ -59,8 +69,7 @@ impl BitmapFont {
     return (width as usize, height as usize);
   }
 
-  /// Gets the glyph for the given character.
-  pub fn get_glyph(&self, character: char) -> Option<TextureRegion> {
+  fn get_glyph(&self, character: char) -> Option<TextureRegion> {
     // we only support ascii glyphs at the moment
     if !character.is_ascii() {
       return None;
@@ -97,5 +106,21 @@ impl AssetLoader<BitmapFont> for BitmapFontLoader {
     let font = BitmapFont::new(&texture, metrics);
 
     Ok(font)
+  }
+}
+
+/// A true type font that can be rasterized at different font sizes.
+pub struct TrueTypeFont {}
+
+/// An `AssetLoader` for `TrueTypeFont`s.
+pub struct TrueTypeFontLoader {}
+
+impl Asset for TrueTypeFont {
+  type Loader = TrueTypeFontLoader;
+}
+
+impl AssetLoader<TrueTypeFont> for TrueTypeFontLoader {
+  fn load(&self, _context: &AssetContext) -> crate::Result<TrueTypeFont> {
+    todo!()
   }
 }

@@ -1,5 +1,6 @@
 //! An example of bitmap fonts in Surreal.
 
+use lazy_static::__Deref;
 use surreal::prelude::*;
 
 fn main() {
@@ -33,7 +34,7 @@ fn main() {
       // render some text
       renderer.with(|context: &mut SpriteBatchContext| {
         context.batch.draw_text(
-          &font,
+          font.deref(),
           "HELLO, SURREAL!",
           &SpriteOptions {
             position: vec2(0., 0.),

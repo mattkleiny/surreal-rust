@@ -23,8 +23,8 @@ AI:
 
 Graphics:
   [✔] Add bitmap fonts @done(22-06-06 18:57)
+  [ ] Add true type fonts? (maybe) @started(22-06-06 19:08)
   [ ] Get #[derive(Vertex)] working
-  [ ] Add true type fonts? (maybe)
   [ ] Font layout/galley system
   [ ] Add sprite pivots, transforms, etc
   [ ] Add sprite animations
