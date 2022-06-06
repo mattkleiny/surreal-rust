@@ -5,8 +5,6 @@
 //! It's opinionated, but small in scope and is intended to form a solid 'library'-like toolkit
 //! for constructing small but fast 2d games (and maybe 3d someday). A lot of the work is left
 //! to the author as to how they'd like to glue things together.
-//! 
-//! Use the `prelude` module to get convenient access to the common aspects of the engine.
 
 #![allow(incomplete_features)]
 #![allow(dead_code)]
@@ -35,8 +33,11 @@ pub mod scripting;
 pub mod ui;
 pub mod utilities;
 
-#[doc(hidden)]
 pub mod prelude {
+  //! A prelude for the Surreal engine.
+  //!
+  //! Import this module to get convenient access to all engine features.
+
   pub use crate::assets::*;
   pub use crate::audio::*;
   pub use crate::collections::*;

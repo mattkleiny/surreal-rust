@@ -11,7 +11,7 @@ use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
 use crate::graphics::{Texture, TextureRegion};
 use crate::maths::{vec2, Vector2};
 
-use super::GraphicsServer;
+use super::{Color32, GraphicsServer};
 
 /// Represents different kinds of fonts and permits rendering.
 pub trait Font {
@@ -140,7 +140,18 @@ impl Font for TrueTypeFont {
     }
 
     // otherwise build a new glyph
-    let _glyph = self.font.glyph_id(character).with_scale(self.font_size);
+    let glyph = self.font.glyph_id(character).with_scale(self.font_size);
+    // let mut glyph_cell = self.texture_atlas.create();
+
+    // if let Some(outline) = self.font.outline_glyph(glyph) {
+    //   outline.draw(|x, y, coverage| {
+    //     let color = Color32::rgba(255, 255, 255, (coverage * 255.0) as u8);
+
+    //     glyph_cell.set_pixel(x, y, color);
+    //   });
+
+    //   self.texture_atlas.apply(&mut self.texture);
+    // }
 
     todo!()
   }

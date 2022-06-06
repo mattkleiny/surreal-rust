@@ -3,9 +3,9 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::assets::{AssetContext, AssetLoader};
+use crate::assets::{Asset, AssetContext, AssetLoader};
+use crate::collections::Grid;
 use crate::maths::{vec2, FromRandom, Rectangle, Vector2};
-use crate::prelude::Asset;
 
 use super::*;
 
@@ -321,6 +321,50 @@ impl<'a> TextureAtlas<'a> {
       offset: vec2(x * self.width, y * self.height),
       size: vec2(self.width, self.height),
     }
+  }
+}
+
+/// A utility for building texture atlases procedurally.
+#[derive(Default)]
+pub struct TextureAtlasBuilder<P> {
+  cells: Vec<Grid<P>>,
+}
+
+impl<P> TextureAtlasBuilder<P> {
+  /// Creates a new texture atlas builder.
+  pub fn new() -> Self {
+    Self { cells: Vec::new() }
+  }
+
+  /// Adds a new cell to the builder.
+  pub fn push(&mut self, pixels: Grid<P>) {
+    self.cells.push(pixels);
+  }
+
+  /// Writes this builder's contents to the given texture.
+  pub fn write(&self, stride: usize, _texture: &mut Texture) {
+    let max_width = self.cells.iter().map(|it| it.width()).max().unwrap_or(0);
+    let max_height = self.cells.iter().map(|it| it.height()).max().unwrap_or(0);
+
+    let cells_x = stride;
+    let cells_y = self.cells.len() / stride;
+
+    let mut x = 0;
+    let mut y = 0;
+
+    // let mut pixels = Vec::new();
+
+    for cell in &self.cells {
+      let x_offset = x * max_width;
+      let y_offset = y * max_height;
+      
+      // TODO: blit all pixels
+
+      x += cell.width();
+      y += cell.height();
+    }
+
+    todo!()
   }
 }
 
