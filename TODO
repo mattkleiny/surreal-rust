@@ -15,8 +15,8 @@ Core:
   [ ] Scene management and loading
 
 Graphics:
-  [ ] Get #[derive(Vertex)] working
   [ ] Add bitmap fonts
+  [ ] Get #[derive(Vertex)] working
   [ ] Add true type fonts? (maybe)
   [ ] Add sprite pivots, transforms, etc
   [ ] Add sprite animations
@@ -29,3 +29,13 @@ Audio:
   [ ] Get audio backend playing simple buffered sounds
   [ ] Support buffered audio
   [ ] Support streaming audio
+
+Scripting:
+  [ ] Finish Lox implementation and basic virtual machine
+  [ ] Add Lisp implementation and virtual machine
+  [ ] Add BASIC implementation and virtual machine, and lots of common operations
+  [ ] Consider other languages and ideas
+
+Editor:
+  [ ] Tauri-based editor with web frontend technologies
+  [ ] How to integrate render target output from UI into Tauri/Canvas?

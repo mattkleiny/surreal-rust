@@ -52,7 +52,7 @@ pub trait Asset: 'static + Any + Sized {
 }
 
 /// A loader for a particular asset type `A`.
-pub trait AssetLoader<A>: 'static {
+pub trait AssetLoader<A : Asset>: 'static {
   fn load(&self, context: &AssetContext) -> crate::Result<A>;
 }
 

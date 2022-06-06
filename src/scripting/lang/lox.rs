@@ -117,7 +117,7 @@ mod parser {
       // emits one of two new token into the output depending on the peek character
       ($token1:expr, $token2:expr, $peek:expr) => {
         if let Some($peek) = characters.peek() {
-          characters.next(); // consume peeke character
+          characters.next(); // consume peeked character
           emit!($token2);
         } else {
           emit!($token1);
