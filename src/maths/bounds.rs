@@ -7,9 +7,7 @@ pub struct Rectangle<T> {
   max: Vector2<T>,
 }
 
-impl<T> Rectangle<T>
-where T: Numeric
-{
+impl<T: Numeric> Rectangle<T> {
   /// Creates a new rectangle from the given corner points.
   pub fn new(min: Vector2<T>, max: Vector2<T>) -> Self {
     Self { min, max }

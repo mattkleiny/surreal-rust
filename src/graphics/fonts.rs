@@ -33,6 +33,11 @@ impl BitmapFont {
 
   /// Gets the glyph for the given character.
   pub fn get_glyph(&self, character: char) -> Option<TextureRegion> {
+    // we only support ascii glyphs at the moment
+    if !character.is_ascii() {
+      return None;
+    }
+
     let metrics = &self.metrics;
 
     let x = (character as u16 % metrics.columns) * metrics.glyph_width + metrics.glyph_padding;

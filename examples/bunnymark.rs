@@ -20,10 +20,7 @@ fn main() {
     let mut interface = UserInterface::new(graphics);
 
     // set-up assets and rendering
-    let sprite: Handle<Texture> = assets
-      .load_asset("assets/sprites/bunny.png")
-      .expect("Failed to load sprite image");
-
+    let sprite = Texture::load(&assets, "assets/sprites/bunny.png").unwrap();
     let region = TextureRegion::from(sprite.deref());
     let mut renderer = RenderManager::new(graphics);
 

@@ -21,7 +21,7 @@ impl VirtualMachine {
     let mut stack = Vec::with_capacity(256);
 
     while program_counter < program.len() {
-      if let Some((opcode, _)) = program.get(program_counter) {
+      if let Some(opcode) = program.get(program_counter) {
         program_counter += 1;
 
         // debug printing
@@ -90,7 +90,7 @@ impl Debug for TokenPos {
 /// Represents a chunk of bytecode that can be executed in the `VirtualMachine`.
 #[derive(Default)]
 pub struct BytecodeChunk {
-  opcodes: Vec<(OpCode, TokenPos)>,
+  opcodes: Vec<OpCode>,
 }
 
 impl BytecodeChunk {
@@ -112,24 +112,20 @@ impl BytecodeChunk {
   }
 
   /// Borrows the opcode at the given index.
-  pub fn get(&self, index: usize) -> Option<&(OpCode, TokenPos)> {
+  pub fn get(&self, index: usize) -> Option<&OpCode> {
     self.opcodes.get(index)
   }
 
   /// Pushes a new opcode onto the chunk.
-  pub fn push(&mut self, opcode: OpCode, position: TokenPos) {
-    self.opcodes.push((opcode, position));
+  pub fn push(&mut self, opcode: OpCode) {
+    self.opcodes.push(opcode);
   }
 }
 
 impl Debug for BytecodeChunk {
   fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    for (index, (opcode, pos)) in self.opcodes.iter().enumerate() {
-      writeln!(
-        formatter,
-        "{:#06x} {:?} at ({:}:{:})",
-        index, opcode, pos.line, pos.column
-      )?;
+    for (index, opcode) in self.opcodes.iter().enumerate() {
+      writeln!(formatter, "{:#06x} {:?}", index, opcode)?;
     }
 
     Ok(())
@@ -158,13 +154,12 @@ mod tests {
   #[test]
   fn virtual_machine_should_execute_simple_bytecode_chunk() {
     let mut chunk = BytecodeChunk::new();
-    let position = TokenPos { line: 1, column: 1 };
 
-    chunk.push(OpCode::Constant(2.), position);
-    chunk.push(OpCode::Negate, position);
-    chunk.push(OpCode::Constant(3.), position);
-    chunk.push(OpCode::Multiply, position);
-    chunk.push(OpCode::Return, position);
+    chunk.push(OpCode::Constant(2.));
+    chunk.push(OpCode::Negate);
+    chunk.push(OpCode::Constant(3.));
+    chunk.push(OpCode::Multiply);
+    chunk.push(OpCode::Return);
 
     let mut vm = VirtualMachine::new();
 

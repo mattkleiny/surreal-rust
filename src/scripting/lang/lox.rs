@@ -1,9 +1,13 @@
-//! Scripting language implementation for the 'Lox'language.
+//! Scripting language implementation for the 'Lox' language.
 //!
 //! Based on the work from the excellent book, 'Crafting Interpreters'.
 
 use super::*;
 
+/// A scripting language based on 'Lox' from the 'Crafting Interpreters' series.
+/// 
+/// This is a simple language that offers basic functionality for the engine.
+/// It's simple to integrate and serves as a first example of more complex scripting.
 struct LoxLanguage {}
 
 impl ScriptLanguage for LoxLanguage {
@@ -15,9 +19,11 @@ impl ScriptLanguage for LoxLanguage {
 }
 
 mod parser {
-  //! Parsing an tokenization for the Lox language.
+  //! Parsing and tokenization for the Lox language.
 
   use super::*;
+
+  use std::collections::HashMap;
 
   /// Represents a token in the Lox language.
   #[derive(Debug)]
@@ -73,24 +79,29 @@ mod parser {
     While,
   }
 
-  static KEYWORDS: phf::Map<&'static str, Keyword> = phf::phf_map! {
-    "and" => Keyword::And,
-    "class" => Keyword::Class,
-    "else" => Keyword::Else,
-    "false" => Keyword::False,
-    "for" => Keyword::For,
-    "fun" => Keyword::Fun,
-    "if" => Keyword::If,
-    "nil" => Keyword::Nil,
-    "or" => Keyword::Or,
-    "print" => Keyword::Print,
-    "return" => Keyword::Return,
-    "super" => Keyword::Super,
-    "this" => Keyword::This,
-    "true" => Keyword::True,
-    "var" => Keyword::Var,
-    "while" => Keyword::While,
-  };
+  lazy_static::lazy_static! {
+    /// A look-up table of keywords.
+    static ref KEYWORDS: HashMap<&'static str, Keyword> = {
+      let mut m = HashMap::new();
+      m.insert("and", Keyword::And);
+      m.insert("class", Keyword::Class);
+      m.insert("else", Keyword::Else);
+      m.insert("false", Keyword::False);
+      m.insert("for", Keyword::For);
+      m.insert("fun", Keyword::Fun);
+      m.insert("if", Keyword::If);
+      m.insert("nil", Keyword::Nil);
+      m.insert("or", Keyword::Or);
+      m.insert("print", Keyword::Print);
+      m.insert("return", Keyword::Return);
+      m.insert("super", Keyword::Super);
+      m.insert("this", Keyword::This);
+      m.insert("true", Keyword::True);
+      m.insert("var", Keyword::Var);
+      m.insert("while", Keyword::While);
+      m
+    };
+  }
 
   /// Tokenizes the given string into a list of `Token`.
   pub fn tokenize(code: &str) -> crate::Result<Vec<(Token, TokenPos)>> {
@@ -106,7 +117,7 @@ mod parser {
       // emits one of two new token into the output depending on the peek character
       ($token1:expr, $token2:expr, $peek:expr) => {
         if let Some($peek) = characters.peek() {
-          characters.next(); // consume peeke character
+          characters.next(); // consume peeked character
           emit!($token2);
         } else {
           emit!($token1);
@@ -204,7 +215,7 @@ mod parser {
             }
           }
 
-          if let Some(keyword) = KEYWORDS.get(&identifier) {
+          if let Some(keyword) = KEYWORDS.get(identifier.as_str()) {
             emit!(Token::Keyword(*keyword));
           } else {
             emit!(Token::Identifier(identifier));

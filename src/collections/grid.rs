@@ -1,4 +1,4 @@
-use crate::maths::{Raster, Vector2};
+use crate::maths::{Raster, Vector2, vec2};
 
 /// Represents a point in a [`Grid`].
 pub type GridPoint = (usize, usize);
@@ -82,13 +82,6 @@ impl<T> Grid<T> {
     self.fill(T::default());
   }
 
-  /// Rasterizes a shape onto the grid.
-  pub fn draw_shape(&mut self, shape: &impl Raster, value: T)
-  where T: Clone {
-    // TODO: split this into two traits (Raster and Rasterable)
-    shape.draw_to(self, value);
-  }
-
   /// Returns the items as a slice.
   pub fn as_slice(&self) -> &[T] {
     self.items.as_slice()
@@ -97,6 +90,25 @@ impl<T> Grid<T> {
   /// Returns the items as a mutable slice.
   pub fn as_mut_slice(&mut self) -> &mut [T] {
     self.items.as_mut_slice()
+  }
+}
+
+/// Allow rasterization of shapes into the grid.
+impl<T> Raster<T> for Grid<T> {
+  fn width(&self) -> usize {
+    self.width()
+  }
+
+  fn height(&self) -> usize {
+    self.height()
+  }
+
+  fn get(&self, x: isize, y: isize) -> &T {
+    self.get(vec2(x, y))
+  }
+
+  fn set(&mut self, x: isize, y: isize, value: T) {
+    self.set(vec2(x, y), value)
   }
 }
 
