@@ -1,13 +1,14 @@
-use crate::maths::{vec2, Raster, Rasterable, Rectangle, Vector2};
+use super::{vec2, Raster, Rasterable, Rectangle, Vector2};
 
 /// A simple circle in 2-space.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Circle {
-  pub center: Vector2<isize>,
-  pub radius: isize,
+pub struct Circle<N> {
+  pub center: Vector2<N>,
+  pub radius: N,
 }
 
-impl Rasterable for Circle {
+/// Allow rasterization of integrally sized circles.
+impl Rasterable for Circle<isize> {
   fn rasterize<T: Clone>(&self, value: T, target: &mut impl Raster<T>) {
     let center = self.center;
     let radius = self.radius;

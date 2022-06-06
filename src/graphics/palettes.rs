@@ -5,11 +5,14 @@
 //!
 //! JASC-PAL files can be loaded from disc, as well.
 
-use std::ops::Index;
+use std::{marker::PhantomData, ops::Index};
 
 use anyhow::anyhow;
 
-use crate::io::AsVirtualPath;
+use crate::{
+  io::AsVirtualPath,
+  assets::{Asset, AssetLoader, AssetContext},
+};
 
 use super::*;
 
@@ -116,5 +119,21 @@ impl<P> Index<usize> for ColorPalette<P> {
 
   fn index(&self, index: usize) -> &Self::Output {
     &self.colors[index]
+  }
+}
+
+/// An `AssetLoader` for `ColorPalette`s of the given pixel type, `P`.
+#[derive(Default)]
+pub struct ColorPaletteLoader<P : Pixel> {
+  _pixel: PhantomData<P>,
+}
+
+impl<P: Pixel + 'static> Asset for ColorPalette<P> {
+  type Loader = ColorPaletteLoader<P>;
+}
+
+impl<P: Pixel + 'static> AssetLoader<ColorPalette<P>> for ColorPaletteLoader<P> {
+  fn load(&self, context: &AssetContext) -> crate::Result<ColorPalette<P>> {
+    ColorPalette::from_file(context.path)
   }
 }

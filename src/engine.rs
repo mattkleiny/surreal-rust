@@ -8,13 +8,13 @@ pub use scenes::*;
 mod ecs;
 mod scenes;
 
-use glutin::{window::Window, ContextBuilder};
-use log::LevelFilter;
 use glutin::{
   dpi::LogicalSize,
   event_loop::{ControlFlow, EventLoop},
   window::{Icon, WindowBuilder},
 };
+use glutin::{window::Window, ContextBuilder};
+use log::LevelFilter;
 
 use crate::{
   assets::AssetManager,
@@ -140,6 +140,9 @@ impl Engine {
     assets.add_loader(MaterialLoader {
       server: graphics.clone(),
     });
+
+    assets.add_loader(ColorPaletteLoader::<Color>::default());
+    assets.add_loader(ColorPaletteLoader::<Color32>::default());
 
     log::trace!("Running engine setup");
 

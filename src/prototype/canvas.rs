@@ -1,6 +1,6 @@
 use crate::collections::Grid;
 use crate::graphics::*;
-use crate::maths::{vec2, Circle, Vector2, Rasterable};
+use crate::maths::{vec2, Circle, Rasterable, Vector2};
 use crate::utilities::{IntervalTimer, TimeSpan};
 
 use super::*;
@@ -40,9 +40,9 @@ impl PixelCanvas {
   }
 
   /// Draws a circle of pixels.
-  pub fn draw_circle(&mut self, Vector2 { x, y }: Vector2<f32>, radius: f32, color: Color32) {
+  pub fn draw_circle(&mut self, center: Vector2<f32>, radius: f32, color: Color32) {
     let shape = Circle {
-      center: vec2(x.floor() as isize, y.floor() as isize),
+      center: vec2(center.x.floor() as isize, center.y.floor() as isize),
       radius: radius as isize,
     };
 
