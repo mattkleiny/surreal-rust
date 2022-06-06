@@ -1,6 +1,6 @@
 use crate::collections::Grid;
 use crate::graphics::*;
-use crate::maths::{vec2, Circle, Vector2};
+use crate::maths::{vec2, Circle, Vector2, Rasterable};
 use crate::utilities::{IntervalTimer, TimeSpan};
 
 use super::*;
@@ -46,7 +46,7 @@ impl PixelCanvas {
       radius: radius as isize,
     };
 
-    self.pixels.draw_shape(&shape, color);
+    shape.rasterize(color, &mut self.pixels);
   }
 
   /// Updates the pixel simulation.

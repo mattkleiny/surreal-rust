@@ -2,7 +2,6 @@
 
 pub use bounds::*;
 pub use curves::*;
-pub use grids::*;
 pub use interpolation::*;
 pub use linear::*;
 pub use neighbours::*;
@@ -10,12 +9,12 @@ pub use numbers::*;
 pub use paths::*;
 pub use random::*;
 pub use ranges::*;
+pub use rasterization::*;
 pub use shapes::*;
 pub use tessellation::*;
 
 mod bounds;
 mod curves;
-mod grids;
 mod interpolation;
 mod linear;
 mod neighbours;
@@ -23,6 +22,7 @@ mod numbers;
 mod paths;
 mod random;
 mod ranges;
+mod rasterization;
 mod shapes;
 mod tessellation;
 
