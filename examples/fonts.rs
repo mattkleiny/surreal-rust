@@ -14,7 +14,8 @@ fn main() {
     let graphics = &engine.graphics;
 
     // set-up rendering
-    let font = BitmapFont::load(&assets, "assets/fonts/IBM.font").unwrap();
+    let bitmap_font = BitmapFont::load(&assets, "assets/fonts/IBM.font").unwrap();
+    let _ttf_font = TrueTypeFont::load(&assets, "assets/fonts/bitboy8_v1.otf").unwrap();
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
@@ -34,7 +35,7 @@ fn main() {
       // render some text
       renderer.with(|context: &mut SpriteBatchContext| {
         context.batch.draw_text(
-          font.deref(),
+          bitmap_font.deref(),
           "HELLO, SURREAL!",
           &SpriteOptions {
             position: vec2(0., 0.),

@@ -2,9 +2,16 @@
 //!
 //! We currently support bitmap fonts, with a planned future change to support TrueType fonts.
 
-use crate::assets::{Asset, AssetContext, AssetLoader};
+use std::collections::HashMap;
+use std::sync::RwLock;
+
+use ab_glyph::{Font as AbFont, FontVec};
+
+use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
 use crate::graphics::{Texture, TextureRegion};
-use crate::maths::vec2;
+use crate::maths::{vec2, Vector2};
+
+use super::GraphicsServer;
 
 /// Represents different kinds of fonts and permits rendering.
 pub trait Font {
@@ -17,29 +24,19 @@ pub trait Font {
 
 /// A font comprised of bitmap images for each glyph.
 pub struct BitmapFont {
-  texture: Texture,
+  texture: Handle<Texture>,
   metrics: BitmapFontMetrics,
 }
 
 /// Describes the metrics for a bitmap font.
 #[derive(Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct BitmapFontMetrics {
+struct BitmapFontMetrics {
   pub file_path: String,
   pub glyph_width: u16,
   pub glyph_height: u16,
   pub glyph_padding: u16,
   pub columns: u16,
-}
-
-impl BitmapFont {
-  /// Creates a new bitmap font.
-  pub fn new(texture: &Texture, metrics: BitmapFontMetrics) -> Self {
-    Self {
-      texture: texture.clone(),
-      metrics,
-    }
-  }
 }
 
 impl Font for BitmapFont {
@@ -102,25 +99,74 @@ impl Asset for BitmapFont {
 impl AssetLoader<BitmapFont> for BitmapFontLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<BitmapFont> {
     let metrics: BitmapFontMetrics = context.path.deserialize_json()?;
-    let texture = context.load_asset(&metrics.file_path)?;
-    let font = BitmapFont::new(&texture, metrics);
+    let texture: Handle<Texture> = context.load_asset(&metrics.file_path)?;
 
-    Ok(font)
+    Ok(BitmapFont {
+      texture: texture.clone(),
+      metrics,
+    })
   }
 }
 
 /// A true type font that can be rasterized at different font sizes.
-pub struct TrueTypeFont {}
+pub struct TrueTypeFont {
+  font: FontVec,
+  font_size: f32,
+  texture: Texture,
+  cache: RwLock<HashMap<char, GlyphInfo>>,
+}
+
+/// Represents position information for a single glyph in a texture.
+struct GlyphInfo {
+  pub position: Vector2<u32>,
+  pub size: Vector2<u32>,
+}
+
+impl Font for TrueTypeFont {
+  fn measure_size(&self, _text: &str) -> (usize, usize) {
+    todo!()
+  }
+
+  fn get_glyph(&self, character: char) -> Option<TextureRegion> {
+    // if we already have a glyph position cached for this in our texture
+    let cache = self.cache.read().unwrap();
+
+    if let Some(glyph_info) = cache.get(&character) {
+      return Some(TextureRegion {
+        texture: &self.texture,
+        offset: glyph_info.position,
+        size: glyph_info.size,
+      });
+    }
+
+    // otherwise build a new glyph
+    let _glyph = self.font.glyph_id(character).with_scale(self.font_size);
+
+    todo!()
+  }
+}
 
 /// An `AssetLoader` for `TrueTypeFont`s.
-pub struct TrueTypeFontLoader {}
+pub struct TrueTypeFontLoader {
+  graphics: GraphicsServer,
+  font_size: f32,
+}
 
 impl Asset for TrueTypeFont {
   type Loader = TrueTypeFontLoader;
 }
 
 impl AssetLoader<TrueTypeFont> for TrueTypeFontLoader {
-  fn load(&self, _context: &AssetContext) -> crate::Result<TrueTypeFont> {
-    todo!()
+  fn load(&self, context: &AssetContext) -> crate::Result<TrueTypeFont> {
+    let bytes = context.path.read_all_bytes()?;
+
+    let font = TrueTypeFont {
+      font: FontVec::try_from_vec(bytes)?,
+      font_size: self.font_size,
+      texture: Texture::new(&self.graphics),
+      cache: RwLock::new(HashMap::new()),
+    };
+
+    Ok(font)
   }
 }
