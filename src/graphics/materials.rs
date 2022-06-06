@@ -64,7 +64,7 @@ struct MaterialUniform {
 /// A material describes how to render a mesh and describes the underlying GPU pipeline state needed.
 #[derive(Clone)]
 pub struct Material {
-  server: GraphicsServer,
+  graphics: GraphicsServer,
   shader: ShaderProgram,
   uniforms: HashMap<String, MaterialUniform>,
   blend_state: BlendState,
@@ -74,9 +74,9 @@ pub struct Material {
 
 impl Material {
   /// Constructs a new material for the given shader program.
-  pub fn new(server: &GraphicsServer, shader: &ShaderProgram) -> Self {
+  pub fn new(graphics: &GraphicsServer, shader: &ShaderProgram) -> Self {
     Self {
-      server: server.clone(),
+      graphics: graphics.clone(),
       shader: shader.clone(),
       uniforms: HashMap::new(),
       blend_state: BlendState::Disabled,
@@ -159,28 +159,28 @@ impl Material {
     // TODO: minimize state changes in the underlying platform?
     // TODO: material batching or sorting in a render pipeline?
 
-    self.server.set_blend_state(self.blend_state);
-    self.server.set_culling_mode(self.culling_mode);
-    self.server.set_scissor_mode(self.scissor_mode);
+    self.graphics.set_blend_state(self.blend_state);
+    self.graphics.set_culling_mode(self.culling_mode);
+    self.graphics.set_scissor_mode(self.scissor_mode);
 
     for uniform in self.uniforms.values() {
       self.shader.set_uniform_at(uniform.location, &uniform.value);
     }
 
-    self.server.set_active_shader(self.shader.handle());
+    self.graphics.set_active_shader(self.shader.handle());
   }
 
   /// Unbinds this material from the graphics server.
   pub fn unbind(&self) {
-    self.server.set_blend_state(BlendState::Disabled);
-    self.server.set_culling_mode(CullingMode::Disabled);
-    self.server.set_scissor_mode(ScissorMode::Disabled);
+    self.graphics.set_blend_state(BlendState::Disabled);
+    self.graphics.set_culling_mode(CullingMode::Disabled);
+    self.graphics.set_scissor_mode(ScissorMode::Disabled);
   }
 }
 
 /// An [`AssetLoader`] for materials
 pub struct MaterialLoader {
-  pub server: GraphicsServer,
+  pub graphics: GraphicsServer,
 }
 
 impl Asset for Material {
@@ -190,7 +190,7 @@ impl Asset for Material {
 impl AssetLoader<Material> for MaterialLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Material> {
     let shader = context.load_asset(context.path)?;
-    let material = Material::new(&self.server, &shader);
+    let material = Material::new(&self.graphics, &shader);
 
     Ok(material)
   }

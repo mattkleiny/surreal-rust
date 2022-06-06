@@ -48,12 +48,12 @@ pub enum BuiltInPalette {
 }
 
 /// Loads a built-in shader.
-pub fn load_built_in_shader(server: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
+pub fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let shader = match shader {
-    BuiltInShader::Canvas => ShaderProgram::from_glsl(server, SHADER_CANVAS_STANDARD),
-    BuiltInShader::SpriteStandard => ShaderProgram::from_glsl(server, SHADER_SPRITE_STANDARD),
-    BuiltInShader::SpritePalette => ShaderProgram::from_glsl(server, SHADER_SPRITE_PALETTE),
-    BuiltInShader::AberrationEffect => ShaderProgram::from_glsl(server, SHADER_EFFECT_ABERRATION),
+    BuiltInShader::Canvas => ShaderProgram::from_glsl(graphics, SHADER_CANVAS_STANDARD),
+    BuiltInShader::SpriteStandard => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_STANDARD),
+    BuiltInShader::SpritePalette => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_PALETTE),
+    BuiltInShader::AberrationEffect => ShaderProgram::from_glsl(graphics, SHADER_EFFECT_ABERRATION),
   };
 
   shader.expect("Failed to load standard shader")
@@ -103,22 +103,22 @@ impl Default for SpriteBatchDescriptor {
 impl RenderContextDescriptor for SpriteBatchDescriptor {
   type Context = SpriteBatchContext;
 
-  fn create(&self, server: &GraphicsServer) -> Self::Context {
+  fn create(&self, graphics: &GraphicsServer) -> Self::Context {
     // determine which shader we're using, prepare material
     let shader = match &self.shader {
         Some(shader) => shader.clone(),
         None => match self.palette {
-          None => load_built_in_shader(server, BuiltInShader::SpriteStandard),
-          Some(_) => load_built_in_shader(server, BuiltInShader::SpritePalette),
+          None => load_built_in_shader(graphics, BuiltInShader::SpriteStandard),
+          Some(_) => load_built_in_shader(graphics, BuiltInShader::SpritePalette),
         }
     }; 
 
-    let mut material = Material::new(server, &shader);
-    let batch = SpriteBatch::with_capacity(server, self.sprite_count);
+    let mut material = Material::new(graphics, &shader);
+    let batch = SpriteBatch::with_capacity(graphics, self.sprite_count);
 
     // prepare the palette texture, if enabled
     if let Some(palette) = &self.palette {
-      let mut palette_texture = Texture::new(server);
+      let mut palette_texture = Texture::new(graphics);
 
       palette_texture.write_pixels(palette.len(), 1, palette.as_slice());
 

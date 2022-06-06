@@ -13,7 +13,7 @@ use super::*;
 /// Command buffers decouple the order of instructions from the executino of those instructions
 /// and allow for collection of commands from across multiple threads and workers.
 pub struct CommandBuffer {
-  server: GraphicsServer,
+  graphics: GraphicsServer,
   commands: VecDeque<Command>,
 }
 
@@ -25,9 +25,9 @@ enum Command {
 
 impl CommandBuffer {
   /// Creates a new command buffer.
-  pub fn new(server: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
-      server: server.clone(),
+      graphics: graphics.clone(),
       commands: VecDeque::new(),
     }
   }
@@ -51,10 +51,10 @@ impl CommandBuffer {
   fn execute_command(&mut self, command: Command) {
     match command {
       Command::ClearColor(color) => {
-        self.server.clear_color_buffer(color);
+        self.graphics.clear_color_buffer(color);
       }
       Command::ClearDepth => {
-        self.server.clear_depth_buffer();
+        self.graphics.clear_depth_buffer();
       }
     }
   }
@@ -82,10 +82,10 @@ pub trait RenderPass {
 
 impl Renderer {
   /// Creates a new renderer.
-  pub fn new(server: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
       passes: Vec::new(),
-      commands: CommandBuffer::new(server),
+      commands: CommandBuffer::new(graphics),
     }
   }
 
@@ -144,7 +144,7 @@ pub trait RenderContextDescriptor {
   type Context: RenderContext;
 
   /// Creates the associated context.
-  fn create(&self, server: &GraphicsServer) -> Self::Context;
+  fn create(&self, graphics: &GraphicsServer) -> Self::Context;
 }
 
 /// A renderer is responsible for rendering a scene.
@@ -154,15 +154,15 @@ pub trait RenderContextDescriptor {
 ///
 /// Each context can be acquired and utilized via the `with` method.
 pub struct RenderManager {
-  server: GraphicsServer,
+  graphics: GraphicsServer,
   contexts: AnyMap,
 }
 
 impl RenderManager {
   /// Creates a new render manager.
-  pub fn new(server: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
-      server: server.clone(),
+      graphics: graphics.clone(),
       contexts: AnyMap::new(),
     }
   }
@@ -170,7 +170,7 @@ impl RenderManager {
   /// Configures the manager with the given context.
   pub fn configure<D>(&mut self, descriptor: D)
   where D: RenderContextDescriptor {
-    self.contexts.insert(descriptor.create(&self.server));
+    self.contexts.insert(descriptor.create(&self.graphics));
   }
 
   /// Renders the given object via the associated context.

@@ -9,10 +9,10 @@ mod ecs;
 mod scenes;
 
 use glutin::{
-  ContextBuilder,
   dpi::LogicalSize,
   event_loop::{ControlFlow, EventLoop},
   window::{Icon, Window, WindowBuilder},
+  ContextBuilder,
 };
 use log::LevelFilter;
 
@@ -124,19 +124,24 @@ impl Engine {
     let mut assets = AssetManager::new();
 
     assets.add_loader(BitmapFontLoader {});
+    assets.add_loader(TrueTypeFontLoader {
+      graphics: graphics.clone(),
+      font_size: 64.,
+    });
+
     assets.add_loader(ImageLoader { format: None });
 
     assets.add_loader(TextureLoader {
-      server: graphics.clone(),
+      graphics: graphics.clone(),
       options: TextureOptions::default(),
     });
 
     assets.add_loader(ShaderProgramLoader {
-      server: graphics.clone(),
+      graphics: graphics.clone(),
     });
 
     assets.add_loader(MaterialLoader {
-      server: graphics.clone(),
+      graphics: graphics.clone(),
     });
 
     assets.add_loader(ColorPaletteLoader::<Color>::default());

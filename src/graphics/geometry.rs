@@ -16,9 +16,9 @@ pub struct GeometryBatch {
 
 impl GeometryBatch {
   /// Creates a new geometry batch.
-  pub fn new(server: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
-      mesh: Mesh::new(server, BufferUsage::Dynamic),
+      mesh: Mesh::new(graphics, BufferUsage::Dynamic),
       vertices: Vec::new(),
       indices: Vec::new(),
       material: None,

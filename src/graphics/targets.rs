@@ -30,8 +30,8 @@ pub struct RenderTextureDescriptor {
 
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
-  pub fn to_texture(&self, server: &GraphicsServer) -> Texture {
-    let mut texture = Texture::with_options(server, &self.options);
+  pub fn to_texture(&self, graphics: &GraphicsServer) -> Texture {
+    let mut texture = Texture::with_options(graphics, &self.options);
 
     // allocate the memory ahead of time; RGBA8 format
     // TODO: use format specified 
@@ -52,7 +52,7 @@ pub struct RenderTarget {
 
 /// The inner state of a [`RenderTarget`].
 struct RenderTargetState {
-  server: GraphicsServer,
+  graphics: GraphicsServer,
   handle: GraphicsHandle,
   color_attachment: Texture,
   depth_attachment: Option<Texture>,
@@ -61,21 +61,21 @@ struct RenderTargetState {
 
 impl RenderTarget {
   /// Creates a new blank [`RenderTarget`] on the GPU.
-  pub fn new(server: &GraphicsServer, descriptor: &RenderTargetDescriptor) -> Self {
+  pub fn new(graphics: &GraphicsServer, descriptor: &RenderTargetDescriptor) -> Self {
     // prepare attachments
-    let color_attachment = descriptor.color_attachment.to_texture(server);
+    let color_attachment = descriptor.color_attachment.to_texture(graphics);
 
     let depth_attachment = descriptor
       .depth_attachment
       .as_ref()
-      .map(|it| it.to_texture(server));
+      .map(|it| it.to_texture(graphics));
 
     let stencil_attachment = descriptor
       .stencil_attachment
       .as_ref()
-      .map(|it| it.to_texture(server));
+      .map(|it| it.to_texture(graphics));
 
-    let handle = server.create_render_target(
+    let handle = graphics.create_render_target(
       color_attachment.handle(),
       depth_attachment.as_ref().map(|it| it.handle()),
       stencil_attachment.as_ref().map(|it| it.handle()),
@@ -83,7 +83,7 @@ impl RenderTarget {
 
     Self {
       state: Rc::new(RefCell::new(RenderTargetState {
-        server: server.clone(),
+        graphics: graphics.clone(),
         handle,
         color_attachment,
         depth_attachment,
@@ -117,14 +117,14 @@ impl RenderTarget {
   pub fn activate(&self) {
     let state = self.state.borrow();
 
-    state.server.set_active_render_target(state.handle);
+    state.graphics.set_active_render_target(state.handle);
   }
 
   /// Deactivates the [`RenderTarget`].
   pub fn deactivate(&self) {
     let state = self.state.borrow();
 
-    state.server.set_default_render_target();
+    state.graphics.set_default_render_target();
   }
 }
 
@@ -138,6 +138,6 @@ impl GraphicsResource for RenderTarget {
 impl Drop for RenderTargetState {
   /// Deletes the [`RenderTarget`] from the GPU.
   fn drop(&mut self) {
-    self.server.delete_render_target(self.handle);
+    self.graphics.delete_render_target(self.handle);
   }
 }

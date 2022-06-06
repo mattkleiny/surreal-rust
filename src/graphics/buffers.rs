@@ -32,7 +32,7 @@ pub struct Buffer<T> {
 
 /// The internal state for a buffer.
 struct BufferState {
-  server: GraphicsServer,
+  graphics: GraphicsServer,
   handle: GraphicsHandle,
   kind: BufferKind,
   usage: BufferUsage,
@@ -41,11 +41,11 @@ struct BufferState {
 
 impl<T> Buffer<T> {
   /// Constructs a new empty buffer on the GPU.
-  pub fn new(server: &GraphicsServer, kind: BufferKind, usage: BufferUsage) -> Self {
+  pub fn new(graphics: &GraphicsServer, kind: BufferKind, usage: BufferUsage) -> Self {
     Self {
       state: Rc::new(RefCell::new(BufferState {
-        server: server.clone(),
-        handle: server.create_buffer(),
+        graphics: graphics.clone(),
+        handle: graphics.create_buffer(),
         kind,
         usage,
         length: 0,
@@ -75,7 +75,7 @@ impl<T> Buffer<T> {
     unsafe {
       buffer.set_len(length);
 
-      state.server.read_buffer_data(
+      state.graphics.read_buffer_data(
         state.handle,
         0, // offset
         length * std::mem::size_of::<T>(),
@@ -92,7 +92,7 @@ impl<T> Buffer<T> {
     let mut state = self.state.borrow_mut();
 
     state.length = data.len();
-    state.server.write_buffer_data(
+    state.graphics.write_buffer_data(
       state.handle,
       state.usage,
       state.kind,
@@ -112,6 +112,6 @@ impl<T> GraphicsResource for Buffer<T> {
 impl Drop for BufferState {
   /// Deletes the [`Buffer`] from the GPU.
   fn drop(&mut self) {
-    self.server.delete_buffer(self.handle)
+    self.graphics.delete_buffer(self.handle)
   }
 }

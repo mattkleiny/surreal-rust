@@ -148,8 +148,8 @@ impl Font for TrueTypeFont {
 
 /// An `AssetLoader` for `TrueTypeFont`s.
 pub struct TrueTypeFontLoader {
-  graphics: GraphicsServer,
-  font_size: f32,
+  pub graphics: GraphicsServer,
+  pub font_size: f32,
 }
 
 impl Asset for TrueTypeFont {

@@ -119,7 +119,7 @@ pub struct Mesh<V> {
 
 /// The internal state for a mesh.
 struct MeshState<V> {
-  server: GraphicsServer,
+  graphics: GraphicsServer,
   handle: GraphicsHandle,
   vertices: Buffer<V>,
   indices: Buffer<Index>,
@@ -136,14 +136,14 @@ impl<V> Mesh<V>
 where V: Vertex
 {
   /// Constructs a new blank mesh on the GPU.
-  pub fn new(server: &GraphicsServer, usage: BufferUsage) -> Self {
-    let vertices = Buffer::new(server, BufferKind::Element, usage);
-    let indices = Buffer::new(server, BufferKind::Index, usage);
+  pub fn new(graphics: &GraphicsServer, usage: BufferUsage) -> Self {
+    let vertices = Buffer::new(graphics, BufferKind::Element, usage);
+    let indices = Buffer::new(graphics, BufferKind::Index, usage);
 
     Self {
       state: Rc::new(RefCell::new(MeshState {
-        server: server.clone(),
-        handle: server.create_mesh(vertices.handle(), indices.handle(), V::DESCRIPTORS),
+        graphics: graphics.clone(),
+        handle: graphics.create_mesh(vertices.handle(), indices.handle(), V::DESCRIPTORS),
         vertices,
         indices,
       })),
@@ -151,8 +151,8 @@ where V: Vertex
   }
 
   /// Constructs a mesh with the given factory method.
-  pub fn create(server: &GraphicsServer, factory: impl Fn(&mut Tessellator<V>)) -> Self {
-    let mut mesh = Self::new(server, BufferUsage::Static);
+  pub fn create(graphics: &GraphicsServer, factory: impl Fn(&mut Tessellator<V>)) -> Self {
+    let mut mesh = Self::new(graphics, BufferUsage::Static);
     let mut tessellator = Tessellator::new();
 
     factory(&mut tessellator);
@@ -194,9 +194,9 @@ where V: Vertex
     material.bind();
 
     let state = self.state.borrow();
-    let server = &state.server;
+    let graphics = &state.graphics;
 
-    server.draw_mesh(state.handle, topology, vertex_count, index_count);
+    graphics.draw_mesh(state.handle, topology, vertex_count, index_count);
 
     material.unbind();
   }
@@ -212,15 +212,15 @@ impl<V> GraphicsResource for Mesh<V> {
 impl<V> Drop for MeshState<V> {
   /// Deletes the [`Mesh`] from the GPU.
   fn drop(&mut self) {
-    self.server.delete_mesh(self.handle);
+    self.graphics.delete_mesh(self.handle);
   }
 }
 
 /// Specialization for standard 2d meshes.
 impl Mesh<Vertex2> {
   /// Constructs a simple triangle mesh of the given size.
-  pub fn create_triangle(server: &GraphicsServer, size: f32) -> Self {
-    Self::create(server, |mesh| {
+  pub fn create_triangle(graphics: &GraphicsServer, size: f32) -> Self {
+    Self::create(graphics, |mesh| {
       mesh.add_triangle(&[
         Vertex2 {
           position: vec2(-size, -size),
@@ -242,8 +242,8 @@ impl Mesh<Vertex2> {
   }
 
   /// Constructs a simple quad mesh of the given size.
-  pub fn create_quad(server: &GraphicsServer, size: f32) -> Self {
-    Self::create(server, |mesh| {
+  pub fn create_quad(graphics: &GraphicsServer, size: f32) -> Self {
+    Self::create(graphics, |mesh| {
       mesh.add_quad(&[
         Vertex2 {
           position: vec2(-size, -size),
@@ -270,8 +270,8 @@ impl Mesh<Vertex2> {
   }
 
   /// Constructs a simple circle mesh of the given size.
-  pub fn create_circle(server: &GraphicsServer, radius: f32, segments: usize) -> Self {
-    Self::create(server, |mesh| {
+  pub fn create_circle(graphics: &GraphicsServer, radius: f32, segments: usize) -> Self {
+    Self::create(graphics, |mesh| {
       use std::f32::consts::PI;
 
       let mut vertices = Vec::with_capacity(segments);

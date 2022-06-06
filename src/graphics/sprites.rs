@@ -46,18 +46,18 @@ impl Default for SpriteOptions {
 
 impl SpriteBatch {
   /// Constructs a new [`SpriteBatch`].
-  pub fn new(server: &GraphicsServer) -> Self {
-    Self::with_capacity(server, DEFAULT_SPRITE_COUNT)
+  pub fn new(graphics: &GraphicsServer) -> Self {
+    Self::with_capacity(graphics, DEFAULT_SPRITE_COUNT)
   }
 
   /// Creates a new [`SpriteBatch`] with the given sprite capacity.
-  pub fn with_capacity(server: &GraphicsServer, sprite_count: usize) -> Self {
+  pub fn with_capacity(graphics: &GraphicsServer, sprite_count: usize) -> Self {
     // build standard quad indices ahead-of-time
     let vertices = Vec::with_capacity(sprite_count * 4);
     let indices = build_quad_indices(sprite_count);
 
     // create mesh, upload quad indices immediately
-    let mut mesh = Mesh::new(server, BufferUsage::Static);
+    let mut mesh = Mesh::new(graphics, BufferUsage::Static);
 
     mesh.with_buffers(|_, buffer| {
       buffer.write_data(&indices);

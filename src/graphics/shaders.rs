@@ -57,24 +57,24 @@ pub struct ShaderProgram {
 
 /// The internal state for a [`ShaderProgram`] .
 struct ShaderProgramState {
-  server: GraphicsServer,
+  graphics: GraphicsServer,
   handle: GraphicsHandle,
 }
 
 impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
-  pub fn new(server: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
       state: Rc::new(ShaderProgramState {
-        server: server.clone(),
-        handle: server.create_shader(),
+        graphics: graphics.clone(),
+        handle: graphics.create_shader(),
       }),
     }
   }
 
   /// Loads a [`ShaderProgram`] from the given raw 'glsl' code.
-  pub fn from_glsl(server: &GraphicsServer, code: &str) -> crate::Result<Self> {
-    let program = Self::new(server);
+  pub fn from_glsl(graphics: &GraphicsServer, code: &str) -> crate::Result<Self> {
+    let program = Self::new(graphics);
 
     program.load_glsl(code)?;
 
@@ -83,40 +83,40 @@ impl ShaderProgram {
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
-    let server = &self.state.server;
+    let graphics = &self.state.graphics;
 
-    server.get_shader_uniform_location(self.state.handle, name)
+    graphics.get_shader_uniform_location(self.state.handle, name)
   }
 
   /// Sets the given uniform value in the underlying program.
   pub fn set_uniform(&self, name: &str, value: &ShaderUniform) {
     if let Some(location) = self.get_uniform_location(name) {
-      let server = &self.state.server;
+      let graphics = &self.state.graphics;
 
-      server.set_shader_uniform(self.state.handle, location, value);
+      graphics.set_shader_uniform(self.state.handle, location, value);
     }
   }
 
   /// Sets the given uniform value in the underlying program.
   pub fn set_uniform_at(&self, location: usize, value: &ShaderUniform) {
-    let server = &self.state.server;
+    let graphics = &self.state.graphics;
 
-    server.set_shader_uniform(self.state.handle, location, value);
+    graphics.set_shader_uniform(self.state.handle, location, value);
   }
 
   /// Dispatches compute work to the GPU for this shader program.
   pub fn dispatch_compute(&self, x: u32, y: u32, z: u32) {
-    let server = &self.state.server;
+    let graphics = &self.state.graphics;
 
-    server.dispatch_compute(self.state.handle, x, y, z);
+    graphics.dispatch_compute(self.state.handle, x, y, z);
   }
 
   /// Reloads the [`ShaderProgram`] from the given 'glsl' program code.
   pub fn load_glsl(&self, text: &str) -> crate::Result<()> {
-    let server = &self.state.server;
+    let graphics = &self.state.graphics;
     let shaders = parse_glsl_source(text)?;
 
-    server.link_shaders(self.state.handle, shaders)?;
+    graphics.link_shaders(self.state.handle, shaders)?;
 
     Ok(())
   }
@@ -142,13 +142,13 @@ impl GraphicsResource for ShaderProgram {
 impl Drop for ShaderProgramState {
   /// Deletes the [`ShaderProgram`] from the GPU.
   fn drop(&mut self) {
-    self.server.delete_shader(self.handle);
+    self.graphics.delete_shader(self.handle);
   }
 }
 
 /// An [`AssetLoader`] for shader programs
 pub struct ShaderProgramLoader {
-  pub server: GraphicsServer,
+  pub graphics: GraphicsServer,
 }
 
 impl Asset for ShaderProgram {
@@ -158,7 +158,7 @@ impl Asset for ShaderProgram {
 impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
 
   fn load(&self, context: &AssetContext) -> crate::Result<ShaderProgram> {
-    let program = ShaderProgram::new(&self.server);
+    let program = ShaderProgram::new(&self.graphics);
     let source_code = context.path.read_all_text()?;
 
     program.load_glsl(&source_code)?;

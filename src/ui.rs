@@ -34,10 +34,10 @@ pub struct UserInterface {
 
 impl UserInterface {
   /// Creates a new user interface.
-  pub fn new(server: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsServer) -> Self {
     // load and configure material
-    let shader = ShaderProgram::from_glsl(server, SHADER_CANVAS_STANDARD).unwrap();
-    let mut material = Material::new(server, &shader);
+    let shader = ShaderProgram::from_glsl(graphics, SHADER_CANVAS_STANDARD).unwrap();
+    let mut material = Material::new(graphics, &shader);
 
     material.set_culling_mode(CullingMode::Disabled);
     material.set_blend_state(BlendState::Enabled {
@@ -46,10 +46,10 @@ impl UserInterface {
     });
 
     Self {
-      graphics: server.clone(),
+      graphics: graphics.clone(),
       context: egui::Context::default(),
       material,
-      mesh: Mesh::new(server, BufferUsage::Dynamic),
+      mesh: Mesh::new(graphics, BufferUsage::Dynamic),
       textures: HashMap::new(),
     }
   }

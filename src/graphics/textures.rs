@@ -73,7 +73,7 @@ pub struct Texture {
 }
 
 struct TextureState {
-  server: GraphicsServer,
+  graphics: GraphicsServer,
   handle: GraphicsHandle,
   options: TextureOptions,
   width: u32,
@@ -82,18 +82,18 @@ struct TextureState {
 
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new(server: &GraphicsServer) -> Self {
-    Self::with_options(server, &TextureOptions::default())
+  pub fn new(graphics: &GraphicsServer) -> Self {
+    Self::with_options(graphics, &TextureOptions::default())
   }
 
   /// Builds a new colored texture of the given size.
   pub fn create_colored<T: Texel + Clone>(
-    server: &GraphicsServer,
+    graphics: &GraphicsServer,
     width: usize,
     height: usize,
     color: T,
   ) -> Self {
-    let mut texture = Self::new(server);
+    let mut texture = Self::new(graphics);
     let colors = vec![color; width * height];
 
     texture.write_pixels(width, height, &colors);
@@ -102,8 +102,8 @@ impl Texture {
   }
 
   /// Builds a new texture with random grayscale noise.
-  pub fn create_noise(server: &GraphicsServer, width: usize, height: usize) -> Self {
-    let mut texture = Self::new(server);
+  pub fn create_noise(graphics: &GraphicsServer, width: usize, height: usize) -> Self {
+    let mut texture = Self::new(graphics);
     let mut colors = vec![Color32::CLEAR; width * height];
 
     for y in 0..height {
@@ -120,11 +120,11 @@ impl Texture {
   }
 
   /// Creates a new blank texture on the GPU with the given options.
-  pub fn with_options(server: &GraphicsServer, options: &TextureOptions) -> Self {
+  pub fn with_options(graphics: &GraphicsServer, options: &TextureOptions) -> Self {
     Self {
       state: Rc::new(RefCell::new(TextureState {
-        server: server.clone(),
-        handle: server.create_texture(&options.sampler),
+        graphics: graphics.clone(),
+        handle: graphics.create_texture(&options.sampler),
         options: options.clone(),
         width: 0,
         height: 0,
@@ -148,7 +148,7 @@ impl Texture {
 
     state.options = options;
     state
-      .server
+      .graphics
       .set_texture_options(state.handle, &state.options.sampler);
   }
 
@@ -164,7 +164,7 @@ impl Texture {
     unsafe {
       buffer.set_len(size);
 
-      state.server.read_texture_data(
+      state.graphics.read_texture_data(
         state.handle,
         size * std::mem::size_of::<T>(),
         T::FORMAT,
@@ -190,7 +190,7 @@ impl Texture {
       _ => pixels.as_ptr() as *const u8,
     };
 
-    state.server.write_texture_data(
+    state.graphics.write_texture_data(
       state.handle,
       width,
       height,
@@ -207,7 +207,7 @@ impl Texture {
   where T: Texel {
     let state = self.state.borrow();
 
-    state.server.write_texture_sub_data(
+    state.graphics.write_texture_sub_data(
       state.handle,
       region,
       pixels.as_ptr() as *const u8,
@@ -232,13 +232,13 @@ impl GraphicsResource for Texture {
 impl Drop for TextureState {
   /// Deletes the texture from the GPU.
   fn drop(&mut self) {
-    self.server.delete_texture(self.handle);
+    self.graphics.delete_texture(self.handle);
   }
 }
 
 /// An [`AssetLoader`] for textures.
 pub struct TextureLoader {
-  pub server: GraphicsServer,
+  pub graphics: GraphicsServer,
   pub options: TextureOptions,
 }
 
@@ -249,7 +249,7 @@ impl Asset for Texture {
 impl AssetLoader<Texture> for TextureLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Texture> {
     let image = context.load_asset(context.path)?;
-    let mut texture = Texture::new(&self.server);
+    let mut texture = Texture::new(&self.graphics);
 
     texture.write_image(&image);
 

@@ -16,11 +16,11 @@ pub struct PixelCanvas {
 
 impl PixelCanvas {
   /// Creates a new pixel canvas with the given dimensions.
-  pub fn new(server: &GraphicsServer, width: usize, height: usize) -> Self {
-    let shader = load_built_in_shader(server, BuiltInShader::SpriteStandard);
-    let texture = Texture::new(server);
+  pub fn new(graphics: &GraphicsServer, width: usize, height: usize) -> Self {
+    let shader = load_built_in_shader(graphics, BuiltInShader::SpriteStandard);
+    let texture = Texture::new(graphics);
 
-    let mut material = Material::new(server, &shader);
+    let mut material = Material::new(graphics, &shader);
 
     material.set_uniform("u_projectionView", &Matrix4x4::identity());
     material.set_uniform("u_texture", &texture);
@@ -32,7 +32,7 @@ impl PixelCanvas {
 
     Self {
       texture,
-      mesh: Mesh::create_quad(server, 1.),
+      mesh: Mesh::create_quad(graphics, 1.),
       pixels: Grid::new(width, height),
       material,
       timer: IntervalTimer::new(TimeSpan::from_millis(10.)),
