@@ -13,6 +13,7 @@ Core:
   [✔] Get egui text input working (and platform output handled) @done(22-06-05 23:46)
   [ ] Swap to stable (instead of nightly)?
   [ ] Scene management and loading
+  [ ] Symmetric matrices for intersection tests, etc?
 
 AI:
   [ ] Basic automata
