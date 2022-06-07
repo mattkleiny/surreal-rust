@@ -29,11 +29,17 @@ impl<A> Clone for Handle<A> {
   }
 }
 
+impl<A> AsRef<A> for Handle<A> {
+  fn as_ref(&self) -> &A {
+    &self.asset
+  }
+}
+
 impl<A> Deref for Handle<A> {
   type Target = A;
 
   fn deref(&self) -> &Self::Target {
-    self.asset.deref()
+    &self.asset
   }
 }
 
@@ -44,15 +50,15 @@ struct AssetId(TypeId, String);
 /// Represents an asset that can be loaded from the filesystem.
 pub trait Asset: 'static + Any + Sized {
   type Loader: AssetLoader<Self>;
-  
+
   /// Loads this asset from the given path.
-  fn load(assets: &AssetManager, path: &str) -> crate::Result<Handle<Self>>{
+  fn load(assets: &AssetManager, path: &str) -> crate::Result<Handle<Self>> {
     assets.load_asset(path)
   }
 }
 
 /// A loader for a particular asset type `A`.
-pub trait AssetLoader<A : Asset>: 'static {
+pub trait AssetLoader<A: Asset>: 'static {
   fn load(&self, context: &AssetContext) -> crate::Result<A>;
 }
 
@@ -116,7 +122,7 @@ impl AssetManager {
   /// * If the asset is found and the loader is registered, then the asset is loaded and returned.
   pub fn load_asset<A: Asset>(&self, path: impl AsPath) -> crate::Result<Handle<A>> {
     let state = unsafe { &mut *self.state.get() };
-    
+
     let path = path.as_path();
     let id = AssetId(TypeId::of::<A>(), path.to_string());
 

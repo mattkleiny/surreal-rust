@@ -277,8 +277,10 @@ impl<'a> TextureRegion<'a> {
   }
 }
 
-impl<'a> From<&'a Texture> for TextureRegion<'a> {
-  fn from(texture: &'a Texture) -> Self {
+impl<'a, R: AsRef<Texture>> From<&'a R> for TextureRegion<'a> {
+  fn from(texture: &'a R) -> Self {
+    let texture = texture.as_ref();
+
     TextureRegion {
       texture,
       offset: Vector2::ZERO,

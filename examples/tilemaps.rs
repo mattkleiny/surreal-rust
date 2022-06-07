@@ -44,7 +44,7 @@ fn main() {
 
     // set-up assets and rendering
     let texture = Texture::load(&assets, "assets/sprites/tiles_desert.png").unwrap();
-    let sprites = TextureAtlas::new(16, 16, texture.deref());
+    let sprites = TextureAtlas::new(16, 16, &texture);
     let palette = load_built_in_palette(BuiltInPalette::Demichrome4);
 
     let mut renderer = RenderManager::new(graphics);

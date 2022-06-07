@@ -21,7 +21,7 @@ fn main() {
 
     // set-up assets and rendering
     let sprite = Texture::load(&assets, "assets/sprites/bunny.png").unwrap();
-    let region = TextureRegion::from(sprite.deref());
+    let region = TextureRegion::from(&sprite);
     let mut renderer = RenderManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
