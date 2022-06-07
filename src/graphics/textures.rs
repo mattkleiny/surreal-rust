@@ -288,17 +288,18 @@ impl<'a> From<&'a Texture> for TextureRegion<'a> {
 }
 
 /// An atlas of textures, which is a subdivison of a texture into a smaller grid of [`TextureRegion`]s.
-pub struct TextureAtlas<'a> {
-  texture: &'a Texture,
+#[derive(Clone)]
+pub struct TextureAtlas {
+  texture: Texture,
   width: u32,
   height: u32,
 }
 
-impl<'a> TextureAtlas<'a> {
+impl TextureAtlas {
   /// Creates a new texture atlas from the given texture.
-  pub fn new(width: u32, height: u32, texture: &'a Texture) -> Self {
+  pub fn new(width: u32, height: u32, texture: &Texture) -> Self {
     Self {
-      texture,
+      texture: texture.clone(),
       width,
       height,
     }
@@ -315,9 +316,9 @@ impl<'a> TextureAtlas<'a> {
   }
 
   /// Gets a sub-region of the texture atlas at the given position.
-  pub fn get_region(&self, x: u32, y: u32) -> TextureRegion<'a> {
+  pub fn get_region(&self, x: u32, y: u32) -> TextureRegion {
     TextureRegion {
-      texture: self.texture,
+      texture: &self.texture,
       offset: vec2(x * self.width, y * self.height),
       size: vec2(self.width, self.height),
     }
@@ -357,7 +358,7 @@ impl<P> TextureAtlasBuilder<P> {
     for cell in &self.cells {
       let x_offset = x * max_width;
       let y_offset = y * max_height;
-      
+
       // TODO: blit all pixels
 
       x += cell.width();

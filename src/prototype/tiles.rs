@@ -49,7 +49,7 @@ impl<'a, T: Tile> TileMap<'a, T> {
   }
 
   /// Sets a tile in the grid.
-  pub fn set(&mut self, point: impl Into<GridPoint>, value: T) {
+  pub fn set(&mut self, point: impl Into<GridPoint>, value: &T) {
     self.tiles.set(point, value.to_id());
   }
 
@@ -146,7 +146,7 @@ mod tests {
     let mut map = TileMap::new(16, 16);
     let position = vec2(0, 0);
 
-    map.set(position, ExampleTile::WALL);
+    map.set(position, &ExampleTile::WALL);
 
     let tile = map.get(position);
 
