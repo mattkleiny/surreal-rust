@@ -3,7 +3,7 @@ Core:
   [ ] Get hot reload for assets working
     [ ] Dependent file hot reloads (for shader includes, etc?)
   [✔] Generalized object loading? @done(22-06-05 14:12)
-  [ ] Fix virtual file system
+  [ ] Fix virtual file system (registry + more formats)
   [ ] Get top-level crash handler working
   [✔] Allow reads from buffers and textures @done(22-06-05 14:12)
   [ ] Finalize core maths library

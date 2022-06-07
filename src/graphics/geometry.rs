@@ -31,28 +31,6 @@ impl GeometryBatch {
     self.vertices.clear();
   }
 
-  /// Draws a line in the batch.
-  #[profiling::function]
-  pub fn draw_line(&mut self, a: Vector2<f32>, b: Vector2<f32>, color: Color32, _thickness: f32) {
-    let base_offset = self.vertices.len() as Index;
-
-    // TODO: get the winding order correct?
-    self.vertices.push(Vertex2 {
-      position: a,
-      uv: vec2(0., 0.),
-      color,
-    });
-
-    self.vertices.push(Vertex2 {
-      position: b,
-      uv: vec2(1., 1.),
-      color,
-    });
-
-    self.indices.push(base_offset + 0);
-    self.indices.push(base_offset + 1);
-  }
-
   /// Draws a triangle in the batch.
   #[profiling::function]
   pub fn draw_triangle(

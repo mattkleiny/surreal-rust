@@ -83,7 +83,6 @@ impl UserInterface {
           (pixels, image.size)
         }
         egui::ImageData::Font(image) => {
-          // TODO: gamma correction?
           let pixels = image
             .pixels
             .iter()

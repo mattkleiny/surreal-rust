@@ -23,6 +23,7 @@ surreal-macros = { path = "macros" }
 # core dependencies
 anyhow = "1.0.57"
 ab_glyph = "0.2.15"
+chrono = "0.4.19"
 image = { version = "0.24.1", default-features = false, features = ["jpeg", "png", "ico"] }
 egui = { version = "0.18.1" }
 profiling = { version = "1.0.6" }

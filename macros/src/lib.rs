@@ -61,7 +61,6 @@ fn parse_vertex_attributes(attributes: &Vec<Attribute>) -> (usize, proc_macro2::
         let kind: Option<proc_macro2::TokenStream> = Some(quote!(F32));
         let normalize: Option<bool> = Some(false);
 
-        // TODO: finish me
         // match meta {
         //   Meta::List(ref list) => {
         //     for nested in list.nested.iter() {

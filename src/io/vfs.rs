@@ -4,7 +4,6 @@ pub use local::*;
 
 mod local;
 
-// TODO: put a file system registry here
 thread_local! {
   static CURRENT_FILE_SYSTEM: LocalFileSystem = LocalFileSystem::new();
 }

@@ -33,11 +33,12 @@ impl log::Log for ConsoleLogger {
 
     let thread = std::thread::current();
     let thread = thread.name().unwrap_or("?");
-
+    let timestamp = chrono::Local::now();
+    
     println!(
-      "{:<5} - [{}] [{}] {}",
-      // timestamp, // TODO: add basic timestamp formatting
+      "{:<5} {} - [{}] [{}] {}",
       level,
+      timestamp.format("%Y-%m-%d %H:%M:%S:%f"),
       target,
       thread,
       record.args()
