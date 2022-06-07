@@ -55,3 +55,4 @@ Editor:
     [ ] Define the scene file format, and other data structures as well?
     [ ] Consider visual graph models for state machines, behaviour trees, etc
     [ ] Consider visual timeline editor for sprite animatinos and events?
+  [ ] Graph editor for VS Code symlinked into the project folder?

@@ -1,6 +1,6 @@
 //! An example of bitmap fonts in Surreal.
 
-use lazy_static::__Deref;
+use std::ops::Deref;
 use surreal::prelude::*;
 
 fn main() {

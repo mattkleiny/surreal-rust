@@ -21,6 +21,7 @@ pub struct CommandBuffer {
 enum Command {
   ClearColor(Color),
   ClearDepth,
+  BlitToDisplay(RenderTarget),
 }
 
 impl CommandBuffer {
@@ -40,6 +41,12 @@ impl CommandBuffer {
     self.commands.push_back(Command::ClearDepth);
   }
 
+  pub fn blit_to_display(&mut self, target: &RenderTarget) {
+    let command = Command::BlitToDisplay(target.clone());
+
+    self.commands.push_back(command);
+  }
+
   /// Executes the commands in the command buffer and clears it.
   pub fn flush(&mut self) {
     while let Some(command) = self.commands.pop_front() {
@@ -49,12 +56,21 @@ impl CommandBuffer {
 
   /// Executes the given command.
   fn execute_command(&mut self, command: Command) {
+    let graphics = &self.graphics;
+
     match command {
       Command::ClearColor(color) => {
         self.graphics.clear_color_buffer(color);
       }
       Command::ClearDepth => {
         self.graphics.clear_depth_buffer();
+      }
+      Command::BlitToDisplay(target) => {
+        let color = target.color_attachment();
+        let source = Rectangle::from_corner_points(0, 0, color.width() as i32, color.height() as i32);
+        let dest = Rectangle::from_corner_points(0, 0, 1280, 720);
+
+        graphics.blit_render_target_to_display(target.handle(), &source, &dest);
       }
     }
   }

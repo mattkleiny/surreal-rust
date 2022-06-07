@@ -122,6 +122,19 @@ impl RenderTarget {
 
     state.graphics.set_default_render_target();
   }
+
+  /// Blits this render target to the active display.
+  pub fn blit_to_display(&self) {
+    let state = self.state.borrow();
+    let color = &state.color_attachment;
+
+    let source = Rectangle::from_corner_points(0, 0, color.width() as i32, color.height() as i32);
+    let dest = Rectangle::from_corner_points(0, 0, 1280, 720);
+
+    let graphics = &state.graphics;
+
+    graphics.blit_render_target_to_display(state.handle, &source, &dest);
+  }
 }
 
 impl GraphicsResource for RenderTarget {

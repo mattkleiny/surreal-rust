@@ -802,6 +802,33 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  fn blit_render_target_to_display(
+    &self,
+    target: GraphicsHandle,
+    source: &Rectangle<i32>,
+    dest: &Rectangle<i32>,
+  ) {
+    unsafe {
+      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, target);
+      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
+
+      gl::BlitFramebuffer(
+        source.left(),
+        source.top(),
+        source.width(),
+        source.height(),
+        dest.left(),
+        dest.top(),
+        dest.width(),
+        dest.height(),
+        gl::COLOR_BUFFER_BIT,
+        gl::NEAREST,
+      );
+
+      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, 0);
+    }
+  }
+
   fn delete_render_target(&self, render_target: GraphicsHandle) {
     unsafe {
       gl::DeleteFramebuffers(1, &render_target);

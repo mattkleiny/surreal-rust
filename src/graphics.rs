@@ -16,6 +16,8 @@ pub use sprites::*;
 pub use targets::*;
 pub use textures::*;
 
+use crate::maths::Rectangle;
+
 mod buffers;
 mod colors;
 mod fonts;
@@ -166,5 +168,11 @@ pub trait GraphicsBackend {
   ) -> GraphicsHandle;
   fn set_active_render_target(&self, render_target: GraphicsHandle);
   fn set_default_render_target(&self);
+  fn blit_render_target_to_display(
+    &self,
+    target: GraphicsHandle,
+    source: &Rectangle<i32>,
+    dest: &Rectangle<i32>,
+  );
   fn delete_render_target(&self, render_target: GraphicsHandle);
 }
