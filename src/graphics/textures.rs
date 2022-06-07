@@ -346,11 +346,12 @@ impl<P> TextureAtlasBuilder<P> {
 
   /// Writes this builder's contents to the given texture.
   pub fn write(&self, stride: usize, _texture: &mut Texture) {
+    // TODO: finish implementing me
     let max_width = self.cells.iter().map(|it| it.width()).max().unwrap_or(0);
     let max_height = self.cells.iter().map(|it| it.height()).max().unwrap_or(0);
 
-    let cells_x = stride;
-    let cells_y = self.cells.len() / stride;
+    let _cells_x = stride;
+    let _cells_y = self.cells.len() / stride;
 
     let mut x = 0;
     let mut y = 0;
@@ -358,10 +359,8 @@ impl<P> TextureAtlasBuilder<P> {
     // let mut pixels = Vec::new();
 
     for cell in &self.cells {
-      let x_offset = x * max_width;
-      let y_offset = y * max_height;
-
-      // TODO: blit all pixels
+      let _x_offset = x * max_width;
+      let _y_offset = y * max_height;
 
       x += cell.width();
       y += cell.height();

@@ -1,7 +1,5 @@
 //! A simple sprite benchmark for Surreal.
 
-use std::ops::Deref;
-
 use surreal::prelude::*;
 
 const WIDTH: f32 = 1920.;
