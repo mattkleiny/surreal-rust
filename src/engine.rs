@@ -290,7 +290,6 @@ impl Engine {
             self.window.request_redraw();
           } else {
             *control_flow = ControlFlow::Wait;
-            self.window.request_redraw();
           }
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
