@@ -16,7 +16,6 @@ void main()
 {
   v_uv = a_uv;
   
-  // TODO: sort out y-flipping in post effects?
   gl_Position = vec4(a_position.x, - a_position.y, 0.0, 1.0) * u_projectionView;
 }
 

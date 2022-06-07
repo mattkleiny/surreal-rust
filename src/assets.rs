@@ -10,8 +10,6 @@ use anyhow::Ok;
 
 use crate::io::{AsPath, VirtualPath};
 
-// TODO: asset hot loading and dependent asset reloads (shader program includes, for example)
-
 /// A handle to an asset in the asset system.
 ///
 /// Handles are cheap to clone and can be passed around the application freely.

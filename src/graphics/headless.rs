@@ -99,6 +99,16 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_texture_id.fetch_add(1, Ordering::Relaxed)
   }
 
+  fn initialize_texture(
+    &self,
+    _texture: GraphicsHandle,
+    _width: u32,
+    _height: u32,
+    _format: TextureFormat,
+  ) {
+    // no-op
+  }
+
   fn set_texture_options(&self, _texture: GraphicsHandle, _sampler: &TextureSampler) {
     // no-op
   }
@@ -117,8 +127,8 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   fn write_texture_data(
     &self,
     _texture: GraphicsHandle,
-    _width: usize,
-    _height: usize,
+    _width: u32,
+    _height: u32,
     _pixels: *const u8,
     _internal_format: TextureFormat,
     _pixel_format: TextureFormat,

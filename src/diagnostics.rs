@@ -3,6 +3,8 @@
 pub use log::{debug, error, info, trace, warn, Level, LevelFilter};
 
 /// A simple `log` that logs to the console.
+/// 
+/// This implementation provides no buffering and logs to the console immediately.
 pub struct ConsoleLogger {}
 
 impl ConsoleLogger {
@@ -42,7 +44,5 @@ impl log::Log for ConsoleLogger {
     );
   }
 
-  fn flush(&self) {
-    // TODO: buffer messages and emit over time.
-  }
+  fn flush(&self) {}
 }

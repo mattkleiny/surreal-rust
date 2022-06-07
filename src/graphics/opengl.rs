@@ -219,6 +219,40 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  fn initialize_texture(
+    &self,
+    texture: GraphicsHandle,
+    width: u32,
+    height: u32,
+    format: TextureFormat,
+  ) {
+    unsafe {
+      let (components, kind) = match format {
+        TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
+        TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
+        TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
+        TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
+        TextureFormat::R32 => (gl::RED, gl::FLOAT),
+        TextureFormat::RG32 => (gl::RG, gl::FLOAT),
+        TextureFormat::RGB32 => (gl::RGB, gl::FLOAT),
+        TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
+      };
+
+      gl::BindTexture(gl::TEXTURE_2D, texture);
+      gl::TexImage2D(
+        gl::TEXTURE_2D,
+        0,
+        format as i32,
+        width as i32,
+        height as i32,
+        0,
+        components,
+        kind,
+        std::ptr::null(),
+      );
+    }
+  }
+
   fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler) {
     unsafe {
       let min_filter = match sampler.minify_filter {
@@ -280,8 +314,8 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
   fn write_texture_data(
     &self,
     texture: GraphicsHandle,
-    width: usize,
-    height: usize,
+    width: u32,
+    height: u32,
     pixels: *const u8,
     internal_format: TextureFormat,
     pixel_format: TextureFormat,

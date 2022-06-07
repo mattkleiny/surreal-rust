@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::collections::Grid;
-use crate::maths::{vec2, FromRandom, Rectangle, Vector2};
+use crate::maths::{vec2, Rectangle, Vector2};
 
 use super::*;
 
@@ -101,24 +101,6 @@ impl Texture {
     texture
   }
 
-  /// Builds a new texture with random grayscale noise.
-  pub fn create_noise(graphics: &GraphicsServer, width: usize, height: usize) -> Self {
-    let mut texture = Self::new(graphics);
-    let mut colors = vec![Color32::CLEAR; width * height];
-
-    for y in 0..height {
-      for x in 0..width {
-        let intensity = u8::random();
-
-        colors[x + y * width] = Color32::rgb(intensity, intensity, intensity);
-      }
-    }
-
-    texture.write_pixels(width, height, &colors);
-
-    texture
-  }
-
   /// Creates a new blank texture on the GPU with the given options.
   pub fn with_options(graphics: &GraphicsServer, options: &TextureOptions) -> Self {
     Self {
@@ -147,9 +129,24 @@ impl Texture {
     let mut state = self.state.borrow_mut();
 
     state.options = options;
-    state
-      .graphics
-      .set_texture_options(state.handle, &state.options.sampler);
+
+    let graphics = &state.graphics;
+
+    graphics.set_texture_options(state.handle, &state.options.sampler);
+  }
+
+  /// Initializes the texture with the given width and height.
+  ///
+  /// This is only necessary if the texture requires sizing information prior to access from the GPU.
+  pub fn initialize(&mut self, width: u32, height: u32, format: TextureFormat) {
+    let mut state = self.state.borrow_mut();
+
+    state.width = width;
+    state.height = height;
+
+    let graphics = &state.graphics;
+
+    graphics.initialize_texture(state.handle, width, height, format);
   }
 
   /// Downloads pixel data from the texture.
@@ -157,6 +154,7 @@ impl Texture {
   pub fn read_pixels<T>(&self) -> Vec<T>
   where T: Texel {
     let state = self.state.borrow();
+    let graphics = &state.graphics;
     let size = state.width as usize * state.height as usize;
 
     let mut buffer = Vec::<T>::with_capacity(size);
@@ -164,7 +162,7 @@ impl Texture {
     unsafe {
       buffer.set_len(size);
 
-      state.graphics.read_texture_data(
+      graphics.read_texture_data(
         state.handle,
         size * std::mem::size_of::<T>(),
         T::FORMAT,
@@ -185,16 +183,16 @@ impl Texture {
     state.width = width as u32;
     state.height = height as u32;
 
-    let pixels = match pixels.len() {
-      0 => std::ptr::null(),
-      _ => pixels.as_ptr() as *const u8,
-    };
+    let graphics = &state.graphics;
 
-    state.graphics.write_texture_data(
+    graphics.write_texture_data(
       state.handle,
-      width,
-      height,
-      pixels,
+      width as u32,
+      height as u32,
+      match pixels.len() {
+        0 => std::ptr::null(),
+        _ => pixels.as_ptr() as *const u8,
+      },
       state.options.format,
       T::FORMAT,
       0, // mip level
@@ -206,8 +204,9 @@ impl Texture {
   pub fn write_sub_pixels<T>(&self, region: &Rectangle<usize>, pixels: &[T])
   where T: Texel {
     let state = self.state.borrow();
+    let graphics = &state.graphics;
 
-    state.graphics.write_texture_sub_data(
+    graphics.write_texture_sub_data(
       state.handle,
       region,
       pixels.as_ptr() as *const u8,

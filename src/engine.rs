@@ -26,8 +26,6 @@ use crate::{
   utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
-// TODO: better rendering pipeline support
-
 /// Configuration for the `Engine`.
 ///
 /// This struct defines how to set-up the game and initial settings.
@@ -184,7 +182,7 @@ impl Engine {
       .build_windowed(window, &event_loop)
       .unwrap();
 
-    // HACK: unpick the window from glutin so we can manage it ourselves
+    // unpick the window from glutin so we can manage it ourselves
     let (context, window) = unsafe { context.make_current().unwrap().split() };
 
     let pixels_per_point = window.scale_factor() as f32;
@@ -377,7 +375,6 @@ impl crate::ui::UserInterfaceHost for Engine {
     self.cursor_icon = cursor_icon;
 
     if let Some(cursor_icon) = translate_cursor(cursor_icon) {
-      // TODO: if cursor in window?
       self.window.set_cursor_visible(true);
       self.window.set_cursor_icon(cursor_icon);
     } else {

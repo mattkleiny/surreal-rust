@@ -156,9 +156,6 @@ impl Material {
 
   /// Binds this material to the graphics server.
   pub fn bind(&self) {
-    // TODO: minimize state changes in the underlying platform?
-    // TODO: material batching or sorting in a render pipeline?
-
     self.graphics.set_blend_state(self.blend_state);
     self.graphics.set_culling_mode(self.culling_mode);
     self.graphics.set_scissor_mode(self.scissor_mode);

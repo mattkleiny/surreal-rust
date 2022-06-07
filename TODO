@@ -1,6 +1,7 @@
 Core:
   [✔] Get asset management loading working @done(22-06-05 14:12)
   [ ] Get hot reload for assets working
+    [ ] Dependent file hot reloads (for shader includes, etc?)
   [✔] Generalized object loading? @done(22-06-05 14:12)
   [ ] Fix virtual file system
   [ ] Get top-level crash handler working
@@ -33,6 +34,8 @@ Graphics:
   [ ] Add tilemap animations
   [ ] Add texture atlases (automatically baked)?
   [ ] Draw lists? (load/store actions, render targets, command buffer and post processing)
+  [ ] Sprite transforms for rotations/shear/etc
+  [ ] Sprite batching that supports multiple textures per draw call
   
 Audio:
   [ ] Get audio backend playing simple buffered sounds

@@ -94,6 +94,13 @@ pub trait GraphicsBackend {
   // textures
   fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle;
   fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler);
+  fn initialize_texture(
+    &self,
+    texture: GraphicsHandle,
+    width: u32,
+    height: u32,
+    format: TextureFormat,
+  );
   fn read_texture_data(
     &self,
     texture: GraphicsHandle,
@@ -105,8 +112,8 @@ pub trait GraphicsBackend {
   fn write_texture_data(
     &self,
     texture: GraphicsHandle,
-    width: usize,
-    height: usize,
+    width: u32,
+    height: u32,
     pixels: *const u8,
     internal_format: TextureFormat,
     pixel_format: TextureFormat,

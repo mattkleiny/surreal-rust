@@ -34,12 +34,8 @@ impl RenderTextureDescriptor {
     let mut texture = Texture::with_options(graphics, &self.options);
 
     // allocate the memory ahead of time; RGBA8 format
-    // TODO: use format specified 
-    texture.write_pixels(
-      self.width as usize,
-      self.height as usize,
-      &[Color32::CLEAR; 0],
-    );
+    texture.initialize(self.width, self.height, self.options.format);
+
     texture
   }
 }

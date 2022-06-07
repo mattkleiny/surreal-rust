@@ -6,10 +6,6 @@ use crate::maths::{vec2, Vector2};
 
 use super::*;
 
-// TODO: sprite pivots
-// TODO: transforms for tile maps and sprites
-// TODO: abstract over sprite instead of texture region?
-
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
 
@@ -110,7 +106,6 @@ impl SpriteBatch {
   #[profiling::function]
   pub fn draw_sprite<'a>(&mut self, region: &'a TextureRegion, options: &SpriteOptions) {
     // flush if the texture has changed
-    // TODO: support multiple textures per batch (e.g. for tile maps)
     if let Some(texture) = &self.texture {
       if texture.handle() != region.texture.handle() {
         self.flush();
