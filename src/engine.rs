@@ -113,13 +113,13 @@ impl Engine {
     profiling::register_thread!("Main Thread");
 
     // set-up core engine
-    log::trace!("Configuring engine");
+    log::trace!("Starting engine");
 
     let engine = Engine::new(configuration);
     let graphics = &engine.graphics;
 
     // set-up asset manager
-    log::trace!("Configuration asset manager");
+    log::trace!("Building asset manager");
 
     let mut assets = AssetManager::new();
 
@@ -176,8 +176,6 @@ impl Engine {
 
         Icon::from_rgba(pixels, width, height).expect("Failed to convert icon from raw image")
       }));
-
-    log::trace!("Building OpenGL context");
 
     // glutin tries to be safe via the type system, what a mess.
     let context = ContextBuilder::new()
@@ -352,7 +350,7 @@ impl Engine {
       }
     });
 
-    log::trace!("Exiting main event loop")
+    log::trace!("Stopping engine")
   }
 }
 
