@@ -34,6 +34,7 @@ impl Sub for TimeStamp {
 pub struct Clock {
   start_time: TimeStamp,
   last_time: TimeStamp,
+  max_delta_time: f32,
 }
 
 impl Clock {
@@ -42,6 +43,7 @@ impl Clock {
     Self {
       start_time: TimeStamp::now(),
       last_time: TimeStamp::now(),
+      max_delta_time: 0.16 * 2.,
     }
   }
 
@@ -52,7 +54,7 @@ impl Clock {
 
     self.last_time = current_time;
 
-    delta_time.total_seconds()
+    delta_time.total_seconds().min(self.max_delta_time)
   }
 
   pub fn total_time(&self) -> f32 {

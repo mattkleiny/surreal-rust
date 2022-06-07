@@ -48,6 +48,7 @@ fn main() {
             &region,
             &SpriteOptions {
               position: bunny.position,
+              color: bunny.color,
               ..Default::default()
             },
           );
@@ -79,6 +80,7 @@ fn main() {
               random.next::<f32>() * 2. - 1.,
               random.next::<f32>() * 2. - 1.,
             ),
+            color: Color32::random(),
           });
         }
 
@@ -100,6 +102,7 @@ fn main() {
 struct Bunny {
   position: Vector2<f32>,
   velocity: Vector2<f32>,
+  color: Color32,
 }
 
 impl Bunny {
