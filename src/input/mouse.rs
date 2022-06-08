@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-use crate::maths::{range, Vector2, vec2};
+use crate::maths::{range, vec2, Vector2};
 use glutin::event::ElementState;
 
 pub use glutin::event::MouseButton;

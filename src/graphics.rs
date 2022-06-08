@@ -1,10 +1,10 @@
 //! A lightweight cross-platform graphics engine.
-//! 
+//!
 //! This engine is a light abstraction on top of OpenGL; it offers basic lifecycle management
 //! of common OpenGL primitives (textures, buffers, vertex array/meshes, etc). These primitives
 //! are backed by a particular `GraphicsBackend` implementation, which allows us to gracefully swap
 //! the internal graphics implementation through a single dynamic pointer.
-//! 
+//!
 //! On top of the these lower-level primitives, we also build up to some more useful abstractions,
 //! such as the `RenderManager`. This manager types allow for the creation of render contexts/passes
 //! and simplifies the work required to initialize all the OpenGL resources required to pull off some
@@ -88,13 +88,7 @@ pub trait GraphicsBackend {
 
   // buffers
   fn create_buffer(&self) -> GraphicsHandle;
-  fn read_buffer_data(
-    &self,
-    buffer: GraphicsHandle,
-    offset: usize,
-    length: usize,
-    pointer: *mut u8,
-  );
+  fn read_buffer_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8);
   fn write_buffer_data(
     &self,
     buffer: GraphicsHandle,
@@ -108,13 +102,7 @@ pub trait GraphicsBackend {
   // textures
   fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle;
   fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler);
-  fn initialize_texture(
-    &self,
-    texture: GraphicsHandle,
-    width: u32,
-    height: u32,
-    format: TextureFormat,
-  );
+  fn initialize_texture(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat);
   fn read_texture_data(
     &self,
     texture: GraphicsHandle,
@@ -162,13 +150,7 @@ pub trait GraphicsBackend {
     indices: GraphicsHandle,
     descriptors: &[VertexDescriptor],
   ) -> GraphicsHandle;
-  fn draw_mesh(
-    &self,
-    mesh: GraphicsHandle,
-    topology: PrimitiveTopology,
-    vertex_count: usize,
-    index_count: usize,
-  );
+  fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize);
   fn delete_mesh(&self, mesh: GraphicsHandle);
 
   // render targets

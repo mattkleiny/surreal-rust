@@ -7,7 +7,7 @@
 
 use std::rc::Rc;
 
-use crate::assets::{AssetContext, AssetLoader, Asset};
+use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::io::AsPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
@@ -156,7 +156,6 @@ impl Asset for ShaderProgram {
 }
 
 impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
-
   fn load(&self, context: &AssetContext) -> crate::Result<ShaderProgram> {
     let program = ShaderProgram::new(&self.graphics);
     let source_code = context.path.read_all_text()?;

@@ -174,12 +174,7 @@ where V: Vertex
   pub fn draw(&self, material: &Material, topology: PrimitiveTopology) {
     let state = self.state.borrow();
 
-    self.draw_sub_mesh(
-      material,
-      topology,
-      state.vertices.len(),
-      state.indices.len(),
-    );
+    self.draw_sub_mesh(material, topology, state.vertices.len(), state.indices.len());
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.

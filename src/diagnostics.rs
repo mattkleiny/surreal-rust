@@ -3,7 +3,7 @@
 pub use log::{debug, error, info, trace, warn, Level, LevelFilter};
 
 /// A simple `log` that logs to the console.
-/// 
+///
 /// This implementation provides no buffering and logs to the console immediately.
 pub struct ConsoleLogger {}
 
@@ -34,7 +34,7 @@ impl log::Log for ConsoleLogger {
     let thread = std::thread::current();
     let thread = thread.name().unwrap_or("?");
     let timestamp = chrono::Local::now();
-    
+
     println!(
       "{:<5} {} - [{}] [{}] {}",
       level,

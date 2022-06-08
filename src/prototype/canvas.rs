@@ -104,11 +104,9 @@ impl PixelCanvas {
   /// Draws the canvas to the screen.
   pub fn draw(&mut self) {
     // blit pixel data to the GPU
-    self.texture.write_pixels(
-      self.pixels.width(),
-      self.pixels.height(),
-      &self.pixels.as_slice(),
-    );
+    self
+      .texture
+      .write_pixels(self.pixels.width(), self.pixels.height(), &self.pixels.as_slice());
 
     // render to the screen
     self.mesh.draw(&self.material, PrimitiveTopology::Triangles);

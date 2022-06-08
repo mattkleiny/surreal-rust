@@ -48,12 +48,7 @@ where T: Numeric
   type Output = Self;
 
   fn add(self, rhs: Self) -> Self::Output {
-    Self::new(
-      self.x + rhs.x,
-      self.y + rhs.y,
-      self.z + rhs.z,
-      self.w + rhs.w,
-    )
+    Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z, self.w + rhs.w)
   }
 }
 
@@ -63,12 +58,7 @@ where T: Numeric
   type Output = Self;
 
   fn sub(self, rhs: Self) -> Self::Output {
-    Self::new(
-      self.x - rhs.x,
-      self.y - rhs.y,
-      self.z - rhs.z,
-      self.w - rhs.w,
-    )
+    Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z, self.w - rhs.w)
   }
 }
 
@@ -78,12 +68,7 @@ where T: Numeric
   type Output = Self;
 
   fn mul(self, rhs: Self) -> Self::Output {
-    Self::new(
-      self.x * rhs.x,
-      self.y * rhs.y,
-      self.z * rhs.z,
-      self.w * rhs.w,
-    )
+    Self::new(self.x * rhs.x, self.y * rhs.y, self.z * rhs.z, self.w * rhs.w)
   }
 }
 
@@ -93,12 +78,7 @@ where T: Numeric
   type Output = Self;
 
   fn div(self, rhs: Self) -> Self::Output {
-    Self::new(
-      self.x / rhs.x,
-      self.y / rhs.y,
-      self.z / rhs.z,
-      self.w / rhs.w,
-    )
+    Self::new(self.x / rhs.x, self.y / rhs.y, self.z / rhs.z, self.w / rhs.w)
   }
 }
 

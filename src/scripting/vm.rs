@@ -96,9 +96,7 @@ pub struct BytecodeChunk {
 impl BytecodeChunk {
   /// Creates an empty chunk.
   pub fn new() -> Self {
-    Self {
-      opcodes: Vec::new(),
-    }
+    Self { opcodes: Vec::new() }
   }
 
   /// Is the chunk empty?
@@ -163,7 +161,6 @@ mod tests {
 
     let mut vm = VirtualMachine::new();
 
-    vm.execute(&chunk)
-      .expect("Failed to execute simple program");
+    vm.execute(&chunk).expect("Failed to execute simple program");
   }
 }

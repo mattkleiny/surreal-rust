@@ -15,12 +15,7 @@ impl Rasterable for Circle<isize> {
 
     let size = vec2(radius, radius);
     let rectangle = Rectangle::from_size(center, size);
-    let rectangle = rectangle.clamp(
-      0,
-      0,
-      target.width() as isize - 1,
-      target.height() as isize - 1,
-    );
+    let rectangle = rectangle.clamp(0, 0, target.width() as isize - 1, target.height() as isize - 1);
 
     for y in rectangle.top()..rectangle.bottom() {
       for x in rectangle.left()..rectangle.right() {

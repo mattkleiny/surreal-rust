@@ -163,8 +163,7 @@ impl Engine {
       .with_resizable(true)
       .with_transparent(config.transparent_window)
       .with_window_icon(config.icon.map(|buffer| {
-        let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico)
-          .expect("Failed to decode icon data");
+        let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico).expect("Failed to decode icon data");
 
         let rgba = image.as_rgba8().expect("Image was not in RGBA format");
 
@@ -272,11 +271,9 @@ impl Engine {
             self.frame_counter.tick(delta_time);
 
             if self.frame_timer.tick(delta_time) {
-              self.window.set_title(&format!(
-                "{} - FPS: {:.2}",
-                self.config.title,
-                self.frame_counter.fps()
-              ));
+              self
+                .window
+                .set_title(&format!("{} - FPS: {:.2}", self.config.title, self.frame_counter.fps()));
 
               self.frame_timer.reset();
             }

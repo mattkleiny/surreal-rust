@@ -15,10 +15,7 @@ impl<T: Numeric> Rectangle<T> {
 
   /// Creates a new rectangle from the given center and size.
   pub fn from_size(center: Vector2<T>, size: Vector2<T>) -> Self {
-    Self::new(
-      center - size / T::from_f32(2.),
-      center + size / T::from_f32(2.),
-    )
+    Self::new(center - size / T::from_f32(2.), center + size / T::from_f32(2.))
   }
 
   /// Creates a new rectangle from the given corner points.

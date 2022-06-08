@@ -87,12 +87,7 @@ impl Texture {
   }
 
   /// Builds a new colored texture of the given size.
-  pub fn create_colored<T: Texel + Clone>(
-    graphics: &GraphicsServer,
-    width: usize,
-    height: usize,
-    color: T,
-  ) -> Self {
+  pub fn create_colored<T: Texel + Clone>(graphics: &GraphicsServer, width: usize, height: usize, color: T) -> Self {
     let mut texture = Self::new(graphics);
     let colors = vec![color; width * height];
 

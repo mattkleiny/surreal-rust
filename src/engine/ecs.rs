@@ -193,9 +193,7 @@ mod tests {
       .get_component::<Vector2<f32>>(entity)
       .expect("Failed to get component");
 
-    let rotation = world
-      .get_component::<f32>(entity)
-      .expect("Failed to get component");
+    let rotation = world.get_component::<f32>(entity).expect("Failed to get component");
 
     assert_eq!(*position, vec2(0., 10.));
     assert_eq!(*rotation, 2. * std::f32::consts::PI);

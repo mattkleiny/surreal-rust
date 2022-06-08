@@ -31,11 +31,7 @@ where T: Numeric
 
   /// Clamps the (x, y, z) components of the vector to the given range.
   pub fn clamp(&self, range: Range<T>) -> Self {
-    Self::new(
-      range.clamp(self.x),
-      range.clamp(self.y),
-      range.clamp(self.z),
-    )
+    Self::new(range.clamp(self.x), range.clamp(self.y), range.clamp(self.z))
   }
 }
 
@@ -159,10 +155,6 @@ impl<T> Lerp for Vector3<T>
 where T: Numeric + Lerp
 {
   fn lerp(a: Self, b: Self, t: f32) -> Self {
-    Self::new(
-      T::lerp(a.x, b.x, t),
-      T::lerp(a.y, b.y, t),
-      T::lerp(a.z, b.z, t),
-    )
+    Self::new(T::lerp(a.x, b.x, t), T::lerp(a.y, b.y, t), T::lerp(a.z, b.z, t))
   }
 }

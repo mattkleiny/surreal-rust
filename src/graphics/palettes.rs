@@ -10,8 +10,8 @@ use std::{marker::PhantomData, ops::Index};
 use anyhow::anyhow;
 
 use crate::{
+  assets::{Asset, AssetContext, AssetLoader},
   io::AsPath,
-  assets::{Asset, AssetLoader, AssetContext},
 };
 
 use super::*;
@@ -35,9 +35,7 @@ impl<P: Pixel> ColorPalette<P> {
 
   /// Creates a color palette from the given slice of pixels.
   pub fn from_slice(slice: &[P]) -> Self {
-    Self {
-      colors: slice.to_vec(),
-    }
+    Self { colors: slice.to_vec() }
   }
 
   /// Loads a palette from the given file path.
@@ -124,7 +122,7 @@ impl<P> Index<usize> for ColorPalette<P> {
 
 /// An `AssetLoader` for `ColorPalette`s of the given pixel type, `P`.
 #[derive(Default)]
-pub struct ColorPaletteLoader<P : Pixel> {
+pub struct ColorPaletteLoader<P: Pixel> {
   _pixel: PhantomData<P>,
 }
 

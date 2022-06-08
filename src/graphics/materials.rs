@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use crate::assets::{AssetContext, AssetLoader, Asset};
+use crate::assets::{Asset, AssetContext, AssetLoader};
 
 use super::*;
 
@@ -127,13 +127,7 @@ impl Material {
   }
 
   /// Sets the given material texture with texture slot and optional sampler options.
-  pub fn set_texture(
-    &mut self,
-    name: &str,
-    texture: &Texture,
-    slot: usize,
-    sampler: Option<TextureSampler>,
-  ) {
+  pub fn set_texture(&mut self, name: &str, texture: &Texture, slot: usize, sampler: Option<TextureSampler>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
       let uniform = MaterialUniform {
         location,

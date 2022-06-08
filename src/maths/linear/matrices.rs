@@ -209,16 +209,12 @@ where T: Numeric
 {
   /// Constructs a new empty matrix.
   pub const fn new() -> Self {
-    Self {
-      elements: [T::ZERO; L],
-    }
+    Self { elements: [T::ZERO; L] }
   }
 
   /// Constructs a matrix from the given elements.
   pub const fn create(elements: &[T; L]) -> Self {
-    Self {
-      elements: *elements,
-    }
+    Self { elements: *elements }
   }
 
   /// Transposes the matrix.

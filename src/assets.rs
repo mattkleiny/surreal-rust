@@ -140,11 +140,7 @@ impl AssetManager {
         Ok(handle)
       }
       None => {
-        log::trace!(
-          "Loading asset {} from {}",
-          std::any::type_name::<A>(),
-          path.as_path()
-        );
+        log::trace!("Loading asset {} from {}", std::any::type_name::<A>(), path.as_path());
 
         let state = unsafe { &mut *self.state.get() };
 
@@ -152,18 +148,10 @@ impl AssetManager {
           .loaders
           .get(&TypeId::of::<A>())
           .and_then(|it| it.downcast_ref::<A::Loader>())
-          .ok_or_else(|| {
-            anyhow::anyhow!(
-              "Could not result loader for asset {:?}",
-              std::any::type_name::<A>()
-            )
-          })?;
+          .ok_or_else(|| anyhow::anyhow!("Could not result loader for asset {:?}", std::any::type_name::<A>()))?;
 
         // persist loaded assets into cache
-        let context = AssetContext {
-          path,
-          manager: self,
-        };
+        let context = AssetContext { path, manager: self };
 
         let asset = loader.load(&context)?;
         let handle = Handle {
@@ -171,9 +159,7 @@ impl AssetManager {
           asset: Rc::new(asset),
         };
 
-        state
-          .cache
-          .insert(handle.id.clone(), Box::new(handle.clone()));
+        state.cache.insert(handle.id.clone(), Box::new(handle.clone()));
 
         Ok(handle)
       }

@@ -29,10 +29,7 @@ impl Image {
   }
 
   /// Attempts to load an image from the given reader.
-  pub fn from_bytes(
-    reader: impl std::io::BufRead + std::io::Seek,
-    format: Option<ImageFormat>,
-  ) -> crate::Result<Self> {
+  pub fn from_bytes(reader: impl std::io::BufRead + std::io::Seek, format: Option<ImageFormat>) -> crate::Result<Self> {
     let mut reader = image::io::Reader::new(reader);
 
     if let Some(format) = format {
@@ -103,8 +100,7 @@ mod tests {
 
   #[test]
   fn image_should_load_from_path() {
-    let image = Image::from_path("local://surreal.ico", Some(ImageFormat::Ico))
-      .expect("Failed to load image");
+    let image = Image::from_path("local://surreal.ico", Some(ImageFormat::Ico)).expect("Failed to load image");
 
     assert_eq!(image.width(), 32);
     assert_eq!(image.height(), 32);

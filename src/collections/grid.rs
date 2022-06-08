@@ -1,4 +1,4 @@
-use crate::maths::{Raster, Vector2, vec2};
+use crate::maths::{vec2, Raster, Vector2};
 
 /// Represents a point in a [`Grid`].
 pub type GridPoint = (usize, usize);

@@ -106,12 +106,12 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
   fn create(&self, graphics: &GraphicsServer) -> Self::Context {
     // determine which shader we're using, prepare material
     let shader = match &self.shader {
-        Some(shader) => shader.clone(),
-        None => match self.palette {
-          None => load_built_in_shader(graphics, BuiltInShader::SpriteStandard),
-          Some(_) => load_built_in_shader(graphics, BuiltInShader::SpritePalette),
-        }
-    }; 
+      Some(shader) => shader.clone(),
+      None => match self.palette {
+        None => load_built_in_shader(graphics, BuiltInShader::SpriteStandard),
+        Some(_) => load_built_in_shader(graphics, BuiltInShader::SpritePalette),
+      },
+    };
 
     let mut material = Material::new(graphics, &shader);
     let batch = SpriteBatch::with_capacity(graphics, self.sprite_count);

@@ -5,7 +5,7 @@
 use super::*;
 
 /// A scripting language based on 'Lox' from the 'Crafting Interpreters' series.
-/// 
+///
 /// This is a simple language that offers basic functionality for the engine.
 /// It's simple to integrate and serves as a first example of more complex scripting.
 struct LoxLanguage {}

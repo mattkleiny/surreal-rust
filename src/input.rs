@@ -2,9 +2,9 @@
 
 use egui::RawInput;
 
+use glutin::event::{ElementState, KeyboardInput, ModifiersState, MouseScrollDelta};
 pub use keyboard::*;
 pub use mouse::*;
-use glutin::event::{ElementState, ModifiersState, MouseScrollDelta, KeyboardInput};
 
 use crate::maths::{vec2, Vector2};
 
@@ -85,9 +85,7 @@ impl InputBackend {
 
         egui::vec2(*x, *y) * points_per_scroll_line
       }
-      MouseScrollDelta::PixelDelta(delta) => {
-        egui::vec2(delta.x as f32, delta.y as f32) / self.pixels_per_point
-      }
+      MouseScrollDelta::PixelDelta(delta) => egui::vec2(delta.x as f32, delta.y as f32) / self.pixels_per_point,
     };
 
     delta.x *= -1.0;

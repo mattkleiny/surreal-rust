@@ -39,11 +39,7 @@ where K: Eq + Hash
   /// Determines if the given key-value pair is contained in the map.
   pub fn contains_value(&self, key: &K, value: &V) -> bool
   where V: PartialEq {
-    self
-      .entries
-      .get(key)
-      .map(|vec| vec.contains(value))
-      .unwrap_or(false)
+    self.entries.get(key).map(|vec| vec.contains(value)).unwrap_or(false)
   }
 
   /// Gets all values for the given key.

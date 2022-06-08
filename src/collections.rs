@@ -59,7 +59,7 @@ mod tests {
     assert_eq!(triangle_number(4), 10);
 
     let mut entries = Vec::new();
-    
+
     entries.push(0);
     entries.push(1);
     entries.push(2);

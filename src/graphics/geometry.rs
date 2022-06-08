@@ -33,13 +33,7 @@ impl GeometryBatch {
 
   /// Draws a triangle in the batch.
   #[profiling::function]
-  pub fn draw_triangle(
-    &mut self,
-    a: Vector2<f32>,
-    b: Vector2<f32>,
-    c: Vector2<f32>,
-    color: Color32,
-  ) {
+  pub fn draw_triangle(&mut self, a: Vector2<f32>, b: Vector2<f32>, c: Vector2<f32>, color: Color32) {
     let base_offset = self.vertices.len() as Index;
 
     self.vertices.push(Vertex2 {
@@ -158,13 +152,7 @@ impl GeometryBatch {
 
   /// Draws a sprite in the batch.
   #[profiling::function]
-  pub fn draw_sprite(
-    &mut self,
-    texture: &TextureRegion,
-    position: Vector2<f32>,
-    scale: Vector2<f32>,
-    color: Color32,
-  ) {
+  pub fn draw_sprite(&mut self, texture: &TextureRegion, position: Vector2<f32>, scale: Vector2<f32>, color: Color32) {
     let base_offset = self.vertices.len() as Index;
 
     // calculate sprite bounds and uv coordinates

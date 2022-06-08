@@ -70,13 +70,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_buffer_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn read_buffer_data(
-    &self,
-    _buffer: GraphicsHandle,
-    _offset: usize,
-    _length: usize,
-    _pointer: *mut u8,
-  ) {
+  fn read_buffer_data(&self, _buffer: GraphicsHandle, _offset: usize, _length: usize, _pointer: *mut u8) {
     // no-op
   }
 
@@ -99,13 +93,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_texture_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn initialize_texture(
-    &self,
-    _texture: GraphicsHandle,
-    _width: u32,
-    _height: u32,
-    _format: TextureFormat,
-  ) {
+  fn initialize_texture(&self, _texture: GraphicsHandle, _width: u32, _height: u32, _format: TextureFormat) {
     // no-op
   }
 
@@ -193,13 +181,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_mesh_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn draw_mesh(
-    &self,
-    _mesh: GraphicsHandle,
-    _topology: PrimitiveTopology,
-    _vertex_count: usize,
-    _index_count: usize,
-  ) {
+  fn draw_mesh(&self, _mesh: GraphicsHandle, _topology: PrimitiveTopology, _vertex_count: usize, _index_count: usize) {
     // no-op
   }
 
@@ -234,7 +216,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   ) {
     // no-op
   }
-  
+
   fn blit_render_target_to_display(
     &self,
     _handle: GraphicsHandle,

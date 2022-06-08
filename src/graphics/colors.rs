@@ -80,10 +80,7 @@ impl From<Color32> for Color {
 
 impl PartialEq for Color {
   fn eq(&self, other: &Self) -> bool {
-    self.r.approx_eq(other.r)
-      && self.g.approx_eq(other.g)
-      && self.b.approx_eq(other.b)
-      && self.a.approx_eq(other.a)
+    self.r.approx_eq(other.r) && self.g.approx_eq(other.g) && self.b.approx_eq(other.b) && self.a.approx_eq(other.a)
   }
 }
 
@@ -91,12 +88,7 @@ impl Add for Color {
   type Output = Color;
 
   fn add(self, rhs: Self) -> Self::Output {
-    Color::rgba(
-      self.r + rhs.r,
-      self.g + rhs.g,
-      self.b + rhs.b,
-      self.a + rhs.a,
-    )
+    Color::rgba(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
   }
 }
 
@@ -104,12 +96,7 @@ impl Sub for Color {
   type Output = Color;
 
   fn sub(self, rhs: Self) -> Self::Output {
-    Color::rgba(
-      self.r - rhs.r,
-      self.g - rhs.g,
-      self.b - rhs.b,
-      self.a - rhs.a,
-    )
+    Color::rgba(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
   }
 }
 
@@ -196,12 +183,7 @@ impl Add for Color32 {
   type Output = Color32;
 
   fn add(self, rhs: Self) -> Self::Output {
-    Color32::rgba(
-      self.r + rhs.r,
-      self.g + rhs.g,
-      self.b + rhs.b,
-      self.a + rhs.a,
-    )
+    Color32::rgba(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b, self.a + rhs.a)
   }
 }
 
@@ -209,12 +191,7 @@ impl Sub for Color32 {
   type Output = Color32;
 
   fn sub(self, rhs: Self) -> Self::Output {
-    Color32::rgba(
-      self.r - rhs.r,
-      self.g - rhs.g,
-      self.b - rhs.b,
-      self.a - rhs.a,
-    )
+    Color32::rgba(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
   }
 }
 

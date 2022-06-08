@@ -72,14 +72,8 @@ fn main() {
 
         for _ in 0..128 {
           bunnies.push(Bunny {
-            position: vec2(
-              position.x * WIDTH - WIDTH / 2.,
-              position.y * HEIGHT - HEIGHT / 2.,
-            ),
-            velocity: vec2(
-              random.next::<f32>() * 2. - 1.,
-              random.next::<f32>() * 2. - 1.,
-            ),
+            position: vec2(position.x * WIDTH - WIDTH / 2., position.y * HEIGHT - HEIGHT / 2.),
+            velocity: vec2(random.next::<f32>() * 2. - 1., random.next::<f32>() * 2. - 1.),
             color: Color32::random(),
           });
         }

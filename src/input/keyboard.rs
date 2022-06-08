@@ -2,8 +2,8 @@
 
 use std::collections::HashSet;
 
-use glutin::event::{ElementState, KeyboardInput};
 pub use glutin::event::VirtualKeyCode as Key;
+use glutin::event::{ElementState, KeyboardInput};
 
 /// Represents a keyboard device in the system.
 pub struct KeyboardDevice {
