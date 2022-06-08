@@ -158,20 +158,9 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn read_buffer_data(
-    &self,
-    buffer: GraphicsHandle,
-    offset: usize,
-    length: usize,
-    pointer: *mut u8,
-  ) {
+  fn read_buffer_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8) {
     unsafe {
-      gl::GetNamedBufferSubData(
-        buffer,
-        offset as isize,
-        length as isize,
-        pointer as *mut c_void,
-      );
+      gl::GetNamedBufferSubData(buffer, offset as isize, length as isize, pointer as *mut c_void);
     }
   }
 
@@ -218,13 +207,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn initialize_texture(
-    &self,
-    texture: GraphicsHandle,
-    width: u32,
-    height: u32,
-    format: TextureFormat,
-  ) {
+  fn initialize_texture(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat) {
     unsafe {
       let (components, kind) = match format {
         TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
@@ -522,31 +505,13 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           gl::ProgramUniform4f(shader, location as i32, value.x, value.y, value.z, value.w);
         }
         ShaderUniform::Matrix2x2(value) => {
-          gl::ProgramUniformMatrix2fv(
-            shader,
-            location as i32,
-            1,
-            gl::TRUE,
-            value.as_slice().as_ptr(),
-          );
+          gl::ProgramUniformMatrix2fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
         }
         ShaderUniform::Matrix3x3(value) => {
-          gl::ProgramUniformMatrix3fv(
-            shader,
-            location as i32,
-            1,
-            gl::TRUE,
-            value.as_slice().as_ptr(),
-          );
+          gl::ProgramUniformMatrix3fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
         }
         ShaderUniform::Matrix4x4(value) => {
-          gl::ProgramUniformMatrix4fv(
-            shader,
-            location as i32,
-            1,
-            gl::TRUE,
-            value.as_slice().as_ptr(),
-          );
+          gl::ProgramUniformMatrix4fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
         }
         ShaderUniform::Texture(texture, slot, sampler) => {
           gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
@@ -705,13 +670,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn draw_mesh(
-    &self,
-    mesh: GraphicsHandle,
-    topology: PrimitiveTopology,
-    vertex_count: usize,
-    index_count: usize,
-  ) {
+  fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     unsafe {
       gl::BindVertexArray(mesh);
 
@@ -722,12 +681,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       };
 
       if index_count > 0 {
-        gl::DrawElements(
-          topology,
-          index_count as i32,
-          gl::UNSIGNED_INT,
-          std::ptr::null(),
-        );
+        gl::DrawElements(topology, index_count as i32, gl::UNSIGNED_INT, std::ptr::null());
       } else {
         gl::DrawArrays(topology, 0, vertex_count as i32);
       }
@@ -803,13 +757,14 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn blit_render_target_to(
+  fn blit_render_target(
     &self,
     from: GraphicsHandle,
     to: GraphicsHandle,
     source_rect: &Rectangle<i32>,
     dest_rect: &Rectangle<i32>,
-  ){
+    filter: TextureFilter,
+  ) {
     unsafe {
       gl::BindFramebuffer(gl::READ_FRAMEBUFFER, from);
       gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, to);
@@ -823,9 +778,11 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         dest_rect.top(),
         dest_rect.width(),
         dest_rect.height(),
-        // TODO: lift these parameters to the API
         gl::COLOR_BUFFER_BIT,
-        gl::NEAREST,
+        match filter {
+          TextureFilter::Nearest => gl::NEAREST,
+          TextureFilter::Linear => gl::LINEAR,
+        },
       );
 
       gl::BindFramebuffer(gl::READ_FRAMEBUFFER, 0);
@@ -838,27 +795,9 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     handle: GraphicsHandle,
     source_rect: &Rectangle<i32>,
     dest_rect: &Rectangle<i32>,
+    filter: TextureFilter,
   ) {
-    unsafe {
-      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, handle);
-      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
-
-      gl::BlitFramebuffer(
-        source_rect.left(),
-        source_rect.top(),
-        source_rect.width(),
-        source_rect.height(),
-        dest_rect.left(),
-        dest_rect.top(),
-        dest_rect.width(),
-        dest_rect.height(),
-        gl::COLOR_BUFFER_BIT,
-        gl::NEAREST,
-      );
-
-      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, 0);
-      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
-    }
+    self.blit_render_target(handle, 0, source_rect, dest_rect, filter);
   }
 
   fn delete_render_target(&self, render_target: GraphicsHandle) {

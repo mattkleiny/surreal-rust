@@ -12,71 +12,83 @@ use super::*;
 ///
 /// Command buffers decouple the order of instructions from the executino of those instructions
 /// and allow for collection of commands from across multiple threads and workers.
+#[derive(Default)]
 pub struct CommandBuffer {
-  graphics: GraphicsServer,
   commands: VecDeque<Command>,
 }
 
 /// Encodes a single command in the command buffer.
 enum Command {
+  // TODO: how to handle
   ClearColor(Color),
   ClearDepth,
+  SetRenderTarget(RenderTarget),
+  SetRenderTargetToDisplay,
+  Blit(RenderTarget, RenderTarget),
   BlitToDisplay(RenderTarget),
+  // RenderMesh(Mesh),
 }
 
 impl CommandBuffer {
   /// Creates a new command buffer.
-  pub fn new(graphics: &GraphicsServer) -> Self {
+  pub fn new() -> Self {
     Self {
-      graphics: graphics.clone(),
       commands: VecDeque::new(),
     }
   }
 
+  /// Clears the active color buffer.
   pub fn clear_color_buffer(&mut self, color: Color) {
     self.commands.push_back(Command::ClearColor(color));
   }
 
+  /// Clears the active depth buffer.
   pub fn clear_depth_buffer(&mut self) {
     self.commands.push_back(Command::ClearDepth);
   }
 
-  pub fn blit_to_display(&mut self, target: &RenderTarget) {
-    let command = Command::BlitToDisplay(target.clone());
+  /// Sets the active render target to the given target.
+  pub fn set_render_target(&mut self, target: &RenderTarget) {
+    self.commands.push_back(Command::SetRenderTarget(target.clone()));
+  }
 
-    self.commands.push_back(command);
+  /// Sets the active render target to the default display.
+  pub fn set_render_target_to_display(&mut self) {
+    self.commands.push_back(Command::SetRenderTargetToDisplay);
+  }
+
+  /// Blits between two given render targets.
+  pub fn blit_to(&mut self, from: &RenderTarget, to: &RenderTarget) {
+    self.commands.push_back(Command::Blit(from.clone(), to.clone()));
+  }
+
+  /// Blits the given render target to the active display.
+  pub fn blit_to_display(&mut self, target: &RenderTarget) {
+    self.commands.push_back(Command::BlitToDisplay(target.clone()));
   }
 
   /// Executes the commands in the command buffer and clears it.
-  pub fn flush(&mut self) {
+  pub fn flush(&mut self, graphics: &GraphicsServer) {
     while let Some(command) = self.commands.pop_front() {
-      self.execute_command(command);
+      self.execute_command(command, graphics);
     }
   }
 
   /// Executes the given command.
-  fn execute_command(&mut self, command: Command) {
-    let graphics = &self.graphics;
-
+  fn execute_command(&mut self, command: Command, graphics: &GraphicsServer) {
     match command {
-      Command::ClearColor(color) => {
-        self.graphics.clear_color_buffer(color);
-      }
-      Command::ClearDepth => {
-        self.graphics.clear_depth_buffer();
-      }
-      Command::BlitToDisplay(target) => {
-        let color = target.color_attachment();
-        let source = Rectangle::from_corner_points(0, 0, color.width() as i32, color.height() as i32);
-        let dest = Rectangle::from_corner_points(0, 0, 1280, 720);
-
-        graphics.blit_render_target_to_display(target.handle(), &source, &dest);
-      }
+      Command::ClearColor(color) => todo!(),
+      Command::ClearDepth => todo!(),
+      Command::SetRenderTarget(_) => todo!(),
+      Command::SetRenderTargetToDisplay => todo!(),
+      Command::Blit(_, _) => todo!(),
+      Command::BlitToDisplay(_) => todo!(),
     }
   }
 }
 
-/// A renderer based on render passes and the command buffer.
+/// A renderer based on `RenderPass`es and the command buffer.
+#[derive(Default)]
 pub struct Renderer {
   passes: Vec<Box<dyn RenderPass>>,
   commands: CommandBuffer,
@@ -98,21 +110,21 @@ pub trait RenderPass {
 
 impl Renderer {
   /// Creates a new renderer.
-  pub fn new(graphics: &GraphicsServer) -> Self {
+  pub fn new() -> Self {
     Self {
       passes: Vec::new(),
-      commands: CommandBuffer::new(graphics),
+      commands: CommandBuffer::new(),
     }
   }
 
-  /// Adds a render pass to the renderer.
+  /// Adds a `RenderPass` to the renderer.
   pub fn add_pass(&mut self, pass: impl RenderPass + 'static) {
     self.passes.push(Box::new(pass));
     self.passes.sort_by_key(|pass| pass.order());
   }
 
-  /// Renders a single frame.
-  pub fn render(&mut self) {
+  /// Renders a single frame to the given `GraphicsServer`.
+  pub fn render(&mut self, graphics: &GraphicsServer) {
     let commands = &mut self.commands;
 
     for pass in &mut self.passes {
@@ -127,16 +139,14 @@ impl Renderer {
       pass.end_frame(commands);
     }
 
-    commands.flush();
+    commands.flush(graphics);
   }
 }
 
 /// Allows an object to be rendered via a [`RenderManager`].
 ///
 /// Requires that the manager is configured for the associated context.
-pub trait Renderable<C>
-where C: RenderContext
-{
+pub trait Renderable<C: RenderContext> {
   /// Renders this object via the associated [`RenderContext`].
   fn render(&self, context: &mut C);
 }
@@ -184,17 +194,12 @@ impl RenderManager {
   }
 
   /// Configures the manager with the given context.
-  pub fn configure<D>(&mut self, descriptor: D)
-  where D: RenderContextDescriptor {
+  pub fn configure<D: RenderContextDescriptor>(&mut self, descriptor: D) {
     self.contexts.insert(descriptor.create(&self.graphics));
   }
 
   /// Renders the given object via the associated context.
-  pub fn render<R, C>(&mut self, renderable: &R)
-  where
-    R: Renderable<C>,
-    C: RenderContext,
-  {
+  pub fn render<R: Renderable<C>, C: RenderContext>(&mut self, renderable: &R) {
     self.with(|context| {
       renderable.render(context);
     });
@@ -203,8 +208,7 @@ impl RenderManager {
   /// Acquires a context for the given descriptor.
   ///
   /// If the context cannot be acquired, the body will not be run.
-  pub fn with<C>(&mut self, body: impl FnOnce(&mut C))
-  where C: RenderContext {
+  pub fn with<C: RenderContext>(&mut self, body: impl FnOnce(&mut C)) {
     if let Some(context) = self.contexts.get_mut::<C>() {
       context.on_before_with();
       body(context);
@@ -213,8 +217,7 @@ impl RenderManager {
   }
 
   /// Releases the given context from the manager.
-  pub fn release<C>(&mut self)
-  where C: RenderContext {
+  pub fn release<C: RenderContext>(&mut self) {
     self.contexts.remove::<C>();
   }
 

@@ -224,12 +224,13 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn blit_render_target_to(
+  fn blit_render_target(
     &self,
     _from: GraphicsHandle,
     _to: GraphicsHandle,
     _source_rect: &Rectangle<i32>,
     _dest_rect: &Rectangle<i32>,
+    _filter: TextureFilter,
   ) {
     // no-op
   }
@@ -239,6 +240,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     _handle: GraphicsHandle,
     _source_rect: &Rectangle<i32>,
     _dest_rect: &Rectangle<i32>,
+    _filter: TextureFilter,
   ) {
     // no-op
   }

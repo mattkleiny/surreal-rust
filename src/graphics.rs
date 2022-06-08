@@ -180,18 +180,20 @@ pub trait GraphicsBackend {
   ) -> GraphicsHandle;
   fn set_active_render_target(&self, render_target: GraphicsHandle);
   fn set_default_render_target(&self);
-  fn blit_render_target_to(
+  fn blit_render_target(
     &self,
     from: GraphicsHandle,
     to: GraphicsHandle,
     source_rect: &Rectangle<i32>,
     dest_rect: &Rectangle<i32>,
+    filter: TextureFilter,
   );
   fn blit_render_target_to_display(
     &self,
     handle: GraphicsHandle,
     source_rect: &Rectangle<i32>,
     dest_rect: &Rectangle<i32>,
+    filter: TextureFilter,
   );
   fn delete_render_target(&self, render_target: GraphicsHandle);
 }

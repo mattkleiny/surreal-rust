@@ -61,15 +61,9 @@ impl RenderTarget {
     // prepare attachments
     let color_attachment = descriptor.color_attachment.to_texture(graphics);
 
-    let depth_attachment = descriptor
-      .depth_attachment
-      .as_ref()
-      .map(|it| it.to_texture(graphics));
+    let depth_attachment = descriptor.depth_attachment.as_ref().map(|it| it.to_texture(graphics));
 
-    let stencil_attachment = descriptor
-      .stencil_attachment
-      .as_ref()
-      .map(|it| it.to_texture(graphics));
+    let stencil_attachment = descriptor.stencil_attachment.as_ref().map(|it| it.to_texture(graphics));
 
     let handle = graphics.create_render_target(
       color_attachment.handle(),
@@ -123,17 +117,34 @@ impl RenderTarget {
     state.graphics.set_default_render_target();
   }
 
-  /// Blits this render target to the active display.
-  pub fn blit_to_display(&self) {
+  /// Blits this render target to the given other target.
+  pub fn blit_to(&self, other: &RenderTarget, filter: TextureFilter) {
     let state = self.state.borrow();
-    let color = &state.color_attachment;
 
-    let source = Rectangle::from_corner_points(0, 0, color.width() as i32, color.height() as i32);
-    let dest = Rectangle::from_corner_points(0, 0, 1280, 720);
+    let source_color = &state.color_attachment;
+    let dest_color = other.color_attachment();
+
+    let source = Rectangle::from_corner_points(0, 0, source_color.width() as i32, source_color.height() as i32);
+    let dest = Rectangle::from_corner_points(0, 0, dest_color.width() as i32, dest_color.height() as i32);
 
     let graphics = &state.graphics;
 
-    graphics.blit_render_target_to_display(state.handle, &source, &dest);
+    graphics.blit_render_target(state.handle, other.handle(), &source, &dest, filter);
+  }
+
+  /// Blits this render target to the active display.
+  pub fn blit_to_display(&self, filter: TextureFilter) {
+    let state = self.state.borrow();
+    let color = &state.color_attachment;
+
+    let (width, height) = state.graphics.get_viewport_size();
+
+    let source = Rectangle::from_corner_points(0, 0, color.width() as i32, color.height() as i32);
+    let dest = Rectangle::from_corner_points(0, 0, width as i32, height as i32);
+
+    let graphics = &state.graphics;
+
+    graphics.blit_render_target_to_display(state.handle, &source, &dest, filter);
   }
 }
 
