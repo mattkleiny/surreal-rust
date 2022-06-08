@@ -164,7 +164,6 @@ impl Engine {
       .with_transparent(config.transparent_window)
       .with_window_icon(config.icon.map(|buffer| {
         let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico).expect("Failed to decode icon data");
-
         let rgba = image.as_rgba8().expect("Image was not in RGBA format");
 
         let pixels = rgba.pixels().flat_map(|pixel| pixel.0).collect();

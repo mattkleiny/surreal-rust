@@ -19,70 +19,109 @@ pub struct CommandBuffer {
 
 /// Encodes a single command in the command buffer.
 enum Command {
-  // TODO: how to handle
   ClearColor(Color),
   ClearDepth,
-  SetRenderTarget(RenderTarget),
-  SetRenderTargetToDisplay,
-  Blit(RenderTarget, RenderTarget),
-  BlitToDisplay(RenderTarget),
-  // RenderMesh(Mesh),
+  SetViewportSize((usize, usize)),
+  SetBlendState(BlendState),
+  SetScissorMode(ScissorMode),
+  SetCullingMode(CullingMode),
+  SetTarget(RenderTarget),
+  SetTargetToDisplay,
+  Blit(RenderTarget, RenderTarget, TextureFilter),
+  BlitToDisplay(RenderTarget, TextureFilter),
+  DrawMesh(GraphicsHandle, PrimitiveTopology, usize, usize),
 }
 
 impl CommandBuffer {
-  /// Creates a new command buffer.
   pub fn new() -> Self {
     Self {
       commands: VecDeque::new(),
     }
   }
 
-  /// Clears the active color buffer.
   pub fn clear_color_buffer(&mut self, color: Color) {
     self.commands.push_back(Command::ClearColor(color));
   }
 
-  /// Clears the active depth buffer.
   pub fn clear_depth_buffer(&mut self) {
     self.commands.push_back(Command::ClearDepth);
   }
 
-  /// Sets the active render target to the given target.
+  pub fn set_viewport_size(&mut self, viewport_size: (usize, usize)) {
+    self.commands.push_back(Command::SetViewportSize(viewport_size));
+  }
+
+  pub fn set_blend_state(&mut self, blend_state: BlendState) {
+    self.commands.push_back(Command::SetBlendState(blend_state));
+  }
+
+  pub fn set_scissor_mode(&mut self, scissor_mode: ScissorMode) {
+    self.commands.push_back(Command::SetScissorMode(scissor_mode));
+  }
+
+  pub fn set_culling_mode(&mut self, culling_mode: CullingMode) {
+    self.commands.push_back(Command::SetCullingMode(culling_mode));
+  }
+
   pub fn set_render_target(&mut self, target: &RenderTarget) {
-    self.commands.push_back(Command::SetRenderTarget(target.clone()));
+    self.commands.push_back(Command::SetTarget(target.clone()));
   }
 
-  /// Sets the active render target to the default display.
   pub fn set_render_target_to_display(&mut self) {
-    self.commands.push_back(Command::SetRenderTargetToDisplay);
+    self.commands.push_back(Command::SetTargetToDisplay);
   }
 
-  /// Blits between two given render targets.
-  pub fn blit_to(&mut self, from: &RenderTarget, to: &RenderTarget) {
-    self.commands.push_back(Command::Blit(from.clone(), to.clone()));
+  pub fn blit_to(&mut self, from: &RenderTarget, to: &RenderTarget, filter: TextureFilter) {
+    self.commands.push_back(Command::Blit(from.clone(), to.clone(), filter));
   }
 
-  /// Blits the given render target to the active display.
-  pub fn blit_to_display(&mut self, target: &RenderTarget) {
-    self.commands.push_back(Command::BlitToDisplay(target.clone()));
+  pub fn blit_to_display(&mut self, target: &RenderTarget, filter: TextureFilter) {
+    self.commands.push_back(Command::BlitToDisplay(target.clone(), filter));
   }
 
-  /// Executes the commands in the command buffer and clears it.
+  pub fn draw_mesh<V>(&mut self, mesh: &Mesh<V>, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+    let command = Command::DrawMesh(mesh.handle(), topology, vertex_count, index_count);
+    self.commands.push_back(command);
+  }
+
   pub fn flush(&mut self, graphics: &GraphicsServer) {
     while let Some(command) = self.commands.pop_front() {
       self.execute_command(command, graphics);
     }
   }
 
-  /// Executes the given command.
-  fn execute_command(&mut self, command: Command, _graphics: &GraphicsServer) {
+  fn execute_command(&mut self, command: Command, graphics: &GraphicsServer) {
     match command {
-      Command::ClearColor(_) => todo!(),
-      Command::ClearDepth => todo!(),
-      Command::SetRenderTarget(_) => todo!(),
-      Command::SetRenderTargetToDisplay => todo!(),
-      Command::Blit(_, _) => todo!(),
-      Command::BlitToDisplay(_) => todo!(),
+      Command::ClearColor(color) => graphics.clear_color_buffer(color),
+      Command::ClearDepth => graphics.clear_depth_buffer(),
+      Command::SetViewportSize(viewport_size) => graphics.set_viewport_size(viewport_size),
+      Command::SetBlendState(blend_state) => graphics.set_blend_state(blend_state),
+      Command::SetScissorMode(scissor_mode) => graphics.set_scissor_mode(scissor_mode),
+      Command::SetCullingMode(culling_mode) => graphics.set_culling_mode(culling_mode),
+      Command::SetTarget(target) => graphics.set_active_render_target(target.handle()),
+      Command::SetTargetToDisplay => graphics.set_default_render_target(),
+      Command::Blit(from, to, filter) => {
+        let source_color = from.color_attachment();
+        let dest_color = to.color_attachment();
+
+        let source = Rectangle::from_corner_points(0, 0, source_color.width() as i32, source_color.height() as i32);
+        let dest = Rectangle::from_corner_points(0, 0, dest_color.width() as i32, dest_color.height() as i32);
+
+        graphics.blit_render_target(from.handle(), to.handle(), &source, &dest, filter);
+      }
+      Command::BlitToDisplay(from, filter) => {
+        let source_color = from.color_attachment();
+
+        let (width, height) = graphics.get_viewport_size();
+
+        let source = Rectangle::from_corner_points(0, 0, source_color.width() as i32, source_color.height() as i32);
+        let dest = Rectangle::from_corner_points(0, 0, width as i32, height as i32);
+
+        graphics.blit_render_target_to_display(from.handle(), &source, &dest, filter);
+      }
+      Command::DrawMesh(mesh, topology, vertex_count, index_count) => {
+        graphics.draw_mesh(mesh, topology, vertex_count, index_count);
+      }
     }
   }
 }
@@ -171,7 +210,7 @@ impl RenderContextManager {
 }
 
 /// A manager for `RenderPass`es.
-/// 
+///
 /// Render passes are executed based on their `RenderPass::order()`.
 #[derive(Default)]
 pub struct RenderPassManager {

@@ -22,6 +22,7 @@ AI:
     [ ] Decision trees?
     [ ] State machines?
   [ ] Navigation meshes and path-finding?
+  [ ] Dijkstra maps for 2d flow finding?
 
 Graphics:
   [✔] Add bitmap fonts @done(22-06-06 18:57)
@@ -36,7 +37,7 @@ Graphics:
   [ ] Draw lists? (load/store actions, render targets, command buffer and post processing)
   [ ] Sprite transforms for rotations/shear/etc
   [ ] Sprite batching that supports multiple textures per draw call
-  
+
 Audio:
   [ ] Get audio backend playing simple buffered sounds
   [ ] Support buffered audio
