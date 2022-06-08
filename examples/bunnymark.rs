@@ -20,7 +20,7 @@ fn main() {
     // set-up assets and rendering
     let sprite = Texture::load(&assets, "assets/sprites/bunny.png").unwrap();
     let region = TextureRegion::from(&sprite);
-    let mut renderer = RenderManager::new(graphics);
+    let mut renderer = RenderContextManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::orthographic(WIDTH, HEIGHT, 0., 100.),

@@ -75,71 +75,15 @@ impl CommandBuffer {
   }
 
   /// Executes the given command.
-  fn execute_command(&mut self, command: Command, graphics: &GraphicsServer) {
+  fn execute_command(&mut self, command: Command, _graphics: &GraphicsServer) {
     match command {
-      Command::ClearColor(color) => todo!(),
+      Command::ClearColor(_) => todo!(),
       Command::ClearDepth => todo!(),
       Command::SetRenderTarget(_) => todo!(),
       Command::SetRenderTargetToDisplay => todo!(),
       Command::Blit(_, _) => todo!(),
       Command::BlitToDisplay(_) => todo!(),
     }
-  }
-}
-
-/// A renderer based on `RenderPass`es and the command buffer.
-#[derive(Default)]
-pub struct Renderer {
-  passes: Vec<Box<dyn RenderPass>>,
-  commands: CommandBuffer,
-}
-
-/// Represents a single render pass in a renderer.
-///
-/// Render passes are executed in order to create a single frame.
-pub trait RenderPass {
-  /// The order in which this pass should evaluate.
-  ///
-  /// Higher values are evaluated last.
-  fn order(&self) -> usize;
-
-  fn begin_frame(&mut self, commands: &mut CommandBuffer);
-  fn render_frame(&mut self, commands: &mut CommandBuffer);
-  fn end_frame(&mut self, commands: &mut CommandBuffer);
-}
-
-impl Renderer {
-  /// Creates a new renderer.
-  pub fn new() -> Self {
-    Self {
-      passes: Vec::new(),
-      commands: CommandBuffer::new(),
-    }
-  }
-
-  /// Adds a `RenderPass` to the renderer.
-  pub fn add_pass(&mut self, pass: impl RenderPass + 'static) {
-    self.passes.push(Box::new(pass));
-    self.passes.sort_by_key(|pass| pass.order());
-  }
-
-  /// Renders a single frame to the given `GraphicsServer`.
-  pub fn render(&mut self, graphics: &GraphicsServer) {
-    let commands = &mut self.commands;
-
-    for pass in &mut self.passes {
-      pass.begin_frame(commands);
-    }
-
-    for pass in &mut self.passes {
-      pass.render_frame(commands);
-    }
-
-    for pass in &mut self.passes {
-      pass.end_frame(commands);
-    }
-
-    commands.flush(graphics);
   }
 }
 
@@ -173,18 +117,17 @@ pub trait RenderContextDescriptor {
   fn create(&self, graphics: &GraphicsServer) -> Self::Context;
 }
 
-/// A renderer is responsible for rendering a scene.
+/// A manager for `RenderContext`s.
 ///
-/// The render manages a set of [`RenderContext`] s which include all the required details for
-/// textures, materials, render targets, shaders, etc.
-///
-/// Each context can be acquired and utilized via the `with` method.
-pub struct RenderManager {
+/// A [`RenderContext`] encodes all of the required details for textures,
+/// materials, render targets, shaders, necessary in a single invocation of some
+/// rendering state.
+pub struct RenderContextManager {
   graphics: GraphicsServer,
   contexts: AnyMap,
 }
 
-impl RenderManager {
+impl RenderContextManager {
   /// Creates a new render manager.
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
@@ -224,5 +167,63 @@ impl RenderManager {
   /// Clears all contexts from the manager, resetting it to a clean state.
   pub fn reset(&mut self) {
     self.contexts.clear();
+  }
+}
+
+/// A manager for `RenderPass`es.
+/// 
+/// Render passes are executed based on their `RenderPass::order()`.
+#[derive(Default)]
+pub struct RenderPassManager {
+  passes: Vec<Box<dyn RenderPass>>,
+  commands: CommandBuffer,
+}
+
+/// Represents a single render pass in a renderer.
+///
+/// Render passes are executed in order to create a single frame.
+pub trait RenderPass {
+  /// The order in which this pass should evaluate.
+  ///
+  /// Higher values are evaluated last.
+  fn order(&self) -> usize;
+
+  fn begin_frame(&mut self, commands: &mut CommandBuffer);
+  fn render_frame(&mut self, commands: &mut CommandBuffer);
+  fn end_frame(&mut self, commands: &mut CommandBuffer);
+}
+
+impl RenderPassManager {
+  /// Creates a new renderer.
+  pub fn new() -> Self {
+    Self {
+      passes: Vec::new(),
+      commands: CommandBuffer::new(),
+    }
+  }
+
+  /// Adds a `RenderPass` to the renderer.
+  pub fn add_pass(&mut self, pass: impl RenderPass + 'static) {
+    self.passes.push(Box::new(pass));
+    self.passes.sort_by_key(|pass| pass.order());
+  }
+
+  /// Renders a single frame to the given `GraphicsServer`.
+  pub fn render(&mut self, graphics: &GraphicsServer) {
+    let commands = &mut self.commands;
+
+    for pass in &mut self.passes {
+      pass.begin_frame(commands);
+    }
+
+    for pass in &mut self.passes {
+      pass.render_frame(commands);
+    }
+
+    for pass in &mut self.passes {
+      pass.end_frame(commands);
+    }
+
+    commands.flush(graphics);
   }
 }

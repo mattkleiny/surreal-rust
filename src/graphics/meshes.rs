@@ -72,7 +72,7 @@ impl VertexKind {
   }
 }
 
-/// A simple vertex in 2-space.
+/// A simple vertex in 2-space with UV and color.
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct Vertex2 {
@@ -90,7 +90,7 @@ impl Vertex for Vertex2 {
   ];
 }
 
-/// A simple vertex in 3-space.
+/// A simple vertex in 3-space with UV and color.
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct Vertex3 {
@@ -126,15 +126,13 @@ struct MeshState<V> {
 }
 
 impl<V> MeshState<V> {
-  /// Borrows the underlying graphics buffers from the state at the same time..
+  /// Borrows the underlying graphics buffers from the state at the same time.
   pub fn borrow_buffers_mut(&mut self) -> (&mut Buffer<V>, &mut Buffer<Index>) {
     (&mut self.vertices, &mut self.indices)
   }
 }
 
-impl<V> Mesh<V>
-where V: Vertex
-{
+impl<V: Vertex> Mesh<V> {
   /// Constructs a new blank mesh on the GPU.
   pub fn new(graphics: &GraphicsServer, usage: BufferUsage) -> Self {
     let vertices = Buffer::new(graphics, BufferKind::Element, usage);
@@ -322,9 +320,7 @@ impl<V> Tessellator<V> {
   }
 }
 
-impl<V> Tessellation for Tessellator<V>
-where V: Vertex
-{
+impl<V: Vertex> Tessellation for Tessellator<V> {
   type Vertex = V;
 
   fn vertex_count(&self) -> Index {

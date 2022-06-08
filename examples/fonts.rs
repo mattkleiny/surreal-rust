@@ -16,7 +16,7 @@ fn main() {
     // set-up rendering
     let bitmap_font = BitmapFont::load(&assets, "assets/fonts/IBM.font").unwrap();
     let _ttf_font = TrueTypeFont::load(&assets, "assets/fonts/bitboy8_v1.otf").unwrap();
-    let mut renderer = RenderManager::new(graphics);
+    let mut renderer = RenderContextManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::orthographic(256., 144., 0., 100.),

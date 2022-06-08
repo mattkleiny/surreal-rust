@@ -45,7 +45,7 @@ fn main() {
     let sprites = TextureAtlas::new(16, 16, &texture);
     let palette = load_built_in_palette(BuiltInPalette::Demichrome4);
 
-    let mut renderer = RenderManager::new(graphics);
+    let mut renderer = RenderContextManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::orthographic(256., 144., 0., 100.),
