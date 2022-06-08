@@ -25,7 +25,6 @@ struct InternalState {
 impl OpenGLGraphicsBackend {
   /// Creates a new OpenGL backend.
   pub fn new(context: ContextWrapper<PossiblyCurrent, ()>) -> Self {
-    // load our opengl bindings
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
     Self {
@@ -588,6 +587,8 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             });
 
             gl::BindSampler(*slot as u32, *sampler_id);
+          } else {
+            gl::BindSampler(*slot as u32, 0);
           }
         }
         ShaderUniform::TextureBinding(texture, slot, mode, format) => {
@@ -802,30 +803,61 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn blit_render_target_to_display(
+  fn blit_render_target_to(
     &self,
-    target: GraphicsHandle,
-    source: &Rectangle<i32>,
-    dest: &Rectangle<i32>,
-  ) {
+    from: GraphicsHandle,
+    to: GraphicsHandle,
+    source_rect: &Rectangle<i32>,
+    dest_rect: &Rectangle<i32>,
+  ){
     unsafe {
-      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, target);
-      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
+      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, from);
+      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, to);
 
       gl::BlitFramebuffer(
-        source.left(),
-        source.top(),
-        source.width(),
-        source.height(),
-        dest.left(),
-        dest.top(),
-        dest.width(),
-        dest.height(),
+        source_rect.left(),
+        source_rect.top(),
+        source_rect.width(),
+        source_rect.height(),
+        dest_rect.left(),
+        dest_rect.top(),
+        dest_rect.width(),
+        dest_rect.height(),
+        // TODO: lift these parameters to the API
         gl::COLOR_BUFFER_BIT,
         gl::NEAREST,
       );
 
       gl::BindFramebuffer(gl::READ_FRAMEBUFFER, 0);
+      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
+    }
+  }
+
+  fn blit_render_target_to_display(
+    &self,
+    handle: GraphicsHandle,
+    source_rect: &Rectangle<i32>,
+    dest_rect: &Rectangle<i32>,
+  ) {
+    unsafe {
+      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, handle);
+      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
+
+      gl::BlitFramebuffer(
+        source_rect.left(),
+        source_rect.top(),
+        source_rect.width(),
+        source_rect.height(),
+        dest_rect.left(),
+        dest_rect.top(),
+        dest_rect.width(),
+        dest_rect.height(),
+        gl::COLOR_BUFFER_BIT,
+        gl::NEAREST,
+      );
+
+      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, 0);
+      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
     }
   }
 
