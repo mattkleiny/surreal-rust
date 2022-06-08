@@ -106,15 +106,17 @@ impl RenderTarget {
   /// Activates the [`RenderTarget`].
   pub fn activate(&self) {
     let state = self.state.borrow();
+    let graphics = &state.graphics;
 
-    state.graphics.set_active_render_target(state.handle);
+    graphics.set_active_render_target(state.handle);
   }
 
   /// Deactivates the [`RenderTarget`].
   pub fn deactivate(&self) {
     let state = self.state.borrow();
+    let graphics = &state.graphics;
 
-    state.graphics.set_default_render_target();
+    graphics.set_default_render_target();
   }
 
   /// Blits this render target to the given other target.
@@ -141,6 +143,9 @@ impl RenderTarget {
 
     let source = Rectangle::from_corner_points(0, 0, color.width() as i32, color.height() as i32);
     let dest = Rectangle::from_corner_points(0, 0, width as i32, height as i32);
+
+    log::trace!("Source size is {}x{}", source.width(), source.height());
+    log::trace!("Dest size is {}x{}", dest.width(), dest.height());
 
     let graphics = &state.graphics;
 

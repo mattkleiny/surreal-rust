@@ -346,6 +346,13 @@ impl Engine {
 
     log::trace!("Stopping engine")
   }
+
+  /// Gets the size of the window
+  pub fn window_size(&self) -> (usize, usize) {
+    let inner_size = self.window.inner_size();
+
+    (inner_size.width as usize, inner_size.height as usize)
+  }
 }
 
 /// Allow the engine to be used in egui rendering.
