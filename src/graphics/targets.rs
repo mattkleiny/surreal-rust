@@ -60,9 +60,7 @@ impl RenderTarget {
   pub fn new(graphics: &GraphicsServer, descriptor: &RenderTargetDescriptor) -> Self {
     // prepare attachments
     let color_attachment = descriptor.color_attachment.to_texture(graphics);
-
     let depth_attachment = descriptor.depth_attachment.as_ref().map(|it| it.to_texture(graphics));
-
     let stencil_attachment = descriptor.stencil_attachment.as_ref().map(|it| it.to_texture(graphics));
 
     let handle = graphics.create_render_target(
@@ -143,9 +141,6 @@ impl RenderTarget {
 
     let source = Rectangle::from_corner_points(0, 0, color.width() as i32, color.height() as i32);
     let dest = Rectangle::from_corner_points(0, 0, width as i32, height as i32);
-
-    log::trace!("Source size is {}x{}", source.width(), source.height());
-    log::trace!("Dest size is {}x{}", dest.width(), dest.height());
 
     let graphics = &state.graphics;
 
