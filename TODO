@@ -39,7 +39,7 @@ Graphics:
   [ ] Sprite batching that supports multiple textures per draw call
 
 Audio:
-  [ ] Get audio backend playing simple buffered sounds @started(22-06-09 02:09)
+  [ ] Get audio backend playing simple buffered sounds
   [ ] Support buffered audio
   [ ] Support streaming audio
 
