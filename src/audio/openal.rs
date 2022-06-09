@@ -12,6 +12,10 @@ impl OpenALAudioBackend {
   }
 }
 
+impl Drop for OpenALAudioBackend {
+  fn drop(&mut self) {}
+}
+
 impl AudioBackend for OpenALAudioBackend {
   fn create_clip(&self) -> AudioHandle {
     todo!()
