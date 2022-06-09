@@ -34,5 +34,6 @@ log = "0.4.17"
 
 # platform dependencies
 gl = "0.14.0"
+oal-sys = "0.0.2"
 glutin = { version = "0.28.0", default-features = false, features = [ "x11" ] }
 

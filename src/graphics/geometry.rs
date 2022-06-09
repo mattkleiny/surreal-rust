@@ -212,7 +212,7 @@ impl GeometryBatch {
       indices.write_data(&self.indices);
     });
 
-    self.mesh.draw_sub_mesh(
+    self.mesh.draw_sub(
       material,
       PrimitiveTopology::Triangles,
       self.vertices.len(),

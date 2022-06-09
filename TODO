@@ -22,6 +22,7 @@ AI:
     [ ] Decision trees?
     [ ] State machines?
   [ ] Navigation meshes and path-finding?
+  [ ] Dijkstra maps for 2d flow finding?
 
 Graphics:
   [✔] Add bitmap fonts @done(22-06-06 18:57)

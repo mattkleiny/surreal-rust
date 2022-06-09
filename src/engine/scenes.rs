@@ -1,13 +1,10 @@
 //! Scene management system for Surreal.
-//!
-//! Scenes are serialized representations of entities and components
-//! that can be loaded and saved to disk.
 
-#[derive(Serialize, Deserialize)]
-pub struct Scene {}
-
-impl Scene {
-  pub fn new() -> Self {
-    Self {}
-  }
-}
+/// A scene that can be serialized/deserialized from disk.
+///
+/// This is a high level representation of the objects present in the scene,
+/// along with the parameters used to configure them.
+///
+/// A scene can be converted into a convential `Scene` via the `build()` method.
+#[derive(Default, Serialize, Deserialize)]
+pub struct PackedScene {}

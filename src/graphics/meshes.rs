@@ -172,18 +172,12 @@ impl<V: Vertex> Mesh<V> {
   pub fn draw(&self, material: &Material, topology: PrimitiveTopology) {
     let state = self.state.borrow();
 
-    self.draw_sub_mesh(material, topology, state.vertices.len(), state.indices.len());
+    self.draw_sub(material, topology, state.vertices.len(), state.indices.len());
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
   #[profiling::function]
-  pub fn draw_sub_mesh(
-    &self,
-    material: &Material,
-    topology: PrimitiveTopology,
-    vertex_count: usize,
-    index_count: usize,
-  ) {
+  pub fn draw_sub(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     material.bind();
 
     let state = self.state.borrow();

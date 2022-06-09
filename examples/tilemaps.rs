@@ -14,17 +14,23 @@ enum MapTile {
 impl Tile for MapTile {
   type Id = u8;
 
-  fn from_id(id: Self::Id) -> &'static Self {
+  fn from_id(id: Self::Id) -> Self {
     match id {
-      0 => &Self::Empty,
-      1 => &Self::Cactus,
-      2 => &Self::Rock,
+      0 => Self::Empty,
+      1 => Self::Cactus,
+      2 => Self::Rock,
       _ => panic!(),
     }
   }
 
   fn to_id(&self) -> Self::Id {
     *self as Self::Id
+  }
+}
+
+impl FromRandom for MapTile {
+  fn from_random(random: &mut Random) -> Self {
+    Self::from_id(random.next::<u8>() % 3)
   }
 }
 
@@ -56,21 +62,11 @@ fn main() {
     // set-up tile map
     let mut map = TileMap::new(16, 9);
 
-    map.set_sprite(&MapTile::Empty, sprites.get_region(0, 3));
-    map.set_sprite(&MapTile::Cactus, sprites.get_region(3, 0));
-    map.set_sprite(&MapTile::Rock, sprites.get_region(2, 2));
+    map.set_sprite(MapTile::Empty, sprites.get_region(0, 3));
+    map.set_sprite(MapTile::Cactus, sprites.get_region(3, 0));
+    map.set_sprite(MapTile::Rock, sprites.get_region(2, 2));
 
-    map.fill(|_, _| {
-      if bool::random() {
-        if bool::random() {
-          &MapTile::Rock
-        } else {
-          &MapTile::Cactus
-        }
-      } else {
-        &MapTile::Empty
-      }
-    });
+    map.fill(|_, _| MapTile::random());
 
     engine.run_variable_step(|engine, tick| {
       let graphics = &engine.graphics;
@@ -80,17 +76,7 @@ fn main() {
 
       if engine.input.keyboard.is_key_pressed(Key::Space) {
         map.clear();
-        map.fill(|_, _| {
-          if bool::random() {
-            if bool::random() {
-              &MapTile::Rock
-            } else {
-              &MapTile::Cactus
-            }
-          } else {
-            &MapTile::Empty
-          }
-        });
+        map.fill(|_, _| MapTile::random());
       }
 
       if engine.input.keyboard.is_key_pressed(Key::Escape) {

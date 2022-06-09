@@ -3,15 +3,16 @@
 //! We currently support bitmap fonts, with a planned future change to support TrueType fonts.
 
 use std::collections::HashMap;
-use std::sync::RwLock;
+use std::sync::{Arc, Mutex};
 
 use ab_glyph::{Font as AbFont, FontVec};
 
 use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
 use crate::graphics::{Texture, TextureRegion};
 use crate::maths::{vec2, Vector2};
+use crate::prelude::Grid;
 
-use super::GraphicsServer;
+use super::{Color32, GraphicsServer, TextureAtlasBuilder};
 
 /// Represents different kinds of fonts and permits rendering.
 pub trait Font {
@@ -23,13 +24,14 @@ pub trait Font {
 }
 
 /// A font comprised of bitmap images for each glyph.
+#[derive(Clone)]
 pub struct BitmapFont {
   texture: Handle<Texture>,
   metrics: BitmapFontMetrics,
 }
 
 /// Describes the metrics for a bitmap font.
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 struct BitmapFontMetrics {
   pub file_path: String,
@@ -101,19 +103,27 @@ impl AssetLoader<BitmapFont> for BitmapFontLoader {
     let metrics: BitmapFontMetrics = context.path.deserialize_json()?;
     let texture: Handle<Texture> = context.load_asset(&metrics.file_path)?;
 
-    Ok(BitmapFont {
+    let font = BitmapFont {
       texture: texture.clone(),
       metrics,
-    })
+    };
+
+    Ok(font)
   }
 }
 
 /// A true type font that can be rasterized at different font sizes.
+#[derive(Clone)]
 pub struct TrueTypeFont {
+  state: Arc<Mutex<TrueTypeFontState>>,
+}
+
+struct TrueTypeFontState {
   font: FontVec,
   font_size: f32,
   texture: Texture,
-  cache: RwLock<HashMap<char, GlyphInfo>>,
+  builder: TextureAtlasBuilder<Color32>,
+  cache: HashMap<char, GlyphInfo>,
 }
 
 /// Represents position information for a single glyph in a texture.
@@ -129,29 +139,31 @@ impl Font for TrueTypeFont {
 
   fn get_glyph(&self, character: char) -> Option<TextureRegion> {
     // if we already have a glyph position cached for this in our texture
-    let cache = self.cache.read().unwrap();
+    let state = self.state.lock().unwrap();
 
-    if let Some(glyph_info) = cache.get(&character) {
-      return Some(TextureRegion {
-        texture: &self.texture,
-        offset: glyph_info.position,
-        size: glyph_info.size,
-      });
+    if let Some(_glyph_info) = state.cache.get(&character) {
+      // return Some(TextureRegion {
+      //   texture: &state.texture,
+      //   offset: glyph_info.position,
+      //   size: glyph_info.size,
+      // });
+      todo!();
     }
 
     // otherwise build a new glyph
-    let _glyph = self.font.glyph_id(character).with_scale(self.font_size);
-    // let mut glyph_cell = self.texture_atlas.create();
+    let glyph = state.font.glyph_id(character).with_scale(state.font_size);
+    let mut pixels = Grid::new(32, 32);
 
-    // if let Some(outline) = self.font.outline_glyph(glyph) {
-    //   outline.draw(|x, y, coverage| {
-    //     let color = Color32::rgba(255, 255, 255, (coverage * 255.0) as u8);
+    if let Some(outline) = state.font.outline_glyph(glyph) {
+      outline.draw(|x, y, coverage| {
+        let color = Color32::rgba(255, 255, 255, (coverage * 255.0) as u8);
 
-    //     glyph_cell.set_pixel(x, y, color);
-    //   });
+        pixels.set((x as usize, y as usize), color);
+      });
 
-    //   self.texture_atlas.apply(&mut self.texture);
-    // }
+      // state.builder.push(pixels);
+      // state.builder.write_to(32 * 6, &mut state.texture);
+    }
 
     todo!()
   }
@@ -172,10 +184,13 @@ impl AssetLoader<TrueTypeFont> for TrueTypeFontLoader {
     let bytes = context.path.read_all_bytes()?;
 
     let font = TrueTypeFont {
-      font: FontVec::try_from_vec(bytes)?,
-      font_size: self.font_size,
-      texture: Texture::new(&self.graphics),
-      cache: RwLock::new(HashMap::new()),
+      state: Arc::new(Mutex::new(TrueTypeFontState {
+        font: FontVec::try_from_vec(bytes)?,
+        font_size: self.font_size,
+        texture: Texture::new(&self.graphics),
+        builder: TextureAtlasBuilder::new(),
+        cache: HashMap::new(),
+      })),
     };
 
     Ok(font)

@@ -726,6 +726,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "oal-sys"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad5a1a94ebe5075f52edba478e00c476e1f2c284b4d288e062ee87e199a7f3b7"
+
+[[package]]
 name = "objc"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -980,6 +986,7 @@ dependencies = [
  "image",
  "lazy_static",
  "log",
+ "oal-sys",
  "profiling",
  "serde",
  "serde_json",

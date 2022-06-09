@@ -2,8 +2,8 @@
 //!
 //! This engine is a light abstraction on top of OpenGL; it offers basic lifecycle management
 //! of common OpenGL primitives (textures, buffers, vertex array/meshes, etc). These primitives
-//! are backed by a particular `GraphicsBackend` implementation, which allows us to gracefully swap
-//! the internal graphics implementation through a single dynamic pointer.
+//! are backed by a particular `GraphicsBackend` implementation, which allows us to gracefully
+//! swap the internal graphics implementation through a single dynamic pointer.
 //!
 //! On top of the these lower-level primitives, we also build up to some more useful abstractions,
 //! such as the `RenderContextManager`. This manager types allow for the creation of context objects

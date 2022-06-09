@@ -1,12 +1,21 @@
 //! A lightweight cross-platform audio engine.
+//!
+//! This engine is a light abstraction on top of OpenAL; it offers basic lifecycle management
+//! of common OpenAL primitives (buffers, sounds, sources); these primitives are backed by
+//! a particular `AudioBackend` implementation, which allows us to gracefully swap the internal
+//! audio implementation through a single dynamic pointer.
 
+pub use clips::*;
 pub use headless::*;
 pub use openal::*;
+pub use sources::*;
 
 use crate::utilities::{Size, TimeSpan};
 
+mod clips;
 mod headless;
 mod openal;
+mod sources;
 
 /// An opaque handle to a resource in the audio system.
 pub type AudioHandle = u32;
@@ -63,6 +72,13 @@ impl AudioSampleRate {
 pub trait AudioBackend {
   // clips
   fn create_clip(&self) -> AudioHandle;
-  fn upload_clip_data(&self, handle: AudioHandle, data: &[u8]);
-  fn delete_clip(&self, handle: AudioHandle);
+  fn upload_clip_data(&self, clip: AudioHandle, data: *const u8, length: usize);
+  fn delete_clip(&self, clip: AudioHandle);
+
+  // sources
+  fn create_source(&self) -> AudioHandle;
+  fn is_source_playing(&self, source: AudioHandle) -> bool;
+  fn get_source_volume(&self, source: AudioHandle) -> f32;
+  fn set_source_volume(&self, source: AudioHandle, volume: f32);
+  fn delete_source(&self, source: AudioHandle);
 }
