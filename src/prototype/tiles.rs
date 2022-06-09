@@ -8,10 +8,10 @@ use crate::maths::{vec2, Numeric};
 use super::*;
 
 /// Represents a tile that can be used in a [`TileMap`].
-pub trait Tile: 'static {
+pub trait Tile: Clone {
   type Id: Numeric + Hash + Eq;
 
-  fn from_id(id: Self::Id) -> &'static Self;
+  fn from_id(id: Self::Id) -> Self;
   fn to_id(&self) -> Self::Id;
 }
 
@@ -44,27 +44,27 @@ impl<'a, T: Tile> TileMap<'a, T> {
   }
 
   /// Gets a tile in the grid.
-  pub fn get(&self, point: impl Into<GridPoint>) -> &T {
+  pub fn get(&self, point: impl Into<GridPoint>) -> T {
     T::from_id(*self.tiles.get(point))
   }
 
   /// Sets a tile in the grid.
-  pub fn set(&mut self, point: impl Into<GridPoint>, value: &T) {
+  pub fn set(&mut self, point: impl Into<GridPoint>, value: T) {
     self.tiles.set(point, value.to_id());
   }
 
   /// Gets the sprite to be used for the given tile.
-  pub fn get_sprite(&self, tile: &T) -> Option<&TextureRegion<'a>> {
+  pub fn get_sprite(&self, tile: T) -> Option<&TextureRegion<'a>> {
     self.sprites.get(&tile.to_id())
   }
 
   /// Sets the sprite to be used for the given tile.
-  pub fn set_sprite(&mut self, tile: &T, sprite: impl Into<TextureRegion<'a>>) {
+  pub fn set_sprite(&mut self, tile: T, sprite: impl Into<TextureRegion<'a>>) {
     self.sprites.insert(tile.to_id(), sprite.into());
   }
 
   /// Fills the map with the given delegate.
-  pub fn fill(&mut self, body: impl Fn(usize, usize) -> &'a T) {
+  pub fn fill(&mut self, body: impl Fn(usize, usize) -> T) {
     for y in 0..self.height() {
       for x in 0..self.width() {
         let tile = body(x, y);
@@ -114,6 +114,7 @@ impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
 mod tests {
   use super::*;
 
+  #[derive(Clone)]
   struct ExampleTile(u8, &'static str);
 
   impl ExampleTile {
@@ -126,12 +127,12 @@ mod tests {
   impl Tile for ExampleTile {
     type Id = u8;
 
-    fn from_id(id: Self::Id) -> &'static Self {
+    fn from_id(id: Self::Id) -> Self {
       match id {
-        0 => &Self::EMPTY,
-        1 => &Self::WALL,
-        2 => &Self::FLOOR,
-        3 => &Self::DOOR,
+        0 => Self::EMPTY,
+        1 => Self::WALL,
+        2 => Self::FLOOR,
+        3 => Self::DOOR,
         _ => panic!("Just experimenting: {:?}", id),
       }
     }
@@ -146,7 +147,7 @@ mod tests {
     let mut map = TileMap::new(16, 16);
     let position = vec2(0, 0);
 
-    map.set(position, &ExampleTile::WALL);
+    map.set(position, ExampleTile::WALL);
 
     let tile = map.get(position);
 
