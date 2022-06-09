@@ -13,6 +13,7 @@ mod tiles;
 const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
 const SHADER_SPRITE_STANDARD: &str = include_str!("../assets/shaders/sprite-standard.glsl");
 const SHADER_SPRITE_PALETTE: &str = include_str!("../assets/shaders/sprite-palette.glsl");
+const SHADER_WIRE_STANDARD: &str = include_str!("../assets/shaders/wire-standard.glsl");
 const SHADER_EFFECT_ABERRATION: &str = include_str!("../assets/shaders/effect-aberration.glsl");
 
 // built-in palettes
@@ -32,6 +33,8 @@ pub enum BuiltInShader {
   SpriteStandard,
   /// Palette-shifted sprite shader.
   SpritePalette,
+  /// A material for wire rendering and basic geometry.
+  Wire,
   /// A simple screen-space aberration effect.
   AberrationEffect,
 }
@@ -53,6 +56,7 @@ pub fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) ->
     BuiltInShader::Canvas => ShaderProgram::from_glsl(graphics, SHADER_CANVAS_STANDARD),
     BuiltInShader::SpriteStandard => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_STANDARD),
     BuiltInShader::SpritePalette => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_PALETTE),
+    BuiltInShader::Wire => ShaderProgram::from_glsl(graphics, SHADER_WIRE_STANDARD),
     BuiltInShader::AberrationEffect => ShaderProgram::from_glsl(graphics, SHADER_EFFECT_ABERRATION),
   };
 
@@ -149,6 +153,69 @@ pub struct SpriteBatchContext {
 }
 
 impl RenderContext for SpriteBatchContext {
+  fn on_before_with(&mut self) {
+    self.batch.begin(&self.material);
+  }
+
+  fn on_after_with(&mut self) {
+    self.batch.flush();
+  }
+}
+
+/// A descriptor for the `GeometryBatch`.
+pub struct GeometryBatchDescriptor {
+  /// A default projection-view matrix to apply.
+  pub projection_view: Matrix4x4<f32>,
+
+  /// A custom shader program to use for rendering.
+  pub shader: Option<ShaderProgram>,
+}
+
+impl Default for GeometryBatchDescriptor {
+  fn default() -> Self {
+    Self {
+      projection_view: Matrix4x4::identity(),
+      shader: None,
+    }
+  }
+}
+
+impl RenderContextDescriptor for GeometryBatchDescriptor {
+  type Context = GeometryBatchContext;
+
+  fn create(&self, graphics: &GraphicsServer) -> Self::Context {
+    // determine which shader we're using, prepare material
+    let shader = match &self.shader {
+      Some(shader) => shader.clone(),
+      None => load_built_in_shader(graphics, BuiltInShader::Wire),
+    };
+
+    let mut material = Material::new(graphics, &shader);
+    let batch = GeometryBatch::new(graphics);
+
+    // apply the default projection-view matrix
+    material.set_uniform("u_projectionView", &self.projection_view);
+
+    // enable default material state
+    material.set_blend_state(BlendState::Enabled {
+      source: BlendFactor::SrcAlpha,
+      destination: BlendFactor::OneMinusSrcAlpha,
+    });
+
+    Self::Context { material, batch }
+  }
+}
+
+/// A simple [`RenderContext`] that allows for geometry rendering using the standard wire shaders.
+pub struct GeometryBatchContext {
+  /// A material configured to render geometry.
+  pub material: Material,
+
+  /// The geometry batch to use for wire geometry.
+  pub batch: GeometryBatch,
+}
+
+impl RenderContext for GeometryBatchContext {
   fn on_before_with(&mut self) {
     self.batch.begin(&self.material);
   }

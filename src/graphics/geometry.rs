@@ -8,10 +8,26 @@ use super::*;
 ///
 /// This batch pre-allocates an array of vertices and re-uses it to tessellate shapes and polygons.
 pub struct GeometryBatch {
-  mesh: Mesh<Vertex2>,
-  vertices: Vec<Vertex2>,
+  mesh: Mesh<GeometryVertex>,
+  vertices: Vec<GeometryVertex>,
   indices: Vec<Index>,
   material: Option<Material>,
+}
+
+/// A specialized vertex for use in our geometry batch.
+#[repr(C)]
+#[derive(Clone, Debug)]
+struct GeometryVertex {
+  pub position: Vector2<f32>,
+  pub color: Color32,
+}
+
+impl Vertex for GeometryVertex {
+  #[rustfmt::skip]
+  const DESCRIPTORS: &'static [VertexDescriptor] = &[
+    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
+    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
+  ];
 }
 
 impl GeometryBatch {
@@ -36,23 +52,9 @@ impl GeometryBatch {
   pub fn draw_triangle(&mut self, a: Vector2<f32>, b: Vector2<f32>, c: Vector2<f32>, color: Color32) {
     let base_offset = self.vertices.len() as Index;
 
-    self.vertices.push(Vertex2 {
-      position: a,
-      uv: vec2(0., 0.),
-      color,
-    });
-
-    self.vertices.push(Vertex2 {
-      position: b,
-      uv: vec2(0.5, 1.),
-      color,
-    });
-
-    self.vertices.push(Vertex2 {
-      position: c,
-      uv: vec2(1., 0.),
-      color,
-    });
+    self.vertices.push(GeometryVertex { position: a, color });
+    self.vertices.push(GeometryVertex { position: b, color });
+    self.vertices.push(GeometryVertex { position: c, color });
 
     self.indices.push(base_offset + 0);
     self.indices.push(base_offset + 1);
@@ -68,24 +70,21 @@ impl GeometryBatch {
 
     let base_offset = self.vertices.len() as Index;
 
-    self.vertices.push(Vertex2 {
+    self.vertices.push(GeometryVertex {
       position: points[0],
-      uv: vec2(0., 0.),
       color,
     });
 
     for i in 1..points.len() - 1 {
       let offset = self.vertices.len() as Index;
 
-      self.vertices.push(Vertex2 {
+      self.vertices.push(GeometryVertex {
         position: points[i + 0],
-        uv: vec2(0., 0.),
         color,
       });
 
-      self.vertices.push(Vertex2 {
+      self.vertices.push(GeometryVertex {
         position: points[i + 1],
-        uv: vec2(0., 0.),
         color,
       });
 
@@ -100,27 +99,23 @@ impl GeometryBatch {
   pub fn draw_rectangle(&mut self, rectangle: Rectangle<f32>, color: Color32) {
     let base_offset = self.vertices.len() as Index;
 
-    self.vertices.push(Vertex2 {
+    self.vertices.push(GeometryVertex {
       position: rectangle.bottom_left(),
-      uv: vec2(0., 0.),
       color,
     });
 
-    self.vertices.push(Vertex2 {
+    self.vertices.push(GeometryVertex {
       position: rectangle.top_left(),
-      uv: vec2(0., 1.),
       color,
     });
 
-    self.vertices.push(Vertex2 {
+    self.vertices.push(GeometryVertex {
       position: rectangle.top_right(),
-      uv: vec2(1., 1.),
       color,
     });
 
-    self.vertices.push(Vertex2 {
+    self.vertices.push(GeometryVertex {
       position: rectangle.bottom_right(),
-      uv: vec2(1., 0.),
       color,
     });
 
@@ -148,48 +143,6 @@ impl GeometryBatch {
     }
 
     self.draw_triangle_strip(&points, color);
-  }
-
-  /// Draws a sprite in the batch.
-  #[profiling::function]
-  pub fn draw_sprite(&mut self, texture: &TextureRegion, position: Vector2<f32>, scale: Vector2<f32>, color: Color32) {
-    let base_offset = self.vertices.len() as Index;
-
-    // calculate sprite bounds and uv coordinates
-    let bounds = Rectangle::from_size(position, scale);
-    let uv = texture.calculate_uv();
-
-    self.vertices.push(Vertex2 {
-      position: bounds.bottom_left(),
-      uv: uv.top_left(),
-      color,
-    });
-
-    self.vertices.push(Vertex2 {
-      position: bounds.top_left(),
-      uv: uv.bottom_left(),
-      color,
-    });
-
-    self.vertices.push(Vertex2 {
-      position: bounds.top_right(),
-      uv: uv.bottom_right(),
-      color,
-    });
-
-    self.vertices.push(Vertex2 {
-      position: bounds.bottom_right(),
-      uv: uv.top_right(),
-      color,
-    });
-
-    self.indices.push(base_offset + 0);
-    self.indices.push(base_offset + 1);
-    self.indices.push(base_offset + 2);
-
-    self.indices.push(base_offset + 0);
-    self.indices.push(base_offset + 2);
-    self.indices.push(base_offset + 3);
   }
 
   /// Flushes the batch content to the GPU.
