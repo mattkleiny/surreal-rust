@@ -43,12 +43,13 @@ impl Default for SpriteOptions {
 /// A specialized vertex for use in our sprite batch.
 ///
 /// Encodes a unique texture id representing which of the bound texture units is relevant for this sprite
-#[derive(Copy, Clone, Debug)]
+#[repr(C)]
+#[derive(Clone, Debug)]
 struct SpriteVertex {
-  position: Vector2<f32>,
-  uv: Vector2<f32>,
-  color: Color32,
-  texture_id: u8,
+  pub position: Vector2<f32>,
+  pub uv: Vector2<f32>,
+  pub color: Color32,
+  pub texture_id: u8,
 }
 
 impl Vertex for SpriteVertex {
@@ -74,7 +75,7 @@ impl SpriteBatch {
     let indices = build_quad_indices(sprite_count);
 
     // create mesh, upload quad indices immediately
-    let mut mesh = Mesh::new(graphics, BufferUsage::Static);
+    let mut mesh = Mesh::new(graphics, BufferUsage::Dynamic);
 
     mesh.with_buffers(|_, buffer| {
       buffer.write_data(&indices);
@@ -187,9 +188,9 @@ impl SpriteBatch {
       vertices.write_data(&self.vertices);
     });
 
-    let mesh = &self.mesh;
-
-    mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
+    self
+      .mesh
+      .draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
 
     self.vertices.clear();
   }
@@ -229,11 +230,11 @@ fn build_quad_indices(sprite_count: usize) -> Vec<u32> {
 /// Retains a pool of textures in unique slot indices to allow multiple textures per batch
 #[derive(Default)]
 struct TexturePool {
-  slots: [Option<Texture>; 16],
+  slots: [Option<Texture>; 8],
 }
 
 impl TexturePool {
-  /// Allocates a new texture from the pool, if possible.
+  /// Allocates a new texture slot from the pool, if possible.
   pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
     for (index, slot) in self.slots.iter_mut().enumerate() {
       match slot {
@@ -255,7 +256,10 @@ impl TexturePool {
   pub fn bind(&mut self, material: &mut Material) {
     for (index, texture) in self.slots.iter().enumerate() {
       if let Some(texture) = texture {
-        material.set_uniform(&format!("u_texture[{}]", index), texture);
+        material.set_uniform(
+          &format!("u_textures[{}]", index),
+          ShaderUniform::Texture(texture.clone(), index as u8, None),
+        );
       }
     }
 

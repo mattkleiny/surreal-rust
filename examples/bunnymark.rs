@@ -70,7 +70,7 @@ fn main() {
       if engine.input.mouse.is_button_down(MouseButton::Left) {
         let position = engine.input.mouse.normalised_position();
 
-        for _ in 0..128 {
+        for _ in 0..1 {
           bunnies.push(Bunny {
             position: vec2(position.x * WIDTH - WIDTH / 2., position.y * HEIGHT - HEIGHT / 2.),
             velocity: vec2(random.next::<f32>() * 2. - 1., random.next::<f32>() * 2. - 1.),
@@ -82,7 +82,7 @@ fn main() {
       }
 
       if engine.input.mouse.is_button_down(MouseButton::Right) {
-        for _ in 0..128 {
+        for _ in 0.. {
           bunnies.pop();
         }
 

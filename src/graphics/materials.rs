@@ -131,7 +131,7 @@ impl Material {
     if let Some(location) = self.shader.get_uniform_location(name) {
       let uniform = MaterialUniform {
         location,
-        value: ShaderUniform::Texture(texture.clone(), slot, sampler),
+        value: ShaderUniform::Texture(texture.clone(), slot as u8, sampler),
       };
 
       self.uniforms.insert(name.to_string(), uniform);

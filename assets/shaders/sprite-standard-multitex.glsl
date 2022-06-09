@@ -14,7 +14,7 @@ layout(location = 3)in uint a_textureId;
 
 out vec2 v_uv;
 out vec4 v_color;
-out uint v_textureId;
+flat out uint v_textureId;
 
 void main() {
   v_uv = a_uv;
@@ -26,12 +26,13 @@ void main() {
 
 #shader_type fragment
 
-uniform sampler2D[16]u_texture;
+uniform sampler2D u_textures[16];
 
 in vec2 v_uv;
 in vec4 v_color;
-in flat uint v_textureId;
+flat in uint v_textureId;
 
 void main() {
-  gl_FragColor = v_color * texture(u_texture[v_textureId], v_uv);
+  // gl_FragColor = v_color * texture(u_textures[v_textureId], v_uv);
+  gl_FragColor = vec4(v_textureId, v_uv.x, v_uv.y, 1) * v_color;
 }

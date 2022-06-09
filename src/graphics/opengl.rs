@@ -636,14 +636,14 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       let mut offset = 0;
 
       for (index, descriptor) in descriptors.iter().enumerate() {
-        let kind = match descriptor.kind {
-          VertexKind::U8 => gl::UNSIGNED_BYTE,
-          VertexKind::U16 => gl::UNSIGNED_SHORT,
-          VertexKind::U32 => gl::UNSIGNED_INT,
-          VertexKind::I16 => gl::SHORT,
-          VertexKind::I32 => gl::INT,
-          VertexKind::F32 => gl::FLOAT,
-          VertexKind::F64 => gl::DOUBLE,
+        let (kind, is_integral) = match descriptor.kind {
+          VertexKind::U8 => (gl::UNSIGNED_BYTE, true),
+          VertexKind::U16 => (gl::UNSIGNED_SHORT, true),
+          VertexKind::U32 => (gl::UNSIGNED_INT, true),
+          VertexKind::I16 => (gl::SHORT, true),
+          VertexKind::I32 => (gl::INT, true),
+          VertexKind::F32 => (gl::FLOAT, false),
+          VertexKind::F64 => (gl::DOUBLE, false),
         };
 
         let should_normalize = match descriptor.should_normalize {
@@ -651,14 +651,25 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           false => gl::FALSE,
         };
 
-        gl::VertexAttribPointer(
-          index as u32,
-          descriptor.count as i32,
-          kind,
-          should_normalize,
-          stride as i32,
-          offset as *const _,
-        );
+        if !is_integral || descriptor.should_normalize {
+          gl::VertexAttribPointer(
+            index as u32,
+            descriptor.count as i32,
+            kind,
+            should_normalize,
+            stride as i32,
+            offset as *const _,
+          );
+        } else {
+          gl::VertexAttribIPointer(
+            index as u32,
+            descriptor.count as i32,
+            kind,
+            stride as i32,
+            offset as *const _,
+          );
+        }
+
         gl::EnableVertexAttribArray(index as u32);
 
         offset += descriptor.size();
