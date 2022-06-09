@@ -625,14 +625,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       let mut id: u32 = 0;
 
       gl::GenVertexArrays(1, &mut id);
-
       gl::BindVertexArray(id);
 
       gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
       gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
 
-      let stride: usize = descriptors.iter().map(|it| it.count * it.kind.size()).sum();
-
+      let stride: usize = descriptors.iter().map(|desc| desc.size()).sum();
       let mut offset = 0;
 
       for (index, descriptor) in descriptors.iter().enumerate() {
@@ -646,17 +644,15 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           VertexKind::F64 => (gl::DOUBLE, false),
         };
 
-        let should_normalize = match descriptor.should_normalize {
-          true => gl::TRUE,
-          false => gl::FALSE,
-        };
-
         if !is_integral || descriptor.should_normalize {
           gl::VertexAttribPointer(
             index as u32,
             descriptor.count as i32,
             kind,
-            should_normalize,
+            match descriptor.should_normalize {
+              true => gl::TRUE,
+              false => gl::FALSE,
+            },
             stride as i32,
             offset as *const _,
           );

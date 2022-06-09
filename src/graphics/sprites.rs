@@ -14,8 +14,9 @@ const DEFAULT_SPRITE_COUNT: usize = 1024;
 /// This batch pre-allocates an array of vertices and indices and re-uses them for as many
 /// sprites as possible.
 ///
-/// Batching is possible over 1 material and texture pair; each texture swap requires a flush
-/// and so it's important to pre-sort sprites into batches by material and texture.
+/// Batching is possible over 1 material and up to 16 textures; any additional texture samples
+/// will require a flush and so it's important to pre-sort sprites into batches by material and
+/// texture.
 pub struct SpriteBatch {
   mesh: Mesh<SpriteVertex>,
   material: Option<Material>,
@@ -42,14 +43,16 @@ impl Default for SpriteOptions {
 
 /// A specialized vertex for use in our sprite batch.
 ///
-/// Encodes a unique texture id representing which of the bound texture units is relevant for this sprite
+/// Encodes a unique `texture_id` representing which of the bound texture units is
+/// relevant for this sprite. This is used to avoid unnecessary flushes in the batch
+/// when rendering sprites from multiple texture sources simultaneously.
 #[repr(C)]
 #[derive(Clone, Debug)]
 struct SpriteVertex {
   pub position: Vector2<f32>,
   pub uv: Vector2<f32>,
   pub color: Color32,
-  pub texture_id: u8,
+  pub texture_id: u32,
 }
 
 impl Vertex for SpriteVertex {
@@ -58,7 +61,7 @@ impl Vertex for SpriteVertex {
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-    VertexDescriptor { count: 1, kind: VertexKind::U8, should_normalize: false },
+    VertexDescriptor { count: 1, kind: VertexKind::U32, should_normalize: false },
   ];
 }
 
@@ -130,7 +133,7 @@ impl SpriteBatch {
       self.flush();
     }
 
-    let texture_id = self.allocate_texture(&region.texture);
+    let texture_id = self.allocate_texture(&region.texture) as u32;
 
     let position = options.position;
     let size = vec2(
@@ -181,20 +184,21 @@ impl SpriteBatch {
     let vertex_count = self.vertices.len();
     let sprite_count = vertex_count / 4;
     let index_count = sprite_count * 6;
+    let mesh = &mut self.mesh;
 
     self.textures.bind(material);
 
-    self.mesh.with_buffers(|vertices, _| {
+    mesh.with_buffers(|vertices, _| {
       vertices.write_data(&self.vertices);
     });
 
-    self
-      .mesh
-      .draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
+    mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
 
     self.vertices.clear();
+    self.textures.clear();
   }
 
+  /// Allocates a texture slot id for the given texture in the batch.
   fn allocate_texture(&mut self, texture: &Texture) -> u8 {
     let slot = self.textures.allocate(&texture);
 
@@ -227,14 +231,19 @@ fn build_quad_indices(sprite_count: usize) -> Vec<u32> {
   indices
 }
 
-/// Retains a pool of textures in unique slot indices to allow multiple textures per batch
+/// Retains a pool of textures in unique texture slot indices to
+/// allow multiple textures per batch.
+///
+/// Internally the pool will take care of allocating the slots as used.
+/// If the pool is full, the batch will be flushed and the pool will be reset.
 #[derive(Default)]
 struct TexturePool {
-  slots: [Option<Texture>; 8],
+  slots: [Option<Texture>; 16],
 }
 
 impl TexturePool {
   /// Allocates a new texture slot from the pool, if possible.
+  /// If no texture allocation is possible, `None` is returned.
   pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
     for (index, slot) in self.slots.iter_mut().enumerate() {
       match slot {
@@ -252,7 +261,7 @@ impl TexturePool {
     None
   }
 
-  /// Binds all active texture in the pool to the given material and then resets all slots.
+  /// Binds all active texture in the pool to the given material.
   pub fn bind(&mut self, material: &mut Material) {
     for (index, texture) in self.slots.iter().enumerate() {
       if let Some(texture) = texture {
@@ -262,8 +271,6 @@ impl TexturePool {
         );
       }
     }
-
-    self.clear();
   }
 
   /// Clears the pool of all textures.

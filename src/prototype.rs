@@ -11,7 +11,7 @@ mod tiles;
 
 // built-in shaders
 const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
-const SHADER_SPRITE_STANDARD: &str = include_str!("../assets/shaders/sprite-standard-multitex.glsl");
+const SHADER_SPRITE_STANDARD: &str = include_str!("../assets/shaders/sprite-standard.glsl");
 const SHADER_SPRITE_PALETTE: &str = include_str!("../assets/shaders/sprite-palette.glsl");
 const SHADER_EFFECT_ABERRATION: &str = include_str!("../assets/shaders/effect-aberration.glsl");
 
