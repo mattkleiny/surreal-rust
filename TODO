@@ -15,6 +15,7 @@ Core:
   [ ] Swap to stable (instead of nightly)?
   [ ] Scene management and loading
   [ ] Symmetric matrices for intersection tests, etc?
+  [ ] Support for custom allocators? (A frame arena for scratch work, perhaps?)
 
 AI:
   [ ] Basic automata
