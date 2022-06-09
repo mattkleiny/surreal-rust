@@ -3,9 +3,8 @@
 //! Buffers typically contain vertex or index data used in mesh rendering, however
 //! they can also be used as an in intermediate store for compute shaders.
 
-use std::cell::RefCell;
 use std::marker::PhantomData;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use super::*;
 

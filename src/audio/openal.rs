@@ -17,11 +17,31 @@ impl AudioBackend for OpenALAudioBackend {
     todo!()
   }
 
-  fn upload_clip_data(&self, _handle: AudioHandle, _data: &[u8]) {
+  fn upload_clip_data(&self, _handle: AudioHandle, _data: *const u8, _length: usize) {
     todo!()
   }
 
   fn delete_clip(&self, _handle: AudioHandle) {
+    todo!()
+  }
+
+  fn create_source(&self) -> AudioHandle {
+    todo!()
+  }
+
+  fn is_source_playing(&self, _source: AudioHandle) -> bool {
+    todo!()
+  }
+
+  fn get_source_volume(&self, _source: AudioHandle) -> f32 {
+    todo!()
+  }
+
+  fn set_source_volume(&self, _source: AudioHandle, _volume: f32) {
+    todo!()
+  }
+
+  fn delete_source(&self, _handle: AudioHandle) {
     todo!()
   }
 }

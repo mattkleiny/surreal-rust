@@ -1,7 +1,5 @@
 //! Collections and data structures.
 
-use std::ops::Index;
-
 pub use anymap::*;
 pub use arena::*;
 pub use grid::*;
