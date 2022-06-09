@@ -339,7 +339,7 @@ impl<P> TextureAtlasBuilder<P> {
   }
 
   /// Writes this builder's contents to the given texture.
-  pub fn write(&self, stride: usize, _texture: &mut Texture) {
+  pub fn write_to(&self, stride: usize, _texture: &mut Texture) {
     // TODO: finish implementing me
     let max_width = self.cells.iter().map(|it| it.width()).max().unwrap_or(0);
     let max_height = self.cells.iter().map(|it| it.height()).max().unwrap_or(0);

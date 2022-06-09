@@ -174,9 +174,9 @@ impl SpriteBatch {
       vertices.write_data(&self.vertices);
     });
 
-    self
-      .mesh
-      .draw_sub_mesh(material, PrimitiveTopology::Triangles, vertex_count, index_count);
+    let mesh = &self.mesh;
+
+    mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
 
     self.vertices.clear();
   }
