@@ -15,11 +15,17 @@ struct ArenaEntry<T> {
 /// A simple generational arena of elements of type [`T`] .
 ///
 /// An arena exposes safe externalized indices in the form of [`ArenaIndex`]es.
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct Arena<T> {
   entries: Vec<Option<ArenaEntry<T>>>,
   current_generation: u16,
   is_generation_dirty: bool,
+}
+
+impl<T> Default for Arena<T> {
+  fn default() -> Self {
+    Self::new()
+  }
 }
 
 impl<T> Arena<T> {
@@ -153,6 +159,85 @@ impl<T> Arena<T> {
       generation: self.current_generation,
     }
   }
+
+  /// Iterates over the arena.
+  pub fn iter(&self) -> ArenaIter<T> {
+    ArenaIter { arena: self, index: 0 }
+  }
+
+  /// Mutably iterates over the arena.
+  pub fn iter_mut(&mut self) -> ArenaIterMut<T> {
+    ArenaIterMut { arena: self, index: 0 }
+  }
+}
+
+impl<'a, T> IntoIterator for &'a Arena<T> {
+  type Item = &'a T;
+  type IntoIter = ArenaIter<'a, T>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
+  }
+}
+
+impl<'a, T> IntoIterator for &'a mut Arena<T> {
+  type Item = &'a mut T;
+  type IntoIter = ArenaIterMut<'a, T>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter_mut()
+  }
+}
+
+/// An immutable iterator for the `Arena`.
+pub struct ArenaIter<'a, T> {
+  arena: &'a Arena<T>,
+  index: usize,
+}
+
+impl<'a, T> Iterator for ArenaIter<'a, T> {
+  type Item = &'a T;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    while let Some(entry) = self.arena.entries.get(self.index) {
+      if let Some(value) = entry {
+        self.index += 1;
+
+        return Some(&value.value);
+      }
+
+      self.index += 1;
+    }
+
+    None
+  }
+}
+
+/// A mutable iterator for the `Arena`.
+pub struct ArenaIterMut<'a, T> {
+  arena: &'a mut Arena<T>,
+  index: usize,
+}
+
+impl<'a, T> Iterator for ArenaIterMut<'a, T> {
+  type Item = &'a mut T;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    while let Some(entry) = self.arena.entries.get_mut(self.index) {
+      if let Some(value) = entry.as_mut() {
+        self.index += 1;
+
+        // elide the lifetime; rust has trouble with the borrow checker
+        let value = value as *mut ArenaEntry<T>;
+
+        return Some(unsafe { &mut (*value).value });
+      }
+
+      self.index += 1;
+    }
+
+    None
+  }
 }
 
 #[cfg(test)]
@@ -215,5 +300,39 @@ mod tests {
 
     assert_eq!(index2.index, index4.index);
     assert_ne!(index2.generation, index4.generation);
+  }
+
+  #[test]
+  fn arena_should_iterate() {
+    let mut arena = Arena::new();
+
+    arena.add("Item 1");
+    let index2 = arena.add("Item 2");
+    arena.add("Item 3");
+    arena.add("Item 4");
+
+    arena.remove(index2);
+
+    for item in arena.iter() {
+      println!("{}", item);
+    }
+  }
+
+  #[test]
+  fn arena_should_iterate_mutably() {
+    let mut arena = Arena::new();
+
+    arena.add("Item 1");
+    let index2 = arena.add("Item 2");
+    arena.add("Item 3");
+    arena.add("Item 4");
+
+    arena.remove(index2);
+
+    for item in arena.iter_mut() {
+      *item = "Test 1";
+
+      println!("{}", item);
+    }
   }
 }

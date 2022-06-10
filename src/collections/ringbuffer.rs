@@ -10,7 +10,9 @@ pub struct RingBuffer<T> {
 impl<T> RingBuffer<T> {
   /// Creates a new ring buffer with the given capacity.
   pub fn new(capacity: usize) -> Self
-  where T: Clone {
+  where
+    T: Clone,
+  {
     Self {
       cursor: 0,
       elements: vec![None; capacity],
@@ -49,8 +51,8 @@ impl<T> RingBuffer<T> {
   }
 
   /// Permits iterating over the ring buffer.
-  pub fn iter(&self) -> RingBufferIterator<T> {
-    RingBufferIterator {
+  pub fn iter(&self) -> RingBufferIter<T> {
+    RingBufferIter {
       buffer: self,
       index: self.cursor,
       touched: 0,
@@ -61,7 +63,7 @@ impl<T> RingBuffer<T> {
 /// Allows iterating over the ring buffer.
 impl<'a, T> IntoIterator for &'a RingBuffer<T> {
   type Item = &'a T;
-  type IntoIter = RingBufferIterator<'a, T>;
+  type IntoIter = RingBufferIter<'a, T>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
@@ -70,13 +72,13 @@ impl<'a, T> IntoIterator for &'a RingBuffer<T> {
 
 /// An iterator for the ring buffer. This is a forward-only iterator,
 /// and does not support in-place mutation.
-pub struct RingBufferIterator<'a, T> {
+pub struct RingBufferIter<'a, T> {
   buffer: &'a RingBuffer<T>,
   index: usize,
   touched: usize,
 }
 
-impl<'a, T> Iterator for RingBufferIterator<'a, T> {
+impl<'a, T> Iterator for RingBufferIter<'a, T> {
   type Item = &'a T;
 
   fn next(&mut self) -> Option<Self::Item> {
