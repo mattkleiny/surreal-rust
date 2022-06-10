@@ -103,7 +103,7 @@ impl UserInterface {
       match image_delta.pos {
         None => {
           // create new texture
-          let mut texture = Texture::new(&self.graphics);
+          let texture = Texture::new(&self.graphics);
 
           texture.write_pixels(width, height, &pixels);
 

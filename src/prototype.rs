@@ -33,7 +33,7 @@ pub enum BuiltInShader {
   SpriteStandard,
   /// Palette-shifted sprite shader.
   SpritePalette,
-  /// A material for wire rendering and basic geometry.
+  /// Shader for wire rendering and basic geometry.
   Wire,
   /// A simple screen-space aberration effect.
   AberrationEffect,
@@ -122,7 +122,7 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
 
     // prepare the palette texture, if enabled
     if let Some(palette) = &self.palette {
-      let mut palette_texture = Texture::new(graphics);
+      let palette_texture = Texture::new(graphics);
 
       palette_texture.write_pixels(palette.len(), 1, palette.as_slice());
 
