@@ -86,7 +86,6 @@ impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
     let half_width = self.tiles.width() as f32 / 2.;
     let half_height = self.tiles.height() as f32 / 2.;
 
-    // TODO: batch tiles by sprite texture?
     for y in 0..self.tiles.height() {
       for x in 0..self.tiles.width() {
         let id = self.tiles.get((x, y));

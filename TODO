@@ -15,6 +15,7 @@ Core:
   [ ] Swap to stable (instead of nightly)?
   [ ] Scene management and loading
   [ ] Symmetric matrices for intersection tests, etc?
+  [ ] Support for custom allocators? (A frame arena for scratch work, perhaps?)
 
 AI:
   [ ] Basic automata
@@ -36,7 +37,7 @@ Graphics:
   [ ] Add texture atlases (automatically baked)?
   [ ] Draw lists? (load/store actions, render targets, command buffer and post processing)
   [ ] Sprite transforms for rotations/shear/etc
-  [ ] Sprite batching that supports multiple textures per draw call
+  [✔] Sprite batching that supports multiple textures per draw call @done(22-06-09 19:58)
 
 Audio:
   [ ] Get audio backend playing simple buffered sounds
@@ -57,3 +58,8 @@ Editor:
     [ ] Consider visual graph models for state machines, behaviour trees, etc
     [ ] Consider visual timeline editor for sprite animatinos and events?
   [ ] Graph editor for VS Code symlinked into the project folder?
+
+User Interface:
+  [ ] `egui` based UI Rust framework?
+    [ ] `rsx` style markup for egui function invocations.
+    [ ] `redux` style state management in a central store

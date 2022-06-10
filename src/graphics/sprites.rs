@@ -46,13 +46,16 @@ impl Default for SpriteOptions {
 
 /// A specialized vertex for use in our sprite batch.
 ///
-/// Encodes a unique texture id representing which of the bound texture units is relevant for this sprite
-#[derive(Copy, Clone, Debug)]
+/// Encodes a unique `texture_id` representing which of the bound texture units is
+/// relevant for this sprite. This is used to avoid unnecessary flushes in the batch
+/// when rendering sprites from multiple texture sources simultaneously.
+#[repr(C)]
+#[derive(Clone, Debug)]
 struct SpriteVertex {
-  position: Vector2<f32>,
-  uv: Vector2<f32>,
-  color: Color32,
-  texture_id: u8,
+  pub position: Vector2<f32>,
+  pub uv: Vector2<f32>,
+  pub color: Color32,
+  pub texture_id: u32,
 }
 
 impl Vertex for SpriteVertex {
@@ -61,7 +64,7 @@ impl Vertex for SpriteVertex {
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-    VertexDescriptor { count: 1, kind: VertexKind::U8, should_normalize: false },
+    VertexDescriptor { count: 1, kind: VertexKind::U32, should_normalize: false },
   ];
 }
 
@@ -78,7 +81,7 @@ impl SpriteBatch {
     let indices = build_quad_indices(sprite_count);
 
     // create mesh, upload quad indices immediately
-    let mut mesh = Mesh::new(graphics, BufferUsage::Static);
+    let mut mesh = Mesh::new(graphics, BufferUsage::Dynamic);
 
     mesh.with_buffers(|_, buffer| {
       buffer.write_data(&indices);
@@ -133,7 +136,7 @@ impl SpriteBatch {
       self.flush();
     }
 
-    let texture_id = self.allocate_texture(&region.texture);
+    let texture_id = self.allocate_texture(&region.texture) as u32;
 
     let position = options.position;
     let size = vec2(
@@ -184,20 +187,21 @@ impl SpriteBatch {
     let vertex_count = self.vertices.len();
     let sprite_count = vertex_count / 4;
     let index_count = sprite_count * 6;
+    let mesh = &mut self.mesh;
 
     self.textures.bind(material);
 
-    self.mesh.with_buffers(|vertices, _| {
+    mesh.with_buffers(|vertices, _| {
       vertices.write_data(&self.vertices);
     });
-
-    let mesh = &self.mesh;
 
     mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
 
     self.vertices.clear();
+    self.textures.clear();
   }
 
+  /// Allocates a texture slot id for the given texture in the batch.
   fn allocate_texture(&mut self, texture: &Texture) -> u8 {
     let slot = self.textures.allocate(&texture);
 
@@ -230,7 +234,11 @@ fn build_quad_indices(sprite_count: usize) -> Vec<u32> {
   indices
 }
 
-/// Retains a pool of textures in unique slot indices to allow multiple textures per batch
+/// Retains a pool of textures in unique texture slot indices to
+/// allow multiple textures per batch.
+///
+/// Internally the pool will take care of allocating the slots as used.
+/// If the pool is full, the batch will be flushed and the pool will be reset.
 #[derive(Default)]
 struct TexturePool {
   slots: [Option<Texture>; TEXTURE_POOL_SIZE],
@@ -258,15 +266,16 @@ impl TexturePool {
     None
   }
 
-  /// Binds all active texture in the pool to the given material and then resets all slots.
+  /// Binds all active texture in the pool to the given material.
   pub fn bind(&mut self, material: &mut Material) {
     for (index, texture) in self.slots.iter().enumerate() {
       if let Some(texture) = texture {
-        material.set_uniform(&format!("u_texture[{}]", index), texture);
+        material.set_uniform(
+          &format!("u_textures[{}]", index),
+          ShaderUniform::Texture(texture.clone(), index as u8, None),
+        );
       }
     }
-
-    self.clear();
   }
 
   /// Clears the pool of all textures.

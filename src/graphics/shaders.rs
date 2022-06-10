@@ -42,7 +42,7 @@ pub enum ShaderUniform {
   Matrix2x2(Matrix2x2<f32>),
   Matrix3x3(Matrix3x3<f32>),
   Matrix4x4(Matrix4x4<f32>),
-  Texture(Texture, usize, Option<TextureSampler>),
+  Texture(Texture, u8, Option<TextureSampler>),
 
   /// A special case of a texture uniform,
   /// used for binding a texture to a compute shader.
