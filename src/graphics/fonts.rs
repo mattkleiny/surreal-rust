@@ -12,7 +12,7 @@ use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
 use crate::graphics::{Texture, TextureRegion};
 use crate::maths::{vec2, Vector2};
 
-use super::{Color32, GraphicsServer, TextureAtlasBuilder};
+use super::{GraphicsServer, TextureAtlasBuilder};
 
 /// Represents different kinds of fonts and permits rendering.
 pub trait Font {
@@ -123,7 +123,7 @@ pub struct VectorFont {
 struct VectorFontState {
   font: FontVec,
   font_size: f32,
-  atlas: TextureAtlasBuilder<Color32>,
+  atlas: TextureAtlasBuilder<f32>,
   glyphs: HashMap<char, GlyphInfo>,
 }
 
@@ -175,10 +175,7 @@ impl Font for VectorFont {
 
         // draw this glyph's pixels into our texture atlas
         outline.draw(|x, y, coverage| {
-          let color = Color32::rgba(255, 255, 255, (coverage * 255.0) as u8);
-          let position = (x as usize, y as usize);
-
-          cell.pixels.set(position, color);
+          cell.pixels.set((x, y), coverage);
         });
 
         GlyphInfo {
@@ -210,7 +207,7 @@ pub struct VectorFontLoader {
   pub graphics: GraphicsServer,
   pub font_size: f32,
   pub atlas_stride: usize,
-  pub atlas_size: Vector2<u32>,
+  pub atlas_cell_size: Vector2<u32>,
 }
 
 impl Asset for VectorFont {
@@ -226,7 +223,7 @@ impl AssetLoader<VectorFont> for VectorFontLoader {
       state: Rc::new(RefCell::new(VectorFontState {
         font: FontVec::try_from_vec(bytes)?,
         font_size: self.font_size,
-        atlas: TextureAtlasBuilder::new(self.atlas_stride, self.atlas_size),
+        atlas: TextureAtlasBuilder::new(self.atlas_stride, self.atlas_cell_size),
         glyphs: HashMap::new(),
       })),
     };

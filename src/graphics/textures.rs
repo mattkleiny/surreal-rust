@@ -355,9 +355,9 @@ impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
     });
 
     // advance the offset
-    self.next_offset += self.cell_size;
+    self.next_offset.x += self.cell_size.x;
 
-    if self.next_offset.x as usize >= self.stride {
+    if self.next_offset.x as usize > self.stride {
       self.next_offset.x = 0;
       self.next_offset.y += self.cell_size.y;
     }
@@ -370,34 +370,36 @@ impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
     let cells_x = self.cells.len() % self.stride;
     let cells_y = (self.cells.len() / self.stride).max(1);
 
+    let cell_size_x = self.cell_size.x as usize;
+    let cell_size_y = self.cell_size.y as usize;
+
     let pixels_x = cells_x * self.cell_size.x as usize;
     let pixels_y = cells_y * self.cell_size.y as usize;
 
-    let mut advance_x = 0;
-    let mut advance_y = 0;
+    let mut cell_x = 0;
+    let mut cell_y = 0;
 
-    let mut pixels = vec![P::default(); pixels_x * pixels_y];
+    let mut texels = vec![P::default(); pixels_x * pixels_y];
 
     for cell in &self.cells {
-      for y in 0..cell.size.y {
-        for x in 0..cell.size.x {
-          let dest_index = advance_x + advance_y * pixels_x;
+      for pixel_y in 0..cell.size.y as usize {
+        for pixel_x in 0..cell.size.x as usize {
+          let advance_x = cell_x * cell_size_x + pixel_x;
+          let advance_y = cell_y * cell_size_y + pixel_y;
+          let index = advance_x + advance_y * pixels_x;
 
-          pixels[dest_index] = cell.pixels.get((x, y)).clone();
-
-          advance_x += 1;
-
-          if advance_x >= pixels_x {
-            advance_x = 0;
-            advance_y += 1;
-          }
+          texels[index] = cell.pixels.get((pixel_x, pixel_y)).clone();
         }
+      }
 
-        advance_y += 1;
+      cell_x += 1;
+      if cell_x > cells_x {
+        cell_x = 0;
+        cell_y += 1;
       }
     }
 
-    texture.write_pixels(pixels_x, pixels_y, &pixels);
+    texture.write_pixels(pixels_x, pixels_y, &texels);
   }
 }
 
@@ -415,8 +417,8 @@ macro_rules! implement_texel {
   };
 }
 
-implement_texel!(Color, RGBA32);
 implement_texel!(Color32, RGBA8);
+implement_texel!(u8, R8);
 implement_texel!([u8; 1], R8);
 implement_texel!([u8; 2], RG8);
 implement_texel!([u8; 3], RGB8);
@@ -425,10 +427,13 @@ implement_texel!((u8,), R8);
 implement_texel!((u8, u8), RG8);
 implement_texel!((u8, u8, u8), RGB8);
 implement_texel!((u8, u8, u8, u8), RGBA8);
-implement_texel!([f32; 1], R8);
-implement_texel!([f32; 2], RG8);
-implement_texel!([f32; 3], RGB8);
-implement_texel!([f32; 4], RGBA8);
+
+implement_texel!(Color, RGBA32);
+implement_texel!(f32, R32);
+implement_texel!([f32; 1], R32);
+implement_texel!([f32; 2], RG32);
+implement_texel!([f32; 3], RGB32);
+implement_texel!([f32; 4], RGBA32);
 implement_texel!((f32,), R32);
 implement_texel!((f32, f32), RG32);
 implement_texel!((f32, f32, f32), RGB32);

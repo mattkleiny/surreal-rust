@@ -13,7 +13,9 @@ pub struct Grid<T> {
 impl<T> Grid<T> {
   /// Creates a new grid with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self
-  where T: Clone + Default {
+  where
+    T: Clone + Default,
+  {
     Self {
       stride: width,
       items: vec![T::default(); width * height],
@@ -22,7 +24,9 @@ impl<T> Grid<T> {
 
   /// Converts the given slice into a grid.
   pub fn from_slice(stride: usize, slice: &[T]) -> Self
-  where T: Clone {
+  where
+    T: Clone,
+  {
     Self {
       stride,
       items: slice.to_vec(),
@@ -57,6 +61,7 @@ impl<T> Grid<T> {
   }
 
   /// Accesses an item from the grid.
+  #[inline]
   pub fn get(&self, point: impl Into<GridPoint>) -> &T {
     let point = point.into();
 
@@ -67,6 +72,7 @@ impl<T> Grid<T> {
   }
 
   /// Sets an item from the grid.
+  #[inline]
   pub fn set(&mut self, point: impl Into<GridPoint>, value: T) {
     let point = point.into();
 
@@ -78,13 +84,17 @@ impl<T> Grid<T> {
 
   /// Fills the grid with the given value.
   pub fn fill(&mut self, value: T)
-  where T: Clone {
+  where
+    T: Clone,
+  {
     self.items.fill(value);
   }
 
   /// Clears the grid.
   pub fn clear(&mut self)
-  where T: Clone + Default {
+  where
+    T: Clone + Default,
+  {
     self.fill(T::default());
   }
 

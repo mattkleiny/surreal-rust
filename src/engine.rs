@@ -125,8 +125,8 @@ impl Engine {
     assets.add_loader(VectorFontLoader {
       graphics: graphics.clone(),
       font_size: 64.,
-      atlas_size: vec2(64, 64),
       atlas_stride: 16,
+      atlas_cell_size: vec2(64, 64),
     });
 
     assets.add_loader(ImageLoader { format: None });
