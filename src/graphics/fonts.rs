@@ -2,15 +2,15 @@
 //!
 //! We currently support bitmap fonts, with a planned future change to support TrueType fonts.
 
+use std::cell::RefCell;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::rc::Rc;
 
 use ab_glyph::{Font as AbFont, FontVec};
 
 use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
 use crate::graphics::{Texture, TextureRegion};
 use crate::maths::{vec2, Vector2};
-use crate::prelude::Grid;
 
 use super::{Color32, GraphicsServer, TextureAtlasBuilder};
 
@@ -112,83 +112,108 @@ impl AssetLoader<BitmapFont> for BitmapFontLoader {
   }
 }
 
-/// A true type font that can be rasterized at different font sizes.
+/// A vector font that can be rasterized at different font sizes.
 #[derive(Clone)]
-pub struct TrueTypeFont {
-  state: Arc<Mutex<TrueTypeFontState>>,
+pub struct VectorFont {
+  texture: Texture,
+  state: Rc<RefCell<VectorFontState>>,
 }
 
-struct TrueTypeFontState {
+/// Internal state for a `VectorFont`.
+struct VectorFontState {
   font: FontVec,
   font_size: f32,
-  texture: Texture,
-  builder: TextureAtlasBuilder<Color32>,
+  atlas: TextureAtlasBuilder<Color32>,
   cache: HashMap<char, GlyphInfo>,
 }
 
 /// Represents position information for a single glyph in a texture.
+#[derive(Clone, Debug)]
 struct GlyphInfo {
-  pub position: Vector2<u32>,
+  pub offset: Vector2<u32>,
   pub size: Vector2<u32>,
 }
 
-impl Font for TrueTypeFont {
+impl Font for VectorFont {
   fn measure_size(&self, _text: &str) -> (usize, usize) {
     todo!()
   }
 
   fn get_glyph(&self, character: char) -> Option<TextureRegion> {
-    // if we already have a glyph position cached for this in our texture
-    let state = self.state.lock().unwrap();
+    // check if we've already built this glyph before
+    let state = self.state.borrow();
 
-    if let Some(_glyph_info) = state.cache.get(&character) {
-      // return Some(TextureRegion {
-      //   texture: &state.texture,
-      //   offset: glyph_info.position,
-      //   size: glyph_info.size,
-      // });
-      todo!();
+    if let Some(glyph_info) = state.cache.get(&character) {
+      return Some(TextureRegion {
+        texture: &self.texture,
+        offset: glyph_info.offset,
+        size: glyph_info.size,
+      });
     }
 
     // otherwise build a new glyph
     let glyph = state.font.glyph_id(character).with_scale(state.font_size);
-    let mut pixels = Grid::new(32, 32);
 
     if let Some(outline) = state.font.outline_glyph(glyph) {
-      outline.draw(|x, y, coverage| {
-        let color = Color32::rgba(255, 255, 255, (coverage * 255.0) as u8);
+      let mut state = self.state.borrow_mut();
 
-        pixels.set((x as usize, y as usize), color);
-      });
+      let glyph_info = {
+        let cell = state.atlas.allocate();
 
-      // state.builder.push(pixels);
-      // state.builder.write_to(32 * 6, &mut state.texture);
+        // draw this glyph's pixels into our texture atlas
+        outline.draw(|x, y, coverage| {
+          let color = Color32::rgba(255, 255, 255, (coverage * 255.0) as u8);
+          let position = (x as usize, y as usize);
+
+          cell.pixels.set(position, color);
+        });
+
+        GlyphInfo {
+          offset: cell.offset,
+          size: cell.size,
+        }
+      };
+
+      state.atlas.write_to(&mut self.texture);
+
+      // insert into the cache
+      let region = TextureRegion {
+        texture: &self.texture,
+        offset: glyph_info.offset,
+        size: glyph_info.size,
+      };
+
+      state.cache.insert(character, glyph_info);
+
+      Some(region)
+    } else {
+      None
     }
-
-    todo!()
   }
 }
 
 /// An `AssetLoader` for `TrueTypeFont`s.
-pub struct TrueTypeFontLoader {
+pub struct VectorFontLoader {
   pub graphics: GraphicsServer,
   pub font_size: f32,
+  pub atlas_stride: usize,
+  pub atlas_size: Vector2<u32>,
 }
 
-impl Asset for TrueTypeFont {
-  type Loader = TrueTypeFontLoader;
+impl Asset for VectorFont {
+  type Loader = VectorFontLoader;
 }
 
-impl AssetLoader<TrueTypeFont> for TrueTypeFontLoader {
-  fn load(&self, context: &AssetContext) -> crate::Result<TrueTypeFont> {
+impl AssetLoader<VectorFont> for VectorFontLoader {
+  fn load(&self, context: &AssetContext) -> crate::Result<VectorFont> {
     let bytes = context.path.read_all_bytes()?;
 
-    let font = TrueTypeFont {
-      state: Arc::new(Mutex::new(TrueTypeFontState {
+    let font = VectorFont {
+      texture: Texture::new(&self.graphics),
+      state: Rc::new(RefCell::new(VectorFontState {
         font: FontVec::try_from_vec(bytes)?,
         font_size: self.font_size,
-        texture: Texture::new(&self.graphics),
-        builder: TextureAtlasBuilder::new(),
+        atlas: TextureAtlasBuilder::new(self.atlas_stride, self.atlas_size),
         cache: HashMap::new(),
       })),
     };

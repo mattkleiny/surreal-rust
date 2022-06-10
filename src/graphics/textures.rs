@@ -323,44 +323,84 @@ impl TextureAtlas {
 
 /// A utility for building texture atlases procedurally.
 #[derive(Default)]
-pub struct TextureAtlasBuilder<P> {
-  cells: Vec<Grid<P>>,
+pub struct TextureAtlasBuilder<T> {
+  cells: Vec<TextureAtlasCell<T>>,
+  cell_size: Vector2<u32>,
+  next_offset: Vector2<u32>,
+  stride: usize,
 }
 
-impl<P> TextureAtlasBuilder<P> {
+/// Represents a discrete cell in a `TextureAtlasBuilder`.
+pub struct TextureAtlasCell<T> {
+  pub pixels: Grid<T>,
+  pub offset: Vector2<u32>,
+  pub size: Vector2<u32>,
+}
+
+impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
   /// Creates a new texture atlas builder.
-  pub fn new() -> Self {
-    Self { cells: Vec::new() }
+  pub fn new(stride: usize, cell_size: Vector2<u32>) -> Self {
+    Self {
+      cells: Vec::new(),
+      cell_size,
+      next_offset: vec2(0, 0),
+      stride,
+    }
   }
 
-  /// Adds a new cell to the builder.
-  pub fn push(&mut self, pixels: Grid<P>) {
-    self.cells.push(pixels);
+  /// Allocates a new cell in the texture atlas.
+  pub fn allocate(&mut self) -> &mut TextureAtlasCell<P> {
+    // allocate the cell
+    self.cells.push(TextureAtlasCell {
+      pixels: Grid::new(self.cell_size.x as usize, self.cell_size.y as usize),
+      offset: self.next_offset,
+      size: self.cell_size,
+    });
+
+    // advance the offset
+    self.next_offset += self.cell_size;
+
+    if self.next_offset.x as usize >= self.stride {
+      self.next_offset.x = 0;
+      self.next_offset.y += self.cell_size.y;
+    }
+
+    self.cells.last_mut().unwrap()
   }
 
   /// Writes this builder's contents to the given texture.
-  pub fn write_to(&self, stride: usize, _texture: &mut Texture) {
-    // TODO: finish implementing me
-    let max_width = self.cells.iter().map(|it| it.width()).max().unwrap_or(0);
-    let max_height = self.cells.iter().map(|it| it.height()).max().unwrap_or(0);
+  pub fn write_to(&self, texture: &mut Texture) {
+    let cells_x = self.cells.len() % self.stride;
+    let cells_y = self.cells.len() / self.stride;
 
-    let _cells_x = stride;
-    let _cells_y = self.cells.len() / stride;
+    let pixels_x = cells_x * self.cell_size.x as usize;
+    let pixels_y = cells_y * self.cell_size.y as usize;
 
-    let mut x = 0;
-    let mut y = 0;
+    let mut advance_x = 0;
+    let mut advance_y = 0;
 
-    // let mut pixels = Vec::new();
+    let mut pixels = vec![P::default(); pixels_x * pixels_y];
 
     for cell in &self.cells {
-      let _x_offset = x * max_width;
-      let _y_offset = y * max_height;
+      for y in 0..cell.size.y {
+        for x in 0..cell.size.x {
+          let dest_index = advance_x + advance_y * pixels_x;
 
-      x += cell.width();
-      y += cell.height();
+          pixels[dest_index] = cell.pixels.get((x, y)).clone();
+
+          advance_x += 1;
+
+          if advance_x >= pixels_x {
+            advance_x = 0;
+            advance_y += 1;
+          }
+        }
+
+        advance_y += 1;
+      }
     }
 
-    todo!()
+    texture.write_pixels(pixels_x, pixels_y, &pixels);
   }
 }
 

@@ -1,7 +1,7 @@
 use crate::maths::{vec2, Raster, Vector2};
 
 /// Represents a point in a [`Grid`].
-pub type GridPoint = (usize, usize);
+pub struct GridPoint(pub usize, pub usize);
 
 /// A simple 2d grid of [`T`]s.
 #[derive(Clone, Debug)]
@@ -58,14 +58,20 @@ impl<T> Grid<T> {
 
   /// Accesses an item from the grid.
   pub fn get(&self, point: impl Into<GridPoint>) -> &T {
-    let (x, y) = point.into();
+    let point = point.into();
+
+    let x = point.0;
+    let y = point.1;
 
     &self.items[x + y * self.stride]
   }
 
   /// Sets an item from the grid.
   pub fn set(&mut self, point: impl Into<GridPoint>, value: T) {
-    let (x, y) = point.into();
+    let point = point.into();
+
+    let x = point.0;
+    let y = point.1;
 
     self.items[x + y * self.stride] = value
   }
@@ -112,38 +118,72 @@ impl<T> Raster<T> for Grid<T> {
   }
 }
 
-/// Allows conversion into a GridPoint.
-macro_rules! implement_grid_point {
+/// Allows conversion into a GridPoint from tuples.
+macro_rules! tuple_grid_point {
   ($type:ty) => {
-    impl From<crate::maths::Vector2<$type>> for GridPoint {
-      fn from(point: Vector2<$type>) -> Self {
-        (point.x as usize, point.y as usize)
+    impl From<($type, $type)> for GridPoint {
+      fn from(point: ($type, $type)) -> Self {
+        Self(point.0 as usize, point.0 as usize)
       }
     }
   };
 }
 
-implement_grid_point!(u8);
-implement_grid_point!(u16);
-implement_grid_point!(u32);
-implement_grid_point!(u64);
-implement_grid_point!(usize);
-implement_grid_point!(i16);
-implement_grid_point!(i32);
-implement_grid_point!(i64);
-implement_grid_point!(isize);
+tuple_grid_point!(u8);
+tuple_grid_point!(u16);
+tuple_grid_point!(u32);
+tuple_grid_point!(u64);
+tuple_grid_point!(usize);
+tuple_grid_point!(i16);
+tuple_grid_point!(i32);
+tuple_grid_point!(i64);
+tuple_grid_point!(isize);
+
+impl From<(f32, f32)> for GridPoint {
+  fn from(point: (f32, f32)) -> Self {
+    Self(point.0.floor() as usize, point.1.floor() as usize)
+  }
+}
+
+impl From<(f64, f64)> for GridPoint {
+  fn from(point: (f64, f64)) -> Self {
+    Self(point.0.floor() as usize, point.1.floor() as usize)
+  }
+}
+
+/// Allows conversion into a GridPoint from vectors.
+macro_rules! vector_grid_point {
+  ($type:ty) => {
+    impl From<crate::maths::Vector2<$type>> for GridPoint {
+      fn from(point: Vector2<$type>) -> Self {
+        Self(point.x as usize, point.y as usize)
+      }
+    }
+  };
+}
+
+vector_grid_point!(u8);
+vector_grid_point!(u16);
+vector_grid_point!(u32);
+vector_grid_point!(u64);
+vector_grid_point!(usize);
+vector_grid_point!(i16);
+vector_grid_point!(i32);
+vector_grid_point!(i64);
+vector_grid_point!(isize);
 
 impl From<Vector2<f32>> for GridPoint {
   fn from(point: Vector2<f32>) -> Self {
-    (point.x.floor() as usize, point.y.floor() as usize)
+    Self(point.x.floor() as usize, point.y.floor() as usize)
   }
 }
 
 impl From<Vector2<f64>> for GridPoint {
   fn from(point: Vector2<f64>) -> Self {
-    (point.x.floor() as usize, point.y.floor() as usize)
+    Self(point.x.floor() as usize, point.y.floor() as usize)
   }
 }
+
 #[cfg(test)]
 mod tests {
   use crate::graphics::Color32;

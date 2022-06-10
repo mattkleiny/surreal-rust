@@ -15,7 +15,7 @@ fn main() {
 
     // set-up rendering
     let bitmap_font = BitmapFont::load(&assets, "assets/fonts/IBM.font").unwrap();
-    let _ttf_font = TrueTypeFont::load(&assets, "assets/fonts/bitboy8_v1.otf").unwrap();
+    let _ttf_font = VectorFont::load(&assets, "assets/fonts/bitboy8_v1.otf").unwrap();
     let mut renderer = RenderContextManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {

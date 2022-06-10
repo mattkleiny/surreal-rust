@@ -122,9 +122,11 @@ impl Engine {
     let mut assets = AssetManager::new();
 
     assets.add_loader(BitmapFontLoader {});
-    assets.add_loader(TrueTypeFontLoader {
+    assets.add_loader(VectorFontLoader {
       graphics: graphics.clone(),
       font_size: 64.,
+      atlas_size: vec2(64, 64),
+      atlas_stride: 16,
     });
 
     assets.add_loader(ImageLoader { format: None });
