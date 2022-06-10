@@ -88,7 +88,7 @@ impl Texture {
 
   /// Builds a new colored texture of the given size.
   pub fn create_colored<T: Texel + Clone>(graphics: &GraphicsServer, width: usize, height: usize, color: T) -> Self {
-    let mut texture = Self::new(graphics);
+    let texture = Self::new(graphics);
     let colors = vec![color; width * height];
 
     texture.write_pixels(width, height, &colors);
@@ -146,8 +146,7 @@ impl Texture {
 
   /// Downloads pixel data from the texture.
   #[profiling::function]
-  pub fn read_pixels<T>(&self) -> Vec<T>
-  where T: Texel {
+  pub fn read_pixels<T: Texel>(&self) -> Vec<T> {
     let state = self.state.borrow();
     let graphics = &state.graphics;
     let size = state.width as usize * state.height as usize;
@@ -171,8 +170,7 @@ impl Texture {
 
   /// Uploads pixel data to the texture.
   #[profiling::function]
-  pub fn write_pixels<T>(&mut self, width: usize, height: usize, pixels: &[T])
-  where T: Texel {
+  pub fn write_pixels<T: Texel>(&self, width: usize, height: usize, pixels: &[T]) {
     let mut state = self.state.borrow_mut();
 
     state.width = width as u32;
@@ -196,8 +194,7 @@ impl Texture {
 
   /// Uploads a sub-section of pixel data to the texture.
   #[profiling::function]
-  pub fn write_sub_pixels<T>(&self, region: &Rectangle<usize>, pixels: &[T])
-  where T: Texel {
+  pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle<usize>, pixels: &[T]) {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
@@ -369,7 +366,7 @@ impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
   }
 
   /// Writes this builder's contents to the given texture.
-  pub fn write_to(&self, texture: &mut Texture) {
+  pub fn write_to(&self, texture: &Texture) {
     let cells_x = self.cells.len() % self.stride;
     let cells_y = self.cells.len() / self.stride;
 

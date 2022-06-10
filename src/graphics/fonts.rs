@@ -17,7 +17,7 @@ use super::{Color32, GraphicsServer, TextureAtlasBuilder};
 /// Represents different kinds of fonts and permits rendering.
 pub trait Font {
   /// Measures the size of the given text in the font.
-  fn measure_size(&self, text: &str) -> (usize, usize);
+  fn measure_size(&self, text: &str) -> (f32, f32);
 
   /// Retrieves a texture region representing the given glyph in the font.
   fn get_glyph(&self, character: char) -> Option<TextureRegion>;
@@ -42,7 +42,7 @@ struct BitmapFontMetrics {
 }
 
 impl Font for BitmapFont {
-  fn measure_size(&self, text: &str) -> (usize, usize) {
+  fn measure_size(&self, text: &str) -> (f32, f32) {
     let mut line_count = 0;
     let mut longest_line = 0;
     let mut current_line = 0;
@@ -65,7 +65,7 @@ impl Font for BitmapFont {
     let width = longest_line * (metrics.glyph_width + metrics.glyph_padding);
     let height = line_count * (metrics.glyph_height + metrics.glyph_padding);
 
-    return (width as usize, height as usize);
+    return (width as f32, height as f32);
   }
 
   fn get_glyph(&self, character: char) -> Option<TextureRegion> {
@@ -124,7 +124,7 @@ struct VectorFontState {
   font: FontVec,
   font_size: f32,
   atlas: TextureAtlasBuilder<Color32>,
-  cache: HashMap<char, GlyphInfo>,
+  glyphs: HashMap<char, GlyphInfo>,
 }
 
 /// Represents position information for a single glyph in a texture.
@@ -135,15 +135,26 @@ struct GlyphInfo {
 }
 
 impl Font for VectorFont {
-  fn measure_size(&self, _text: &str) -> (usize, usize) {
-    todo!()
+  fn measure_size(&self, text: &str) -> (f32, f32) {
+    let state = self.state.borrow();
+    let mut size = (0., 0.);
+
+    for character in text.chars() {
+      let glyph = state.font.glyph_id(character).with_scale(state.font_size);
+      let bounds = state.font.glyph_bounds(&glyph);
+
+      size.0 += bounds.max.x - bounds.min.x;
+      size.1 += bounds.max.y - bounds.min.y;
+    }
+
+    size
   }
 
   fn get_glyph(&self, character: char) -> Option<TextureRegion> {
     // check if we've already built this glyph before
     let state = self.state.borrow();
 
-    if let Some(glyph_info) = state.cache.get(&character) {
+    if let Some(glyph_info) = state.glyphs.get(&character) {
       return Some(TextureRegion {
         texture: &self.texture,
         offset: glyph_info.offset,
@@ -157,6 +168,7 @@ impl Font for VectorFont {
     if let Some(outline) = state.font.outline_glyph(glyph) {
       let mut state = self.state.borrow_mut();
 
+      // allocate a new glyph in the texture
       let glyph_info = {
         let cell = state.atlas.allocate();
 
@@ -174,7 +186,7 @@ impl Font for VectorFont {
         }
       };
 
-      state.atlas.write_to(&mut self.texture);
+      state.atlas.write_to(&self.texture);
 
       // insert into the cache
       let region = TextureRegion {
@@ -183,7 +195,7 @@ impl Font for VectorFont {
         size: glyph_info.size,
       };
 
-      state.cache.insert(character, glyph_info);
+      state.glyphs.insert(character, glyph_info);
 
       Some(region)
     } else {
@@ -214,7 +226,7 @@ impl AssetLoader<VectorFont> for VectorFontLoader {
         font: FontVec::try_from_vec(bytes)?,
         font_size: self.font_size,
         atlas: TextureAtlasBuilder::new(self.atlas_stride, self.atlas_size),
-        cache: HashMap::new(),
+        glyphs: HashMap::new(),
       })),
     };
 
