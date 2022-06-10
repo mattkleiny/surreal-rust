@@ -15,7 +15,7 @@ fn main() {
 
     // set-up rendering
     let bitmap_font = BitmapFont::load(&assets, "assets/fonts/IBM.font").unwrap();
-    let _ttf_font = VectorFont::load(&assets, "assets/fonts/bitboy8_v1.otf").unwrap();
+    let vector_font = VectorFont::load(&assets, "assets/fonts/bitboy8_v1.otf").unwrap();
     let mut renderer = RenderContextManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
@@ -38,11 +38,21 @@ fn main() {
           bitmap_font.deref(),
           "HELLO, SURREAL!",
           &SpriteOptions {
-            position: vec2(0., 0.),
+            position: vec2(0., 8.),
             color: Color32::lerp(color1, color2, time_step),
             ..Default::default()
           },
         );
+
+        context.batch.draw_text(
+          vector_font.deref(),
+          "HELLO, SURREAL!",
+          &SpriteOptions {
+            position: vec2(0., -8.),
+            color: Color32::lerp(color1, color2, time_step),
+            ..Default::default()
+          },
+        )
       });
 
       if engine.input.keyboard.is_key_pressed(Key::Escape) {

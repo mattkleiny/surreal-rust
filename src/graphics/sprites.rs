@@ -136,14 +136,13 @@ impl SpriteBatch {
       self.flush();
     }
 
-    let texture_id = self.allocate_texture(&region.texture) as u32;
-
     let position = options.position;
     let size = vec2(
       (options.scale.x * region.size.x as f32) * 0.5,
       (options.scale.y * region.size.y as f32) * 0.5,
     );
     let uv = region.calculate_uv();
+    let texture_id = self.allocate_texture(&region.texture) as u32;
 
     self.vertices.push(SpriteVertex {
       position: position + vec2(-size.x, -size.y),
