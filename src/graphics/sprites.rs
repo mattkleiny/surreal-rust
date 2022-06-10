@@ -273,10 +273,8 @@ impl TexturePool {
   pub fn bind(&mut self, material: &mut Material) {
     for (index, texture) in self.slots.iter().enumerate() {
       if let Some(texture) = texture {
-        material.set_uniform(
-          &format!("u_textures[{}]", index),
-          ShaderUniform::Texture(texture.clone(), index as u8, None),
-        );
+        // TODO: set array uniform here, instead
+        material.set_texture(&format!("u_textures[{}]", index), &texture, index, None);
       }
     }
   }

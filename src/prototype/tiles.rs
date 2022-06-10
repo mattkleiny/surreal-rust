@@ -7,14 +7,6 @@ use crate::maths::{vec2, Numeric};
 
 use super::*;
 
-/// Represents a tile that can be used in a [`TileMap`].
-pub trait Tile: Clone {
-  type Id: Numeric + Hash + Eq;
-
-  fn from_id(id: Self::Id) -> Self;
-  fn to_id(&self) -> Self::Id;
-}
-
 /// A densely packed 2d map of [`Tile`]s.
 ///
 /// Internally tiles are represented by their [`Tile::Id`], but the public
@@ -108,6 +100,45 @@ impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
     }
   }
 }
+
+/// Represents a tile that can be used in a [`TileMap`].
+pub trait Tile: Clone {
+  type Id: Numeric + Hash + Eq;
+
+  fn from_id(id: Self::Id) -> Self;
+  fn to_id(&self) -> Self::Id;
+}
+
+/// Implements an implicit tile type (no abstraction).
+macro_rules! implement_tile {
+  ($type:ty) => {
+    impl Tile for $type {
+      type Id = $type;
+
+      fn from_id(id: Self::Id) -> Self {
+        id
+      }
+
+      fn to_id(&self) -> Self::Id {
+        *self
+      }
+    }
+  };
+}
+
+implement_tile!(u8);
+implement_tile!(u16);
+implement_tile!(u32);
+implement_tile!(u64);
+implement_tile!(u128);
+implement_tile!(usize);
+
+implement_tile!(i8);
+implement_tile!(i16);
+implement_tile!(i32);
+implement_tile!(i64);
+implement_tile!(i128);
+implement_tile!(isize);
 
 #[cfg(test)]
 mod tests {
