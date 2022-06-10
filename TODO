@@ -12,7 +12,7 @@ Core:
   [✔] Fix up lifetimes for core types (graphics, etc) @done(22-06-05 14:12)
   [ ] Give documentation a bit of love
   [✔] Get egui text input working (and platform output handled) @done(22-06-05 23:46)
-  [ ] Swap to stable (instead of nightly)?
+  [✔] Swap to stable (instead of nightly)? @done(22-06-10 17:20)
   [ ] Scene management and loading
   [ ] Symmetric matrices for intersection tests, etc?
   [ ] Support for custom allocators? (A frame arena for scratch work, perhaps?)
@@ -27,7 +27,7 @@ AI:
 
 Graphics:
   [✔] Add bitmap fonts @done(22-06-06 18:57)
-  [ ] Add vector fonts (22-06-06 19:08)
+  [✔] Add vector fonts @started(22-06-06 19:08) @done(22-06-10 17:19)
   [ ] Get #[derive(Vertex)] working
   [ ] Font layout/galley system
   [ ] Add sprite pivots, transforms, etc

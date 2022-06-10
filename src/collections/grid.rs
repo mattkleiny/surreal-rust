@@ -123,7 +123,7 @@ macro_rules! tuple_grid_point {
   ($type:ty) => {
     impl From<($type, $type)> for GridPoint {
       fn from(point: ($type, $type)) -> Self {
-        Self(point.0 as usize, point.0 as usize)
+        Self(point.0 as usize, point.1 as usize)
       }
     }
   };

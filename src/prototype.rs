@@ -80,7 +80,7 @@ pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<
 /// A descriptor for the `SpriteContext`.
 pub struct SpriteBatchDescriptor {
   /// A default projection-view matrix to apply.
-  pub projection_view: Matrix4x4<f32>,
+  pub projection_view: Matrix4x4,
 
   /// If a palette is specified, a special shader variant will be loaded that uses the palette.
   /// The palette will be bound to u_palette with u_paletteWidth texels wide.
@@ -165,7 +165,7 @@ impl RenderContext for SpriteBatchContext {
 /// A descriptor for the `GeometryBatch`.
 pub struct GeometryBatchDescriptor {
   /// A default projection-view matrix to apply.
-  pub projection_view: Matrix4x4<f32>,
+  pub projection_view: Matrix4x4,
 
   /// A custom shader program to use for rendering.
   pub shader: Option<ShaderProgram>,

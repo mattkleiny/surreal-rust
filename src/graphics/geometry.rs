@@ -157,7 +157,12 @@ impl GeometryBatch {
       return;
     };
 
-    let Some(material) = &self.material else { return; };
+    // fetch the material out
+    let material = &mut self.material;
+    if material.is_none() {
+      return;
+    }
+    let material = material.as_mut().unwrap();
 
     // upload and draw the mesh
     self.mesh.with_buffers(|vertices, indices| {

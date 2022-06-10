@@ -166,6 +166,7 @@ impl Font for VectorFont {
     let glyph = state.font.glyph_id(character).with_scale(state.font_size);
 
     if let Some(outline) = state.font.outline_glyph(glyph) {
+      drop(state); // reborrow mutably
       let mut state = self.state.borrow_mut();
 
       // allocate a new glyph in the texture

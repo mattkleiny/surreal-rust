@@ -181,7 +181,11 @@ impl SpriteBatch {
     }
 
     // fetch the material out
-    let Some(material) = &mut self.material else { return; };
+    let material = &mut self.material;
+    if material.is_none() {
+      return;
+    }
+    let material = material.as_mut().unwrap();
 
     let vertex_count = self.vertices.len();
     let sprite_count = vertex_count / 4;

@@ -1,94 +1,78 @@
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{Debug, Formatter};
 use std::ops::{Index, IndexMut, Mul};
 
 use super::*;
 
 /// A standard 2x2 matrix.
-pub type Matrix2x2<T> = Matrix<T, 2, 4>;
+pub type Matrix2x2 = Matrix<2, 4>;
 
 /// A standard 3x3 matrix.
-pub type Matrix3x3<T> = Matrix<T, 3, 9>;
+pub type Matrix3x3 = Matrix<3, 9>;
 
 /// A standard 4x4 matrix.
-pub type Matrix4x4<T> = Matrix<T, 4, 16>;
+pub type Matrix4x4 = Matrix<4, 16>;
+
+impl Default for Matrix2x2 {
+  fn default() -> Self {
+    Self::IDENTITY
+  }
+}
 
 /// Specialization for 2x2 matrices.
-impl<T> Matrix2x2<T>
-where T: Numeric
-{
+impl Matrix2x2 {
   pub const IDENTITY: Self = Self::identity();
 
   /// Constructs a new 2x2 identity matrix (1 along the left to right diagonal).
   #[rustfmt::skip]
   pub const fn identity() -> Self {
     Self::create(&[
-      T::ONE, T::ZERO,
-      T::ZERO, T::ONE,
+      1., 0.,
+      0., 1.,
     ])
   }
 }
-
-impl<T> Default for Matrix2x2<T>
-where T: Numeric
-{
+impl Default for Matrix3x3 {
   fn default() -> Self {
     Self::IDENTITY
   }
 }
 
 /// Specialization for 3x3 matrices.
-impl<T> Matrix3x3<T>
-where T: Numeric
-{
+impl Matrix3x3 {
   pub const IDENTITY: Self = Self::identity();
 
   /// Constructs a new 3x3 identity matrix (1 along the left to right diagonal).
   #[rustfmt::skip]
   pub const fn identity() -> Self {
     Self::create(&[
-      T::ONE, T::ZERO, T::ZERO,
-      T::ZERO, T::ONE, T::ZERO,
-      T::ZERO, T::ZERO, T::ONE,
+      1., 0., 0.,
+      0., 1., 0.,
+      0., 0., 1.,
     ])
   }
 }
 
-impl<T> Default for Matrix3x3<T>
-where T: Numeric
-{
+impl Default for Matrix4x4 {
   fn default() -> Self {
     Self::IDENTITY
   }
 }
 
 /// Specialization for 4x4 matrices.
-impl<T> Matrix4x4<T>
-where T: Numeric
-{
+impl Matrix4x4 {
   pub const IDENTITY: Self = Self::identity();
 
   /// Constructs a new 4x4 identity matrix (1 along the left to right diagonal).
   #[rustfmt::skip]
   pub const fn identity() -> Self {
     Self::create(&[
-      T::ONE, T::ZERO, T::ZERO, T::ZERO,
-      T::ZERO, T::ONE, T::ZERO, T::ZERO,
-      T::ZERO, T::ZERO, T::ONE, T::ZERO,
-      T::ZERO, T::ZERO, T::ZERO, T::ONE,
+      1., 0., 0., 0.,
+      0., 1., 0., 0.,
+      0., 0., 1., 0.,
+      0., 0., 0., 1.,
     ])
   }
-}
 
-impl<T> Default for Matrix4x4<T>
-where T: Numeric
-{
-  fn default() -> Self {
-    Self::IDENTITY
-  }
-}
-
-/// Specialization for floating point 4x4 matrices.
-impl Matrix4x4<f32> {
   /// Creates a new translation matrix.
   #[rustfmt::skip]
   pub fn translate(x: f32, y: f32, z: f32) -> Self {
@@ -199,21 +183,19 @@ impl Matrix4x4<f32> {
 /// T = Type of the matrix; must be a numeric type.
 /// S = Stride of the matrix; how many columns between each row.
 /// L = Length of the matrix; total number of elements.
-#[derive(Copy, Clone)]
-pub struct Matrix<T, const S: usize, const L: usize> {
-  elements: [T; L],
+#[derive(Clone)]
+pub struct Matrix<const S: usize, const L: usize> {
+  elements: [f32; L],
 }
 
-impl<T, const S: usize, const L: usize> Matrix<T, S, L>
-where T: Numeric
-{
+impl<const S: usize, const L: usize> Matrix<S, L> {
   /// Constructs a new empty matrix.
   pub const fn new() -> Self {
-    Self { elements: [T::ZERO; L] }
+    Self { elements: [0.; L] }
   }
 
   /// Constructs a matrix from the given elements.
-  pub const fn create(elements: &[T; L]) -> Self {
+  pub const fn create(elements: &[f32; L]) -> Self {
     Self { elements: *elements }
   }
 
@@ -231,19 +213,17 @@ where T: Numeric
   }
 
   /// Converts the matrix to a slice.
-  pub fn as_slice(&self) -> &[T] {
+  pub fn as_slice(&self) -> &[f32] {
     self.elements.as_slice()
   }
 
   /// Converts the matrix to a mutable slice.
-  pub fn as_mut_slice(&mut self) -> &mut [T] {
+  pub fn as_mut_slice(&mut self) -> &mut [f32] {
     self.elements.as_mut_slice()
   }
 }
 
-impl<T, const S: usize, const L: usize> Debug for Matrix<T, S, L>
-where T: Display
-{
+impl<const S: usize, const L: usize> Debug for Matrix<S, L> {
   /// Formats the matrix in a semi-readable manner.
   fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     for y in 0..S {
@@ -260,7 +240,7 @@ where T: Display
   }
 }
 
-impl<const S: usize, const L: usize> Mul for Matrix<f32, S, L> {
+impl<const S: usize, const L: usize> Mul for Matrix<S, L> {
   type Output = Self;
 
   /// Multiplies two matrices together.
@@ -283,15 +263,15 @@ impl<const S: usize, const L: usize> Mul for Matrix<f32, S, L> {
   }
 }
 
-impl<T, const S: usize, const L: usize> Index<(usize, usize)> for Matrix<T, S, L> {
-  type Output = T;
+impl<const S: usize, const L: usize> Index<(usize, usize)> for Matrix<S, L> {
+  type Output = f32;
 
   fn index(&self, (row, column): (usize, usize)) -> &Self::Output {
     &self.elements[column + row * S]
   }
 }
 
-impl<T, const S: usize, const L: usize> IndexMut<(usize, usize)> for Matrix<T, S, L> {
+impl<const S: usize, const L: usize> IndexMut<(usize, usize)> for Matrix<S, L> {
   fn index_mut(&mut self, (row, column): (usize, usize)) -> &mut Self::Output {
     &mut self.elements[column + row * S]
   }

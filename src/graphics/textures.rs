@@ -368,7 +368,7 @@ impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
   /// Writes this builder's contents to the given texture.
   pub fn write_to(&self, texture: &Texture) {
     let cells_x = self.cells.len() % self.stride;
-    let cells_y = self.cells.len() / self.stride;
+    let cells_y = (self.cells.len() / self.stride).max(1);
 
     let pixels_x = cells_x * self.cell_size.x as usize;
     let pixels_y = cells_y * self.cell_size.y as usize;

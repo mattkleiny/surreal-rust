@@ -3,12 +3,17 @@
 use surreal::prelude::*;
 
 /// Represents a tile in our simple tile map.
-#[derive(Default, Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 enum MapTile {
-  #[default]
   Empty,
   Cactus,
   Rock,
+}
+
+impl Default for MapTile {
+  fn default() -> Self {
+    MapTile::Empty
+  }
 }
 
 impl Tile for MapTile {
