@@ -28,6 +28,7 @@ AI:
 Graphics:
   [✔] Add bitmap fonts @done(22-06-06 18:57)
   [✔] Add vector fonts @started(22-06-06 19:08) @done(22-06-10 17:19)
+  [ ] Improve vector font rendering and caching
   [ ] Get #[derive(Vertex)] working
   [ ] Font layout/galley system
   [ ] Add sprite pivots, transforms, etc

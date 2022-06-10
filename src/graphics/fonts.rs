@@ -12,7 +12,7 @@ use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
 use crate::graphics::{Texture, TextureRegion};
 use crate::maths::{vec2, Vector2};
 
-use super::{GraphicsServer, TextureAtlasBuilder};
+use super::{Color32, GraphicsServer, TextureAtlasBuilder};
 
 /// Represents different kinds of fonts and permits rendering.
 pub trait Font {
@@ -123,7 +123,7 @@ pub struct VectorFont {
 struct VectorFontState {
   font: FontVec,
   font_size: f32,
-  atlas: TextureAtlasBuilder<f32>,
+  atlas: TextureAtlasBuilder<Color32>,
   glyphs: HashMap<char, GlyphInfo>,
 }
 
@@ -137,17 +137,28 @@ struct GlyphInfo {
 impl Font for VectorFont {
   fn measure_size(&self, text: &str) -> (f32, f32) {
     let state = self.state.borrow();
-    let mut size = (0., 0.);
+
+    let mut line_count = 0;
+    let mut longest_line = 0;
+    let mut current_line = 0;
 
     for character in text.chars() {
-      let glyph = state.font.glyph_id(character).with_scale(state.font_size);
-      let bounds = state.font.glyph_bounds(&glyph);
+      current_line += 1;
 
-      size.0 += bounds.max.x - bounds.min.x;
-      size.1 += bounds.max.y - bounds.min.y;
+      if current_line >= longest_line {
+        longest_line = current_line;
+      }
+
+      if character == '\n' {
+        line_count += 1;
+        current_line = 0;
+      }
     }
 
-    size
+    let width = longest_line as f32 * state.font_size;
+    let height = line_count as f32 * state.font_size;
+
+    return (width, height);
   }
 
   fn get_glyph(&self, character: char) -> Option<TextureRegion> {
@@ -175,7 +186,9 @@ impl Font for VectorFont {
 
         // draw this glyph's pixels into our texture atlas
         outline.draw(|x, y, coverage| {
-          cell.pixels.set((x, y), coverage);
+          let color = Color32::rgba(255, 255, 255, (coverage * 255.0) as u8);
+
+          cell.pixels.set((x, y), color);
         });
 
         GlyphInfo {

@@ -357,7 +357,9 @@ impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
     // advance the offset
     self.next_offset.x += self.cell_size.x;
 
-    if self.next_offset.x as usize > self.stride {
+    let max_width = self.cell_size.x as usize;
+
+    if self.next_offset.x as usize > self.stride * max_width {
       self.next_offset.x = 0;
       self.next_offset.y += self.cell_size.y;
     }

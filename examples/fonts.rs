@@ -5,7 +5,7 @@ use surreal::prelude::*;
 
 fn main() {
   let configuration = Configuration {
-    title: "Bitmap Fonts",
+    title: "Font ",
     transparent_window: true,
     ..Default::default()
   };
