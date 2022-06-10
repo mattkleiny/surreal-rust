@@ -109,6 +109,19 @@ impl Texture {
     }
   }
 
+  /// Creates a new blank texture on the GPU with the given options and initial size.
+  pub fn with_options_and_size(
+    graphics: &GraphicsServer,
+    options: &TextureOptions,
+    width: u32,
+    height: u32,
+    format: TextureFormat,
+  ) -> Self {
+    let texture = Self::with_options(graphics, options);
+    texture.initialize(width, height, format);
+    texture
+  }
+
   /// Returns the width of the texture .
   pub fn width(&self) -> u32 {
     self.state.borrow().width
@@ -133,7 +146,7 @@ impl Texture {
   /// Initializes the texture with the given width and height.
   ///
   /// This is only necessary if the texture requires sizing information prior to access from the GPU.
-  pub fn initialize(&mut self, width: u32, height: u32, format: TextureFormat) {
+  pub fn initialize(&self, width: u32, height: u32, format: TextureFormat) {
     let mut state = self.state.borrow_mut();
 
     state.width = width;
@@ -210,6 +223,13 @@ impl Texture {
   /// Uploads pixel data to the texture from the given [`Image`].
   pub fn write_image(&mut self, image: &Image) {
     self.write_pixels(image.width(), image.height(), image.as_slice());
+  }
+
+  /// Blits this texture to the active display via the given material.
+  pub fn blit_to_display(&self, material: &mut Material) {
+    // TODO: a better way to do this?
+    material.set_uniform("u_texture", self);
+    material.draw_fullscreen_quad(PrimitiveTopology::Triangles);
   }
 }
 
@@ -410,7 +430,7 @@ pub trait Texel {
   const FORMAT: TextureFormat;
 }
 
-/// Implements texel representation common pixel types..
+/// Implements texel representations for common pixel types.
 macro_rules! implement_texel {
   ($type:ty, $value:ident) => {
     impl Texel for $type {

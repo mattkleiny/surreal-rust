@@ -14,12 +14,13 @@ use crate::maths::Rectangle;
 /// An OpenGL [`GraphicsBackend`] implementation.
 pub struct OpenGLGraphicsBackend {
   pub context: ContextWrapper<PossiblyCurrent, ()>,
-  internal_state: RefCell<InternalState>,
+  state: RefCell<InternalState>,
 }
 
 /// Internally managed state for the backend.
 struct InternalState {
   sampler_cache: HashMap<TextureSampler, u32>,
+  fullscreen_quad: Option<Mesh<Vertex2>>,
 }
 
 impl OpenGLGraphicsBackend {
@@ -29,8 +30,9 @@ impl OpenGLGraphicsBackend {
 
     Self {
       context,
-      internal_state: RefCell::new(InternalState {
+      state: RefCell::new(InternalState {
         sampler_cache: HashMap::new(),
+        fullscreen_quad: None,
       }),
     }
   }
@@ -520,7 +522,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
           if let Some(sampler) = sampler {
             // build and cache sampler settings based on hash of options
-            let mut internal_state = self.internal_state.borrow_mut();
+            let mut internal_state = self.state.borrow_mut();
             let sampler_cache = &mut internal_state.sampler_cache;
 
             let sampler_id = sampler_cache.entry(*sampler).or_insert_with(|| {

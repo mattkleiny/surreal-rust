@@ -70,6 +70,7 @@ pub struct Material {
   blend_state: BlendState,
   culling_mode: CullingMode,
   scissor_mode: ScissorMode,
+  fullscreen_quad: Option<Mesh<Vertex2>>,
 }
 
 impl Material {
@@ -82,6 +83,7 @@ impl Material {
       blend_state: BlendState::Disabled,
       culling_mode: CullingMode::Disabled,
       scissor_mode: ScissorMode::Disabled,
+      fullscreen_quad: None,
     }
   }
 
@@ -166,6 +168,19 @@ impl Material {
     self.graphics.set_blend_state(BlendState::Disabled);
     self.graphics.set_culling_mode(CullingMode::Disabled);
     self.graphics.set_scissor_mode(ScissorMode::Disabled);
+  }
+
+  /// Draws a fullscreen quad with this material.
+  pub fn draw_fullscreen_quad(&mut self, topology: PrimitiveTopology) {
+    match &self.fullscreen_quad {
+      Some(mesh) => mesh.draw(self, topology),
+      None => {
+        // create the quad lazily
+        let mesh = Mesh::create_quad(&self.graphics, 1.);
+        mesh.draw(self, topology);
+        self.fullscreen_quad = Some(mesh);
+      }
+    }
   }
 }
 

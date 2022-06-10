@@ -9,9 +9,10 @@ use std::rc::Rc;
 use super::*;
 
 /// Describes how to build a [`RenderTarget`].
+///
+/// A render target requires at least 1 color descriptor.
 #[derive(Clone)]
 pub struct RenderTargetDescriptor {
-  /// A render target requires at least 1 color attachment.
   pub color_attachment: RenderTextureDescriptor,
   pub depth_attachment: Option<RenderTextureDescriptor>,
   pub stencil_attachment: Option<RenderTextureDescriptor>,
@@ -20,23 +21,15 @@ pub struct RenderTargetDescriptor {
 /// Describes how to build a texture for use in a [`RenderTarget`].
 #[derive(Clone)]
 pub struct RenderTextureDescriptor {
-  /// The width of the texture, in pixels.
   pub width: u32,
-  /// The height of the texture, in pixels.
   pub height: u32,
-  /// The options of the texture to be allocated.
   pub options: TextureOptions,
 }
 
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
   pub fn to_texture(&self, graphics: &GraphicsServer) -> Texture {
-    let mut texture = Texture::with_options(graphics, &self.options);
-
-    // allocate the memory ahead of time; RGBA8 format
-    texture.initialize(self.width, self.height, self.options.format);
-
-    texture
+    Texture::with_options_and_size(graphics, &self.options, self.width, self.height, self.options.format)
   }
 }
 

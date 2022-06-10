@@ -295,7 +295,7 @@ pub struct Tessellator<V> {
   indices: Vec<Index>,
 }
 
-impl<V> Tessellator<V> {
+impl<V: Vertex> Tessellator<V> {
   /// Creates a new empty tessellator.
   pub fn new() -> Self {
     Self {
@@ -305,8 +305,7 @@ impl<V> Tessellator<V> {
   }
 
   /// Uploads the contents of the tessellator to the given [`Mesh`].
-  pub fn upload_to(&self, mesh: &mut Mesh<V>)
-  where V: Vertex {
+  pub fn upload_to(&self, mesh: &mut Mesh<V>) {
     mesh.with_buffers(|vertices, indices| {
       vertices.write_data(self.vertices.as_slice());
       indices.write_data(self.indices.as_slice());
