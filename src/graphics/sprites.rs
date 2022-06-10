@@ -9,13 +9,17 @@ use super::*;
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
 
+/// The maximum number of textures that can be bound in a single batch operation.
+const TEXTURE_POOL_SIZE: usize = 32;
+
 /// A fast and lightweight sprite batch renderer.
 ///
 /// This batch pre-allocates an array of vertices and indices and re-uses them for as many
 /// sprites as possible.
 ///
-/// Batching is possible over 1 material and texture pair; each texture swap requires a flush
-/// and so it's important to pre-sort sprites into batches by material and texture.
+/// Batching is possible over 1 material; however up to 32 unique texture sources can be used
+/// for that single batch operation. It's expected that the associated shader program is capable
+/// of supporting multiple textures per operation.
 pub struct SpriteBatch {
   mesh: Mesh<SpriteVertex>,
   material: Option<Material>,
@@ -229,11 +233,14 @@ fn build_quad_indices(sprite_count: usize) -> Vec<u32> {
 /// Retains a pool of textures in unique slot indices to allow multiple textures per batch
 #[derive(Default)]
 struct TexturePool {
-  slots: [Option<Texture>; 16],
+  slots: [Option<Texture>; TEXTURE_POOL_SIZE],
 }
 
 impl TexturePool {
   /// Allocates a new texture from the pool, if possible.
+  ///
+  /// If the texture has already been allocated, returns it's slot index.
+  /// Otherwise, the texture will be emplaced for use this frame.
   pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
     for (index, slot) in self.slots.iter_mut().enumerate() {
       match slot {
