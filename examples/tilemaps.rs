@@ -16,7 +16,7 @@ impl Default for Tile {
   }
 }
 
-impl TileMapTile for Tile {
+impl TileMapEntry for Tile {
   type Id = u8;
 
   fn from_id(id: Self::Id) -> Option<Self> {
