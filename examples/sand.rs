@@ -39,7 +39,7 @@ fn main() {
         let colors = &palette.as_slice()[1..4];
         let color = *colors.select_randomly(&mut random);
 
-        canvas.pixels.rasterize(
+        canvas.pixels.draw(
           color,
           &Circle {
             center: vec2(position.x.floor() as isize, position.y.floor() as isize),
@@ -47,7 +47,7 @@ fn main() {
           },
         );
       } else if mouse.is_button_down(MouseButton::Right) {
-        canvas.pixels.rasterize(
+        canvas.pixels.draw(
           Color32::CLEAR,
           &Circle {
             center: vec2(position.x.floor() as isize, position.y.floor() as isize),
@@ -70,7 +70,7 @@ fn main() {
 fn simulate_sand(pixels: &mut Grid<Color32>) {
   for y in (0..pixels.height()).rev() {
     for x in 0..pixels.width() {
-      let pixel = pixels.get((x, y));
+      let pixel = pixels.get_unchecked((x, y));
 
       if pixel.a <= 0 {
         continue;
@@ -101,10 +101,10 @@ fn simulate_particle(pixels: &mut Grid<Color32>, from_pos: (usize, usize), to_po
   let to_x = to_x as usize;
   let to_y = to_y as usize;
 
-  let target = pixels.get((to_x, to_y));
+  let target = pixels.get_unchecked((to_x, to_y));
 
   if target.a == 0 {
-    let source = *pixels.get((from_x, from_y));
+    let source = *pixels.get_unchecked((from_x, from_y));
 
     pixels.set((to_x, to_y), source);
     pixels.set((from_x, from_y), Color32::CLEAR);

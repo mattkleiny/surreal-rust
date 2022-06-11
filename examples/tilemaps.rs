@@ -4,19 +4,19 @@ use surreal::prelude::*;
 
 /// Represents a tile in our simple tile map.
 #[derive(Copy, Clone, Debug)]
-enum MapTile {
+enum Tile {
   Empty,
   Cactus,
   Rock,
 }
 
-impl Default for MapTile {
+impl Default for Tile {
   fn default() -> Self {
-    MapTile::Empty
+    Tile::Empty
   }
 }
 
-impl Tile for MapTile {
+impl TileMapTile for Tile {
   type Id = u8;
 
   fn from_id(id: Self::Id) -> Self {
@@ -33,7 +33,7 @@ impl Tile for MapTile {
   }
 }
 
-impl FromRandom for MapTile {
+impl FromRandom for Tile {
   fn from_random(random: &mut Random) -> Self {
     Self::from_id(random.next::<u8>() % 3)
   }
@@ -67,11 +67,11 @@ fn main() {
     // set-up tile map
     let mut map = TileMap::new(16, 9);
 
-    map.set_sprite(MapTile::Empty, sprites.get_region(0, 3));
-    map.set_sprite(MapTile::Cactus, sprites.get_region(3, 0));
-    map.set_sprite(MapTile::Rock, sprites.get_region(2, 2));
+    map.set_sprite(Tile::Empty, sprites.get_region(0, 3));
+    map.set_sprite(Tile::Cactus, sprites.get_region(3, 0));
+    map.set_sprite(Tile::Rock, sprites.get_region(2, 2));
 
-    map.fill(|_, _| MapTile::random());
+    map.fill(|_, _| Tile::random());
 
     engine.run_variable_step(|engine, tick| {
       let graphics = &engine.graphics;
@@ -81,7 +81,7 @@ fn main() {
 
       if engine.input.keyboard.is_key_pressed(Key::Space) {
         map.clear();
-        map.fill(|_, _| MapTile::random());
+        map.fill(|_, _| Tile::random());
       }
 
       if engine.input.keyboard.is_key_pressed(Key::Escape) {
