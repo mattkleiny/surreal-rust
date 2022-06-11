@@ -179,7 +179,7 @@ mod tests {
 
     map.set(position, ExampleTile::WALL);
 
-    let tile = map.get(position);
+    let tile = map.get(position).unwrap();
 
     assert_eq!(tile.1, "Wall");
   }

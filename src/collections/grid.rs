@@ -1,7 +1,7 @@
 use crate::maths::{vec2, RasterCanvas, Vector2};
 
 /// Represents a point in a [`Grid`].
-pub struct GridPoint(pub usize, pub usize);
+pub struct GridPoint(pub isize, pub isize);
 
 /// A simple 2d grid of [`T`]s.
 #[derive(Clone, Debug)]
@@ -54,58 +54,55 @@ impl<T> Grid<T> {
   }
 
   /// Is the given point a valid index into the grid?
+  #[inline]
   pub fn is_valid(&self, point: impl Into<GridPoint>) -> bool {
-    let point = point.into();
+    let GridPoint(x, y) = point.into();
 
-    point.0 > 0 && point.0 < self.width() && point.1 > 0 && point.1 < self.height()
+    self.is_valid_position(x, y)
+  }
+
+  /// Is the given position a valid index into the grid?
+  #[inline]
+  pub fn is_valid_position(&self, x: isize, y: isize) -> bool {
+    x >= 0 && x < self.width() as isize && y >= 0 && y < self.height() as isize
   }
 
   /// Accesses an item from the grid.
   #[inline]
   pub fn get(&self, point: impl Into<GridPoint>) -> Option<&T> {
-    let point = point.into();
+    let GridPoint(x, y) = point.into();
 
-    let x = point.0;
-    let y = point.1;
-
-    self.items.get(x + y * self.stride)
+    if self.is_valid_position(x, y) {
+      self.items.get(x as usize + y as usize * self.stride)
+    } else {
+      None
+    }
   }
 
   /// Accesses an item from the grid without checking bounds.
   #[inline]
   pub fn get_unchecked(&self, point: impl Into<GridPoint>) -> &T {
-    let point = point.into();
+    let GridPoint(x, y) = point.into();
 
-    let x = point.0;
-    let y = point.1;
-
-    &self.items[x + y * self.stride]
+    &self.items[x as usize + y as usize * self.stride]
   }
 
   /// Sets an item from the grid.
   #[inline]
   pub fn set(&mut self, point: impl Into<GridPoint>, value: T) {
-    let point = point.into();
+    let GridPoint(x, y) = point.into();
 
-    let x = point.0;
-    let y = point.1;
-
-    let index = x + y * self.stride;
-
-    if index > 0 && index < self.items.len() {
-      self.items[index] = value
+    if self.is_valid_position(x, y) {
+      self.items[x as usize + y as usize * self.stride] = value
     }
   }
 
   /// Sets an item from the grid without checking bounds.
   #[inline]
   pub fn set_unchecked(&mut self, point: impl Into<GridPoint>, value: T) {
-    let point = point.into();
+    let GridPoint(x, y) = point.into();
 
-    let x = point.0;
-    let y = point.1;
-
-    self.items[x + y * self.stride] = value
+    self.items[x as usize + y as usize * self.stride] = value
   }
 
   /// Fills the grid with the given value.
@@ -159,7 +156,7 @@ macro_rules! tuple_grid_point {
   ($type:ty) => {
     impl From<($type, $type)> for GridPoint {
       fn from(point: ($type, $type)) -> Self {
-        Self(point.0 as usize, point.1 as usize)
+        Self(point.0 as isize, point.1 as isize)
       }
     }
   };
@@ -177,13 +174,13 @@ tuple_grid_point!(isize);
 
 impl From<(f32, f32)> for GridPoint {
   fn from(point: (f32, f32)) -> Self {
-    Self(point.0.floor() as usize, point.1.floor() as usize)
+    Self(point.0.floor() as isize, point.1.floor() as isize)
   }
 }
 
 impl From<(f64, f64)> for GridPoint {
   fn from(point: (f64, f64)) -> Self {
-    Self(point.0.floor() as usize, point.1.floor() as usize)
+    Self(point.0.floor() as isize, point.1.floor() as isize)
   }
 }
 
@@ -192,7 +189,7 @@ macro_rules! vector_grid_point {
   ($type:ty) => {
     impl From<crate::maths::Vector2<$type>> for GridPoint {
       fn from(point: Vector2<$type>) -> Self {
-        Self(point.x as usize, point.y as usize)
+        Self(point.x as isize, point.y as isize)
       }
     }
   };
@@ -210,13 +207,13 @@ vector_grid_point!(isize);
 
 impl From<Vector2<f32>> for GridPoint {
   fn from(point: Vector2<f32>) -> Self {
-    Self(point.x.floor() as usize, point.y.floor() as usize)
+    Self(point.x.floor() as isize, point.y.floor() as isize)
   }
 }
 
 impl From<Vector2<f64>> for GridPoint {
   fn from(point: Vector2<f64>) -> Self {
-    Self(point.x.floor() as usize, point.y.floor() as usize)
+    Self(point.x.floor() as isize, point.y.floor() as isize)
   }
 }
 
