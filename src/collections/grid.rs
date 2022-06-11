@@ -1,4 +1,4 @@
-use crate::maths::{vec2, RasterCanvas, Vector2};
+use crate::maths::{RasterCanvas, Vector2};
 
 /// Represents a point in a [`Grid`].
 pub struct GridPoint(pub isize, pub isize);
@@ -142,12 +142,12 @@ impl<T> RasterCanvas<T> for Grid<T> {
     self.height()
   }
 
-  fn get(&self, x: isize, y: isize) -> Option<&T> {
-    self.get(vec2(x, y))
+  fn get(&self, point: impl Into<GridPoint>) -> Option<&T> {
+    self.get(point)
   }
 
-  fn set(&mut self, x: isize, y: isize, value: T) {
-    self.set(vec2(x, y), value)
+  fn set(&mut self, point: impl Into<GridPoint>, value: T) {
+    self.set(point, value);
   }
 }
 
@@ -167,6 +167,7 @@ tuple_grid_point!(u16);
 tuple_grid_point!(u32);
 tuple_grid_point!(u64);
 tuple_grid_point!(usize);
+tuple_grid_point!(i8);
 tuple_grid_point!(i16);
 tuple_grid_point!(i32);
 tuple_grid_point!(i64);
@@ -200,6 +201,7 @@ vector_grid_point!(u16);
 vector_grid_point!(u32);
 vector_grid_point!(u64);
 vector_grid_point!(usize);
+vector_grid_point!(i8);
 vector_grid_point!(i16);
 vector_grid_point!(i32);
 vector_grid_point!(i64);

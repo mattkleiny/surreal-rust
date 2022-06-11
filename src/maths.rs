@@ -1,6 +1,5 @@
 //! Mathematical utilities.
 
-pub use bounds::*;
 pub use curves::*;
 pub use interpolation::*;
 pub use linear::*;
@@ -10,10 +9,10 @@ pub use paths::*;
 pub use random::*;
 pub use ranges::*;
 pub use rasterization::*;
+pub use rectangles::*;
 pub use shapes::*;
 pub use tessellation::*;
 
-mod bounds;
 mod curves;
 mod interpolation;
 mod linear;
@@ -23,6 +22,7 @@ mod paths;
 mod random;
 mod ranges;
 mod rasterization;
+mod rectangles;
 mod shapes;
 mod tessellation;
 
