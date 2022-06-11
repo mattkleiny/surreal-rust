@@ -62,7 +62,18 @@ impl<T> Grid<T> {
 
   /// Accesses an item from the grid.
   #[inline]
-  pub fn get(&self, point: impl Into<GridPoint>) -> &T {
+  pub fn get(&self, point: impl Into<GridPoint>) -> Option<&T> {
+    let point = point.into();
+
+    let x = point.0;
+    let y = point.1;
+
+    self.items.get(x + y * self.stride)
+  }
+
+  /// Accesses an item from the grid without checking bounds.
+  #[inline]
+  pub fn get_unchecked(&self, point: impl Into<GridPoint>) -> &T {
     let point = point.into();
 
     let x = point.0;
@@ -74,6 +85,21 @@ impl<T> Grid<T> {
   /// Sets an item from the grid.
   #[inline]
   pub fn set(&mut self, point: impl Into<GridPoint>, value: T) {
+    let point = point.into();
+
+    let x = point.0;
+    let y = point.1;
+
+    let index = x + y * self.stride;
+
+    if index > 0 && index < self.items.len() {
+      self.items[index] = value
+    }
+  }
+
+  /// Sets an item from the grid without checking bounds.
+  #[inline]
+  pub fn set_unchecked(&mut self, point: impl Into<GridPoint>, value: T) {
     let point = point.into();
 
     let x = point.0;
@@ -119,7 +145,7 @@ impl<T> RasterCanvas<T> for Grid<T> {
     self.height()
   }
 
-  fn get(&self, x: isize, y: isize) -> &T {
+  fn get(&self, x: isize, y: isize) -> Option<&T> {
     self.get(vec2(x, y))
   }
 

@@ -410,7 +410,8 @@ impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
           let advance_y = cell_y * cell_size_y + pixel_y;
           let index = advance_x + advance_y * pixels_x;
 
-          texels[index] = cell.pixels.get((pixel_x, pixel_y)).clone();
+          // TODO: make this safer?
+          texels[index] = cell.pixels.get_unchecked((pixel_x, pixel_y)).clone();
         }
       }
 

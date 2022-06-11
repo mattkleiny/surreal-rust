@@ -36,8 +36,8 @@ impl<'a, T: Tile> TileMap<'a, T> {
   }
 
   /// Gets a tile in the grid.
-  pub fn get(&self, point: impl Into<GridPoint>) -> T {
-    T::from_id(*self.tiles.get(point))
+  pub fn get(&self, point: impl Into<GridPoint>) -> Option<T> {
+    self.tiles.get(point).map(|id| T::from_id(*id))
   }
 
   /// Sets a tile in the grid.
@@ -80,21 +80,21 @@ impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
 
     for y in 0..self.tiles.height() {
       for x in 0..self.tiles.width() {
-        let id = self.tiles.get((x, y));
+        if let Some(id) = self.tiles.get((x, y)) {
+          if let Some(region) = self.sprites.get(id) {
+            let position = vec2(
+              (x as f32 + 0.5) * region.size.x as f32 - half_width * region.size.x as f32,
+              (y as f32 + 0.5) * region.size.y as f32 - half_height * region.size.y as f32,
+            );
 
-        if let Some(region) = self.sprites.get(id) {
-          let position = vec2(
-            (x as f32 + 0.5) * region.size.x as f32 - half_width * region.size.x as f32,
-            (y as f32 + 0.5) * region.size.y as f32 - half_height * region.size.y as f32,
-          );
-
-          context.batch.draw_sprite(
-            region,
-            &SpriteOptions {
-              position,
-              ..Default::default()
-            },
-          );
+            context.batch.draw_sprite(
+              region,
+              &SpriteOptions {
+                position,
+                ..Default::default()
+              },
+            );
+          }
         }
       }
     }

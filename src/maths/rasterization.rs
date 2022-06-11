@@ -2,7 +2,7 @@
 pub trait RasterCanvas<T> {
   fn width(&self) -> usize;
   fn height(&self) -> usize;
-  fn get(&self, x: isize, y: isize) -> &T;
+  fn get(&self, x: isize, y: isize) -> Option<&T>;
   fn set(&mut self, x: isize, y: isize, value: T);
 
   /// Rasterizes the given object into the canvas.
