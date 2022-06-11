@@ -1,4 +1,4 @@
-use super::{vec2, Raster, Rasterable, Rectangle, Vector2};
+use super::{vec2, RasterCanvas, Rasterable, Rectangle, Vector2};
 
 /// A simple circle in 2-space.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -9,7 +9,7 @@ pub struct Circle<N> {
 
 /// Allow rasterization of integrally sized circles.
 impl Rasterable for Circle<isize> {
-  fn rasterize<T: Clone>(&self, value: T, target: &mut impl Raster<T>) {
+  fn rasterize<T: Clone>(&self, value: T, target: &mut impl RasterCanvas<T>) {
     let center = self.center;
     let radius = self.radius;
 

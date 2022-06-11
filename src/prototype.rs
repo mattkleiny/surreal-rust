@@ -63,6 +63,11 @@ pub fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) ->
   shader.expect("Failed to load standard shader")
 }
 
+/// Loads a built-in material.
+pub fn load_built_in_material(graphics: &GraphicsServer, shader: BuiltInShader) -> Material {
+  Material::new(graphics, &load_built_in_shader(graphics, shader))
+}
+
 /// Loads a built-in color palette.
 pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<P> {
   let palette = match palette {

@@ -8,7 +8,7 @@ use std::ops::{Add, Sub};
 use crate::maths::{ApproxEq, FromRandom, Lerp, Numeric, Random};
 
 /// Represents a type of pixel.
-pub trait Pixel: Copy {
+pub trait Pixel: Copy + Default {
   /// The scalar type that is used to store each channel in this pixel.
   type Subpixel: Numeric;
 

@@ -1,4 +1,4 @@
-use crate::maths::{vec2, Raster, Vector2};
+use crate::maths::{vec2, RasterCanvas, Vector2};
 
 /// Represents a point in a [`Grid`].
 pub struct GridPoint(pub usize, pub usize);
@@ -110,7 +110,7 @@ impl<T> Grid<T> {
 }
 
 /// Allow rasterization of shapes into the grid.
-impl<T> Raster<T> for Grid<T> {
+impl<T> RasterCanvas<T> for Grid<T> {
   fn width(&self) -> usize {
     self.width()
   }
