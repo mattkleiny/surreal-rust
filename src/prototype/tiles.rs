@@ -37,22 +37,30 @@ impl<'a, T: TileMapTile> TileMap<'a, T> {
 
   /// Gets a tile in the grid.
   pub fn get(&self, point: impl Into<GridPoint>) -> Option<T> {
-    self.tiles.get(point).map(|id| T::from_id(*id))
+    self.tiles.get(point).and_then(|id| T::from_id(*id))
   }
 
   /// Sets a tile in the grid.
-  pub fn set(&mut self, point: impl Into<GridPoint>, value: T) {
-    self.tiles.set(point, value.to_id());
+  pub fn set(&mut self, point: impl Into<GridPoint>, tile: T) {
+    if let Some(id) = tile.to_id() {
+      self.tiles.set(point, id);
+    }
   }
 
   /// Gets the sprite to be used for the given tile.
   pub fn get_sprite(&self, tile: T) -> Option<&TextureRegion<'a>> {
-    self.sprites.get(&tile.to_id())
+    if let Some(id) = tile.to_id() {
+      self.sprites.get(&id)
+    } else {
+      None
+    }
   }
 
   /// Sets the sprite to be used for the given tile.
   pub fn set_sprite(&mut self, tile: T, sprite: impl Into<TextureRegion<'a>>) {
-    self.sprites.insert(tile.to_id(), sprite.into());
+    if let Some(id) = tile.to_id() {
+      self.sprites.insert(id, sprite.into());
+    }
   }
 
   /// Fills the map with the given delegate.
@@ -60,8 +68,9 @@ impl<'a, T: TileMapTile> TileMap<'a, T> {
     for y in 0..self.height() {
       for x in 0..self.width() {
         let tile = body(x, y);
-
-        self.tiles.set((x, y), tile.to_id());
+        if let Some(id) = tile.to_id() {
+          self.tiles.set((x, y), id);
+        }
       }
     }
   }
@@ -105,8 +114,8 @@ impl<'a, T: TileMapTile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
 pub trait TileMapTile: Clone {
   type Id: Numeric + Hash + Eq;
 
-  fn from_id(id: Self::Id) -> Self;
-  fn to_id(&self) -> Self::Id;
+  fn from_id(id: Self::Id) -> Option<Self>;
+  fn to_id(&self) -> Option<Self::Id>;
 }
 
 /// Implements an implicit tile type (no abstraction).
@@ -115,12 +124,12 @@ macro_rules! implement_tile {
     impl TileMapTile for $type {
       type Id = $type;
 
-      fn from_id(id: Self::Id) -> Self {
-        id
+      fn from_id(id: Self::Id) -> Option<Self> {
+        Some(id)
       }
 
-      fn to_id(&self) -> Self::Id {
-        *self
+      fn to_id(&self) -> Option<Self::Id> {
+        Some(*self)
       }
     }
   };
@@ -157,18 +166,18 @@ mod tests {
   impl TileMapTile for ExampleTile {
     type Id = u8;
 
-    fn from_id(id: Self::Id) -> Self {
+    fn from_id(id: Self::Id) -> Option<Self> {
       match id {
-        0 => Self::EMPTY,
-        1 => Self::WALL,
-        2 => Self::FLOOR,
-        3 => Self::DOOR,
-        _ => panic!("Just experimenting: {:?}", id),
+        0 => Some(Self::EMPTY),
+        1 => Some(Self::WALL),
+        2 => Some(Self::FLOOR),
+        3 => Some(Self::DOOR),
+        _ => None,
       }
     }
 
-    fn to_id(&self) -> Self::Id {
-      self.0
+    fn to_id(&self) -> Option<Self::Id> {
+      Some(self.0)
     }
   }
 

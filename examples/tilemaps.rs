@@ -19,23 +19,23 @@ impl Default for Tile {
 impl TileMapTile for Tile {
   type Id = u8;
 
-  fn from_id(id: Self::Id) -> Self {
+  fn from_id(id: Self::Id) -> Option<Self> {
     match id {
-      0 => Self::Empty,
-      1 => Self::Cactus,
-      2 => Self::Rock,
-      _ => panic!(),
+      0 => Some(Self::Empty),
+      1 => Some(Self::Cactus),
+      2 => Some(Self::Rock),
+      _ => None,
     }
   }
 
-  fn to_id(&self) -> Self::Id {
-    *self as Self::Id
+  fn to_id(&self) -> Option<Self::Id> {
+    Some(*self as Self::Id)
   }
 }
 
 impl FromRandom for Tile {
   fn from_random(random: &mut Random) -> Self {
-    Self::from_id(random.next::<u8>() % 3)
+    Self::from_id(random.next::<u8>() % 3).unwrap()
   }
 }
 
