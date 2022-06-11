@@ -11,12 +11,12 @@ use super::*;
 ///
 /// Internally tiles are represented by their [`Tile::Id`], but the public
 /// API allows for direct access via the [`T`] abstraction.
-pub struct TileMap<'a, T: TileMapTile> {
+pub struct TileMap<'a, T: TileMapEntry> {
   tiles: Grid<T::Id>,
   sprites: HashMap<T::Id, TextureRegion<'a>>,
 }
 
-impl<'a, T: TileMapTile> TileMap<'a, T> {
+impl<'a, T: TileMapEntry> TileMap<'a, T> {
   /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
@@ -81,7 +81,7 @@ impl<'a, T: TileMapTile> TileMap<'a, T> {
   }
 }
 
-impl<'a, T: TileMapTile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
+impl<'a, T: TileMapEntry> Renderable<SpriteBatchContext> for TileMap<'a, T> {
   /// Renders this tile map with to a sprite batch.
   fn render(&self, context: &mut SpriteBatchContext) {
     let half_width = self.tiles.width() as f32 / 2.;
@@ -110,18 +110,18 @@ impl<'a, T: TileMapTile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
   }
 }
 
-/// Represents a tile that can be used in a [`TileMap`].
-pub trait TileMapTile: Clone {
+/// Represents an entry that can be used in a [`TileMap`].
+pub trait TileMapEntry: Clone {
   type Id: Numeric + Hash + Eq;
 
   fn from_id(id: Self::Id) -> Option<Self>;
   fn to_id(&self) -> Option<Self::Id>;
 }
 
-/// Implements an implicit tile type (no abstraction).
+/// Implements an implicit entry type (no abstraction).
 macro_rules! implement_tile {
   ($type:ty) => {
-    impl TileMapTile for $type {
+    impl TileMapEntry for $type {
       type Id = $type;
 
       fn from_id(id: Self::Id) -> Option<Self> {
@@ -163,7 +163,7 @@ mod tests {
     pub const DOOR: Self = Self(3, "Door");
   }
 
-  impl TileMapTile for ExampleTile {
+  impl TileMapEntry for ExampleTile {
     type Id = u8;
 
     fn from_id(id: Self::Id) -> Option<Self> {
