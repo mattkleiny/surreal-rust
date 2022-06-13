@@ -3,9 +3,12 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use lazy_static::__Deref;
+
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::collections::Grid;
 use crate::maths::{vec2, Rectangle, Vector2};
+use crate::prelude::AssetManager;
 
 use super::*;
 
@@ -315,6 +318,13 @@ impl TextureAtlas {
       width,
       height,
     }
+  }
+
+  /// Loads a texture atlas from the given file.
+  pub fn load(assets: &AssetManager, width: u32, height: u32, path: &str) -> crate::Result<TextureAtlas> {
+    let texture = Texture::load(assets, path)?;
+
+    Ok(TextureAtlas::new(width, height, texture.deref()))
   }
 
   /// The width of the atlas, in sub-regions.

@@ -14,12 +14,9 @@ fn main() {
     let graphics = &engine.graphics;
 
     // set-up assets and rendering
-    let sprites1 = Texture::load(&assets, "assets/sprites/tiles_desert.png").unwrap();
-    let sprites1 = TextureAtlas::new(16, 16, &sprites1);
-    let sprites2 = Texture::load(&assets, "assets/sprites/spawner-idle.png").unwrap();
-    let sprites2 = TextureAtlas::new(16, 16, &sprites2);
-    let sprites3 = Texture::load(&assets, "assets/sprites/spawner-walk.png").unwrap();
-    let sprites3 = TextureAtlas::new(16, 16, &sprites3);
+    let sprites1 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/tiles_desert.png").unwrap();
+    let sprites2 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-idle.png").unwrap();
+    let sprites3 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-walk.png").unwrap();
 
     let mut renderer = RenderContextManager::new(graphics);
 

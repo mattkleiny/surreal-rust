@@ -16,8 +16,8 @@ fn main() {
     // set-up rendering
     let palette = load_built_in_palette(BuiltInPalette::Hollow4);
     let mut canvas = PixelCanvas::new(graphics, 256, 144);
-    let mut random = Random::new();
     let mut timer = IntervalTimer::new(TimeSpan::from_millis(10.));
+    let mut random = Random::new();
 
     engine.run_variable_step(|engine, tick| {
       let graphics = &engine.graphics;

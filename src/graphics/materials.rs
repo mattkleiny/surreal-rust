@@ -67,6 +67,7 @@ pub struct Material {
   graphics: GraphicsServer,
   shader: ShaderProgram,
   uniforms: HashMap<String, MaterialUniform>,
+  textures: TextureSlotBindings,
   blend_state: BlendState,
   culling_mode: CullingMode,
   scissor_mode: ScissorMode,
@@ -80,6 +81,7 @@ impl Material {
       graphics: graphics.clone(),
       shader: shader.clone(),
       uniforms: HashMap::new(),
+      textures: TextureSlotBindings::default(),
       blend_state: BlendState::Disabled,
       culling_mode: CullingMode::Disabled,
       scissor_mode: ScissorMode::Disabled,
@@ -131,7 +133,7 @@ impl Material {
   /// Sets the given name as a uniform with a single texture.
   pub fn set_texture(&mut self, name: &str, texture: &Texture, sampler: Option<TextureSampler>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
-      let slot = self.allocate_texture_slot();
+      let slot = self.allocate_texture_slot(texture);
 
       let uniform = MaterialUniform {
         location,
@@ -148,7 +150,7 @@ impl Material {
       let mut bindings = smallvec::SmallVec::<[(Texture, u8); 16]>::new();
 
       for texture in textures {
-        let slot = self.allocate_texture_slot();
+        let slot = self.allocate_texture_slot(texture);
         let texture = (*texture).clone();
 
         bindings.push((texture, slot));
@@ -210,20 +212,12 @@ impl Material {
   /// Finds the first free texture slot in the material.
   ///
   /// This will also re-organise any old textures back into a linear ordering.
-  fn allocate_texture_slot(&mut self) -> u8 {
-    let mut available_slot = 0;
-
-    for uniform in self.uniforms.values_mut() {
-      match &mut uniform.value {
-        ShaderUniform::Texture(_, slot, _) => {
-          *slot = available_slot;
-          available_slot += 1;
-        }
-        _ => {}
-      }
-    }
-
-    available_slot
+  fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
+    // TODO: make this more robust?
+    self
+      .textures
+      .allocate(texture)
+      .expect("Failed to allocate texture slot")
   }
 }
 
@@ -242,5 +236,35 @@ impl AssetLoader<Material> for MaterialLoader {
     let material = Material::new(&self.graphics, &shader);
 
     Ok(material)
+  }
+}
+
+/// Keeps texture assignments uniquely associated with slot indices for use in
+/// texture binding in a material.
+#[derive(Default, Clone)]
+struct TextureSlotBindings {
+  slots: [Option<GraphicsHandle>; 16],
+}
+
+impl TextureSlotBindings {
+  pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
+    for (index, slot) in self.slots.iter_mut().enumerate() {
+      match slot {
+        Some(existing) if *existing == texture.handle() => {
+          return Some(index as u8);
+        }
+        None => {
+          *slot = Some(texture.handle());
+          return Some(index as u8);
+        }
+        _ => continue,
+      }
+    }
+
+    None
+  }
+
+  pub fn clear(&mut self) {
+    self.slots.fill(None);
   }
 }
