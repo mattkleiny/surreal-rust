@@ -6,6 +6,7 @@ fn main() {
   let configuration = Configuration {
     title: "Tile Maps",
     transparent_window: true,
+    update_continuously: false,
     log_level: LevelFilter::Trace,
     ..Default::default()
   };

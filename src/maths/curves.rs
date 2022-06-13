@@ -29,7 +29,6 @@ pub struct QuadraticBezier {
 impl Curve for QuadraticBezier {
   fn sample_at(&self, t: f32) -> Vector2<f32> {
     let x = (1. - t).powf(2.) * self.start.x + 2. * (1. - t) * t * self.control.x + t.powf(2.) * self.end.x;
-
     let y = (1. - t).powf(2.) * self.start.y + 2. * (1. - t) * t * self.control.y + t.powf(2.) * self.end.y;
 
     vec2(x, y)

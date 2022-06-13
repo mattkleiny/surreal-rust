@@ -7,9 +7,7 @@ pub trait VonNeumannNeighbourhood<T> {
   fn von_neighbours(&self) -> Self::Output;
 }
 
-impl<T> VonNeumannNeighbourhood<T> for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> VonNeumannNeighbourhood<T> for Vector2<T> {
   type Output = [Vector2<T>; 4];
 
   fn von_neighbours(&self) -> Self::Output {
@@ -29,9 +27,7 @@ pub trait MooreNeighbourhood<T> {
   fn moore_neighbours(&self) -> Self::Output;
 }
 
-impl<T> MooreNeighbourhood<T> for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> MooreNeighbourhood<T> for Vector2<T> {
   type Output = [Vector2<T>; 8];
 
   fn moore_neighbours(&self) -> Self::Output {

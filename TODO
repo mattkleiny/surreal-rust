@@ -17,6 +17,7 @@ Core:
   [ ] Symmetric matrices for intersection tests, etc?
   [ ] Support for custom allocators? (A frame arena for scratch work, perhaps?)
   [ ] Use static pointers for graphics server, audio server, etc?
+  [ ] Add matrix inversion and more core linear algebra or instead use an existing crate
 
 AI:
   [ ] Basic automata

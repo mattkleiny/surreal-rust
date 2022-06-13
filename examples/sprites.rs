@@ -6,6 +6,7 @@ fn main() {
   let configuration = Configuration {
     title: "Sprites",
     transparent_window: true,
+    update_continuously: false,
     log_level: LevelFilter::Trace,
     ..Default::default()
   };
@@ -40,6 +41,10 @@ fn main() {
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
       renderer.render(&map);
+
+      if engine.input.keyboard.is_key_pressed(Key::Space) {
+        map.fill(|_, _| u8::random() % 3);
+      }
 
       if engine.input.keyboard.is_key_pressed(Key::Escape) {
         tick.exit();

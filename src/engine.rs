@@ -288,6 +288,10 @@ impl Engine {
             self.window.request_redraw();
           } else {
             *control_flow = ControlFlow::Wait;
+
+            if self.is_focused {
+              self.window.request_redraw();
+            }
           }
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
