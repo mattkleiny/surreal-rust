@@ -26,7 +26,7 @@ void main() {
 
 #shader_type fragment
 
-uniform sampler2D u_textures[16];
+uniform sampler2D u_textures[32];
 
 in vec2 v_uv;
 in vec4 v_color;

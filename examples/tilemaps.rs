@@ -15,13 +15,12 @@ fn main() {
 
     // set-up assets and rendering
     let sprites = TextureAtlas::load(&assets, 16, 16, "assets/sprites/tiles_desert.png").unwrap();
-    let palette = load_built_in_palette(BuiltInPalette::Demichrome4);
 
     let mut renderer = RenderContextManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::orthographic(256., 144., 0., 100.),
-      palette: Some(palette.clone()),
+      palette: Some(load_built_in_palette(BuiltInPalette::Demichrome4)),
       ..Default::default()
     });
 

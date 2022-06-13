@@ -22,14 +22,14 @@ fn main() {
 
     renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::orthographic(256., 144., 0., 100.),
-      palette: Some(load_built_in_palette(BuiltInPalette::Hollow4)),
+      palette: Some(load_built_in_palette(BuiltInPalette::Demichrome4)),
       ..Default::default()
     });
 
     // set-up tile map
     let mut map = TileMap::new(16, 9);
 
-    map.set_sprite(0, sprites1.get_region(0, 3));
+    map.set_sprite(0, sprites1.get_region(3, 0));
     map.set_sprite(1, sprites2.get_region(0, 0));
     map.set_sprite(2, sprites3.get_region(0, 0));
 

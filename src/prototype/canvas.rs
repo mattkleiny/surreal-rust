@@ -36,6 +36,6 @@ impl<P: Pixel + Texel> PixelCanvas<P> {
     let (width, height) = (self.pixels.width(), self.pixels.height());
 
     self.texture.write_pixels(width, height, &self.pixels.as_slice());
-    self.material.draw_fullscreen_quad(PrimitiveTopology::Triangles);
+    self.material.draw_fullscreen_quad();
   }
 }

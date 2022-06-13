@@ -67,7 +67,7 @@ pub struct Material {
   graphics: GraphicsServer,
   shader: ShaderProgram,
   uniforms: HashMap<String, MaterialUniform>,
-  textures: TextureSlotBindings,
+  textures: TextureBindingSet,
   blend_state: BlendState,
   culling_mode: CullingMode,
   scissor_mode: ScissorMode,
@@ -81,7 +81,7 @@ impl Material {
       graphics: graphics.clone(),
       shader: shader.clone(),
       uniforms: HashMap::new(),
-      textures: TextureSlotBindings::default(),
+      textures: TextureBindingSet::default(),
       blend_state: BlendState::Disabled,
       culling_mode: CullingMode::Disabled,
       scissor_mode: ScissorMode::Disabled,
@@ -173,6 +173,7 @@ impl Material {
   /// Removes all uniforms from the material.
   pub fn clear_uniforms(&mut self) {
     self.uniforms.clear();
+    self.textures.clear();
   }
 
   /// Binds this material to the graphics server.
@@ -197,14 +198,13 @@ impl Material {
 
   /// Draws a fullscreen quad with this material.
   /// TODO: maybe this would make sense in a render pipeline or manager?
-  pub fn draw_fullscreen_quad(&mut self, topology: PrimitiveTopology) {
+  pub fn draw_fullscreen_quad(&mut self) {
     match &self.fullscreen_quad {
-      Some(mesh) => mesh.draw(self, topology),
+      Some(mesh) => mesh.draw(self, PrimitiveTopology::Triangles),
       None => {
         // create the quad lazily
-        let mesh = Mesh::create_quad(&self.graphics, 1.);
-        mesh.draw(self, topology);
-        self.fullscreen_quad = Some(mesh);
+        self.fullscreen_quad = Some(Mesh::create_quad(&self.graphics, 1.));
+        self.draw_fullscreen_quad();
       }
     }
   }
@@ -213,11 +213,10 @@ impl Material {
   ///
   /// This will also re-organise any old textures back into a linear ordering.
   fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
-    // TODO: make this more robust?
     self
       .textures
       .allocate(texture)
-      .expect("Failed to allocate texture slot")
+      .expect("Failed to allocate texture slot. There's a limit of 16 concurrent textures per material.")
   }
 }
 
@@ -242,11 +241,17 @@ impl AssetLoader<Material> for MaterialLoader {
 /// Keeps texture assignments uniquely associated with slot indices for use in
 /// texture binding in a material.
 #[derive(Default, Clone)]
-struct TextureSlotBindings {
-  slots: [Option<GraphicsHandle>; 16],
+struct TextureBindingSet {
+  slots: [Option<GraphicsHandle>; 32],
 }
 
-impl TextureSlotBindings {
+impl TextureBindingSet {
+  /// ALlocates a texture slot for the given texture.
+  ///
+  /// If the texture is already bound, it will return the existing slot.
+  /// Otherwise the first empty slot will be used.
+  ///
+  /// If we've allocated all texture slots, `None` will be returned.
   pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
     for (index, slot) in self.slots.iter_mut().enumerate() {
       match slot {
@@ -264,6 +269,7 @@ impl TextureSlotBindings {
     None
   }
 
+  /// Clears all used texture slots from the bindings.
   pub fn clear(&mut self) {
     self.slots.fill(None);
   }

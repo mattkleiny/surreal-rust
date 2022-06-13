@@ -3,8 +3,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use lazy_static::__Deref;
-
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::collections::Grid;
 use crate::maths::{vec2, Rectangle, Vector2};
@@ -231,7 +229,7 @@ impl Texture {
   /// Blits this texture to the active display via the given material.
   pub fn blit_to_display(&self, material: &mut Material) {
     material.set_texture("u_texture", self, None);
-    material.draw_fullscreen_quad(PrimitiveTopology::Triangles);
+    material.draw_fullscreen_quad();
   }
 }
 
@@ -324,7 +322,7 @@ impl TextureAtlas {
   pub fn load(assets: &AssetManager, width: u32, height: u32, path: &str) -> crate::Result<TextureAtlas> {
     let texture = Texture::load(assets, path)?;
 
-    Ok(TextureAtlas::new(width, height, texture.deref()))
+    Ok(TextureAtlas::new(width, height, texture.as_ref()))
   }
 
   /// The width of the atlas, in sub-regions.

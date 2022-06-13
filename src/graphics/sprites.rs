@@ -10,7 +10,7 @@ use super::*;
 const DEFAULT_SPRITE_COUNT: usize = 1024;
 
 /// The maximum number of textures that can be bound in a single batch operation.
-const TEXTURE_POOL_SIZE: usize = 16;
+const TEXTURE_POOL_SIZE: usize = 32;
 
 /// A fast and lightweight sprite batch renderer.
 ///
