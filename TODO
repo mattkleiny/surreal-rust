@@ -16,6 +16,7 @@ Core:
   [ ] Scene management and loading
   [ ] Symmetric matrices for intersection tests, etc?
   [ ] Support for custom allocators? (A frame arena for scratch work, perhaps?)
+  [ ] Use static pointers for graphics server, audio server, etc?
 
 AI:
   [ ] Basic automata

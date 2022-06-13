@@ -990,6 +990,7 @@ dependencies = [
  "profiling",
  "serde",
  "serde_json",
+ "smallvec",
  "surreal-macros",
 ]
 

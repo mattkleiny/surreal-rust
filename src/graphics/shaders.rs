@@ -43,6 +43,7 @@ pub enum ShaderUniform {
   Matrix3x3(Matrix3x3),
   Matrix4x4(Matrix4x4),
   Texture(Texture, u8, Option<TextureSampler>),
+  TextureArray(smallvec::SmallVec<[(Texture, u8); 16]>, Option<TextureSampler>),
 }
 
 /// Represents a single compiled shader program.

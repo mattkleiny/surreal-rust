@@ -558,6 +558,56 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             gl::BindSampler(*slot as u32, 0);
           }
         }
+        ShaderUniform::TextureArray(textures, sampler) => {
+          let mut slots = smallvec::SmallVec::<[i32; 16]>::new();
+
+          for (texture, slot) in textures {
+            gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
+            gl::BindTexture(gl::TEXTURE_2D, texture.handle());
+
+            slots.push(*slot as i32);
+
+            if let Some(sampler) = sampler {
+              // build and cache sampler settings based on hash of options
+              let mut internal_state = self.state.borrow_mut();
+              let sampler_cache = &mut internal_state.sampler_cache;
+
+              let sampler_id = sampler_cache.entry(*sampler).or_insert_with(|| {
+                let mut sampler_id = 0;
+
+                gl::CreateSamplers(1, &mut sampler_id);
+
+                let min_filter = match sampler.minify_filter {
+                  TextureFilter::Nearest => gl::NEAREST,
+                  TextureFilter::Linear => gl::LINEAR,
+                };
+
+                let mag_filter = match sampler.magnify_filter {
+                  TextureFilter::Nearest => gl::NEAREST,
+                  TextureFilter::Linear => gl::LINEAR,
+                };
+
+                let wrap_mode = match sampler.wrap_mode {
+                  TextureWrap::Clamp => gl::CLAMP_TO_EDGE,
+                  TextureWrap::Mirror => gl::MIRRORED_REPEAT,
+                };
+
+                gl::SamplerParameteri(sampler_id, gl::TEXTURE_WRAP_S, wrap_mode as i32);
+                gl::SamplerParameteri(sampler_id, gl::TEXTURE_WRAP_T, wrap_mode as i32);
+                gl::SamplerParameteri(sampler_id, gl::TEXTURE_MIN_FILTER, min_filter as i32);
+                gl::SamplerParameteri(sampler_id, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
+
+                sampler_id
+              });
+
+              gl::BindSampler(*slot as u32, *sampler_id);
+            } else {
+              gl::BindSampler(*slot as u32, 0);
+            }
+          }
+
+          gl::Uniform1iv(location as i32, slots.len() as i32, slots.as_ptr());
+        }
       }
     }
   }

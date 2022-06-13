@@ -116,7 +116,7 @@ impl Material {
   pub fn set_scissor_mode(&mut self, mode: ScissorMode) {
     self.scissor_mode = mode;
   }
-  /// Sets the given material uniform.
+  /// Sets the given name as uniform.
   pub fn set_uniform(&mut self, name: &str, value: impl Into<ShaderUniform>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
       let uniform = MaterialUniform {
@@ -128,13 +128,35 @@ impl Material {
     }
   }
 
-  /// Sets the given material texture with texture slot and optional sampler options.
+  /// Sets the given name as a uniform with a single texture.
   pub fn set_texture(&mut self, name: &str, texture: &Texture, sampler: Option<TextureSampler>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
       let slot = self.allocate_texture_slot();
+
       let uniform = MaterialUniform {
         location,
         value: ShaderUniform::Texture(texture.clone(), slot, sampler),
+      };
+
+      self.uniforms.insert(name.to_string(), uniform);
+    }
+  }
+
+  /// Sets the given name as a uniform with an array of textures.
+  pub fn set_texture_array(&mut self, name: &str, textures: &[&Texture], sampler: Option<TextureSampler>) {
+    if let Some(location) = self.shader.get_uniform_location(name) {
+      let mut bindings = smallvec::SmallVec::<[(Texture, u8); 16]>::new();
+
+      for texture in textures {
+        let slot = self.allocate_texture_slot();
+        let texture = (*texture).clone();
+
+        bindings.push((texture, slot));
+      }
+
+      let uniform = MaterialUniform {
+        location,
+        value: ShaderUniform::TextureArray(bindings, sampler),
       };
 
       self.uniforms.insert(name.to_string(), uniform);
@@ -172,6 +194,7 @@ impl Material {
   }
 
   /// Draws a fullscreen quad with this material.
+  /// TODO: maybe this would make sense in a render pipeline or manager?
   pub fn draw_fullscreen_quad(&mut self, topology: PrimitiveTopology) {
     match &self.fullscreen_quad {
       Some(mesh) => mesh.draw(self, topology),

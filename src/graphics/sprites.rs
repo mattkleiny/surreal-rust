@@ -10,7 +10,7 @@ use super::*;
 const DEFAULT_SPRITE_COUNT: usize = 1024;
 
 /// The maximum number of textures that can be bound in a single batch operation.
-const TEXTURE_POOL_SIZE: usize = 32;
+const TEXTURE_POOL_SIZE: usize = 16;
 
 /// A fast and lightweight sprite batch renderer.
 ///
@@ -270,11 +270,15 @@ impl TexturePool {
 
   /// Binds all active texture in the pool to the given material.
   pub fn bind(&mut self, material: &mut Material) {
-    for (index, texture) in self.slots.iter().enumerate() {
+    let mut textures = smallvec::SmallVec::<[&Texture; TEXTURE_POOL_SIZE]>::new();
+
+    for texture in self.slots.iter() {
       if let Some(texture) = texture {
-        material.set_texture(&format!("u_textures[{}]", index), &texture, None);
+        textures.push(texture);
       }
     }
+
+    material.set_texture_array("u_textures", &textures, None);
   }
 
   /// Clears the pool of all textures.
