@@ -558,34 +558,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             gl::BindSampler(*slot as u32, 0);
           }
         }
-        ShaderUniform::TextureBinding(texture, slot, mode, format) => {
-          let mode = match mode {
-            TextureBindingMode::ReadOnly => gl::READ_ONLY,
-            TextureBindingMode::WriteOnly => gl::WRITE_ONLY,
-            TextureBindingMode::ReadWrite => gl::READ_WRITE,
-          };
-
-          let format = match format {
-            TextureFormat::R8 => gl::R8,
-            TextureFormat::RG8 => gl::RG8,
-            TextureFormat::RGB8 => gl::RGB8,
-            TextureFormat::RGBA8 => gl::RGBA8,
-            TextureFormat::R32 => gl::R32F,
-            TextureFormat::RG32 => gl::RG32F,
-            TextureFormat::RGB32 => gl::RGB32F,
-            TextureFormat::RGBA32 => gl::RGBA32F,
-          };
-
-          gl::BindImageTexture(
-            *slot as u32,
-            texture.handle(),
-            0,         // mip level
-            gl::FALSE, // layered
-            0,         // layer
-            mode as u32,
-            format as u32,
-          );
-        }
       }
     }
   }

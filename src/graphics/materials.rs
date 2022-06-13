@@ -129,11 +129,12 @@ impl Material {
   }
 
   /// Sets the given material texture with texture slot and optional sampler options.
-  pub fn set_texture(&mut self, name: &str, texture: &Texture, slot: usize, sampler: Option<TextureSampler>) {
+  pub fn set_texture(&mut self, name: &str, texture: &Texture, sampler: Option<TextureSampler>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
+      let slot = self.allocate_texture_slot();
       let uniform = MaterialUniform {
         location,
-        value: ShaderUniform::Texture(texture.clone(), slot as u8, sampler),
+        value: ShaderUniform::Texture(texture.clone(), slot, sampler),
       };
 
       self.uniforms.insert(name.to_string(), uniform);
@@ -181,6 +182,25 @@ impl Material {
         self.fullscreen_quad = Some(mesh);
       }
     }
+  }
+
+  /// Finds the first free texture slot in the material.
+  ///
+  /// This will also re-organise any old textures back into a linear ordering.
+  fn allocate_texture_slot(&mut self) -> u8 {
+    let mut available_slot = 0;
+
+    for uniform in self.uniforms.values_mut() {
+      match &mut uniform.value {
+        ShaderUniform::Texture(_, slot, _) => {
+          *slot = available_slot;
+          available_slot += 1;
+        }
+        _ => {}
+      }
+    }
+
+    available_slot
   }
 }
 

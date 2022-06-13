@@ -227,8 +227,7 @@ impl Texture {
 
   /// Blits this texture to the active display via the given material.
   pub fn blit_to_display(&self, material: &mut Material) {
-    // TODO: a better way to do this?
-    material.set_uniform("u_texture", self);
+    material.set_texture("u_texture", self, None);
     material.draw_fullscreen_quad(PrimitiveTopology::Triangles);
   }
 }

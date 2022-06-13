@@ -43,10 +43,6 @@ pub enum ShaderUniform {
   Matrix3x3(Matrix3x3),
   Matrix4x4(Matrix4x4),
   Texture(Texture, u8, Option<TextureSampler>),
-
-  /// A special case of a texture uniform,
-  /// used for binding a texture to a compute shader.
-  TextureBinding(Texture, usize, TextureBindingMode, TextureFormat),
 }
 
 /// Represents a single compiled shader program.
@@ -189,34 +185,6 @@ implement_uniform!(Vector4<f32>, Vector4);
 implement_uniform!(&Matrix2x2, Matrix2x2);
 implement_uniform!(&Matrix3x3, Matrix3x3);
 implement_uniform!(&Matrix4x4, Matrix4x4);
-
-/// Different read/write modes for shader texture bindings.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum TextureBindingMode {
-  ReadOnly,
-  WriteOnly,
-  ReadWrite,
-}
-
-/// A compute image allows bound access to a texture image from compute shaders.
-#[derive(Clone)]
-pub struct TextureBinding {
-  pub texture: Texture,
-  pub mode: TextureBindingMode,
-  pub format: TextureFormat,
-}
-
-impl From<&Texture> for ShaderUniform {
-  fn from(texture: &Texture) -> Self {
-    ShaderUniform::Texture(texture.clone(), 0, None)
-  }
-}
-
-impl From<TextureBinding> for ShaderUniform {
-  fn from(image: TextureBinding) -> Self {
-    ShaderUniform::TextureBinding(image.texture, 0, image.mode, image.format)
-  }
-}
 
 /// Parses the given raw GLSL source and performs some basic pre-processing.
 ///

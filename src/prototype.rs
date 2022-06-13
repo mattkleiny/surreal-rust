@@ -131,7 +131,7 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
 
       palette_texture.write_pixels(palette.len(), 1, palette.as_slice());
 
-      material.set_texture("u_palette", &palette_texture, 1, None);
+      material.set_texture("u_palette", &palette_texture, None);
       material.set_uniform("u_paletteWidth", palette.len() as u32);
     }
 

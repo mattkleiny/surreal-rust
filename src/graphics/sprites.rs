@@ -206,14 +206,13 @@ impl SpriteBatch {
 
   /// Allocates a texture slot id for the given texture in the batch.
   fn allocate_texture(&mut self, texture: &Texture) -> u8 {
-    let slot = self.textures.allocate(&texture);
-
-    // flush if the texture pool is full
-    if slot.is_none() {
-      self.flush();
-      self.textures.allocate(&texture).unwrap()
-    } else {
-      slot.unwrap()
+    match self.textures.allocate(&texture) {
+      Some(slot) => slot,
+      None => {
+        // flush if we've reached texture capacity
+        self.flush();
+        self.textures.allocate(&texture).unwrap()
+      }
     }
   }
 }
@@ -273,8 +272,7 @@ impl TexturePool {
   pub fn bind(&mut self, material: &mut Material) {
     for (index, texture) in self.slots.iter().enumerate() {
       if let Some(texture) = texture {
-        // TODO: set array uniform here, instead
-        material.set_texture(&format!("u_textures[{}]", index), &texture, index, None);
+        material.set_texture(&format!("u_textures[{}]", index), &texture, None);
       }
     }
   }

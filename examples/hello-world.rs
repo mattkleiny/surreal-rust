@@ -16,7 +16,7 @@ fn main() {
     let texture = Texture::create_colored(graphics, 1, 1, Color32::WHITE);
     let mut material = Material::new(graphics, &shader);
 
-    material.set_uniform("u_texture", &texture);
+    material.set_texture("u_texture", &texture, None);
 
     let mut batch = GeometryBatch::new(graphics);
 
