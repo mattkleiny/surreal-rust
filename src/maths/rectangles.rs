@@ -96,10 +96,10 @@ impl<T: Numeric> Rectangle<T> {
   /// Creates a new rectangle clamped to the given (X, Y) bounds.
   pub fn clamp(&self, left: T, top: T, right: T, bottom: T) -> Self {
     Self::from_corner_points(
-      clamp(self.left(), left, right),
-      clamp(self.top(), top, bottom),
-      clamp(self.right(), left, right),
-      clamp(self.bottom(), top, bottom),
+      self.left().clamp(left, right),
+      self.top().clamp(top, bottom),
+      self.right().clamp(left, right),
+      self.bottom().clamp(top, bottom),
     )
   }
 

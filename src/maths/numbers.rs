@@ -23,6 +23,9 @@ pub trait Numeric:
 
   /// Converts this numeric type to a 32-bit floating point number.
   fn to_f32(self) -> f32;
+
+  /// Clmaps this value in the given range.
+  fn clamp(self, lower: Self, upper: Self) -> Self;
 }
 
 /// Implements the numeric traits for standard purpose a numeric type.
@@ -40,6 +43,14 @@ macro_rules! implement_numeric {
       #[inline(always)]
       fn to_f32(self) -> f32 {
         self as f32
+      }
+
+      fn clamp(self, lower: Self, upper: Self) -> Self {
+        match () {
+          _ if self > upper => upper,
+          _ if self < lower => lower,
+          _ => self,
+        }
       }
     }
   };

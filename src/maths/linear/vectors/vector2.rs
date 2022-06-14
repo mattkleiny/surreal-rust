@@ -3,8 +3,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use crate::maths::{Lerp, Numeric, Range};
 
 /// Shorthand to construct a [`Vector2`].
-pub const fn vec2<T>(x: T, y: T) -> Vector2<T>
-where T: Numeric {
+pub const fn vec2<T: Numeric>(x: T, y: T) -> Vector2<T> {
   Vector2::new(x, y)
 }
 
@@ -15,9 +14,7 @@ pub struct Vector2<T> {
   pub y: T,
 }
 
-impl<T> Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> Vector2<T> {
   pub const ZERO: Self = Self::new(T::ZERO, T::ZERO);
   pub const UNIT_X: Self = Self::new(T::ONE, T::ZERO);
   pub const UNIT_Y: Self = Self::new(T::ZERO, T::ONE);
@@ -58,9 +55,7 @@ impl Vector2<isize> {
   }
 }
 
-impl<T> Add for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> Add for Vector2<T> {
   type Output = Self;
 
   fn add(self, rhs: Self) -> Self::Output {
@@ -68,18 +63,14 @@ where T: Numeric
   }
 }
 
-impl<T> AddAssign for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> AddAssign for Vector2<T> {
   fn add_assign(&mut self, rhs: Self) {
     self.x += rhs.x;
     self.y += rhs.y;
   }
 }
 
-impl<T> Sub for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> Sub for Vector2<T> {
   type Output = Self;
 
   fn sub(self, rhs: Self) -> Self::Output {
@@ -87,18 +78,14 @@ where T: Numeric
   }
 }
 
-impl<T> SubAssign for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> SubAssign for Vector2<T> {
   fn sub_assign(&mut self, rhs: Self) {
     self.x -= rhs.x;
     self.y -= rhs.y;
   }
 }
 
-impl<T> Mul for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> Mul for Vector2<T> {
   type Output = Self;
 
   fn mul(self, rhs: Self) -> Self::Output {
@@ -106,18 +93,14 @@ where T: Numeric
   }
 }
 
-impl<T> MulAssign for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> MulAssign for Vector2<T> {
   fn mul_assign(&mut self, rhs: Self) {
     self.x *= rhs.x;
     self.y *= rhs.y;
   }
 }
 
-impl<T> Div for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> Div for Vector2<T> {
   type Output = Self;
 
   fn div(self, rhs: Self) -> Self::Output {
@@ -125,18 +108,14 @@ where T: Numeric
   }
 }
 
-impl<T> DivAssign for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> DivAssign for Vector2<T> {
   fn div_assign(&mut self, rhs: Self) {
     self.x /= rhs.x;
     self.y /= rhs.y;
   }
 }
 
-impl<T> Mul<T> for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> Mul<T> for Vector2<T> {
   type Output = Self;
 
   fn mul(self, rhs: T) -> Self::Output {
@@ -144,18 +123,14 @@ where T: Numeric
   }
 }
 
-impl<T> MulAssign<T> for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> MulAssign<T> for Vector2<T> {
   fn mul_assign(&mut self, rhs: T) {
     self.x *= rhs;
     self.y *= rhs;
   }
 }
 
-impl<T> Div<T> for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> Div<T> for Vector2<T> {
   type Output = Self;
 
   fn div(self, rhs: T) -> Self::Output {
@@ -163,26 +138,20 @@ where T: Numeric
   }
 }
 
-impl<T> DivAssign<T> for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> DivAssign<T> for Vector2<T> {
   fn div_assign(&mut self, rhs: T) {
     self.x /= rhs;
     self.y /= rhs;
   }
 }
 
-impl<T> From<(T, T)> for Vector2<T>
-where T: Numeric
-{
+impl<T: Numeric> From<(T, T)> for Vector2<T> {
   fn from((x, y): (T, T)) -> Self {
     Self::new(x, y)
   }
 }
 
-impl<T> Lerp for Vector2<T>
-where T: Numeric + Lerp
-{
+impl<T: Numeric> Lerp for Vector2<T> {
   fn lerp(a: Self, b: Self, t: f32) -> Self {
     Self::new(T::lerp(a.x, b.x, t), T::lerp(a.y, b.y, t))
   }

@@ -3,8 +3,7 @@ use std::ops::{Add, Div, Mul, Sub};
 use crate::maths::{Lerp, Numeric, Range};
 
 /// Shorthand to construct a [`Vector3`].
-pub const fn vec3<T>(x: T, y: T, z: T) -> Vector3<T>
-where T: Numeric {
+pub const fn vec3<T: Numeric>(x: T, y: T, z: T) -> Vector3<T> {
   Vector3::new(x, y, z)
 }
 
@@ -16,9 +15,7 @@ pub struct Vector3<T> {
   pub z: T,
 }
 
-impl<T> Vector3<T>
-where T: Numeric
-{
+impl<T: Numeric> Vector3<T> {
   pub const ZERO: Self = Self::new(T::ZERO, T::ZERO, T::ZERO);
   pub const UNIT_X: Self = Self::new(T::ONE, T::ZERO, T::ZERO);
   pub const UNIT_Y: Self = Self::new(T::ZERO, T::ONE, T::ZERO);
@@ -83,9 +80,7 @@ impl Vector3<f32> {
   }
 }
 
-impl<T> Add for Vector3<T>
-where T: Numeric
-{
+impl<T: Numeric> Add for Vector3<T> {
   type Output = Self;
 
   fn add(self, rhs: Self) -> Self::Output {
@@ -93,9 +88,7 @@ where T: Numeric
   }
 }
 
-impl<T> Sub for Vector3<T>
-where T: Numeric
-{
+impl<T: Numeric> Sub for Vector3<T> {
   type Output = Self;
 
   fn sub(self, rhs: Self) -> Self::Output {
@@ -103,9 +96,7 @@ where T: Numeric
   }
 }
 
-impl<T> Mul for Vector3<T>
-where T: Numeric
-{
+impl<T: Numeric> Mul for Vector3<T> {
   type Output = Self;
 
   fn mul(self, rhs: Self) -> Self::Output {
@@ -113,9 +104,7 @@ where T: Numeric
   }
 }
 
-impl<T> Div for Vector3<T>
-where T: Numeric
-{
+impl<T: Numeric> Div for Vector3<T> {
   type Output = Self;
 
   fn div(self, rhs: Self) -> Self::Output {
@@ -123,9 +112,7 @@ where T: Numeric
   }
 }
 
-impl<T> Mul<T> for Vector3<T>
-where T: Numeric
-{
+impl<T: Numeric> Mul<T> for Vector3<T> {
   type Output = Self;
 
   fn mul(self, rhs: T) -> Self::Output {
@@ -133,9 +120,7 @@ where T: Numeric
   }
 }
 
-impl<T> Div<T> for Vector3<T>
-where T: Numeric
-{
+impl<T: Numeric> Div<T> for Vector3<T> {
   type Output = Self;
 
   fn div(self, rhs: T) -> Self::Output {
@@ -143,17 +128,13 @@ where T: Numeric
   }
 }
 
-impl<T> From<(T, T, T)> for Vector3<T>
-where T: Numeric
-{
+impl<T: Numeric> From<(T, T, T)> for Vector3<T> {
   fn from((x, y, z): (T, T, T)) -> Self {
     Self::new(x, y, z)
   }
 }
 
-impl<T> Lerp for Vector3<T>
-where T: Numeric + Lerp
-{
+impl<T: Numeric + Lerp> Lerp for Vector3<T> {
   fn lerp(a: Self, b: Self, t: f32) -> Self {
     Self::new(T::lerp(a.x, b.x, t), T::lerp(a.y, b.y, t), T::lerp(a.z, b.z, t))
   }

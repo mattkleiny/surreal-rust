@@ -1,8 +1,7 @@
 use super::*;
 
 /// Builds a range between the given values.
-pub const fn range<T>(min: T, max: T) -> Range<T>
-where T: Numeric {
+pub const fn range<T: Numeric>(min: T, max: T) -> Range<T> {
   Range::new(min, max)
 }
 
@@ -13,9 +12,7 @@ pub struct Range<T> {
   pub max: T,
 }
 
-impl<T> Range<T>
-where T: Numeric
-{
+impl<T: Numeric> Range<T> {
   pub const fn new(min: T, max: T) -> Self {
     Self { min, max }
   }
@@ -29,7 +26,7 @@ where T: Numeric
   }
 
   pub fn clamp(&self, value: T) -> T {
-    clamp(value, self.min, self.max)
+    value.clamp(self.min, self.max)
   }
 }
 
