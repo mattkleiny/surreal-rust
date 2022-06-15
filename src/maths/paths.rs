@@ -26,7 +26,7 @@ pub trait PathFindingGrid {
   fn get_neighbours(&self, center: Point) -> NeighbourSet;
 
   /// Locates a path using A* from from the given start point to the given goal.
-  fn find_path(&self, start: Point, goal: Point, heuristic: Heuristic) -> Option<Vec<Point>> {
+  fn find_path(&self, start: Point, goal: Point, heuristic: Heuristic) -> Option<VecDeque<Point>> {
     let mut frontier = BinaryHeap::new();
     let mut came_from = HashMap::new();
     let mut cost_so_far = HashMap::new();
