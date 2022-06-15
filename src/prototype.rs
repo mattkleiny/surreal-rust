@@ -25,6 +25,7 @@ const PALETTE_HOLLOW_4: &[u8] = include_bytes!("../assets/palettes/hollow-4.pal"
 const PALETTE_KULE_16: &[u8] = include_bytes!("../assets/palettes/kule-16.pal");
 const PALETTE_LOW_8: &[u8] = include_bytes!("../assets/palettes/low-8.pal");
 const PALETTE_SPACE_DUST_9: &[u8] = include_bytes!("../assets/palettes/space-dust-9.pal");
+const PALETTE_LASER_LAB: &[u8] = include_bytes!("../assets/palettes/laser-lab.pal");
 
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -50,6 +51,7 @@ pub enum BuiltInPalette {
   Kule16,
   Low8,
   SpaceDust9,
+  LaserLab,
 }
 
 /// Loads a built-in shader.
@@ -79,6 +81,7 @@ pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<
     BuiltInPalette::Kule16 => ColorPalette::from_bytes(PALETTE_KULE_16),
     BuiltInPalette::Low8 => ColorPalette::from_bytes(PALETTE_LOW_8),
     BuiltInPalette::SpaceDust9 => ColorPalette::from_bytes(PALETTE_SPACE_DUST_9),
+    BuiltInPalette::LaserLab => ColorPalette::from_bytes(PALETTE_LASER_LAB),
   };
 
   palette.expect("Failed to load standard palette")
