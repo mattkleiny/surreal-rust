@@ -1,7 +1,8 @@
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::{BinaryHeap, HashMap, VecDeque};
 
 use super::*;
 
+/// Arbitrary upper limit on the number of steps to use in the find_path function.
 const MAXIMUM_STEPS: usize = 128;
 
 /// A point in the path-finding grid.
@@ -44,21 +45,15 @@ pub trait PathFindingGrid {
       // have we reached our target?
       if current == goal {
         // retrace path
-        let mut path = Vec::new();
+        let mut path = VecDeque::new();
         let mut current = goal;
 
         while current != start {
-          path.push(current);
-
-          if current == start {
-            break;
-          }
-
+          path.push_front(current);
           current = came_from[&current];
         }
 
-        path.push(start);
-        path.reverse();
+        path.push_front(start);
 
         return Some(path);
       }
