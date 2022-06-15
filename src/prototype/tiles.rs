@@ -3,7 +3,7 @@ use std::hash::Hash;
 
 use crate::collections::{Grid, GridPoint};
 use crate::graphics::Renderable;
-use crate::maths::{vec2, Cost, MooreNeighbourhood, NeighbourSet, Numeric, PathFindingGrid, Point};
+use crate::maths::{vec2, Cost, NeighbourSet, Numeric, PathFindingGrid, Point, VonNeumannNeighbourhood};
 
 use super::*;
 
@@ -170,7 +170,7 @@ impl<T: PathableTile> PathFindingGrid for TileMap<'_, T> {
   fn get_neighbours(&self, center: Point) -> NeighbourSet {
     let mut results = NeighbourSet::new();
 
-    for neighbour in center.moore_neighbours() {
+    for neighbour in center.von_neighbours() {
       if let Some(tile) = self.get(neighbour) {
         if tile.is_pathable() {
           results.push(neighbour);
