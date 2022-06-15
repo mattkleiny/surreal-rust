@@ -1,11 +1,13 @@
 //! A simple set of tools for rapid prototyping of game ideas and etc.
 
+pub use animations::*;
 pub use canvas::*;
 pub use tiles::*;
 
 use crate::graphics::*;
 use crate::maths::Matrix4x4;
 
+mod animations;
 mod canvas;
 mod tiles;
 

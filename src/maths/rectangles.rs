@@ -112,11 +112,11 @@ impl<T: Numeric> Rectangle<T> {
 /// Allows rasterization of rectangles into canvases.
 macro_rules! implement_rect_raster {
   ($type:ty) => {
-    impl Rasterable for Rectangle<$type> {
-      fn rasterize<T: Clone>(&self, value: T, canvas: &mut impl RasterCanvas<T>) {
+    impl RasterSource for Rectangle<$type> {
+      fn rasterize<T: Clone>(&self, value: T, target: &mut impl RasterTarget<T>) {
         for y in self.top()..self.bottom() {
           for x in self.left()..self.right() {
-            canvas.set((x, y), value.clone());
+            target.set((x, y), value.clone());
           }
         }
       }
@@ -135,8 +135,8 @@ implement_rect_raster!(i32);
 implement_rect_raster!(i64);
 implement_rect_raster!(isize);
 
-impl Rasterable for Rectangle<f32> {
-  fn rasterize<T: Clone>(&self, value: T, canvas: &mut impl RasterCanvas<T>) {
+impl RasterSource for Rectangle<f32> {
+  fn rasterize<T: Clone>(&self, value: T, canvas: &mut impl RasterTarget<T>) {
     let top = self.top().floor() as isize;
     let bottom = self.bottom().ceil() as isize;
     let left = self.left().floor() as isize;
@@ -150,8 +150,8 @@ impl Rasterable for Rectangle<f32> {
   }
 }
 
-impl Rasterable for Rectangle<f64> {
-  fn rasterize<T: Clone>(&self, value: T, canvas: &mut impl RasterCanvas<T>) {
+impl RasterSource for Rectangle<f64> {
+  fn rasterize<T: Clone>(&self, value: T, canvas: &mut impl RasterTarget<T>) {
     let top = self.top().floor() as isize;
     let bottom = self.bottom().ceil() as isize;
     let left = self.left().floor() as isize;

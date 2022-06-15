@@ -1,4 +1,4 @@
-use crate::maths::{RasterCanvas, Vector2};
+use crate::maths::{RasterTarget, Vector2};
 
 /// Represents a point in a [`Grid`].
 pub struct GridPoint(pub isize, pub isize);
@@ -34,21 +34,25 @@ impl<T> Grid<T> {
   }
 
   /// Returns the total length of the grid (width * height).
+  #[inline]
   pub fn len(&self) -> usize {
     self.items.len()
   }
 
   /// Returns the stride/size between each row of the grid.
+  #[inline]
   pub fn stride(&self) -> usize {
     self.stride
   }
 
   /// Returns the width of the grid.
+  #[inline]
   pub fn width(&self) -> usize {
     self.stride()
   }
 
   /// Returns the height of the grid.
+  #[inline]
   pub fn height(&self) -> usize {
     self.len() / self.stride()
   }
@@ -133,7 +137,7 @@ impl<T> Grid<T> {
 }
 
 /// Allow rasterization of shapes into the grid.
-impl<T> RasterCanvas<T> for Grid<T> {
+impl<T> RasterTarget<T> for Grid<T> {
   fn width(&self) -> usize {
     self.width()
   }

@@ -91,7 +91,7 @@ struct PathNode(Point, f32);
 
 impl PartialEq for PathNode {
   fn eq(&self, other: &Self) -> bool {
-    self.0 == other.0 && self.1 == other.1
+    self.0 == other.0 && self.1.approx_eq(other.1)
   }
 }
 
