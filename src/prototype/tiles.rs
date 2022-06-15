@@ -3,9 +3,7 @@ use std::hash::Hash;
 
 use crate::collections::{Grid, GridPoint};
 use crate::graphics::Renderable;
-use crate::maths::{
-  vec2, Cost, MooreNeighbourhood, NeighbourSet, Numeric, PathFindingGrid, Point, VonNeumannNeighbourhood,
-};
+use crate::maths::{vec2, Cost, MooreNeighbourhood, NeighbourSet, Numeric, PathFindingGrid, Point};
 
 use super::*;
 
