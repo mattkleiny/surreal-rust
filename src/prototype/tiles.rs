@@ -3,7 +3,9 @@ use std::hash::Hash;
 
 use crate::collections::{Grid, GridPoint};
 use crate::graphics::Renderable;
-use crate::maths::{vec2, Numeric};
+use crate::maths::{
+  vec2, Cost, MooreNeighbourhood, NeighbourSet, Numeric, PathFindingGrid, Point, VonNeumannNeighbourhood,
+};
 
 use super::*;
 
@@ -11,12 +13,12 @@ use super::*;
 ///
 /// Internally tiles are represented by their [`Tile::Id`], but the public
 /// API allows for direct access via the [`T`] abstraction.
-pub struct TileMap<'a, T: TileKind> {
+pub struct TileMap<'a, T: Tile> {
   tiles: Grid<T::Id>,
   sprites: HashMap<T::Id, TextureRegion<'a>>,
 }
 
-impl<'a, T: TileKind> TileMap<'a, T> {
+impl<'a, T: Tile> TileMap<'a, T> {
   /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
@@ -81,7 +83,7 @@ impl<'a, T: TileKind> TileMap<'a, T> {
   }
 }
 
-impl<'a, T: TileKind> Renderable<SpriteBatchContext> for TileMap<'a, T> {
+impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
   /// Renders this tile map with to a sprite batch.
   fn render(&self, context: &mut SpriteBatchContext) {
     let half_width = self.tiles.width() as f32 / 2.;
@@ -111,7 +113,7 @@ impl<'a, T: TileKind> Renderable<SpriteBatchContext> for TileMap<'a, T> {
 }
 
 /// Represents a kind of tile that can be used in a [`TileMap`].
-pub trait TileKind: Clone {
+pub trait Tile: Clone {
   type Id: Numeric + Hash + Eq;
 
   fn from_id(id: Self::Id) -> Option<Self>;
@@ -121,7 +123,7 @@ pub trait TileKind: Clone {
 /// Implements an implicit entry type (no abstraction).
 macro_rules! implement_tile {
   ($type:ty) => {
-    impl TileKind for $type {
+    impl Tile for $type {
       type Id = $type;
 
       fn from_id(id: Self::Id) -> Option<Self> {
@@ -149,6 +151,39 @@ implement_tile!(i64);
 implement_tile!(i128);
 implement_tile!(isize);
 
+/// A `Tile` that can be used for path finding.
+pub trait PathableTile: Tile {
+  /// The cost of pathing through this tile.
+  fn get_cost(&self) -> Cost;
+
+  /// Can we path through this tile?
+  fn is_pathable(&self) -> bool;
+}
+
+/// Allow path finding over simple tile maps.
+impl<T: PathableTile> PathFindingGrid for TileMap<'_, T> {
+  fn get_cost(&self, _from: Point, to: Point) -> Cost {
+    match self.get(to) {
+      Some(tile) => tile.get_cost(),
+      None => f32::MAX,
+    }
+  }
+
+  fn get_neighbours(&self, center: Point) -> NeighbourSet {
+    let mut results = NeighbourSet::new();
+
+    for neighbour in center.moore_neighbours() {
+      if let Some(tile) = self.get(neighbour) {
+        if tile.is_pathable() {
+          results.push(neighbour);
+        }
+      }
+    }
+
+    results
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -163,7 +198,7 @@ mod tests {
     pub const DOOR: Self = Self(3, "Door");
   }
 
-  impl TileKind for ExampleTile {
+  impl Tile for ExampleTile {
     type Id = u8;
 
     fn from_id(id: Self::Id) -> Option<Self> {

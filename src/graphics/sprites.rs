@@ -128,6 +128,7 @@ impl SpriteBatch {
       }
     }
   }
+
   /// Draws a single sprite texture to the batch with the given options.
   #[profiling::function]
   pub fn draw_sprite<'a>(&mut self, region: &'a TextureRegion, options: &SpriteOptions) {

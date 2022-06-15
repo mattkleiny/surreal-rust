@@ -3,6 +3,7 @@ use std::ops::{Add, Div, Mul, Sub};
 use crate::maths::{Lerp, Numeric, Range};
 
 /// Shorthand to construct a [`Vector3`].
+#[inline(always)]
 pub const fn vec3<T: Numeric>(x: T, y: T, z: T) -> Vector3<T> {
   Vector3::new(x, y, z)
 }
@@ -22,6 +23,8 @@ impl<T: Numeric> Vector3<T> {
   pub const UNIT_Z: Self = Self::new(T::ZERO, T::ZERO, T::ONE);
   pub const ONE: Self = Self::new(T::ONE, T::ONE, T::ONE);
 
+  /// Creates a new vector from the given components.
+  #[inline(always)]
   pub const fn new(x: T, y: T, z: T) -> Self {
     Self { x, y, z }
   }

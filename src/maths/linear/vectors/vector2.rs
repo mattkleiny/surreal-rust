@@ -3,6 +3,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use crate::maths::{Lerp, Numeric, Range};
 
 /// Shorthand to construct a [`Vector2`].
+#[inline(always)]
 pub const fn vec2<T: Numeric>(x: T, y: T) -> Vector2<T> {
   Vector2::new(x, y)
 }
@@ -21,6 +22,7 @@ impl<T: Numeric> Vector2<T> {
   pub const ONE: Self = Self::new(T::ONE, T::ONE);
 
   /// Creates a new vector from the given components.
+  #[inline(always)]
   pub const fn new(x: T, y: T) -> Self {
     Self { x, y }
   }
