@@ -18,6 +18,7 @@ Core:
   [ ] Support for custom allocators? (A frame arena for scratch work, perhaps?)
   [ ] Use static pointers for graphics server, audio server, etc?
   [ ] Add matrix inversion and more core linear algebra or instead use an existing crate
+  [ ] Lightweight entity component system?
 
 AI:
   [ ] Basic automata
@@ -42,6 +43,7 @@ Graphics:
   [ ] Sprite transforms for rotations/shear/etc
   [✔] Sprite batching that supports multiple textures per draw call @done(22-06-09 19:58)
   [✔] Fix sprite batching when there are implicit textures in a material (i.e. slots are relative to material) @done(22-06-13 22:08)
+  [ ] Swap to WGPU and consider implementing a resource abstraction system (ala jdh)
 
 Audio:
   [ ] Get audio backend playing simple buffered sounds
