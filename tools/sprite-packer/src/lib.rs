@@ -1,36 +1,24 @@
-/// Represents a possible error whilst packing a sprite sheet.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum SpritePackError {
-  Unknown,
-}
-
 /// Represents a sprite that can be packed by the sprite sheet packer.
-/// TODO: use a trait instead?
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Sprite<'a> {
+pub struct Sprite {
   pub id: usize,
   pub size: (u32, u32),
-  pub pixels: &'a [u32],
+  pub pixels: Vec<u32>,
 }
 
 /// Encodes an anchor position used in positioning sprites.
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Debug)]
 pub struct SpriteAnchor {
   pub id: usize,
   pub position: (u32, u32),
   pub size: (u32, u32),
 }
 
-impl SpriteAnchor {
-  pub fn new(id: usize, position: (u32, u32), size: (u32, u32)) -> Self {
-    SpriteAnchor { id, position, size }
-  }
-}
-
 /// A sprite sheet as output from the packer.
 ///
 /// The sheet describes which sprites (identified by their ID) are present in the sheet, and where they are located.
 /// A separate step should be used to build the resultant texture/image data.
+#[derive(Clone, Debug)]
 pub struct SpriteSheet {
   pub width: u32,
   pub height: u32,
@@ -38,7 +26,7 @@ pub struct SpriteSheet {
 }
 
 /// Packs the given set of `Sprite`s into a `SpriteSheet`.
-pub fn pack_spritesheet(sprites: &[Sprite]) -> Result<SpriteSheet, SpritePackError> {
+pub fn pack_spritesheet(sprites: &[Sprite]) -> SpriteSheet {
   let mut sprites: Vec<_> = sprites.iter().cloned().collect();
 
   let mut free = Vec::new();
@@ -113,7 +101,7 @@ pub fn pack_spritesheet(sprites: &[Sprite]) -> Result<SpriteSheet, SpritePackErr
   // Finally sort the anchors so that they are in the same order as the input sprites
   anchors.sort_by_key(|s| s.id);
 
-  Ok(SpriteSheet { width, height, anchors })
+  SpriteSheet { width, height, anchors }
 }
 
 /// Compares the position of two sprites.
@@ -136,11 +124,11 @@ mod tests {
       .map(|i| Sprite {
         id: i,
         size: (20, 20),
-        pixels: &[0xFF00FF; 16 * 16],
+        pixels: vec![0xFF00FFFF; 16 * 16],
       })
       .collect::<Vec<_>>();
 
-    let result = pack_spritesheet(&sprites).unwrap();
+    let result = pack_spritesheet(&sprites);
 
     assert_eq!(result.width, 20 * 4);
     assert_eq!(result.height, 20 * 4);
