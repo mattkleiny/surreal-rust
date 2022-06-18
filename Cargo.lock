@@ -771,10 +771,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "packer"
-version = "0.1.0"
-
-[[package]]
 name = "parking_lot"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -970,6 +966,10 @@ name = "smallvec"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
+
+[[package]]
+name = "sprite-packer"
+version = "0.1.0"
 
 [[package]]
 name = "strsim"

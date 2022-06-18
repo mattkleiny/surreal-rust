@@ -6,7 +6,7 @@ authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
 edition = "2021"
 
 [workspace]
-members = ["macros", "tools/packer"]
+members = ["macros", "tools/sprite-packer"]
 
 [profile.dev.package."*"]
 opt-level = 3 # compile third party dependencies by default with some sane optimizations
