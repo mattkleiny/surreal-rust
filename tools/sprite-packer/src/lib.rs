@@ -24,6 +24,17 @@ pub struct SpriteSheet<'a> {
   pub anchors: Vec<SpriteAnchor<'a>>,
 }
 
+/// Packs the given sprites as a uniform set of images into a `SpriteSheet`.
+///
+/// This method requires that all sprites have the same size and will form a rectangular grid of the least highest
+/// power of 2 necessary to fit all sprites.
+pub fn pack_uniform_grid<'a>(sprites: &'a mut [Sprite]) -> SpriteSheet<'a> {
+  let width = sprites.iter().map(|sprite| sprite.size.0).max().unwrap();
+  let height = sprites.iter().map(|sprite| sprite.size.1).max().unwrap();
+
+  todo!()
+}
+
 /// Packs the given set of `Sprite`s into a `SpriteSheet`.
 pub fn pack_spritesheet<'a>(sprites: &'a mut [Sprite]) -> SpriteSheet<'a> {
   let mut positions = Vec::new();
@@ -112,6 +123,14 @@ fn compare_pos(a: &(u32, u32), b: &(u32, u32)) -> std::cmp::Ordering {
 /// Compares the size of two sprites.
 fn compare_size(a: &Sprite, b: &Sprite) -> std::cmp::Ordering {
   (a.size.0 * a.size.1).cmp(&(b.size.0 * b.size.1))
+}
+
+/// Computes the next highest power of 2 of the given number.
+fn next_highest_power_of_2(n: u32) -> u32 {
+  let n = (n - 1) as f32;
+  let log = n.log2();
+
+  return 1u32 << (log as u32) + 1;
 }
 
 impl std::fmt::Debug for Sprite {

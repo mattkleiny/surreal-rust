@@ -2,7 +2,13 @@
 //!
 //! Sprites are very common in projects, so we've a simple dedicated batch to support them.
 
-use crate::maths::{vec2, Vector2};
+use std::collections::HashMap;
+
+use crate::{
+  assets::{Asset, AssetManager, Handle},
+  io::AsPath,
+  maths::{vec2, Vector2},
+};
 
 use super::*;
 
@@ -11,6 +17,47 @@ const DEFAULT_SPRITE_COUNT: usize = 1024;
 
 /// The maximum number of textures that can be bound in a single batch operation.
 const TEXTURE_POOL_SIZE: usize = 32;
+
+/// A sheet of named sprites for efficient packing and use at runtime.
+pub struct SpriteSheet {
+  texture: Handle<Texture>,
+  entries: HashMap<String, SpriteSheetEntry>,
+}
+
+/// An entry in a `SpriteSheet`.
+#[derive(Deserialize, Serialize)]
+struct SpriteSheetEntry {
+  name: String,
+  offset: Vector2<u32>,
+  size: Vector2<u32>,
+}
+
+impl SpriteSheet {
+  /// Loads a sprite sheet from the given path.
+  pub fn load(assets: &AssetManager, path: impl AsPath) -> crate::Result<Self> {
+    let path = path.as_path();
+    let texture = Texture::load(assets, "spritesheet.png")?; // TODO: use the correct path, here?
+
+    let mut entries: Vec<SpriteSheetEntry> = path.deserialize_yaml()?;
+    let mut map = HashMap::new();
+
+    while let Some(entry) = entries.pop() {
+      map.insert(entry.name.clone(), entry);
+    }
+
+    Ok(Self { texture, entries: map })
+  }
+
+  /// Retrieves a single sprite atlas from the sprite sheet.
+  pub fn get_sprite_atlas(&self, name: &str) -> crate::Result<TextureAtlas> {
+    if let Some(entry) = self.entries.get(name) {
+      let offset = entry.offset;
+      let size = entry.size;
+    }
+
+    todo!()
+  }
+}
 
 /// A fast and lightweight sprite batch renderer.
 ///

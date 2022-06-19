@@ -9,7 +9,7 @@ pub const fn vec4<T: Numeric>(x: T, y: T, z: T, w: T) -> Vector4<T> {
 }
 
 /// A standard purpose 4d vector
-#[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash, Deserialize, Serialize)]
 pub struct Vector4<T> {
   pub x: T,
   pub y: T,

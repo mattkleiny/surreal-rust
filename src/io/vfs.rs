@@ -102,11 +102,18 @@ impl<'a> VirtualPath<'a> {
     Ok(buffer)
   }
 
-  /// Deserializes a json value of the given type from the path.
-  pub fn deserialize_json<T>(&self) -> crate::Result<T>
-  where T: serde::de::DeserializeOwned {
+  /// Deserializes a json vaule from the given path.
+  pub fn deserialize_json<T: serde::de::DeserializeOwned>(&self) -> crate::Result<T> {
     let stream = self.open_input_stream()?;
     let result = serde_json::de::from_reader(stream)?;
+
+    Ok(result)
+  }
+
+  /// Deserializes a yaml vaule from the given path.
+  pub fn deserialize_yaml<T: serde::de::DeserializeOwned>(&self) -> crate::Result<T> {
+    let stream = self.open_input_stream()?;
+    let result = serde_yaml::from_reader(stream)?;
 
     Ok(result)
   }
