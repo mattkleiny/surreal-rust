@@ -1,3 +1,7 @@
+Issues:
+  [ ] Core types need to be thread safe to support hecs and parallel workloads?
+  [ ] Consider upgrading to WGPU instead of building custom graphics pipeline?
+
 Core:
   [✔] Get asset management loading working @done(22-06-05 14:12)
   [ ] Get hot reload for assets working

@@ -1,3 +1,5 @@
+use crate::collections::Grid;
+
 use super::*;
 
 /// A bounded rectangle in 2 dimensions formed from the two corner points.
@@ -110,13 +112,13 @@ impl<T: Numeric> Rectangle<T> {
 }
 
 /// Allows rasterization of rectangles into canvases.
-macro_rules! implement_rect_raster {
+macro_rules! implement_shape {
   ($type:ty) => {
-    impl RasterSource for Rectangle<$type> {
-      fn rasterize<T: Clone>(&self, value: T, target: &mut impl RasterTarget<T>) {
+    impl Shape for Rectangle<$type> {
+      fn rasterize<T: Clone>(&self, value: T, grid: &mut Grid<T>) {
         for y in self.top()..self.bottom() {
           for x in self.left()..self.right() {
-            target.set((x, y), value.clone());
+            grid.set((x, y), value.clone());
           }
         }
       }
@@ -124,19 +126,19 @@ macro_rules! implement_rect_raster {
   };
 }
 
-implement_rect_raster!(u8);
-implement_rect_raster!(u16);
-implement_rect_raster!(u32);
-implement_rect_raster!(u64);
-implement_rect_raster!(usize);
-implement_rect_raster!(i8);
-implement_rect_raster!(i16);
-implement_rect_raster!(i32);
-implement_rect_raster!(i64);
-implement_rect_raster!(isize);
+implement_shape!(u8);
+implement_shape!(u16);
+implement_shape!(u32);
+implement_shape!(u64);
+implement_shape!(usize);
+implement_shape!(i8);
+implement_shape!(i16);
+implement_shape!(i32);
+implement_shape!(i64);
+implement_shape!(isize);
 
-impl RasterSource for Rectangle<f32> {
-  fn rasterize<T: Clone>(&self, value: T, canvas: &mut impl RasterTarget<T>) {
+impl Shape for Rectangle<f32> {
+  fn rasterize<T: Clone>(&self, value: T, grid: &mut Grid<T>) {
     let top = self.top().floor() as isize;
     let bottom = self.bottom().ceil() as isize;
     let left = self.left().floor() as isize;
@@ -144,14 +146,14 @@ impl RasterSource for Rectangle<f32> {
 
     for y in top..bottom {
       for x in left..right {
-        canvas.set((x, y), value.clone());
+        grid.set((x, y), value.clone());
       }
     }
   }
 }
 
-impl RasterSource for Rectangle<f64> {
-  fn rasterize<T: Clone>(&self, value: T, canvas: &mut impl RasterTarget<T>) {
+impl Shape for Rectangle<f64> {
+  fn rasterize<T: Clone>(&self, value: T, grid: &mut Grid<T>) {
     let top = self.top().floor() as isize;
     let bottom = self.bottom().ceil() as isize;
     let left = self.left().floor() as isize;
@@ -159,7 +161,7 @@ impl RasterSource for Rectangle<f64> {
 
     for y in top..bottom {
       for x in left..right {
-        canvas.set((x, y), value.clone());
+        grid.set((x, y), value.clone());
       }
     }
   }

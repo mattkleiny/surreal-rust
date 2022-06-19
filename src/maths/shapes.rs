@@ -1,4 +1,11 @@
-use super::{vec2, RasterSource, RasterTarget, Rectangle, Vector2};
+use crate::collections::Grid;
+
+use super::{vec2, Rectangle, Vector2};
+
+/// Represents a shape that can be rasterized into a [`Grid`].
+pub trait Shape {
+  fn rasterize<T: Clone>(&self, value: T, target: &mut Grid<T>);
+}
 
 /// A simple circle in 2-space.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -8,20 +15,20 @@ pub struct Circle<N> {
 }
 
 /// Allow rasterization of integrally sized circles.
-impl RasterSource for Circle<isize> {
-  fn rasterize<T: Clone>(&self, value: T, target: &mut impl RasterTarget<T>) {
+impl Shape for Circle<isize> {
+  fn rasterize<T: Clone>(&self, value: T, grid: &mut Grid<T>) {
     let center = self.center;
     let radius = self.radius;
 
     let size = vec2(radius, radius);
     let rectangle = Rectangle::from_size(center, size);
-    let rectangle = rectangle.clamp(0, 0, target.width() as isize - 1, target.height() as isize - 1);
+    let rectangle = rectangle.clamp(0, 0, grid.width() as isize - 1, grid.height() as isize - 1);
 
     for y in rectangle.top()..rectangle.bottom() {
       for x in rectangle.left()..rectangle.right() {
         let point = vec2(x, y);
         if (point - center).length_squared() <= radius {
-          target.set(point, value.clone());
+          grid.set(point, value.clone());
         }
       }
     }

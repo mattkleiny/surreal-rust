@@ -1,4 +1,4 @@
-use crate::maths::{RasterTarget, Vector2};
+use crate::maths::{Shape, Vector2};
 
 /// Represents a point in a [`Grid`].
 pub struct GridPoint(pub isize, pub isize);
@@ -134,24 +134,13 @@ impl<T> Grid<T> {
   pub fn as_mut_slice(&mut self) -> &mut [T] {
     self.items.as_mut_slice()
   }
-}
 
-/// Allow rasterization of shapes into the grid.
-impl<T> RasterTarget<T> for Grid<T> {
-  fn width(&self) -> usize {
-    self.width()
-  }
-
-  fn height(&self) -> usize {
-    self.height()
-  }
-
-  fn get(&self, point: impl Into<GridPoint>) -> Option<&T> {
-    self.get(point)
-  }
-
-  fn set(&mut self, point: impl Into<GridPoint>, value: T) {
-    self.set(point, value);
+  /// Rasterizes the given shape into the canvas.
+  pub fn draw(&mut self, value: T, shape: &impl Shape)
+  where
+    T: Clone,
+  {
+    shape.rasterize(value, self);
   }
 }
 
