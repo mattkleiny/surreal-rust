@@ -29,8 +29,8 @@ pub struct SpriteSheet<'a> {
 /// This method requires that all sprites have the same size and will form a rectangular grid of the least highest
 /// power of 2 necessary to fit all sprites.
 pub fn pack_uniform_grid<'a>(sprites: &'a mut [Sprite]) -> SpriteSheet<'a> {
-  let width = sprites.iter().map(|sprite| sprite.size.0).max().unwrap();
-  let height = sprites.iter().map(|sprite| sprite.size.1).max().unwrap();
+  let _width = sprites.iter().map(|sprite| sprite.size.0).max().unwrap();
+  let _height = sprites.iter().map(|sprite| sprite.size.1).max().unwrap();
 
   todo!()
 }
@@ -126,7 +126,7 @@ fn compare_size(a: &Sprite, b: &Sprite) -> std::cmp::Ordering {
 }
 
 /// Computes the next highest power of 2 of the given number.
-fn next_highest_power_of_2(n: u32) -> u32 {
+fn _next_highest_power_of_2(n: u32) -> u32 {
   let n = (n - 1) as f32;
   let log = n.log2();
 

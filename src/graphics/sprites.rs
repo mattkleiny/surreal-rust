@@ -51,8 +51,8 @@ impl SpriteSheet {
   /// Retrieves a single sprite atlas from the sprite sheet.
   pub fn get_sprite_atlas(&self, name: &str) -> crate::Result<TextureAtlas> {
     if let Some(entry) = self.entries.get(name) {
-      let offset = entry.offset;
-      let size = entry.size;
+      let _offset = entry.offset;
+      let _size = entry.size;
     }
 
     todo!()
