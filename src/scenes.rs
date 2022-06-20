@@ -126,9 +126,7 @@ impl Scene {
 
 /// Allows a scene to participate in render culling.
 impl CullingProvider for Scene {
-  fn cull_visible_objects(&self, _frustum: &CameraFrustum, _results: &mut Vec<CullingResult>) {
-    todo!()
-  }
+  fn cull_visible_objects(&self, _frustum: &CameraFrustum, _results: &mut Vec<CullingResult>) {}
 }
 
 /// Allows a scene to participate in rendering.

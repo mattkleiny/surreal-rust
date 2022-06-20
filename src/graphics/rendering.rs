@@ -245,6 +245,10 @@ pub trait CullingProvider {
   fn cull_visible_objects(&self, frustum: &CameraFrustum, results: &mut Vec<CullingResult>);
 }
 
+/// A key used to order rendering of objects by the material in use.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct MaterialKey {}
+
 bitflags::bitflags! {
   /// Flags denoting what sort of material is visible from a `CullingResult`.
   pub struct MaterialFlags: u8 {
@@ -258,8 +262,10 @@ bitflags::bitflags! {
 ///
 /// A result contains information on an object that was perceived to be visible to the camera.
 pub struct CullingResult {
+  pub id: usize,
   pub position: Vector3<f32>,
   pub distance_to_camera: f32,
+  pub material_key: MaterialKey,
   pub material_flags: MaterialFlags,
 }
 
@@ -309,6 +315,7 @@ impl RenderPipeline {
     let mut visible_objects = Vec::new(); // TODO: use the graphics arena here?
 
     scene.cull_visible_objects(&frustum, &mut visible_objects);
+    visible_objects.sort_by_key(|it| it.material_key);
 
     // build context for this frame; pass details down to the render passes
     let mut frame = RenderFrame {
@@ -350,43 +357,38 @@ pub mod forward {
     pub size: (u32, u32),
   }
 
-  pub struct ForwardPipelineContext {
-    pub grab_pass: RenderTarget,
-  }
-
   impl ForwardPipelineBuilder {
     pub fn build(&self) -> RenderPipeline {
       let mut pipeline = RenderPipeline::new(&self.graphics);
 
-      // build the context for the render pipeline
-      let grab_pass_target = RenderTarget::new(
-        &self.graphics,
-        &RenderTargetDescriptor {
-          color_attachment: RenderTextureDescriptor {
-            width: self.size.0,
-            height: self.size.1,
-            options: TextureOptions {
-              format: TextureFormat::RGBA8,
-              sampler: TextureSampler {
-                wrap_mode: TextureWrap::Clamp,
-                minify_filter: TextureFilter::Nearest,
-                magnify_filter: TextureFilter::Nearest,
-              },
-            },
-          },
-          depth_attachment: None,
-          stencil_attachment: None,
-        },
-      );
-
       pipeline.configure(SpriteBatchDescriptor {
-        projection_view: Matrix4x4::orthographic(256., 144., 0., 100.),
+        projection_view: Matrix4x4::orthographic(self.size.0 as f32, self.size.1 as f32, 0., 100.),
         ..Default::default()
       });
 
       pipeline.add_pass(OpaquePass {});
       pipeline.add_pass(TransparentPass {});
-      pipeline.add_pass(ScreenGrabPass { grab_pass_target });
+      pipeline.add_pass(ScreenGrabPass {
+        grab_target: RenderTarget::new(
+          &self.graphics,
+          &RenderTargetDescriptor {
+            color_attachment: RenderTextureDescriptor {
+              width: self.size.0,
+              height: self.size.1,
+              options: TextureOptions {
+                format: TextureFormat::RGBA8,
+                sampler: TextureSampler {
+                  wrap_mode: TextureWrap::Clamp,
+                  minify_filter: TextureFilter::Nearest,
+                  magnify_filter: TextureFilter::Nearest,
+                },
+              },
+            },
+            depth_attachment: None,
+            stencil_attachment: None,
+          },
+        ),
+      });
       pipeline.add_pass(PostEffectPass {});
       pipeline.add_pass(CompositePass {});
 
@@ -437,16 +439,16 @@ pub mod forward {
 
   /// Adds a screen-aware forward pass to the rendering pipeline.
   pub struct ScreenGrabPass {
-    grab_pass_target: RenderTarget,
+    grab_target: RenderTarget,
   }
 
   impl RenderPass for ScreenGrabPass {
     fn begin_frame(&mut self, _context: &mut RenderFrame) {
-      self.grab_pass_target.activate();
+      self.grab_target.activate();
     }
 
     fn render_frame(&mut self, frame: &mut RenderFrame) {
-      self.grab_pass_target.deactivate();
+      self.grab_target.deactivate();
 
       for _visible_object in frame
         .visible_objects
@@ -464,18 +466,14 @@ pub mod forward {
   pub struct PostEffectPass {}
 
   impl RenderPass for PostEffectPass {
-    fn render_frame(&mut self, _frame: &mut RenderFrame) {
-      todo!()
-    }
+    fn render_frame(&mut self, _frame: &mut RenderFrame) {}
   }
 
   /// Adds a compositing pass to the rendering pipeline.
   pub struct CompositePass {}
 
   impl RenderPass for CompositePass {
-    fn render_frame(&mut self, _frame: &mut RenderFrame) {
-      todo!()
-    }
+    fn render_frame(&mut self, _frame: &mut RenderFrame) {}
   }
 
   #[cfg(test)]
@@ -485,15 +483,11 @@ pub mod forward {
     use super::*;
 
     #[derive(Default)]
-    pub struct OrthographicCamera {
+    pub struct TestCamera {
       position: Vector3<f32>,
-      forward_direction: Vector3<f32>,
-      up_direction: Vector3<f32>,
-      near_plane: f32,
-      far_plane: f32,
     }
 
-    impl RenderCamera for OrthographicCamera {
+    impl RenderCamera for TestCamera {
       fn compute_frustum(&self) -> CameraFrustum {
         CameraFrustum {
           position: self.position,
@@ -508,11 +502,12 @@ pub mod forward {
 
       let mut pipeline = ForwardPipelineBuilder {
         graphics: graphics.clone(),
+        size: (256, 144),
       }
       .build();
 
       let scene = Scene::default();
-      let camera = OrthographicCamera::default();
+      let camera = TestCamera::default();
 
       pipeline.render_frame(&scene, &camera);
     }
