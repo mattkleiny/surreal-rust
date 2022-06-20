@@ -3,7 +3,11 @@
 //! This is a series of components designed to make it simpler to build more complex render
 //! pipelines than using the 'material', 'mesh', 'render targets' etc do alone.
 
-use crate::collections::AnyMap;
+use crate::{
+  collections::AnyMap,
+  maths::{Plane, Vector3},
+  utilities::MemoryArena,
+};
 use std::collections::VecDeque;
 
 use super::*;
@@ -209,56 +213,265 @@ impl RenderContextManager {
   }
 }
 
-/// A manager for `RenderPass`es.
-///
-/// Render passes are executed based on their `RenderPass::order()`.
-#[derive(Default)]
-pub struct RenderPassManager {
-  passes: Vec<Box<dyn RenderPass>>,
-  commands: CommandBuffer,
+/// A trasnient memory arena used for frame-by-frame rendering.
+pub type GraphicsArena = MemoryArena<4096>;
+
+/// A context for a single frame, for use in [`RenderPass`] operations in a [`RenderPipeline`].
+pub struct RenderFrame<'a> {
+  pub frame_arena: &'a GraphicsArena,
+  pub culling_provider: &'a dyn CullingProvider,
+  pub manager: &'a mut RenderContextManager,
+  pub render_camera: &'a dyn RenderCamera,
+  pub renderer_provider: &'a dyn RendererProvider,
+  pub visible_objects: &'a Vec<CullingResult>,
 }
+
+/// A frustum of 6 planes representing the camera's viewport; used to cull objects.
+pub struct CameraFrustum {
+  pub position: Vector3<f32>,
+  pub planes: [Plane<f32>; 6],
+}
+
+/// Provides camera information for use in a dedicated render pipeline.
+pub trait RenderCamera {
+  /// Computes the frustum information for this camera, for use in later rendering steps.
+  fn compute_frustum(&self) -> CameraFrustum;
+}
+
+/// Provides culling information to a renderer for use in trivial rejection.
+pub trait CullingProvider {
+  fn cull_visible_objects(&self, frustum: &CameraFrustum, results: &mut Vec<CullingResult>);
+}
+
+bitflags::bitflags! {
+  /// Flags denoting what sort of material is visible from a `CullingResult`.
+  pub struct MaterialFlags: u8 {
+    const OPAQUE = 1 << 0;
+    const TRANSPARENT = 1 << 1;
+    const GRAB_PASS = 1 << 2;
+  }
+}
+
+/// Represents the result of a single culling pass.
+///
+/// A result contains information on an object that was perceived to be visible to the camera.
+pub struct CullingResult {
+  pub position: Vector3<f32>,
+  pub distance_to_camera: f32,
+  pub material_flags: MaterialFlags,
+}
+
+/// Provides renderable material information to a renderer for use in different rendering pipelines.
+pub trait RendererProvider {}
 
 /// Represents a single render pass in a renderer.
-///
-/// Render passes are executed in order to create a single frame.
 pub trait RenderPass {
-  fn begin_frame(&mut self, _commands: &mut CommandBuffer) {}
-  fn render_frame(&mut self, commands: &mut CommandBuffer);
-  fn end_frame(&mut self, _commands: &mut CommandBuffer) {}
+  fn begin_frame(&mut self, _context: &mut RenderFrame) {}
+  fn render_frame(&mut self, context: &mut RenderFrame);
+  fn end_frame(&mut self, _context: &mut RenderFrame) {}
 }
 
-impl RenderPassManager {
-  /// Creates a new renderer.
-  pub fn new() -> Self {
+/// A pipeline for rendering, based on a [`RenderPass`]es.
+pub struct RenderPipeline {
+  arena: GraphicsArena,
+  render_passes: Vec<Box<dyn RenderPass>>,
+  context_manager: RenderContextManager,
+}
+
+impl RenderPipeline {
+  /// Creates a new render pipeline.
+  pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
-      passes: Vec::new(),
-      commands: CommandBuffer::new(),
+      arena: GraphicsArena::default(),
+      render_passes: Vec::new(),
+      context_manager: RenderContextManager::new(&graphics),
     }
   }
 
-  /// Adds a `RenderPass` to the renderer.
+  /// Configures the pipeline with the given render context.
+  pub fn configure<D: RenderContextDescriptor>(&mut self, descriptor: D) {
+    self.context_manager.configure(descriptor);
+  }
+
+  /// Adds a `RenderPass` to the render pipeline.
   ///
   /// Passes are evaluated in order of insertion.
   pub fn add_pass(&mut self, pass: impl RenderPass + 'static) {
-    self.passes.push(Box::new(pass));
+    self.render_passes.push(Box::new(pass));
   }
 
-  /// Renders a single frame to the given `GraphicsServer`.
-  pub fn render(&mut self, graphics: &GraphicsServer) {
-    let commands = &mut self.commands;
+  /// Renders a single frame of the given scene to the given graphics server from the perspective of the given camera.
+  pub fn render_frame<S: CullingProvider + RendererProvider>(&mut self, scene: &S, camera: &dyn RenderCamera) {
+    // compute frustum for this frame, and collect visible objects
+    let frustum = camera.compute_frustum();
+    let mut visible_objects = Vec::new(); // TODO: use the graphics arena here?
 
-    for pass in &mut self.passes {
-      pass.begin_frame(commands);
+    scene.cull_visible_objects(&frustum, &mut visible_objects);
+
+    // build context for this frame; pass details down to the render passes
+    let mut frame = RenderFrame {
+      frame_arena: &self.arena,
+      culling_provider: scene,
+      manager: &mut self.context_manager,
+      render_camera: camera,
+      renderer_provider: scene,
+      visible_objects: &visible_objects,
+    };
+
+    for pass in &mut self.render_passes {
+      pass.begin_frame(&mut frame);
     }
 
-    for pass in &mut self.passes {
-      pass.render_frame(commands);
+    for pass in &mut self.render_passes {
+      pass.render_frame(&mut frame);
     }
 
-    for pass in &mut self.passes {
-      pass.end_frame(commands);
+    for pass in &mut self.render_passes {
+      pass.end_frame(&mut frame);
+    }
+  }
+}
+
+pub mod forward {
+  //! A standard-purpose forward rendering pipeline.
+
+  use crate::{
+    maths::Matrix4x4,
+    prelude::{SpriteBatchContext, SpriteBatchDescriptor},
+  };
+
+  use super::*;
+
+  /// Builds a forward `RenderPipeline`.
+  pub struct ForwardPipelineBuilder {
+    pub graphics: GraphicsServer,
+  }
+
+  impl ForwardPipelineBuilder {
+    pub fn build(&self) -> RenderPipeline {
+      let mut pipeline = RenderPipeline::new(&self.graphics);
+
+      pipeline.configure(SpriteBatchDescriptor {
+        projection_view: Matrix4x4::orthographic(256., 144., 0., 100.),
+        ..Default::default()
+      });
+
+      pipeline.add_pass(OpaquePass {});
+      pipeline.add_pass(TransparentPass {});
+      pipeline.add_pass(ScreenGrabPass {});
+      pipeline.add_pass(PostEffectPass {});
+      pipeline.add_pass(CompositePass {});
+
+      pipeline
+    }
+  }
+
+  /// Adds an opaque pass to the rendering pipeline.
+  pub struct OpaquePass {}
+
+  impl RenderPass for OpaquePass {
+    fn render_frame(&mut self, frame: &mut RenderFrame) {
+      for _visible_object in frame
+        .visible_objects
+        .iter()
+        .filter(|it| it.material_flags.contains(MaterialFlags::OPAQUE))
+      {
+        frame.manager.with(|_context: &mut SpriteBatchContext| {
+          todo!();
+        });
+      }
+    }
+  }
+
+  /// Adds a transparent pass to the rendering pipeline.
+  pub struct TransparentPass {}
+
+  impl RenderPass for TransparentPass {
+    fn render_frame(&mut self, frame: &mut RenderFrame) {
+      for _visible_object in frame
+        .visible_objects
+        .iter()
+        .filter(|it| it.material_flags.contains(MaterialFlags::TRANSPARENT))
+      {
+        frame.manager.with(|_context: &mut SpriteBatchContext| {
+          todo!();
+        });
+      }
+    }
+  }
+
+  /// Adds a screen-aware forward pass to the rendering pipeline.
+  pub struct ScreenGrabPass {}
+
+  impl RenderPass for ScreenGrabPass {
+    fn render_frame(&mut self, frame: &mut RenderFrame) {
+      for _visible_object in frame
+        .visible_objects
+        .iter()
+        .filter(|it| it.material_flags.contains(MaterialFlags::GRAB_PASS))
+      {
+        frame.manager.with(|_context: &mut SpriteBatchContext| {
+          todo!();
+        });
+      }
+    }
+  }
+
+  /// Adds an post-processing pass to the rendering pipeline.
+  pub struct PostEffectPass {}
+
+  impl RenderPass for PostEffectPass {
+    fn render_frame(&mut self, _frame: &mut RenderFrame) {
+      todo!()
+    }
+  }
+
+  /// Adds a compositing pass to the rendering pipeline.
+  pub struct CompositePass {}
+
+  impl RenderPass for CompositePass {
+    fn render_frame(&mut self, _frame: &mut RenderFrame) {
+      todo!()
+    }
+  }
+
+  #[cfg(test)]
+  mod tests {
+    use crate::scenes::Scene;
+
+    use super::*;
+
+    #[derive(Default)]
+    pub struct OrthographicCamera {
+      position: Vector3<f32>,
+      forward_direction: Vector3<f32>,
+      up_direction: Vector3<f32>,
+      near_plane: f32,
+      far_plane: f32,
     }
 
-    commands.flush(graphics);
+    impl RenderCamera for OrthographicCamera {
+      fn compute_frustum(&self) -> CameraFrustum {
+        CameraFrustum {
+          position: self.position,
+          planes: [Plane::default(); 6],
+        }
+      }
+    }
+
+    #[test]
+    fn forward_pipeline_should_build_and_render() {
+      let graphics = GraphicsServer::new(Box::new(HeadlessGraphicsBackend::new()));
+
+      let mut pipeline = ForwardPipelineBuilder {
+        graphics: graphics.clone(),
+      }
+      .build();
+
+      let scene = Scene::default();
+      let camera = OrthographicCamera::default();
+
+      pipeline.render_frame(&scene, &camera);
+    }
   }
 }

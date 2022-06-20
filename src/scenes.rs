@@ -1,6 +1,11 @@
 //! A scene management system, based on a very lightweight single threaded ECS system.
 
-use crate::collections::{AnyMap, Arena, ArenaIndex};
+use crate::{
+  collections::{AnyMap, Arena, ArenaIndex},
+  graphics::{CameraFrustum, CullingProvider, CullingResult, RendererProvider},
+};
+
+mod sprites;
 
 /// Represents an entity in a [`Scene`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -118,6 +123,16 @@ impl Scene {
     state.get_or_create_component::<C>()
   }
 }
+
+/// Allows a scene to participate in render culling.
+impl CullingProvider for Scene {
+  fn cull_visible_objects(&self, _frustum: &CameraFrustum, _results: &mut Vec<CullingResult>) {
+    todo!()
+  }
+}
+
+/// Allows a scene to participate in rendering.
+impl RendererProvider for Scene {}
 
 /// Internal state for a particular entity.
 #[derive(Default)]

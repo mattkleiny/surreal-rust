@@ -1,5 +1,4 @@
 Issues:
-  [ ] Core types need to be thread safe to support hecs and parallel workloads?
   [ ] Consider upgrading to WGPU instead of building custom graphics pipeline?
 
 Core:
@@ -22,7 +21,7 @@ Core:
   [ ] Support for custom allocators? (A frame arena for scratch work, perhaps?)
   [ ] Use static pointers for graphics server, audio server, etc?
   [ ] Add matrix inversion and more core linear algebra or instead use an existing crate
-  [ ] Lightweight entity component system?
+  [✔] Lightweight entity component system? @done(22-06-20 16:22)
 
 AI:
   [ ] Basic automata
@@ -38,13 +37,14 @@ Graphics:
   [ ] Improve vector font rendering and caching
   [ ] Get #[derive(Vertex)] working
   [ ] Font layout/galley system
-  [ ] Add sprite pivots, transforms, etc
-  [ ] Add sprite animations
+  [✔] Add sprite pivots, transforms, etc @done(22-06-20 16:21)
+  [✔] Add sprite animations @done(22-06-20 16:22)
   [ ] Add tilemap pivots, transforms, etc
   [ ] Add tilemap animations
-  [ ] Add texture atlases (automatically baked)?
+  [✔] Add texture atlases? @done(22-06-20 16:22)
+  [ ] Automatic sprite atlas baking/packing?
   [ ] Draw lists? (load/store actions, render targets, command buffer and post processing)
-  [ ] Sprite transforms for rotations/shear/etc
+  [✔] Sprite transforms for rotations/shear/etc @done(22-06-20 16:22)
   [✔] Sprite batching that supports multiple textures per draw call @done(22-06-09 19:58)
   [✔] Fix sprite batching when there are implicit textures in a material (i.e. slots are relative to material) @done(22-06-13 22:08)
   [ ] Swap to WGPU and consider implementing a resource abstraction system (ala jdh)
@@ -60,6 +60,10 @@ Scripting:
   [ ] Add BASIC implementation and virtual machine, and lots of common operations
   [ ] Consider other languages and ideas
 
+Physics:
+  [ ] Basic 2d physics
+  [ ] Basic 3d physics
+
 Editor:
   [ ] Tauri-based editor with web frontend technologies
   [ ] How to integrate render target output from UI into Tauri/Canvas?
@@ -70,6 +74,6 @@ Editor:
   [ ] Graph editor for VS Code symlinked into the project folder?
 
 User Interface:
-  [ ] `egui` based UI Rust framework?
+  [✔] `egui` based UI Rust framework? @done(22-06-20 16:22)
     [ ] `rsx` style markup for egui function invocations.
     [ ] `redux` style state management in a central store

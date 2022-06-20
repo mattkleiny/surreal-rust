@@ -22,7 +22,7 @@ impl Default for SpriteState {
 
 fn main() {
   let configuration = Configuration {
-    title: "Entity Component Tests",
+    title: "Scenes",
     transparent_window: true,
     ..Default::default()
   };
