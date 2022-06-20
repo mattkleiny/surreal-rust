@@ -91,7 +91,7 @@ impl Font for BitmapFont {
   }
 }
 
-/// An `AssetLoader` for `BitmapFont`s.
+/// An [`AssetLoader`] for [`BitmapFont`]s.
 pub struct BitmapFontLoader {}
 
 impl Asset for BitmapFont {
@@ -215,7 +215,7 @@ impl Font for VectorFont {
   }
 }
 
-/// An `AssetLoader` for `TrueTypeFont`s.
+/// An [`AssetLoader`] for [`VectorFont`]s.
 pub struct VectorFontLoader {
   pub graphics: GraphicsServer,
   pub font_size: f32,

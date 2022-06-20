@@ -47,7 +47,7 @@ pub struct TextureSampler {
   pub magnify_filter: TextureFilter,
 }
 
-/// Options for configuring a `Texture`.
+/// Options for configuring a [`Texture`].
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct TextureOptions {
   pub format: TextureFormat,
@@ -267,7 +267,7 @@ impl AssetLoader<Texture> for TextureLoader {
   }
 }
 
-/// Represents a sub-region of a `Texture`.
+/// Represents a sub-region of a [`Texture`]`.
 #[derive(Clone)]
 pub struct TextureRegion<'a> {
   pub texture: &'a Texture,
@@ -355,7 +355,7 @@ pub struct TextureAtlasBuilder<T> {
   stride: usize,
 }
 
-/// Represents a discrete cell in a `TextureAtlasBuilder`.
+/// Represents a discrete cell in a [`TextureAtlasBuilder`].
 pub struct TextureAtlasCell<T> {
   pub pixels: Grid<T>,
   pub offset: Vector2<u32>,

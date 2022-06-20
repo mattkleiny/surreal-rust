@@ -30,7 +30,7 @@ pub trait Vertex: Clone {
 /// Describes a kind of index.
 pub type Index = u32;
 
-/// Describes a single vertex field in a `Vertex` type.
+/// Describes a single vertex field in a [`Vertex`] type.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct VertexDescriptor {
   pub count: usize,

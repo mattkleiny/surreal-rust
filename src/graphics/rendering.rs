@@ -213,7 +213,7 @@ impl RenderContextManager {
   }
 }
 
-/// A trasnient memory arena used for frame-by-frame rendering.
+/// A transient memory arena used for frame-by-frame rendering.
 pub type GraphicsArena = MemoryArena<4096>;
 
 /// A context for a single frame, for use in [`RenderPass`] operations in a [`RenderPipeline`].
@@ -240,6 +240,8 @@ pub trait RenderCamera {
 
 /// Provides culling information to a renderer for use in trivial rejection.
 pub trait CullingProvider {
+  /// Culls and computes visible objects from the perspective of the given frustum.
+  /// The results are to be collected into the given `Vec`.
   fn cull_visible_objects(&self, frustum: &CameraFrustum, results: &mut Vec<CullingResult>);
 }
 
@@ -345,11 +347,37 @@ pub mod forward {
   /// Builds a forward `RenderPipeline`.
   pub struct ForwardPipelineBuilder {
     pub graphics: GraphicsServer,
+    pub size: (u32, u32),
+  }
+
+  pub struct ForwardPipelineContext {
+    pub grab_pass: RenderTarget,
   }
 
   impl ForwardPipelineBuilder {
     pub fn build(&self) -> RenderPipeline {
       let mut pipeline = RenderPipeline::new(&self.graphics);
+
+      // build the context for the render pipeline
+      let grab_pass_target = RenderTarget::new(
+        &self.graphics,
+        &RenderTargetDescriptor {
+          color_attachment: RenderTextureDescriptor {
+            width: self.size.0,
+            height: self.size.1,
+            options: TextureOptions {
+              format: TextureFormat::RGBA8,
+              sampler: TextureSampler {
+                wrap_mode: TextureWrap::Clamp,
+                minify_filter: TextureFilter::Nearest,
+                magnify_filter: TextureFilter::Nearest,
+              },
+            },
+          },
+          depth_attachment: None,
+          stencil_attachment: None,
+        },
+      );
 
       pipeline.configure(SpriteBatchDescriptor {
         projection_view: Matrix4x4::orthographic(256., 144., 0., 100.),
@@ -358,7 +386,7 @@ pub mod forward {
 
       pipeline.add_pass(OpaquePass {});
       pipeline.add_pass(TransparentPass {});
-      pipeline.add_pass(ScreenGrabPass {});
+      pipeline.add_pass(ScreenGrabPass { grab_pass_target });
       pipeline.add_pass(PostEffectPass {});
       pipeline.add_pass(CompositePass {});
 
@@ -376,7 +404,9 @@ pub mod forward {
         .iter()
         .filter(|it| it.material_flags.contains(MaterialFlags::OPAQUE))
       {
-        frame.manager.with(|_context: &mut SpriteBatchContext| {
+        frame.manager.with(|context: &mut SpriteBatchContext| {
+          context.material.set_blend_state(BlendState::Disabled);
+
           todo!();
         });
       }
@@ -393,7 +423,12 @@ pub mod forward {
         .iter()
         .filter(|it| it.material_flags.contains(MaterialFlags::TRANSPARENT))
       {
-        frame.manager.with(|_context: &mut SpriteBatchContext| {
+        frame.manager.with(|context: &mut SpriteBatchContext| {
+          context.material.set_blend_state(BlendState::Enabled {
+            source: BlendFactor::SrcAlpha,
+            destination: BlendFactor::OneMinusSrcAlpha,
+          });
+
           todo!();
         });
       }
@@ -401,10 +436,18 @@ pub mod forward {
   }
 
   /// Adds a screen-aware forward pass to the rendering pipeline.
-  pub struct ScreenGrabPass {}
+  pub struct ScreenGrabPass {
+    grab_pass_target: RenderTarget,
+  }
 
   impl RenderPass for ScreenGrabPass {
+    fn begin_frame(&mut self, _context: &mut RenderFrame) {
+      self.grab_pass_target.activate();
+    }
+
     fn render_frame(&mut self, frame: &mut RenderFrame) {
+      self.grab_pass_target.deactivate();
+
       for _visible_object in frame
         .visible_objects
         .iter()

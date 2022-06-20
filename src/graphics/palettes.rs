@@ -120,7 +120,7 @@ impl<P> Index<usize> for ColorPalette<P> {
   }
 }
 
-/// An `AssetLoader` for `ColorPalette`s of the given pixel type, `P`.
+/// An [`AssetLoader`] for [`ColorPalette`]s of the given pixel type, `P`.
 #[derive(Default)]
 pub struct ColorPaletteLoader<P: Pixel> {
   _pixel: PhantomData<P>,
