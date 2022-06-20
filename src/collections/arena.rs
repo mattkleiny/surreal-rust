@@ -171,6 +171,12 @@ impl<T> Arena<T> {
   }
 }
 
+/// An immutable iterator for the `Arena`.
+pub struct ArenaIter<'a, T> {
+  arena: &'a Arena<T>,
+  index: usize,
+}
+
 impl<'a, T> IntoIterator for &'a Arena<T> {
   type Item = &'a T;
   type IntoIter = ArenaIter<'a, T>;
@@ -178,21 +184,6 @@ impl<'a, T> IntoIterator for &'a Arena<T> {
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
   }
-}
-
-impl<'a, T> IntoIterator for &'a mut Arena<T> {
-  type Item = &'a mut T;
-  type IntoIter = ArenaIterMut<'a, T>;
-
-  fn into_iter(self) -> Self::IntoIter {
-    self.iter_mut()
-  }
-}
-
-/// An immutable iterator for the `Arena`.
-pub struct ArenaIter<'a, T> {
-  arena: &'a Arena<T>,
-  index: usize,
 }
 
 impl<'a, T> Iterator for ArenaIter<'a, T> {
@@ -217,6 +208,15 @@ impl<'a, T> Iterator for ArenaIter<'a, T> {
 pub struct ArenaIterMut<'a, T> {
   arena: &'a mut Arena<T>,
   index: usize,
+}
+
+impl<'a, T> IntoIterator for &'a mut Arena<T> {
+  type Item = &'a mut T;
+  type IntoIter = ArenaIterMut<'a, T>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter_mut()
+  }
 }
 
 impl<'a, T> Iterator for ArenaIterMut<'a, T> {

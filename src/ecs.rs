@@ -10,7 +10,7 @@ impl<C: Sized + 'static> Component for C {}
 
 /// Represents an entity in an `EntityWorld`.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Entity(ArenaIndex, *mut EntityWorld);
+pub struct Entity(ArenaIndex, *mut World);
 
 impl Entity {
   pub fn insert<C: Component>(self, component: C) -> Self {
@@ -61,11 +61,11 @@ impl Entity {
 ///
 /// Entities can be spawned and components can be attached/detached from them at runtime.
 #[derive(Default)]
-pub struct EntityWorld {
+pub struct World {
   entities: Arena<EntityState>,
 }
 
-impl EntityWorld {
+impl World {
   /// Spawns a new entity into the world.
   pub fn spawn(&mut self) -> Entity {
     let state = EntityState::default();
@@ -146,9 +146,9 @@ mod tests {
 
   #[test]
   fn world_should_maintain_simple_set_of_entities() {
-    let mut world = EntityWorld::default();
+    let mut world = World::default();
 
-    let player = world
+    let _player = world
       .spawn()
       .insert(Sprite::default())
       .insert(Color32::random())

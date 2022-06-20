@@ -1,6 +1,6 @@
 //! Font loading, management and rendering.
 //!
-//! We currently support bitmap fonts, with a planned future change to support TrueType fonts.
+//! We currently support bitmap fonts with basic support for vector fonts at a fixed scale.
 
 use std::cell::RefCell;
 use std::collections::HashMap;

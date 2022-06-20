@@ -24,6 +24,8 @@ mod rectangles;
 mod shapes;
 mod tessellation;
 
+const EPSILON: f32 = 0.00001;
+
 /// Converts the given value to radians from degrees.
 #[inline]
 pub fn to_radians(degrees: f64) -> f64 {
@@ -42,13 +44,15 @@ pub trait ApproxEq<T = Self> {
 }
 
 impl ApproxEq for f32 {
+  #[inline]
   fn approx_eq(&self, other: Self) -> bool {
-    (other - self).abs() < f32::EPSILON
+    (other - self).abs() < EPSILON
   }
 }
 
 impl ApproxEq for f64 {
+  #[inline]
   fn approx_eq(&self, other: Self) -> bool {
-    (other - self).abs() < f64::EPSILON
+    (other - self).abs() < EPSILON as f64
   }
 }

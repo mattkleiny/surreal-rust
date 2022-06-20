@@ -142,14 +142,12 @@ impl RenderTarget {
 }
 
 impl GraphicsResource for RenderTarget {
-  /// Returns the underlying graphics handle of the [`RenderTarget`].
   fn handle(&self) -> GraphicsHandle {
     self.state.borrow().handle
   }
 }
 
 impl Drop for RenderTargetState {
-  /// Deletes the [`RenderTarget`] from the GPU.
   fn drop(&mut self) {
     self.graphics.delete_render_target(self.handle);
   }

@@ -147,7 +147,7 @@ impl Material {
   /// Sets the given name as a uniform with an array of textures.
   pub fn set_texture_array(&mut self, name: &str, textures: &[&Texture], sampler: Option<TextureSampler>) {
     if let Some(location) = self.shader.get_uniform_location(name) {
-      let mut bindings = smallvec::SmallVec::<[(Texture, u8); 16]>::new();
+      let mut bindings = smallvec::SmallVec::<[(Texture, u8); MAX_TEXTURE_UNITS]>::new();
 
       for texture in textures {
         let slot = self.allocate_texture_slot(texture);
@@ -242,7 +242,7 @@ impl AssetLoader<Material> for MaterialLoader {
 /// texture binding in a material.
 #[derive(Default, Clone)]
 struct TextureBindingSet {
-  slots: [Option<GraphicsHandle>; 32],
+  slots: [Option<GraphicsHandle>; MAX_TEXTURE_UNITS],
 }
 
 impl TextureBindingSet {

@@ -6,16 +6,13 @@ use std::collections::HashMap;
 
 use crate::{
   assets::Handle,
-  maths::{vec2, Vector2},
+  maths::{vec2, Matrix4x4, Vector2},
 };
 
 use super::*;
 
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
-
-/// The maximum number of textures that can be bound in a single batch operation.
-const TEXTURE_POOL_SIZE: usize = 32;
 
 #[derive(Default)]
 pub struct Sprite {
@@ -111,6 +108,7 @@ pub struct SpriteBatch {
 /// Options for drawing a sprite.
 pub struct SpriteOptions {
   pub position: Vector2<f32>,
+  pub rotation: f32,
   pub scale: Vector2<f32>,
   pub color: Color32,
 }
@@ -119,6 +117,7 @@ impl Default for SpriteOptions {
   fn default() -> Self {
     Self {
       position: Vector2::ZERO,
+      rotation: 0.,
       scale: Vector2::ONE,
       color: Color32::WHITE,
     }
@@ -200,6 +199,7 @@ impl SpriteBatch {
           &glyph,
           &SpriteOptions {
             position,
+            rotation: 0.,
             scale: options.scale,
             color: options.color,
           },
@@ -218,37 +218,41 @@ impl SpriteBatch {
       self.flush();
     }
 
-    let position = options.position;
-    let size = vec2(
-      (options.scale.x * region.size.x as f32) * 0.5,
-      (options.scale.y * region.size.y as f32) * 0.5,
+    let translation = Matrix4x4::translate(options.position.x, options.position.y, 0.);
+    let rotation = Matrix4x4::rotate_z(options.rotation);
+    let scale = Matrix4x4::scale(
+      region.size.x as f32 * options.scale.x,
+      region.size.y as f32 * options.scale.y,
+      1.,
     );
-    let uv = region.calculate_uv();
+
+    let transform = translation * rotation * scale;
     let texture_id = self.allocate_texture(&region.texture) as u32;
+    let uv = region.calculate_uv();
 
     self.vertices.push(SpriteVertex {
-      position: position + vec2(-size.x, -size.y),
+      position: vec2(-0.5, -0.5) * transform,
       color: options.color,
       uv: uv.top_left(),
       texture_id,
     });
 
     self.vertices.push(SpriteVertex {
-      position: position + vec2(-size.x, size.y),
+      position: vec2(-0.5, 0.5) * transform,
       color: options.color,
       uv: uv.bottom_left(),
       texture_id,
     });
 
     self.vertices.push(SpriteVertex {
-      position: position + vec2(size.x, size.y),
+      position: vec2(0.5, 0.5) * transform,
       color: options.color,
       uv: uv.bottom_right(),
       texture_id,
     });
 
     self.vertices.push(SpriteVertex {
-      position: position + vec2(size.x, -size.y),
+      position: vec2(0.5, -0.5) * transform,
       color: options.color,
       uv: uv.top_right(),
       texture_id,
@@ -325,7 +329,7 @@ fn build_quad_indices(sprite_count: usize) -> Vec<u32> {
 /// If the pool is full, the batch will be flushed and the pool will be reset.
 #[derive(Default)]
 struct TexturePool {
-  slots: [Option<Texture>; TEXTURE_POOL_SIZE],
+  slots: [Option<Texture>; MAX_TEXTURE_UNITS],
 }
 
 impl TexturePool {
@@ -352,7 +356,7 @@ impl TexturePool {
 
   /// Binds all active texture in the pool to the given material.
   pub fn bind(&mut self, material: &mut Material) {
-    let mut textures = smallvec::SmallVec::<[&Texture; TEXTURE_POOL_SIZE]>::new();
+    let mut textures = smallvec::SmallVec::<[&Texture; MAX_TEXTURE_UNITS]>::new();
 
     for texture in self.slots.iter() {
       if let Some(texture) = texture {

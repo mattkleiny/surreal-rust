@@ -1,12 +1,11 @@
-//! A simple tilemap example for Surreal.
+//! A simple tilemap example for Surreal
 
 use surreal::prelude::*;
 
 fn main() {
   let configuration = Configuration {
-    title: "Tile Maps",
+    title: "Tilemaps",
     transparent_window: true,
-    update_continuously: false,
     log_level: LevelFilter::Trace,
     ..Default::default()
   };
@@ -15,7 +14,9 @@ fn main() {
     let graphics = &engine.graphics;
 
     // set-up assets and rendering
-    let sprites = TextureAtlas::load(&assets, 16, 16, "assets/sprites/tiles_desert.png").unwrap();
+    let sprites1 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/tiles_desert.png").unwrap();
+    let sprites2 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-idle.png").unwrap();
+    let sprites3 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-walk.png").unwrap();
 
     let mut renderer = RenderContextManager::new(graphics);
 
@@ -28,11 +29,11 @@ fn main() {
     // set-up tile map
     let mut map = TileMap::new(16, 9);
 
-    map.set_sprite(0, sprites.get_region(0, 3));
-    map.set_sprite(1, sprites.get_region(3, 0));
-    map.set_sprite(2, sprites.get_region(2, 2));
+    map.set_sprite(1, sprites2.get_region(0, 0));
+    map.set_sprite(2, sprites3.get_region(0, 0));
+    map.set_sprite(3, sprites1.get_region(3, 0));
 
-    map.fill(|_, _| u8::random() % 3);
+    map.fill(|_, _| u8::random() % 4);
 
     engine.run_variable_step(|engine, tick| {
       let graphics = &engine.graphics;
@@ -41,8 +42,7 @@ fn main() {
       renderer.render(&map);
 
       if engine.input.keyboard.is_key_pressed(Key::Space) {
-        map.clear();
-        map.fill(|_, _| u8::random() % 3);
+        map.fill(|_, _| u8::random() % 4);
       }
 
       if engine.input.keyboard.is_key_pressed(Key::Escape) {

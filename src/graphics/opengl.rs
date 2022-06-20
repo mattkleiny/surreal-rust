@@ -559,7 +559,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           }
         }
         ShaderUniform::TextureArray(textures, sampler) => {
-          let mut slots = smallvec::SmallVec::<[i32; 16]>::new();
+          let mut slots = smallvec::SmallVec::<[i32; MAX_TEXTURE_UNITS]>::new();
 
           for (texture, slot) in textures {
             gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);

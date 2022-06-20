@@ -1,6 +1,7 @@
 //! Texture management and loading.
 
-use std::sync::{Arc, RwLock};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::collections::Grid;
@@ -69,7 +70,7 @@ impl Default for TextureOptions {
 /// A texture is a set of pixel data that has been uploaded to the GPU.
 #[derive(Clone)]
 pub struct Texture {
-  state: Arc<RwLock<TextureState>>,
+  state: Rc<RefCell<TextureState>>,
 }
 
 struct TextureState {
@@ -99,7 +100,7 @@ impl Texture {
   /// Creates a new blank texture on the GPU with the given options.
   pub fn with_options(graphics: &GraphicsServer, options: &TextureOptions) -> Self {
     Self {
-      state: Arc::new(RwLock::new(TextureState {
+      state: Rc::new(RefCell::new(TextureState {
         graphics: graphics.clone(),
         handle: graphics.create_texture(&options.sampler),
         options: options.clone(),
@@ -124,21 +125,17 @@ impl Texture {
 
   /// Returns the width of the texture .
   pub fn width(&self) -> u32 {
-    let state = self.state.read().unwrap();
-
-    state.width
+    self.state.borrow().width
   }
 
   /// Returns the width of the texture .
   pub fn height(&self) -> u32 {
-    let state = self.state.read().unwrap();
-
-    state.height
+    self.state.borrow().height
   }
 
   /// Sets the the texture's options on the GPU.
   pub fn set_options(&mut self, options: TextureOptions) {
-    let mut state = self.state.write().unwrap();
+    let mut state = self.state.borrow_mut();
 
     state.options = options;
 
@@ -151,7 +148,7 @@ impl Texture {
   ///
   /// This is only necessary if the texture requires sizing information prior to access from the GPU.
   pub fn initialize(&self, width: u32, height: u32, format: TextureFormat) {
-    let mut state = self.state.write().unwrap();
+    let mut state = self.state.borrow_mut();
 
     state.width = width;
     state.height = height;
@@ -164,7 +161,7 @@ impl Texture {
   /// Downloads pixel data from the texture.
   #[profiling::function]
   pub fn read_pixels<T: Texel>(&self) -> Vec<T> {
-    let state = self.state.read().unwrap();
+    let state = self.state.borrow();
 
     let graphics = &state.graphics;
     let size = state.width as usize * state.height as usize;
@@ -189,7 +186,7 @@ impl Texture {
   /// Uploads pixel data to the texture.
   #[profiling::function]
   pub fn write_pixels<T: Texel>(&self, width: usize, height: usize, pixels: &[T]) {
-    let mut state = self.state.write().unwrap();
+    let mut state = self.state.borrow_mut();
 
     state.width = width as u32;
     state.height = height as u32;
@@ -213,7 +210,7 @@ impl Texture {
   /// Uploads a sub-section of pixel data to the texture.
   #[profiling::function]
   pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle<usize>, pixels: &[T]) {
-    let state = self.state.read().unwrap();
+    let state = self.state.borrow();
     let graphics = &state.graphics;
 
     graphics.write_texture_sub_data(
@@ -238,16 +235,12 @@ impl Texture {
 }
 
 impl GraphicsResource for Texture {
-  /// Returns the underlying graphics handle of the texture.
   fn handle(&self) -> GraphicsHandle {
-    let state = self.state.read().unwrap();
-
-    state.handle
+    self.state.borrow().handle
   }
 }
 
 impl Drop for TextureState {
-  /// Deletes the texture from the GPU.
   fn drop(&mut self) {
     self.graphics.delete_texture(self.handle);
   }

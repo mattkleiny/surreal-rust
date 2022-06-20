@@ -7,17 +7,20 @@ use std::{cell::RefCell, rc::Rc};
 
 use super::*;
 
+/// A clip contains audio data that can be streamed at runtime into an audio source for playback.
 #[derive(Clone)]
 pub struct AudioClip {
   state: Rc<RefCell<AudioClipState>>,
 }
 
+/// Internal state for an `AudioClip`.
 struct AudioClipState {
   handle: AudioHandle,
   audio: AudioServer,
 }
 
 impl AudioClip {
+  /// Creates a new audio clip.
   pub fn new(audio: &AudioServer) -> Self {
     Self {
       state: Rc::new(RefCell::new(AudioClipState {
@@ -27,14 +30,17 @@ impl AudioClip {
     }
   }
 
+  /// Does the clip contain any data?
   pub fn is_empty(&self) -> bool {
     todo!()
   }
 
-  pub fn length(&self) -> usize {
+  /// The number of bytes in the clip data.
+  pub fn len(&self) -> usize {
     todo!()
   }
 
+  /// Writes the given data to the clip.
   pub fn write_data(&mut self, _data: &[u8]) {
     todo!()
   }

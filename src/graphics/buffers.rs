@@ -102,14 +102,12 @@ impl<T> Buffer<T> {
 }
 
 impl<T> GraphicsResource for Buffer<T> {
-  /// Retrieves the handle for the [`Buffer`].
   fn handle(&self) -> GraphicsHandle {
     self.state.borrow().handle
   }
 }
 
 impl Drop for BufferState {
-  /// Deletes the [`Buffer`] from the GPU.
   fn drop(&mut self) {
     self.graphics.delete_buffer(self.handle)
   }

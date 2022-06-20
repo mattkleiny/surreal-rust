@@ -54,6 +54,11 @@ pub type GraphicsHandle = u32;
 /// This pointer is safe to pass around the application.
 pub type GraphicsServer = std::rc::Rc<Box<dyn GraphicsBackend>>;
 
+/// The nominal max number of texture units that might be be bound in the GPU.
+///
+/// This is a hint for sizing arrays and other data structures.
+const MAX_TEXTURE_UNITS: usize = 32;
+
 /// Represents a resource that possesses a `GraphicsHandle`.
 pub trait GraphicsResource {
   fn handle(&self) -> GraphicsHandle;

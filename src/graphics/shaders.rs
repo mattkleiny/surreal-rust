@@ -7,6 +7,8 @@
 
 use std::rc::Rc;
 
+use smallvec::SmallVec;
+
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::io::AsPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
@@ -43,7 +45,7 @@ pub enum ShaderUniform {
   Matrix3x3(Matrix3x3),
   Matrix4x4(Matrix4x4),
   Texture(Texture, u8, Option<TextureSampler>),
-  TextureArray(smallvec::SmallVec<[(Texture, u8); 16]>, Option<TextureSampler>),
+  TextureArray(SmallVec<[(Texture, u8); MAX_TEXTURE_UNITS]>, Option<TextureSampler>),
 }
 
 /// Represents a single compiled shader program.
@@ -130,14 +132,12 @@ impl ShaderProgram {
 }
 
 impl GraphicsResource for ShaderProgram {
-  /// Retrieves the handle for the given [`ShaderProgram`].
   fn handle(&self) -> GraphicsHandle {
     self.state.handle
   }
 }
 
 impl Drop for ShaderProgramState {
-  /// Deletes the [`ShaderProgram`] from the GPU.
   fn drop(&mut self) {
     self.graphics.delete_shader(self.handle);
   }

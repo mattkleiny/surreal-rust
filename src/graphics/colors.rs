@@ -3,7 +3,7 @@
 //! We support the two most common color types, a 32-bit integral RGBA color,
 //! and a 32-bit floating point per-chanenl representation for more precise rendering.
 
-use std::ops::{Add, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
 use crate::maths::{ApproxEq, FromRandom, Lerp, Numeric, Random};
 
@@ -97,6 +97,58 @@ impl Sub for Color {
 
   fn sub(self, rhs: Self) -> Self::Output {
     Color::rgba(self.r - rhs.r, self.g - rhs.g, self.b - rhs.b, self.a - rhs.a)
+  }
+}
+
+impl Mul for Color {
+  type Output = Self;
+
+  fn mul(self, rhs: Self) -> Self::Output {
+    Self {
+      r: self.r * rhs.r,
+      g: self.g * rhs.g,
+      b: self.b * rhs.b,
+      a: self.a * rhs.a,
+    }
+  }
+}
+
+impl Mul<f32> for Color {
+  type Output = Self;
+
+  fn mul(self, rhs: f32) -> Self::Output {
+    Self {
+      r: self.r * rhs,
+      g: self.g * rhs,
+      b: self.b * rhs,
+      a: self.a * rhs,
+    }
+  }
+}
+
+impl Div for Color {
+  type Output = Self;
+
+  fn div(self, rhs: Self) -> Self::Output {
+    Self {
+      r: self.r / rhs.r,
+      g: self.g / rhs.g,
+      b: self.b / rhs.b,
+      a: self.a / rhs.a,
+    }
+  }
+}
+
+impl Div<f32> for Color {
+  type Output = Self;
+
+  fn div(self, rhs: f32) -> Self::Output {
+    Self {
+      r: self.r / rhs,
+      g: self.g / rhs,
+      b: self.b / rhs,
+      a: self.a / rhs,
+    }
   }
 }
 
@@ -195,6 +247,58 @@ impl Sub for Color32 {
   }
 }
 
+impl Mul for Color32 {
+  type Output = Self;
+
+  fn mul(self, rhs: Self) -> Self::Output {
+    Self {
+      r: self.r * rhs.r,
+      g: self.g * rhs.g,
+      b: self.b * rhs.b,
+      a: self.a * rhs.a,
+    }
+  }
+}
+
+impl Mul<u8> for Color32 {
+  type Output = Self;
+
+  fn mul(self, rhs: u8) -> Self::Output {
+    Self {
+      r: self.r * rhs,
+      g: self.g * rhs,
+      b: self.b * rhs,
+      a: self.a * rhs,
+    }
+  }
+}
+
+impl Div for Color32 {
+  type Output = Self;
+
+  fn div(self, rhs: Self) -> Self::Output {
+    Self {
+      r: self.r / rhs.r,
+      g: self.g / rhs.g,
+      b: self.b / rhs.b,
+      a: self.a / rhs.a,
+    }
+  }
+}
+
+impl Div<u8> for Color32 {
+  type Output = Self;
+
+  fn div(self, rhs: u8) -> Self::Output {
+    Self {
+      r: self.r / rhs,
+      g: self.g / rhs,
+      b: self.b / rhs,
+      a: self.a / rhs,
+    }
+  }
+}
+
 impl Lerp for Color32 {
   fn lerp(a: Color32, b: Color32, t: f32) -> Self {
     Color32::rgba(
@@ -240,5 +344,45 @@ mod tests {
     assert_eq!(color.g, 0.5);
     assert_eq!(color.b, 0.5);
     assert_eq!(color.a, 1.);
+  }
+
+  #[test]
+  fn color_should_create_red_green_blue_tuples() {
+    let color = Color::rgb(-0.5, 0.4, 1.7);
+
+    assert_eq!(color.r, -0.5);
+    assert_eq!(color.g, 0.4);
+    assert_eq!(color.b, 1.7);
+  }
+
+  #[test]
+  fn colors_should_add() {
+    let a = Color::rgba(0.9, 0.6, 0.75, 1.);
+    let b = Color::rgba(0.7, 0.1, 0.25, 1.);
+
+    assert_eq!(a + b, Color::rgba(1.6, 0.7, 1.0, 2.));
+  }
+
+  #[test]
+  fn colors_should_subtract() {
+    let a = Color::rgba(0.9, 0.6, 0.75, 2.);
+    let b = Color::rgba(0.7, 0.1, 0.25, 1.);
+
+    assert_eq!(a - b, Color::rgba(0.2, 0.5, 0.5, 1.));
+  }
+
+  #[test]
+  fn colors_should_multiply() {
+    let a = Color::rgb(1., 0.2, 0.4);
+    let b = Color::rgb(0.9, 1., 0.1);
+
+    assert_eq!(a * b, Color::rgb(0.9, 0.2, 0.04));
+  }
+
+  #[test]
+  fn colors_should_multiply_by_scalar() {
+    let a = Color::rgba(0.2, 0.3, 0.4, 1.);
+
+    assert_eq!(a * 2., Color::rgba(0.4, 0.6, 0.8, 2.));
   }
 }

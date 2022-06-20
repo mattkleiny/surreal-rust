@@ -144,7 +144,7 @@ impl<T> Grid<T> {
   }
 }
 
-/// Allows conversion into a GridPoint from tuples.
+/// Allows conversion into a `GridPoint` from tuples.
 macro_rules! tuple_grid_point {
   ($type:ty) => {
     impl From<($type, $type)> for GridPoint {
@@ -178,7 +178,7 @@ impl From<(f64, f64)> for GridPoint {
   }
 }
 
-/// Allows conversion into a GridPoint from vectors.
+/// Allows conversion into a `GridPoint` from `Vector2`.
 macro_rules! vector_grid_point {
   ($type:ty) => {
     impl From<crate::maths::Vector2<$type>> for GridPoint {

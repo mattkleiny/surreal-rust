@@ -1,6 +1,6 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
-use crate::maths::{Lerp, Numeric, Range};
+use crate::maths::{Lerp, Matrix4x4, Numeric, Range};
 
 /// Shorthand to construct a [`Vector2`].
 #[inline(always)]
@@ -28,6 +28,7 @@ impl<T: Numeric> Vector2<T> {
   }
 
   /// Clamps the (x, y) components of the vector to the given range.
+  #[inline(always)]
   pub fn clamp(&self, range: Range<T>) -> Self {
     Self::new(range.clamp(self.x), range.clamp(self.y))
   }
@@ -35,11 +36,13 @@ impl<T: Numeric> Vector2<T> {
 
 impl Vector2<f32> {
   /// Calculates the length of the vector.
+  #[inline(always)]
   pub fn length(&self) -> f32 {
     self.length_squared().sqrt() as f32
   }
 
   /// Calculates the squared length of the vector.
+  #[inline(always)]
   pub fn length_squared(&self) -> f32 {
     self.x * self.x + self.y * self.y
   }
@@ -47,25 +50,53 @@ impl Vector2<f32> {
 
 impl Vector2<isize> {
   /// Calculates the length of the vector.
+  #[inline(always)]
   pub fn length(&self) -> isize {
     (self.length_squared() as f32).sqrt() as isize
   }
 
   /// Calculates the squared length of the vector.
+  #[inline(always)]
   pub fn length_squared(&self) -> isize {
     self.x * self.x + self.y * self.y
+  }
+}
+
+impl<T: Numeric> Index<usize> for Vector2<T> {
+  type Output = T;
+
+  #[inline(always)]
+  fn index(&self, index: usize) -> &Self::Output {
+    match index {
+      0 => &self.x,
+      1 => &self.y,
+      _ => panic!("Index out of range!"),
+    }
+  }
+}
+
+impl<T: Numeric> IndexMut<usize> for Vector2<T> {
+  #[inline(always)]
+  fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+    match index {
+      0 => &mut self.x,
+      1 => &mut self.y,
+      _ => panic!("Index out of range!"),
+    }
   }
 }
 
 impl<T: Numeric> Add for Vector2<T> {
   type Output = Self;
 
+  #[inline(always)]
   fn add(self, rhs: Self) -> Self::Output {
     Self::new(self.x + rhs.x, self.y + rhs.y)
   }
 }
 
 impl<T: Numeric> AddAssign for Vector2<T> {
+  #[inline(always)]
   fn add_assign(&mut self, rhs: Self) {
     self.x += rhs.x;
     self.y += rhs.y;
@@ -75,12 +106,14 @@ impl<T: Numeric> AddAssign for Vector2<T> {
 impl<T: Numeric> Sub for Vector2<T> {
   type Output = Self;
 
+  #[inline(always)]
   fn sub(self, rhs: Self) -> Self::Output {
     Self::new(self.x - rhs.x, self.y - rhs.y)
   }
 }
 
 impl<T: Numeric> SubAssign for Vector2<T> {
+  #[inline(always)]
   fn sub_assign(&mut self, rhs: Self) {
     self.x -= rhs.x;
     self.y -= rhs.y;
@@ -90,12 +123,14 @@ impl<T: Numeric> SubAssign for Vector2<T> {
 impl<T: Numeric> Mul for Vector2<T> {
   type Output = Self;
 
+  #[inline(always)]
   fn mul(self, rhs: Self) -> Self::Output {
     Self::new(self.x * rhs.x, self.y * rhs.y)
   }
 }
 
 impl<T: Numeric> MulAssign for Vector2<T> {
+  #[inline(always)]
   fn mul_assign(&mut self, rhs: Self) {
     self.x *= rhs.x;
     self.y *= rhs.y;
@@ -105,12 +140,14 @@ impl<T: Numeric> MulAssign for Vector2<T> {
 impl<T: Numeric> Div for Vector2<T> {
   type Output = Self;
 
+  #[inline(always)]
   fn div(self, rhs: Self) -> Self::Output {
     Self::new(self.x / rhs.x, self.y / rhs.y)
   }
 }
 
 impl<T: Numeric> DivAssign for Vector2<T> {
+  #[inline(always)]
   fn div_assign(&mut self, rhs: Self) {
     self.x /= rhs.x;
     self.y /= rhs.y;
@@ -120,12 +157,14 @@ impl<T: Numeric> DivAssign for Vector2<T> {
 impl<T: Numeric> Mul<T> for Vector2<T> {
   type Output = Self;
 
+  #[inline(always)]
   fn mul(self, rhs: T) -> Self::Output {
     Self::new(self.x * rhs, self.y * rhs)
   }
 }
 
 impl<T: Numeric> MulAssign<T> for Vector2<T> {
+  #[inline(always)]
   fn mul_assign(&mut self, rhs: T) {
     self.x *= rhs;
     self.y *= rhs;
@@ -135,12 +174,14 @@ impl<T: Numeric> MulAssign<T> for Vector2<T> {
 impl<T: Numeric> Div<T> for Vector2<T> {
   type Output = Self;
 
+  #[inline(always)]
   fn div(self, rhs: T) -> Self::Output {
     Self::new(self.x / rhs, self.y / rhs)
   }
 }
 
 impl<T: Numeric> DivAssign<T> for Vector2<T> {
+  #[inline(always)]
   fn div_assign(&mut self, rhs: T) {
     self.x /= rhs;
     self.y /= rhs;
@@ -148,13 +189,50 @@ impl<T: Numeric> DivAssign<T> for Vector2<T> {
 }
 
 impl<T: Numeric> From<(T, T)> for Vector2<T> {
+  #[inline(always)]
   fn from((x, y): (T, T)) -> Self {
     Self::new(x, y)
   }
 }
 
 impl<T: Numeric> Lerp for Vector2<T> {
+  #[inline(always)]
   fn lerp(a: Self, b: Self, t: f32) -> Self {
     Self::new(T::lerp(a.x, b.x, t), T::lerp(a.y, b.y, t))
+  }
+}
+
+impl Mul<Matrix4x4> for Vector2<f32> {
+  type Output = Self;
+
+  #[inline(always)]
+  fn mul(self, rhs: Matrix4x4) -> Self::Output {
+    Self::new(
+      self.x * rhs[(0, 0)] + self.y * rhs[(1, 0)] + rhs[(3, 0)],
+      self.x * rhs[(0, 1)] + self.y * rhs[(1, 1)] + rhs[(3, 1)],
+    )
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn vector2_should_transform_by_identity_matrix() {
+    let transform = Matrix4x4::IDENTITY;
+    let position = vec2(1., 2.);
+
+    let result = position * transform;
+
+    assert_eq!(result, position);
+  }
+
+  #[test]
+  fn vector2_should_transform_by_translation_matrix() {
+    let transform = Matrix4x4::translate(1., 2., 0.);
+    let result = vec2(1., 1.) * transform;
+
+    assert_eq!(result, vec2(2., 3.));
   }
 }

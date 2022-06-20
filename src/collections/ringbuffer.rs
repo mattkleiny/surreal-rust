@@ -60,7 +60,13 @@ impl<T> RingBuffer<T> {
   }
 }
 
-/// Allows iterating over the ring buffer.
+/// An iterator for the ring buffer.
+pub struct RingBufferIter<'a, T> {
+  buffer: &'a RingBuffer<T>,
+  index: usize,
+  touched: usize,
+}
+
 impl<'a, T> IntoIterator for &'a RingBuffer<T> {
   type Item = &'a T;
   type IntoIter = RingBufferIter<'a, T>;
@@ -68,14 +74,6 @@ impl<'a, T> IntoIterator for &'a RingBuffer<T> {
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
   }
-}
-
-/// An iterator for the ring buffer. This is a forward-only iterator,
-/// and does not support in-place mutation.
-pub struct RingBufferIter<'a, T> {
-  buffer: &'a RingBuffer<T>,
-  index: usize,
-  touched: usize,
 }
 
 impl<'a, T> Iterator for RingBufferIter<'a, T> {

@@ -106,7 +106,7 @@ pub struct SpriteBatchDescriptor {
 impl Default for SpriteBatchDescriptor {
   fn default() -> Self {
     Self {
-      projection_view: Matrix4x4::identity(),
+      projection_view: Matrix4x4::IDENTITY,
       palette: None,
       shader: None,
       sprite_count: 1024,
@@ -184,7 +184,7 @@ pub struct GeometryBatchDescriptor {
 impl Default for GeometryBatchDescriptor {
   fn default() -> Self {
     Self {
-      projection_view: Matrix4x4::identity(),
+      projection_view: Matrix4x4::IDENTITY,
       shader: None,
     }
   }

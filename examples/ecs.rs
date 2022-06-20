@@ -27,7 +27,7 @@ impl Default for SpriteState {
 
 fn main() {
   let configuration = Configuration {
-    title: "Hello, World!",
+    title: "Entity Component Tests",
     transparent_window: true,
     ..Default::default()
   };
@@ -44,11 +44,15 @@ fn main() {
       ..Default::default()
     });
 
-    let mut world = EntityWorld::default();
+    let mut world = World::default();
 
     let player = world.spawn();
 
-    player.insert(Transform::default());
+    player.insert(Transform {
+      position: vec2(0., 0.),
+      rotation: 0.,
+    });
+
     player.insert(
       SpriteAnimation::default()
         .with_sprites(SpriteState::Idle, sprites_idle)
@@ -72,6 +76,7 @@ fn main() {
             &sprite,
             &SpriteOptions {
               position: transform.position,
+              rotation: transform.rotation,
               ..Default::default()
             },
           )
@@ -107,6 +112,7 @@ fn main() {
       }
 
       transform.position += movement * 100. * tick.time.delta_time;
+      transform.rotation += tick.time.delta_time;
     });
   });
 }

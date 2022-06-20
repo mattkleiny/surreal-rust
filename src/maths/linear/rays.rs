@@ -1,11 +1,13 @@
 use super::*;
 
 /// Shorthand to construct a [`Ray2`]
+#[inline(always)]
 pub const fn ray2<T>(origin: Vector2<T>, direction: Vector2<T>) -> Ray2<T> {
   Ray2::new(origin, direction)
 }
 
 /// Shorthand to construct a [`Ray3`]
+#[inline(always)]
 pub const fn ray3<T>(origin: Vector3<T>, direction: Vector3<T>) -> Ray3<T> {
   Ray3::new(origin, direction)
 }
@@ -18,6 +20,7 @@ pub struct Ray2<T> {
 }
 
 impl<T> Ray2<T> {
+  #[inline(always)]
   pub const fn new(origin: Vector2<T>, direction: Vector2<T>) -> Self {
     Self { origin, direction }
   }
@@ -31,6 +34,7 @@ pub struct Ray3<T> {
 }
 
 impl<T> Ray3<T> {
+  #[inline(always)]
   pub const fn new(origin: Vector3<T>, direction: Vector3<T>) -> Self {
     Self { origin, direction }
   }
