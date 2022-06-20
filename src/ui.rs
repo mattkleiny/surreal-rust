@@ -59,7 +59,7 @@ impl UserInterface {
   /// Note: this is a fairly expensive operation and should ideally be done once per frame,
   ///       with as much UI work as possible within a single call.
   #[profiling::function]
-  pub fn run(&mut self, provider: &mut impl UserInterfaceHost, body: impl FnMut(&egui::Context)) {
+  pub fn run(&mut self, provider: &mut dyn UserInterfaceHost, body: impl FnMut(&egui::Context)) {
     // transfer pixels-per-point to the UI
     let pixels_per_point = provider.pixels_per_point();
     self.context.set_pixels_per_point(pixels_per_point);

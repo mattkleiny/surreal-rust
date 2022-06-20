@@ -104,7 +104,7 @@ impl SpriteBatch {
 
   /// Draws a line of text to the batch with the given options
   #[profiling::function]
-  pub fn draw_text(&mut self, font: &impl Font, text: &str, options: &SpriteOptions) {
+  pub fn draw_text(&mut self, font: &dyn Font, text: &str, options: &SpriteOptions) {
     let size = font.measure_size(text);
     let mut position = options.position;
 

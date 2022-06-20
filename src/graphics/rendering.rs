@@ -247,7 +247,9 @@ pub trait CullingProvider {
 
 /// A key used to order rendering of objects by the material in use.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-pub struct MaterialKey {}
+pub struct MaterialKey {
+  pub flags: MaterialFlags,
+}
 
 bitflags::bitflags! {
   /// Flags denoting what sort of material is visible from a `CullingResult`.
@@ -263,10 +265,8 @@ bitflags::bitflags! {
 /// A result contains information on an object that was perceived to be visible to the camera.
 pub struct CullingResult {
   pub id: usize,
-  pub position: Vector3<f32>,
   pub distance_to_camera: f32,
   pub material_key: MaterialKey,
-  pub material_flags: MaterialFlags,
 }
 
 /// Provides renderable material information to a renderer for use in different rendering pipelines.
@@ -404,7 +404,7 @@ pub mod forward {
       for _visible_object in frame
         .visible_objects
         .iter()
-        .filter(|it| it.material_flags.contains(MaterialFlags::OPAQUE))
+        .filter(|it| it.material_key.flags.contains(MaterialFlags::OPAQUE))
       {
         frame.manager.with(|context: &mut SpriteBatchContext| {
           context.material.set_blend_state(BlendState::Disabled);
@@ -423,7 +423,7 @@ pub mod forward {
       for _visible_object in frame
         .visible_objects
         .iter()
-        .filter(|it| it.material_flags.contains(MaterialFlags::TRANSPARENT))
+        .filter(|it| it.material_key.flags.contains(MaterialFlags::TRANSPARENT))
       {
         frame.manager.with(|context: &mut SpriteBatchContext| {
           context.material.set_blend_state(BlendState::Enabled {
@@ -453,7 +453,7 @@ pub mod forward {
       for _visible_object in frame
         .visible_objects
         .iter()
-        .filter(|it| it.material_flags.contains(MaterialFlags::GRAB_PASS))
+        .filter(|it| it.material_key.flags.contains(MaterialFlags::GRAB_PASS))
       {
         frame.manager.with(|_context: &mut SpriteBatchContext| {
           todo!();
