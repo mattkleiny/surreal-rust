@@ -1,6 +1,62 @@
-//! A lightweight single threaded ECS system for use with Surreal.
+//! A scene management system, based on a very lightweight single threaded ECS system.
 
 use crate::collections::{AnyMap, Arena, ArenaIndex};
+
+/// Represents an entity in a [`Scene`].
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct Entity(ArenaIndex, *mut Scene);
+
+impl Entity {
+  /// Inserts the given component into the entity.
+  pub fn insert<C: Component>(self, component: C) -> Self {
+    let scene = unsafe { &mut *self.1 };
+
+    scene.insert_component(&self, component);
+
+    self
+  }
+
+  /// Retrieves the given component from the entity.
+  pub fn get<C: Component>(&self) -> Option<&C> {
+    let scene = unsafe { &*self.1 };
+
+    scene.get_component(self)
+  }
+
+  /// Retrieves the given component from the entity.
+  pub fn get_unchecked<C: Component>(&self) -> &C {
+    let scene = unsafe { &*self.1 };
+
+    scene.get_component(self).unwrap()
+  }
+
+  /// Mutably retrieves the given component from the entity.
+  pub fn get_mut<C: Component>(&self) -> Option<&mut C> {
+    let scene = unsafe { &mut *self.1 };
+
+    scene.get_component_mut(self)
+  }
+
+  /// Retrieves the given component from the entity.
+  pub fn get_mut_unchecked<C: Component>(&self) -> &mut C {
+    let scene = unsafe { &mut *self.1 };
+
+    scene.get_component_mut(self).unwrap()
+  }
+
+  /// Retrieves the given component from the entity, creating it if it doesn't exist.
+  pub fn get_or_create<C: Component + Default>(&self) -> &mut C {
+    let scene = unsafe { &mut *self.1 };
+
+    scene.get_or_create_component(self)
+  }
+}
+
+/// An archetype for instantiating an entity.
+pub trait Archetype {
+  /// Instantiates the given entity with the associated archetype.
+  fn create(&self, entity: Entity) -> Entity;
+}
 
 /// Represents a copmonent that can be attached to an entity.
 pub trait Component: Sized + 'static {}
@@ -8,70 +64,26 @@ pub trait Component: Sized + 'static {}
 /// Blanket implementation for all possible component types.
 impl<C: Sized + 'static> Component for C {}
 
-/// Represents an entity in an `EntityWorld`.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Entity(ArenaIndex, *mut World);
-
-impl Entity {
-  pub fn insert<C: Component>(self, component: C) -> Self {
-    let world = unsafe { &mut *self.1 };
-
-    world.insert_component(&self, component);
-
-    self
-  }
-
-  /// Retrieves the given component from the entity.
-  pub fn get<C: Component>(&self) -> Option<&C> {
-    let world = unsafe { &*self.1 };
-
-    world.get_component(self)
-  }
-
-  /// Retrieves the given component from the entity.
-  pub fn get_unchecked<C: Component>(&self) -> &C {
-    let world = unsafe { &*self.1 };
-
-    world.get_component(self).unwrap()
-  }
-
-  /// Mutably retrieves the given component from the entity.
-  pub fn get_mut<C: Component>(&self) -> Option<&mut C> {
-    let world = unsafe { &mut *self.1 };
-
-    world.get_component_mut(self)
-  }
-
-  /// Retrieves the given component from the entity.
-  pub fn get_mut_unchecked<C: Component>(&self) -> &mut C {
-    let world = unsafe { &mut *self.1 };
-
-    world.get_component_mut(self).unwrap()
-  }
-
-  /// Retrieves the given component from the entity, creating it if it doesn't exist.
-  pub fn get_or_create<C: Component + Default>(&self) -> &mut C {
-    let world = unsafe { &mut *self.1 };
-
-    world.get_or_create_component(self)
-  }
-}
-
-/// A world of entities and components.
+/// A scene of entities and components.
 ///
 /// Entities can be spawned and components can be attached/detached from them at runtime.
 #[derive(Default)]
-pub struct World {
+pub struct Scene {
   entities: Arena<EntityState>,
 }
 
-impl World {
-  /// Spawns a new entity into the world.
+impl Scene {
+  /// Spawns a new entity into the scene.
   pub fn spawn(&mut self) -> Entity {
     let state = EntityState::default();
     let id = self.entities.add(state);
 
     Entity(id, self as *mut _)
+  }
+
+  /// Spawns a new entity into the scene with the given archetype.
+  pub fn spawn_archetype(&mut self, archetype: impl Archetype) -> Entity {
+    archetype.create(self.spawn())
   }
 
   /// Inserts a component into the given entity.
@@ -110,6 +122,7 @@ impl World {
 /// Internal state for a particular entity.
 #[derive(Default)]
 struct EntityState {
+  is_alive: bool,
   components: AnyMap,
 }
 
@@ -138,20 +151,35 @@ impl EntityState {
 #[cfg(test)]
 mod tests {
   use crate::{
-    graphics::{Color32, Sprite},
-    maths::{vec2, FromRandom},
+    graphics::Color32,
+    maths::{vec2, FromRandom, Vector2},
   };
 
   use super::*;
 
-  #[test]
-  fn world_should_maintain_simple_set_of_entities() {
-    let mut world = World::default();
+  struct Transform {
+    position: Vector2<f32>,
+    rotation: f32,
+  }
 
-    let _player = world
+  struct Model {
+    animation: String,
+    tint: Color32,
+  }
+
+  #[test]
+  fn scene_should_maintain_simple_set_of_entities() {
+    let mut scene = Scene::default();
+
+    let _player = scene
       .spawn()
-      .insert(Sprite::default())
-      .insert(Color32::random())
-      .insert(vec2(0., 0.));
+      .insert(Transform {
+        position: vec2(0., 0.),
+        rotation: 0.,
+      })
+      .insert(Model {
+        animation: "idle_down".to_string(),
+        tint: Color32::random(),
+      });
   }
 }

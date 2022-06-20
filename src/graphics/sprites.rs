@@ -15,7 +15,7 @@ use super::*;
 const DEFAULT_SPRITE_COUNT: usize = 1024;
 
 #[derive(Default)]
-pub struct Sprite {
+struct Sprite {
   animations: HashMap<String, SpriteAnimation>,
   current_animation: String,
 }
@@ -65,29 +65,21 @@ struct SpriteAnimation {
   frame_time: f32,
 }
 
-pub struct SpriteFrame {
+struct SpriteFrame {
   pub texture: Handle<Texture>,
   pub offset: Vector2<u32>,
   pub size: Vector2<u32>,
 }
 
-pub struct SpriteSheet {
+struct SpriteSheet {
   texture: Handle<Texture>,
   entries: HashMap<String, SpriteSheetEntry>,
 }
 
-pub struct SpriteSheetEntry {
+struct SpriteSheetEntry {
   name: String,
   offset: Vector2<u32>,
   size: Vector2<u32>,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum SpriteDirection {
-  Up,
-  Down,
-  Left,
-  Right,
 }
 
 /// A fast and lightweight sprite batch renderer.

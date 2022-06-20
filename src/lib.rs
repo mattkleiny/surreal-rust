@@ -19,7 +19,6 @@ pub mod assets;
 pub mod audio;
 pub mod collections;
 pub mod diagnostics;
-pub mod ecs;
 pub mod engine;
 pub mod graphics;
 pub mod input;
@@ -27,6 +26,7 @@ pub mod io;
 pub mod maths;
 #[cfg(feature = "prototype")]
 pub mod prototype;
+pub mod scenes;
 pub mod scripting;
 pub mod ui;
 pub mod utilities;
@@ -40,7 +40,6 @@ pub mod prelude {
   pub use crate::audio::*;
   pub use crate::collections::*;
   pub use crate::diagnostics::*;
-  pub use crate::ecs::*;
   pub use crate::engine::*;
   pub use crate::graphics::*;
   pub use crate::input::*;
@@ -48,6 +47,7 @@ pub mod prelude {
   pub use crate::maths::*;
   #[cfg(feature = "prototype")]
   pub use crate::prototype::*;
+  pub use crate::scenes::*;
   pub use crate::scripting::*;
   pub use crate::ui::*;
   pub use crate::utilities::*;

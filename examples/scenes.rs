@@ -8,11 +8,6 @@ pub struct Transform {
   pub rotation: f32,
 }
 
-#[derive(Default)]
-pub struct Sprite {
-  pub animation: SpriteAnimation<SpriteState>,
-}
-
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub enum SpriteState {
   Idle,
@@ -44,21 +39,20 @@ fn main() {
       ..Default::default()
     });
 
-    let mut world = World::default();
+    let mut scene = Scene::default();
 
-    let player = world.spawn();
-
-    player.insert(Transform {
-      position: vec2(0., 0.),
-      rotation: 0.,
-    });
-
-    player.insert(
-      SpriteAnimation::default()
-        .with_sprites(SpriteState::Idle, sprites_idle)
-        .with_sprites(SpriteState::Walk, sprites_walk)
-        .with_frames_per_second(8.),
-    );
+    let player = scene
+      .spawn()
+      .insert(Transform {
+        position: vec2(0., 0.),
+        rotation: 0.,
+      })
+      .insert(
+        SpriteAnimation::default()
+          .with_sprites(SpriteState::Idle, sprites_idle)
+          .with_sprites(SpriteState::Walk, sprites_walk)
+          .with_frames_per_second(8.),
+      );
 
     engine.run_variable_step(|engine, tick| {
       let graphics = &engine.graphics;

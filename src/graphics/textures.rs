@@ -345,6 +345,8 @@ impl TextureAtlas {
 }
 
 /// A utility for building texture atlases procedurally.
+///
+/// TODO: make this more robust (and safe)?
 #[derive(Default)]
 pub struct TextureAtlasBuilder<T> {
   cells: Vec<TextureAtlasCell<T>>,
@@ -416,7 +418,6 @@ impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
           let advance_y = cell_y * cell_size_y + pixel_y;
           let index = advance_x + advance_y * pixels_x;
 
-          // TODO: make this safer?
           texels[index] = cell.pixels.get_unchecked((pixel_x, pixel_y)).clone();
         }
       }

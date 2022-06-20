@@ -10,7 +10,7 @@ use super::*;
 
 /// A command buffer encodes a set of instructions to be replayed against the graphics server.
 ///
-/// Command buffers decouple the order of instructions from the executino of those instructions
+/// Command buffers decouple the order of instructions from the execution of those instructions
 /// and allow for collection of commands from across multiple threads and workers.
 #[derive(Default)]
 pub struct CommandBuffer {
@@ -222,14 +222,9 @@ pub struct RenderPassManager {
 ///
 /// Render passes are executed in order to create a single frame.
 pub trait RenderPass {
-  /// The order in which this pass should evaluate.
-  ///
-  /// Higher values are evaluated last.
-  fn order(&self) -> usize;
-
-  fn begin_frame(&mut self, commands: &mut CommandBuffer);
+  fn begin_frame(&mut self, _commands: &mut CommandBuffer) {}
   fn render_frame(&mut self, commands: &mut CommandBuffer);
-  fn end_frame(&mut self, commands: &mut CommandBuffer);
+  fn end_frame(&mut self, _commands: &mut CommandBuffer) {}
 }
 
 impl RenderPassManager {
@@ -242,9 +237,10 @@ impl RenderPassManager {
   }
 
   /// Adds a `RenderPass` to the renderer.
+  ///
+  /// Passes are evaluated in order of insertion.
   pub fn add_pass(&mut self, pass: impl RenderPass + 'static) {
     self.passes.push(Box::new(pass));
-    self.passes.sort_by_key(|pass| pass.order());
   }
 
   /// Renders a single frame to the given `GraphicsServer`.
