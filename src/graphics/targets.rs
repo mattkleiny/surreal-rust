@@ -49,9 +49,8 @@ struct RenderTargetState {
 }
 
 impl RenderTarget {
-  /// Creates a new blank [`RenderTarget`] on the GPU.
+  /// Creates a new [`RenderTarget`] on the GPU with the given attachments.
   pub fn new(graphics: &GraphicsServer, descriptor: &RenderTargetDescriptor) -> Self {
-    // prepare attachments
     let color_attachment = descriptor.color_attachment.to_texture(graphics);
     let depth_attachment = descriptor.depth_attachment.as_ref().map(|it| it.to_texture(graphics));
     let stencil_attachment = descriptor.stencil_attachment.as_ref().map(|it| it.to_texture(graphics));

@@ -22,6 +22,8 @@ Core:
   [ ] Use static pointers for graphics server, audio server, etc?
   [ ] Add matrix inversion and more core linear algebra or instead use an existing crate
   [✔] Lightweight entity component system? @done(22-06-20 16:22)
+  [ ] In-game console (with command history, interpreter, etc)
+  [ ] Configuration variables (cvars, doom-like but more ergonomic?)
 
 AI:
   [ ] Basic automata

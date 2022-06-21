@@ -123,12 +123,12 @@ impl Texture {
     texture
   }
 
-  /// Returns the width of the texture .
+  /// Returns the width of the texture.
   pub fn width(&self) -> u32 {
     self.state.borrow().width
   }
 
-  /// Returns the width of the texture .
+  /// Returns the width of the texture.
   pub fn height(&self) -> u32 {
     self.state.borrow().height
   }
@@ -156,6 +156,15 @@ impl Texture {
     let graphics = &state.graphics;
 
     graphics.initialize_texture(state.handle, width, height, format);
+  }
+
+  /// Resizes the texture in-place.
+  ///
+  /// Note that this will discard the contents of the texture and fill it with the default value.
+  pub fn resize(&mut self, width: u32, height: u32) {
+    let format = self.state.borrow().options.format;
+
+    self.initialize(width, height, format);
   }
 
   /// Downloads pixel data from the texture.

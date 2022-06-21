@@ -2,7 +2,7 @@
 
 use crate::{
   collections::{AnyMap, Arena, ArenaIndex},
-  graphics::{CameraFrustum, CullingProvider, CullingResult, RendererProvider},
+  graphics::{CameraFrustum, CullingResult, RenderScene},
 };
 
 mod sprites;
@@ -88,7 +88,9 @@ impl Scene {
 
   /// Spawns a new entity into the scene with the given archetype.
   pub fn spawn_archetype(&mut self, archetype: impl Archetype) -> Entity {
-    archetype.create(self.spawn())
+    let entity = self.spawn();
+
+    archetype.create(entity)
   }
 
   /// Inserts a component into the given entity.
@@ -124,13 +126,12 @@ impl Scene {
   }
 }
 
-/// Allows a scene to participate in render culling.
-impl CullingProvider for Scene {
-  fn cull_visible_objects(&self, _frustum: &CameraFrustum, _results: &mut Vec<CullingResult>) {}
-}
-
 /// Allows a scene to participate in rendering.
-impl RendererProvider for Scene {}
+impl RenderScene for Scene {
+  fn cull_visible_objects(&self, _frustum: &CameraFrustum, _results: &mut Vec<CullingResult>) {
+    todo!()
+  }
+}
 
 /// Internal state for a particular entity.
 #[derive(Default)]

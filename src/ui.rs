@@ -5,6 +5,10 @@ use std::collections::HashMap;
 use crate::graphics::*;
 use crate::maths::{vec2, Rectangle};
 
+pub use widgets::*;
+
+mod widgets;
+
 /// A shader program to use for egui canvas rendering.
 const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
 
@@ -52,6 +56,22 @@ impl UserInterface {
       mesh: Mesh::new(graphics, BufferUsage::Dynamic),
       textures: HashMap::new(),
     }
+  }
+
+  /// Sets the style of the user interface to a light mode.
+  pub fn set_light_mode(&mut self) {
+    self.context.set_style(egui::Style {
+      visuals: egui::Visuals::light(),
+      ..Default::default()
+    });
+  }
+
+  /// Sets the style of the user interface to a dark mode (default).
+  pub fn set_dark_mode(&mut self) {
+    self.context.set_style(egui::Style {
+      visuals: egui::Visuals::dark(),
+      ..Default::default()
+    });
   }
 
   /// Propagates input into the user interface and runs the given body against the UI.

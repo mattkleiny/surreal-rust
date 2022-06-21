@@ -369,6 +369,51 @@ impl crate::ui::UserInterfaceHost for Engine {
   }
 
   fn set_cursor_icon(&mut self, cursor_icon: egui::CursorIcon) {
+    /// Converts an egui cursor to a winit cursor.
+    fn translate_cursor(cursor_icon: egui::CursorIcon) -> Option<glutin::window::CursorIcon> {
+      match cursor_icon {
+        egui::CursorIcon::None => None,
+
+        egui::CursorIcon::Alias => Some(glutin::window::CursorIcon::Alias),
+        egui::CursorIcon::AllScroll => Some(glutin::window::CursorIcon::AllScroll),
+        egui::CursorIcon::Cell => Some(glutin::window::CursorIcon::Cell),
+        egui::CursorIcon::ContextMenu => Some(glutin::window::CursorIcon::ContextMenu),
+        egui::CursorIcon::Copy => Some(glutin::window::CursorIcon::Copy),
+        egui::CursorIcon::Crosshair => Some(glutin::window::CursorIcon::Crosshair),
+        egui::CursorIcon::Default => Some(glutin::window::CursorIcon::Default),
+        egui::CursorIcon::Grab => Some(glutin::window::CursorIcon::Grab),
+        egui::CursorIcon::Grabbing => Some(glutin::window::CursorIcon::Grabbing),
+        egui::CursorIcon::Help => Some(glutin::window::CursorIcon::Help),
+        egui::CursorIcon::Move => Some(glutin::window::CursorIcon::Move),
+        egui::CursorIcon::NoDrop => Some(glutin::window::CursorIcon::NoDrop),
+        egui::CursorIcon::NotAllowed => Some(glutin::window::CursorIcon::NotAllowed),
+        egui::CursorIcon::PointingHand => Some(glutin::window::CursorIcon::Hand),
+        egui::CursorIcon::Progress => Some(glutin::window::CursorIcon::Progress),
+
+        egui::CursorIcon::ResizeHorizontal => Some(glutin::window::CursorIcon::EwResize),
+        egui::CursorIcon::ResizeNeSw => Some(glutin::window::CursorIcon::NeswResize),
+        egui::CursorIcon::ResizeNwSe => Some(glutin::window::CursorIcon::NwseResize),
+        egui::CursorIcon::ResizeVertical => Some(glutin::window::CursorIcon::NsResize),
+
+        egui::CursorIcon::ResizeEast => Some(glutin::window::CursorIcon::EResize),
+        egui::CursorIcon::ResizeSouthEast => Some(glutin::window::CursorIcon::SeResize),
+        egui::CursorIcon::ResizeSouth => Some(glutin::window::CursorIcon::SResize),
+        egui::CursorIcon::ResizeSouthWest => Some(glutin::window::CursorIcon::SwResize),
+        egui::CursorIcon::ResizeWest => Some(glutin::window::CursorIcon::WResize),
+        egui::CursorIcon::ResizeNorthWest => Some(glutin::window::CursorIcon::NwResize),
+        egui::CursorIcon::ResizeNorth => Some(glutin::window::CursorIcon::NResize),
+        egui::CursorIcon::ResizeNorthEast => Some(glutin::window::CursorIcon::NeResize),
+        egui::CursorIcon::ResizeColumn => Some(glutin::window::CursorIcon::ColResize),
+        egui::CursorIcon::ResizeRow => Some(glutin::window::CursorIcon::RowResize),
+
+        egui::CursorIcon::Text => Some(glutin::window::CursorIcon::Text),
+        egui::CursorIcon::VerticalText => Some(glutin::window::CursorIcon::VerticalText),
+        egui::CursorIcon::Wait => Some(glutin::window::CursorIcon::Wait),
+        egui::CursorIcon::ZoomIn => Some(glutin::window::CursorIcon::ZoomIn),
+        egui::CursorIcon::ZoomOut => Some(glutin::window::CursorIcon::ZoomOut),
+      }
+    }
+
     // prevent flickering near frame boundary when Windows OS tries to control cursor icon for window resizing
     if self.cursor_icon == cursor_icon {
       return;
@@ -390,50 +435,5 @@ impl crate::ui::UserInterfaceHost for Engine {
 
   fn request_redraw(&self) {
     self.window.request_redraw();
-  }
-}
-
-/// Converts an egui cursor to a winit cursor.
-fn translate_cursor(cursor_icon: egui::CursorIcon) -> Option<glutin::window::CursorIcon> {
-  match cursor_icon {
-    egui::CursorIcon::None => None,
-
-    egui::CursorIcon::Alias => Some(glutin::window::CursorIcon::Alias),
-    egui::CursorIcon::AllScroll => Some(glutin::window::CursorIcon::AllScroll),
-    egui::CursorIcon::Cell => Some(glutin::window::CursorIcon::Cell),
-    egui::CursorIcon::ContextMenu => Some(glutin::window::CursorIcon::ContextMenu),
-    egui::CursorIcon::Copy => Some(glutin::window::CursorIcon::Copy),
-    egui::CursorIcon::Crosshair => Some(glutin::window::CursorIcon::Crosshair),
-    egui::CursorIcon::Default => Some(glutin::window::CursorIcon::Default),
-    egui::CursorIcon::Grab => Some(glutin::window::CursorIcon::Grab),
-    egui::CursorIcon::Grabbing => Some(glutin::window::CursorIcon::Grabbing),
-    egui::CursorIcon::Help => Some(glutin::window::CursorIcon::Help),
-    egui::CursorIcon::Move => Some(glutin::window::CursorIcon::Move),
-    egui::CursorIcon::NoDrop => Some(glutin::window::CursorIcon::NoDrop),
-    egui::CursorIcon::NotAllowed => Some(glutin::window::CursorIcon::NotAllowed),
-    egui::CursorIcon::PointingHand => Some(glutin::window::CursorIcon::Hand),
-    egui::CursorIcon::Progress => Some(glutin::window::CursorIcon::Progress),
-
-    egui::CursorIcon::ResizeHorizontal => Some(glutin::window::CursorIcon::EwResize),
-    egui::CursorIcon::ResizeNeSw => Some(glutin::window::CursorIcon::NeswResize),
-    egui::CursorIcon::ResizeNwSe => Some(glutin::window::CursorIcon::NwseResize),
-    egui::CursorIcon::ResizeVertical => Some(glutin::window::CursorIcon::NsResize),
-
-    egui::CursorIcon::ResizeEast => Some(glutin::window::CursorIcon::EResize),
-    egui::CursorIcon::ResizeSouthEast => Some(glutin::window::CursorIcon::SeResize),
-    egui::CursorIcon::ResizeSouth => Some(glutin::window::CursorIcon::SResize),
-    egui::CursorIcon::ResizeSouthWest => Some(glutin::window::CursorIcon::SwResize),
-    egui::CursorIcon::ResizeWest => Some(glutin::window::CursorIcon::WResize),
-    egui::CursorIcon::ResizeNorthWest => Some(glutin::window::CursorIcon::NwResize),
-    egui::CursorIcon::ResizeNorth => Some(glutin::window::CursorIcon::NResize),
-    egui::CursorIcon::ResizeNorthEast => Some(glutin::window::CursorIcon::NeResize),
-    egui::CursorIcon::ResizeColumn => Some(glutin::window::CursorIcon::ColResize),
-    egui::CursorIcon::ResizeRow => Some(glutin::window::CursorIcon::RowResize),
-
-    egui::CursorIcon::Text => Some(glutin::window::CursorIcon::Text),
-    egui::CursorIcon::VerticalText => Some(glutin::window::CursorIcon::VerticalText),
-    egui::CursorIcon::Wait => Some(glutin::window::CursorIcon::Wait),
-    egui::CursorIcon::ZoomIn => Some(glutin::window::CursorIcon::ZoomIn),
-    egui::CursorIcon::ZoomOut => Some(glutin::window::CursorIcon::ZoomOut),
   }
 }
