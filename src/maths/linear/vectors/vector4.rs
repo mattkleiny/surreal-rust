@@ -43,6 +43,12 @@ impl<T: Numeric> Vector4<T> {
   }
 }
 
+impl<T: Numeric> From<[T; 4]> for Vector4<T> {
+  fn from([x, y, z, w]: [T; 4]) -> Self {
+    Vector4::new(x, y, z, w)
+  }
+}
+
 impl<T: Numeric> Index<usize> for Vector4<T> {
   type Output = T;
 

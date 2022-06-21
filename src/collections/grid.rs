@@ -142,6 +142,26 @@ impl<T> Grid<T> {
   {
     shape.rasterize(value, self);
   }
+
+  /// Flips the grid horizontally.
+  pub fn flip_horizontally(&mut self) {
+    todo!()
+  }
+
+  /// Flips the grid vertically.
+  pub fn flip_vertically(&mut self) {
+    todo!()
+  }
+
+  /// Mirrors the grid horizontally.
+  pub fn mirror_horizontal(&mut self) {
+    todo!()
+  }
+
+  /// Mirrors the grid vertically.
+  pub fn mirror_vertically(&mut self) {
+    todo!()
+  }
 }
 
 /// Allows conversion into a `GridPoint` from tuples.

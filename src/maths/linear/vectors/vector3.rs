@@ -89,6 +89,12 @@ impl Vector3<f32> {
   }
 }
 
+impl<T: Numeric> From<[T; 3]> for Vector3<T> {
+  fn from([x, y, z]: [T; 3]) -> Self {
+    Vector3::new(x, y, z)
+  }
+}
+
 impl<T: Numeric> Index<usize> for Vector3<T> {
   type Output = T;
 

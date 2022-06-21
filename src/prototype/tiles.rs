@@ -11,12 +11,12 @@ use super::*;
 ///
 /// Internally tiles are represented by their [`Tile::Id`], but the public
 /// API allows for direct access via the [`T`] abstraction.
-pub struct TileMap<'a, T: Tile> {
+pub struct TileMap<'a, T: MapTile> {
   tiles: Grid<T::Id>,
   sprites: HashMap<T::Id, TextureRegion<'a>>,
 }
 
-impl<'a, T: Tile> TileMap<'a, T> {
+impl<'a, T: MapTile> TileMap<'a, T> {
   /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
@@ -81,7 +81,7 @@ impl<'a, T: Tile> TileMap<'a, T> {
   }
 }
 
-impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
+impl<'a, T: MapTile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
   /// Renders this tile map with to a sprite batch.
   fn render(&self, context: &mut SpriteBatchContext) {
     let half_width = self.tiles.width() as f32 / 2.;
@@ -111,7 +111,7 @@ impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
 }
 
 /// Represents a kind of tile that can be used in a [`TileMap`].
-pub trait Tile: Clone {
+pub trait MapTile: Clone {
   type Id: Numeric + Hash + Eq;
 
   fn from_id(id: Self::Id) -> Option<Self>;
@@ -121,7 +121,7 @@ pub trait Tile: Clone {
 /// Implements an implicit entry type (no abstraction).
 macro_rules! implement_tile {
   ($type:ty) => {
-    impl Tile for $type {
+    impl MapTile for $type {
       type Id = $type;
 
       fn from_id(id: Self::Id) -> Option<Self> {
@@ -150,7 +150,7 @@ implement_tile!(i128);
 implement_tile!(isize);
 
 /// A `Tile` that can be used for path finding.
-pub trait PathableTile: Tile {
+pub trait PathableTile: MapTile {
   /// The cost of pathing through this tile.
   fn get_cost(&self) -> Cost;
 
@@ -196,7 +196,7 @@ mod tests {
     pub const DOOR: Self = Self(3, "Door");
   }
 
-  impl Tile for ExampleTile {
+  impl MapTile for ExampleTile {
     type Id = u8;
 
     fn from_id(id: Self::Id) -> Option<Self> {

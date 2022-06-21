@@ -58,6 +58,20 @@ impl UserInterface {
     }
   }
 
+  /// Creates a new user interface in light mode.
+  pub fn with_light_mode(graphics: &GraphicsServer) -> Self {
+    let mut interface = Self::new(graphics);
+    interface.set_light_mode();
+    interface
+  }
+
+  /// Creates a new user interface in dark mode.
+  pub fn with_dark_mode(graphics: &GraphicsServer) -> Self {
+    let mut interface = Self::new(graphics);
+    interface.set_dark_mode();
+    interface
+  }
+
   /// Sets the style of the user interface to a light mode.
   pub fn set_light_mode(&mut self) {
     self.context.set_style(egui::Style {

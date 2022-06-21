@@ -1,40 +1,40 @@
 <mxfile host="65bd71144e">
     <diagram id="_cXo8imJAWg-RhuMHT85" name="Page-1">
-        <mxGraphModel dx="724" dy="932" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
+        <mxGraphModel dx="998" dy="988" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="4" value="many" style="edgeStyle=none;html=1;" parent="1" source="2" target="3" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="7" value="manages" style="edgeStyle=none;html=1;" edge="1" parent="1" source="2" target="6">
+                <mxCell id="7" value="manages" style="edgeStyle=none;html=1;" parent="1" source="2" target="6" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="2" value="#ScriptBackend" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry y="120" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="11" value="parses" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3" target="10">
+                <mxCell id="11" value="parses" style="edgeStyle=none;html=1;" parent="1" source="3" target="10" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="3" value="#ScriptLanguage" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="-90" y="260" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="5" value="&lt;h1&gt;Scripting Overview&lt;/h1&gt;&lt;p&gt;A brief overview of the scripting engine and it's core collaborators.&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+                <mxCell id="5" value="&lt;h1&gt;Scripting Overview&lt;/h1&gt;&lt;p&gt;A brief overview of the scripting engine and it's core collaborators.&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="190" y="370" width="190" height="120" as="geometry"/>
                 </mxCell>
-                <mxCell id="6" value="#ScriptVirtualMachine" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+                <mxCell id="6" value="#ScriptVirtualMachine" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="210" y="120" width="130" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="10" value="High Level IR" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+                <mxCell id="10" value="High Level IR" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="100" y="260" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="runs on&lt;br&gt;" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="12" target="6">
+                <mxCell id="14" value="runs on&lt;br&gt;" style="edgeStyle=none;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="12" target="6" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="16" value="compiles" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="12" target="10">
+                <mxCell id="16" value="compiles" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="12" target="10" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="12" value="#ScriptCompiler" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+                <mxCell id="12" value="#ScriptCompiler" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="310" y="260" width="120" height="60" as="geometry"/>
                 </mxCell>
             </root>

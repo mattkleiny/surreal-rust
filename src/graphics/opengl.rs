@@ -13,7 +13,7 @@ use crate::maths::Rectangle;
 
 /// An OpenGL [`GraphicsBackend`] implementation.
 pub struct OpenGLGraphicsBackend {
-  pub context: ContextWrapper<PossiblyCurrent, ()>,
+  context: ContextWrapper<PossiblyCurrent, ()>,
   state: RefCell<InternalState>,
 }
 
