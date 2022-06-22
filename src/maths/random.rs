@@ -86,34 +86,32 @@ pub trait FromRandom: Sized {
   fn from_random(random: &mut Random) -> Self;
 }
 
-// commonly used random types
+// Implements random conversion for common integer types
+macro_rules! implement_from_random {
+  ($type:ty) => {
+    impl FromRandom for $type {
+      fn from_random(generator: &mut Random) -> Self {
+        generator.next_u64() as $type
+      }
+    }
+  };
+}
+
+implement_from_random!(u8);
+implement_from_random!(u16);
+implement_from_random!(u32);
+implement_from_random!(u64);
+implement_from_random!(usize);
+
+implement_from_random!(i8);
+implement_from_random!(i16);
+implement_from_random!(i32);
+implement_from_random!(i64);
+implement_from_random!(isize);
+
 impl FromRandom for bool {
   fn from_random(generator: &mut Random) -> Self {
     generator.next_f64() < 0.5
-  }
-}
-
-impl FromRandom for u8 {
-  fn from_random(generator: &mut Random) -> Self {
-    generator.next_u64() as u8
-  }
-}
-
-impl FromRandom for u16 {
-  fn from_random(generator: &mut Random) -> Self {
-    generator.next_u64() as u16
-  }
-}
-
-impl FromRandom for u32 {
-  fn from_random(generator: &mut Random) -> Self {
-    generator.next_u64() as u32
-  }
-}
-
-impl FromRandom for u64 {
-  fn from_random(generator: &mut Random) -> Self {
-    generator.next_u64()
   }
 }
 
@@ -126,32 +124,6 @@ impl FromRandom for f32 {
 impl FromRandom for f64 {
   fn from_random(generator: &mut Random) -> Self {
     generator.next_f64()
-  }
-}
-
-/// Allows an item to be selected randomly.
-pub trait RandomSelect {
-  type Item;
-
-  /// Selects an item randomly from the object.
-  fn select_randomly(&self, random: &mut Random) -> &Self::Item;
-}
-
-/// Allows random selection from a slice of [`T`].
-impl<T> RandomSelect for &[T] {
-  type Item = T;
-
-  fn select_randomly(&self, random: &mut Random) -> &Self::Item {
-    &self[random.next_u64() as usize % self.len()]
-  }
-}
-
-/// Allows random selection from a [`Vec<T>`].
-impl<T> RandomSelect for &Vec<T> {
-  type Item = T;
-
-  fn select_randomly(&self, random: &mut Random) -> &Self::Item {
-    &self[random.next_u64() as usize % self.len()]
   }
 }
 
@@ -218,6 +190,7 @@ mod tests {
     };
 
     assert_eq!(0., variable.sample(0.));
+    assert_eq!(0.5, variable.sample(0.5));
     assert_eq!(1., variable.sample(1.));
   }
 }

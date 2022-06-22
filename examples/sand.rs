@@ -17,7 +17,6 @@ fn main() {
     let palette = load_built_in_palette(BuiltInPalette::Hollow4);
     let mut canvas = PixelCanvas::new(graphics, 256, 144);
     let mut timer = IntervalTimer::new(TimeSpan::from_millis(10.));
-    let mut random = Random::new();
 
     engine.run_variable_step(|engine, tick| {
       let graphics = &engine.graphics;
@@ -37,7 +36,7 @@ fn main() {
 
       if mouse.is_button_down(MouseButton::Left) {
         let colors = &palette.as_slice()[1..4];
-        let color = *colors.select_randomly(&mut random);
+        let color = colors[usize::random() % colors.len()];
 
         canvas.pixels.draw(
           color,
