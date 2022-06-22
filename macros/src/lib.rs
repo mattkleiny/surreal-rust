@@ -32,7 +32,7 @@ fn impl_vertex_trait(input: &DeriveInput) -> TokenStream {
 
             // build the descriptor
             quote_spanned! {field.span() =>
-              VertexDescriptor { count: #count, kind: VertexKind::#kind, should_normalize: #normalize }
+              surreal::graphics::VertexDescriptor { count: #count, kind: surreal::graphics::VertexKind::#kind, should_normalize: #normalize }
             }
           })
         }
@@ -44,7 +44,7 @@ fn impl_vertex_trait(input: &DeriveInput) -> TokenStream {
 
   quote! {
     impl Vertex for #name {
-      const DESCRIPTORS: &'static [VertexDescriptor] = &[
+      const DESCRIPTORS: &'static [surreal::graphics::VertexDescriptor] = &[
         #(#descriptors),*
       ];
     }
@@ -64,27 +64,23 @@ fn parse_vertex_attributes(attributes: &Vec<Attribute>) -> (usize, proc_macro2::
         // match meta {
         //   Meta::List(ref list) => {
         //     for nested in list.nested.iter() {
-        //      match nested {
-        //        NestedMeta::Meta(ref meta) => {
-        //         match meta {
+        //       match nested {
+        //         NestedMeta::Meta(ref meta) => match meta {
         //           Meta::Path(_) => panic!("It was a path!"),
         //           Meta::List(_) => panic!("It was a list!"),
         //           Meta::NameValue(_) => panic!("It was a name value!"),
-        //         }
-        //        }
-        //        NestedMeta::Lit(ref literal) => {
-        //          match literal {
-        //            Lit::Str(_) => {}
-        //            Lit::ByteStr(_) => {}
-        //            Lit::Byte(_) => {}
-        //            Lit::Char(_) => {}
-        //            Lit::Int(_) => {}
-        //            Lit::Float(_) => {}
-        //            Lit::Bool(_) => {}
-        //            Lit::Verbatim(_) => {}
-        //          }
-        //        }
-        //      }
+        //         },
+        //         NestedMeta::Lit(ref literal) => match literal {
+        //           Lit::Str(_) => {}
+        //           Lit::ByteStr(_) => {}
+        //           Lit::Byte(_) => {}
+        //           Lit::Char(_) => {}
+        //           Lit::Int(_) => {}
+        //           Lit::Float(_) => {}
+        //           Lit::Bool(_) => {}
+        //           Lit::Verbatim(_) => {}
+        //         },
+        //       }
         //     }
         //   }
         //   _ => panic!("#[vertex] must be tuple of (count, kind, normalize)"),

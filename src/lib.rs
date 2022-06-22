@@ -12,9 +12,6 @@
 #[macro_use]
 extern crate serde;
 
-// Re-export the macro crate for consumers.
-pub extern crate surreal_macros as macros;
-
 pub mod assets;
 pub mod audio;
 pub mod collections;

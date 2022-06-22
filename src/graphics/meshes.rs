@@ -23,7 +23,7 @@ pub enum PrimitiveTopology {
 /// Describes a kind of vertex.
 ///
 /// Vertices provide a set of [`VertexDescriptor`]s which are used for binding vertex data to a mesh.
-pub trait Vertex: Clone {
+pub trait Vertex {
   const DESCRIPTORS: &'static [VertexDescriptor];
 }
 
@@ -190,14 +190,12 @@ impl<V: Vertex> Mesh<V> {
 }
 
 impl<V> GraphicsResource for Mesh<V> {
-  /// Returns the underlying graphics handle of the [`Mesh`].
   fn handle(&self) -> GraphicsHandle {
     self.state.borrow().handle
   }
 }
 
 impl<V> Drop for MeshState<V> {
-  /// Deletes the [`Mesh`] from the GPU.
   fn drop(&mut self) {
     self.graphics.delete_mesh(self.handle);
   }
@@ -313,7 +311,7 @@ impl<V: Vertex> Tessellator<V> {
   }
 }
 
-impl<V: Vertex> Tessellation for Tessellator<V> {
+impl<V: Vertex + Clone> Tessellation for Tessellator<V> {
   type Vertex = V;
 
   fn vertex_count(&self) -> Index {

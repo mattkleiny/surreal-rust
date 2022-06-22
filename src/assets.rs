@@ -50,7 +50,7 @@ pub trait Asset: 'static + Any + Sized {
   type Loader: AssetLoader<Self>;
 
   /// Loads this asset from the given path.
-  fn load(assets: &AssetManager, path: &str) -> crate::Result<Handle<Self>> {
+  fn load(assets: &AssetManager, path: impl AsPath) -> crate::Result<Handle<Self>> {
     assets.load_asset(path)
   }
 }

@@ -1,5 +1,7 @@
 use std::cell::RefCell;
 
+use super::{Lerp, Numeric};
+
 /// A pseudo-random number generator.
 #[derive(Clone, Debug)]
 pub struct Random {
@@ -63,7 +65,9 @@ thread_local! {
 
 /// Generates a new f64 using the thread-local generator.
 fn generate_thread_local<T>() -> T
-where T: FromRandom {
+where
+  T: FromRandom,
+{
   THREAD_LOCAL_RANDOM.with(|random| {
     let mut random = random.borrow_mut();
 
@@ -148,5 +152,72 @@ impl<T> RandomSelect for &Vec<T> {
 
   fn select_randomly(&self, random: &mut Random) -> &Self::Item {
     &self[random.next_u64() as usize % self.len()]
+  }
+}
+
+/// Distribution modes for `RandomVariable`s.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Distribution {
+  Uniform,
+  Square,
+  Cube,
+  Fourth,
+  OneMinusSquare,
+  OneMinusCube,
+  OneMinusFourth,
+}
+
+/// A variable of T that allows random sampling.
+#[derive(Clone, Debug)]
+pub struct RandomVariable<T> {
+  pub low: T,
+  pub high: T,
+  pub distribution: Distribution,
+}
+
+impl<T: Numeric> Default for RandomVariable<T> {
+  fn default() -> Self {
+    Self {
+      low: T::ZERO,
+      high: T::ONE,
+      distribution: Distribution::Uniform,
+    }
+  }
+}
+
+impl<T: Numeric + Lerp> RandomVariable<T> {
+  /// Samples the random variable at the given `t`.
+  #[inline]
+  pub fn sample(&self, t: f32) -> T {
+    use Distribution::*;
+
+    let x = match self.distribution {
+      Uniform => t,
+      Square => t * t,
+      Cube => t * t * t,
+      Fourth => t * t * t * t,
+      OneMinusSquare => 1. - t * t,
+      OneMinusCube => 1. - t * t * t,
+      OneMinusFourth => 1. - t * t * t * t,
+    };
+
+    T::lerp(self.low, self.high, x)
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn random_variable_should_sample_uniformly() {
+    let variable = RandomVariable {
+      low: 0.,
+      high: 1.,
+      distribution: Distribution::Uniform,
+    };
+
+    assert_eq!(0., variable.sample(0.));
+    assert_eq!(1., variable.sample(1.));
   }
 }
