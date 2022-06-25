@@ -21,6 +21,8 @@ pub enum TextureFormat {
   RG32,
   RGB32,
   RGBA32,
+  A8,
+  A32,
 }
 
 /// Texture wrapping modes modes.

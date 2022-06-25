@@ -1,14 +1,14 @@
 //! A simple set of tools for rapid prototyping of game ideas and etc.
 
-pub use animations::*;
 pub use canvas::*;
+pub use sprites::*;
 pub use tiles::*;
 
 use crate::graphics::*;
 use crate::maths::Matrix4x4;
 
-mod animations;
 mod canvas;
+mod sprites;
 mod tiles;
 
 // built-in shaders
@@ -25,7 +25,10 @@ const PALETTE_HOLLOW_4: &[u8] = include_bytes!("../assets/palettes/hollow-4.pal"
 const PALETTE_KULE_16: &[u8] = include_bytes!("../assets/palettes/kule-16.pal");
 const PALETTE_LOW_8: &[u8] = include_bytes!("../assets/palettes/low-8.pal");
 const PALETTE_SPACE_DUST_9: &[u8] = include_bytes!("../assets/palettes/space-dust-9.pal");
-const PALETTE_LASER_LAB: &[u8] = include_bytes!("../assets/palettes/laser-lab.pal");
+
+// built-in fonts
+const FONT_BIT536: &[u8] = include_bytes!("../assets/fonts/bit536_v1.otf");
+const FONT_BITBOY_8: &[u8] = include_bytes!("../assets/fonts/bitboy8_v1.otf");
 
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -51,7 +54,13 @@ pub enum BuiltInPalette {
   Kule16,
   Low8,
   SpaceDust9,
-  LaserLab,
+}
+
+/// Represents one of the built-in fonts.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum BuiltInFont {
+  Bit536,
+  BitBoy8,
 }
 
 /// Loads a built-in shader.
@@ -64,7 +73,7 @@ pub fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) ->
     BuiltInShader::AberrationEffect => ShaderProgram::from_glsl(graphics, SHADER_EFFECT_ABERRATION),
   };
 
-  shader.expect("Failed to load standard shader")
+  shader.expect("Failed to load build-in shader")
 }
 
 /// Loads a built-in material.
@@ -81,10 +90,21 @@ pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<
     BuiltInPalette::Kule16 => ColorPalette::from_bytes(PALETTE_KULE_16),
     BuiltInPalette::Low8 => ColorPalette::from_bytes(PALETTE_LOW_8),
     BuiltInPalette::SpaceDust9 => ColorPalette::from_bytes(PALETTE_SPACE_DUST_9),
-    BuiltInPalette::LaserLab => ColorPalette::from_bytes(PALETTE_LASER_LAB),
   };
 
-  palette.expect("Failed to load standard palette")
+  palette.expect("Failed to load built-in palette")
+}
+
+/// Loads a built-in font.
+pub fn load_built_in_font(_font: BuiltInFont) -> VectorFont {
+  todo!();
+
+  // let font: crate::Result<VectorFont> = match font {
+  //   BuiltInFont::Bit536 => todo!(),
+  //   BuiltInFont::BitBoy8 => todo!(),
+  // };
+
+  // font.expect("Failed to load build-in font")
 }
 
 /// A descriptor for the `SpriteContext`.

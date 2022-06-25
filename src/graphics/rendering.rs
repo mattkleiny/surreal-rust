@@ -3,137 +3,13 @@
 //! This is a series of components designed to make it simpler to build more complex render
 //! pipelines than using the 'material', 'mesh', 'render targets' etc do alone.
 
-use super::*;
 use crate::{
   collections::AnyMap,
   maths::{Plane, Vector3},
   utilities::FixedMemoryArena,
 };
-use std::collections::VecDeque;
 
-pub use deferred::*;
-pub use forward::*;
-
-mod deferred;
-mod forward;
-
-/// A command buffer encodes a set of instructions to be replayed against the graphics server.
-///
-/// Command buffers decouple the order of instructions from the execution of those instructions
-/// and allow for collection of commands from across multiple threads and workers.
-#[derive(Default)]
-pub struct CommandBuffer {
-  commands: VecDeque<Command>,
-}
-
-/// Encodes a single command in the command buffer.
-enum Command {
-  ClearColor(Color),
-  ClearDepth,
-  SetViewportSize((usize, usize)),
-  SetBlendState(BlendState),
-  SetScissorMode(ScissorMode),
-  SetCullingMode(CullingMode),
-  SetTarget(RenderTarget),
-  SetTargetToDisplay,
-  Blit(RenderTarget, RenderTarget, TextureFilter),
-  BlitToDisplay(RenderTarget, TextureFilter),
-  DrawMesh(GraphicsHandle, PrimitiveTopology, usize, usize),
-}
-
-impl CommandBuffer {
-  pub fn new() -> Self {
-    Self {
-      commands: VecDeque::new(),
-    }
-  }
-
-  pub fn clear_color_buffer(&mut self, color: Color) {
-    self.commands.push_back(Command::ClearColor(color));
-  }
-
-  pub fn clear_depth_buffer(&mut self) {
-    self.commands.push_back(Command::ClearDepth);
-  }
-
-  pub fn set_viewport_size(&mut self, viewport_size: (usize, usize)) {
-    self.commands.push_back(Command::SetViewportSize(viewport_size));
-  }
-
-  pub fn set_blend_state(&mut self, blend_state: BlendState) {
-    self.commands.push_back(Command::SetBlendState(blend_state));
-  }
-
-  pub fn set_scissor_mode(&mut self, scissor_mode: ScissorMode) {
-    self.commands.push_back(Command::SetScissorMode(scissor_mode));
-  }
-
-  pub fn set_culling_mode(&mut self, culling_mode: CullingMode) {
-    self.commands.push_back(Command::SetCullingMode(culling_mode));
-  }
-
-  pub fn set_render_target(&mut self, target: &RenderTarget) {
-    self.commands.push_back(Command::SetTarget(target.clone()));
-  }
-
-  pub fn set_render_target_to_display(&mut self) {
-    self.commands.push_back(Command::SetTargetToDisplay);
-  }
-
-  pub fn blit_to(&mut self, from: &RenderTarget, to: &RenderTarget, filter: TextureFilter) {
-    self.commands.push_back(Command::Blit(from.clone(), to.clone(), filter));
-  }
-
-  pub fn blit_to_display(&mut self, target: &RenderTarget, filter: TextureFilter) {
-    self.commands.push_back(Command::BlitToDisplay(target.clone(), filter));
-  }
-
-  pub fn draw_mesh<V>(&mut self, mesh: &Mesh<V>, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
-    let command = Command::DrawMesh(mesh.handle(), topology, vertex_count, index_count);
-    self.commands.push_back(command);
-  }
-
-  pub fn flush(&mut self, graphics: &GraphicsServer) {
-    while let Some(command) = self.commands.pop_front() {
-      self.execute_command(command, graphics);
-    }
-  }
-
-  fn execute_command(&mut self, command: Command, graphics: &GraphicsServer) {
-    match command {
-      Command::ClearColor(color) => graphics.clear_color_buffer(color),
-      Command::ClearDepth => graphics.clear_depth_buffer(),
-      Command::SetViewportSize(viewport_size) => graphics.set_viewport_size(viewport_size),
-      Command::SetBlendState(blend_state) => graphics.set_blend_state(blend_state),
-      Command::SetScissorMode(scissor_mode) => graphics.set_scissor_mode(scissor_mode),
-      Command::SetCullingMode(culling_mode) => graphics.set_culling_mode(culling_mode),
-      Command::SetTarget(target) => graphics.set_active_render_target(target.handle()),
-      Command::SetTargetToDisplay => graphics.set_default_render_target(),
-      Command::Blit(from, to, filter) => {
-        let source_color = from.color_attachment();
-        let dest_color = to.color_attachment();
-
-        let source = Rectangle::from_corner_points(0, 0, source_color.width() as i32, source_color.height() as i32);
-        let dest = Rectangle::from_corner_points(0, 0, dest_color.width() as i32, dest_color.height() as i32);
-
-        graphics.blit_render_target(from.handle(), to.handle(), &source, &dest, filter);
-      }
-      Command::BlitToDisplay(from, filter) => {
-        let source_color = from.color_attachment();
-
-        let (width, height) = graphics.get_viewport_size();
-
-        let source = Rectangle::from_corner_points(0, 0, source_color.width() as i32, source_color.height() as i32);
-        let dest = Rectangle::from_corner_points(0, 0, width as i32, height as i32);
-
-        graphics.blit_render_target_to_display(from.handle(), &source, &dest, filter);
-      }
-      Command::DrawMesh(mesh, topology, vertex_count, index_count) => {
-        graphics.draw_mesh(mesh, topology, vertex_count, index_count);
-      }
-    }
-  }
-}
+use super::*;
 
 /// Allows an object to be rendered via a [`RenderManager`].
 ///
@@ -187,6 +63,16 @@ impl RenderContextManager {
   /// Configures the manager with the given context.
   pub fn configure<D: RenderContextDescriptor>(&mut self, descriptor: D) {
     self.contexts.insert(descriptor.create(&self.graphics));
+  }
+
+  /// Borrows a context from the manager.
+  pub fn get<C: RenderContext>(&self) -> Option<&C> {
+    self.contexts.get()
+  }
+
+  /// Mutably borrows a context from the manager.
+  pub fn get_mut<C: RenderContext>(&mut self) -> Option<&mut C> {
+    self.contexts.get_mut()
   }
 
   /// Renders the given object via the associated context.
@@ -279,7 +165,7 @@ pub trait RenderPass {
   fn end_frame(&mut self, _context: &mut RenderFrame) {}
 }
 
-/// A pipeline for rendering, based on a [`RenderPass`]es.
+/// A pipeline for rendering, based on [`RenderPass`]es.
 pub struct RenderPipeline {
   arena: FixedMemoryArena,
   render_passes: Vec<Box<dyn RenderPass>>,

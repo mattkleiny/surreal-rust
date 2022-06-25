@@ -12,7 +12,7 @@ use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
 use crate::graphics::{Texture, TextureRegion};
 use crate::maths::{vec2, Vector2};
 
-use super::{Color32, GraphicsServer, TextureAtlasBuilder};
+use super::{Color32, GraphicsServer, Texel, TextureAtlasBuilder};
 
 /// Represents different kinds of fonts and permits rendering.
 pub trait Font {
@@ -243,4 +243,11 @@ impl AssetLoader<VectorFont> for VectorFontLoader {
 
     Ok(font)
   }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
+struct Coverage(f32);
+
+impl Texel for Coverage {
+  const FORMAT: super::TextureFormat = super::TextureFormat::A32;
 }

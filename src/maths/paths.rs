@@ -93,12 +93,12 @@ pub mod heuristics {
   use super::*;
 
   /// A constant distance
-  pub fn constant<T>(_from: &Vector2<i32>, _to: &Vector2<i32>) -> Cost {
+  pub fn constant(_from: &Vector2<i32>, _to: &Vector2<i32>) -> Cost {
     1.
   }
 
   /// The straight-line distance between two points.
-  pub fn euclidean_distance<T: Numeric>(from: &Vector2<i32>, to: &Vector2<i32>) -> Cost {
+  pub fn euclidean_distance(from: &Vector2<i32>, to: &Vector2<i32>) -> Cost {
     let dx = to.x - from.x;
     let dy = to.y - from.y;
 

@@ -211,16 +211,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
   fn initialize_texture(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat) {
     unsafe {
-      let (components, kind) = match format {
-        TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
-        TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
-        TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
-        TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
-        TextureFormat::R32 => (gl::RED, gl::FLOAT),
-        TextureFormat::RG32 => (gl::RG, gl::FLOAT),
-        TextureFormat::RGB32 => (gl::RGB, gl::FLOAT),
-        TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
-      };
+      let (components, kind) = convert_texture_format(format);
 
       gl::BindTexture(gl::TEXTURE_2D, texture);
       gl::TexImage2D(
@@ -272,16 +263,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     mip_level: usize,
   ) {
     unsafe {
-      let (components, kind) = match pixel_format {
-        TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
-        TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
-        TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
-        TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
-        TextureFormat::R32 => (gl::RED, gl::FLOAT),
-        TextureFormat::RG32 => (gl::RG, gl::FLOAT),
-        TextureFormat::RGB32 => (gl::RGB, gl::FLOAT),
-        TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
-      };
+      let (components, kind) = convert_texture_format(pixel_format);
 
       gl::BindTexture(gl::TEXTURE_2D, texture);
       gl::GetnTexImage(
@@ -315,18 +297,11 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         TextureFormat::RG32 => gl::RG32F,
         TextureFormat::RGB32 => gl::RGB32F,
         TextureFormat::RGBA32 => gl::RGBA32F,
+        TextureFormat::A8 => gl::ALPHA,
+        TextureFormat::A32 => todo!(),
       };
 
-      let (components, kind) = match pixel_format {
-        TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
-        TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
-        TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
-        TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
-        TextureFormat::R32 => (gl::RED, gl::FLOAT),
-        TextureFormat::RG32 => (gl::RG, gl::FLOAT),
-        TextureFormat::RGB32 => (gl::RGB, gl::FLOAT),
-        TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
-      };
+      let (components, kind) = convert_texture_format(pixel_format);
 
       gl::BindTexture(gl::TEXTURE_2D, texture);
       gl::TexImage2D(
@@ -352,16 +327,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     mip_level: usize,
   ) {
     unsafe {
-      let (components, kind) = match pixel_format {
-        TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
-        TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
-        TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
-        TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
-        TextureFormat::R32 => (gl::RED, gl::FLOAT),
-        TextureFormat::RG32 => (gl::RG, gl::FLOAT),
-        TextureFormat::RGB32 => (gl::RGB, gl::FLOAT),
-        TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
-      };
+      let (components, kind) = convert_texture_format(pixel_format);
 
       gl::BindTexture(gl::TEXTURE_2D, texture);
       gl::TexSubImage2D(
@@ -835,5 +801,20 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     unsafe {
       gl::DeleteFramebuffers(1, &render_target);
     }
+  }
+}
+
+fn convert_texture_format(texture_format: TextureFormat) -> (u32, u32) {
+  match texture_format {
+    TextureFormat::R8 => (gl::RED, gl::UNSIGNED_BYTE),
+    TextureFormat::RG8 => (gl::RG, gl::UNSIGNED_BYTE),
+    TextureFormat::RGB8 => (gl::RGB, gl::UNSIGNED_BYTE),
+    TextureFormat::RGBA8 => (gl::RGBA, gl::UNSIGNED_BYTE),
+    TextureFormat::R32 => (gl::RED, gl::FLOAT),
+    TextureFormat::RG32 => (gl::RG, gl::FLOAT),
+    TextureFormat::RGB32 => (gl::RGB, gl::FLOAT),
+    TextureFormat::RGBA32 => (gl::RGBA, gl::FLOAT),
+    TextureFormat::A8 => (gl::ALPHA, gl::UNSIGNED_BYTE),
+    TextureFormat::A32 => (gl::ALPHA, gl::FLOAT),
   }
 }

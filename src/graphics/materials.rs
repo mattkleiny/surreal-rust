@@ -246,7 +246,7 @@ struct TextureBindingSet {
 }
 
 impl TextureBindingSet {
-  /// ALlocates a texture slot for the given texture.
+  /// Allocates a texture slot for the given texture.
   ///
   /// If the texture is already bound, it will return the existing slot.
   /// Otherwise the first empty slot will be used.

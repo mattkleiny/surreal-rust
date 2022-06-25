@@ -68,7 +68,7 @@ impl Matrix3x3 {
           continue;
         }
 
-        result[(i / 2, i % 2)] = self[(x, y)];
+        result[(i % 2, i / 2)] = self[(x, y)];
         i += 1;
       }
     }
@@ -99,7 +99,7 @@ impl Matrix3x3 {
     let mut result = 0.;
 
     for i in 0..3 {
-      result += self[(0, i)] * self.cofactor(0, i);
+      result += self[(i, 0)] * self.cofactor(0, i);
     }
 
     result
@@ -249,7 +249,7 @@ impl Matrix4x4 {
           continue;
         }
 
-        result[(i / 3, i % 3)] = self[(x, y)];
+        result[(i % 3, i / 3)] = self[(x, y)];
         i += 1;
       }
     }
@@ -280,7 +280,7 @@ impl Matrix4x4 {
     let mut result = 0.;
 
     for i in 0..4 {
-      result += self[(0, i)] * self.cofactor(0, i);
+      result += self[(i, 0)] * self.cofactor(0, i);
     }
 
     result
@@ -297,7 +297,7 @@ impl Matrix4x4 {
 
     for row in 0..4 {
       for column in 0..4 {
-        result[(column, row)] = self.cofactor(row, column) / determinant;
+        result[(row, column)] = self.cofactor(row, column) / determinant;
       }
     }
 
@@ -715,10 +715,10 @@ mod tests {
     assert_eq!(a.determinant(), 532.);
 
     assert_eq!(a.cofactor(2, 3), -160.);
-    assert_eq!(b[(3, 2)], -160. / 532.);
+    assert_eq!(b[(2, 3)], -160. / 532.);
 
     assert_eq!(a.cofactor(3, 2), 105.);
-    assert_eq!(b[(2, 3)], 105. / 532.);
+    assert_eq!(b[(3, 2)], 105. / 532.);
 
     #[rustfmt::skip]
     assert_eq!(b, Matrix4x4::create(&[

@@ -241,7 +241,10 @@ impl Engine {
 
     // use this hack to unpack the event loop out of 'self' and then remove the 'static
     // lifetime bound on run_return so that body can access things in self without lifetime woes.
-    let mut event_loop = self.event_loop.take().unwrap();
+    let mut event_loop = self
+      .event_loop
+      .take()
+      .expect("The engine has already run once and cannot be started again");
 
     event_loop.run_return(move |event, _, control_flow| {
       match event {
@@ -370,7 +373,7 @@ impl crate::ui::UserInterfaceHost for Engine {
 
   fn set_cursor_icon(&mut self, cursor_icon: egui::CursorIcon) {
     /// Converts an egui cursor to a winit cursor.
-    fn translate_cursor(cursor_icon: egui::CursorIcon) -> Option<glutin::window::CursorIcon> {
+    fn convert_cursor(cursor_icon: egui::CursorIcon) -> Option<glutin::window::CursorIcon> {
       match cursor_icon {
         egui::CursorIcon::None => None,
 
@@ -421,7 +424,7 @@ impl crate::ui::UserInterfaceHost for Engine {
 
     self.cursor_icon = cursor_icon;
 
-    if let Some(cursor_icon) = translate_cursor(cursor_icon) {
+    if let Some(cursor_icon) = convert_cursor(cursor_icon) {
       self.window.set_cursor_visible(true);
       self.window.set_cursor_icon(cursor_icon);
     } else {

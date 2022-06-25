@@ -122,14 +122,6 @@ impl<T> Grid<T> {
     self.items.as_mut_slice()
   }
 
-  /// Rasterizes the given shape into the canvas.
-  pub fn draw(&mut self, value: T, shape: &impl Shape)
-  where
-    T: Clone,
-  {
-    shape.rasterize(value, self);
-  }
-
   /// Flips the grid horizontally.
   pub fn flip_horizontally(&mut self) {
     todo!()
@@ -148,6 +140,14 @@ impl<T> Grid<T> {
   /// Mirrors the grid vertically.
   pub fn mirror_vertically(&mut self) {
     todo!()
+  }
+
+  /// Rasterizes the given shape into the canvas.
+  pub fn draw(&mut self, value: T, shape: &impl Shape)
+  where
+    T: Clone,
+  {
+    shape.rasterize(value, self);
   }
 }
 
