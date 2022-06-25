@@ -118,7 +118,7 @@ macro_rules! implement_shape {
       fn rasterize<T: Clone>(&self, value: T, grid: &mut Grid<T>) {
         for y in self.top()..self.bottom() {
           for x in self.left()..self.right() {
-            grid.set((x, y), value.clone());
+            grid.set(x as i32, y as i32, value.clone());
           }
         }
       }
@@ -146,7 +146,7 @@ impl Shape for Rectangle<f32> {
 
     for y in top..bottom {
       for x in left..right {
-        grid.set((x, y), value.clone());
+        grid.set(x as i32, y as i32, value.clone());
       }
     }
   }
@@ -161,7 +161,7 @@ impl Shape for Rectangle<f64> {
 
     for y in top..bottom {
       for x in left..right {
-        grid.set((x, y), value.clone());
+        grid.set(x as i32, y as i32, value.clone());
       }
     }
   }

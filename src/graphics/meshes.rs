@@ -6,8 +6,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub use surreal_macros::Vertex;
-
 use crate::maths::{vec2, Tessellation, Vector2, Vector3};
 
 use super::*;

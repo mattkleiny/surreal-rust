@@ -188,7 +188,7 @@ impl Font for VectorFont {
         outline.draw(|x, y, coverage| {
           let color = Color32::rgba(255, 255, 255, (coverage * 255.0) as u8);
 
-          cell.pixels.set((x, y), color);
+          cell.pixels.set(x as i32, y as i32, color);
         });
 
         GlyphInfo {

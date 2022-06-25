@@ -9,6 +9,7 @@ pub const fn vec3<T: Numeric>(x: T, y: T, z: T) -> Vector3<T> {
 }
 
 /// A standard purpose 3d vector
+#[repr(C)]
 #[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash, Deserialize, Serialize)]
 pub struct Vector3<T> {
   pub x: T,

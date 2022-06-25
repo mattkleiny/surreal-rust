@@ -313,6 +313,7 @@ impl Matrix4x4 {
 /// T = Type of the matrix; must be a numeric type.
 /// S = Stride of the matrix; how many columns between each row.
 /// L = Length of the matrix; total number of elements.
+#[repr(C)]
 #[derive(Copy, Clone)]
 pub struct Matrix<const S: usize, const L: usize> {
   elements: [f32; L],

@@ -23,6 +23,7 @@ pub trait Pixel: Copy + Default {
 }
 
 /// A simple floating point color value with 4 channels (RGBA).
+#[repr(C)]
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Color {
   pub r: f32,
@@ -170,6 +171,7 @@ impl FromRandom for Color {
 }
 
 /// A simple 32-bit color value with 4 channels (RGBA).
+#[repr(C)]
 #[derive(Copy, Clone, Default, Debug, Eq)]
 pub struct Color32 {
   pub r: u8,

@@ -1,7 +1,4 @@
-use crate::maths::{Shape, Vector2};
-
-/// Represents a point in a [`Grid`].
-pub struct GridPoint(pub isize, pub isize);
+use crate::maths::Shape;
 
 /// A simple 2d grid of [`T`]s.
 #[derive(Clone, Debug)]
@@ -59,23 +56,19 @@ impl<T> Grid<T> {
 
   /// Is the given point a valid index into the grid?
   #[inline]
-  pub fn is_valid(&self, point: impl Into<GridPoint>) -> bool {
-    let GridPoint(x, y) = point.into();
-
+  pub fn is_valid(&self, x: i32, y: i32) -> bool {
     self.is_valid_position(x, y)
   }
 
   /// Is the given position a valid index into the grid?
   #[inline]
-  pub fn is_valid_position(&self, x: isize, y: isize) -> bool {
-    x >= 0 && x < self.width() as isize && y >= 0 && y < self.height() as isize
+  pub fn is_valid_position(&self, x: i32, y: i32) -> bool {
+    x >= 0 && x < self.width() as i32 && y >= 0 && y < self.height() as i32
   }
 
   /// Accesses an item from the grid.
   #[inline]
-  pub fn get(&self, point: impl Into<GridPoint>) -> Option<&T> {
-    let GridPoint(x, y) = point.into();
-
+  pub fn get(&self, x: i32, y: i32) -> Option<&T> {
     if self.is_valid_position(x, y) {
       self.items.get(x as usize + y as usize * self.stride)
     } else {
@@ -85,17 +78,13 @@ impl<T> Grid<T> {
 
   /// Accesses an item from the grid without checking bounds.
   #[inline]
-  pub fn get_unchecked(&self, point: impl Into<GridPoint>) -> &T {
-    let GridPoint(x, y) = point.into();
-
+  pub unsafe fn get_unchecked(&self, x: i32, y: i32) -> &T {
     &self.items[x as usize + y as usize * self.stride]
   }
 
   /// Sets an item from the grid.
   #[inline]
-  pub fn set(&mut self, point: impl Into<GridPoint>, value: T) {
-    let GridPoint(x, y) = point.into();
-
+  pub fn set(&mut self, x: i32, y: i32, value: T) {
     if self.is_valid_position(x, y) {
       self.items[x as usize + y as usize * self.stride] = value
     }
@@ -103,9 +92,7 @@ impl<T> Grid<T> {
 
   /// Sets an item from the grid without checking bounds.
   #[inline]
-  pub fn set_unchecked(&mut self, point: impl Into<GridPoint>, value: T) {
-    let GridPoint(x, y) = point.into();
-
+  pub unsafe fn set_unchecked(&mut self, x: i32, y: i32, value: T) {
     self.items[x as usize + y as usize * self.stride] = value
   }
 
@@ -164,74 +151,6 @@ impl<T> Grid<T> {
   }
 }
 
-/// Allows conversion into a `GridPoint` from tuples.
-macro_rules! tuple_grid_point {
-  ($type:ty) => {
-    impl From<($type, $type)> for GridPoint {
-      fn from(point: ($type, $type)) -> Self {
-        Self(point.0 as isize, point.1 as isize)
-      }
-    }
-  };
-}
-
-tuple_grid_point!(u8);
-tuple_grid_point!(u16);
-tuple_grid_point!(u32);
-tuple_grid_point!(u64);
-tuple_grid_point!(usize);
-tuple_grid_point!(i8);
-tuple_grid_point!(i16);
-tuple_grid_point!(i32);
-tuple_grid_point!(i64);
-tuple_grid_point!(isize);
-
-impl From<(f32, f32)> for GridPoint {
-  fn from(point: (f32, f32)) -> Self {
-    Self(point.0.floor() as isize, point.1.floor() as isize)
-  }
-}
-
-impl From<(f64, f64)> for GridPoint {
-  fn from(point: (f64, f64)) -> Self {
-    Self(point.0.floor() as isize, point.1.floor() as isize)
-  }
-}
-
-/// Allows conversion into a `GridPoint` from `Vector2`.
-macro_rules! vector_grid_point {
-  ($type:ty) => {
-    impl From<crate::maths::Vector2<$type>> for GridPoint {
-      fn from(point: Vector2<$type>) -> Self {
-        Self(point.x as isize, point.y as isize)
-      }
-    }
-  };
-}
-
-vector_grid_point!(u8);
-vector_grid_point!(u16);
-vector_grid_point!(u32);
-vector_grid_point!(u64);
-vector_grid_point!(usize);
-vector_grid_point!(i8);
-vector_grid_point!(i16);
-vector_grid_point!(i32);
-vector_grid_point!(i64);
-vector_grid_point!(isize);
-
-impl From<Vector2<f32>> for GridPoint {
-  fn from(point: Vector2<f32>) -> Self {
-    Self(point.x.floor() as isize, point.y.floor() as isize)
-  }
-}
-
-impl From<Vector2<f64>> for GridPoint {
-  fn from(point: Vector2<f64>) -> Self {
-    Self(point.x.floor() as isize, point.y.floor() as isize)
-  }
-}
-
 #[cfg(test)]
 mod tests {
   use crate::graphics::Color32;
@@ -247,7 +166,7 @@ mod tests {
 
     for y in 0..grid.height() {
       for x in 0..grid.width() {
-        grid.set((x, y), Color32::random());
+        grid.set(x as i32, y as i32, Color32::random());
       }
     }
   }

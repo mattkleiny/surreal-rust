@@ -69,46 +69,48 @@ fn main() {
 fn simulate_sand(pixels: &mut Grid<Color32>) {
   for y in (0..pixels.height()).rev() {
     for x in 0..pixels.width() {
-      let pixel = pixels.get_unchecked((x, y));
+      let pixel = unsafe { pixels.get_unchecked(x as i32, y as i32) };
 
       if pixel.a <= 0 {
         continue;
       }
 
       match () {
-        _ if simulate_particle(pixels, (x, y), (x as isize, y as isize + 1)) => (),
-        _ if simulate_particle(pixels, (x, y), (x as isize - 1, y as isize + 1)) => (),
-        _ if simulate_particle(pixels, (x, y), (x as isize + 1, y as isize + 1)) => (),
+        _ if simulate_particle(pixels, (x as i32, y as i32), (x as i32, y as i32 + 1)) => (),
+        _ if simulate_particle(pixels, (x as i32, y as i32), (x as i32 - 1, y as i32 + 1)) => (),
+        _ if simulate_particle(pixels, (x as i32, y as i32), (x as i32 + 1, y as i32 + 1)) => (),
         _ => {}
       }
     }
   }
 }
 
-fn simulate_particle(pixels: &mut Grid<Color32>, from_pos: (usize, usize), to_pos: (isize, isize)) -> bool {
+fn simulate_particle(pixels: &mut Grid<Color32>, from_pos: (i32, i32), to_pos: (i32, i32)) -> bool {
   let (from_x, from_y) = from_pos;
   let (to_x, to_y) = to_pos;
 
-  if to_x < 0 || to_x > (pixels.width() - 1) as isize {
+  if to_x < 0 || to_x > (pixels.width() - 1) as i32 {
     return false;
   }
 
-  if to_y < 0 || to_y > (pixels.height() - 1) as isize {
+  if to_y < 0 || to_y > (pixels.height() - 1) as i32 {
     return false;
   }
 
-  let to_x = to_x as usize;
-  let to_y = to_y as usize;
+  let to_x = to_x as i32;
+  let to_y = to_y as i32;
 
-  let target = pixels.get_unchecked((to_x, to_y));
+  unsafe {
+    let target = pixels.get_unchecked(to_x, to_y);
 
-  if target.a == 0 {
-    let source = *pixels.get_unchecked((from_x, from_y));
+    if target.a == 0 {
+      let source = *pixels.get_unchecked(from_x, from_y);
 
-    pixels.set((to_x, to_y), source);
-    pixels.set((from_x, from_y), Color32::CLEAR);
+      pixels.set(to_x, to_y, source);
+      pixels.set(from_x, from_y, Color32::CLEAR);
 
-    return true;
+      return true;
+    }
   }
 
   false

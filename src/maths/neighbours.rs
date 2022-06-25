@@ -1,13 +1,13 @@
 use super::*;
 
-/// Provides a von neumann neighbour expansion for points in 2-space.
-pub trait VonNeumannNeighbourhood<T> {
+/// Provides a Von Neumann neighbourhood expansion for points in 2-space.
+pub trait VonNeumannNeighbourhood {
   type Output;
 
   fn von_neighbours(&self) -> Self::Output;
 }
 
-impl<T: Numeric> VonNeumannNeighbourhood<T> for Vector2<T> {
+impl<T: Numeric> VonNeumannNeighbourhood for Vector2<T> {
   type Output = [Vector2<T>; 4];
 
   fn von_neighbours(&self) -> Self::Output {
@@ -20,14 +20,14 @@ impl<T: Numeric> VonNeumannNeighbourhood<T> for Vector2<T> {
   }
 }
 
-/// Provides a moore neighbour expansion for points in 2-space.
-pub trait MooreNeighbourhood<T> {
+/// Provides a Moore neighbourhood expansion for points in 2-space.
+pub trait MooreNeighbourhood {
   type Output;
 
   fn moore_neighbours(&self) -> Self::Output;
 }
 
-impl<T: Numeric> MooreNeighbourhood<T> for Vector2<T> {
+impl<T: Numeric> MooreNeighbourhood for Vector2<T> {
   type Output = [Vector2<T>; 8];
 
   fn moore_neighbours(&self) -> Self::Output {

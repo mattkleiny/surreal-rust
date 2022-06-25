@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use crate::collections::{Grid, GridPoint};
+use crate::collections::Grid;
 use crate::graphics::Renderable;
-use crate::maths::{vec2, Cost, NeighbourSet, Numeric, PathFindingGrid, Point, VonNeumannNeighbourhood};
+use crate::maths::{vec2, Cost, Neighbours, Numeric, PathFindingGrid, Vector2, VonNeumannNeighbourhood};
 
 use super::*;
 
@@ -11,12 +11,12 @@ use super::*;
 ///
 /// Internally tiles are represented by their [`Tile::Id`], but the public
 /// API allows for direct access via the [`T`] abstraction.
-pub struct TileMap<'a, T: MapTile> {
+pub struct TileMap<'a, T: Tile> {
   tiles: Grid<T::Id>,
   sprites: HashMap<T::Id, TextureRegion<'a>>,
 }
 
-impl<'a, T: MapTile> TileMap<'a, T> {
+impl<'a, T: Tile> TileMap<'a, T> {
   /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
@@ -36,14 +36,14 @@ impl<'a, T: MapTile> TileMap<'a, T> {
   }
 
   /// Gets a tile in the grid.
-  pub fn get(&self, point: impl Into<GridPoint>) -> Option<T> {
-    self.tiles.get(point).and_then(|id| T::from_id(*id))
+  pub fn get(&self, x: i32, y: i32) -> Option<T> {
+    self.tiles.get(x, y).and_then(|id| T::from_id(*id))
   }
 
   /// Sets a tile in the grid.
-  pub fn set(&mut self, point: impl Into<GridPoint>, tile: T) {
+  pub fn set(&mut self, x: i32, y: i32, tile: T) {
     if let Some(id) = tile.to_id() {
-      self.tiles.set(point, id);
+      self.tiles.set(x, y, id);
     }
   }
 
@@ -68,8 +68,9 @@ impl<'a, T: MapTile> TileMap<'a, T> {
     for y in 0..self.height() {
       for x in 0..self.width() {
         let tile = body(x, y);
+
         if let Some(id) = tile.to_id() {
-          self.tiles.set((x, y), id);
+          self.tiles.set(x as i32, y as i32, id);
         }
       }
     }
@@ -81,7 +82,7 @@ impl<'a, T: MapTile> TileMap<'a, T> {
   }
 }
 
-impl<'a, T: MapTile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
+impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
   /// Renders this tile map with to a sprite batch.
   fn render(&self, context: &mut SpriteBatchContext) {
     let half_width = self.tiles.width() as f32 / 2.;
@@ -89,7 +90,7 @@ impl<'a, T: MapTile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
 
     for y in 0..self.tiles.height() {
       for x in 0..self.tiles.width() {
-        if let Some(id) = self.tiles.get((x, y)) {
+        if let Some(id) = self.tiles.get(x as i32, y as i32) {
           if let Some(region) = self.sprites.get(id) {
             let position = vec2(
               (x as f32 + 0.5) * region.size.x as f32 - half_width * region.size.x as f32,
@@ -111,7 +112,7 @@ impl<'a, T: MapTile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
 }
 
 /// Represents a kind of tile that can be used in a [`TileMap`].
-pub trait MapTile: Clone {
+pub trait Tile: Clone {
   type Id: Numeric + Hash + Eq;
 
   fn from_id(id: Self::Id) -> Option<Self>;
@@ -121,7 +122,7 @@ pub trait MapTile: Clone {
 /// Implements an implicit entry type (no abstraction).
 macro_rules! implement_tile {
   ($type:ty) => {
-    impl MapTile for $type {
+    impl Tile for $type {
       type Id = $type;
 
       fn from_id(id: Self::Id) -> Option<Self> {
@@ -150,7 +151,7 @@ implement_tile!(i128);
 implement_tile!(isize);
 
 /// A `Tile` that can be used for path finding.
-pub trait PathableTile: MapTile {
+pub trait PathableTile: Tile {
   /// The cost of pathing through this tile.
   fn get_cost(&self) -> Cost;
 
@@ -160,25 +161,21 @@ pub trait PathableTile: MapTile {
 
 /// Allow path finding over simple tile maps.
 impl<T: PathableTile> PathFindingGrid for TileMap<'_, T> {
-  fn get_cost(&self, _from: Point, to: Point) -> Cost {
-    match self.get(to) {
+  fn get_cost(&self, _from: Vector2<i32>, to: Vector2<i32>) -> Cost {
+    match self.get(to.x, to.y) {
       Some(tile) => tile.get_cost(),
       None => f32::MAX,
     }
   }
 
-  fn get_neighbours(&self, center: Point) -> NeighbourSet {
-    let mut results = NeighbourSet::new();
-
+  fn get_neighbours(&self, center: Vector2<i32>, neighbours: &mut Neighbours) {
     for neighbour in center.von_neighbours() {
-      if let Some(tile) = self.get(neighbour) {
+      if let Some(tile) = self.get(neighbour.x, neighbour.y) {
         if tile.is_pathable() {
-          results.push(neighbour);
+          neighbours.push(neighbour);
         }
       }
     }
-
-    results
   }
 }
 
@@ -196,7 +193,7 @@ mod tests {
     pub const DOOR: Self = Self(3, "Door");
   }
 
-  impl MapTile for ExampleTile {
+  impl Tile for ExampleTile {
     type Id = u8;
 
     fn from_id(id: Self::Id) -> Option<Self> {
@@ -217,11 +214,9 @@ mod tests {
   #[test]
   fn tile_map_should_read_and_write() {
     let mut map = TileMap::new(16, 16);
-    let position = vec2(0, 0);
 
-    map.set(position, ExampleTile::WALL);
-
-    let tile = map.get(position).unwrap();
+    map.set(0, 0, ExampleTile::WALL);
+    let tile = map.get(0, 0).unwrap();
 
     assert_eq!(tile.1, "Wall");
   }

@@ -28,7 +28,7 @@ impl Shape for Circle<isize> {
       for x in rectangle.left()..rectangle.right() {
         let point = vec2(x, y);
         if (point - center).length_squared() <= radius {
-          grid.set(point, value.clone());
+          grid.set(x as i32, y as i32, value.clone());
         }
       }
     }

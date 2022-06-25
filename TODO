@@ -24,6 +24,7 @@ Core:
   [✔] Lightweight entity component system? @done(22-06-20 16:22)
   [ ] In-game console (with command history, interpreter, etc)
   [ ] Configuration variables (cvars, doom-like but more ergonomic?)
+  [ ] Better core smart pointer type instead of using Rc<RefCell>, etc.
 
 AI:
   [ ] Basic automata

@@ -9,6 +9,7 @@ pub const fn vec2<T: Numeric>(x: T, y: T) -> Vector2<T> {
 }
 
 /// A standard purpose 2d vector
+#[repr(C)]
 #[derive(Copy, Clone, Default, Debug, Eq, PartialEq, Hash, Deserialize, Serialize)]
 pub struct Vector2<T> {
   pub x: T,
