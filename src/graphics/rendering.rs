@@ -149,7 +149,7 @@ bitflags::bitflags! {
 ///
 /// A result contains information on an object that was perceived to be visible to the camera.
 pub struct CullingResult {
-  pub id: usize,
+  pub id: u64,
   pub distance_metric: f32,
   pub material_key: MaterialKey,
 }
@@ -174,8 +174,10 @@ pub trait RenderScene {
   /// The results are to be collected into the given `Vec`.
   fn cull_visible_objects(&self, frustum: &CameraFrustum, results: &mut Vec<CullingResult>);
 
-  /// Enqueues rendering operations for the given target object.
-  fn render_object(&self, id: usize, manager: &mut RenderContextManager);
+  // rendering callbacks
+  fn on_begin_frame(&self, _frame: &mut RenderFrame) {}
+  fn on_end_frame(&self, _frame: &mut RenderFrame) {}
+  fn render(&self, id: u64, manager: &mut RenderContextManager);
 }
 
 /// Represents a single render pass in a renderer.
@@ -183,6 +185,13 @@ pub trait RenderPass {
   fn begin_frame(&mut self, _frame: &mut RenderFrame) {}
   fn render_frame(&mut self, frame: &mut RenderFrame);
   fn end_frame(&mut self, _frame: &mut RenderFrame) {}
+}
+
+/// Allow closures to acts as render passes, where appropriate.
+impl<F: FnMut(&mut RenderFrame)> RenderPass for F {
+  fn render_frame(&mut self, frame: &mut RenderFrame) {
+    self(frame)
+  }
 }
 
 /// A pipeline for rendering, based on [`RenderPass`]es.
@@ -223,6 +232,7 @@ impl RenderPipeline {
     scene.cull_visible_objects(&frustum, &mut visible_objects);
     visible_objects.sort_by_key(|it| it.material_key);
 
+    // render this frame
     self.context_manager.begin_frame();
     {
       // build context for this frame; pass details down to the render passes
@@ -233,6 +243,8 @@ impl RenderPipeline {
         context_manager: &mut self.context_manager,
         visible_objects: &visible_objects,
       };
+
+      scene.on_begin_frame(&mut frame);
 
       for pass in &mut self.render_passes {
         pass.begin_frame(&mut frame);
@@ -245,6 +257,8 @@ impl RenderPipeline {
       for pass in &mut self.render_passes {
         pass.end_frame(&mut frame);
       }
+
+      scene.on_end_frame(&mut frame);
     }
     self.context_manager.end_frame();
 
@@ -295,7 +309,7 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
 
       for visible_object in frame.visible_objects {
         if visible_object.material_key.flags.contains(MaterialFlags::OPAQUE) {
-          frame.scene.render_object(visible_object.id, frame.context_manager);
+          frame.scene.render(visible_object.id, frame.context_manager);
         }
       }
     }
@@ -305,7 +319,7 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
     fn render_frame(&mut self, frame: &mut RenderFrame) {
       for visible_object in frame.visible_objects {
         if visible_object.material_key.flags.contains(MaterialFlags::TRANSPARENT) {
-          frame.scene.render_object(visible_object.id, frame.context_manager);
+          frame.scene.render(visible_object.id, frame.context_manager);
         }
       }
     }
@@ -315,7 +329,7 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
     fn render_frame(&mut self, frame: &mut RenderFrame) {
       for visible_object in frame.visible_objects {
         if visible_object.material_key.flags.contains(MaterialFlags::GRAB_PASS) {
-          frame.scene.render_object(visible_object.id, frame.context_manager);
+          frame.scene.render(visible_object.id, frame.context_manager);
         }
       }
     }

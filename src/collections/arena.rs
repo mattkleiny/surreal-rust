@@ -1,7 +1,7 @@
 /// Represents a safe index into an [`Arena`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ArenaIndex {
-  pub index: usize,
+  pub index: u32,
   pub generation: u16,
 }
 
@@ -64,12 +64,12 @@ impl<T> Arena<T> {
   /// Returns a reference to the item at the given index.
   pub fn get(&self, index: ArenaIndex) -> Option<&T> {
     // sanity check external index
-    if index.index >= self.entries.len() {
+    if index.index as usize >= self.entries.len() {
       return None;
     }
 
     // if this entry exists and the generation matches
-    if let Some(Some(entry)) = self.entries.get(index.index) {
+    if let Some(Some(entry)) = self.entries.get(index.index as usize) {
       if entry.generation == index.generation {
         return Some(&entry.value);
       }
@@ -81,12 +81,12 @@ impl<T> Arena<T> {
   /// Returns a mutable reference to the item at the given index.
   pub fn get_mut(&mut self, index: ArenaIndex) -> Option<&mut T> {
     // sanity check external index
-    if index.index >= self.entries.len() {
+    if index.index as usize >= self.entries.len() {
       return None;
     }
 
     // if this entry exists and the generation matches
-    if let Some(Some(entry)) = self.entries.get_mut(index.index) {
+    if let Some(Some(entry)) = self.entries.get_mut(index.index as usize) {
       if entry.generation == index.generation {
         return Some(&mut entry.value);
       }
@@ -99,7 +99,7 @@ impl<T> Arena<T> {
   pub fn add(&mut self, value: T) -> ArenaIndex {
     let index = self.allocate_index();
 
-    self.entries[index.index] = Some(ArenaEntry {
+    self.entries[index.index as usize] = Some(ArenaEntry {
       value,
       generation: index.generation,
     });
@@ -110,14 +110,14 @@ impl<T> Arena<T> {
   /// Removes an item from the arena.
   pub fn remove(&mut self, ArenaIndex { index, generation }: ArenaIndex) -> Option<T> {
     // sanity check external index
-    if index >= self.entries.len() {
+    if index as usize >= self.entries.len() {
       return None;
     }
 
     // if this is the relevant entry and the generation matches
-    if let Some(entry) = &self.entries[index] {
+    if let Some(entry) = &self.entries[index as usize] {
       if generation == entry.generation {
-        let entry = self.entries[index].take().unwrap();
+        let entry = self.entries[index as usize].take().unwrap();
         self.is_generation_dirty = true;
 
         return Some(entry.value);
@@ -142,10 +142,10 @@ impl<T> Arena<T> {
     }
 
     // scan through existing entries and find an empty slot
-    for i in 0..self.entries.len() {
-      if self.entries[i].is_none() {
+    for index in 0..self.entries.len() {
+      if self.entries[index].is_none() {
         return ArenaIndex {
-          index: i,
+          index: index as u32,
           generation: self.current_generation,
         };
       }
@@ -155,7 +155,7 @@ impl<T> Arena<T> {
     self.entries.push(None);
 
     ArenaIndex {
-      index: self.entries.len() - 1,
+      index: (self.entries.len() - 1) as u32,
       generation: self.current_generation,
     }
   }
