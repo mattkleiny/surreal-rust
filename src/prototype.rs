@@ -183,11 +183,19 @@ pub struct SpriteBatchContext {
 }
 
 impl RenderContext for SpriteBatchContext {
-  fn on_before_with(&mut self) {
+  fn as_any(&self) -> &dyn std::any::Any {
+    self as &dyn std::any::Any
+  }
+
+  fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+    self as &mut dyn std::any::Any
+  }
+
+  fn on_begin_frame(&mut self) {
     self.batch.begin(&self.material);
   }
 
-  fn on_after_with(&mut self) {
+  fn on_end_frame(&mut self) {
     self.batch.flush();
   }
 }
@@ -246,11 +254,19 @@ pub struct GeometryBatchContext {
 }
 
 impl RenderContext for GeometryBatchContext {
-  fn on_before_with(&mut self) {
+  fn as_any(&self) -> &dyn std::any::Any {
+    self as &dyn std::any::Any
+  }
+
+  fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+    self as &mut dyn std::any::Any
+  }
+
+  fn on_begin_frame(&mut self) {
     self.batch.begin(&self.material);
   }
 
-  fn on_after_with(&mut self) {
+  fn on_end_frame(&mut self) {
     self.batch.flush();
   }
 }

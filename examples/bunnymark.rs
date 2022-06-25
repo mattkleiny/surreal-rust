@@ -42,6 +42,7 @@ fn main() {
       }
 
       // draw bunnies
+      renderer.begin_frame();
       renderer.with(|context: &mut SpriteBatchContext| {
         for bunny in &bunnies {
           context.batch.draw_sprite(
@@ -54,6 +55,7 @@ fn main() {
           );
         }
       });
+      renderer.end_frame();
 
       interface.run(engine, |egui| {
         egui::Window::new("Bunnymark").show(egui, |ui| {

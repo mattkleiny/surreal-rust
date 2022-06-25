@@ -3,8 +3,12 @@
 //! This is a series of components designed to make it simpler to build more complex render
 //! pipelines than using the 'material', 'mesh', 'render targets' etc do alone.
 
+use std::{
+  any::{Any, TypeId},
+  collections::HashMap,
+};
+
 use crate::{
-  collections::AnyMap,
   maths::{Matrix4x4, Plane, Vector3},
   utilities::FixedMemoryArena,
 };
@@ -23,10 +27,14 @@ pub trait Renderable<C: RenderContext> {
 ///
 /// A context contains the state useful for a particular kind of rendering operation, and also
 /// exposes some basic lifecycle methods.
-pub trait RenderContext: Sized + 'static {
+pub trait RenderContext: Any {
+  fn as_any(&self) -> &dyn Any;
+  fn as_any_mut(&mut self) -> &mut dyn Any;
   fn on_initialize(&mut self) {}
-  fn on_before_with(&mut self) {}
-  fn on_after_with(&mut self) {}
+  fn on_begin_with(&mut self) {}
+  fn on_end_with(&mut self) {}
+  fn on_begin_frame(&mut self) {}
+  fn on_end_frame(&mut self) {}
 }
 
 /// Describes how to build a [`RenderContext`] .
@@ -48,7 +56,7 @@ pub trait RenderContextDescriptor {
 /// rendering state.
 pub struct RenderContextManager {
   graphics: GraphicsServer,
-  contexts: AnyMap,
+  contexts: HashMap<TypeId, Box<dyn RenderContext>>,
 }
 
 impl RenderContextManager {
@@ -56,23 +64,43 @@ impl RenderContextManager {
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
       graphics: graphics.clone(),
-      contexts: AnyMap::new(),
+      contexts: HashMap::new(),
     }
   }
 
   /// Configures the manager with the given context.
   pub fn configure<D: RenderContextDescriptor>(&mut self, descriptor: D) {
-    self.contexts.insert(descriptor.create(&self.graphics));
+    let key = TypeId::of::<D::Context>();
+    let value = Box::new(descriptor.create(&self.graphics));
+
+    self.contexts.insert(key, value);
   }
 
-  /// Borrows a context from the manager.
-  pub fn get<C: RenderContext>(&self) -> Option<&C> {
-    self.contexts.get()
+  /// Begins a new frame.
+  pub fn begin_frame(&mut self) {
+    for context in self.contexts.values_mut() {
+      context.on_begin_frame();
+    }
   }
 
-  /// Mutably borrows a context from the manager.
-  pub fn get_mut<C: RenderContext>(&mut self) -> Option<&mut C> {
-    self.contexts.get_mut()
+  /// Ends the current frame.
+  pub fn end_frame(&mut self) {
+    for context in self.contexts.values_mut() {
+      context.on_end_frame();
+    }
+  }
+
+  /// Acquires a context for the given descriptor.
+  ///
+  /// If the context cannot be acquired, the body will not be run.
+  pub fn with<C: RenderContext>(&mut self, body: impl FnOnce(&mut C)) {
+    if let Some(context) = self.contexts.get_mut(&TypeId::of::<C>()) {
+      let context = context.as_any_mut().downcast_mut::<C>().unwrap();
+
+      context.on_begin_with();
+      body(context);
+      context.on_end_with();
+    }
   }
 
   /// Renders the given object via the associated context.
@@ -82,20 +110,9 @@ impl RenderContextManager {
     });
   }
 
-  /// Acquires a context for the given descriptor.
-  ///
-  /// If the context cannot be acquired, the body will not be run.
-  pub fn with<C: RenderContext>(&mut self, body: impl FnOnce(&mut C)) {
-    if let Some(context) = self.contexts.get_mut::<C>() {
-      context.on_before_with();
-      body(context);
-      context.on_after_with();
-    }
-  }
-
   /// Releases the given context from the manager.
   pub fn release<C: RenderContext>(&mut self) {
-    self.contexts.remove::<C>();
+    self.contexts.remove(&TypeId::of::<C>());
   }
 
   /// Clears all contexts from the manager, resetting it to a clean state.
@@ -109,7 +126,7 @@ pub struct RenderFrame<'a> {
   pub arena: &'a FixedMemoryArena,
   pub scene: &'a dyn RenderScene,
   pub camera: &'a dyn RenderCamera,
-  pub manager: &'a mut RenderContextManager,
+  pub context_manager: &'a mut RenderContextManager,
   pub visible_objects: &'a Vec<CullingResult>,
 }
 
@@ -206,26 +223,30 @@ impl RenderPipeline {
     scene.cull_visible_objects(&frustum, &mut visible_objects);
     visible_objects.sort_by_key(|it| it.material_key);
 
-    // build context for this frame; pass details down to the render passes
-    let mut frame = RenderFrame {
-      arena: &self.arena,
-      scene,
-      camera,
-      manager: &mut self.context_manager,
-      visible_objects: &visible_objects,
-    };
+    self.context_manager.begin_frame();
+    {
+      // build context for this frame; pass details down to the render passes
+      let mut frame = RenderFrame {
+        arena: &self.arena,
+        scene,
+        camera,
+        context_manager: &mut self.context_manager,
+        visible_objects: &visible_objects,
+      };
 
-    for pass in &mut self.render_passes {
-      pass.begin_frame(&mut frame);
-    }
+      for pass in &mut self.render_passes {
+        pass.begin_frame(&mut frame);
+      }
 
-    for pass in &mut self.render_passes {
-      pass.render_frame(&mut frame);
-    }
+      for pass in &mut self.render_passes {
+        pass.render_frame(&mut frame);
+      }
 
-    for pass in &mut self.render_passes {
-      pass.end_frame(&mut frame);
+      for pass in &mut self.render_passes {
+        pass.end_frame(&mut frame);
+      }
     }
+    self.context_manager.end_frame();
 
     self.arena.reset();
   }
@@ -274,7 +295,7 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
 
       for visible_object in frame.visible_objects {
         if visible_object.material_key.flags.contains(MaterialFlags::OPAQUE) {
-          frame.scene.render_object(visible_object.id, frame.manager);
+          frame.scene.render_object(visible_object.id, frame.context_manager);
         }
       }
     }
@@ -284,7 +305,7 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
     fn render_frame(&mut self, frame: &mut RenderFrame) {
       for visible_object in frame.visible_objects {
         if visible_object.material_key.flags.contains(MaterialFlags::TRANSPARENT) {
-          frame.scene.render_object(visible_object.id, frame.manager);
+          frame.scene.render_object(visible_object.id, frame.context_manager);
         }
       }
     }
@@ -294,7 +315,7 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
     fn render_frame(&mut self, frame: &mut RenderFrame) {
       for visible_object in frame.visible_objects {
         if visible_object.material_key.flags.contains(MaterialFlags::GRAB_PASS) {
-          frame.scene.render_object(visible_object.id, frame.manager);
+          frame.scene.render_object(visible_object.id, frame.context_manager);
         }
       }
     }

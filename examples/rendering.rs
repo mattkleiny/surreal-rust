@@ -32,7 +32,6 @@ fn main() {
     };
 
     engine.run_variable_step(|engine, tick| {
-      // render the scene
       pipeline.render(&scene, &scene);
 
       for entity in scene.entities.iter_mut() {

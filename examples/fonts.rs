@@ -31,6 +31,7 @@ fn main() {
       let time_step = (tick.time.total_time.sin() + 1.) / 2.;
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
+      renderer.begin_frame();
 
       // render some text
       renderer.with(|context: &mut SpriteBatchContext| {
@@ -54,6 +55,8 @@ fn main() {
           },
         )
       });
+
+      renderer.end_frame();
 
       if engine.input.keyboard.is_key_pressed(Key::Escape) {
         tick.exit();

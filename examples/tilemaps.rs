@@ -39,7 +39,10 @@ fn main() {
       let graphics = &engine.graphics;
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
+
+      renderer.begin_frame();
       renderer.render(&map);
+      renderer.end_frame();
 
       if engine.input.keyboard.is_key_pressed(Key::Space) {
         map.fill(|_, _| u8::random() % 4);
