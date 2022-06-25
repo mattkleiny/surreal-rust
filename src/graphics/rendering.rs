@@ -5,7 +5,7 @@
 
 use crate::{
   collections::AnyMap,
-  maths::{Plane, Vector3},
+  maths::{Matrix4x4, Plane, Vector3},
   utilities::FixedMemoryArena,
 };
 
@@ -133,12 +133,12 @@ bitflags::bitflags! {
 /// A result contains information on an object that was perceived to be visible to the camera.
 pub struct CullingResult {
   pub id: usize,
-  pub distance_metrics: f32,
+  pub distance_metric: f32,
   pub material_key: MaterialKey,
 }
 
 /// A frustum of 6 planes representing the camera's viewport; used to cull objects.
-#[derive(Clone)]
+#[derive(Default, Clone)]
 pub struct CameraFrustum {
   pub position: Vector3<f32>,
   pub planes: [Plane<f32>; 6],
@@ -156,13 +156,16 @@ pub trait RenderScene {
   ///
   /// The results are to be collected into the given `Vec`.
   fn cull_visible_objects(&self, frustum: &CameraFrustum, results: &mut Vec<CullingResult>);
+
+  /// Enqueues rendering operations for the given target object.
+  fn render_object(&self, id: usize, manager: &mut RenderContextManager);
 }
 
 /// Represents a single render pass in a renderer.
 pub trait RenderPass {
-  fn begin_frame(&mut self, _context: &mut RenderFrame) {}
-  fn render_frame(&mut self, context: &mut RenderFrame);
-  fn end_frame(&mut self, _context: &mut RenderFrame) {}
+  fn begin_frame(&mut self, _frame: &mut RenderFrame) {}
+  fn render_frame(&mut self, frame: &mut RenderFrame);
+  fn end_frame(&mut self, _frame: &mut RenderFrame) {}
 }
 
 /// A pipeline for rendering, based on [`RenderPass`]es.
@@ -226,4 +229,110 @@ impl RenderPipeline {
 
     self.arena.reset();
   }
+}
+
+/// Configuration for the forward rendering pipeline.
+pub struct ForwardConfiguration {
+  /// The color to use when clearing the scene at the start of the frame, or None to not clear.
+  pub clear_color: Option<Color>,
+
+  /// The resolution of the screen to render at; it not specified we'll render at the
+  /// display/viewport resoluition, otherwise a custom render target will be created and
+  /// either upscaled or dowscaled depending on the resolution.
+  pub render_resolution: Option<(usize, usize)>,
+}
+
+/// Creates a forward rendering pipeline using default render passes.
+///
+/// The forward pipeline consists of the following core stages:
+///
+/// * An opaque pass for materials that contain only opaque geometry and don't require blending.
+/// * A transparent pass for materials that do require blending, ordered by their distance metric.
+/// * A grab pass for materials that require a capture of the current frame.
+/// * A post effect pass that applies post-processing steps in seqeunce.
+/// * A compositing pass that takes the resultant image and present it to the display (possibly with upscaling).
+///
+/// Configuration for the pipeline is via the [`ForwardConfiguration`] struct.
+pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &ForwardConfiguration) -> RenderPipeline {
+  use crate::prototype::{GeometryBatchDescriptor, SpriteBatchDescriptor};
+
+  struct OpaquePass {
+    graphics: GraphicsServer,
+    clear_color: Option<Color>,
+  }
+
+  struct TransparentPass;
+  struct GrabPass;
+  struct PostEffectPass;
+  struct CompositePass;
+
+  impl RenderPass for OpaquePass {
+    fn render_frame(&mut self, frame: &mut RenderFrame) {
+      if let Some(color) = self.clear_color {
+        self.graphics.clear_color_buffer(color);
+      }
+
+      for visible_object in frame.visible_objects {
+        if visible_object.material_key.flags.contains(MaterialFlags::OPAQUE) {
+          frame.scene.render_object(visible_object.id, frame.manager);
+        }
+      }
+    }
+  }
+
+  impl RenderPass for TransparentPass {
+    fn render_frame(&mut self, frame: &mut RenderFrame) {
+      for visible_object in frame.visible_objects {
+        if visible_object.material_key.flags.contains(MaterialFlags::TRANSPARENT) {
+          frame.scene.render_object(visible_object.id, frame.manager);
+        }
+      }
+    }
+  }
+
+  impl RenderPass for GrabPass {
+    fn render_frame(&mut self, frame: &mut RenderFrame) {
+      for visible_object in frame.visible_objects {
+        if visible_object.material_key.flags.contains(MaterialFlags::GRAB_PASS) {
+          frame.scene.render_object(visible_object.id, frame.manager);
+        }
+      }
+    }
+  }
+
+  impl RenderPass for PostEffectPass {
+    fn render_frame(&mut self, _frame: &mut RenderFrame) {}
+  }
+
+  impl RenderPass for CompositePass {
+    fn render_frame(&mut self, _frame: &mut RenderFrame) {}
+  }
+
+  let mut pipeline = RenderPipeline::new(graphics);
+
+  // configure the render contexts
+  let resolution = configuration.render_resolution.unwrap_or((256, 144));
+
+  pipeline.configure(SpriteBatchDescriptor {
+    projection_view: Matrix4x4::orthographic(resolution.0 as f32, resolution.1 as f32, 0., 100.),
+    ..Default::default()
+  });
+
+  pipeline.configure(GeometryBatchDescriptor {
+    projection_view: Matrix4x4::orthographic(resolution.0 as f32, resolution.1 as f32, 0., 100.),
+    ..Default::default()
+  });
+
+  // configure rendering passes
+  pipeline.add_pass(OpaquePass {
+    graphics: graphics.clone(),
+    clear_color: configuration.clear_color,
+  });
+
+  pipeline.add_pass(TransparentPass);
+  pipeline.add_pass(GrabPass);
+  pipeline.add_pass(PostEffectPass);
+  pipeline.add_pass(CompositePass);
+
+  pipeline
 }
