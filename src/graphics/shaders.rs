@@ -6,6 +6,7 @@
 //! For higher-level shader control see the material module instead.
 
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use smallvec::SmallVec;
@@ -59,6 +60,7 @@ pub struct ShaderProgram {
 struct ShaderProgramState {
   graphics: GraphicsServer,
   handle: GraphicsHandle,
+  location_cache: HashMap<String, Option<usize>>,
 }
 
 impl ShaderProgram {
@@ -68,6 +70,7 @@ impl ShaderProgram {
       state: Rc::new(RefCell::new(ShaderProgramState {
         graphics: graphics.clone(),
         handle: graphics.create_shader(),
+        location_cache: HashMap::new(),
       })),
     }
   }
@@ -82,19 +85,30 @@ impl ShaderProgram {
   }
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.
+  #[profiling::function]
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
     let state = self.state.borrow();
-    let graphics = &state.graphics;
 
-    // TODO: cache these?
-    graphics.get_shader_uniform_location(state.handle, name)
+    if let Some(location) = state.location_cache.get(name) {
+      return location.to_owned();
+    }
+
+    drop(state);
+
+    let mut state = self.state.borrow_mut();
+    let graphics = &state.graphics;
+    let location = graphics.get_shader_uniform_location(state.handle, name);
+
+    state.location_cache.insert(name.to_string(), location);
+
+    location
   }
 
   /// Sets the given uniform value in the underlying program.
+  #[profiling::function]
   pub fn set_uniform(&self, name: &str, value: &ShaderUniform) {
-    let state = self.state.borrow();
-
     if let Some(location) = self.get_uniform_location(name) {
+      let state = self.state.borrow();
       let graphics = &state.graphics;
 
       graphics.set_shader_uniform(state.handle, location, value);
@@ -102,6 +116,7 @@ impl ShaderProgram {
   }
 
   /// Dispatches compute work to the GPU for this shader program.
+  #[profiling::function]
   pub fn dispatch_compute(&self, x: u32, y: u32, z: u32) {
     let state = self.state.borrow();
     let graphics = &state.graphics;

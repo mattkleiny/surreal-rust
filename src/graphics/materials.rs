@@ -13,10 +13,7 @@ use super::*;
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum BlendState {
   Disabled,
-  Enabled {
-    source: BlendFactor,
-    destination: BlendFactor,
-  },
+  Enabled { source: BlendFactor, destination: BlendFactor },
 }
 
 /// Blending factors for materials.
@@ -46,12 +43,7 @@ pub enum CullingMode {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ScissorMode {
   Disabled,
-  Enabled {
-    left: i32,
-    bottom: i32,
-    width: i32,
-    height: i32,
-  },
+  Enabled { left: i32, bottom: i32, width: i32, height: i32 },
 }
 
 /// A set of [`ShaderUniform`]s that can be passed around the application.
@@ -192,6 +184,7 @@ impl Material {
   }
 
   /// Binds this material to the graphics server.
+  #[profiling::function]
   pub fn bind(&self) {
     self.graphics.set_blend_state(self.blend_state);
     self.graphics.set_culling_mode(self.culling_mode);
@@ -203,6 +196,7 @@ impl Material {
   }
 
   /// Unbinds this material from the graphics server.
+  #[profiling::function]
   pub fn unbind(&self) {
     self.graphics.set_blend_state(BlendState::Disabled);
     self.graphics.set_culling_mode(CullingMode::Disabled);
@@ -211,6 +205,7 @@ impl Material {
 
   /// Draws a fullscreen quad with this material.
   /// TODO: maybe this would make sense in a dedicated render pipeline or manager?
+  #[profiling::function]
   pub fn draw_fullscreen_quad(&mut self) {
     match &self.fullscreen_quad {
       Some(mesh) => mesh.draw(self, PrimitiveTopology::Triangles),
