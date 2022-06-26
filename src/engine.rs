@@ -55,6 +55,7 @@ impl Default for Configuration {
 }
 
 /// Contains information on the game's timing state.
+#[derive(Clone, Debug)]
 pub struct GameTime {
   pub delta_time: f32,
   pub total_time: f32,

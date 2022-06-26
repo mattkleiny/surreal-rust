@@ -54,11 +54,65 @@ pub enum ScissorMode {
   },
 }
 
-/// A single uniform setting in a `Material`.
-#[derive(Clone)]
-struct MaterialUniform {
-  pub location: usize,
-  pub value: ShaderUniform,
+/// A set of [`ShaderUniform`]s that can be passed around the application.
+#[derive(Default, Clone)]
+pub struct MaterialUniformSet {
+  uniforms: HashMap<String, ShaderUniform>,
+  textures: TextureBindingSet,
+}
+
+impl MaterialUniformSet {
+  /// Sets the given name as uniform.
+  pub fn set_uniform(&mut self, name: &str, value: impl Into<ShaderUniform>) {
+    self.uniforms.insert(name.to_string(), value.into());
+  }
+
+  /// Sets the given name as a uniform with a single texture.
+  pub fn set_texture(&mut self, name: &str, texture: &Texture, sampler: Option<TextureSampler>) {
+    let slot = self.allocate_texture_slot(texture);
+    let uniform = ShaderUniform::Texture(texture.clone(), slot, sampler);
+
+    self.uniforms.insert(name.to_string(), uniform);
+  }
+
+  /// Sets the given name as a uniform with an array of textures.
+  pub fn set_texture_array(&mut self, name: &str, textures: &[&Texture], sampler: Option<TextureSampler>) {
+    let mut bindings = smallvec::SmallVec::<[(Texture, u8); MAX_TEXTURE_UNITS]>::new();
+
+    for texture in textures {
+      let slot = self.allocate_texture_slot(texture);
+      let texture = (*texture).clone();
+
+      bindings.push((texture, slot));
+    }
+
+    let uniform = ShaderUniform::TextureArray(bindings, sampler);
+
+    self.uniforms.insert(name.to_string(), uniform);
+  }
+
+  /// Applies all of the uniforms to the given shader program.
+  pub fn apply_to_shader(&self, shader: &ShaderProgram) {
+    for (name, uniform) in self.uniforms.iter() {
+      shader.set_uniform(&name, &uniform);
+    }
+  }
+
+  /// Clears all uniforms from the set.
+  pub fn clear(&mut self) {
+    self.uniforms.clear();
+    self.textures.clear();
+  }
+
+  /// Finds the first free texture slot in the material.
+  ///
+  /// This will also re-organise any old textures back into a linear ordering.
+  fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
+    self.textures.allocate(texture).expect(&format!(
+      "Failed to allocate texture slot. There's a limit of {} concurrent textures per material.",
+      MAX_TEXTURE_UNITS
+    ))
+  }
 }
 
 /// A material describes how to render a mesh and describes the underlying GPU pipeline state needed.
@@ -66,8 +120,7 @@ struct MaterialUniform {
 pub struct Material {
   graphics: GraphicsServer,
   shader: ShaderProgram,
-  uniforms: HashMap<String, MaterialUniform>,
-  textures: TextureBindingSet,
+  uniforms: MaterialUniformSet,
   blend_state: BlendState,
   culling_mode: CullingMode,
   scissor_mode: ScissorMode,
@@ -80,8 +133,7 @@ impl Material {
     Self {
       graphics: graphics.clone(),
       shader: shader.clone(),
-      uniforms: HashMap::new(),
-      textures: TextureBindingSet::default(),
+      uniforms: MaterialUniformSet::default(),
       blend_state: BlendState::Disabled,
       culling_mode: CullingMode::Disabled,
       scissor_mode: ScissorMode::Disabled,
@@ -118,62 +170,25 @@ impl Material {
   pub fn set_scissor_mode(&mut self, mode: ScissorMode) {
     self.scissor_mode = mode;
   }
+
   /// Sets the given name as uniform.
   pub fn set_uniform(&mut self, name: &str, value: impl Into<ShaderUniform>) {
-    if let Some(location) = self.shader.get_uniform_location(name) {
-      let uniform = MaterialUniform {
-        location,
-        value: value.into(),
-      };
-
-      self.uniforms.insert(name.to_string(), uniform);
-    }
+    self.uniforms.set_uniform(name, value);
   }
 
   /// Sets the given name as a uniform with a single texture.
   pub fn set_texture(&mut self, name: &str, texture: &Texture, sampler: Option<TextureSampler>) {
-    if let Some(location) = self.shader.get_uniform_location(name) {
-      let slot = self.allocate_texture_slot(texture);
-
-      let uniform = MaterialUniform {
-        location,
-        value: ShaderUniform::Texture(texture.clone(), slot, sampler),
-      };
-
-      self.uniforms.insert(name.to_string(), uniform);
-    }
+    self.uniforms.set_texture(name, texture, sampler);
   }
 
   /// Sets the given name as a uniform with an array of textures.
   pub fn set_texture_array(&mut self, name: &str, textures: &[&Texture], sampler: Option<TextureSampler>) {
-    if let Some(location) = self.shader.get_uniform_location(name) {
-      let mut bindings = smallvec::SmallVec::<[(Texture, u8); MAX_TEXTURE_UNITS]>::new();
-
-      for texture in textures {
-        let slot = self.allocate_texture_slot(texture);
-        let texture = (*texture).clone();
-
-        bindings.push((texture, slot));
-      }
-
-      let uniform = MaterialUniform {
-        location,
-        value: ShaderUniform::TextureArray(bindings, sampler),
-      };
-
-      self.uniforms.insert(name.to_string(), uniform);
-    }
-  }
-
-  /// Removes a uniform from the material.
-  pub fn remove_uniform(&mut self, name: &str) {
-    self.uniforms.remove(name);
+    self.uniforms.set_texture_array(name, textures, sampler);
   }
 
   /// Removes all uniforms from the material.
   pub fn clear_uniforms(&mut self) {
     self.uniforms.clear();
-    self.textures.clear();
   }
 
   /// Binds this material to the graphics server.
@@ -182,9 +197,7 @@ impl Material {
     self.graphics.set_culling_mode(self.culling_mode);
     self.graphics.set_scissor_mode(self.scissor_mode);
 
-    for uniform in self.uniforms.values() {
-      self.shader.set_uniform_at(uniform.location, &uniform.value);
-    }
+    self.uniforms.apply_to_shader(&self.shader);
 
     self.graphics.set_active_shader(self.shader.handle());
   }
@@ -207,16 +220,6 @@ impl Material {
         self.draw_fullscreen_quad();
       }
     }
-  }
-
-  /// Finds the first free texture slot in the material.
-  ///
-  /// This will also re-organise any old textures back into a linear ordering.
-  fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
-    self
-      .textures
-      .allocate(texture)
-      .expect("Failed to allocate texture slot. There's a limit of 16 concurrent textures per material.")
   }
 }
 

@@ -5,6 +5,21 @@ pub struct ArenaIndex {
   pub generation: u16,
 }
 
+impl Into<u64> for ArenaIndex {
+  fn into(self) -> u64 {
+    (self.generation as u64) << 32 | self.index as u64
+  }
+}
+
+impl From<u64> for ArenaIndex {
+  fn from(packed: u64) -> Self {
+    let generation = (packed >> 32) as u16;
+    let index = packed as u32;
+
+    ArenaIndex { index, generation }
+  }
+}
+
 /// A single entry in an `Arena`.
 #[derive(Debug)]
 struct ArenaEntry<T> {
@@ -178,7 +193,7 @@ pub struct ArenaIter<'a, T> {
 }
 
 impl<'a, T> IntoIterator for &'a Arena<T> {
-  type Item = &'a T;
+  type Item = (ArenaIndex, &'a T);
   type IntoIter = ArenaIter<'a, T>;
 
   fn into_iter(self) -> Self::IntoIter {
@@ -187,14 +202,19 @@ impl<'a, T> IntoIterator for &'a Arena<T> {
 }
 
 impl<'a, T> Iterator for ArenaIter<'a, T> {
-  type Item = &'a T;
+  type Item = (ArenaIndex, &'a T);
 
   fn next(&mut self) -> Option<Self::Item> {
     while let Some(entry) = self.arena.entries.get(self.index) {
       if let Some(value) = entry {
+        let arena_index = ArenaIndex {
+          index: self.index as u32,
+          generation: value.generation,
+        };
+
         self.index += 1;
 
-        return Some(&value.value);
+        return Some((arena_index, &value.value));
       }
 
       self.index += 1;
@@ -211,7 +231,7 @@ pub struct ArenaIterMut<'a, T> {
 }
 
 impl<'a, T> IntoIterator for &'a mut Arena<T> {
-  type Item = &'a mut T;
+  type Item = (ArenaIndex, &'a mut T);
   type IntoIter = ArenaIterMut<'a, T>;
 
   fn into_iter(self) -> Self::IntoIter {
@@ -220,17 +240,22 @@ impl<'a, T> IntoIterator for &'a mut Arena<T> {
 }
 
 impl<'a, T> Iterator for ArenaIterMut<'a, T> {
-  type Item = &'a mut T;
+  type Item = (ArenaIndex, &'a mut T);
 
   fn next(&mut self) -> Option<Self::Item> {
     while let Some(entry) = self.arena.entries.get_mut(self.index) {
       if let Some(value) = entry.as_mut() {
+        let arena_index = ArenaIndex {
+          index: self.index as u32,
+          generation: value.generation,
+        };
+
         self.index += 1;
 
         // elide the lifetime; rust has trouble with the borrow checker
         let value = value as *mut ArenaEntry<T>;
 
-        return Some(unsafe { &mut (*value).value });
+        return Some((arena_index, unsafe { &mut (*value).value }));
       }
 
       self.index += 1;
@@ -276,10 +301,7 @@ mod tests {
     let index1 = arena.add("Item 1");
     let index2 = arena.add("Item 2");
 
-    let index3 = ArenaIndex {
-      index: 23,
-      generation: 0,
-    };
+    let index3 = ArenaIndex { index: 23, generation: 0 };
 
     assert!(arena.get(index1).is_some());
     assert!(arena.get_mut(index2).is_some());
@@ -313,8 +335,8 @@ mod tests {
 
     arena.remove(index2);
 
-    for item in arena.iter() {
-      println!("{}", item);
+    for (index, item) in arena.iter() {
+      println!("{} at {:?}", item, index);
     }
   }
 
@@ -329,10 +351,19 @@ mod tests {
 
     arena.remove(index2);
 
-    for item in arena.iter_mut() {
+    for (index, item) in arena.iter_mut() {
       *item = "Test 1";
 
-      println!("{}", item);
+      println!("{} at {:?}", item, index);
     }
+  }
+
+  #[test]
+  fn arena_index_should_pack_and_unpack_from_u64() {
+    let index = ArenaIndex { index: 10, generation: 3 };
+    let packed: u64 = index.into();
+    let unpacked = ArenaIndex::from(packed);
+
+    assert_eq!(index, unpacked);
   }
 }

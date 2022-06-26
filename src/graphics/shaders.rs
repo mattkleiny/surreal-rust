@@ -5,6 +5,7 @@
 //!
 //! For higher-level shader control see the material module instead.
 
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use smallvec::SmallVec;
@@ -51,7 +52,7 @@ pub enum ShaderUniform {
 /// Represents a single compiled shader program.
 #[derive(Clone)]
 pub struct ShaderProgram {
-  state: Rc<ShaderProgramState>,
+  state: Rc<RefCell<ShaderProgramState>>,
 }
 
 /// The internal state for a [`ShaderProgram`] .
@@ -64,10 +65,10 @@ impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
-      state: Rc::new(ShaderProgramState {
+      state: Rc::new(RefCell::new(ShaderProgramState {
         graphics: graphics.clone(),
         handle: graphics.create_shader(),
-      }),
+      })),
     }
   }
 
@@ -82,40 +83,39 @@ impl ShaderProgram {
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
-    let graphics = &self.state.graphics;
+    let state = self.state.borrow();
+    let graphics = &state.graphics;
 
-    graphics.get_shader_uniform_location(self.state.handle, name)
+    // TODO: cache these?
+    graphics.get_shader_uniform_location(state.handle, name)
   }
 
   /// Sets the given uniform value in the underlying program.
   pub fn set_uniform(&self, name: &str, value: &ShaderUniform) {
+    let state = self.state.borrow();
+
     if let Some(location) = self.get_uniform_location(name) {
-      let graphics = &self.state.graphics;
+      let graphics = &state.graphics;
 
-      graphics.set_shader_uniform(self.state.handle, location, value);
+      graphics.set_shader_uniform(state.handle, location, value);
     }
-  }
-
-  /// Sets the given uniform value in the underlying program.
-  pub fn set_uniform_at(&self, location: usize, value: &ShaderUniform) {
-    let graphics = &self.state.graphics;
-
-    graphics.set_shader_uniform(self.state.handle, location, value);
   }
 
   /// Dispatches compute work to the GPU for this shader program.
   pub fn dispatch_compute(&self, x: u32, y: u32, z: u32) {
-    let graphics = &self.state.graphics;
+    let state = self.state.borrow();
+    let graphics = &state.graphics;
 
-    graphics.dispatch_compute(self.state.handle, x, y, z);
+    graphics.dispatch_compute(state.handle, x, y, z);
   }
 
   /// Reloads the [`ShaderProgram`] from the given 'glsl' program code.
   pub fn load_glsl(&self, text: &str) -> crate::Result<()> {
-    let graphics = &self.state.graphics;
+    let state = self.state.borrow();
+    let graphics = &state.graphics;
     let shaders = parse_glsl_source(text)?;
 
-    graphics.link_shaders(self.state.handle, shaders)?;
+    graphics.link_shaders(state.handle, shaders)?;
 
     Ok(())
   }
@@ -133,7 +133,7 @@ impl ShaderProgram {
 
 impl GraphicsResource for ShaderProgram {
   fn handle(&self) -> GraphicsHandle {
-    self.state.handle
+    self.state.borrow().handle
   }
 }
 

@@ -4,7 +4,7 @@
 
 #shader_type vertex
 
-uniform vec2 u_screen_size;
+uniform vec2 u_viewportSize;
 
 layout(location = 0)in vec2 a_position;
 layout(location = 1)in vec2 a_uv;
@@ -18,8 +18,8 @@ void main() {
   v_color = a_color;
   
   gl_Position = vec4(
-    2.0 * a_position.x / u_screen_size.x - 1.0,
-    1.0 - 2.0 * a_position.y / u_screen_size.y,
+    2.0 * a_position.x / u_viewportSize.x - 1.0,
+    1.0 - 2.0 * a_position.y / u_viewportSize.y,
     0.0,
     1.0
   );

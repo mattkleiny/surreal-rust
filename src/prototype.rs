@@ -1,7 +1,6 @@
 //! A simple set of tools for rapid prototyping of game ideas and etc.
 
 pub use canvas::*;
-pub use scenes::*;
 pub use sprites::*;
 pub use tiles::*;
 
@@ -9,7 +8,6 @@ use crate::graphics::*;
 use crate::maths::Matrix4x4;
 
 mod canvas;
-mod scenes;
 mod sprites;
 mod tiles;
 

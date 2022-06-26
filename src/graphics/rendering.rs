@@ -9,7 +9,8 @@ use std::{
 };
 
 use crate::{
-  maths::{Matrix4x4, Plane, Vector3},
+  engine::GameTime,
+  maths::{vec2, Matrix4x4, Plane, Vector3},
   utilities::FixedMemoryArena,
 };
 
@@ -121,11 +122,15 @@ impl RenderContextManager {
   }
 }
 
+// TODO: global material properties for this particular frame?
+
 /// A context for a single frame, for use in [`RenderPass`] operations in a [`RenderPipeline`].
 pub struct RenderFrame<'a> {
+  pub graphics: &'a GraphicsServer,
   pub arena: &'a FixedMemoryArena,
   pub scene: &'a dyn RenderScene,
   pub camera: &'a dyn RenderCamera,
+  pub uniforms: &'a mut MaterialUniformSet,
   pub context_manager: &'a mut RenderContextManager,
   pub visible_objects: &'a Vec<CullingResult>,
 }
@@ -165,18 +170,21 @@ pub struct CameraFrustum {
 pub trait RenderCamera {
   /// Computes the frustum information for this camera, for use in later rendering steps.
   fn compute_frustum(&self) -> CameraFrustum;
+
+  /// Retrieves the projection-view matrix for this camera.
+  fn projection_view(&self) -> Matrix4x4;
 }
 
 /// Provides culling information to a renderer for use in trivial rejection.
 pub trait RenderScene {
   /// Culls and computes visible objects from the perspective of the given frustum.
-  ///
-  /// The results are to be collected into the given `Vec`.
   fn cull_visible_objects(&self, frustum: &CameraFrustum, results: &mut Vec<CullingResult>);
 
   // rendering callbacks
   fn on_begin_frame(&self, _frame: &mut RenderFrame) {}
   fn on_end_frame(&self, _frame: &mut RenderFrame) {}
+
+  /// Renders the given object against the given context manager.
   fn render(&self, id: u64, manager: &mut RenderContextManager);
 }
 
@@ -196,18 +204,22 @@ impl<F: FnMut(&mut RenderFrame)> RenderPass for F {
 
 /// A pipeline for rendering, based on [`RenderPass`]es.
 pub struct RenderPipeline {
+  graphics: GraphicsServer,
   arena: FixedMemoryArena,
   render_passes: Vec<Box<dyn RenderPass>>,
   context_manager: RenderContextManager,
+  frame_uniforms: MaterialUniformSet,
 }
 
 impl RenderPipeline {
   /// Creates a new render pipeline.
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
+      graphics: graphics.clone(),
       arena: FixedMemoryArena::default(),
       render_passes: Vec::new(),
       context_manager: RenderContextManager::new(&graphics),
+      frame_uniforms: MaterialUniformSet::default(),
     }
   }
 
@@ -224,7 +236,7 @@ impl RenderPipeline {
   }
 
   /// Renders a single frame of the given scene to the given graphics server from the perspective of the given camera.
-  pub fn render(&mut self, scene: &dyn RenderScene, camera: &dyn RenderCamera) {
+  pub fn render(&mut self, scene: &dyn RenderScene, camera: &dyn RenderCamera, time: &GameTime) {
     // compute frustum for this frame, and collect visible objects
     let frustum = camera.compute_frustum();
     let mut visible_objects = Vec::new(); // TODO: use the graphics arena here?
@@ -237,12 +249,21 @@ impl RenderPipeline {
     {
       // build context for this frame; pass details down to the render passes
       let mut frame = RenderFrame {
+        graphics: &self.graphics,
         arena: &self.arena,
         scene,
         camera,
         context_manager: &mut self.context_manager,
         visible_objects: &visible_objects,
+        uniforms: &mut self.frame_uniforms,
       };
+
+      // TODO: make this more customizable?
+      let (width, height) = self.graphics.get_viewport_size();
+
+      frame.uniforms.set_uniform("u_viewportSize", vec2(width as f32, height as f32));
+      frame.uniforms.set_uniform("u_time", vec2(time.delta_time, time.total_time));
+      frame.uniforms.set_uniform("u_projectionView", &camera.projection_view());
 
       scene.on_begin_frame(&mut frame);
 
@@ -263,6 +284,7 @@ impl RenderPipeline {
     self.context_manager.end_frame();
 
     self.arena.reset();
+    self.frame_uniforms.clear();
   }
 }
 
@@ -292,7 +314,6 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
   use crate::prototype::{GeometryBatchDescriptor, SpriteBatchDescriptor};
 
   struct OpaquePass {
-    graphics: GraphicsServer,
     clear_color: Option<Color>,
   }
 
@@ -304,7 +325,7 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
   impl RenderPass for OpaquePass {
     fn render_frame(&mut self, frame: &mut RenderFrame) {
       if let Some(color) = self.clear_color {
-        self.graphics.clear_color_buffer(color);
+        frame.graphics.clear_color_buffer(color);
       }
 
       for visible_object in frame.visible_objects {
@@ -360,7 +381,6 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
 
   // configure rendering passes
   pipeline.add_pass(OpaquePass {
-    graphics: graphics.clone(),
     clear_color: configuration.clear_color,
   });
 

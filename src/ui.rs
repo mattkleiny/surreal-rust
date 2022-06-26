@@ -211,7 +211,7 @@ impl UserInterface {
 
           let screen_size = vec2(width_in_points, height_in_points);
 
-          self.material.set_uniform("u_screen_size", screen_size);
+          self.material.set_uniform("u_viewportSize", screen_size);
           self.material.set_texture("u_texture", texture, None);
 
           // render mesh using material
