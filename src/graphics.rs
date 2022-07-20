@@ -94,28 +94,14 @@ pub trait GraphicsBackend {
   // buffers
   fn create_buffer(&self) -> GraphicsHandle;
   fn read_buffer_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8);
-  fn write_buffer_data(
-    &self,
-    buffer: GraphicsHandle,
-    usage: BufferUsage,
-    kind: BufferKind,
-    length: usize,
-    pointer: *const u8,
-  );
+  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8);
   fn delete_buffer(&self, buffer: GraphicsHandle);
 
   // textures
   fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle;
   fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler);
   fn initialize_texture(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat);
-  fn read_texture_data(
-    &self,
-    texture: GraphicsHandle,
-    length: usize,
-    pixel_format: TextureFormat,
-    pixels: *mut u8,
-    mip_level: usize,
-  );
+  fn read_texture_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize);
   fn write_texture_data(
     &self,
     texture: GraphicsHandle,
@@ -149,12 +135,7 @@ pub trait GraphicsBackend {
   fn wait_compute_barrier(&self, barrier: GraphicsBarrier);
 
   // meshes
-  fn create_mesh(
-    &self,
-    vertices: GraphicsHandle,
-    indices: GraphicsHandle,
-    descriptors: &[VertexDescriptor],
-  ) -> GraphicsHandle;
+  fn create_mesh(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
   fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize);
   fn delete_mesh(&self, mesh: GraphicsHandle);
 

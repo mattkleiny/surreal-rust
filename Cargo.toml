@@ -14,8 +14,6 @@ opt-level = 3 # compile third party dependencies by default with some sane optim
 [profile.release]
 opt-level = 3
 overflow-checks = false
-lto = "fat"
-strip = "debuginfo"
 
 [features]
 default = ["prototype"]

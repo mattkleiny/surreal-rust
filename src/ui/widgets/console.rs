@@ -2,27 +2,26 @@
 
 use std::ops::RangeInclusive;
 
-use egui::{panel::TopBottomSide, Frame, Id, InnerResponse};
+use egui::{panel::TopBottomSide, Id, InnerResponse};
 
 /// An in-game console that can be rendered on top of the game's UI.
 ///
 /// The console displays the most recent log messages and permits
 /// basic command execution via a `ConsoleInterpreter` implementation.
 #[must_use = "You should call .show()"]
-pub struct InGameConsole<'a> {
-  side: TopBottomSide,
+pub struct DropDownConsole<'a> {
   id: Id,
-  frame: Option<Frame>,
-  resizable: bool,
-  default_height: Option<f32>,
+  side: TopBottomSide,
   height_range: RangeInclusive<f32>,
-  interpreter: Option<&'a dyn ConsoleInterpreter>,
+  interpreter: Option<&'a mut dyn ConsoleInterpreter>,
 }
 
-/// An interpreter allows an `InGameConsole` to respond to user commands.
-pub trait ConsoleInterpreter {}
+/// An interpreter allows a [`DropDownConsole`] to respond to user commands.
+pub trait ConsoleInterpreter {
+  fn interpret(&mut self, command: String) -> Option<()>;
+}
 
-impl<'a> InGameConsole<'a> {
+impl<'a> DropDownConsole<'a> {
   pub fn top(id_source: impl std::hash::Hash) -> Self {
     Self::new(TopBottomSide::Top, id_source)
   }
@@ -35,22 +34,9 @@ impl<'a> InGameConsole<'a> {
     Self {
       side,
       id: Id::new(id_source),
-      frame: None,
-      resizable: false,
-      default_height: None,
       height_range: 20.0..=f32::INFINITY,
       interpreter: None,
     }
-  }
-
-  pub fn resizable(mut self, resizable: bool) -> Self {
-    self.resizable = resizable;
-    self
-  }
-
-  pub fn default_height(mut self, default_height: f32) -> Self {
-    self.default_height = Some(default_height);
-    self
   }
 
   pub fn min_height(mut self, min_height: f32) -> Self {
@@ -68,12 +54,7 @@ impl<'a> InGameConsole<'a> {
     self
   }
 
-  pub fn frame(mut self, frame: Frame) -> Self {
-    self.frame = Some(frame);
-    self
-  }
-
-  pub fn interpreter(mut self, interpreter: &'a dyn ConsoleInterpreter) -> Self {
+  pub fn interpreter(mut self, interpreter: &'a mut dyn ConsoleInterpreter) -> Self {
     self.interpreter = Some(interpreter);
     self
   }

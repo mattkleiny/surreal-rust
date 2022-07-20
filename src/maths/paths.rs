@@ -14,7 +14,7 @@ pub type Cost = f32;
 pub type Heuristic = fn(&Vector2<i32>, &Vector2<i32>) -> Cost;
 
 /// Represents a small stack-allocated set of points used in path-finding steps.
-pub type Neighbours = smallvec::SmallVec<[Vector2<i32>; 9]>;
+pub type NeighbourList = smallvec::SmallVec<[Vector2<i32>; 9]>;
 
 /// Permits exploratory path-finding over some connected grid.
 pub trait PathFindingGrid {
@@ -22,7 +22,7 @@ pub trait PathFindingGrid {
   fn get_cost(&self, from: Vector2<i32>, to: Vector2<i32>) -> Cost;
 
   /// Gets the potential neighbours around the given point.
-  fn get_neighbours(&self, center: Vector2<i32>, results: &mut Neighbours);
+  fn get_neighbours(&self, center: Vector2<i32>, results: &mut NeighbourList);
 
   /// Locates a path using A* from from the given start point to the given goal.
   fn find_path(&self, start: Vector2<i32>, goal: Vector2<i32>, heuristic: Heuristic) -> Option<VecDeque<Vector2<i32>>> {
@@ -35,7 +35,7 @@ pub trait PathFindingGrid {
 
     frontier.push(start, 0.);
 
-    let mut neighbours = Neighbours::new();
+    let mut neighbours = NeighbourList::new();
 
     while let Some(current) = frontier.pop() {
       // dont search too far afield

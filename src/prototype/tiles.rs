@@ -3,7 +3,7 @@ use std::hash::Hash;
 
 use crate::collections::Grid;
 use crate::graphics::Renderable;
-use crate::maths::{vec2, Cost, Neighbours, Numeric, PathFindingGrid, Vector2, VonNeumannNeighbourhood};
+use crate::maths::{vec2, Cost, NeighbourList, Numeric, PathFindingGrid, Vector2, VonNeumannNeighbourhood};
 
 use super::*;
 
@@ -150,7 +150,7 @@ implement_tile!(i64);
 implement_tile!(i128);
 implement_tile!(isize);
 
-/// A `Tile` that can be used for path finding.
+/// A [`Tile`] that can be used for path finding.
 pub trait PathableTile: Tile {
   /// The cost of pathing through this tile.
   fn get_cost(&self) -> Cost;
@@ -168,7 +168,7 @@ impl<T: PathableTile> PathFindingGrid for TileMap<'_, T> {
     }
   }
 
-  fn get_neighbours(&self, center: Vector2<i32>, neighbours: &mut Neighbours) {
+  fn get_neighbours(&self, center: Vector2<i32>, neighbours: &mut NeighbourList) {
     for neighbour in center.von_neighbours() {
       if let Some(tile) = self.get(neighbour.x, neighbour.y) {
         if tile.is_pathable() {

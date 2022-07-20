@@ -32,9 +32,7 @@ fn main() {
     let mut bunnies = Vec::<Bunny>::new();
 
     engine.run_variable_step(move |engine, tick| {
-      let graphics = &engine.graphics;
-
-      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
+      engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       // update bunnies
       for bunny in &mut bunnies {
@@ -107,16 +105,16 @@ impl Bunny {
     self.position += self.velocity * 100. * delta_time;
 
     if self.velocity.x < 0. && self.position.x < -WIDTH / 2. {
-      self.position.x = WIDTH / 2.
+      self.velocity.x *= -1.;
     }
     if self.velocity.y < 0. && self.position.y < -HEIGHT / 2. {
-      self.position.y = HEIGHT / 2.
+      self.velocity.y *= -1.;
     }
     if self.velocity.x > 0. && self.position.x > WIDTH / 2. {
-      self.position.x = -WIDTH / 2.
+      self.velocity.x *= -1.;
     }
     if self.velocity.y > 0. && self.position.y > HEIGHT / 2. {
-      self.position.y = -HEIGHT / 2.
+      self.velocity.y *= -1.;
     }
   }
 }

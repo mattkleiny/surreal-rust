@@ -13,7 +13,9 @@ pub struct PixelCanvas<P> {
 impl<P: Pixel + Texel> PixelCanvas<P> {
   /// Creates a new pixel canvas with the size.
   pub fn new(graphics: &GraphicsServer, width: usize, height: usize) -> Self {
+    let pixels = Grid::new(width, height);
     let texture = Texture::new(graphics);
+
     let mut material = load_built_in_material(graphics, BuiltInShader::SpriteStandard);
 
     material.set_uniform("u_projectionView", &Matrix4x4::IDENTITY);
@@ -24,11 +26,7 @@ impl<P: Pixel + Texel> PixelCanvas<P> {
       destination: BlendFactor::OneMinusSrcAlpha,
     });
 
-    Self {
-      pixels: Grid::new(width, height),
-      texture,
-      material,
-    }
+    Self { pixels, texture, material }
   }
 
   /// Draws the canvas to the screen.
