@@ -45,6 +45,7 @@ impl Polygon {
     }
   }
 
+  /// Computes the rectilinear bounds of the polygon.
   pub fn bounds(&self) -> Rectangle<f32> {
     let mut min_x = f32::MAX;
     let mut min_y = f32::MAX;
@@ -69,6 +70,7 @@ impl Polygon {
     return Rectangle::from_corner_points(min_x, min_y, max_x, max_y);
   }
 
+  /// Determines if the polygon contains the given point.
   pub fn contains(&self, point: Vector2<f32>) -> bool {
     #[inline]
     fn is_ccw(a: Vector2<f32>, b: Vector2<f32>, c: Vector2<f32>) -> bool {

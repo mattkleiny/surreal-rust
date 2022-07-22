@@ -19,7 +19,9 @@ pub type NeighbourList = smallvec::SmallVec<[Vector2<i32>; 9]>;
 /// Permits exploratory path-finding over some connected grid.
 pub trait PathFindingGrid {
   /// Gets the pathing cost between the given two points.
-  fn get_cost(&self, from: Vector2<i32>, to: Vector2<i32>) -> Cost;
+  fn get_cost(&self, _from: Vector2<i32>, _to: Vector2<i32>) -> Cost {
+    1. // no cost function by default
+  }
 
   /// Gets the potential neighbours around the given point.
   fn get_neighbours(&self, center: Vector2<i32>, results: &mut NeighbourList);
@@ -103,5 +105,29 @@ pub mod heuristics {
     let dy = to.y - from.y;
 
     (dx * dx + dy * dy).to_f32()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[derive(Default)]
+  struct TestGrid {}
+
+  impl PathFindingGrid for TestGrid {
+    fn get_neighbours(&self, center: Vector2<i32>, results: &mut NeighbourList) {
+      for neighbour in center.von_neighbours() {
+        results.push(neighbour)
+      }
+    }
+  }
+
+  #[test]
+  fn it_should_find_a_path_in_a_simple_grid() {
+    let grid = TestGrid::default();
+    let path = grid.find_path(vec2(0, 0), vec2(4, 4), heuristics::euclidean_distance);
+
+    assert!(path.is_some())
   }
 }
