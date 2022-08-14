@@ -14,22 +14,37 @@ fn main() {
     let mut canvas = PixelCanvas::<Color32>::new(&engine.graphics, 256, 144);
     let polygon = Polygon::triangle(4.);
 
+    let mut position = vec2(64., 64.);
     let mut rotation = 0.;
 
     engine.run_variable_step(|engine, tick| {
       engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
-      rotation += tick.time.delta_time * 0.9;
-
       canvas.pixels.clear();
-      canvas
-        .pixels
-        .draw(Color32::WHITE, &polygon.rotate(rotation).translate(vec2(64., 64.)));
+      canvas.pixels.draw(Color32::WHITE, &polygon.rotate(rotation).translate(position));
 
       canvas.draw();
 
       if engine.input.keyboard.is_key_pressed(Key::Escape) {
         tick.exit();
+      }
+
+      let forward = vec2(0., 1.).rotate(rotation);
+
+      if engine.input.keyboard.is_key_down(Key::W) {
+        position -= forward * tick.time.delta_time * 10.;
+      }
+
+      if engine.input.keyboard.is_key_down(Key::S) {
+        position += forward * tick.time.delta_time * 10.;
+      }
+
+      if engine.input.keyboard.is_key_down(Key::Q) {
+        rotation -= tick.time.delta_time * 10.;
+      }
+
+      if engine.input.keyboard.is_key_down(Key::E) {
+        rotation += tick.time.delta_time * 10.;
       }
     });
   });
