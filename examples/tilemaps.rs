@@ -1,10 +1,10 @@
-//! A simple tilemap example for Surreal
+//! A simple tile-map example for Surreal
 
 use surreal::prelude::*;
 
 fn main() {
   let configuration = Configuration {
-    title: "Tilemaps",
+    title: "Tile-maps",
     transparent_window: true,
     log_level: LevelFilter::Trace,
     ..Default::default()

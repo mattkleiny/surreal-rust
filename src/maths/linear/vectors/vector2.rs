@@ -47,6 +47,17 @@ impl Vector2<f32> {
   pub fn length_squared(&self) -> f32 {
     self.x * self.x + self.y * self.y
   }
+
+  /// Rotates a vector by the given angle (in radians).
+  pub fn rotate(&self, radians: f32) -> Self {
+    let sin = radians.sin();
+    let cos = radians.cos();
+
+    let tx = self.x * cos - self.y * sin;
+    let ty = self.x * sin + self.y * cos;
+
+    Self::new(tx, ty)
+  }
 }
 
 impl Vector2<isize> {

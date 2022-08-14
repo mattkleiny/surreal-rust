@@ -153,7 +153,9 @@ implement_tile!(isize);
 /// A [`Tile`] that can be used for path finding.
 pub trait PathableTile: Tile {
   /// The cost of pathing through this tile.
-  fn get_cost(&self) -> Cost;
+  fn get_cost(&self) -> Cost {
+    1. // no cost by default
+  }
 
   /// Can we path through this tile?
   fn is_pathable(&self) -> bool;

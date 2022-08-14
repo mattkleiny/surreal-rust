@@ -126,7 +126,11 @@ mod tests {
   #[test]
   fn it_should_find_a_path_in_a_simple_grid() {
     let grid = TestGrid::default();
-    let path = grid.find_path(vec2(0, 0), vec2(4, 4), heuristics::euclidean_distance);
+
+    let start = vec2(0, 0);
+    let goal = vec2(4, 4);
+
+    let path = grid.find_path(start, goal, heuristics::euclidean_distance);
 
     assert!(path.is_some())
   }

@@ -119,9 +119,9 @@ impl Engine {
     assets.add_loader(BitmapFontLoader {});
     assets.add_loader(VectorFontLoader {
       graphics: graphics.clone(),
-      font_size: 64.,
+      font_size: 16.,
       atlas_stride: 16,
-      atlas_cell_size: vec2(64, 64),
+      atlas_cell_size: vec2(16, 16),
     });
 
     assets.add_loader(ImageLoader { format: None });

@@ -14,11 +14,18 @@ fn main() {
     let mut canvas = PixelCanvas::<Color32>::new(&engine.graphics, 256, 144);
     let polygon = Polygon::triangle(4.);
 
+    let mut rotation = 0.;
+
     engine.run_variable_step(|engine, tick| {
       engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
-      // TODO: why no longer drawing
-      canvas.pixels.draw(Color32::WHITE, &polygon);
+      rotation += tick.time.delta_time * 0.9;
+
+      canvas.pixels.clear();
+      canvas
+        .pixels
+        .draw(Color32::WHITE, &polygon.rotate(rotation).translate(vec2(64., 64.)));
+
       canvas.draw();
 
       if engine.input.keyboard.is_key_pressed(Key::Escape) {
@@ -68,6 +75,20 @@ impl Polygon {
     }
 
     return Rectangle::from_corner_points(min_x, min_y, max_x, max_y);
+  }
+
+  /// Translates the poylgon by the given vector.
+  pub fn translate(&self, offset: Vector2<f32>) -> Self {
+    Self {
+      vertices: self.vertices.iter().map(|v| *v + offset).collect(),
+    }
+  }
+
+  /// Rotates the polygon by the given angle (in radians).
+  pub fn rotate(&self, angle: f32) -> Self {
+    Self {
+      vertices: self.vertices.iter().map(|v| v.rotate(angle)).collect(),
+    }
   }
 
   /// Determines if the polygon contains the given point.
