@@ -86,7 +86,7 @@ impl MaterialUniformSet {
   /// Applies all of the uniforms to the given shader program.
   pub fn apply_to_shader(&self, shader: &ShaderProgram) {
     for (name, uniform) in self.uniforms.iter() {
-      shader.set_uniform(&name, &uniform);
+      shader.set_uniform(name, uniform);
     }
   }
 

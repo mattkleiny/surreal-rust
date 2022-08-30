@@ -107,31 +107,3 @@ pub mod heuristics {
     (dx * dx + dy * dy).to_f32()
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[derive(Default)]
-  struct TestGrid {}
-
-  impl PathFindingGrid for TestGrid {
-    fn get_neighbours(&self, center: Vector2<i32>, results: &mut NeighbourList) {
-      for neighbour in center.von_neighbours() {
-        results.push(neighbour)
-      }
-    }
-  }
-
-  #[test]
-  fn it_should_find_a_path_in_a_simple_grid() {
-    let grid = TestGrid::default();
-
-    let start = vec2(0, 0);
-    let goal = vec2(4, 4);
-
-    let path = grid.find_path(start, goal, heuristics::euclidean_distance);
-
-    assert!(path.is_some())
-  }
-}

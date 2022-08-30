@@ -191,7 +191,7 @@ pub trait RenderScene {
 /// Represents a single render pass in a renderer.
 pub trait RenderPass {
   fn begin_frame(&mut self, _frame: &mut RenderFrame) {}
-  fn render_frame(&mut self, frame: &mut RenderFrame);
+  fn render_frame(&mut self, _frame: &mut RenderFrame) {}
   fn end_frame(&mut self, _frame: &mut RenderFrame) {}
 }
 
@@ -361,7 +361,8 @@ pub fn create_forward_pipeline(graphics: &GraphicsServer, configuration: &Forwar
   }
 
   impl RenderPass for CompositePass {
-    fn render_frame(&mut self, _frame: &mut RenderFrame) {}
+    fn begin_frame(&mut self, _frame: &mut RenderFrame) {}
+    fn end_frame(&mut self, _frame: &mut RenderFrame) {}
   }
 
   let mut pipeline = RenderPipeline::new(graphics);
