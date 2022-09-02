@@ -16,8 +16,9 @@ opt-level = 3
 overflow-checks = false
 
 [features]
-default = ["prototype"]
+default = ["editor", "prototype"]
 profiling = ["profiling/profile-with-optick"]
+editor = []
 prototype = []
 
 [dependencies]

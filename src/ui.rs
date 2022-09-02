@@ -5,10 +5,6 @@ use std::collections::HashMap;
 use crate::graphics::*;
 use crate::maths::{vec2, Rectangle};
 
-pub use widgets::*;
-
-mod widgets;
-
 /// A shader program to use for egui canvas rendering.
 const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
 
