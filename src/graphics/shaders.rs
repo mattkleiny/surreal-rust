@@ -17,6 +17,8 @@ use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 use super::*;
 
+mod compiler;
+
 /// Different types of shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ShaderKind {

@@ -31,7 +31,8 @@ AI:
     [ ] Behaviour trees?
     [ ] Decision trees?
     [ ] State machines?
-  [ ] Navigation meshes and path-finding?
+  [✔] Path-finding support (A*) @done(22-06-16 09:28)
+  [ ] Navigation meshes?
   [ ] Dijkstra maps for 2d flow finding?
 
 Graphics:
@@ -51,6 +52,7 @@ Graphics:
   [✔] Sprite batching that supports multiple textures per draw call @done(22-06-09 19:58)
   [✔] Fix sprite batching when there are implicit textures in a material (i.e. slots are relative to material) @done(22-06-13 22:08)
   [ ] Swap to WGPU and consider implementing a resource abstraction system (ala jdh)
+  [ ] Custom shading language ala GDShader.
 
 Audio:
   [ ] Get audio backend playing simple buffered sounds
@@ -62,6 +64,7 @@ Scripting:
   [ ] Add Lisp implementation and virtual machine
   [ ] Add BASIC implementation and virtual machine, and lots of common operations
   [ ] Consider other languages and ideas
+  [ ] Custom scripting language ala GDScript.
 
 Physics:
   [ ] Basic 2d physics
