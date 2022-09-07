@@ -86,10 +86,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     unsafe {
       match blend_state {
         BlendState::Disabled => gl::Disable(gl::BLEND),
-        BlendState::Enabled {
-          source,
-          destination: dest,
-        } => {
+        BlendState::Enabled { source, destination: dest } => {
           let source = convert_blend_factor(source);
           let dest = convert_blend_factor(dest);
 
@@ -166,14 +163,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn write_buffer_data(
-    &self,
-    buffer: GraphicsHandle,
-    usage: BufferUsage,
-    kind: BufferKind,
-    length: usize,
-    pointer: *const u8,
-  ) {
+  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -254,14 +244,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn read_texture_data(
-    &self,
-    texture: GraphicsHandle,
-    length: usize,
-    pixel_format: TextureFormat,
-    pixels: *mut u8,
-    mip_level: usize,
-  ) {
+  fn read_texture_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
     unsafe {
       let (components, kind) = convert_texture_format(pixel_format);
 
@@ -384,12 +367,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           let mut info_log = Vec::with_capacity(info_log_length as usize);
           info_log.set_len(info_log_length as usize);
 
-          gl::GetShaderInfoLog(
-            shader_id,
-            info_log_length,
-            std::ptr::null_mut(),
-            info_log.as_mut_ptr() as *mut _,
-          );
+          gl::GetShaderInfoLog(shader_id, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
 
           return Err(anyhow!(String::from_utf8(info_log).unwrap()));
         }
@@ -411,12 +389,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         let mut info_log = Vec::with_capacity(info_log_length as usize);
         info_log.set_len(info_log_length as usize);
 
-        gl::GetProgramInfoLog(
-          shader,
-          info_log_length,
-          std::ptr::null_mut(),
-          info_log.as_mut_ptr() as *mut _,
-        );
+        gl::GetProgramInfoLog(shader, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
 
         return Err(anyhow!(String::from_utf8(info_log).unwrap()));
       }
@@ -605,12 +578,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn create_mesh(
-    &self,
-    vertex_buffer: GraphicsHandle,
-    index_buffer: GraphicsHandle,
-    descriptors: &[VertexDescriptor],
-  ) -> GraphicsHandle {
+  fn create_mesh(&self, vertex_buffer: GraphicsHandle, index_buffer: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     unsafe {
       let mut id: u32 = 0;
 
@@ -647,13 +615,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             offset as *const _,
           );
         } else {
-          gl::VertexAttribIPointer(
-            index as u32,
-            descriptor.count as i32,
-            kind,
-            stride as i32,
-            offset as *const _,
-          );
+          gl::VertexAttribIPointer(index as u32, descriptor.count as i32, kind, stride as i32, offset as *const _);
         }
 
         gl::EnableVertexAttribArray(index as u32);
@@ -704,32 +666,14 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       gl::CreateFramebuffers(1, &mut framebuffer);
 
       gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer);
-      gl::FramebufferTexture2D(
-        gl::FRAMEBUFFER,
-        gl::COLOR_ATTACHMENT0,
-        gl::TEXTURE_2D,
-        color_attachment,
-        0,
-      );
+      gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, color_attachment, 0);
 
       if let Some(depth_attachment) = depth_attachment {
-        gl::FramebufferTexture2D(
-          gl::FRAMEBUFFER,
-          gl::DEPTH_ATTACHMENT,
-          gl::TEXTURE_2D,
-          depth_attachment,
-          0,
-        );
+        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::DEPTH_ATTACHMENT, gl::TEXTURE_2D, depth_attachment, 0);
       }
 
       if let Some(stencil_attachment) = stencil_attachment {
-        gl::FramebufferTexture2D(
-          gl::FRAMEBUFFER,
-          gl::STENCIL_ATTACHMENT,
-          gl::TEXTURE_2D,
-          stencil_attachment,
-          0,
-        );
+        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::STENCIL_ATTACHMENT, gl::TEXTURE_2D, stencil_attachment, 0);
       }
 
       if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {

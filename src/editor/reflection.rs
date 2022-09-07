@@ -10,14 +10,10 @@ pub trait Reflect {
   fn get_functions() -> Vec<FunctionInfo>;
 
   /// Gets a property on this type.
-  fn get_property(&self, _name: &str) -> Result<Variant, PropertyError> {
-    todo!()
-  }
+  fn get_property(&self, _name: &str) -> Result<Variant, PropertyError>;
 
   /// Sets a property on this type.
-  fn set_property(&mut self, _name: &str, _value: Variant) -> Result<(), PropertyError> {
-    todo!()
-  }
+  fn set_property(&mut self, _name: &str, _value: Variant) -> Result<(), PropertyError>;
 
   /// Calls a method on the underlying type by name, passing the given arguments
   fn call_method(&mut self, _name: &str, _args: &[Variant]) -> Result<Variant, CallError> {

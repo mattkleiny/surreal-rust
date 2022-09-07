@@ -1,6 +1,6 @@
 //! Sprite management and rendering.
 //!
-//! Sprites are very common in projects, so we've a simple dedicated batch to support them.
+//! Sprites are very common in projects, so this is a dedicated batch to support.
 
 use crate::maths::{vec2, Matrix4x4, Vector2};
 
@@ -139,11 +139,7 @@ impl SpriteBatch {
 
     let translation = Matrix4x4::translate(options.position.x, options.position.y, 0.);
     let rotation = Matrix4x4::rotate_z(options.rotation);
-    let scale = Matrix4x4::scale(
-      region.size.x as f32 * options.scale.x,
-      region.size.y as f32 * options.scale.y,
-      1.,
-    );
+    let scale = Matrix4x4::scale(region.size.x as f32 * options.scale.x, region.size.y as f32 * options.scale.y, 1.);
 
     let transform = translation * rotation * scale;
     let texture_id = self.allocate_texture(&region.texture) as u32;
