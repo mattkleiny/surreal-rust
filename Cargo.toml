@@ -4,9 +4,10 @@ description = "The Surreal game engine"
 version = "0.1.0"
 authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
 edition = "2021"
+exclude = ["docs", "modules/", "tools/"]
 
 [workspace]
-members = ["tools/*"]
+members = ["modules/*", "tools/*"]
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -32,7 +33,7 @@ egui = { version = "0.18" }
 profiling = { version = "1" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_yaml = "0.8"
+serde_yaml = "0.9"
 smallvec = "1.8"
 lazy_static = "1"
 log = "0.4"
