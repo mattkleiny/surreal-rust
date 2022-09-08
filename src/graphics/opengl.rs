@@ -337,14 +337,14 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     unsafe { gl::CreateProgram() }
   }
 
-  fn link_shaders(&self, shader: GraphicsHandle, shaders: Vec<Shader>) -> crate::Result<()> {
+  fn link_shaders(&self, shader: GraphicsHandle, shaders: &[Shader]) -> crate::Result<()> {
     unsafe {
       gl::UseProgram(shader);
 
       // compile the shader kernel code
       let mut shader_ids = Vec::with_capacity(shaders.len());
 
-      for Shader { kind, code } in &shaders {
+      for Shader { kind, code } in shaders {
         let shader_id = gl::CreateShader(match kind {
           ShaderKind::Vertex => gl::VERTEX_SHADER,
           ShaderKind::Fragment => gl::FRAGMENT_SHADER,

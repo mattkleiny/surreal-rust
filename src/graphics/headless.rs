@@ -74,14 +74,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn write_buffer_data(
-    &self,
-    _buffer: GraphicsHandle,
-    _usage: BufferUsage,
-    _kind: BufferKind,
-    _length: usize,
-    _pointer: *const u8,
-  ) {
+  fn write_buffer_data(&self, _buffer: GraphicsHandle, _usage: BufferUsage, _kind: BufferKind, _length: usize, _pointer: *const u8) {
     // no-op
   }
 
@@ -101,14 +94,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn read_texture_data(
-    &self,
-    _texture: GraphicsHandle,
-    _length: usize,
-    _pixel_format: TextureFormat,
-    _pixels: *mut u8,
-    _mip_level: usize,
-  ) {
+  fn read_texture_data(&self, _texture: GraphicsHandle, _length: usize, _pixel_format: TextureFormat, _pixels: *mut u8, _mip_level: usize) {
     // no-op
   }
 
@@ -144,7 +130,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_shader_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn link_shaders(&self, _shader: GraphicsHandle, _shaders: Vec<Shader>) -> crate::Result<()> {
+  fn link_shaders(&self, _shader: GraphicsHandle, _shaders: &[Shader]) -> crate::Result<()> {
     Ok(())
   }
 
@@ -172,12 +158,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn create_mesh(
-    &self,
-    _vertices: GraphicsHandle,
-    _indices: GraphicsHandle,
-    _descriptors: &[VertexDescriptor],
-  ) -> GraphicsHandle {
+  fn create_mesh(&self, _vertices: GraphicsHandle, _indices: GraphicsHandle, _descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     self.next_mesh_id.fetch_add(1, Ordering::Relaxed)
   }
 

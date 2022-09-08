@@ -17,6 +17,8 @@ use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 use super::*;
 
+pub use compiler::*;
+
 mod compiler;
 
 /// Different types of shaders supported by the engine.
@@ -77,11 +79,27 @@ impl ShaderProgram {
     }
   }
 
+  /// Compiles a [`ShaderProgram`] from the given raw string.
+  pub fn compile<S: ShaderLanguage>(graphics: &GraphicsServer, source: &str) -> crate::Result<Self> {
+    let shaders = S::compile_shader(source)?;
+
+    Self::from_shaders(graphics, &shaders)
+  }
+
   /// Loads a [`ShaderProgram`] from the given raw 'glsl' code.
   pub fn from_glsl(graphics: &GraphicsServer, code: &str) -> crate::Result<Self> {
     let program = Self::new(graphics);
 
     program.load_glsl(code)?;
+
+    Ok(program)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given discrete [`Shader`] pieces.
+  pub fn from_shaders(graphics: &GraphicsServer, shaders: &[Shader]) -> crate::Result<Self> {
+    let program = Self::new(graphics);
+
+    program.load_shaders(shaders)?;
 
     Ok(program)
   }
@@ -131,6 +149,16 @@ impl ShaderProgram {
     let state = self.state.borrow();
     let graphics = &state.graphics;
     let shaders = parse_glsl_source(text)?;
+
+    graphics.link_shaders(state.handle, &shaders)?;
+
+    Ok(())
+  }
+
+  /// Reloads the [`ShaderProgram`] from the given [`Shader`] pieces.
+  pub fn load_shaders(&self, shaders: &[Shader]) -> crate::Result<()> {
+    let state = self.state.borrow();
+    let graphics = &state.graphics;
 
     graphics.link_shaders(state.handle, shaders)?;
 

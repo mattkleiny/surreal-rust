@@ -1,20 +1,23 @@
-#[derive(Error, Copy, Clone, Debug, Eq, PartialEq)]
-pub enum ShaderError {
-  InvalidSyntax,
-  InvalidPrecision,
-  InvalidOperation,
-  Unexpected,
+use super::Shader;
+
+pub use shady::ShadyLanguage;
+
+/// Represents a type of shader language that can be compiled at runtime.
+pub trait ShaderLanguage {
+  fn compile_shader(shader: &str) -> crate::Result<Vec<Shader>>;
 }
 
-pub trait ShaderCompiler {
-  fn compile_shader(&self, shader: &Shader) -> Result<ShaderError, String>;
-}
+mod shady {
+  use super::*;
 
-pub struct GlslCompiler {
-  pub version: u32,
-  pub profile: u32,
-}
+  /// Compiles Shady programs down to GLSL.
+  ///
+  /// Shady is a simple domain-specific shader language that compiles down to GLSL.
+  pub struct ShadyLanguage;
 
-impl ShaderCompiler for GlslCompiler {
-
+  impl ShaderLanguage for ShadyLanguage {
+    fn compile_shader(_shader: &str) -> crate::Result<Vec<Shader>> {
+      todo!()
+    }
+  }
 }

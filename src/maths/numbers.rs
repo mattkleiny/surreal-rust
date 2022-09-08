@@ -24,7 +24,7 @@ pub trait Numeric:
   /// Converts this numeric type to a 32-bit floating point number.
   fn to_f32(self) -> f32;
 
-  /// Clmaps this value in the given range.
+  /// Clamps this value in the given range.
   fn clamp(self, lower: Self, upper: Self) -> Self;
 }
 
