@@ -27,7 +27,8 @@ pub trait Renderable<C: RenderContext> {
 /// A context for rendering operations.
 ///
 /// A context contains the state useful for a particular kind of rendering operation, and also
-/// exposes some basic lifecycle methods.
+/// exposes some basic lifecycle methods. It's lazily constructed upon first use and remains
+/// alive until the [`RenderContextManager`] is dropped.
 pub trait RenderContext: Any {
   fn as_any(&self) -> &dyn Any;
   fn as_any_mut(&mut self) -> &mut dyn Any;
