@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 surreal = { path = "../../" }
+pest = "2.5.1"
+pest_derive = "2.5.1"
