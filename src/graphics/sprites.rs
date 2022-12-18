@@ -20,8 +20,8 @@ const DEFAULT_SPRITE_COUNT: usize = 1024;
 pub struct SpriteBatch {
   mesh: Mesh<SpriteVertex>,
   material: Option<Material>,
-  textures: TexturePool,
   vertices: Vec<SpriteVertex>,
+  last_texture: Option<Texture>,
 }
 
 /// Options for drawing a sprite.
@@ -54,7 +54,6 @@ struct SpriteVertex {
   pub position: Vector2<f32>,
   pub uv: Vector2<f32>,
   pub color: Color32,
-  pub texture_id: u32,
 }
 
 impl Vertex for SpriteVertex {
@@ -63,7 +62,6 @@ impl Vertex for SpriteVertex {
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
     VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-    VertexDescriptor { count: 1, kind: VertexKind::U32, should_normalize: false },
   ];
 }
 
@@ -88,9 +86,9 @@ impl SpriteBatch {
 
     Self {
       mesh,
-      material: None,
-      textures: TexturePool::default(),
       vertices,
+      material: None,
+      last_texture: None,
     }
   }
 
@@ -99,7 +97,6 @@ impl SpriteBatch {
   pub fn begin(&mut self, material: &Material) {
     self.material = Some(material.clone());
     self.vertices.clear();
-    self.textures.clear();
   }
 
   /// Draws a line of text to the batch with the given options
@@ -137,40 +134,44 @@ impl SpriteBatch {
       self.flush();
     }
 
+    if let Some(texture) = &self.last_texture {
+      if texture.handle() != region.texture.handle() {
+        self.flush();
+        self.last_texture = Some(region.texture.clone());
+      }
+    } else if self.last_texture.is_none() {
+      self.last_texture = Some(region.texture.clone());
+    }
+
     let translation = Matrix4x4::translate(options.position.x, options.position.y, 0.);
     let rotation = Matrix4x4::rotate_z(options.rotation);
     let scale = Matrix4x4::scale(region.size.x as f32 * options.scale.x, region.size.y as f32 * options.scale.y, 1.);
 
     let transform = translation * rotation * scale;
-    let texture_id = self.allocate_texture(&region.texture) as u32;
     let uv = region.calculate_uv();
 
     self.vertices.push(SpriteVertex {
       position: vec2(-0.5, -0.5) * transform,
       color: options.color,
       uv: uv.top_left(),
-      texture_id,
     });
 
     self.vertices.push(SpriteVertex {
       position: vec2(-0.5, 0.5) * transform,
       color: options.color,
       uv: uv.bottom_left(),
-      texture_id,
     });
 
     self.vertices.push(SpriteVertex {
       position: vec2(0.5, 0.5) * transform,
       color: options.color,
       uv: uv.bottom_right(),
-      texture_id,
     });
 
     self.vertices.push(SpriteVertex {
       position: vec2(0.5, -0.5) * transform,
       color: options.color,
       uv: uv.top_right(),
-      texture_id,
     });
   }
 
@@ -193,7 +194,9 @@ impl SpriteBatch {
     let index_count = sprite_count * 6;
     let mesh = &mut self.mesh;
 
-    self.textures.bind(material);
+    if let Some(texture) = &self.last_texture {
+      material.set_texture("u_texture", texture, None);
+    }
 
     mesh.with_buffers(|vertices, _| {
       vertices.write_data(&self.vertices);
@@ -202,19 +205,6 @@ impl SpriteBatch {
     mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
 
     self.vertices.clear();
-    self.textures.clear();
-  }
-
-  /// Allocates a texture slot id for the given texture in the batch.
-  fn allocate_texture(&mut self, texture: &Texture) -> u8 {
-    match self.textures.allocate(&texture) {
-      Some(slot) => slot,
-      None => {
-        // flush if we've reached texture capacity
-        self.flush();
-        self.textures.allocate(&texture).unwrap()
-      }
-    }
   }
 }
 
@@ -235,55 +225,4 @@ fn build_quad_indices(sprite_count: usize) -> Vec<u32> {
   }
 
   indices
-}
-
-/// Retains a pool of textures in unique texture slot indices to
-/// allow multiple textures per batch.
-///
-/// Internally the pool will take care of allocating the slots as used.
-/// If the pool is full, the batch will be flushed and the pool will be reset.
-#[derive(Default)]
-struct TexturePool {
-  slots: [Option<Texture>; MAX_TEXTURE_UNITS],
-}
-
-impl TexturePool {
-  /// Allocates a new texture from the pool, if possible.
-  ///
-  /// If the texture has already been allocated, returns it's slot index.
-  /// Otherwise, the texture will be emplaced for use this frame.
-  pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
-    for (index, slot) in self.slots.iter_mut().enumerate() {
-      match slot {
-        Some(existing) if existing.handle() == texture.handle() => {
-          return Some(index as u8);
-        }
-        None => {
-          *slot = Some(texture.clone());
-          return Some(index as u8);
-        }
-        _ => continue,
-      }
-    }
-
-    None
-  }
-
-  /// Binds all active texture in the pool to the given material.
-  pub fn bind(&mut self, material: &mut Material) {
-    let mut textures = smallvec::SmallVec::<[&Texture; MAX_TEXTURE_UNITS]>::new();
-
-    for texture in self.slots.iter() {
-      if let Some(texture) = texture {
-        textures.push(texture);
-      }
-    }
-
-    material.set_texture_array("u_textures", &textures, None);
-  }
-
-  /// Clears the pool of all textures.
-  pub fn clear(&mut self) {
-    self.slots.fill(None);
-  }
 }

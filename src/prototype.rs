@@ -14,7 +14,6 @@ mod tiles;
 // built-in shaders
 const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
 const SHADER_SPRITE_STANDARD: &str = include_str!("../assets/shaders/sprite-standard.glsl");
-const SHADER_SPRITE_BATCHED: &str = include_str!("../assets/shaders/sprite-batched.glsl");
 const SHADER_SPRITE_PALETTE: &str = include_str!("../assets/shaders/sprite-palette.glsl");
 const SHADER_WIRE_STANDARD: &str = include_str!("../assets/shaders/wire-standard.glsl");
 const SHADER_EFFECT_ABERRATION: &str = include_str!("../assets/shaders/effect-aberration.glsl");
@@ -38,8 +37,6 @@ pub enum BuiltInShader {
   Canvas,
   /// Simple purpose projected sprite shader.
   SpriteStandard,
-  /// Standard purpose projected sprite shader.
-  SpriteBatched,
   /// Palette-shifted sprite shader.
   SpritePalette,
   /// Shader for wire rendering and basic geometry.
@@ -71,7 +68,6 @@ pub fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) ->
   let shader = match shader {
     BuiltInShader::Canvas => ShaderProgram::from_glsl(graphics, SHADER_CANVAS_STANDARD),
     BuiltInShader::SpriteStandard => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_STANDARD),
-    BuiltInShader::SpriteBatched => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_BATCHED),
     BuiltInShader::SpritePalette => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_PALETTE),
     BuiltInShader::Wire => ShaderProgram::from_glsl(graphics, SHADER_WIRE_STANDARD),
     BuiltInShader::AberrationEffect => ShaderProgram::from_glsl(graphics, SHADER_EFFECT_ABERRATION),
@@ -146,7 +142,7 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
     let shader = match &self.shader {
       Some(shader) => shader.clone(),
       None => match self.palette {
-        None => load_built_in_shader(graphics, BuiltInShader::SpriteBatched),
+        None => load_built_in_shader(graphics, BuiltInShader::SpriteStandard),
         Some(_) => load_built_in_shader(graphics, BuiltInShader::SpritePalette),
       },
     };

@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dev-dependencies]
+anyhow = "1.0.66"
 image = { version = "0.24", default-features = false, features = ["png"] }

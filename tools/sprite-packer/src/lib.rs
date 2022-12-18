@@ -1,3 +1,5 @@
+use anyhow::anyhow;
+
 /// Represents a sprite that can be packed by the sprite sheet packer.
 #[derive(Clone, Eq, PartialEq)]
 pub struct Sprite {
@@ -6,7 +8,7 @@ pub struct Sprite {
   pub pixels: Vec<u32>,
 }
 
-/// Encodes an anchor position used in positioning `Sprite`s.
+/// Encodes an anchor position used in positioning [`Sprite`]s.
 #[derive(Clone, Debug)]
 pub struct SpriteAnchor<'a> {
   pub position: (u32, u32),
@@ -24,19 +26,19 @@ pub struct SpriteSheet<'a> {
   pub anchors: Vec<SpriteAnchor<'a>>,
 }
 
-/// Packs the given sprites as a uniform set of images into a `SpriteSheet`.
+/// Packs the given sprites as a uniform set of images into a [`SpriteSheet`].
 ///
 /// This method requires that all sprites have the same size and will form a rectangular grid of the least highest
 /// power of 2 necessary to fit all sprites.
-pub fn pack_uniform_grid<'a>(sprites: &'a mut [Sprite]) -> SpriteSheet<'a> {
+pub fn pack_uniform_grid(sprites: &mut [Sprite]) -> anyhow::Result<SpriteSheet> {
   let _width = sprites.iter().map(|sprite| sprite.size.0).max().unwrap();
   let _height = sprites.iter().map(|sprite| sprite.size.1).max().unwrap();
 
   todo!()
 }
 
-/// Packs the given set of `Sprite`s into a `SpriteSheet`.
-pub fn pack_spritesheet<'a>(sprites: &'a mut [Sprite]) -> SpriteSheet<'a> {
+/// Packs the given set of `Sprite`s into a [`SpriteSheet`].
+pub fn pack_sprite_sheet(sprites: &mut [Sprite]) -> anyhow::Result<SpriteSheet> {
   let mut positions = Vec::new();
   let mut anchors = Vec::new();
 
@@ -47,7 +49,9 @@ pub fn pack_spritesheet<'a>(sprites: &'a mut [Sprite]) -> SpriteSheet<'a> {
 
   for sprite in sprites {
     // add sprite to this free position
-    let next_pos = *positions.first().expect("No free anchor positions!");
+    let next_pos = *positions
+      .first()
+      .ok_or(anyhow!("No free anchor positions!"))?;
 
     anchors.push(SpriteAnchor {
       position: next_pos,
@@ -96,19 +100,19 @@ pub fn pack_spritesheet<'a>(sprites: &'a mut [Sprite]) -> SpriteSheet<'a> {
   let width = positions
     .iter()
     .max_by(|a, b| a.0.cmp(&b.0))
-    .expect("Invalid: No free anchors")
+    .ok_or(anyhow!("Invalid: No free anchors"))?
     .0;
 
   let height = positions
     .iter()
     .max_by(|a, b| a.1.cmp(&b.1))
-    .expect("Invalid: No free anchors")
+    .ok_or(anyhow!("Invalid: No free anchors"))?
     .1;
 
   // Finally sort the anchors so that they are in the same order as the input sprites
   anchors.sort_by_key(|s| s.sprite.id);
 
-  SpriteSheet { width, height, anchors }
+  Ok(SpriteSheet { width, height, anchors })
 }
 
 /// Compares the position of two sprites.
@@ -158,7 +162,7 @@ mod tests {
       })
       .collect::<Vec<_>>();
 
-    let result = pack_spritesheet(&mut sprites);
+    let result = pack_sprite_sheet(&mut sprites).unwrap();
 
     assert_eq!(result.width, 20 * 4);
     assert_eq!(result.height, 20 * 4);
@@ -196,6 +200,6 @@ mod tests {
       }
     }
 
-    pack_spritesheet(&mut sprites);
+    assert!(pack_sprite_sheet(&mut sprites).is_ok());
   }
 }
