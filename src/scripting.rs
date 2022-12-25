@@ -4,13 +4,17 @@
 //! this trait surfaces all of the required metadata required to engage script
 //! management by the engine.
 
-/// Represents a script.
-pub trait Script {
-  fn language(&self) -> &dyn ScriptLanguage;
-}
-
 /// Represents a scripting language.
 pub trait ScriptLanguage {
+  /// A unique name for the language.
   fn name(&self) -> &str;
-  fn file_extension(&self) -> &str;
+
+  /// The possible file extensions for scripts in this language.
+  fn file_extension(&self) -> &[&str];
+}
+
+/// Represents a script.
+pub trait Script {
+  /// The language that this script is written in.
+  fn language(&self) -> &dyn ScriptLanguage;
 }

@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use uuid::Uuid;
 
 use super::{Lerp, Numeric};
 
@@ -10,19 +11,19 @@ pub struct Random {
 
 impl Default for Random {
   fn default() -> Self {
-    Self::new()
+    Self::with_thread_local_seed()
   }
 }
 
 impl Random {
-  /// Constructs a random generator with a random seed.
-  pub fn new() -> Self {
-    Self::with_seed(generate_thread_local())
-  }
-
   /// Constructs a random generator with the given seed.
   pub fn with_seed(seed: u64) -> Self {
     Random { state: seed }
+  }
+
+  /// Constructs a random generator with a random seed.
+  pub fn with_thread_local_seed() -> Self {
+    Self::with_seed(generate_thread_local())
   }
 
   /// Generates a new value of the given [`Random`] type, T.
@@ -64,10 +65,7 @@ thread_local! {
 }
 
 /// Generates a new f64 using the thread-local generator.
-fn generate_thread_local<T>() -> T
-where
-  T: FromRandom,
-{
+fn generate_thread_local<T: FromRandom>() -> T {
   THREAD_LOCAL_RANDOM.with(|random| {
     let mut random = random.borrow_mut();
 
@@ -87,43 +85,65 @@ pub trait FromRandom: Sized {
 }
 
 // Implements random conversion for common integer types
-macro_rules! implement_from_random {
+macro_rules! implement_random_number {
   ($type:ty) => {
     impl FromRandom for $type {
-      fn from_random(generator: &mut Random) -> Self {
-        generator.next_u64() as $type
+      fn from_random(random: &mut Random) -> Self {
+        random.next_u64() as $type
       }
     }
   };
 }
 
-implement_from_random!(u8);
-implement_from_random!(u16);
-implement_from_random!(u32);
-implement_from_random!(u64);
-implement_from_random!(usize);
+implement_random_number!(u8);
+implement_random_number!(u16);
+implement_random_number!(u32);
+implement_random_number!(u64);
+implement_random_number!(usize);
 
-implement_from_random!(i8);
-implement_from_random!(i16);
-implement_from_random!(i32);
-implement_from_random!(i64);
-implement_from_random!(isize);
+implement_random_number!(i8);
+implement_random_number!(i16);
+implement_random_number!(i32);
+implement_random_number!(i64);
+implement_random_number!(isize);
 
 impl FromRandom for bool {
-  fn from_random(generator: &mut Random) -> Self {
-    generator.next_f64() < 0.5
+  fn from_random(random: &mut Random) -> Self {
+    random.next_f64() < 0.5
   }
 }
 
 impl FromRandom for f32 {
-  fn from_random(generator: &mut Random) -> Self {
-    generator.next_f64() as f32
+  fn from_random(random: &mut Random) -> Self {
+    random.next_f64() as f32
   }
 }
 
 impl FromRandom for f64 {
-  fn from_random(generator: &mut Random) -> Self {
-    generator.next_f64()
+  fn from_random(random: &mut Random) -> Self {
+    random.next_f64()
+  }
+}
+
+impl FromRandom for Uuid {
+  fn from_random(random: &mut Random) -> Self {
+    Uuid::from_bytes(random.next())
+  }
+}
+
+/// Generates arrays of T where T itself is randomly creatable
+impl<T, const L: usize> FromRandom for [T; L]
+where
+  T: FromRandom + Sized + Default + Copy,
+{
+  fn from_random(random: &mut Random) -> Self {
+    let mut result = [T::default(); L];
+
+    for element in result.iter_mut() {
+      *element = T::from_random(random);
+    }
+
+    result
   }
 }
 
@@ -139,7 +159,7 @@ pub enum Distribution {
   OneMinusFourth,
 }
 
-/// A variable of T that allows random sampling.
+/// A variable of [`T`] that allows random sampling.
 #[derive(Clone, Debug)]
 pub struct RandomVariable<T> {
   pub low: T,

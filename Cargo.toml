@@ -37,6 +37,7 @@ serde_yaml = "0.9"
 smallvec = "1.8"
 lazy_static = "1"
 log = "0.4"
+uuid = { version = "1.2.2", features = ["serde"] }
 
 # platform dependencies
 gl = "0.14"

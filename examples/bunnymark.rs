@@ -28,7 +28,7 @@ fn main() {
     });
 
     // set-up state
-    let mut random = Random::new();
+    let mut random = Random::with_thread_local_seed();
     let mut bunnies = Vec::<Bunny>::new();
 
     engine.run_variable_step(move |engine, tick| {

@@ -3,7 +3,7 @@
 pub use image::ImageFormat;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::io::AsPath;
+use crate::io::VirtualPath;
 
 use super::*;
 
@@ -21,8 +21,8 @@ impl Image {
   }
 
   /// Attempts to load an image from the given path.
-  pub fn from_path(path: impl AsPath, format: Option<ImageFormat>) -> crate::Result<Self> {
-    let stream = path.as_path().open_input_stream()?;
+  pub fn from_path(path: impl Into<VirtualPath>, format: Option<ImageFormat>) -> crate::Result<Self> {
+    let stream = path.into().open_input_stream()?;
     let image = Self::from_bytes(stream, format)?;
 
     Ok(image)
@@ -69,8 +69,8 @@ impl Image {
   }
 
   /// Saves the image to the given path.
-  pub fn save_to(&self, path: impl AsPath, format: ImageFormat) -> crate::Result<()> {
-    let mut stream = path.as_path().open_output_stream()?;
+  pub fn save_to(&self, path: impl Into<VirtualPath>, format: ImageFormat) -> crate::Result<()> {
+    let mut stream = path.into().open_output_stream()?;
 
     self.buffer.write_to(&mut stream, format)?;
 

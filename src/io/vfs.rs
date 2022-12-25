@@ -30,6 +30,14 @@ pub trait FileSystem {
 }
 
 /// Represents a path in a virtual file system.
+///
+/// A path is a scheme and a location within that scheme. The scheme
+/// determines which file system component we delegate to for file operations,
+/// and so allows for intermixing storage formats and technologies.
+///
+/// For example, a path might be `file://Assets/Textures/Texture01.png`, or
+/// `zip://Assets.zip/Textures/Texture01.png`, or something more exotic like a
+/// packed storage scheme `packed://Assets.pak/Textures/Texture01.png`.
 #[derive(Copy, Clone)]
 pub struct VirtualPath<'a> {
   scheme: &'a str,
@@ -131,26 +139,15 @@ impl<'a> std::fmt::Display for VirtualPath<'a> {
   }
 }
 
-/// Allows a type to be converted to a [`VirtualPath`].
-pub trait AsPath {
-  fn as_path(&self) -> VirtualPath;
-}
-
-impl<'a> AsPath for VirtualPath<'a> {
-  fn as_path(&self) -> VirtualPath<'a> {
-    *self
+impl<'a> From<&'a str> for VirtualPath<'a> {
+  fn from(value: &'a str) -> Self {
+    VirtualPath::parse(value)
   }
 }
 
-impl AsPath for &str {
-  fn as_path(&self) -> VirtualPath {
-    VirtualPath::parse(self)
-  }
-}
-
-impl AsPath for &String {
-  fn as_path(&self) -> VirtualPath {
-    VirtualPath::parse(self)
+impl<'a> From<&'a String> for VirtualPath<'a> {
+  fn from(value: &'a String) -> Self {
+    VirtualPath::parse(value.as_str())
   }
 }
 

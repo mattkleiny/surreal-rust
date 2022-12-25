@@ -1,7 +1,7 @@
 //! Pixel types and abstractions for color manipulation.
 //!
 //! We support the two most common color types, a 32-bit integral RGBA color,
-//! and a 32-bit floating point per-chanenl representation for more precise rendering.
+//! and a 32-bit floating point per-channel representation for more precise rendering.
 
 use std::ops::{Add, Div, Mul, Sub};
 
@@ -42,11 +42,13 @@ impl Color {
   pub const MAGENTA: Self = Self::rgb(1., 0., 1.);
 
   /// Creates a new color with the given components.
+  #[inline(always)]
   pub const fn rgb(r: f32, g: f32, b: f32) -> Self {
     Self::rgba(r, g, b, 1.)
   }
 
   /// Creates a new color with the given components.
+  #[inline(always)]
   pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
     Self { r, g, b, a }
   }
@@ -165,6 +167,7 @@ impl Lerp for Color {
 }
 
 impl FromRandom for Color {
+  #[inline(always)]
   fn from_random(random: &mut Random) -> Self {
     Color::rgb(random.next(), random.next(), random.next())
   }
@@ -192,11 +195,13 @@ impl Color32 {
   pub const CYAN: Self = Self::rgb(0, 255, 255);
 
   /// Creates a new color with the given components.
+  #[inline(always)]
   pub const fn rgb(r: u8, g: u8, b: u8) -> Self {
     Self::rgba(r, g, b, 255)
   }
 
   /// Creates a new color with the given components.
+  #[inline(always)]
   pub const fn rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
     Self { r, g, b, a }
   }
@@ -328,8 +333,10 @@ mod tests {
   fn color_should_be_equatable() {
     let color1 = Color::WHITE;
     let color2 = Color::WHITE;
+    let color3 = Color::BLACK;
 
     assert_eq!(color1, color2);
+    assert_ne!(color1, color3);
   }
 
   #[test]

@@ -3,10 +3,9 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::assets::{Asset, AssetContext, AssetLoader};
+use crate::assets::{Asset, AssetContext, AssetLoader, AssetManager};
 use crate::collections::Grid;
-use crate::maths::{vec2, Rectangle, Vector2};
-use crate::prelude::AssetManager;
+use crate::maths::{Rectangle, vec2, Vector2};
 
 use super::*;
 

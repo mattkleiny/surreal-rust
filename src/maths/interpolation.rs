@@ -6,6 +6,7 @@ pub trait Lerp {
 }
 
 impl<T: Numeric> Lerp for T {
+  #[inline(always)]
   fn lerp(a: Self, b: Self, t: f32) -> T {
     let a = a.to_f32();
     let b = b.to_f32();

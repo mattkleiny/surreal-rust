@@ -8,6 +8,7 @@
 
 #![allow(incomplete_features)]
 #![allow(dead_code)]
+#![feature(anonymous_lifetime_in_impl_trait)]
 
 #[macro_use]
 extern crate serde;

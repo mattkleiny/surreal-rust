@@ -9,10 +9,8 @@ use std::{marker::PhantomData, ops::Index};
 
 use anyhow::anyhow;
 
-use crate::{
-  assets::{Asset, AssetContext, AssetLoader},
-  io::AsPath,
-};
+use crate::assets::{Asset, AssetContext, AssetLoader};
+use crate::io::VirtualPath;
 
 use super::*;
 
@@ -39,8 +37,8 @@ impl<P: Pixel> ColorPalette<P> {
   }
 
   /// Loads a palette from the given file path.
-  pub fn from_file(path: impl AsPath) -> crate::Result<Self> {
-    let path = path.as_path();
+  pub fn from_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
+    let path = path.into();
     let stream = path.open_input_stream()?;
 
     Self::from_bytes(stream)
@@ -70,12 +68,7 @@ impl<P: Pixel> ColorPalette<P> {
         return Err(anyhow!("Expected 3 color components on line {}", index + 1));
       }
 
-      *color = P::from_bytes(&[
-        components[0].parse()?,
-        components[1].parse()?,
-        components[2].parse()?,
-        255,
-      ]);
+      *color = P::from_bytes(&[components[0].parse()?, components[1].parse()?, components[2].parse()?, 255]);
     }
 
     Ok(Self::from_vec(colors))

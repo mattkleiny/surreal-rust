@@ -12,11 +12,11 @@ use std::rc::Rc;
 use smallvec::SmallVec;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::io::AsPath;
 use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
 
 use super::*;
 
+use crate::io::VirtualPath;
 pub use compiler::*;
 
 mod compiler;
@@ -166,8 +166,8 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path(&self, path: impl AsPath) -> crate::Result<()> {
-    let path = path.as_path();
+  pub fn load_from_path(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
+    let path = path.into();
     let source_code = path.read_all_text()?;
 
     self.load_glsl(&source_code)?;

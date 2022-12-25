@@ -8,7 +8,11 @@ use std::rc::Rc;
 
 use anyhow::Ok;
 
-use crate::io::{AsPath, VirtualPath};
+use crate::io::VirtualPath;
+
+/// A id for an asset in the asset manager cache.
+#[derive(Clone, Eq, PartialEq, Hash)]
+struct AssetId(TypeId, String);
 
 /// A handle to an asset in the asset system.
 ///
@@ -41,16 +45,12 @@ impl<A> Deref for Handle<A> {
   }
 }
 
-/// A id for an asset in the asset manager cache.
-#[derive(Clone, Eq, PartialEq, Hash)]
-struct AssetId(TypeId, String);
-
 /// Represents an asset that can be loaded from the filesystem.
 pub trait Asset: 'static + Any + Sized {
   type Loader: AssetLoader<Self>;
 
   /// Loads this asset from the given path.
-  fn load(assets: &AssetManager, path: impl AsPath) -> crate::Result<Handle<Self>> {
+  fn load(assets: &AssetManager, path: impl Into<VirtualPath>) -> crate::Result<Handle<Self>> {
     assets.load_asset(path)
   }
 }
@@ -69,7 +69,7 @@ pub struct AssetContext<'a> {
 
 impl<'a> AssetContext<'a> {
   /// Loads a dependent asset from the given path.
-  pub fn load_asset<A: Asset>(&self, path: impl AsPath) -> crate::Result<Handle<A>> {
+  pub fn load_asset<A: Asset>(&self, path: impl Into<VirtualPath>) -> crate::Result<Handle<A>> {
     self.manager.load_asset(path)
   }
 }
@@ -118,29 +118,22 @@ impl AssetManager {
   /// then an error is returned.
   /// * If the asset is found, but the loader is not registered, then an error is returned.
   /// * If the asset is found and the loader is registered, then the asset is loaded and returned.
-  pub fn load_asset<A: Asset>(&self, path: impl AsPath) -> crate::Result<Handle<A>> {
+  pub fn load_asset<A: Asset>(&self, path: impl Into<VirtualPath>) -> crate::Result<Handle<A>> {
     let state = unsafe { &mut *self.state.get() };
 
-    let path = path.as_path();
+    let path = path.into();
     let id = AssetId(TypeId::of::<A>(), path.to_string());
 
     match state.cache.get(&id) {
       Some(asset) => {
-        log::trace!(
-          "Using cached asset {} from {}",
-          std::any::type_name::<A>(),
-          path.as_path()
-        );
+        log::trace!("Using cached asset {} from {}", std::any::type_name::<A>(), path);
 
-        let handle = asset
-          .downcast_ref::<Handle<A>>()
-          .expect("Should not be possible")
-          .to_owned();
+        let handle = asset.downcast_ref::<Handle<A>>().expect("Should not be possible").to_owned();
 
         Ok(handle)
       }
       None => {
-        log::trace!("Loading asset {} from {}", std::any::type_name::<A>(), path.as_path());
+        log::trace!("Loading asset {} from {}", std::any::type_name::<A>(), path);
 
         let state = unsafe { &mut *self.state.get() };
 
@@ -154,10 +147,7 @@ impl AssetManager {
         let context = AssetContext { path, manager: self };
 
         let asset = loader.load(&context)?;
-        let handle = Handle {
-          id,
-          asset: Rc::new(asset),
-        };
+        let handle = Handle { id, asset: Rc::new(asset) };
 
         state.cache.insert(handle.id.clone(), Box::new(handle.clone()));
 

@@ -4,8 +4,12 @@
 //! inspectors, reflection and a central message bus.
 
 pub use reflection::*;
+pub use resources::*;
+pub use scenes::*;
 
 mod reflection;
+mod resources;
+mod scenes;
 
 /// Possible errors for registering a type.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

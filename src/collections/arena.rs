@@ -53,6 +53,15 @@ impl<T> Arena<T> {
     }
   }
 
+  /// Creates a new empty arena with the given default capacity.
+  pub fn with_capacity(size: usize) -> Self {
+    Self {
+      entries: Vec::with_capacity(size),
+      current_generation: 1,
+      is_generation_dirty: false,
+    }
+  }
+
   /// Is the arena empty?
   pub fn is_empty(&self) -> bool {
     self.entries.is_empty()

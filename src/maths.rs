@@ -26,6 +26,9 @@ mod tessellation;
 
 const EPSILON: f32 = 0.00001;
 
+/// A globally unique identifier.
+pub type Guid = uuid::Uuid;
+
 /// Converts the given value to radians from degrees.
 #[inline]
 pub fn to_radians(degrees: f32) -> f32 {
