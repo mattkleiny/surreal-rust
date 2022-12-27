@@ -115,7 +115,7 @@ pub trait GraphicsBackend {
   fn write_texture_sub_data(
     &self,
     texture: GraphicsHandle,
-    region: &crate::maths::Rectangle<usize>,
+    region: &Rectangle<usize>,
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,

@@ -1,9 +1,9 @@
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 
-/// An any-map is a hash map that can contain a single value per unique `TypeId`.
+/// An any-map is a hash map that can contain a single value per unique [`TypeId`].
 ///
-/// That is to say, a hash map that associates `TypeId` to `Box<dyn Any>>`.
+/// That is to say, a hash map that associates [`TypeId`] to [`Box<dyn Any>>`].
 #[derive(Default)]
 pub struct AnyMap {
   entries: HashMap<TypeId, Box<dyn Any>>,
@@ -12,9 +12,7 @@ pub struct AnyMap {
 impl AnyMap {
   /// Creates a new any-map.
   pub fn new() -> Self {
-    Self {
-      entries: HashMap::new(),
-    }
+    Self { entries: HashMap::new() }
   }
 
   /// Is the map empty?
@@ -49,10 +47,7 @@ impl AnyMap {
 
   /// Mutably accesses a given value from the map.
   pub fn get_mut<T: Any>(&mut self) -> Option<&mut T> {
-    self
-      .entries
-      .get_mut(&TypeId::of::<T>())
-      .and_then(|any| any.downcast_mut())
+    self.entries.get_mut(&TypeId::of::<T>()).and_then(|any| any.downcast_mut())
   }
 
   /// Removes a value from the map.

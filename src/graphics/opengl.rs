@@ -17,7 +17,7 @@ pub struct OpenGLGraphicsBackend {
   state: RefCell<InternalState>,
 }
 
-/// Internally managed state for the backend.
+/// Interior mutable state for the backend.
 struct InternalState {
   sampler_cache: HashMap<TextureSampler, u32>,
   fullscreen_quad: Option<Mesh<Vertex2>>,

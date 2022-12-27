@@ -15,9 +15,7 @@ pub struct TimeStamp {
 impl TimeStamp {
   /// Creates a new timestamp from the current time.
   pub fn now() -> Self {
-    TimeStamp {
-      instant: Instant::now(),
-    }
+    TimeStamp { instant: Instant::now() }
   }
 }
 
@@ -153,50 +151,62 @@ pub struct TimeSpan {
 }
 
 impl TimeSpan {
+  #[inline]
   pub fn from_duration(duration: Duration) -> TimeSpan {
     Self::from_millis(duration.as_nanos() as f32 / (1000. * 1000.))
   }
 
+  #[inline]
   pub fn from_millis(milliseconds: f32) -> TimeSpan {
     Self { milliseconds }
   }
 
+  #[inline]
   pub fn from_seconds(seconds: f32) -> TimeSpan {
     Self::from_millis(seconds * 1000.)
   }
 
+  #[inline]
   pub fn from_minutes(minutes: f32) -> TimeSpan {
     Self::from_seconds(minutes * 60.)
   }
 
+  #[inline]
   pub fn from_hours(hours: f32) -> TimeSpan {
     Self::from_minutes(hours * 60.)
   }
 
+  #[inline]
   pub fn from_days(days: f32) -> TimeSpan {
     Self::from_hours(days * 24.)
   }
 
+  #[inline]
   pub fn total_duration(&self) -> Duration {
     Duration::from_micros((self.milliseconds * 1000.) as u64)
   }
 
+  #[inline]
   pub fn total_millis(&self) -> f32 {
     self.milliseconds
   }
 
+  #[inline]
   pub fn total_seconds(&self) -> f32 {
     self.total_millis() / 1000.
   }
 
+  #[inline]
   pub fn total_minutes(&self) -> f32 {
     self.total_seconds() / 60.
   }
 
+  #[inline]
   pub fn total_hours(&self) -> f32 {
     self.total_minutes() / 60.
   }
 
+  #[inline]
   pub fn total_days(&self) -> f32 {
     self.total_hours() / 24.
   }
