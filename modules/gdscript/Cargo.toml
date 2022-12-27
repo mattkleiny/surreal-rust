@@ -1,9 +1,9 @@
 [package]
-name = "surreal-gdscript"
+name = "surreal-modules-gdscript"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-surreal = { path = "../../" }
+surreal-core = { path = "../../core" }
 pest = "2.5.1"
 pest_derive = "2.5.1"

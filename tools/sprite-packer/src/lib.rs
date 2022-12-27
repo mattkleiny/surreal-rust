@@ -49,9 +49,7 @@ pub fn pack_sprite_sheet(sprites: &mut [Sprite]) -> anyhow::Result<SpriteSheet> 
 
   for sprite in sprites {
     // add sprite to this free position
-    let next_pos = *positions
-      .first()
-      .ok_or(anyhow!("No free anchor positions!"))?;
+    let next_pos = *positions.first().ok_or(anyhow!("No free anchor positions!"))?;
 
     anchors.push(SpriteAnchor {
       position: next_pos,
@@ -139,10 +137,7 @@ fn _next_highest_power_of_2(n: u32) -> u32 {
 
 impl std::fmt::Debug for Sprite {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    f.debug_struct("Sprite")
-      .field("id", &self.id)
-      .field("size", &self.size)
-      .finish()
+    f.debug_struct("Sprite").field("id", &self.id).field("size", &self.size).finish()
   }
 }
 

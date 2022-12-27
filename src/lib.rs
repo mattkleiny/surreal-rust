@@ -1,57 +1,46 @@
-//! A lightweight game engine for Rust.
+//! Packaging project for the Surreal engine.
 //!
-//! Surreal is designed to be a simple and flexible game engine, not unlike libGDX or MonoGame.
-//!
-//! It's opinionated, but small in scope and is intended to form a solid 'library'-like toolkit
-//! for constructing small but fast 2d games (and maybe 3d someday). A lot of the work is left
-//! to the author as to how they'd like to glue things together.
+//! Importing this crate and enabling specific features will turn various functionalities on/off.
 
-#![allow(incomplete_features)]
-#![allow(dead_code)]
-#![feature(anonymous_lifetime_in_impl_trait)]
-
-#[macro_use]
-extern crate serde;
-
-pub mod assets;
-pub mod audio;
-pub mod collections;
-pub mod diagnostics;
+pub extern crate surreal_core as core;
 #[cfg(feature = "editor")]
-pub mod editor;
-pub mod engine;
-pub mod graphics;
-pub mod input;
-pub mod io;
-pub mod maths;
+pub extern crate surreal_editor as editor;
+#[cfg(feature = "csg")]
+pub extern crate surreal_modules_csg as csg;
+#[cfg(feature = "gdscript")]
+pub extern crate surreal_modules_gdscript as gdscript;
 #[cfg(feature = "prototype")]
-pub mod prototype;
-pub mod scripting;
-pub mod ui;
-pub mod utilities;
+pub extern crate surreal_modules_prototype as prototype;
+#[cfg(feature = "voxels")]
+pub extern crate surreal_modules_voxels as voxels;
+
+pub use core::Result;
 
 pub mod prelude {
   //! A prelude for the Surreal engine.
   //!
   //! Import this module to get convenient access to all engine features.
 
-  pub use crate::assets::*;
-  pub use crate::audio::*;
-  pub use crate::collections::*;
-  pub use crate::diagnostics::*;
+  pub use core::assets::*;
+  pub use core::audio::*;
+  pub use core::collections::*;
+  pub use core::diagnostics::*;
+  pub use core::engine::*;
+  pub use core::graphics::*;
+  pub use core::input::*;
+  pub use core::io::*;
+  pub use core::maths::*;
+  pub use core::scripting::*;
+  pub use core::ui::*;
+  pub use core::utilities::*;
+  #[cfg(feature = "csg")]
+  pub use csg::*;
   #[cfg(feature = "editor")]
-  pub use crate::editor::*;
-  pub use crate::engine::*;
-  pub use crate::graphics::*;
-  pub use crate::input::*;
-  pub use crate::io::*;
-  pub use crate::maths::*;
+  pub use editor::*;
+  #[cfg(feature = "gdscript")]
+  pub use gdscript::*;
   #[cfg(feature = "prototype")]
-  pub use crate::prototype::*;
-  pub use crate::scripting::*;
-  pub use crate::ui::*;
-  pub use crate::utilities::*;
+  pub use prototype::*;
+  #[cfg(feature = "voxels")]
+  pub use voxels::*;
 }
-
-/// Represents a result type in any part of the engine.
-pub type Result<T> = anyhow::Result<T>;

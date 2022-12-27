@@ -28,11 +28,17 @@ pub trait Chunk {
 }
 
 /// A statically sized chunk of [`Voxel`]s.
-pub struct StaticChunk<const X: usize, const Y: usize, const Z: usize> where [(); X * Y * Z]: Sized {
+pub struct StaticChunk<const X: usize, const Y: usize, const Z: usize>
+where
+  [(); X * Y * Z]: Sized,
+{
   voxels: [Voxel; X * Y * Z],
 }
 
-impl<const X: usize, const Y: usize, const Z: usize> Default for StaticChunk<X, Y, Z> where [(); X * Y * Z]: Sized {
+impl<const X: usize, const Y: usize, const Z: usize> Default for StaticChunk<X, Y, Z>
+where
+  [(); X * Y * Z]: Sized,
+{
   /// Creates a new empty [`StaticChunk`].
   fn default() -> Self {
     Self {
@@ -41,7 +47,10 @@ impl<const X: usize, const Y: usize, const Z: usize> Default for StaticChunk<X, 
   }
 }
 
-impl<const X: usize, const Y: usize, const Z: usize> Chunk for StaticChunk<X, Y, Z> where [(); X * Y * Z]: Sized {
+impl<const X: usize, const Y: usize, const Z: usize> Chunk for StaticChunk<X, Y, Z>
+where
+  [(); X * Y * Z]: Sized,
+{
   #[inline(always)]
   fn width(&self) -> usize {
     X
