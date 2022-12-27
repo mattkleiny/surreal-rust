@@ -8,6 +8,7 @@ use glutin::event::ElementState;
 pub use glutin::event::MouseButton;
 
 /// Represents a mouse device on the system.
+#[derive(Default)]
 pub struct MouseDevice {
   position: Vector2<f32>,
   normalised_position: Vector2<f32>,
@@ -16,16 +17,6 @@ pub struct MouseDevice {
 }
 
 impl MouseDevice {
-  /// Creates a new mouse device.
-  pub fn new() -> Self {
-    Self {
-      position: Vector2::new(0., 0.),
-      normalised_position: Vector2::new(0., 0.),
-      previous_buttons: HashSet::new(),
-      current_buttons: HashSet::new(),
-    }
-  }
-
   /// Ticks the mouse.
   pub fn tick(&mut self) {
     self.previous_buttons.clear();

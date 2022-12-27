@@ -1,8 +1,8 @@
 //! A lightweight and cross-platform input engine.
 
 use egui::RawInput;
-
 use glutin::event::{ElementState, KeyboardInput, ModifiersState, MouseScrollDelta};
+
 pub use keyboard::*;
 pub use mouse::*;
 
@@ -14,11 +14,11 @@ mod mouse;
 /// The input management backend implementation for the underlying input API.
 pub struct InputBackend {
   // devices
-  pub keyboard: KeyboardDevice,
-  pub mouse: MouseDevice,
-  pub pixels_per_point: f32,
+  pub keyboard: Option<KeyboardDevice>,
+  pub mouse: Option<MouseDevice>,
 
-  // input tracking for UI purposes
+  // egui state
+  pub pixels_per_point: f32,
   actual_mouse_pos: Vector2<f32>,
   pub raw_input: RawInput,
   pub exclusive_keyboard_input: bool,
@@ -29,11 +29,11 @@ impl InputBackend {
   /// Creates a new input backend.
   pub fn new(pixels_per_point: f32) -> Self {
     Self {
-      keyboard: KeyboardDevice::new(),
-      mouse: MouseDevice::new(),
+      keyboard: Some(KeyboardDevice::default()),
+      mouse: Some(MouseDevice::default()),
       pixels_per_point,
 
-      raw_input: Default::default(),
+      raw_input: RawInput::default(),
       actual_mouse_pos: vec2(0., 0.),
       exclusive_keyboard_input: false,
       exclusive_pointer_input: false,
@@ -42,12 +42,16 @@ impl InputBackend {
 
   /// Ticks the input system, apply state changes.
   pub fn tick(&mut self) {
-    if !self.exclusive_keyboard_input {
-      self.keyboard.tick();
+    if let Some(keyboard) = &mut self.keyboard {
+      if !self.exclusive_keyboard_input {
+        keyboard.tick();
+      }
     }
 
-    if !self.exclusive_pointer_input {
-      self.mouse.tick();
+    if let Some(mouse) = &mut self.mouse {
+      if !self.exclusive_pointer_input {
+        mouse.tick();
+      }
     }
 
     // reset egui events
@@ -64,16 +68,18 @@ impl InputBackend {
 
   /// Notifies of a mouse movement event.
   pub fn on_mouse_move(&mut self, position: Vector2<f32>, window_size: Vector2<f32>) {
-    let event = egui::Event::PointerMoved(egui::Pos2 {
-      x: position.x as f32 / self.pixels_per_point,
-      y: position.y as f32 / self.pixels_per_point,
-    });
+    if let Some(mouse) = &mut self.mouse {
+      let event = egui::Event::PointerMoved(egui::Pos2 {
+        x: position.x as f32 / self.pixels_per_point,
+        y: position.y as f32 / self.pixels_per_point,
+      });
 
-    self.raw_input.events.push(event);
-    self.actual_mouse_pos = position;
+      self.raw_input.events.push(event);
+      self.actual_mouse_pos = position;
 
-    if !self.exclusive_pointer_input {
-      self.mouse.on_mouse_moved(position, window_size);
+      if !self.exclusive_pointer_input {
+        mouse.on_mouse_moved(position, window_size);
+      }
     }
   }
 
@@ -107,44 +113,48 @@ impl InputBackend {
 
   /// Notifies of a mouse button event.
   pub fn on_mouse_button(&mut self, button: MouseButton, state: ElementState) {
-    let position = self.actual_mouse_pos;
-    let event = egui::Event::PointerButton {
-      pos: egui::Pos2 {
-        x: position.x as f32 / self.pixels_per_point,
-        y: position.y as f32 / self.pixels_per_point,
-      },
-      button: match button {
-        MouseButton::Left => egui::PointerButton::Primary,
-        MouseButton::Right => egui::PointerButton::Secondary,
-        _ => egui::PointerButton::Middle,
-      },
-      pressed: state == ElementState::Pressed,
-      modifiers: self.raw_input.modifiers,
-    };
+    if let Some(mouse) = &mut self.mouse {
+      let position = self.actual_mouse_pos;
+      let event = egui::Event::PointerButton {
+        pos: egui::Pos2 {
+          x: position.x as f32 / self.pixels_per_point,
+          y: position.y as f32 / self.pixels_per_point,
+        },
+        button: match button {
+          MouseButton::Left => egui::PointerButton::Primary,
+          MouseButton::Right => egui::PointerButton::Secondary,
+          _ => egui::PointerButton::Middle,
+        },
+        pressed: state == ElementState::Pressed,
+        modifiers: self.raw_input.modifiers,
+      };
 
-    self.raw_input.events.push(event);
+      self.raw_input.events.push(event);
 
-    if !self.exclusive_pointer_input {
-      self.mouse.on_mouse_button(button, state);
+      if !self.exclusive_pointer_input {
+        mouse.on_mouse_button(button, state);
+      }
     }
   }
 
   /// Notifies of a keyboard event.
   pub fn on_keyboard_event(&mut self, event: &KeyboardInput) {
-    if let Some(virtual_key) = event.virtual_keycode {
-      if let Some(key) = translate_virtual_key_code_to_egui(virtual_key) {
-        let event = egui::Event::Key {
-          key,
-          pressed: event.state == ElementState::Pressed,
-          modifiers: self.raw_input.modifiers,
-        };
+    if let Some(keyboard) = &mut self.keyboard {
+      if let Some(virtual_key) = event.virtual_keycode {
+        if let Some(key) = translate_virtual_key_code_to_egui(virtual_key) {
+          let event = egui::Event::Key {
+            key,
+            pressed: event.state == ElementState::Pressed,
+            modifiers: self.raw_input.modifiers,
+          };
 
-        self.raw_input.events.push(event)
+          self.raw_input.events.push(event)
+        }
       }
-    }
 
-    if !self.exclusive_keyboard_input {
-      self.keyboard.on_keyboard_event(event);
+      if !self.exclusive_keyboard_input {
+        keyboard.on_keyboard_event(event);
+      }
     }
   }
 
@@ -163,9 +173,8 @@ impl InputBackend {
 /// We also ignore '\r', '\n', '\t'.
 /// Newlines are handled by the `Key::Enter` event.
 fn is_printable_char(chr: char) -> bool {
-  let is_in_private_use_area = '\u{e000}' <= chr && chr <= '\u{f8ff}'
-    || '\u{f0000}' <= chr && chr <= '\u{ffffd}'
-    || '\u{100000}' <= chr && chr <= '\u{10fffd}';
+  let is_in_private_use_area =
+    '\u{e000}' <= chr && chr <= '\u{f8ff}' || '\u{f0000}' <= chr && chr <= '\u{ffffd}' || '\u{100000}' <= chr && chr <= '\u{10fffd}';
 
   !is_in_private_use_area && !chr.is_ascii_control()
 }

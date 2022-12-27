@@ -25,8 +25,10 @@ fn main() {
       batch.draw_circle(vec2(0., 0.), 0.75, 64, color);
       batch.flush();
 
-      if engine.input.keyboard.is_key_pressed(Key::Escape) {
-        tick.exit();
+      if let Some(keyboard) = &engine.input.keyboard {
+        if keyboard.is_key_pressed(Key::Escape) {
+          tick.exit();
+        }
       }
     });
   });

@@ -8,9 +8,6 @@ pub type ResourceId = crate::maths::Guid;
 /// Represents a kind of resource in the application, and allows it to be
 /// both loaded and persisted to/from the virtual file system.
 pub trait Resource: Sized {
-  // fn asset_id(&self) -> ResourceId;
-  // fn instance_id(&self) -> ResourceId;
-
   /// Loads this type of resource from the given path.
   fn load<'a>(path: impl Into<VirtualPath<'a>>) -> crate::Result<Self>;
 

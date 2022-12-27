@@ -20,7 +20,6 @@ fn main() {
 
     engine.run_variable_step(|engine, tick| {
       let graphics = &engine.graphics;
-      let mouse = &engine.input.mouse;
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
@@ -31,36 +30,40 @@ fn main() {
 
       canvas.draw();
 
-      let size = vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
-      let position = mouse.normalised_position() * size;
+      if let Some(mouse) = &engine.input.mouse {
+        let size = vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
+        let position = mouse.normalised_position() * size;
 
-      if mouse.is_button_down(MouseButton::Left) {
-        let colors = &palette.as_slice()[1..4];
-        let color = colors[usize::random() % colors.len()];
+        if mouse.is_button_down(MouseButton::Left) {
+          let colors = &palette.as_slice()[1..4];
+          let color = colors[usize::random() % colors.len()];
 
-        canvas.pixels.draw(
-          color,
-          &Circle {
-            center: vec2(position.x.floor() as isize, position.y.floor() as isize),
-            radius: 6,
-          },
-        );
-      } else if mouse.is_button_down(MouseButton::Right) {
-        canvas.pixels.draw(
-          Color32::CLEAR,
-          &Circle {
-            center: vec2(position.x.floor() as isize, position.y.floor() as isize),
-            radius: 6,
-          },
-        );
+          canvas.pixels.draw(
+            color,
+            &Circle {
+              center: vec2(position.x.floor() as isize, position.y.floor() as isize),
+              radius: 6,
+            },
+          );
+        } else if mouse.is_button_down(MouseButton::Right) {
+          canvas.pixels.draw(
+            Color32::CLEAR,
+            &Circle {
+              center: vec2(position.x.floor() as isize, position.y.floor() as isize),
+              radius: 6,
+            },
+          );
+        }
       }
 
-      if engine.input.keyboard.is_key_pressed(Key::Space) {
-        canvas.pixels.fill(Color32::CLEAR);
-      }
+      if let Some(keyboard) = &engine.input.keyboard {
+        if keyboard.is_key_pressed(Key::Space) {
+          canvas.pixels.fill(Color32::CLEAR);
+        }
 
-      if engine.input.keyboard.is_key_pressed(Key::Escape) {
-        tick.exit();
+        if keyboard.is_key_pressed(Key::Escape) {
+          tick.exit();
+        }
       }
     });
   });

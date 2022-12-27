@@ -58,8 +58,10 @@ fn main() {
 
       renderer.end_frame();
 
-      if engine.input.keyboard.is_key_pressed(Key::Escape) {
-        tick.exit();
+      if let Some(keyboard) = &engine.input.keyboard {
+        if keyboard.is_key_pressed(Key::Escape) {
+          tick.exit();
+        }
       }
     });
   });

@@ -5,6 +5,7 @@ pub use sprites::*;
 pub use tiles::*;
 
 use crate::graphics::*;
+use crate::impl_object;
 use crate::maths::Matrix4x4;
 
 mod canvas;
@@ -183,14 +184,6 @@ pub struct SpriteBatchContext {
 }
 
 impl RenderContext for SpriteBatchContext {
-  fn as_any(&self) -> &dyn std::any::Any {
-    self as &dyn std::any::Any
-  }
-
-  fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-    self as &mut dyn std::any::Any
-  }
-
   fn on_begin_frame(&mut self) {
     self.batch.begin(&self.material);
   }
@@ -199,6 +192,8 @@ impl RenderContext for SpriteBatchContext {
     self.batch.flush();
   }
 }
+
+impl_object!(SpriteBatchContext);
 
 /// A descriptor for the `GeometryBatch`.
 pub struct GeometryBatchDescriptor {
@@ -254,14 +249,6 @@ pub struct GeometryBatchContext {
 }
 
 impl RenderContext for GeometryBatchContext {
-  fn as_any(&self) -> &dyn std::any::Any {
-    self as &dyn std::any::Any
-  }
-
-  fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-    self as &mut dyn std::any::Any
-  }
-
   fn on_begin_frame(&mut self) {
     self.batch.begin(&self.material);
   }
@@ -270,3 +257,5 @@ impl RenderContext for GeometryBatchContext {
     self.batch.flush();
   }
 }
+
+impl_object!(GeometryBatchContext);

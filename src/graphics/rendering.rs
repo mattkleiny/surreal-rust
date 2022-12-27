@@ -3,11 +3,10 @@
 //! This is a series of components designed to make it simpler to build more complex render
 //! pipelines than using the 'material', 'mesh', 'render targets' etc do alone.
 
-use std::{
-  any::{Any, TypeId},
-  collections::HashMap,
-};
+use std::any::TypeId;
+use std::collections::HashMap;
 
+use crate::utilities::Object;
 use crate::{
   engine::GameTime,
   maths::{vec2, Matrix4x4, Plane, Vector3},
@@ -29,9 +28,7 @@ pub trait Renderable<C: RenderContext> {
 /// A context contains the state useful for a particular kind of rendering operation, and also
 /// exposes some basic lifecycle methods. It's lazily constructed upon first use and remains
 /// alive until the [`RenderContextManager`] is dropped.
-pub trait RenderContext: Any {
-  fn as_any(&self) -> &dyn Any;
-  fn as_any_mut(&mut self) -> &mut dyn Any;
+pub trait RenderContext: Object {
   fn on_initialize(&mut self) {}
   fn on_begin_with(&mut self) {}
   fn on_end_with(&mut self) {}
@@ -51,7 +48,7 @@ pub trait RenderContextDescriptor {
   fn create(&self, graphics: &GraphicsServer) -> Self::Context;
 }
 
-/// A manager for `RenderContext`s.
+/// A manager for [`RenderContext`]s.
 ///
 /// A [`RenderContext`] encodes all of the required details for textures,
 /// materials, render targets, shaders, necessary in a single invocation of some

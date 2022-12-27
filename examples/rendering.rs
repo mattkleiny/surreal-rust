@@ -39,8 +39,10 @@ fn main() {
       scene.update(tick.time.delta_time);
       renderer.render(&scene, &scene.camera, &tick.time);
 
-      if engine.input.keyboard.is_key_pressed(Key::Escape) {
-        tick.exit();
+      if let Some(keyboard) = &engine.input.keyboard {
+        if keyboard.is_key_pressed(Key::Escape) {
+          tick.exit();
+        }
       }
     });
   });

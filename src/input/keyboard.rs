@@ -6,20 +6,13 @@ pub use glutin::event::VirtualKeyCode as Key;
 use glutin::event::{ElementState, KeyboardInput};
 
 /// Represents a keyboard device in the system.
+#[derive(Default)]
 pub struct KeyboardDevice {
   previous_keys: HashSet<Key>,
   current_keys: HashSet<Key>,
 }
 
 impl KeyboardDevice {
-  /// Creates a new keyboard device.
-  pub fn new() -> Self {
-    Self {
-      previous_keys: HashSet::new(),
-      current_keys: HashSet::new(),
-    }
-  }
-
   /// Ticks the keyboard device.
   pub fn tick(&mut self) {
     self.previous_keys.clear();

@@ -25,26 +25,28 @@ fn main() {
 
       canvas.draw();
 
-      if engine.input.keyboard.is_key_pressed(Key::Escape) {
-        tick.exit();
-      }
+      if let Some(keyboard) = &engine.input.keyboard {
+        let forward = vec2(0., 1.).rotate(rotation);
 
-      let forward = vec2(0., 1.).rotate(rotation);
+        if keyboard.is_key_pressed(Key::Escape) {
+          tick.exit();
+        }
 
-      if engine.input.keyboard.is_key_down(Key::W) {
-        position -= forward * tick.time.delta_time * 10.;
-      }
+        if keyboard.is_key_down(Key::W) {
+          position -= forward * tick.time.delta_time * 10.;
+        }
 
-      if engine.input.keyboard.is_key_down(Key::S) {
-        position += forward * tick.time.delta_time * 10.;
-      }
+        if keyboard.is_key_down(Key::S) {
+          position += forward * tick.time.delta_time * 10.;
+        }
 
-      if engine.input.keyboard.is_key_down(Key::Q) {
-        rotation -= tick.time.delta_time * 10.;
-      }
+        if keyboard.is_key_down(Key::Q) {
+          rotation -= tick.time.delta_time * 10.;
+        }
 
-      if engine.input.keyboard.is_key_down(Key::E) {
-        rotation += tick.time.delta_time * 10.;
+        if keyboard.is_key_down(Key::E) {
+          rotation += tick.time.delta_time * 10.;
+        }
       }
     });
   });

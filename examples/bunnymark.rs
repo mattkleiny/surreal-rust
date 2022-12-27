@@ -63,30 +63,34 @@ fn main() {
       });
 
       // handle input
-      if engine.input.keyboard.is_key_pressed(Key::Escape) {
-        tick.exit();
+      if let Some(keyboard) = &engine.input.keyboard {
+        if keyboard.is_key_pressed(Key::Escape) {
+          tick.exit();
+        }
       }
 
-      if engine.input.mouse.is_button_down(MouseButton::Left) {
-        let position = engine.input.mouse.normalised_position();
+      if let Some(mouse) = &engine.input.mouse {
+        if mouse.is_button_down(MouseButton::Left) {
+          let position = mouse.normalised_position();
 
-        for _ in 0..128 {
-          bunnies.push(Bunny {
-            position: vec2(position.x * WIDTH - WIDTH / 2., position.y * HEIGHT - HEIGHT / 2.),
-            velocity: vec2(random.next::<f32>() * 2. - 1., random.next::<f32>() * 2. - 1.),
-            color: Color32::random(),
-          });
+          for _ in 0..128 {
+            bunnies.push(Bunny {
+              position: vec2(position.x * WIDTH - WIDTH / 2., position.y * HEIGHT - HEIGHT / 2.),
+              velocity: vec2(random.next::<f32>() * 2. - 1., random.next::<f32>() * 2. - 1.),
+              color: Color32::random(),
+            });
+          }
+
+          info!("There are {:?} bunnies", bunnies.len());
         }
 
-        info!("There are {:?} bunnies", bunnies.len());
-      }
+        if mouse.is_button_down(MouseButton::Right) {
+          for _ in 0..128 {
+            bunnies.pop();
+          }
 
-      if engine.input.mouse.is_button_down(MouseButton::Right) {
-        for _ in 0..128 {
-          bunnies.pop();
+          info!("There are {:?} bunnies", bunnies.len());
         }
-
-        info!("There are {:?} bunnies", bunnies.len());
       }
     });
   });

@@ -22,7 +22,7 @@ fn main() {
 
     renderer.configure(SpriteBatchDescriptor {
       projection_view: Matrix4x4::orthographic(256., 144., 0., 100.),
-      palette: Some(load_built_in_palette(BuiltInPalette::Demichrome4)),
+      palette: Some(load_built_in_palette(BuiltInPalette::Hollow4)),
       ..Default::default()
     });
 
@@ -44,12 +44,14 @@ fn main() {
       renderer.render(&map);
       renderer.end_frame();
 
-      if engine.input.keyboard.is_key_pressed(Key::Space) {
-        map.fill(|_, _| u8::random() % 4);
-      }
+      if let Some(keyboard) = &engine.input.keyboard {
+        if keyboard.is_key_pressed(Key::Space) {
+          map.fill(|_, _| u8::random() % 4);
+        }
 
-      if engine.input.keyboard.is_key_pressed(Key::Escape) {
-        tick.exit();
+        if keyboard.is_key_pressed(Key::Escape) {
+          tick.exit();
+        }
       }
     });
   });

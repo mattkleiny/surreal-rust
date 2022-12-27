@@ -98,7 +98,7 @@ pub struct Engine {
 
 impl Engine {
   /// Starts the engine with the given configuration.
-  pub fn start(configuration: Configuration, mut setup: impl FnMut(Engine, AssetManager)) {
+  pub fn start(configuration: Configuration, setup: impl FnOnce(Engine, AssetManager)) {
     use crate::graphics::*;
 
     // set-up diagnostics
