@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-profiling = ["profiling/profile-with-optick"]
+profiling = [] # TODO: get optick compilation working in actions
 
 [dependencies]
 # core dependencies

@@ -9,7 +9,7 @@ edition = "2021"
 members = ["core", "drivers/*", "editor", "platform/*", "modules/*", "tools/*"]
 
 [features]
-default = ["editor", "prototype", "profiling"]
+default = []
 
 # core features
 profiling = ["surreal-core/profiling"]
@@ -17,6 +17,7 @@ editor = ["surreal-editor"]
 
 # module features
 csg = ["surreal-modules-csg"]
+fsm = ["surreal-modules-fsm"]
 gdscript = ["surreal-modules-gdscript"]
 prototype = ["surreal-modules-prototype"]
 voxels = ["surreal-modules-voxels"]
@@ -25,9 +26,42 @@ voxels = ["surreal-modules-voxels"]
 surreal-core = { path = "./core" }
 surreal-editor = { path = "./editor", optional = true }
 surreal-modules-csg = { path = "./modules/csg", optional = true }
+surreal-modules-fsm = { path = "./modules/fsm", optional = true }
 surreal-modules-gdscript = { path = "./modules/gdscript", optional = true }
 surreal-modules-prototype = { path = "./modules/prototype", optional = true }
 surreal-modules-voxels = { path = "./modules/voxels", optional = true }
 
 [dev-dependencies]
 egui = "0.20.1" # for examples
+
+[[example]]
+name = "asteroids"
+required-features = ["prototype"]
+
+[[example]]
+name = "bunnymark"
+required-features = ["prototype"]
+
+[[example]]
+name = "editor"
+required-features = ["editor"]
+
+[[example]]
+name = "egui"
+required-features = ["prototype"]
+
+[[example]]
+name = "fonts"
+required-features = ["prototype"]
+
+[[example]]
+name = "hello-world"
+required-features = ["prototype"]
+
+[[example]]
+name = "sand"
+required-features = ["prototype"]
+
+[[example]]
+name = "tilemaps"
+required-features = ["prototype"]

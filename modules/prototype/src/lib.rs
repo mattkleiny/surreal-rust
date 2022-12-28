@@ -2,31 +2,25 @@
 
 use std::any::Any;
 
-pub use canvas::*;
+use core::graphics::*;
+use core::maths::Matrix4x4;
+use core::utilities::Object;
+pub use pixels::*;
 pub use sprites::*;
-use surreal_core::graphics::*;
-use surreal_core::maths::Matrix4x4;
-use surreal_core::utilities::Object;
 pub use tiles::*;
 
-mod canvas;
+mod pixels;
 mod sprites;
 mod tiles;
 
-// built-in shaders
-const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
-const SHADER_SPRITE_STANDARD: &str = include_str!("../assets/shaders/sprite-standard.glsl");
-const SHADER_SPRITE_PALETTE: &str = include_str!("../assets/shaders/sprite-palette.glsl");
-const SHADER_WIRE_STANDARD: &str = include_str!("../assets/shaders/wire-standard.glsl");
-const SHADER_EFFECT_ABERRATION: &str = include_str!("../assets/shaders/effect-aberration.glsl");
+/// A uniform that contains the [`ColorPalette`] texture for sprite rendering.
+pub const UNIFORM_PALETTE: UniformKey<&Texture> = UniformKey::new("u_palette");
 
-// built-in palettes
-const PALETTE_AYY_4: &[u8] = include_bytes!("../assets/palettes/ayy-4.pal");
-const PALETTE_DEMICHROME_4: &[u8] = include_bytes!("../assets/palettes/demichrome-4.pal");
-const PALETTE_HOLLOW_4: &[u8] = include_bytes!("../assets/palettes/hollow-4.pal");
-const PALETTE_KULE_16: &[u8] = include_bytes!("../assets/palettes/kule-16.pal");
-const PALETTE_LOW_8: &[u8] = include_bytes!("../assets/palettes/low-8.pal");
-const PALETTE_SPACE_DUST_9: &[u8] = include_bytes!("../assets/palettes/space-dust-9.pal");
+/// A uniform that contains the width of the value in [`UNIFORM_PALETTE`].
+pub const UNIFORM_PALETTE_WIDTH: UniformKey<u32> = UniformKey::new("u_paletteWidth");
+
+/// A uniform that contains the projection-view matrix for perspective adjustment.
+pub const UNIFORM_PROJECTION_VIEW: UniformKey<&Matrix4x4> = UniformKey::new("u_projectionView");
 
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -43,6 +37,13 @@ pub enum BuiltInShader {
   AberrationEffect,
 }
 
+// built-in shaders
+const SHADER_CANVAS_STANDARD: &str = include_str!("../assets/shaders/canvas-standard.glsl");
+const SHADER_SPRITE_STANDARD: &str = include_str!("../assets/shaders/sprite-standard.glsl");
+const SHADER_SPRITE_PALETTE: &str = include_str!("../assets/shaders/sprite-palette.glsl");
+const SHADER_WIRE_STANDARD: &str = include_str!("../assets/shaders/wire-standard.glsl");
+const SHADER_EFFECT_ABERRATION: &str = include_str!("../assets/shaders/effect-aberration.glsl");
+
 /// Represents one of the built-in color palettes.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BuiltInPalette {
@@ -54,14 +55,15 @@ pub enum BuiltInPalette {
   SpaceDust9,
 }
 
-/// Represents one of the built-in fonts.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum BuiltInFont {
-  Bit536,
-  BitBoy8,
-}
+// built-in palettes
+const PALETTE_AYY_4: &[u8] = include_bytes!("../assets/palettes/ayy-4.pal");
+const PALETTE_DEMICHROME_4: &[u8] = include_bytes!("../assets/palettes/demichrome-4.pal");
+const PALETTE_HOLLOW_4: &[u8] = include_bytes!("../assets/palettes/hollow-4.pal");
+const PALETTE_KULE_16: &[u8] = include_bytes!("../assets/palettes/kule-16.pal");
+const PALETTE_LOW_8: &[u8] = include_bytes!("../assets/palettes/low-8.pal");
+const PALETTE_SPACE_DUST_9: &[u8] = include_bytes!("../assets/palettes/space-dust-9.pal");
 
-/// Loads a built-in shader.
+/// Loads a built-in [`ShaderProgram`].
 pub fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let shader = match shader {
     BuiltInShader::Canvas => ShaderProgram::from_glsl(graphics, SHADER_CANVAS_STANDARD),
@@ -74,12 +76,12 @@ pub fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) ->
   shader.expect("Failed to load build-in shader")
 }
 
-/// Loads a built-in material.
+/// Loads a built-in [`Material`].
 pub fn load_built_in_material(graphics: &GraphicsServer, shader: BuiltInShader) -> Material {
   Material::new(graphics, &load_built_in_shader(graphics, shader))
 }
 
-/// Loads a built-in color palette.
+/// Loads a built-in [`ColorPalette`].
 pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<P> {
   let palette = match palette {
     BuiltInPalette::Ayy4 => ColorPalette::from_bytes(PALETTE_AYY_4),
@@ -93,16 +95,16 @@ pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<
   palette.expect("Failed to load built-in palette")
 }
 
-/// A descriptor for the `SpriteContext`.
+/// A [`RenderContextDescriptor`] for a simple [`SpriteContext`] for use in sprite rendering.
 pub struct SpriteBatchDescriptor {
   /// A default projection-view matrix to apply.
   pub projection_view: Matrix4x4,
 
   /// If a palette is specified, a special shader variant will be loaded that uses the palette.
-  /// The palette will be bound to u_palette with u_paletteWidth texels wide.
+  /// The palette will be bound to `u_palette` with `u_paletteWidth` texels wide.
   pub palette: Option<ColorPalette<Color>>,
 
-  /// A custom shader program to use for rendering.
+  /// A custom [`ShaderProgram`] to use for rendering.
   pub shader: Option<ShaderProgram>,
 
   /// The expected number of sprites to use in the batch; used for pre-sizing the batch vertex buffer.
@@ -128,26 +130,28 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
     let shader = match &self.shader {
       Some(shader) => shader.clone(),
       None => match self.palette {
+        // we need a special variant if we're using palette shifting effects
         None => load_built_in_shader(graphics, BuiltInShader::SpriteStandard),
         Some(_) => load_built_in_shader(graphics, BuiltInShader::SpritePalette),
       },
     };
 
+    // prepare the material and sprite batch
     let mut material = Material::new(graphics, &shader);
     let batch = SpriteBatch::with_capacity(graphics, self.sprite_count);
 
-    // prepare the palette texture, if enabled
+    // prepare the palette texture, if enabled, upload it once
     if let Some(palette) = &self.palette {
       let palette_texture = Texture::new(graphics);
 
       palette_texture.write_pixels(palette.len(), 1, palette.as_slice());
 
-      material.set_texture("u_palette", &palette_texture, None);
-      material.set_uniform("u_paletteWidth", palette.len() as u32);
+      material.set_texture_key(UNIFORM_PALETTE, &palette_texture, None);
+      material.set_uniform_key(UNIFORM_PALETTE_WIDTH, palette.len() as u32);
     }
 
     // apply the default projection-view matrix
-    material.set_uniform("u_projectionView", &self.projection_view);
+    material.set_uniform_key(UNIFORM_PROJECTION_VIEW, &self.projection_view);
 
     // enable default material state
     material.set_blend_state(BlendState::Enabled {
@@ -161,10 +165,10 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
 
 /// A simple [`RenderContext`] that allows for sprite rendering using the standard sprite shaders.
 pub struct SpriteBatchContext {
-  /// A material configured to render sprites.
+  /// A [`Material`] configured to render sprites.
   pub material: Material,
 
-  /// The sprite batch to use for sprite geometry.
+  /// The [`SpriteBatch`] to use for sprite geometry.
   pub batch: SpriteBatch,
 }
 
@@ -220,7 +224,7 @@ impl RenderContextDescriptor for GeometryBatchDescriptor {
     let batch = GeometryBatch::new(graphics);
 
     // apply the default projection-view matrix
-    material.set_uniform("u_projectionView", &self.projection_view);
+    material.set_uniform_key(UNIFORM_PROJECTION_VIEW, &self.projection_view);
 
     // enable default material state
     material.set_blend_state(BlendState::Enabled {

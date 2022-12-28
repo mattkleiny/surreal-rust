@@ -94,7 +94,7 @@ impl Polygon {
     return Rectangle::from_corner_points(min_x, min_y, max_x, max_y);
   }
 
-  /// Translates the poylgon by the given vector.
+  /// Translates the polygon by the given vector.
   pub fn translate(&self, offset: Vector2<f32>) -> Self {
     Self {
       vertices: self.vertices.iter().map(|v| *v + offset).collect(),

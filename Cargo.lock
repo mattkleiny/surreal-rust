@@ -807,12 +807,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86f0b0d4bf799edbc74508c1e8bf170ff5f41238e5f8225603ca7caaae2b7860"
 
 [[package]]
-name = "optick"
-version = "1.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7e7ab6068cdba9928db83674b18fe7aa2efbaa9920698d260ecbaf7906c6548"
-
-[[package]]
 name = "osmesa-sys"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -971,7 +965,6 @@ version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74605f360ce573babfe43964cbe520294dcb081afbf8c108fc6e23036b4da2df"
 dependencies = [
- "optick",
  "profiling-procmacros",
 ]
 
@@ -1117,6 +1110,7 @@ dependencies = [
  "surreal-core",
  "surreal-editor",
  "surreal-modules-csg",
+ "surreal-modules-fsm",
  "surreal-modules-gdscript",
  "surreal-modules-prototype",
  "surreal-modules-voxels",
@@ -1165,6 +1159,13 @@ dependencies = [
 
 [[package]]
 name = "surreal-modules-csg"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-modules-fsm"
 version = "0.1.0"
 dependencies = [
  "surreal-core",

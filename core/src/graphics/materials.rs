@@ -59,12 +59,25 @@ impl MaterialUniformSet {
     self.uniforms.insert(name.to_string(), value.into());
   }
 
+  /// Sets the given [`UniformKey`] as uniform.
+  pub fn set_uniform_key<U: Into<ShaderUniform>>(&mut self, key: UniformKey<U>, value: U) {
+    self.uniforms.insert(key.name.to_string(), value.into());
+  }
+
   /// Sets the given name as a uniform with a single texture.
   pub fn set_texture(&mut self, name: &str, texture: &Texture, sampler: Option<TextureSampler>) {
     let slot = self.allocate_texture_slot(texture);
     let uniform = ShaderUniform::Texture(texture.clone(), slot, sampler);
 
     self.uniforms.insert(name.to_string(), uniform);
+  }
+
+  /// Sets the given [`UniformKey`] as a uniform with a single texture.
+  pub fn set_texture_key(&mut self, key: UniformKey<&Texture>, texture: &Texture, sampler: Option<TextureSampler>) {
+    let slot = self.allocate_texture_slot(texture);
+    let uniform = ShaderUniform::Texture(texture.clone(), slot, sampler);
+
+    self.uniforms.insert(key.name.to_string(), uniform);
   }
 
   /// Sets the given name as a uniform with an array of textures.
@@ -168,9 +181,19 @@ impl Material {
     self.uniforms.set_uniform(name, value);
   }
 
+  /// Sets the given [`UniformKey`] as uniform.
+  pub fn set_uniform_key<U: Into<ShaderUniform>>(&mut self, key: UniformKey<U>, value: U) {
+    self.uniforms.set_uniform_key(key, value);
+  }
+
   /// Sets the given name as a uniform with a single texture.
   pub fn set_texture(&mut self, name: &str, texture: &Texture, sampler: Option<TextureSampler>) {
     self.uniforms.set_texture(name, texture, sampler);
+  }
+
+  /// Sets the given [`UniformKey`] as a uniform with a single texture.
+  pub fn set_texture_key(&mut self, key: UniformKey<&Texture>, texture: &Texture, sampler: Option<TextureSampler>) {
+    self.uniforms.set_texture_key(key, texture, sampler);
   }
 
   /// Sets the given name as a uniform with an array of textures.

@@ -66,12 +66,14 @@ impl Vertex for SpriteVertex {
 }
 
 impl SpriteBatch {
-  /// Constructs a new [`SpriteBatch`].
+  /// Constructs a new [`SpriteBatch`] with a default capacity.
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self::with_capacity(graphics, DEFAULT_SPRITE_COUNT)
   }
 
-  /// Creates a new [`SpriteBatch`] with the given sprite capacity.
+  /// Creates a new [`SpriteBatch`] with the given expected sprite capacity.
+  ///
+  /// This will pre-allocate buffers to minimize reallocation costs.
   pub fn with_capacity(graphics: &GraphicsServer, sprite_count: usize) -> Self {
     // build standard quad indices ahead-of-time
     let vertices = Vec::with_capacity(sprite_count * 4);

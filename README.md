@@ -29,7 +29,8 @@ Some example features:
 * SDF generation for advanced screen space effects (such as ray marching)
 * Global illumination based on 2d voxel projection planes
 
-Whilst 3d rendering is not a goal of the project, it's of course possible with some tweaks to the core pipelines. The intent however is to not introduce rendering complexity by implying structure about lighting, shadowing, model management, bone management, etc.
+Whilst 3d rendering is not a goal of the project, it's of course possible with some tweaks to the core pipelines.
+The intent however is to not introduce rendering complexity by implying structure about lighting, shadowing, model management, bone management, etc.
 
 ### Pluggable and flexible scripting
 

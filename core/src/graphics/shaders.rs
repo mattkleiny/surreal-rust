@@ -54,6 +54,24 @@ pub enum ShaderUniform {
   TextureArray(SmallVec<[(Texture, u8); MAX_TEXTURE_UNITS]>, Option<TextureSampler>),
 }
 
+/// Identifies a kind of [`ShaderUniform`] for strongly-typed assignment.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub struct UniformKey<U> {
+  pub name: &'static str,
+  _phantom: std::marker::PhantomData<U>,
+}
+
+impl<U> UniformKey<U> {
+  /// Creates a new uniform key with the given name.
+  #[inline(always)]
+  pub const fn new(name: &'static str) -> Self {
+    Self {
+      name,
+      _phantom: std::marker::PhantomData,
+    }
+  }
+}
+
 /// Represents a single compiled shader program.
 #[derive(Clone)]
 pub struct ShaderProgram {

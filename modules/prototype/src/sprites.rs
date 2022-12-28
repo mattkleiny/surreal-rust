@@ -2,7 +2,7 @@
 
 use std::hash::Hash;
 
-use surreal_core::{
+use core::{
   graphics::{TextureAtlas, TextureRegion},
   utilities::FSM,
 };

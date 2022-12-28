@@ -1,9 +1,7 @@
 [package]
-name = "surreal-modules-gdscript"
+name = "surreal-modules-fsm"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 core = { package = "surreal-core", path = "../../core" }
-pest = "2.5.1"
-pest_derive = "2.5.1"

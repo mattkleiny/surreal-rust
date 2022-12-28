@@ -1,12 +1,20 @@
-//! Packaging project for the Surreal engine.
+//! Root project for the Surreal engine.
 //!
-//! Importing this crate and enabling specific features will turn various functionalities on/off.
+//! Surreal is a lightweight game engine built with Rust. It offers an opinionated set of basic
+//! functionalities that game developers require to get-things-done, without over-emphasising non
+//! goals such as performance or feature-completeness.
+//!
+//! The engine is built on top of a number of core libraries, which are all available as separate
+//! crates. This root project can be added as a dependency, and features enabled/disabled to toggle
+//! the set of requirements needed for any particular project.
 
 pub extern crate surreal_core as core;
 #[cfg(feature = "editor")]
 pub extern crate surreal_editor as editor;
 #[cfg(feature = "csg")]
 pub extern crate surreal_modules_csg as csg;
+#[cfg(feature = "fsm")]
+pub extern crate surreal_modules_fsm as fsm;
 #[cfg(feature = "gdscript")]
 pub extern crate surreal_modules_gdscript as gdscript;
 #[cfg(feature = "prototype")]
@@ -37,6 +45,8 @@ pub mod prelude {
   pub use csg::*;
   #[cfg(feature = "editor")]
   pub use editor::*;
+  #[cfg(feature = "fsm")]
+  pub use fsm::*;
   #[cfg(feature = "gdscript")]
   pub use gdscript::*;
   #[cfg(feature = "prototype")]
