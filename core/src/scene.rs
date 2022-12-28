@@ -1,3 +1,5 @@
+use std::collections::{HashMap, HashSet};
+
 use crate::maths::{FromRandom, Quaternion, Vector3};
 use crate::utilities::unsafe_mutable_alias;
 
@@ -9,6 +11,13 @@ pub type SceneNodeId = crate::maths::Guid;
 pub struct SceneGraph {
   /// The root [`SceneNode`] of this graph.
   pub root: SceneNode,
+  groups: HashMap<String, SceneGroup>,
+}
+
+/// A group of nodes in a [`SceneGraph`].
+#[derive(Default)]
+struct SceneGroup {
+  members: HashSet<SceneNodeId>,
 }
 
 /// A node in a [`SceneGraph`].
@@ -19,19 +28,6 @@ pub struct SceneNode {
   transform: AffineTransform,
   components: Vec<Box<dyn Component>>,
   children: Vec<SceneNode>,
-}
-
-impl Default for SceneNode {
-  fn default() -> Self {
-    Self {
-      id: SceneNodeId::random(),
-      is_visible: true,
-      is_enabled: true,
-      transform: Default::default(),
-      components: vec![],
-      children: vec![],
-    }
-  }
 }
 
 /// A notification for some event that occurred in the scene.
@@ -78,10 +74,54 @@ struct AffineTransform {
   pub scale: Vector3<f32>,
 }
 
+impl Default for SceneNode {
+  fn default() -> Self {
+    Self {
+      id: SceneNodeId::random(),
+      is_visible: true,
+      is_enabled: true,
+      transform: Default::default(),
+      components: vec![],
+      children: vec![],
+    }
+  }
+}
+
+impl Default for AffineTransform {
+  fn default() -> Self {
+    Self {
+      position: Vector3::ZERO,
+      rotation: Quaternion::IDENTITY,
+      scale: Vector3::ONE,
+    }
+  }
+}
+
 impl SceneGraph {
   /// Notifies all nodes in the scene graph of a [`SceneEvent`].
   pub fn notify(&mut self, event: SceneEvent) {
     self.root.notify(event);
+  }
+
+  /// Adds a [`SceneNode`] to a group.
+  pub fn add_to_group(&mut self, name: impl Into<String>, node_id: SceneNodeId) {
+    let name = name.into();
+    let group = self.groups.entry(name).or_default();
+
+    group.members.insert(node_id);
+  }
+
+  /// Removes a [`SceneNode`] from a group.
+  pub fn remove_from_group(&mut self, name: impl Into<String>, node_id: SceneNodeId) {
+    let name = name.into();
+
+    if let Some(group) = self.groups.get_mut(&name) {
+      group.members.retain(|id| *id != node_id);
+
+      if group.members.is_empty() {
+        self.groups.remove(&name);
+      }
+    }
   }
 }
 
@@ -175,18 +215,8 @@ impl SceneNode {
     }
 
     ChildrenIter {
-      node: &self,
+      node: self,
       index: Some(0),
-    }
-  }
-}
-
-impl Default for AffineTransform {
-  fn default() -> Self {
-    Self {
-      position: Vector3::ZERO,
-      rotation: Quaternion::IDENTITY,
-      scale: Vector3::ONE,
     }
   }
 }
@@ -280,6 +310,7 @@ mod tests {
         ],
         ..Default::default()
       },
+      groups: HashMap::new(),
     };
 
     scene.notify(SceneEvent::Update(0.16));

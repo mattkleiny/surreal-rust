@@ -37,10 +37,6 @@ pub extern crate voxels;
 pub use core::Result;
 
 pub mod prelude {
-  //! A prelude for the Surreal engine.
-  //!
-  //! Import this module to get convenient access to all engine features.
-
   pub use core::assets::*;
   pub use core::audio::*;
   pub use core::collections::*;
@@ -54,4 +50,13 @@ pub mod prelude {
   pub use core::scripting::*;
   pub use core::ui::*;
   pub use core::utilities::*;
+}
+
+pub mod servers {
+  #[cfg(feature = "audio")]
+  pub use audio::*;
+  #[cfg(feature = "graphics")]
+  pub use graphics::*;
+  #[cfg(feature = "physics")]
+  pub use physics::*;
 }

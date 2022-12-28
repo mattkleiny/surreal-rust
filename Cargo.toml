@@ -8,20 +8,20 @@ edition = "2021"
 [workspace]
 members = [
     "core",
-    "drivers/*",
     "editor",
     "macros",
     "modules/*",
-    "platform/*",
     "scenes/*",
+    "servers/*",
     "tools/*"
 ]
 
 [features]
-default = []
+default = ["audio", "graphics", "physics"]
 profiling = ["core/profiling"]
 
 [dependencies]
+# core
 core = { package = "surreal-core", path = "./core" }
 editor = { package = "surreal-editor", path = "./editor", optional = true }
 macros = { package = "surreal-macros", path = "./macros", optional = true }
@@ -40,6 +40,11 @@ voxels = { package = "surreal-modules-voxels", path = "./modules/voxels", option
 # scenes
 scene2d = { package = "surreal-scene-2d", path = "./scenes/2d", optional = true }
 scene3d = { package = "surreal-scene-3d", path = "./scenes/3d", optional = true }
+
+# servers
+audio = { package = "surreal-server-audio", path = "./servers/audio", optional = true }
+graphics = { package = "surreal-server-graphics", path = "./servers/graphics", optional = true }
+physics = { package = "surreal-server-physics", path = "./servers/physics", optional = true }
 
 [dev-dependencies]
 egui = "0.20.1" # for examples

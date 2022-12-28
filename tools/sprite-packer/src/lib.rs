@@ -17,8 +17,9 @@ pub struct SpriteAnchor<'a> {
 
 /// A sprite sheet as output from the packer.
 ///
-/// The sheet describes which sprites (identified by their ID) are present in the sheet, and where they are located.
-/// A separate step should be used to build the resultant texture/image data.
+/// The sheet describes which sprites (identified by their ID) are present in
+/// the sheet, and where they are located. A separate step should be used to
+/// build the resultant texture/image data.
 #[derive(Clone, Debug)]
 pub struct SpriteSheet<'a> {
   pub width: u32,
@@ -28,8 +29,8 @@ pub struct SpriteSheet<'a> {
 
 /// Packs the given sprites as a uniform set of images into a [`SpriteSheet`].
 ///
-/// This method requires that all sprites have the same size and will form a rectangular grid of the least highest
-/// power of 2 necessary to fit all sprites.
+/// This method requires that all sprites have the same size and will form a
+/// rectangular grid of the least highest power of 2 necessary to fit all sprites.
 pub fn pack_uniform_grid(sprites: &mut [Sprite]) -> anyhow::Result<SpriteSheet> {
   let _width = sprites.iter().map(|sprite| sprite.size.0).max().unwrap();
   let _height = sprites.iter().map(|sprite| sprite.size.1).max().unwrap();

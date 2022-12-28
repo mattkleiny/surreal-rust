@@ -1121,6 +1121,9 @@ dependencies = [
  "surreal-modules-voxels",
  "surreal-scene-2d",
  "surreal-scene-3d",
+ "surreal-server-audio",
+ "surreal-server-graphics",
+ "surreal-server-physics",
 ]
 
 [[package]]
@@ -1144,20 +1147,6 @@ dependencies = [
  "serde_yaml",
  "smallvec",
  "uuid",
-]
-
-[[package]]
-name = "surreal-drivers-openal"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-drivers-opengl"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
 ]
 
 [[package]]
@@ -1245,13 +1234,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "surreal-platform-windows"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
 name = "surreal-scene-2d"
 version = "0.1.0"
 dependencies = [
@@ -1260,6 +1242,27 @@ dependencies = [
 
 [[package]]
 name = "surreal-scene-3d"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-server-audio"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-server-graphics"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-server-physics"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
