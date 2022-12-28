@@ -1109,11 +1109,13 @@ dependencies = [
  "egui",
  "surreal-core",
  "surreal-editor",
+ "surreal-modules-ai",
  "surreal-modules-blueprints",
  "surreal-modules-csg",
  "surreal-modules-fsm",
  "surreal-modules-gdscript",
  "surreal-modules-prototype",
+ "surreal-modules-streaming",
  "surreal-modules-voxels",
 ]
 
@@ -1159,6 +1161,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "surreal-modules-ai"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
 name = "surreal-modules-blueprints"
 version = "0.1.0"
 dependencies = [
@@ -1190,6 +1199,13 @@ dependencies = [
 
 [[package]]
 name = "surreal-modules-prototype"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-modules-streaming"
 version = "0.1.0"
 dependencies = [
  "surreal-core",

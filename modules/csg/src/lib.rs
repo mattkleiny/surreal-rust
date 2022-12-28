@@ -3,7 +3,7 @@
 //! This module provides the basic operations for constructing and manipulating
 //! 3D geometry using the Constructive Solid Geometry (CSG) paradigm.
 //!
-//! The core of this module is the [`Brush`] type, which represents a 3D shape
+//! The core of this module is the [`Brush`] type, which represents a 2D/3D shape
 //! that can be constructed from a simple set of [`Polygon`]s.
 
 use core::graphics::{Color32, Index, Vertex, VertexDescriptor, VertexKind};
@@ -95,6 +95,15 @@ pub trait Operation {
 pub struct Sphere {
   pub radius: f32,
   pub offset: Vector3<f32>,
+}
+
+impl Default for Sphere {
+  fn default() -> Self {
+    Self {
+      radius: 1.0,
+      offset: Vector3::ZERO,
+    }
+  }
 }
 
 impl Brush for Sphere {

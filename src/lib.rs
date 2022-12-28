@@ -11,6 +11,8 @@
 pub extern crate surreal_core as core;
 #[cfg(feature = "editor")]
 pub extern crate surreal_editor as editor;
+#[cfg(feature = "ai")]
+pub extern crate surreal_modules_ai as ai;
 #[cfg(feature = "blueprints")]
 pub extern crate surreal_modules_blueprints as blueprints;
 #[cfg(feature = "csg")]
@@ -21,6 +23,8 @@ pub extern crate surreal_modules_fsm as fsm;
 pub extern crate surreal_modules_gdscript as gdscript;
 #[cfg(feature = "prototype")]
 pub extern crate surreal_modules_prototype as prototype;
+#[cfg(feature = "streaming")]
+pub extern crate surreal_modules_streaming as streaming;
 #[cfg(feature = "voxels")]
 pub extern crate surreal_modules_voxels as voxels;
 
@@ -31,8 +35,6 @@ pub mod prelude {
   //!
   //! Import this module to get convenient access to all engine features.
 
-  #[cfg(feature = "blueprints")]
-  pub use blueprints::*;
   pub use core::assets::*;
   pub use core::audio::*;
   pub use core::collections::*;
@@ -45,16 +47,4 @@ pub mod prelude {
   pub use core::scripting::*;
   pub use core::ui::*;
   pub use core::utilities::*;
-  #[cfg(feature = "csg")]
-  pub use csg::*;
-  #[cfg(feature = "editor")]
-  pub use editor::*;
-  #[cfg(feature = "fsm")]
-  pub use fsm::*;
-  #[cfg(feature = "gdscript")]
-  pub use gdscript::*;
-  #[cfg(feature = "prototype")]
-  pub use prototype::*;
-  #[cfg(feature = "voxels")]
-  pub use voxels::*;
 }
