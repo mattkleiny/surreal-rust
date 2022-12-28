@@ -132,7 +132,7 @@ pub struct RenderFrame<'a> {
 
 /// A key used to order rendering of objects by the material in use.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-pub struct MaterialKey {
+pub struct MaterialSortKey {
   pub flags: MaterialFlags,
 }
 
@@ -151,7 +151,7 @@ bitflags::bitflags! {
 pub struct CullingResult {
   pub id: u64,
   pub distance_metric: f32,
-  pub material_key: MaterialKey,
+  pub material_key: MaterialSortKey,
 }
 
 /// A frustum of 6 planes representing the camera's viewport; used to cull objects.

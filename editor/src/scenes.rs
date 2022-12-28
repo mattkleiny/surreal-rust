@@ -1,7 +1,7 @@
 //! Scene management abstractions and tools
 
-use surreal_core::collections::Arena;
-use surreal_core::maths::Guid;
+use core::collections::Arena;
+use core::maths::Guid;
 
 /// Describes a game scene that can be simulated.
 pub struct Scene {
@@ -119,7 +119,7 @@ impl Into<SceneDescriptor> for &Scene {
 
 #[cfg(test)]
 mod tests {
-  use surreal_core::maths::FromRandom;
+  use core::maths::FromRandom;
 
   use super::*;
 

@@ -1110,6 +1110,7 @@ dependencies = [
  "surreal-core",
  "surreal-editor",
  "surreal-modules-ai",
+ "surreal-modules-animation",
  "surreal-modules-blueprints",
  "surreal-modules-csg",
  "surreal-modules-fsm",
@@ -1117,6 +1118,8 @@ dependencies = [
  "surreal-modules-prototype",
  "surreal-modules-streaming",
  "surreal-modules-voxels",
+ "surreal-scene-2d",
+ "surreal-scene-3d",
 ]
 
 [[package]]
@@ -1145,10 +1148,16 @@ dependencies = [
 [[package]]
 name = "surreal-drivers-openal"
 version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
 
 [[package]]
 name = "surreal-drivers-opengl"
 version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
 
 [[package]]
 name = "surreal-editor"
@@ -1162,6 +1171,13 @@ dependencies = [
 
 [[package]]
 name = "surreal-modules-ai"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-modules-animation"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
@@ -1221,6 +1237,23 @@ dependencies = [
 [[package]]
 name = "surreal-platform-windows"
 version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-scene-2d"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-scene-3d"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
 
 [[package]]
 name = "syn"

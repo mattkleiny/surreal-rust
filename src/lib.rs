@@ -8,25 +8,29 @@
 //! crates. This root project can be added as a dependency, and features enabled/disabled to toggle
 //! the set of requirements needed for any particular project.
 
-pub extern crate surreal_core as core;
-#[cfg(feature = "editor")]
-pub extern crate surreal_editor as editor;
 #[cfg(feature = "ai")]
-pub extern crate surreal_modules_ai as ai;
+pub extern crate ai;
 #[cfg(feature = "blueprints")]
-pub extern crate surreal_modules_blueprints as blueprints;
+pub extern crate blueprints;
+pub extern crate core;
 #[cfg(feature = "csg")]
-pub extern crate surreal_modules_csg as csg;
+pub extern crate csg;
+#[cfg(feature = "editor")]
+pub extern crate editor;
 #[cfg(feature = "fsm")]
-pub extern crate surreal_modules_fsm as fsm;
+pub extern crate fsm;
 #[cfg(feature = "gdscript")]
-pub extern crate surreal_modules_gdscript as gdscript;
+pub extern crate gdscript;
 #[cfg(feature = "prototype")]
-pub extern crate surreal_modules_prototype as prototype;
+pub extern crate prototype;
+#[cfg(feature = "scene2d")]
+pub extern crate scene2d;
+#[cfg(feature = "scene3d")]
+pub extern crate scene3d;
 #[cfg(feature = "streaming")]
-pub extern crate surreal_modules_streaming as streaming;
+pub extern crate streaming;
 #[cfg(feature = "voxels")]
-pub extern crate surreal_modules_voxels as voxels;
+pub extern crate voxels;
 
 pub use core::Result;
 

@@ -1,0 +1,19 @@
+@startuml
+'https://plantuml.com/class-diagram
+title: Streaming System Overview
+
+interface StreamingHandler {
+  + startStreaming(&[StreamRequest]): Future<Unit>
+}
+
+class StreamingManager
+class StreamingVolume
+class StreamingArea
+class StreamingJob
+
+StreamingManager -up-> StreamingHandler: <<uses>>
+StreamingManager -down-|> StreamingJob: <<creates>>
+StreamingVolume -left> StreamingManager: <<invokes>>
+StreamingArea -right> StreamingManager: <<invokes>>
+
+@enduml

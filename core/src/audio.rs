@@ -67,7 +67,7 @@ impl AudioSampleRate {
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level implementation abstraction.
 ///
-/// Theoeretically different backends could be supported; though it's unlikely to be anything other
+/// Theoretically different backends could be supported; though it's unlikely to be anything other
 /// than OpenAL. We do provide a headless backend to facilitate testing and related, however.
 pub trait AudioBackend {
   // clips

@@ -10,7 +10,7 @@ use super::*;
 /// A densely packed 2d map of [`Tile`]s.
 ///
 /// Internally tiles are represented by their [`Tile::Id`], but the public
-/// API allows for direct access via the [`T`] abstraction.
+/// API allows for direct access via the `T` abstraction.
 pub struct TileMap<'a, T: Tile> {
   tiles: Grid<T::Id>,
   sprites: HashMap<T::Id, TextureRegion<'a>>,

@@ -2,15 +2,13 @@
 //!
 //! This engine is a light abstraction on top of OpenGL; it offers basic lifecycle management
 //! of common OpenGL primitives (textures, buffers, vertex array/meshes, etc). These primitives
-//! are backed by a particular `GraphicsBackend` implementation, which allows us to gracefully
+//! are backed by a particular [`GraphicsBackend`] implementation, which allows us to gracefully
 //! swap the internal graphics implementation through a single dynamic pointer.
 //!
 //! On top of the these lower-level primitives, we also build up to some more useful abstractions,
-//! such as the `RenderContextManager`. This manager types allow for the creation of context objects
+//! such as the [`RenderContextManager`]. This manager types allow for the creation of context objects
 //! and simplifies the work required to initialize all the OpenGL resources required to pull off some
-//! sort of meaningful rendering step. Similarly the `CommandQueue` can be used to coordinate resource
-//! access across discrete lifetime bounds in Rust (such as issuing rendering instructions from a script,
-//! or another thread).
+//! sort of meaningful rendering step.
 
 pub use buffers::*;
 pub use colors::*;
@@ -75,7 +73,7 @@ pub enum GraphicsBarrier {
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level implementation abstraction.
 ///
-/// Theoeretically different backends could be supported; though it's unlikely to be anything other
+/// Theoretically different backends could be supported; though it's unlikely to be anything other
 /// than OpenGL. We do provide a headless backend to facilitate testing and related, however.
 pub trait GraphicsBackend {
   // frame operations

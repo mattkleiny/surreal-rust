@@ -50,7 +50,7 @@ impl AudioSource {
     state.audio.set_source_volume(self.handle(), volume)
   }
 
-  /// Plays the given clip on this audio source.
+  /// Plays the given [`AudioClip`] on this [`AudioSource`].
   ///
   /// If the source was already playing, it will restart.
   pub fn play(&mut self, _clip: &AudioClip) {

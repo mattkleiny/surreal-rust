@@ -6,36 +6,38 @@ authors = ["Matt Kleinschafer <xeusalmighty@gmail.com>"]
 edition = "2021"
 
 [workspace]
-members = ["core", "drivers/*", "editor", "platform/*", "modules/*", "tools/*"]
+members = [
+    "core",
+    "drivers/*",
+    "editor",
+    "modules/*",
+    "platform/*",
+    "scenes/*",
+    "tools/*"
+]
 
 [features]
 default = []
-
-# core features
-profiling = ["surreal-core/profiling"]
-editor = ["surreal-editor"]
-
-# module features
-ai = ["surreal-modules-ai"]
-blueprints = ["surreal-modules-blueprints"]
-csg = ["surreal-modules-csg"]
-fsm = ["surreal-modules-fsm"]
-gdscript = ["surreal-modules-gdscript"]
-prototype = ["surreal-modules-prototype"]
-streaming = ["surreal-modules-streaming"]
-voxels = ["surreal-modules-voxels"]
+profiling = ["core/profiling"]
 
 [dependencies]
-surreal-core = { path = "./core" }
-surreal-editor = { path = "./editor", optional = true }
-surreal-modules-ai = { path = "./modules/ai", optional = true }
-surreal-modules-blueprints = { path = "./modules/blueprints", optional = true }
-surreal-modules-csg = { path = "./modules/csg", optional = true }
-surreal-modules-fsm = { path = "./modules/fsm", optional = true }
-surreal-modules-gdscript = { path = "./modules/gdscript", optional = true }
-surreal-modules-prototype = { path = "./modules/prototype", optional = true }
-surreal-modules-streaming = { path = "./modules/streaming", optional = true }
-surreal-modules-voxels = { path = "./modules/voxels", optional = true }
+core = { package = "surreal-core", path = "./core" }
+editor = { package = "surreal-editor", path = "./editor", optional = true }
+
+# modules
+ai = { package = "surreal-modules-ai", path = "./modules/ai", optional = true }
+animation = { package = "surreal-modules-animation", path = "./modules/animation", optional = true }
+blueprints = { package = "surreal-modules-blueprints", path = "./modules/blueprints", optional = true }
+csg = { package = "surreal-modules-csg", path = "./modules/csg", optional = true }
+fsm = { package = "surreal-modules-fsm", path = "./modules/fsm", optional = true }
+gdscript = { package = "surreal-modules-gdscript", path = "./modules/gdscript", optional = true }
+prototype = { package = "surreal-modules-prototype", path = "./modules/prototype", optional = true }
+streaming = { package = "surreal-modules-streaming", path = "./modules/streaming", optional = true }
+voxels = { package = "surreal-modules-voxels", path = "./modules/voxels", optional = true }
+
+# scenes
+scene2d = { package = "surreal-scene-2d", path = "./scenes/2d", optional = true }
+scene3d = { package = "surreal-scene-3d", path = "./scenes/3d", optional = true }
 
 [dev-dependencies]
 egui = "0.20.1" # for examples
@@ -47,10 +49,6 @@ required-features = ["prototype"]
 [[example]]
 name = "bunnymark"
 required-features = ["prototype"]
-
-[[example]]
-name = "editor"
-required-features = ["editor"]
 
 [[example]]
 name = "egui"

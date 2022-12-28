@@ -4,6 +4,8 @@
 //! inspectors, reflection and a central message bus as well as a UI that
 //! can be composed for differing workflows depending on the game being built.
 
+#![feature(anonymous_lifetime_in_impl_trait)]
+
 #[macro_use]
 extern crate serde;
 

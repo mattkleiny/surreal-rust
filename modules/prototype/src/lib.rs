@@ -95,7 +95,7 @@ pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<
   palette.expect("Failed to load built-in palette")
 }
 
-/// A [`RenderContextDescriptor`] for a simple [`SpriteContext`] for use in sprite rendering.
+/// A [`RenderContextDescriptor`] for a simple [`SpriteBatchContext`] for use in sprite rendering.
 pub struct SpriteBatchDescriptor {
   /// A default projection-view matrix to apply.
   pub projection_view: Matrix4x4,

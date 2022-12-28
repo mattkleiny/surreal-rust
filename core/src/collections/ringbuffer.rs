@@ -60,7 +60,7 @@ impl<T> RingBuffer<T> {
   }
 }
 
-/// An iterator for the ring buffer.
+/// An iterator for [`RingBuffer`].
 pub struct RingBufferIter<'a, T> {
   buffer: &'a RingBuffer<T>,
   index: usize,

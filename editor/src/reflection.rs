@@ -1,4 +1,4 @@
-use surreal_core::utilities::{Variant, VariantKind};
+use core::utilities::{Variant, VariantKind};
 
 /// Allows a type to be reflected and provide
 /// information about it's properties and methods.
