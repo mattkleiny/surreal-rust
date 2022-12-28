@@ -84,10 +84,22 @@ pub trait Brush {
 /// A Constructive Solid Geometry (CSG) operation.
 ///
 /// An operation is a function that takes a collection of brushes and produces
-/// a new brush.
-pub trait Operation {
-  /// Returns the [`Brush`] that results from applying this operation to the given brushes.
-  fn apply(&self, brushes: &[&dyn Brush]) -> Box<dyn Brush>;
+/// a new brush representing their logical combination.
+pub enum Operation {
+  Union,
+  Difference,
+  Intersection,
+}
+
+impl Operation {
+  /// Applies this operation to the given [`Brush`]es.
+  fn apply(&self, _brushes: &[&dyn Brush]) -> Box<dyn Brush> {
+    match self {
+      Operation::Union => todo!(),
+      Operation::Difference => todo!(),
+      Operation::Intersection => todo!(),
+    }
+  }
 }
 
 /// A sphere.

@@ -1,6 +1,7 @@
 //! A simple tile-map example for Surreal
 
 use surreal::prelude::*;
+use surreal::prototype::*;
 
 fn main() {
   let configuration = Configuration {

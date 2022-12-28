@@ -1,6 +1,7 @@
 //! A simple Hello, World for Surreal.
 
 use surreal::prelude::*;
+use surreal::prototype::*;
 
 fn main() {
   let configuration = Configuration {

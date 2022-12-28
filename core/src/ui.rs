@@ -172,7 +172,7 @@ impl UserInterface {
 
           // update our single mesh shape and re-render it
           self.mesh.with_buffers(|vertex_buffer, index_buffer| {
-            // our vertices are blitably the same as what egui gives us, so just cast the slice.
+            // our vertices are blit-ably the same as what egui gives us, so just cast the slice.
             let vertices = unsafe { std::slice::from_raw_parts(vertices.as_ptr() as *const Vertex2, vertices.len()) };
 
             vertex_buffer.write_data(vertices);

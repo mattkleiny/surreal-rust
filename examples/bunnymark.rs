@@ -1,6 +1,7 @@
 //! A simple sprite benchmark for Surreal.
 
 use surreal::prelude::*;
+use surreal::prototype::*;
 
 const WIDTH: f32 = 1920.;
 const HEIGHT: f32 = 1080.;

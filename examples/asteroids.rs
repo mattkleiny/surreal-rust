@@ -1,6 +1,7 @@
 //! An asteroids clone in Rust with manual rasterization into a pixel grid.
 
 use surreal::prelude::*;
+use surreal::prototype::*;
 
 fn main() {
   let configuration = Configuration {

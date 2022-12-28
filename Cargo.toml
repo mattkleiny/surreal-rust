@@ -29,10 +29,8 @@ macros = { package = "surreal-macros", path = "./macros", optional = true }
 # modules
 ai = { package = "surreal-modules-ai", path = "./modules/ai", optional = true }
 animation = { package = "surreal-modules-animation", path = "./modules/animation", optional = true }
-blueprints = { package = "surreal-modules-blueprints", path = "./modules/blueprints", optional = true }
 csg = { package = "surreal-modules-csg", path = "./modules/csg", optional = true }
-fsm = { package = "surreal-modules-fsm", path = "./modules/fsm", optional = true }
-gdscript = { package = "surreal-modules-gdscript", path = "./modules/gdscript", optional = true }
+scripting = { package = "surreal-modules-scripting", path = "modules/scripting", optional = true }
 prototype = { package = "surreal-modules-prototype", path = "./modules/prototype", optional = true }
 streaming = { package = "surreal-modules-streaming", path = "./modules/streaming", optional = true }
 voxels = { package = "surreal-modules-voxels", path = "./modules/voxels", optional = true }

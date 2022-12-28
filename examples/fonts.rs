@@ -2,6 +2,7 @@
 
 use std::ops::Deref;
 use surreal::prelude::*;
+use surreal::prototype::*;
 
 fn main() {
   let configuration = Configuration {

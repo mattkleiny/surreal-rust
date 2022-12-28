@@ -26,7 +26,7 @@ pub struct StreamingManager {}
 /// The handler is responsible for loading and unloading assets based on the
 /// requests it receives from the [`StreamingManager`].
 pub trait StreamingHandler {
-  async fn handle(&self, request: &StreamingRequest) -> StreamingResponse;
+  async fn handle(&self, request: &StreamingRequest) -> core::Result<()>;
 }
 
 /// A single job for the [`StreamingManager`].
@@ -37,13 +37,6 @@ pub struct StreamingHandle {}
 
 /// A request to load a bundle of resources in the [`StreamingManager`].
 pub struct StreamingRequest {}
-
-/// The response for a [`StreamingHandler`] request.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum StreamingResponse {
-  Success,
-  Failure,
-}
 
 /// A 2d area that can indicate to the [`StreamingManager`] to change resources.
 pub trait StreamingArea {}

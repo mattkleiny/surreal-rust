@@ -1,4 +1,4 @@
-//! A GDScript scripting language implementation for Surreal.
+//! A scripting language for Surreal.
 
 #[macro_use]
 extern crate pest_derive;

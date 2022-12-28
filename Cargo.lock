@@ -1112,11 +1112,9 @@ dependencies = [
  "surreal-macros",
  "surreal-modules-ai",
  "surreal-modules-animation",
- "surreal-modules-blueprints",
  "surreal-modules-csg",
- "surreal-modules-fsm",
- "surreal-modules-gdscript",
  "surreal-modules-prototype",
+ "surreal-modules-scripting",
  "surreal-modules-streaming",
  "surreal-modules-voxels",
  "surreal-scene-2d",
@@ -1183,13 +1181,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "surreal-modules-blueprints"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
 name = "surreal-modules-csg"
 version = "0.1.0"
 dependencies = [
@@ -1197,25 +1188,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "surreal-modules-fsm"
+name = "surreal-modules-prototype"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
 ]
 
 [[package]]
-name = "surreal-modules-gdscript"
+name = "surreal-modules-scripting"
 version = "0.1.0"
 dependencies = [
  "pest",
  "pest_derive",
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-modules-prototype"
-version = "0.1.0"
-dependencies = [
  "surreal-core",
 ]
 

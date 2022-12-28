@@ -1,6 +1,7 @@
 //! A fun little falling sand simulation for Surreal.
 
 use surreal::prelude::*;
+use surreal::prototype::*;
 
 fn main() {
   let configuration = Configuration {

@@ -10,17 +10,11 @@
 
 #[cfg(feature = "ai")]
 pub extern crate ai;
-#[cfg(feature = "blueprints")]
-pub extern crate blueprints;
 pub extern crate core;
 #[cfg(feature = "csg")]
 pub extern crate csg;
 #[cfg(feature = "editor")]
 pub extern crate editor;
-#[cfg(feature = "fsm")]
-pub extern crate fsm;
-#[cfg(feature = "gdscript")]
-pub extern crate gdscript;
 #[cfg(feature = "macros")]
 pub extern crate macros;
 #[cfg(feature = "prototype")]
@@ -29,12 +23,12 @@ pub extern crate prototype;
 pub extern crate scene2d;
 #[cfg(feature = "scene3d")]
 pub extern crate scene3d;
+#[cfg(feature = "scripting")]
+pub extern crate scripting;
 #[cfg(feature = "streaming")]
 pub extern crate streaming;
 #[cfg(feature = "voxels")]
 pub extern crate voxels;
-
-pub use core::Result;
 
 pub mod prelude {
   pub use core::assets::*;
