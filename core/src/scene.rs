@@ -1,4 +1,5 @@
-use crate::maths::{FromRandom, Matrix4x4, Quaternion, Vector3};
+use crate::maths::{FromRandom, Quaternion, Vector3};
+use crate::utilities::unsafe_mutable_alias;
 
 /// A unique identifier for a [`SceneNode`].
 pub type SceneNodeId = crate::maths::Guid;
@@ -48,25 +49,25 @@ pub enum SceneEvent {
 ///
 /// Components receive callbacks in response to scene lifecycle events, and
 /// can access information from their parent [`SceneNode`]s.
-pub trait Component {
+pub trait Component<N = SceneNode> {
   /// Invoked to handle dispatch of [`SceneEvent`]s.
-  fn on_event(&mut self, event: SceneEvent) {
+  fn on_event(&mut self, node: &mut N, event: SceneEvent) {
     match event {
-      SceneEvent::Awake => self.on_awake(),
-      SceneEvent::Start => self.on_start(),
-      SceneEvent::Enable => self.on_enable(),
-      SceneEvent::Disable => self.on_disable(),
-      SceneEvent::Update(delta_time) => self.on_update(delta_time),
-      SceneEvent::Destroy => self.on_destroy(),
+      SceneEvent::Awake => self.on_awake(node),
+      SceneEvent::Start => self.on_start(node),
+      SceneEvent::Enable => self.on_enable(node),
+      SceneEvent::Disable => self.on_disable(node),
+      SceneEvent::Update(delta_time) => self.on_update(node, delta_time),
+      SceneEvent::Destroy => self.on_destroy(node),
     }
   }
 
-  fn on_awake(&mut self) {}
-  fn on_start(&mut self) {}
-  fn on_enable(&mut self) {}
-  fn on_disable(&mut self) {}
-  fn on_update(&mut self, _delta_time: f32) {}
-  fn on_destroy(&mut self) {}
+  fn on_awake(&mut self, _node: &mut N) {}
+  fn on_start(&mut self, _node: &mut N) {}
+  fn on_enable(&mut self, _node: &mut N) {}
+  fn on_disable(&mut self, _node: &mut N) {}
+  fn on_update(&mut self, _node: &mut N, _delta_time: f32) {}
+  fn on_destroy(&mut self, _node: &mut N) {}
 }
 
 /// An affine transform for use in [`SceneNode`] positioning.
@@ -82,33 +83,13 @@ impl SceneGraph {
   pub fn notify(&mut self, event: SceneEvent) {
     self.root.notify(event);
   }
-
-  pub fn awake(&mut self) {
-    self.notify(SceneEvent::Awake);
-  }
-
-  pub fn start(&mut self) {
-    self.notify(SceneEvent::Start);
-  }
-
-  pub fn enable(&mut self) {
-    self.notify(SceneEvent::Enable);
-  }
-
-  pub fn disable(&mut self) {
-    self.notify(SceneEvent::Disable);
-  }
-
-  pub fn update(&mut self, delta_time: f32) {
-    self.notify(SceneEvent::Update(delta_time));
-  }
-
-  pub fn destroy(&mut self) {
-    self.notify(SceneEvent::Destroy);
-  }
 }
 
 impl SceneNode {
+  pub fn id(&self) -> SceneNodeId {
+    self.id
+  }
+
   pub fn is_visible(&self) -> bool {
     self.is_visible
   }
@@ -149,20 +130,20 @@ impl SceneNode {
     self.transform.scale = scale
   }
 
-  /// Adds a child node to this node.
   pub fn add_child(&mut self, child: SceneNode) {
     self.children.push(child);
   }
 
-  /// Adds a new component to this node.
   pub fn add_component(&mut self, component: Box<dyn Component>) {
     self.components.push(component);
   }
 
   /// Notify this node's [`Component`] and all of it's child [`SceneNode`]s.
   pub fn notify(&mut self, event: SceneEvent) {
+    let node = unsafe_mutable_alias(self);
+
     for component in &mut self.components {
-      component.on_event(event);
+      component.on_event(node, event);
     }
 
     for child in &mut self.children {
@@ -210,13 +191,6 @@ impl Default for AffineTransform {
   }
 }
 
-impl AffineTransform {
-  /// Converts this transform to a model [`Matrix4x4`].
-  pub fn to_matrix4x4(&self) -> Matrix4x4 {
-    todo!()
-  }
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -244,8 +218,8 @@ mod tests {
     struct TestComponent {}
 
     impl Component for TestComponent {
-      fn on_update(&mut self, delta_time: f32) {
-        println!("on_update: {}", delta_time);
+      fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
+        println!("Update node id {} delta_time {}", node.id, delta_time);
       }
     }
 
@@ -271,8 +245,8 @@ mod tests {
     struct TestComponent {}
 
     impl Component for TestComponent {
-      fn on_update(&mut self, delta_time: f32) {
-        println!("on_update: {}", delta_time);
+      fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
+        println!("Update node id {} delta_time {}", node.id, delta_time);
       }
     }
 

@@ -146,12 +146,12 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
 
       palette_texture.write_pixels(palette.len(), 1, palette.as_slice());
 
-      material.set_texture_key(UNIFORM_PALETTE, &palette_texture, None);
-      material.set_uniform_key(UNIFORM_PALETTE_WIDTH, palette.len() as u32);
+      material.set_texture(UNIFORM_PALETTE, &palette_texture, None);
+      material.set_uniform(UNIFORM_PALETTE_WIDTH, palette.len() as u32);
     }
 
     // apply the default projection-view matrix
-    material.set_uniform_key(UNIFORM_PROJECTION_VIEW, &self.projection_view);
+    material.set_uniform(UNIFORM_PROJECTION_VIEW, &self.projection_view);
 
     // enable default material state
     material.set_blend_state(BlendState::Enabled {
@@ -224,7 +224,7 @@ impl RenderContextDescriptor for GeometryBatchDescriptor {
     let batch = GeometryBatch::new(graphics);
 
     // apply the default projection-view matrix
-    material.set_uniform_key(UNIFORM_PROJECTION_VIEW, &self.projection_view);
+    material.set_uniform(UNIFORM_PROJECTION_VIEW, &self.projection_view);
 
     // enable default material state
     material.set_blend_state(BlendState::Enabled {

@@ -72,6 +72,12 @@ impl<U> UniformKey<U> {
   }
 }
 
+impl<U> From<&'static str> for UniformKey<U> {
+  fn from(name: &'static str) -> Self {
+    UniformKey::new(name)
+  }
+}
+
 /// Represents a single compiled shader program.
 #[derive(Clone)]
 pub struct ShaderProgram {

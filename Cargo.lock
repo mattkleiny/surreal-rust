@@ -1205,7 +1205,6 @@ name = "surreal-modules-csg"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
- "surreal-macros",
 ]
 
 [[package]]
