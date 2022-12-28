@@ -20,7 +20,7 @@ pub const UNIFORM_PALETTE: UniformKey<&Texture> = UniformKey::new("u_palette");
 pub const UNIFORM_PALETTE_WIDTH: UniformKey<u32> = UniformKey::new("u_paletteWidth");
 
 /// A uniform that contains the projection-view matrix for perspective adjustment.
-pub const UNIFORM_PROJECTION_VIEW: UniformKey<&Matrix4x4> = UniformKey::new("u_projectionView");
+pub const UNIFORM_PROJECTION_VIEW: UniformKey<&Matrix4x4<f32>> = UniformKey::new("u_projectionView");
 
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -98,7 +98,7 @@ pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<
 /// A [`RenderContextDescriptor`] for a simple [`SpriteBatchContext`] for use in sprite rendering.
 pub struct SpriteBatchDescriptor {
   /// A default projection-view matrix to apply.
-  pub projection_view: Matrix4x4,
+  pub projection_view: Matrix4x4<f32>,
 
   /// If a palette is specified, a special shader variant will be loaded that uses the palette.
   /// The palette will be bound to `u_palette` with `u_paletteWidth` texels wide.
@@ -195,7 +195,7 @@ impl Object for SpriteBatchContext {
 /// A descriptor for the `GeometryBatch`.
 pub struct GeometryBatchDescriptor {
   /// A default projection-view matrix to apply.
-  pub projection_view: Matrix4x4,
+  pub projection_view: Matrix4x4<f32>,
 
   /// A custom shader program to use for rendering.
   pub shader: Option<ShaderProgram>,

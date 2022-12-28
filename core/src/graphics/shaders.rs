@@ -47,9 +47,9 @@ pub enum ShaderUniform {
   Vector2(Vector2<f32>),
   Vector3(Vector3<f32>),
   Vector4(Vector4<f32>),
-  Matrix2x2(Matrix2x2),
-  Matrix3x3(Matrix3x3),
-  Matrix4x4(Matrix4x4),
+  Matrix2x2(Matrix2x2<f32>),
+  Matrix3x3(Matrix3x3<f32>),
+  Matrix4x4(Matrix4x4<f32>),
   Texture(Texture, u8, Option<TextureSampler>),
   TextureArray(SmallVec<[(Texture, u8); MAX_TEXTURE_UNITS]>, Option<TextureSampler>),
 }
@@ -252,9 +252,9 @@ implement_uniform!(Vector4<i32>, Point4);
 implement_uniform!(Vector2<f32>, Vector2);
 implement_uniform!(Vector3<f32>, Vector3);
 implement_uniform!(Vector4<f32>, Vector4);
-implement_uniform!(&Matrix2x2, Matrix2x2);
-implement_uniform!(&Matrix3x3, Matrix3x3);
-implement_uniform!(&Matrix4x4, Matrix4x4);
+implement_uniform!(&Matrix2x2<f32>, Matrix2x2);
+implement_uniform!(&Matrix3x3<f32>, Matrix3x3);
+implement_uniform!(&Matrix4x4<f32>, Matrix4x4);
 
 /// Parses the given raw GLSL source and performs some basic pre-processing.
 ///

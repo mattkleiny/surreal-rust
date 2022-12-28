@@ -190,11 +190,11 @@ impl<T: Numeric + Lerp> Lerp for Vector3<T> {
   }
 }
 
-impl Mul<Matrix4x4> for Vector3<f32> {
+impl Mul<Matrix4x4<f32>> for Vector3<f32> {
   type Output = Self;
 
   #[inline(always)]
-  fn mul(self, rhs: Matrix4x4) -> Self::Output {
+  fn mul(self, rhs: Matrix4x4<f32>) -> Self::Output {
     Self::new(
       self.x * rhs[(0, 0)] + self.y * rhs[(1, 0)] + self.z * rhs[(2, 0)] + rhs[(3, 0)],
       self.x * rhs[(0, 1)] + self.y * rhs[(1, 1)] + self.z * rhs[(2, 1)] + rhs[(3, 1)],
@@ -218,7 +218,7 @@ mod tests {
 
   #[test]
   fn vector3_should_transform_by_translation_matrix() {
-    let transform = Matrix4x4::translate(1., 2., 3.);
+    let transform = Matrix4x4::from_translation(1., 2., 3.);
     let result = vec3(1., 1., 1.) * transform;
 
     assert_eq!(result, vec3(2., 3., 4.));

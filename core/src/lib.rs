@@ -7,6 +7,7 @@
 //! like to glue things together.
 
 #![feature(anonymous_lifetime_in_impl_trait)]
+#![feature(const_refs_to_cell)]
 
 #[macro_use]
 extern crate serde;

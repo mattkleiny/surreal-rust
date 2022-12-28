@@ -364,6 +364,10 @@ impl crate::ui::UserInterfaceHost for Engine {
     self.window.scale_factor() as f32
   }
 
+  fn raw_input(&self) -> &egui::RawInput {
+    &self.input.raw_input
+  }
+
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool) {
     self.input.exclusive_keyboard_input = exclusive;
   }
@@ -431,10 +435,6 @@ impl crate::ui::UserInterfaceHost for Engine {
     } else {
       self.window.set_cursor_visible(false);
     }
-  }
-
-  fn raw_input(&self) -> &egui::RawInput {
-    &self.input.raw_input
   }
 
   fn request_redraw(&self) {

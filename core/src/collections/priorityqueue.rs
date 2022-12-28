@@ -5,7 +5,7 @@ use crate::maths::ApproxEq;
 /// A lightweight priority queue with per-element ordering based on single floating point value.
 ///
 /// This is a lightweight wrapper over the built in `BinaryHeap`
-/// with an intenral node ordering explicitly defined.
+/// with an internal node ordering explicitly defined.
 pub struct PriorityQueue<T> {
   elements: BinaryHeap<Node<T>>,
 }
@@ -69,5 +69,23 @@ impl<T: PartialEq> PartialOrd for Node<T> {
 impl<T: PartialEq> Ord for Node<T> {
   fn cmp(&self, other: &Self) -> std::cmp::Ordering {
     self.order.partial_cmp(&other.order).unwrap()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn priority_queue_should_order_based_on_explicit_order() {
+    let mut queue = PriorityQueue::new();
+
+    queue.push("a", 1.0);
+    queue.push("b", 2.0);
+    queue.push("c", 3.0);
+
+    assert_eq!(queue.pop().unwrap(), "c");
+    assert_eq!(queue.pop().unwrap(), "b");
+    assert_eq!(queue.pop().unwrap(), "a");
   }
 }

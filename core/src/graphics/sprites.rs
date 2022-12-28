@@ -145,9 +145,9 @@ impl SpriteBatch {
       self.last_texture = Some(region.texture.clone());
     }
 
-    let translation = Matrix4x4::translate(options.position.x, options.position.y, 0.);
-    let rotation = Matrix4x4::rotate_z(options.rotation);
-    let scale = Matrix4x4::scale(region.size.x as f32 * options.scale.x, region.size.y as f32 * options.scale.y, 1.);
+    let translation = Matrix4x4::from_translation(options.position.x, options.position.y, 0.);
+    let rotation = Matrix4x4::from_rotate_z(options.rotation);
+    let scale = Matrix4x4::from_scale(region.size.x as f32 * options.scale.x, region.size.y as f32 * options.scale.y, 1.);
 
     let transform = translation * rotation * scale;
     let uv = region.calculate_uv();

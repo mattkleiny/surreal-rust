@@ -167,7 +167,7 @@ pub trait RenderCamera {
   fn compute_frustum(&self) -> CameraFrustum;
 
   /// Retrieves the projection-view matrix for this camera.
-  fn projection_view(&self) -> Matrix4x4;
+  fn projection_view(&self) -> Matrix4x4<f32>;
 }
 
 /// Provides culling information to a renderer for use in trivial rejection.

@@ -1,5 +1,5 @@
 /// A singleton that can be referenced statically in the application.
-pub trait Singleton: Default + Send + Sync + 'static {
+pub trait Singleton: Default + 'static {
   /// Retrieves the static instance of this type.
   fn instance() -> &'static std::sync::Mutex<Self>;
 

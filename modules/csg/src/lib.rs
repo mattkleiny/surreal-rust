@@ -1,10 +1,16 @@
 //! Constructive Solid Geometry for Surreal
 //!
 //! This module provides the basic operations for constructing and manipulating
-//! 3D geometry using the Constructive Solid Geometry (CSG) paradigm.
+//! 2D and 3D geometry using the Constructive Solid Geometry (CSG) paradigm.
 //!
 //! The core of this module is the [`Brush`] type, which represents a 2D/3D shape
-//! that can be constructed from a simple set of [`Polygon`]s.
+//! that can be constructed from a set of [`Polygon`]s.
+//!
+//! [`Brush`]es can be combined with [`Operation`]s to produce new [`Brush`] which
+//! can be further combined, and so on.
+//!
+//! A dedicated [`Mesh`] type is also available to optimize the rendering of CSG
+//! meshes.
 
 use core::graphics::{Color32, Index, Vertex, VertexDescriptor, VertexKind};
 use core::maths::{Vector2, Vector3};
