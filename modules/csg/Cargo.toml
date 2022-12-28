@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 core = { package = "surreal-core", path = "../../core" }
+macros = { package = "surreal-macros", path = "../../macros" }

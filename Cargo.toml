@@ -10,6 +10,7 @@ members = [
     "core",
     "drivers/*",
     "editor",
+    "macros",
     "modules/*",
     "platform/*",
     "scenes/*",
@@ -23,6 +24,7 @@ profiling = ["core/profiling"]
 [dependencies]
 core = { package = "surreal-core", path = "./core" }
 editor = { package = "surreal-editor", path = "./editor", optional = true }
+macros = { package = "surreal-macros", path = "./macros", optional = true }
 
 # modules
 ai = { package = "surreal-modules-ai", path = "./modules/ai", optional = true }

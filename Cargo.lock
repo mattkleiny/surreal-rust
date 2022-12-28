@@ -1109,6 +1109,7 @@ dependencies = [
  "egui",
  "surreal-core",
  "surreal-editor",
+ "surreal-macros",
  "surreal-modules-ai",
  "surreal-modules-animation",
  "surreal-modules-blueprints",
@@ -1170,6 +1171,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "surreal-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "surreal-modules-ai"
 version = "0.1.0"
 dependencies = [
@@ -1195,6 +1205,7 @@ name = "surreal-modules-csg"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
+ "surreal-macros",
 ]
 
 [[package]]

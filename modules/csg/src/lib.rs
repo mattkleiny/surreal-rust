@@ -8,6 +8,7 @@
 
 use core::graphics::{Color32, Index, Vertex, VertexDescriptor, VertexKind};
 use core::maths::{Vector2, Vector3};
+use macros::Vertex;
 
 /// A Constructive Solid Geometry (CSG) mesh.
 ///
