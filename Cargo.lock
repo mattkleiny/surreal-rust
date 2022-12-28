@@ -1109,6 +1109,7 @@ dependencies = [
  "egui",
  "surreal-core",
  "surreal-editor",
+ "surreal-modules-blueprints",
  "surreal-modules-csg",
  "surreal-modules-fsm",
  "surreal-modules-gdscript",
@@ -1154,6 +1155,13 @@ dependencies = [
  "egui",
  "serde",
  "serde_json",
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-modules-blueprints"
+version = "0.1.0"
+dependencies = [
  "surreal-core",
 ]
 

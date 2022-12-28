@@ -11,6 +11,8 @@
 pub extern crate surreal_core as core;
 #[cfg(feature = "editor")]
 pub extern crate surreal_editor as editor;
+#[cfg(feature = "blueprints")]
+pub extern crate surreal_modules_blueprints as blueprints;
 #[cfg(feature = "csg")]
 pub extern crate surreal_modules_csg as csg;
 #[cfg(feature = "fsm")]
@@ -29,6 +31,8 @@ pub mod prelude {
   //!
   //! Import this module to get convenient access to all engine features.
 
+  #[cfg(feature = "blueprints")]
+  pub use blueprints::*;
   pub use core::assets::*;
   pub use core::audio::*;
   pub use core::collections::*;

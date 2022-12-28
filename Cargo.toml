@@ -16,6 +16,7 @@ profiling = ["surreal-core/profiling"]
 editor = ["surreal-editor"]
 
 # module features
+blueprints = ["surreal-modules-blueprints"]
 csg = ["surreal-modules-csg"]
 fsm = ["surreal-modules-fsm"]
 gdscript = ["surreal-modules-gdscript"]
@@ -25,6 +26,7 @@ voxels = ["surreal-modules-voxels"]
 [dependencies]
 surreal-core = { path = "./core" }
 surreal-editor = { path = "./editor", optional = true }
+surreal-modules-blueprints = { path = "./modules/blueprints", optional = true }
 surreal-modules-csg = { path = "./modules/csg", optional = true }
 surreal-modules-fsm = { path = "./modules/fsm", optional = true }
 surreal-modules-gdscript = { path = "./modules/gdscript", optional = true }
