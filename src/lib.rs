@@ -49,11 +49,11 @@ pub mod prelude {
 
 pub mod servers {
   #[cfg(feature = "audio")]
-  pub use audio::*;
+  pub use audio;
   #[cfg(feature = "graphics")]
-  pub use graphics::*;
+  pub use graphics;
   #[cfg(feature = "input")]
-  pub use input::*;
+  pub use input;
   #[cfg(feature = "physics")]
-  pub use physics::*;
+  pub use physics;
 }

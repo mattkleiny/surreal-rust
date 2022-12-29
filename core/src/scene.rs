@@ -1,3 +1,5 @@
+//! Scene graph and scene node management.
+
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Formatter};
 

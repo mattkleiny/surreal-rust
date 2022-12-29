@@ -47,9 +47,6 @@ graphics = { package = "surreal-server-graphics", path = "./servers/graphics", o
 input = { package = "surreal-server-input", path = "./servers/input", optional = true }
 physics = { package = "surreal-server-physics", path = "./servers/physics", optional = true }
 
-[dev-dependencies]
-egui = "0.20.1" # for examples
-
 [[example]]
 name = "bunnymark"
 required-features = ["prototype"]

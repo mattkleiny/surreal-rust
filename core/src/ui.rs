@@ -2,6 +2,8 @@
 
 use std::collections::HashMap;
 
+pub use egui;
+
 use crate::graphics::*;
 use crate::maths::{vec2, Rectangle};
 
