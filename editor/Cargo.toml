@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-core = { package = "surreal-core", path = "../core" }
+surreal = { package = "surreal-core", path = "../core" }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 egui = "0.20.1"

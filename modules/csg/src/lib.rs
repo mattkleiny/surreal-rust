@@ -12,8 +12,8 @@
 //! A dedicated [`Mesh`] type is also available to optimize the rendering of CSG
 //! meshes.
 
-use core::graphics::{Color32, Index, Vertex, VertexDescriptor, VertexKind};
-use core::maths::{vec3, Vec2, Vec3};
+use surreal::graphics::{Color32, Index, Vertex, VertexDescriptor, VertexKind};
+use surreal::maths::{vec3, Vec2, Vec3};
 
 /// A Constructive Solid Geometry (CSG) mesh.
 ///

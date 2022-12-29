@@ -2,10 +2,10 @@
 
 use std::any::Any;
 
-use core::graphics::*;
-use core::maths::Mat4;
-use core::utilities::Object;
 pub use pixels::*;
+use surreal::graphics::*;
+use surreal::maths::Mat4;
+use surreal::utilities::Object;
 pub use tiles::*;
 
 mod pixels;

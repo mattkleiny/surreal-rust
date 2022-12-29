@@ -22,7 +22,6 @@ pub mod input;
 pub mod io;
 pub mod maths;
 pub mod scene;
-pub mod scripting;
 pub mod ui;
 pub mod utilities;
 

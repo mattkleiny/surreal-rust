@@ -10,6 +10,8 @@
 
 #[cfg(feature = "ai")]
 pub extern crate ai;
+#[cfg(feature = "animation")]
+pub extern crate animation;
 pub extern crate core;
 #[cfg(feature = "csg")]
 pub extern crate csg;
@@ -41,7 +43,6 @@ pub mod prelude {
   pub use core::io::*;
   pub use core::maths::*;
   pub use core::scene::*;
-  pub use core::scripting::*;
   pub use core::ui::*;
   pub use core::utilities::*;
 }
@@ -51,6 +52,8 @@ pub mod servers {
   pub use audio::*;
   #[cfg(feature = "graphics")]
   pub use graphics::*;
+  #[cfg(feature = "input")]
+  pub use input::*;
   #[cfg(feature = "physics")]
   pub use physics::*;
 }

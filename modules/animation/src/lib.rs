@@ -1,7 +1,11 @@
 //! Animation support for Surreal
 
-use core::maths::Lerp;
-use core::utilities::TimeSpan;
+use surreal::graphics::TextureRegion;
+use surreal::maths::Lerp;
+use surreal::utilities::TimeSpan;
+
+/// A function for interpolating values in a [`KeyFrameTrack`].
+pub type Interpolator<T> = fn(&T, &T, f32) -> T;
 
 /// An animation that evaluates one or more [`AnimationTrack`]s over time.
 pub struct Animation {
@@ -25,8 +29,9 @@ pub trait AnimationTrack {
 
 /// An [`AnimationTrack`] that evaluates [`KeyFrame`]s through interpolation.
 pub struct KeyFrameTrack<T> {
+  pub current_value: T,
   pub key_frames: Vec<KeyFrame<T>>,
-  pub evaluator: KeyFrameInterpolator<T>,
+  pub evaluator: Interpolator<T>,
 }
 
 /// A single key-frame in a [`KeyFrameTrack`].
@@ -35,27 +40,27 @@ pub struct KeyFrame<T> {
   pub normalised_time: f32,
 }
 
-/// A function for interpolating values in a [`KeyFrameTrack`].
-pub type KeyFrameInterpolator<T> = fn(&T, &T, f32) -> T;
-
 impl<T: Lerp> AnimationTrack for KeyFrameTrack<T> {
   fn advance(&mut self, duration: TimeSpan) {
     let a = &self.key_frames[0].value;
     let b = &self.key_frames[1].value;
 
-    (self.evaluator)(a, b, duration.total_seconds() as f32);
+    let result = (self.evaluator)(a, b, duration.total_seconds() as f32);
+
+    self.current_value = result;
   }
 }
 
-impl AnimationTrack for KeyFrameTrack<SpriteFrame> {
+impl<'a> AnimationTrack for KeyFrameTrack<SpriteFrame<'a>> {
   fn advance(&mut self, _duration: TimeSpan) {
     todo!()
   }
 }
 
 /// A single frame in a [`KeyFrameTrack`] for use in sprite animations.
-pub struct SpriteFrame {
-  pub texture: Option<String>,
+#[derive(Clone)]
+pub struct SpriteFrame<'a> {
+  pub texture: &'a TextureRegion,
   pub duration: TimeSpan,
 }
 
@@ -69,14 +74,15 @@ mod tests {
       name: "Test".to_string(),
       duration: TimeSpan::from_seconds(1.0),
       tracks: vec![Box::new(KeyFrameTrack {
+        current_value: 0.,
         key_frames: vec![
           KeyFrame {
-            normalised_time: 0.0,
-            value: 0.0,
+            normalised_time: 0.,
+            value: 0.,
           },
           KeyFrame {
-            normalised_time: 1.0,
-            value: 1.0,
+            normalised_time: 1.,
+            value: 1.,
           },
         ],
         evaluator: |a, b, t| f32::lerp(*a, *b, t),

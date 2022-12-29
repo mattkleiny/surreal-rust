@@ -1,11 +1,9 @@
-//! 2D scene components.
-
 use std::any::Any;
 
-use core::graphics::*;
-use core::maths::vec2;
-use core::scene::*;
-use core::utilities::Object;
+use surreal::graphics::*;
+use surreal::maths::vec2;
+use surreal::scene::*;
+use surreal::utilities::Object;
 
 /// A [`Component`] which renders a sprite in the game world.
 pub struct SpriteComponent {
@@ -66,7 +64,7 @@ impl Object for SpriteContext {
 
 #[cfg(test)]
 mod tests {
-  use core::maths::{vec3, Quat};
+  use surreal::maths::{vec3, Quat};
 
   use super::*;
 

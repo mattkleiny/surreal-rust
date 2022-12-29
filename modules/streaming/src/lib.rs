@@ -26,7 +26,7 @@ pub struct StreamingManager {}
 /// The handler is responsible for loading and unloading assets based on the
 /// requests it receives from the [`StreamingManager`].
 pub trait StreamingHandler {
-  async fn handle(&self, request: &StreamingRequest) -> core::Result<()>;
+  async fn handle(&self, request: &StreamingRequest) -> surreal::Result<()>;
 }
 
 /// A single job for the [`StreamingManager`].

@@ -1,13 +1,64 @@
-use core::graphics::PrimitiveTopology;
-use core::maths::AABB;
+//! A cross-platform graphics engine for Surreal.
+//!
+//! The engine is split into different 'pipelines' to allow specific targeting
+//! of different project goals.
+//!
+//! The `lwrp` pipeline is a lightweight rendering pipeline that is designed to
+//! be fast and efficient. It is designed to be used for 2D games and other
+//! applications that do not require advanced rendering techniques.
+//!
+//! The `hdrp` pipeline is a high-definition rendering pipeline that is designed
+//! to be used for 3D games and other applications that require advanced rendering
+//! techniques such as volumetric fog and realistic lighting.
+
+use surreal::graphics::PrimitiveTopology;
+use surreal::maths::AABB;
 
 #[cfg(feature = "hdrp")]
 pub mod hdrp;
 #[cfg(feature = "lwrp")]
 pub mod lwrp;
 
-pub type GraphicsId = core::utilities::RID;
+pub type GraphicsId = surreal::utilities::RID;
 
+/// An abstraction on top of the underlying graphics system.
+///
+/// This is a high-level abstraction that makes use of 'opaque' [`GraphicsId`]
+/// to hide away implementation details. The server is intended to be a low-level
+/// implementation abstraction.
+///
+/// Different render pipelines might offer different features and capabilities on
+/// top of those exported here.
+pub trait GraphicsServer {
+  // shader operations
+  fn shader_create(&self) -> surreal::Result<GraphicsId>;
+  fn shader_set_code(&self, shader_id: GraphicsId, code: &str) -> surreal::Result<()>;
+  fn shader_get_code(&self, shader_id: GraphicsId) -> surreal::Result<String>;
+  fn shader_delete(&self, shader_id: GraphicsId) -> surreal::Result<()>;
+
+  // material operations
+  fn material_create(&self) -> surreal::Result<GraphicsId>;
+  fn material_set_shader(&self, material_id: GraphicsId, shader_id: GraphicsId) -> surreal::Result<()>;
+  fn material_delete(&self, material_id: GraphicsId) -> surreal::Result<()>;
+
+  // mesh operations
+  fn mesh_create(&self) -> surreal::Result<GraphicsId>;
+  fn mesh_get_surface_count(&self, mesh_id: GraphicsId) -> surreal::Result<usize>;
+  fn mesh_add_surface(&self, mesh_id: GraphicsId, surface_data: SurfaceData) -> surreal::Result<()>;
+  fn mesh_get_surface(&self, mesh_id: GraphicsId, surface_index: usize) -> surreal::Result<SurfaceData>;
+  fn mesh_get_surface_material(&self, mesh_id: GraphicsId, surface_index: usize) -> surreal::Result<GraphicsId>;
+  fn mesh_set_surface_material(&self, mesh_id: GraphicsId, surface_index: usize, material_id: GraphicsId) -> surreal::Result<()>;
+  fn mesh_clear(&self, mesh_id: GraphicsId) -> surreal::Result<()>;
+  fn mesh_delete(&self, mesh_id: GraphicsId) -> surreal::Result<()>;
+
+  // light operations
+  fn light_create(&self, light_type: LightType) -> surreal::Result<GraphicsId>;
+  fn light_get_type(&self, light_id: GraphicsId) -> surreal::Result<LightType>;
+  fn light_set_parameter(&self, light_id: GraphicsId, parameter: LightParameter) -> surreal::Result<()>;
+  fn light_delete(&self, light_id: GraphicsId) -> surreal::Result<()>;
+}
+
+/// Surface data used for mesh creation.
 #[derive(Clone)]
 pub struct SurfaceData {
   pub topology: PrimitiveTopology,
@@ -17,6 +68,7 @@ pub struct SurfaceData {
   pub material: GraphicsId,
 }
 
+/// Different kinds of lights supported.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum LightType {
   Directional,
@@ -24,52 +76,21 @@ pub enum LightType {
   Spot,
 }
 
+/// Parameters that can be set on lights.
 #[derive(Copy, Clone, Debug)]
 pub enum LightParameter {
-  Color(core::graphics::Color),
+  Color(surreal::graphics::Color),
+  Color32(surreal::graphics::Color32),
   Intensity(f32),
   Size(f32),
   Range(f32),
   BakingMode(LightBakeMode),
 }
 
+/// Baking modes for lights.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum LightBakeMode {
   Disabled,
   Static,
   Dynamic,
-}
-
-/// An abstraction on top of the underlying graphics system.
-///
-/// This is a high-level abstraction that makes use of 'opaque' [`GraphicsId`]
-/// to hide away implementation details. The server is intended to be a low-level
-/// implementation abstraction.
-pub trait GraphicsServer {
-  // shader operations
-  fn shader_create(&self) -> core::Result<GraphicsId>;
-  fn shader_set_code(&self, shader_id: GraphicsId, code: &str) -> core::Result<()>;
-  fn shader_get_code(&self, shader_id: GraphicsId) -> core::Result<String>;
-  fn shader_delete(&self, shader_id: GraphicsId) -> core::Result<()>;
-
-  // material operations
-  fn material_create(&self) -> core::Result<GraphicsId>;
-  fn material_set_shader(&self, material_id: GraphicsId, shader_id: GraphicsId) -> core::Result<()>;
-  fn material_delete(&self, material_id: GraphicsId) -> core::Result<()>;
-
-  // mesh operations
-  fn mesh_create(&self) -> core::Result<GraphicsId>;
-  fn mesh_get_surface_count(&self, mesh_id: GraphicsId) -> core::Result<usize>;
-  fn mesh_add_surface(&self, mesh_id: GraphicsId, surface_data: SurfaceData) -> core::Result<()>;
-  fn mesh_get_surface(&self, mesh_id: GraphicsId, surface_index: usize) -> core::Result<SurfaceData>;
-  fn mesh_get_surface_material(&self, mesh_id: GraphicsId, surface_index: usize) -> core::Result<GraphicsId>;
-  fn mesh_set_surface_material(&self, mesh_id: GraphicsId, surface_index: usize, material_id: GraphicsId) -> core::Result<()>;
-  fn mesh_clear(&self, mesh_id: GraphicsId) -> core::Result<()>;
-  fn mesh_delete(&self, mesh_id: GraphicsId) -> core::Result<()>;
-
-  // light operations
-  fn light_create(&self, light_type: LightType) -> core::Result<GraphicsId>;
-  fn light_get_type(&self, light_id: GraphicsId) -> core::Result<LightType>;
-  fn light_set_parameter(&self, light_id: GraphicsId, parameter: LightParameter) -> core::Result<()>;
-  fn light_delete(&self, light_id: GraphicsId) -> core::Result<()>;
 }

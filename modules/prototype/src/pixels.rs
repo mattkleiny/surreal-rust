@@ -1,5 +1,5 @@
-use core::collections::Grid;
-use core::graphics::*;
+use surreal::collections::Grid;
+use surreal::graphics::*;
 
 use super::*;
 

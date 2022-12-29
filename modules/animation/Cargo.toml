@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-core = { package = "surreal-core", path = "../../core" }
+surreal = { package = "surreal-core", path = "../../core" }

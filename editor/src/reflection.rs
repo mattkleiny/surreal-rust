@@ -1,17 +1,19 @@
-use core::utilities::{Variant, VariantKind};
+use surreal::utilities::{Variant, VariantKind};
 
-/// Allows a type to be reflected and provide
-/// information about it's properties and methods.
+/// Allows a type to be reflected over, and provides information about it's properties and methods.
 pub trait Reflect {
-  fn get_properties() -> Vec<PropertyInfo>;
-  fn get_functions() -> Vec<FunctionInfo>;
+  fn properties() -> &'static Vec<PropertyInfo>;
+  fn methods() -> &'static Vec<MethodInfo>;
 
-  fn get_property(&self, _name: &str) -> Result<Variant, PropertyError>;
-  fn set_property(&mut self, _name: &str, _value: Variant) -> Result<(), PropertyError>;
+  /// Reads a property from the object.
+  fn get_property(&self, name: impl AsRef<str>) -> Result<Variant, PropertyError>;
+
+  /// Writes a property to the object.
+  fn set_property(&mut self, name: impl AsRef<str>, value: Variant) -> Result<(), PropertyError>;
 
   /// Calls a method on the underlying type by name, passing the given arguments
-  fn call_function(&mut self, _name: &str, _args: &[Variant]) -> Result<Variant, CallError> {
-    Err(CallError::FunctionDoesntExist)
+  fn call_method(&mut self, _name: &str, _args: &[Variant]) -> Result<Variant, MethodCallError> {
+    Err(MethodCallError::FunctionDoesntExist)
   }
 }
 
@@ -22,22 +24,22 @@ pub struct PropertyInfo {
   pub kind: VariantKind,
 }
 
-/// Contains information about a single function.
+/// Contains information about a single method.
 #[derive(Clone, Debug)]
-pub struct FunctionInfo {
+pub struct MethodInfo {
   pub name: String,
 }
 
-/// Possible errors for modifying a property via reflection.
+/// Possible errors for modifying a property via [`Reflect`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PropertyError {
   PropertyDoesntExist,
   PropertySetFailed,
 }
 
-/// Possible errors for calling a function via reflection.
+/// Possible errors for calling a method via [`Reflect`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum CallError {
+pub enum MethodCallError {
   FunctionDoesntExist,
   FunctionFailed,
 }

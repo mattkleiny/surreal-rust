@@ -1,4 +1,4 @@
-//! Voxel engine support for Surreal, with voxel palettes, chunking and mesh generation.
+//! Voxel support for Surreal, with voxel palettes, chunking, mesh generation and path tracing.
 
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]

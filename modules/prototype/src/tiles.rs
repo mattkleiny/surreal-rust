@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use core::collections::Grid;
-use core::graphics::Renderable;
-use core::maths::{vec2, Cost, IVec2, NeighbourList, Numeric, PathFindingGrid, VonNeumannNeighbourhood};
+use surreal::collections::Grid;
+use surreal::graphics::Renderable;
+use surreal::maths::{vec2, Cost, IVec2, NeighbourList, Numeric, PathFindingGrid, VonNeumannNeighbourhood};
 
 use super::*;
 
