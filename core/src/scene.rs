@@ -1,4 +1,7 @@
 use std::collections::{HashMap, HashSet};
+use std::fmt::{Debug, Formatter};
+
+use anyhow::anyhow;
 
 use crate::graphics::RenderContextManager;
 use crate::maths::{Affine3A, FromRandom, Quat, Vec3};
@@ -55,9 +58,9 @@ struct SceneGroup {
 
 impl SceneGraph {
   /// Creates a new [`SceneGraph`] with the given root [`SceneNode`].
-  pub fn new(root: SceneNode) -> Self {
+  pub fn new(root: impl Into<SceneNode>) -> Self {
     Self {
-      root,
+      root: root.into(),
       groups: HashMap::new(),
     }
   }
@@ -67,7 +70,7 @@ impl SceneGraph {
     self.root.notify(&mut event);
   }
 
-  /// Adds a [`SceneNode`] to a group.
+  /// Adds a [`SceneNode`] to a [`SceneGroup`], or creates the group anew.
   pub fn add_to_group(&mut self, name: impl Into<String>, node_id: NodeId) {
     let name = name.into();
     let group = self.groups.entry(name).or_default();
@@ -75,7 +78,7 @@ impl SceneGraph {
     group.members.insert(node_id);
   }
 
-  /// Removes a [`SceneNode`] from a group.
+  /// Removes a [`SceneNode`] from a [`SceneGroup`].
   pub fn remove_from_group(&mut self, name: impl Into<String>, node_id: NodeId) {
     let name = name.into();
 
@@ -86,6 +89,52 @@ impl SceneGraph {
         self.groups.remove(&name);
       }
     }
+  }
+
+  /// Re-parents a [`SceneNode`] to a new parent.
+  pub fn reparent_node(&mut self, node_to_move_id: NodeId, new_parent_id: NodeId) -> crate::Result<()> {
+    let node_to_move = self
+      .root
+      .take_node_by_id(node_to_move_id)
+      .ok_or(anyhow!("Unable to locate node to move"))?;
+
+    let new_parent = self
+      .root
+      .find_by_id_mut(new_parent_id)
+      .ok_or(anyhow!("Unable to find target node"))?;
+
+    if node_to_move.children.iter().any(|node| node.id == new_parent_id) {
+      return Err(anyhow!("Unable to reparent node to a child of itself"));
+    }
+
+    new_parent.children.push(node_to_move);
+    new_parent.update_child_transforms();
+
+    Ok(())
+  }
+
+  /// Destroys a [`SceneNode`] and all of it's children.
+  pub fn delete_node(&mut self, node_to_delete_id: NodeId) -> crate::Result<()> {
+    let mut node_to_delete = self
+      .root
+      .take_node_by_id(node_to_delete_id)
+      .ok_or(anyhow!("Unable to find node to delete"))?;
+
+    node_to_delete.notify(&mut SceneEvent::Destroy);
+    drop(node_to_delete);
+
+    Ok(())
+  }
+}
+
+impl Debug for SceneGraph {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+    // render a small tree view of the graph
+    for (node, level) in self.root.iter_recursive() {
+      writeln!(formatter, "{}{:?}", " ".repeat(level * 2), node.id)?;
+    }
+
+    Ok(())
   }
 }
 
@@ -121,6 +170,7 @@ impl Transform {
 
   /// Rebuilds this transform from the given other parent [`Transform`].
   pub fn rebuild(&mut self, _parent: &Transform) {
+    // TODO: work this out
     // let affine = parent.world_to_local();
 
     // self.global_position = affine.transform_point3(self.local_position);
@@ -404,7 +454,7 @@ impl SceneNode {
   }
 
   /// Notify this node's [`Component`] and all of it's child [`SceneNode`]s.
-  pub fn notify(&mut self, event: &mut SceneEvent) {
+  fn notify(&mut self, event: &mut SceneEvent) {
     let node = unsafe_mutable_alias(self);
 
     // notify all components
@@ -475,15 +525,26 @@ impl SceneNode {
     None
   }
 
+  /// Tries to locate the [`SceneNode`] with the given [`NodeId`] in this hierarchy.
+  /// If the node is found, remove it from it's parent and return it.
+  fn take_node_by_id(&mut self, node_id: NodeId) -> Option<SceneNode> {
+    for i in 0..self.children.len() {
+      if self.children[i].id == node_id {
+        return Some(self.children.remove(i));
+      }
+    }
+
+    None
+  }
+
   /// Iterates all child [`SceneNode`]s of this node.
-  pub fn children(&self) -> impl Iterator<Item = &SceneNode> {
-    /// Allows iteration of the node's children.
-    struct ChildrenIter<'a> {
+  pub fn iter(&self) -> impl Iterator<Item = &SceneNode> {
+    struct DirectIter<'a> {
       node: &'a SceneNode,
       index: Option<usize>,
     }
 
-    impl<'a> Iterator for ChildrenIter<'a> {
+    impl<'a> Iterator for DirectIter<'a> {
       type Item = &'a SceneNode;
 
       fn next(&mut self) -> Option<Self::Item> {
@@ -498,10 +559,35 @@ impl SceneNode {
       }
     }
 
-    ChildrenIter {
+    DirectIter {
       node: self,
       index: Some(0),
     }
+  }
+
+  /// Iterates all child [`SceneNode`]s of this node, recursively.
+  pub fn iter_recursive(&self) -> impl Iterator<Item = (&SceneNode, usize)> {
+    struct RecursiveIter<'a> {
+      stack: Vec<(&'a SceneNode, usize)>,
+    }
+
+    impl<'a> Iterator for RecursiveIter<'a> {
+      type Item = (&'a SceneNode, usize);
+
+      fn next(&mut self) -> Option<Self::Item> {
+        if let Some((node, level)) = self.stack.pop() {
+          for child in &node.children {
+            self.stack.push((child, level + 1));
+          }
+
+          Some((node, level))
+        } else {
+          None
+        }
+      }
+    }
+
+    RecursiveIter { stack: vec![(self, 0)] }
   }
 }
 
@@ -561,8 +647,8 @@ impl SceneNodeBuilder {
     self
   }
 
-  pub fn with_child(mut self, child: SceneNode) -> Self {
-    self.children.push(child);
+  pub fn with_child(mut self, child: impl Into<SceneNode>) -> Self {
+    self.children.push(child.into());
     self
   }
 
@@ -586,6 +672,12 @@ impl SceneNodeBuilder {
   }
 }
 
+impl Into<SceneNode> for SceneNodeBuilder {
+  fn into(self) -> SceneNode {
+    self.build()
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -600,7 +692,7 @@ mod tests {
       .with_child(SceneNode::default())
       .build();
 
-    for child in node.children() {
+    for child in node.iter() {
       println!("Child: {:?}", child.local_position());
     }
   }
@@ -690,20 +782,61 @@ mod tests {
             .with_component(TestComponent)
             .with_component(TestComponent)
             .with_component(TestComponent)
-            .with_component(TestComponent)
-            .build(),
+            .with_component(TestComponent),
         )
         .with_child(
           SceneNodeBuilder::default()
             .with_component(TestComponent)
             .with_component(TestComponent)
             .with_component(TestComponent)
-            .with_component(TestComponent)
-            .build(),
-        )
-        .build(),
+            .with_component(TestComponent),
+        ),
     );
 
     scene.notify(SceneEvent::Update(0.16));
+  }
+
+  #[test]
+  fn scene_graph_should_reparent_nodes() {
+    let mut scene = SceneGraph::new(
+      SceneNodeBuilder::default()
+        .with_child(SceneNodeBuilder::default())
+        .with_child(SceneNodeBuilder::default()),
+    );
+
+    let from_id = scene.root.children[0].id;
+    let to_id = scene.root.children[1].id;
+
+    println!("Before: {:?}", scene);
+
+    scene.reparent_node(from_id, to_id).unwrap();
+
+    println!("After: {:?}", scene);
+  }
+
+  #[test]
+  fn scene_graph_should_destroy_nodes() {
+    let mut scene = SceneGraph::new(
+      SceneNodeBuilder::default()
+        .with_child(SceneNodeBuilder::default())
+        .with_child(SceneNodeBuilder::default())
+        .with_child(
+          SceneNodeBuilder::default()
+            .with_child(SceneNodeBuilder::default())
+            .with_child(SceneNodeBuilder::default())
+            .with_child(
+              SceneNodeBuilder::default()
+                .with_child(SceneNodeBuilder::default())
+                .with_child(SceneNodeBuilder::default())
+                .with_child(SceneNodeBuilder::default()),
+            ),
+        ),
+    );
+
+    println!("Before: {:?}", scene);
+
+    scene.delete_node(scene.root.children[2].id).unwrap();
+
+    println!("After: {:?}", scene);
   }
 }
