@@ -1,10 +1,11 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::maths::{FromRandom, Mat4, Quat, Vec3};
+use crate::graphics::RenderContextManager;
+use crate::maths::{Affine3A, FromRandom, Quat, Vec3};
 use crate::utilities::unsafe_mutable_alias;
 
 /// A unique identifier for a [`SceneNode`].
-pub type SceneNodeId = crate::maths::Guid;
+pub type NodeId = crate::maths::Guid;
 
 /// The ID of the layer that a [`SceneNode`] inhabits.
 pub type LayerId = u16;
@@ -22,59 +23,7 @@ impl<'a> From<&'a str> for Tag {
   }
 }
 
-/// A graph of [`SceneNode`]s that represent a scene in space.
-///
-/// Graphs are composed of [`SceneNode`]s in a recursive tree structure. Each
-/// node provides transform information to the graph for use in rendering and logic.
-///
-/// Notifications are sent down the graph via the [`SceneEvent`] type, which can be
-/// used to inform recursive operations on the graph and it's children.
-#[derive(Default)]
-pub struct SceneGraph {
-  /// The root [`SceneNode`] of this graph.
-  pub root: SceneNode,
-
-  /// Groups of [`SceneNode`]s by name.
-  groups: HashMap<String, SceneGroup>,
-}
-
-/// A grouping of nodes in a [`SceneGraph`].
-#[derive(Default)]
-struct SceneGroup {
-  members: HashSet<SceneNodeId>,
-}
-
-/// A node in a [`SceneGraph`].
-///
-/// A node is a sub-tree of [`SceneNode`]s that represent a scene in a [`SceneGraph`].
-/// Each node can contain one or more [`Component`]s to build up logic from pieces.
-///
-/// A node has a position, orientation, and scale relative to its parent node.
-pub struct SceneNode {
-  id: SceneNodeId,
-  is_visible: bool,
-  is_enabled: bool,
-  is_transform_dirty: bool,
-  layer_id: LayerId,
-  tags: TagSet,
-  transform: SceneNodeTransform,
-  components: Vec<Box<dyn Component>>,
-  children: Vec<SceneNode>,
-}
-
-/// A transform for use in [`SceneNode`] positioning.
-#[derive(Clone, Debug)]
-pub struct SceneNodeTransform {
-  pub local_position: Vec3,
-  pub local_rotation: Quat,
-  pub local_scale: Vec3,
-  pub global_position: Vec3,
-  pub global_rotation: Quat,
-  pub global_scale: Vec3,
-}
-
 /// A notification for some event that occurred in the scene.
-#[derive(Copy, Clone, Debug)]
 pub enum SceneEvent<'a> {
   Awake,
   Start,
@@ -82,88 +31,46 @@ pub enum SceneEvent<'a> {
   Disable,
   Update(f32),
   Destroy,
-  TransformChanged(&'a SceneNodeTransform),
+  PreRender(&'a mut RenderContextManager),
+  Render(&'a mut RenderContextManager),
+  PostRender(&'a mut RenderContextManager),
+  TransformChanged(&'a Transform),
 }
 
-/// Represents a component in a scene.
+/// A graph of [`SceneNode`]s that represent a scene in space.
 ///
-/// Components receive callbacks in response to scene lifecycle events, and
-/// can access information from their parent [`SceneNode`]s.
-pub trait Component<N = SceneNode> {
-  /// Invoked to handle dispatch of [`SceneEvent`]s.
-  fn on_event(&mut self, node: &mut N, event: SceneEvent) {
-    match event {
-      SceneEvent::Awake => self.on_awake(node),
-      SceneEvent::Start => self.on_start(node),
-      SceneEvent::Enable => self.on_enable(node),
-      SceneEvent::Disable => self.on_disable(node),
-      SceneEvent::Update(delta_time) => self.on_update(node, delta_time),
-      SceneEvent::Destroy => self.on_destroy(node),
-      _ => {}
-    }
-  }
-
-  fn on_awake(&mut self, _node: &mut N) {}
-  fn on_start(&mut self, _node: &mut N) {}
-  fn on_enable(&mut self, _node: &mut N) {}
-  fn on_disable(&mut self, _node: &mut N) {}
-  fn on_update(&mut self, _node: &mut N, _delta_time: f32) {}
-  fn on_destroy(&mut self, _node: &mut N) {}
+/// Graphs are composed of [`SceneNode`]s in a recursive tree structure. Each
+/// node provides transform information to the graph for use in rendering and logic.
+///
+/// Notifications are sent down the graph via the [`SceneEvent`] type, which can be
+/// used to inform recursive operations on the graph and it's children.
+pub struct SceneGraph {
+  pub root: SceneNode,
+  groups: HashMap<String, SceneGroup>,
 }
 
-impl Default for SceneNode {
-  fn default() -> Self {
-    Self {
-      id: SceneNodeId::random(),
-      is_visible: true,
-      is_enabled: true,
-      is_transform_dirty: true,
-      layer_id: 0,
-      tags: HashSet::new(),
-      transform: Default::default(),
-      components: Vec::with_capacity(0),
-      children: Vec::with_capacity(0),
-    }
-  }
-}
-
-impl Default for SceneNodeTransform {
-  fn default() -> Self {
-    SceneNodeTransform::IDENTITY
-  }
-}
-
-impl SceneNodeTransform {
-  pub const IDENTITY: Self = Self {
-    local_position: Vec3::ZERO,
-    local_rotation: Quat::IDENTITY,
-    local_scale: Vec3::ONE,
-    global_position: Vec3::ZERO,
-    global_rotation: Quat::IDENTITY,
-    global_scale: Vec3::ONE,
-  };
-
-  pub fn local_to_world(&self) -> Mat4 {
-    todo!()
-  }
-
-  pub fn world_to_local(&self) -> Mat4 {
-    todo!()
-  }
-
-  pub fn recalculate(&mut self, _other: &SceneNodeTransform) {
-    // TODO: implement me
-  }
+/// A grouping of nodes in a [`SceneGraph`].
+#[derive(Default)]
+struct SceneGroup {
+  members: HashSet<NodeId>,
 }
 
 impl SceneGraph {
+  /// Creates a new [`SceneGraph`] with the given root [`SceneNode`].
+  pub fn new(root: SceneNode) -> Self {
+    Self {
+      root,
+      groups: HashMap::new(),
+    }
+  }
+
   /// Notifies all nodes in the scene graph of a [`SceneEvent`].
-  pub fn notify(&mut self, event: SceneEvent) {
-    self.root.notify(event);
+  pub fn notify(&mut self, mut event: SceneEvent) {
+    self.root.notify(&mut event);
   }
 
   /// Adds a [`SceneNode`] to a group.
-  pub fn add_to_group(&mut self, name: impl Into<String>, node_id: SceneNodeId) {
+  pub fn add_to_group(&mut self, name: impl Into<String>, node_id: NodeId) {
     let name = name.into();
     let group = self.groups.entry(name).or_default();
 
@@ -171,7 +78,7 @@ impl SceneGraph {
   }
 
   /// Removes a [`SceneNode`] from a group.
-  pub fn remove_from_group(&mut self, name: impl Into<String>, node_id: SceneNodeId) {
+  pub fn remove_from_group(&mut self, name: impl Into<String>, node_id: NodeId) {
     let name = name.into();
 
     if let Some(group) = self.groups.get_mut(&name) {
@@ -184,8 +91,166 @@ impl SceneGraph {
   }
 }
 
+/// A transform for use in [`SceneNode`] positioning.
+#[derive(Clone, Debug)]
+pub struct Transform {
+  pub local_position: Vec3,
+  pub local_rotation: Quat,
+  pub local_scale: Vec3,
+  pub global_position: Vec3,
+  pub global_rotation: Quat,
+  pub global_scale: Vec3,
+}
+
+impl Default for Transform {
+  fn default() -> Self {
+    Self {
+      local_position: Vec3::ZERO,
+      local_rotation: Quat::IDENTITY,
+      local_scale: Vec3::ONE,
+      global_position: Vec3::ZERO,
+      global_rotation: Quat::IDENTITY,
+      global_scale: Vec3::ONE,
+    }
+  }
+}
+
+impl Transform {
+  /// Creates a [`Mat4`] that takes a point in local space and transforms it to global space.
+  pub fn world_to_local(&self) -> Affine3A {
+    Affine3A::from_scale_rotation_translation(self.global_scale, self.global_rotation, self.global_position)
+  }
+
+  /// Rebuilds this transform from the given other parent [`Transform`].
+  pub fn rebuild(&mut self, parent: &Transform) {
+    let affine = parent.world_to_local();
+
+    // self.global_position = affine.transform_point3(self.local_position);
+    // self.global_rotation = transform * self.local_rotation;
+    // self.global_scale = affine.transform_vector3(self.local_scale);
+  }
+}
+
+/// A flag that indicates what kind of [`Component`]s are present in a [`ComponentSet`].
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum ComponentKind {
+  /// This component has standard 'update' behaviour, but doesn't need to render.
+  Behaviour,
+  /// This component needs to render and wants access to the [`RenderContextManager`].
+  Renderer,
+}
+
+/// Represents a component in a scene.
+///
+/// Components receive callbacks in response to scene lifecycle events, and
+/// can access information from their parent [`SceneNode`]s.
+pub trait Component<N = SceneNode> {
+  /// Invoked to handle dispatch of [`SceneEvent`]s.
+  fn on_event(&mut self, node: &mut N, event: &mut SceneEvent) {
+    match event {
+      SceneEvent::Awake => self.on_awake(node),
+      SceneEvent::Start => self.on_start(node),
+      SceneEvent::Enable => self.on_enable(node),
+      SceneEvent::Disable => self.on_disable(node),
+      SceneEvent::Destroy => self.on_destroy(node),
+      SceneEvent::Update(delta_time) => self.on_update(node, *delta_time),
+      SceneEvent::PreRender(manager) => self.on_pre_render(node, *manager),
+      SceneEvent::Render(manager) => self.on_render(node, *manager),
+      SceneEvent::PostRender(manager) => self.on_post_render(node, *manager),
+      _ => {}
+    }
+  }
+
+  fn on_awake(&mut self, _node: &mut N) {}
+  fn on_start(&mut self, _node: &mut N) {}
+  fn on_enable(&mut self, _node: &mut N) {}
+  fn on_disable(&mut self, _node: &mut N) {}
+  fn on_destroy(&mut self, _node: &mut N) {}
+  fn on_update(&mut self, _node: &mut N, _delta_time: f32) {}
+  fn on_pre_render(&mut self, _node: &mut N, _manager: &mut RenderContextManager) {}
+  fn on_render(&mut self, _node: &mut N, _manager: &mut RenderContextManager) {}
+  fn on_post_render(&mut self, _node: &mut N, _manager: &mut RenderContextManager) {}
+
+  /// Determines the [`ComponentKind`] of this component.
+  ///
+  /// The kind is used for determining which sub-trees have component types.
+  fn get_kind(&self) -> ComponentKind {
+    ComponentKind::Behaviour
+  }
+}
+
+/// A set of [`Component`]s in a [`SceneNode`].
+#[derive(Default)]
+pub struct ComponentSet {
+  // TODO: hierarchical bit mask over ComponentKind
+  components: Vec<Box<dyn Component>>,
+}
+
+impl ComponentSet {
+  /// Builds a [`ComponentSet`] from the given array.
+  pub fn from_array<const S: usize>(components: [Box<dyn Component>; S]) -> Self {
+    Self {
+      components: Vec::from(components),
+    }
+  }
+
+  /// Determines if the given [`ComponentKind`] is present in the set.
+  pub fn has_kind(&self, kind: ComponentKind) -> bool {
+    self.components.iter().any(|c| c.get_kind() == kind)
+  }
+
+  /// Adds a new [`Component`] to the set.
+  pub fn push<C: Component + 'static>(&mut self, component: C) {
+    self.components.push(Box::new(component));
+  }
+
+  /// Iterates the [`Component`]s in this set.
+  pub fn iter(&self) -> impl Iterator<Item = &Box<dyn Component>> {
+    self.components.iter()
+  }
+
+  /// Mutably iterates the [`Component`]s in this set.
+  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Box<dyn Component>> {
+    self.components.iter_mut()
+  }
+}
+
+/// A node in a [`SceneGraph`].
+///
+/// A node is a sub-tree of [`SceneNode`]s that represent a scene in a [`SceneGraph`].
+/// Each node can contain one or more [`Component`]s to build up logic from pieces.
+///
+/// A node has a position, orientation, and scale relative to its parent node.
+pub struct SceneNode {
+  id: NodeId,
+  is_visible: bool,
+  is_enabled: bool,
+  is_transform_dirty: bool,
+  layer_id: LayerId,
+  tags: TagSet,
+  transform: Transform,
+  components: ComponentSet,
+  children: Vec<SceneNode>,
+}
+
+impl Default for SceneNode {
+  fn default() -> Self {
+    Self {
+      id: NodeId::random(),
+      is_visible: true,
+      is_enabled: true,
+      is_transform_dirty: true,
+      layer_id: 0,
+      tags: HashSet::new(),
+      transform: Default::default(),
+      components: ComponentSet::default(),
+      children: Vec::with_capacity(0),
+    }
+  }
+}
+
 impl SceneNode {
-  pub fn id(&self) -> SceneNodeId {
+  pub fn id(&self) -> NodeId {
     self.id
   }
 
@@ -340,29 +405,31 @@ impl SceneNode {
   }
 
   /// Adds a new [`Component`] to the node.
-  pub fn add_component(&mut self, component: Box<dyn Component>) {
+  pub fn add_component<C: Component + 'static>(&mut self, component: C) {
     self.components.push(component);
   }
 
   /// Notify this node's [`Component`] and all of it's child [`SceneNode`]s.
-  pub fn notify(&mut self, event: SceneEvent) {
+  pub fn notify(&mut self, event: &mut SceneEvent) {
     let node = unsafe_mutable_alias(self);
 
-    for component in &mut self.components {
+    // notify all components
+    for component in &mut self.components.iter_mut() {
       component.on_event(node, event);
     }
 
+    // propagate to child nodes
     match event {
       SceneEvent::Update(_) => {
+        // if our transform is dirty, on the next update we need to notify all children
         if self.is_transform_dirty {
-          // propagate our local transform changes to children
           self.update_child_transforms();
         }
         self.notify_children(event);
       }
-      // propagate transform information down the hierarchy when parent updates
       SceneEvent::TransformChanged(parent_transform) => {
-        self.transform.recalculate(&parent_transform);
+        // propagate transform information down the hierarchy
+        self.transform.rebuild(&parent_transform);
         self.update_child_transforms();
       }
       _ => self.notify_children(event),
@@ -374,18 +441,18 @@ impl SceneNode {
     let node = unsafe_mutable_alias(self);
 
     self.is_transform_dirty = false;
-    node.notify_children(SceneEvent::TransformChanged(&self.transform));
+    node.notify_children(&mut SceneEvent::TransformChanged(&self.transform));
   }
 
   /// Notifies this node's child [`SceneNode`]s of the given [`SceneEvent`].
-  fn notify_children(&mut self, event: SceneEvent) {
+  fn notify_children(&mut self, event: &mut SceneEvent) {
     for child in &mut self.children {
       child.notify(event);
     }
   }
 
-  /// Tries to locate the node with the given [`SceneNodeId`] in this hierarchy.
-  pub fn find_by_id(&self, node_id: SceneNodeId) -> Option<&SceneNode> {
+  /// Tries to locate the node with the given [`NodeId`] in this hierarchy.
+  pub fn find_by_id(&self, node_id: NodeId) -> Option<&SceneNode> {
     if self.id == node_id {
       return Some(self);
     }
@@ -399,8 +466,8 @@ impl SceneNode {
     None
   }
 
-  /// Tries to locate the node with the given [`SceneNodeId`] in this hierarchy.
-  pub fn find_by_id_mut(&mut self, node_id: SceneNodeId) -> Option<&mut SceneNode> {
+  /// Tries to locate the node with the given [`NodeId`] in this hierarchy.
+  pub fn find_by_id_mut(&mut self, node_id: NodeId) -> Option<&mut SceneNode> {
     if self.id == node_id {
       return Some(self);
     }
@@ -444,23 +511,102 @@ impl SceneNode {
   }
 }
 
+/// A utility builder for [`SceneNode`]s.
+#[derive(Default)]
+pub struct SceneNodeBuilder {
+  layer_id: LayerId,
+  tags: TagSet,
+  transform: Transform,
+  components: ComponentSet,
+  children: Vec<SceneNode>,
+}
+
+impl SceneNodeBuilder {
+  pub fn with_layer_id(mut self, layer_id: LayerId) -> Self {
+    self.layer_id = layer_id;
+    self
+  }
+
+  pub fn with_tag(mut self, tag: impl Into<Tag>) -> Self {
+    self.tags.insert(tag.into());
+    self
+  }
+
+  pub fn with_local_position(mut self, position: Vec3) -> Self {
+    self.transform.local_position = position;
+    self
+  }
+
+  pub fn with_global_position(mut self, position: Vec3) -> Self {
+    self.transform.global_position = position;
+    self
+  }
+
+  pub fn with_local_rotation(mut self, rotation: Quat) -> Self {
+    self.transform.local_rotation = rotation;
+    self
+  }
+
+  pub fn with_global_rotation(mut self, rotation: Quat) -> Self {
+    self.transform.global_rotation = rotation;
+    self
+  }
+
+  pub fn with_local_scale(mut self, scale: Vec3) -> Self {
+    self.transform.local_scale = scale;
+    self
+  }
+
+  pub fn with_global_scale(mut self, scale: Vec3) -> Self {
+    self.transform.global_scale = scale;
+    self
+  }
+
+  pub fn with_component(mut self, component: impl Component + 'static) -> Self {
+    self.components.push(component);
+    self
+  }
+
+  pub fn with_child(mut self, child: SceneNode) -> Self {
+    self.children.push(child);
+    self
+  }
+
+  /// Builds the resultant [`SceneNode`].
+  pub fn build(self) -> SceneNode {
+    let mut node = SceneNode {
+      id: NodeId::random(),
+      is_visible: true,
+      is_enabled: true,
+      is_transform_dirty: false,
+      layer_id: self.layer_id,
+      tags: self.tags.clone(),
+      transform: self.transform,
+      components: self.components,
+      children: self.children,
+    };
+
+    // initial transform propagation
+    node.update_child_transforms();
+    node
+  }
+}
+
 #[cfg(test)]
 mod tests {
-  use super::*;
   use crate::maths::vec3;
+
+  use super::*;
 
   #[test]
   pub fn scene_node_should_iterate_child_nodes() {
-    let node = SceneNode {
-      children: vec![
-        SceneNode::default(),
-        SceneNode::default(),
-        SceneNode::default(),
-        SceneNode::default(),
-        SceneNode::default(),
-      ],
-      ..Default::default()
-    };
+    let node = SceneNodeBuilder::default()
+      .with_child(SceneNode::default())
+      .with_child(SceneNode::default())
+      .with_child(SceneNode::default())
+      .with_child(SceneNode::default())
+      .with_child(SceneNode::default())
+      .build();
 
     for child in node.children() {
       println!("Child: {:?}", child.local_position());
@@ -469,47 +615,49 @@ mod tests {
 
   #[test]
   pub fn scene_node_should_notify_child_nodes() {
-    struct TestComponent {}
+    struct TestComponent1;
+    struct TestComponent2;
 
-    impl Component for TestComponent {
+    impl Component for TestComponent1 {
       fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
-        println!("Update node id {} delta_time {}", node.id, delta_time);
+        println!("Update component 1 on node id {} delta_time {}", node.id, delta_time);
       }
     }
 
-    let mut node = SceneNode {
-      children: vec![
-        SceneNode::default(),
-        SceneNode::default(),
-        SceneNode::default(),
-        SceneNode::default(),
-        SceneNode {
-          components: vec![Box::new(TestComponent {})],
-          ..Default::default()
-        },
-      ],
-      ..Default::default()
-    };
+    impl Component for TestComponent2 {
+      fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
+        println!("Update component 2 on node id {} delta_time {}", node.id, delta_time);
+      }
+    }
 
-    node.notify(SceneEvent::Update(0.16));
+    let mut node = SceneNodeBuilder::default()
+      .with_component(TestComponent1)
+      .with_component(TestComponent2)
+      .build();
+
+    node.notify(&mut SceneEvent::Update(0.16));
   }
 
-  #[test]
-  fn scene_node_should_propagate_transform_changes() {
-    let mut node = SceneNode {
-      children: vec![
-        SceneNode::default(),
-        SceneNode::default(),
-        SceneNode::default(),
-        SceneNode::default(),
-        SceneNode::default(),
-      ],
-      ..Default::default()
-    };
-
-    node.set_local_position(vec3(1.0, 2.0, 3.0));
-    node.notify(SceneEvent::Update(0.16));
-  }
+  // #[test]
+  // fn scene_node_should_propagate_transform_changes() {
+  //   let node = SceneNodeBuilder::default()
+  //     .with_global_position(vec3(1.0, 2.0, 3.0))
+  //     .with_child(
+  //       SceneNodeBuilder::default()
+  //         .with_global_position(vec3(1.0, 0.0, 1.0))
+  //         .with_child(
+  //           SceneNodeBuilder::default()
+  //             .with_global_position(vec3(1.0, 0.0, 1.0))
+  //             .with_local_rotation(Quat::IDENTITY)
+  //             .build(),
+  //         )
+  //         .build(),
+  //     )
+  //     .build();
+  //
+  //   assert_eq!(node.children[0].transform.global_position, vec3(2.0, 2.0, 4.0));
+  //   assert_eq!(node.children[0].children[0].transform.global_position, vec3(3.0, 2.0, 5.0));
+  // }
 
   #[test]
   fn scene_node_should_manage_tag_lists() {
@@ -530,7 +678,7 @@ mod tests {
 
   #[test]
   fn scene_graph_should_notify_all_child_nodes_recursively() {
-    struct TestComponent {}
+    struct TestComponent;
 
     impl Component for TestComponent {
       fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
@@ -538,38 +686,31 @@ mod tests {
       }
     }
 
-    let mut scene = SceneGraph {
-      root: SceneNode {
-        components: vec![
-          Box::new(TestComponent {}),
-          Box::new(TestComponent {}),
-          Box::new(TestComponent {}),
-          Box::new(TestComponent {}),
-        ],
-        children: vec![
-          SceneNode {
-            components: vec![
-              Box::new(TestComponent {}),
-              Box::new(TestComponent {}),
-              Box::new(TestComponent {}),
-              Box::new(TestComponent {}),
-            ],
-            ..Default::default()
-          },
-          SceneNode {
-            components: vec![
-              Box::new(TestComponent {}),
-              Box::new(TestComponent {}),
-              Box::new(TestComponent {}),
-              Box::new(TestComponent {}),
-            ],
-            ..Default::default()
-          },
-        ],
-        ..Default::default()
-      },
-      groups: HashMap::new(),
-    };
+    let mut scene = SceneGraph::new(
+      SceneNodeBuilder::default()
+        .with_component(TestComponent)
+        .with_component(TestComponent)
+        .with_component(TestComponent)
+        .with_component(TestComponent)
+        .with_component(TestComponent)
+        .with_child(
+          SceneNodeBuilder::default()
+            .with_component(TestComponent)
+            .with_component(TestComponent)
+            .with_component(TestComponent)
+            .with_component(TestComponent)
+            .build(),
+        )
+        .with_child(
+          SceneNodeBuilder::default()
+            .with_component(TestComponent)
+            .with_component(TestComponent)
+            .with_component(TestComponent)
+            .with_component(TestComponent)
+            .build(),
+        )
+        .build(),
+    );
 
     scene.notify(SceneEvent::Update(0.16));
   }

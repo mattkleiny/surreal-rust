@@ -131,7 +131,7 @@ impl FromRandom for Uuid {
   }
 }
 
-/// Generates arrays of T where T itself is randomly creatable
+/// Generates fixed-length arrays of `T` where `T` itself is [`FromRandom`]
 impl<T, const L: usize> FromRandom for [T; L]
 where
   T: FromRandom + Sized + Default + Copy,
@@ -147,7 +147,7 @@ where
   }
 }
 
-/// Distribution modes for `RandomVariable`s.
+/// Distribution modes for [`RandomVariable`]s.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Distribution {
   Uniform,
