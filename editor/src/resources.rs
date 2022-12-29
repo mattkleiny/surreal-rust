@@ -1,5 +1,3 @@
-//! Resource management for Surreal
-
 use core::io::VirtualPath;
 
 /// A unique identifier for a [`Resource`] in the application.

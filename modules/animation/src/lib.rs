@@ -20,31 +20,43 @@ impl Animation {
 
 /// A single track in an [`Animation`].
 pub trait AnimationTrack {
-  fn advance(&mut self, time: TimeSpan);
+  fn advance(&mut self, duration: TimeSpan);
 }
 
 /// An [`AnimationTrack`] that evaluates [`KeyFrame`]s through interpolation.
-pub struct KeyFrameTrack<T: Lerp> {
-  pub keyframes: Vec<KeyFrame<T>>,
-  pub evaluator: Interpolator<T>,
+pub struct KeyFrameTrack<T> {
+  pub key_frames: Vec<KeyFrame<T>>,
+  pub evaluator: KeyFrameInterpolator<T>,
 }
 
 /// A single key-frame in a [`KeyFrameTrack`].
 pub struct KeyFrame<T> {
-  pub normalised_time: f32,
   pub value: T,
+  pub normalised_time: f32,
 }
 
 /// A function for interpolating values in a [`KeyFrameTrack`].
-pub type Interpolator<T> = fn(&T, &T, f32) -> T;
+pub type KeyFrameInterpolator<T> = fn(&T, &T, f32) -> T;
 
 impl<T: Lerp> AnimationTrack for KeyFrameTrack<T> {
-  fn advance(&mut self, time: TimeSpan) {
-    let a = &self.keyframes[0].value;
-    let b = &self.keyframes[1].value;
+  fn advance(&mut self, duration: TimeSpan) {
+    let a = &self.key_frames[0].value;
+    let b = &self.key_frames[1].value;
 
-    (self.evaluator)(a, b, time.total_seconds() as f32);
+    (self.evaluator)(a, b, duration.total_seconds() as f32);
   }
+}
+
+impl AnimationTrack for KeyFrameTrack<SpriteFrame> {
+  fn advance(&mut self, _duration: TimeSpan) {
+    todo!()
+  }
+}
+
+/// A single frame in a [`KeyFrameTrack`] for use in sprite animations.
+pub struct SpriteFrame {
+  pub texture: Option<String>,
+  pub duration: TimeSpan,
 }
 
 #[cfg(test)]
@@ -57,7 +69,7 @@ mod tests {
       name: "Test".to_string(),
       duration: TimeSpan::from_seconds(1.0),
       tracks: vec![Box::new(KeyFrameTrack {
-        keyframes: vec![
+        key_frames: vec![
           KeyFrame {
             normalised_time: 0.0,
             value: 0.0,

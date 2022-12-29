@@ -6,15 +6,10 @@
 
 #![feature(anonymous_lifetime_in_impl_trait)]
 
-#[macro_use]
-extern crate serde;
-
+pub use assets::*;
 pub use reflection::*;
 pub use resources::*;
-pub use scenes::*;
-pub use ui::*;
 
+mod assets;
 mod reflection;
 mod resources;
-mod scenes;
-mod ui;

@@ -1,11 +1,7 @@
 [package]
-name = "surreal-server-graphics"
+name = "surreal-server-input"
 version = "0.1.0"
 edition = "2021"
-
-[features]
-hdrp = []
-lwrp = []
 
 [dependencies]
 core = { package = "surreal-core", path = "../../core" }

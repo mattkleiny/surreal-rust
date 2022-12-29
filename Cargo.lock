@@ -1130,6 +1130,7 @@ dependencies = [
  "surreal-scene-3d",
  "surreal-server-audio",
  "surreal-server-graphics",
+ "surreal-server-input",
  "surreal-server-physics",
 ]
 
@@ -1250,6 +1251,13 @@ dependencies = [
 
 [[package]]
 name = "surreal-server-graphics"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-server-input"
 version = "0.1.0"
 dependencies = [
  "surreal-core",

@@ -6,11 +6,9 @@ use core::graphics::*;
 use core::maths::Mat4;
 use core::utilities::Object;
 pub use pixels::*;
-pub use sprites::*;
 pub use tiles::*;
 
 mod pixels;
-mod sprites;
 mod tiles;
 
 /// A uniform that contains the [`ColorPalette`] texture for sprite rendering.

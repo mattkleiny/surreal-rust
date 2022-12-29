@@ -2,24 +2,43 @@
 
 pub use log::{debug, error, info, trace, warn, Level, LevelFilter};
 
-/// A simple `log` that logs to the console.
-///
-/// This implementation provides no buffering and logs to the console immediately.
-pub struct ConsoleLogger {}
+/// A builder pattern for [`ConsoleLogger`].
+pub struct ConsoleLoggerBuilder {
+  level: LevelFilter,
+}
 
-impl ConsoleLogger {
-  /// Installs the console logger as the default logger.
-  pub fn install(level: LevelFilter) {
-    let logger = &&ConsoleLogger {};
+impl ConsoleLoggerBuilder {
+  pub fn new() -> Self {
+    Self { level: LevelFilter::Info }
+  }
 
-    log::set_max_level(level);
+  pub fn with_level(mut self, level: LevelFilter) -> Self {
+    self.level = level;
+    self
+  }
+
+  /// Installs this logger as the global logger.
+  pub fn install(self) {
+    let logger = self.build();
+
+    log::set_max_level(LevelFilter::Trace);
     log::set_logger(logger).expect("Failed to set logger");
+  }
+
+  /// Builds a [`ConsoleLogger`] with the given configuration in static context.
+  fn build(self) -> &'static mut ConsoleLogger {
+    Box::leak(Box::new(ConsoleLogger { level: self.level }))
   }
 }
 
+/// A simple [`log::Log`] that logs to the console.
+struct ConsoleLogger {
+  level: LevelFilter,
+}
+
 impl log::Log for ConsoleLogger {
-  fn enabled(&self, _metadata: &log::Metadata) -> bool {
-    true
+  fn enabled(&self, metadata: &log::Metadata) -> bool {
+    metadata.level() >= self.level
   }
 
   fn log(&self, record: &log::Record) {
@@ -45,5 +64,7 @@ impl log::Log for ConsoleLogger {
     );
   }
 
-  fn flush(&self) {}
+  fn flush(&self) {
+    // no-op
+  }
 }

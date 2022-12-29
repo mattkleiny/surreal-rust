@@ -13,7 +13,7 @@ use log::LevelFilter;
 use crate::{
   assets::AssetManager,
   audio::{AudioServer, OpenALAudioBackend},
-  diagnostics::ConsoleLogger,
+  diagnostics::ConsoleLoggerBuilder,
   graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend},
   input::InputBackend,
   maths::{uvec2, vec2},
@@ -102,7 +102,7 @@ impl Engine {
     use crate::graphics::*;
 
     // set-up diagnostics
-    ConsoleLogger::install(configuration.log_level);
+    ConsoleLoggerBuilder::new().with_level(configuration.log_level).install();
     profiling::register_thread!("Main Thread");
 
     // set-up core engine

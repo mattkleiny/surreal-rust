@@ -17,8 +17,10 @@ members = [
 ]
 
 [features]
-default = ["audio", "graphics", "physics"]
+default = ["audio", "graphics", "input", "physics"]
 profiling = ["core/profiling"]
+hdrp = ["graphics/hdrp"]
+lwrp = ["graphics/lwrp"]
 
 [dependencies]
 # core
@@ -42,6 +44,7 @@ scene3d = { package = "surreal-scene-3d", path = "./scenes/3d", optional = true 
 # servers
 audio = { package = "surreal-server-audio", path = "./servers/audio", optional = true }
 graphics = { package = "surreal-server-graphics", path = "./servers/graphics", optional = true }
+input = { package = "surreal-server-input", path = "./servers/input", optional = true }
 physics = { package = "surreal-server-physics", path = "./servers/physics", optional = true }
 
 [dev-dependencies]

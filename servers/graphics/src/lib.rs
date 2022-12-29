@@ -1,6 +1,11 @@
 use core::graphics::PrimitiveTopology;
 use core::maths::AABB;
 
+#[cfg(feature = "hdrp")]
+pub mod hdrp;
+#[cfg(feature = "lwrp")]
+pub mod lwrp;
+
 pub type GraphicsId = core::utilities::RID;
 
 #[derive(Clone)]
