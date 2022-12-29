@@ -66,8 +66,9 @@ impl Object for SpriteContext {
 
 #[cfg(test)]
 mod tests {
+  use core::maths::{vec3, Quat};
+
   use super::*;
-  use core::maths::vec3;
 
   #[test]
   fn sprite_should_render() {
@@ -76,9 +77,11 @@ mod tests {
 
     let graph = SceneGraph::new(
       SceneNodeBuilder::default()
+        .with_name("Test")
         .with_local_position(vec3(0., 0., 0.))
+        .with_local_rotation(Quat::from_rotation_z(std::f32::consts::PI))
         .with_component(SpriteComponent {
-          region: TextureRegion::from(&texture),
+          region: TextureRegion::from(texture),
         }),
     );
 

@@ -128,6 +128,12 @@ impl SceneGraph {
   }
 }
 
+impl Drop for SceneGraph {
+  fn drop(&mut self) {
+    self.root.notify(&mut SceneEvent::Destroy);
+  }
+}
+
 impl Debug for SceneGraph {
   fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     for (node, level) in self.root.iter_recursive() {
@@ -283,6 +289,7 @@ impl Debug for ComponentSet {
 /// A node has a position, orientation, and scale relative to its parent node.
 pub struct SceneNode {
   id: NodeId,
+  name: Option<String>,
   is_visible: bool,
   is_enabled: bool,
   is_transform_dirty: bool,
@@ -297,6 +304,7 @@ impl Default for SceneNode {
   fn default() -> Self {
     Self {
       id: NodeId::random(),
+      name: None,
       is_visible: true,
       is_enabled: true,
       is_transform_dirty: true,
@@ -312,6 +320,14 @@ impl Default for SceneNode {
 impl SceneNode {
   pub fn id(&self) -> NodeId {
     self.id
+  }
+
+  pub fn name(&self) -> Option<&str> {
+    self.name.as_deref()
+  }
+
+  pub fn set_name(&mut self, name: impl Into<String>) {
+    self.name = Some(name.into());
   }
 
   pub fn is_visible(&self) -> bool {
@@ -541,6 +557,44 @@ impl SceneNode {
     None
   }
 
+  /// Tries to locate a node in this hierarchy by it's [`NodePath`].
+  pub fn find_by_path(&self, node_path: impl Into<NodePath>) -> Option<&SceneNode> {
+    fn find_recursive<'a>(node: &'a SceneNode, node_path: impl Into<NodePath>) -> Option<&'a SceneNode> {
+      if let Some((first, rest)) = node_path.into().split_first() {
+        if node.name() == Some(first) {
+          for child in &node.children {
+            return find_recursive(child, rest);
+          }
+        }
+
+        return None;
+      }
+
+      return Some(node);
+    }
+
+    find_recursive(self, node_path)
+  }
+
+  /// Tries to mutably locate a node in this hierarchy by it's [`NodePath`].
+  pub fn find_by_path_mut(&mut self, node_path: impl Into<NodePath>) -> Option<&mut SceneNode> {
+    fn find_recursive<'a>(node: &'a mut SceneNode, node_path: impl Into<NodePath>) -> Option<&'a mut SceneNode> {
+      if let Some((first, rest)) = node_path.into().split_first() {
+        if node.name() == Some(first) {
+          for child in &mut node.children {
+            return find_recursive(child, rest);
+          }
+        }
+
+        return None;
+      }
+
+      return Some(node);
+    }
+
+    find_recursive(self, node_path)
+  }
+
   /// Tries to locate the [`SceneNode`] with the given [`NodeId`] in this hierarchy.
   /// If the node is found, remove it from it's parent and return it.
   fn take_node_by_id(&mut self, node_id: NodeId) -> Option<SceneNode> {
@@ -611,9 +665,33 @@ impl Debug for SceneNode {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("SceneNode")
       .field("id", &self.id)
+      .field("name", &self.name)
+      .field("layer", &self.layer_id)
       .field("tags", &self.tags)
       .field("components", &self.components)
       .finish()
+  }
+}
+
+/// A path to a [`SceneNode`].
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct NodePath<'a>(&'a str);
+
+impl<'a> NodePath<'a> {
+  /// Splits the path into it's first component and the rest of the path as two pieces.
+  pub fn split_first(&self) -> Option<(&'a str, &'a str)> {
+    let mut split = self.0.splitn(2, '/');
+
+    let first = split.next()?;
+    let rest = split.next()?;
+
+    Some((first, rest))
+  }
+}
+
+impl<'a> From<&'a str> for NodePath<'a> {
+  fn from(value: &'a str) -> Self {
+    Self(value)
   }
 }
 
@@ -621,6 +699,7 @@ impl Debug for SceneNode {
 #[must_use]
 #[derive(Default)]
 pub struct SceneNodeBuilder {
+  name: Option<String>,
   layer_id: LayerId,
   tags: TagSet,
   transform: Transform,
@@ -629,6 +708,11 @@ pub struct SceneNodeBuilder {
 }
 
 impl SceneNodeBuilder {
+  pub fn with_name(mut self, name: impl Into<String>) -> Self {
+    self.name = Some(name.into());
+    self
+  }
+
   pub fn with_layer_id(mut self, layer_id: LayerId) -> Self {
     self.layer_id = layer_id;
     self
@@ -683,6 +767,7 @@ impl SceneNodeBuilder {
   pub fn build(self) -> SceneNode {
     let mut node = SceneNode {
       id: NodeId::random(),
+      name: self.name,
       is_visible: true,
       is_enabled: true,
       is_transform_dirty: false,
@@ -850,6 +935,32 @@ mod tests {
     scene.reparent_node(from_id, to_id).unwrap();
 
     println!("After reparent:\n{:?}", scene);
+  }
+
+  #[test]
+  fn scene_graph_should_find_by_node_path() {
+    #[rustfmt::skip]
+    let scene = SceneGraph::new(
+      SceneNodeBuilder::default()
+        .with_name("Parent")
+        .with_child(
+          SceneNodeBuilder::default()
+            .with_name("Child1")
+            .with_child(
+              SceneNodeBuilder::default()
+                .with_name("Child2")
+                .with_child(SceneNodeBuilder::default()
+                  .with_name("Child3")
+                )
+            ),
+        ),
+    );
+
+    println!("{:?}", scene);
+
+    let result = scene.root.find_by_path("Parent/Child1/Child2/Child3").unwrap();
+
+    println!("{:?}", result);
   }
 
   #[test]

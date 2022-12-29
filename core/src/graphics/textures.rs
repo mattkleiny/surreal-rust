@@ -297,6 +297,16 @@ impl TextureRegion {
   }
 }
 
+impl From<Texture> for TextureRegion {
+  fn from(texture: Texture) -> Self {
+    TextureRegion {
+      offset: uvec2(0, 0),
+      size: uvec2(texture.width() as u32, texture.height() as u32),
+      texture,
+    }
+  }
+}
+
 impl From<&Texture> for TextureRegion {
   fn from(texture: &Texture) -> Self {
     TextureRegion {
