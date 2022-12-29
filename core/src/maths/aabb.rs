@@ -1,8 +1,8 @@
-use crate::maths::Vector3;
+use super::*;
 
 /// An axially-aligned bounding box.
 #[derive(Clone)]
 pub struct AABB<T> {
-  pub position: Vector3<T>,
+  pub position: Vec3,
   pub size: T,
 }

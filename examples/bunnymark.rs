@@ -24,7 +24,7 @@ fn main() {
     let mut renderer = RenderContextManager::new(graphics);
 
     renderer.configure(SpriteBatchDescriptor {
-      projection_view: Matrix4x4::from_orthographic(WIDTH, HEIGHT, 0., 100.),
+      projection_view: Mat4::orthographic_rh_gl(-WIDTH / 2., WIDTH / 2., HEIGHT / 2., -HEIGHT / 2., 0., 100.),
       ..Default::default()
     });
 
@@ -49,6 +49,7 @@ fn main() {
             &SpriteOptions {
               position: bunny.position,
               color: bunny.color,
+              rotation: bunny.rotation,
               ..Default::default()
             },
           );
@@ -79,6 +80,8 @@ fn main() {
               position: vec2(position.x * WIDTH - WIDTH / 2., position.y * HEIGHT - HEIGHT / 2.),
               velocity: vec2(random.next::<f32>() * 2. - 1., random.next::<f32>() * 2. - 1.),
               color: Color32::random(),
+              rotation: 0.0,
+              rotation_speed: f32::random() * 10. - 5.,
             });
           }
 
@@ -99,15 +102,18 @@ fn main() {
 
 /// Represents a bunny in the benchmark.
 struct Bunny {
-  position: Vector2<f32>,
-  velocity: Vector2<f32>,
+  position: Vec2,
+  velocity: Vec2,
   color: Color32,
+  rotation: f32,
+  rotation_speed: f32,
 }
 
 impl Bunny {
   /// Updates the bunny's position.
   pub fn update(&mut self, delta_time: f32) {
     self.position += self.velocity * 100. * delta_time;
+    self.rotation += self.rotation_speed * delta_time;
 
     if self.velocity.x < 0. && self.position.x < -WIDTH / 2. {
       self.velocity.x *= -1.;

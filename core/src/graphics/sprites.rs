@@ -2,7 +2,7 @@
 //!
 //! Sprites are very common in projects, so this is a dedicated batch to support.
 
-use crate::maths::{vec2, Matrix4x4, Vector2};
+use crate::maths::{vec2, Mat2, Vec2};
 
 use super::*;
 
@@ -26,18 +26,18 @@ pub struct SpriteBatch {
 
 /// Options for drawing a sprite.
 pub struct SpriteOptions {
-  pub position: Vector2<f32>,
+  pub position: Vec2,
   pub rotation: f32,
-  pub scale: Vector2<f32>,
+  pub scale: Vec2,
   pub color: Color32,
 }
 
 impl Default for SpriteOptions {
   fn default() -> Self {
     Self {
-      position: Vector2::ZERO,
+      position: Vec2::ZERO,
       rotation: 0.,
-      scale: Vector2::ONE,
+      scale: Vec2::ONE,
       color: Color32::WHITE,
     }
   }
@@ -51,8 +51,8 @@ impl Default for SpriteOptions {
 #[repr(C)]
 #[derive(Clone, Debug)]
 struct SpriteVertex {
-  pub position: Vector2<f32>,
-  pub uv: Vector2<f32>,
+  pub position: Vec2,
+  pub uv: Vec2,
   pub color: Color32,
 }
 
@@ -145,33 +145,35 @@ impl SpriteBatch {
       self.last_texture = Some(region.texture.clone());
     }
 
-    let translation = Matrix4x4::from_translation(options.position.x, options.position.y, 0.);
-    let rotation = Matrix4x4::from_rotate_z(options.rotation);
-    let scale = Matrix4x4::from_scale(region.size.x as f32 * options.scale.x, region.size.y as f32 * options.scale.y, 1.);
+    let scale = vec2(region.size.x as f32 * options.scale.x, region.size.y as f32 * options.scale.y);
+    let angle = options.rotation;
+    let translation = options.position;
 
-    let transform = translation * rotation * scale;
+    // prepare vertex transform
+    let transform = Mat2::from_scale_angle(scale, angle);
+
     let uv = region.calculate_uv();
 
     self.vertices.push(SpriteVertex {
-      position: vec2(-0.5, -0.5) * transform,
+      position: translation + transform * vec2(-0.5, -0.5),
       color: options.color,
       uv: uv.top_left(),
     });
 
     self.vertices.push(SpriteVertex {
-      position: vec2(-0.5, 0.5) * transform,
+      position: translation + transform * vec2(-0.5, 0.5),
       color: options.color,
       uv: uv.bottom_left(),
     });
 
     self.vertices.push(SpriteVertex {
-      position: vec2(0.5, 0.5) * transform,
+      position: translation + transform * vec2(0.5, 0.5),
       color: options.color,
       uv: uv.bottom_right(),
     });
 
     self.vertices.push(SpriteVertex {
-      position: vec2(0.5, -0.5) * transform,
+      position: translation + transform * vec2(0.5, -0.5),
       color: options.color,
       uv: uv.top_right(),
     });

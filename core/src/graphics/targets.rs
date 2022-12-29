@@ -116,8 +116,8 @@ impl RenderTarget {
     let source_color = &state.color_attachment;
     let dest_color = other.color_attachment();
 
-    let source = Rectangle::from_corner_points(0, 0, source_color.width() as i32, source_color.height() as i32);
-    let dest = Rectangle::from_corner_points(0, 0, dest_color.width() as i32, dest_color.height() as i32);
+    let source = Rectangle::from_corner_points(0., 0., source_color.width() as f32, source_color.height() as f32);
+    let dest = Rectangle::from_corner_points(0., 0., dest_color.width() as f32, dest_color.height() as f32);
 
     let graphics = &state.graphics;
 
@@ -131,8 +131,8 @@ impl RenderTarget {
 
     let (width, height) = state.graphics.get_viewport_size();
 
-    let source = Rectangle::from_corner_points(0, 0, color.width() as i32, color.height() as i32);
-    let dest = Rectangle::from_corner_points(0, 0, width as i32, height as i32);
+    let source = Rectangle::from_corner_points(0., 0., color.width() as f32, color.height() as f32);
+    let dest = Rectangle::from_corner_points(0., 0., width as f32, height as f32);
 
     let graphics = &state.graphics;
 

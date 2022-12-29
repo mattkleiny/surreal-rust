@@ -302,7 +302,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
   fn write_texture_sub_data(
     &self,
     texture: GraphicsHandle,
-    region: &Rectangle<usize>,
+    region: &Rectangle,
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,
@@ -419,38 +419,32 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         ShaderUniform::Bool(value) => {
           gl::ProgramUniform1i(shader, location as i32, *value as i32);
         }
-        ShaderUniform::Integer(value) => {
+        ShaderUniform::I32(value) => {
+          gl::ProgramUniform1i(shader, location as i32, *value);
+        }
+        ShaderUniform::U32(value) => {
           gl::ProgramUniform1i(shader, location as i32, *value as i32);
         }
-        ShaderUniform::Floating(value) => {
+        ShaderUniform::F32(value) => {
           gl::ProgramUniform1f(shader, location as i32, *value);
         }
-        ShaderUniform::Point2(value) => {
-          gl::ProgramUniform2i(shader, location as i32, value.x, value.y);
-        }
-        ShaderUniform::Point3(value) => {
-          gl::ProgramUniform3i(shader, location as i32, value.x, value.y, value.z);
-        }
-        ShaderUniform::Point4(value) => {
-          gl::ProgramUniform4i(shader, location as i32, value.x, value.y, value.z, value.w);
-        }
-        ShaderUniform::Vector2(value) => {
+        ShaderUniform::Vec2(value) => {
           gl::ProgramUniform2f(shader, location as i32, value.x, value.y);
         }
-        ShaderUniform::Vector3(value) => {
+        ShaderUniform::Vec3(value) => {
           gl::ProgramUniform3f(shader, location as i32, value.x, value.y, value.z);
         }
-        ShaderUniform::Vector4(value) => {
+        ShaderUniform::Vec4(value) => {
           gl::ProgramUniform4f(shader, location as i32, value.x, value.y, value.z, value.w);
         }
-        ShaderUniform::Matrix2x2(value) => {
-          gl::ProgramUniformMatrix2fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+        ShaderUniform::Mat2(value) => {
+          gl::ProgramUniformMatrix2fv(shader, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
-        ShaderUniform::Matrix3x3(value) => {
-          gl::ProgramUniformMatrix3fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+        ShaderUniform::Mat3(value) => {
+          gl::ProgramUniformMatrix3fv(shader, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
-        ShaderUniform::Matrix4x4(value) => {
-          gl::ProgramUniformMatrix4fv(shader, location as i32, 1, gl::TRUE, value.as_slice().as_ptr());
+        ShaderUniform::Mat4(value) => {
+          gl::ProgramUniformMatrix4fv(shader, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
         ShaderUniform::Texture(texture, slot, sampler) => {
           gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
@@ -700,8 +694,8 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     &self,
     from: GraphicsHandle,
     to: GraphicsHandle,
-    source_rect: &Rectangle<i32>,
-    dest_rect: &Rectangle<i32>,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
     filter: TextureFilter,
   ) {
     unsafe {
@@ -709,14 +703,14 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, to);
 
       gl::BlitFramebuffer(
-        source_rect.left(),
-        source_rect.top(),
-        source_rect.width(),
-        source_rect.height(),
-        dest_rect.left(),
-        dest_rect.top(),
-        dest_rect.width(),
-        dest_rect.height(),
+        source_rect.left() as i32,
+        source_rect.top() as i32,
+        source_rect.width() as i32,
+        source_rect.height() as i32,
+        dest_rect.left() as i32,
+        dest_rect.top() as i32,
+        dest_rect.width() as i32,
+        dest_rect.height() as i32,
         gl::COLOR_BUFFER_BIT,
         match filter {
           TextureFilter::Nearest => gl::NEAREST,
@@ -729,13 +723,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn blit_render_target_to_display(
-    &self,
-    handle: GraphicsHandle,
-    source_rect: &Rectangle<i32>,
-    dest_rect: &Rectangle<i32>,
-    filter: TextureFilter,
-  ) {
+  fn blit_render_target_to_display(&self, handle: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
     self.blit_render_target(handle, 0, source_rect, dest_rect, filter);
   }
 

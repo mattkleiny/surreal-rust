@@ -10,7 +10,7 @@ use ab_glyph::{Font as AbFont, FontVec};
 
 use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
 use crate::graphics::{Texture, TextureRegion};
-use crate::maths::{vec2, Vector2};
+use crate::maths::{uvec2, UVec2};
 
 use super::{Color32, GraphicsServer, Texel, TextureAtlasBuilder};
 
@@ -35,9 +35,9 @@ pub struct BitmapFont {
 #[serde(rename_all = "PascalCase")]
 struct BitmapFontMetrics {
   pub file_path: String,
-  pub glyph_width: u16,
-  pub glyph_height: u16,
-  pub glyph_padding: u16,
+  pub glyph_width: u32,
+  pub glyph_height: u32,
+  pub glyph_padding: u32,
   pub columns: u16,
 }
 
@@ -77,16 +77,13 @@ impl Font for BitmapFont {
     let metrics = &self.metrics;
     let character = character as u8;
 
-    let x = (character as u16 % metrics.columns) * (metrics.glyph_width + metrics.glyph_padding);
-    let y = (character as u16 / metrics.columns) * (metrics.glyph_height + metrics.glyph_padding);
-
-    let offset = vec2(x as u32, y as u32);
-    let size = vec2(metrics.glyph_width as u32, metrics.glyph_height as u32);
+    let x = (character as u16 % metrics.columns) as u32 * (metrics.glyph_width + metrics.glyph_padding);
+    let y = (character as u16 / metrics.columns) as u32 * (metrics.glyph_height + metrics.glyph_padding);
 
     Some(TextureRegion {
       texture: &self.texture,
-      offset,
-      size,
+      offset: uvec2(x, y),
+      size: uvec2(metrics.glyph_width, metrics.glyph_height),
     })
   }
 }
@@ -130,8 +127,8 @@ struct VectorFontState {
 /// Represents position information for a single glyph in a texture.
 #[derive(Clone, Debug)]
 struct GlyphInfo {
-  pub offset: Vector2<u32>,
-  pub size: Vector2<u32>,
+  pub offset: UVec2,
+  pub size: UVec2,
 }
 
 impl Font for VectorFont {
@@ -220,7 +217,7 @@ pub struct VectorFontLoader {
   pub graphics: GraphicsServer,
   pub font_size: f32,
   pub atlas_stride: usize,
-  pub atlas_cell_size: Vector2<u32>,
+  pub atlas_cell_size: UVec2,
 }
 
 impl Asset for VectorFont {

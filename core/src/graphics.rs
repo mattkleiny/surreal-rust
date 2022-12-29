@@ -113,7 +113,7 @@ pub trait GraphicsBackend {
   fn write_texture_sub_data(
     &self,
     texture: GraphicsHandle,
-    region: &Rectangle<usize>,
+    region: &Rectangle,
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,
@@ -150,16 +150,10 @@ pub trait GraphicsBackend {
     &self,
     from: GraphicsHandle,
     to: GraphicsHandle,
-    source_rect: &Rectangle<i32>,
-    dest_rect: &Rectangle<i32>,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
     filter: TextureFilter,
   );
-  fn blit_render_target_to_display(
-    &self,
-    handle: GraphicsHandle,
-    source_rect: &Rectangle<i32>,
-    dest_rect: &Rectangle<i32>,
-    filter: TextureFilter,
-  );
+  fn blit_render_target_to_display(&self, handle: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
   fn delete_render_target(&self, render_target: GraphicsHandle);
 }

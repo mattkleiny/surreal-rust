@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use crate::utilities::Object;
 use crate::{
   engine::GameTime,
-  maths::{vec2, Matrix4x4, Plane, Vector3},
+  maths::{vec2, Mat4, Plane, Vec3},
 };
 
 use super::*;
@@ -157,8 +157,8 @@ pub struct CullingResult {
 /// A frustum of 6 planes representing the camera's viewport; used to cull objects.
 #[derive(Default, Clone)]
 pub struct CameraFrustum {
-  pub position: Vector3<f32>,
-  pub planes: [Plane<f32>; 6],
+  pub position: Vec3,
+  pub planes: [Plane; 6],
 }
 
 /// Provides camera information for use in a dedicated render pipeline.
@@ -167,7 +167,7 @@ pub trait RenderCamera {
   fn compute_frustum(&self) -> CameraFrustum;
 
   /// Retrieves the projection-view matrix for this camera.
-  fn projection_view(&self) -> Matrix4x4<f32>;
+  fn projection_view(&self) -> Mat4;
 }
 
 /// Provides culling information to a renderer for use in trivial rejection.

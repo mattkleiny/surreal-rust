@@ -2,40 +2,40 @@ use super::*;
 
 /// Shorthand to construct a [`Ray2`]
 #[inline(always)]
-pub const fn ray2<T>(origin: Vector2<T>, direction: Vector2<T>) -> Ray2<T> {
+pub const fn ray2(origin: Vec2, direction: Vec2) -> Ray2 {
   Ray2::new(origin, direction)
 }
 
 /// Shorthand to construct a [`Ray3`]
 #[inline(always)]
-pub const fn ray3<T>(origin: Vector3<T>, direction: Vector3<T>) -> Ray3<T> {
+pub const fn ray3(origin: Vec3, direction: Vec3) -> Ray3 {
   Ray3::new(origin, direction)
 }
 
 /// Represents a ray into 2-space.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Ray2<T> {
-  pub origin: Vector2<T>,
-  pub direction: Vector2<T>,
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Ray2 {
+  pub origin: Vec2,
+  pub direction: Vec2,
 }
 
-impl<T> Ray2<T> {
+impl Ray2 {
   #[inline(always)]
-  pub const fn new(origin: Vector2<T>, direction: Vector2<T>) -> Self {
+  pub const fn new(origin: Vec2, direction: Vec2) -> Self {
     Self { origin, direction }
   }
 }
 
 /// Represents a ray into 3-space.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Ray3<T> {
-  pub origin: Vector3<T>,
-  pub direction: Vector3<T>,
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Ray3 {
+  pub origin: Vec3,
+  pub direction: Vec3,
 }
 
-impl<T> Ray3<T> {
+impl Ray3 {
   #[inline(always)]
-  pub const fn new(origin: Vector3<T>, direction: Vector3<T>) -> Self {
+  pub const fn new(origin: Vec3, direction: Vec3) -> Self {
     Self { origin, direction }
   }
 }

@@ -441,6 +441,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "glam"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12f597d56c1bd55a811a1be189459e8fad2bbc272616375602443bdfb37fa774"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "glutin"
 version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1134,6 +1143,7 @@ dependencies = [
  "chrono",
  "egui",
  "gl",
+ "glam",
  "glutin",
  "image",
  "lazy_static",

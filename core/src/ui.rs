@@ -142,7 +142,7 @@ impl UserInterface {
         Some([x, y]) => {
           // update existing texture
           let texture = self.textures.get_mut(&id).expect("Texture not found");
-          let region = Rectangle::from_corner_points(x, y, x + width, y + height);
+          let region = Rectangle::from_corner_points(x as f32, y as f32, x as f32 + width as f32, y as f32 + height as f32);
 
           texture.write_sub_pixels(&region, &pixels);
         }

@@ -3,7 +3,7 @@
 use std::any::Any;
 
 use core::graphics::*;
-use core::maths::Matrix4x4;
+use core::maths::Mat4;
 use core::utilities::Object;
 pub use pixels::*;
 pub use sprites::*;
@@ -20,7 +20,7 @@ pub const UNIFORM_PALETTE: UniformKey<&Texture> = UniformKey::new("u_palette");
 pub const UNIFORM_PALETTE_WIDTH: UniformKey<u32> = UniformKey::new("u_paletteWidth");
 
 /// A uniform that contains the projection-view matrix for perspective adjustment.
-pub const UNIFORM_PROJECTION_VIEW: UniformKey<&Matrix4x4<f32>> = UniformKey::new("u_projectionView");
+pub const UNIFORM_PROJECTION_VIEW: UniformKey<&Mat4> = UniformKey::new("u_projectionView");
 
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -98,7 +98,7 @@ pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<
 /// A [`RenderContextDescriptor`] for a simple [`SpriteBatchContext`] for use in sprite rendering.
 pub struct SpriteBatchDescriptor {
   /// A default projection-view matrix to apply.
-  pub projection_view: Matrix4x4<f32>,
+  pub projection_view: Mat4,
 
   /// If a palette is specified, a special shader variant will be loaded that uses the palette.
   /// The palette will be bound to `u_palette` with `u_paletteWidth` texels wide.
@@ -114,7 +114,7 @@ pub struct SpriteBatchDescriptor {
 impl Default for SpriteBatchDescriptor {
   fn default() -> Self {
     Self {
-      projection_view: Matrix4x4::IDENTITY,
+      projection_view: Mat4::IDENTITY,
       palette: None,
       shader: None,
       sprite_count: 1024,
@@ -195,7 +195,7 @@ impl Object for SpriteBatchContext {
 /// A descriptor for the `GeometryBatch`.
 pub struct GeometryBatchDescriptor {
   /// A default projection-view matrix to apply.
-  pub projection_view: Matrix4x4<f32>,
+  pub projection_view: Mat4,
 
   /// A custom shader program to use for rendering.
   pub shader: Option<ShaderProgram>,
@@ -204,7 +204,7 @@ pub struct GeometryBatchDescriptor {
 impl Default for GeometryBatchDescriptor {
   fn default() -> Self {
     Self {
-      projection_view: Matrix4x4::IDENTITY,
+      projection_view: Mat4::IDENTITY,
       shader: None,
     }
   }

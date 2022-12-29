@@ -1,5 +1,3 @@
-use crate::maths::Shape;
-
 /// A simple 2d grid of [`T`]s.
 #[derive(Clone, Debug)]
 pub struct Grid<T> {
@@ -140,14 +138,6 @@ impl<T> Grid<T> {
   /// Mirrors the grid vertically.
   pub fn mirror_vertically(&mut self) {
     todo!()
-  }
-
-  /// Rasterizes the given shape into the canvas.
-  pub fn draw(&mut self, value: T, shape: &impl Shape)
-  where
-    T: Clone,
-  {
-    shape.rasterize(value, self);
   }
 }
 

@@ -3,7 +3,7 @@ use std::hash::Hash;
 
 use core::collections::Grid;
 use core::graphics::Renderable;
-use core::maths::{vec2, Cost, NeighbourList, Numeric, PathFindingGrid, Vector2, VonNeumannNeighbourhood};
+use core::maths::{vec2, Cost, IVec2, NeighbourList, Numeric, PathFindingGrid, VonNeumannNeighbourhood};
 
 use super::*;
 
@@ -163,14 +163,14 @@ pub trait PathableTile: Tile {
 
 /// Allow path finding over simple tile maps.
 impl<T: PathableTile> PathFindingGrid for TileMap<'_, T> {
-  fn get_cost(&self, _from: Vector2<i32>, to: Vector2<i32>) -> Cost {
+  fn get_cost(&self, _from: IVec2, to: IVec2) -> Cost {
     match self.get(to.x, to.y) {
       Some(tile) => tile.get_cost(),
       None => f32::MAX,
     }
   }
 
-  fn get_neighbours(&self, center: Vector2<i32>, neighbours: &mut NeighbourList) {
+  fn get_neighbours(&self, center: IVec2, neighbours: &mut NeighbourList) {
     for neighbour in center.von_neighbours() {
       if let Some(tile) = self.get(neighbour.x, neighbour.y) {
         if tile.is_pathable() {

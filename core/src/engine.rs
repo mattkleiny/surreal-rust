@@ -16,7 +16,7 @@ use crate::{
   diagnostics::ConsoleLogger,
   graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend},
   input::InputBackend,
-  maths::vec2,
+  maths::{uvec2, vec2},
   utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
@@ -121,7 +121,7 @@ impl Engine {
       graphics: graphics.clone(),
       font_size: 16.,
       atlas_stride: 16,
-      atlas_cell_size: vec2(16, 16),
+      atlas_cell_size: uvec2(16, 16),
     });
 
     assets.add_loader(ImageLoader { format: None });

@@ -48,10 +48,6 @@ physics = { package = "surreal-server-physics", path = "./servers/physics", opti
 egui = "0.20.1" # for examples
 
 [[example]]
-name = "asteroids"
-required-features = ["prototype"]
-
-[[example]]
 name = "bunnymark"
 required-features = ["prototype"]
 

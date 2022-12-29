@@ -1,6 +1,6 @@
 use crate::{
   graphics::{Color, Color32},
-  maths::{Vector2, Vector3, Vector4},
+  maths::{Quat, Vec2, Vec3, Vec4},
 };
 
 /// Different kinds of variant supported.
@@ -42,9 +42,10 @@ pub enum Variant {
   F32(f32),
   F64(f64),
   String(String),
-  Vec2(Vector2<f32>),
-  Vec3(Vector3<f32>),
-  Vec4(Vector4<f32>),
+  Vec2(Vec2),
+  Vec3(Vec3),
+  Vec4(Vec4),
+  Quat(Quat),
   Color(Color),
   Color32(Color32),
   Enum(u32),
@@ -69,6 +70,7 @@ impl Variant {
       Variant::Vec2(_) => VariantKind::Vec2,
       Variant::Vec3(_) => VariantKind::Vec3,
       Variant::Vec4(_) => VariantKind::Vec4,
+      Variant::Quat(_) => VariantKind::Quat,
       Variant::Color(_) => VariantKind::Color,
       Variant::Color32(_) => VariantKind::Color32,
       Variant::Enum(_) => VariantKind::Enum,

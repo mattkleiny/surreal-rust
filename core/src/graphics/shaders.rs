@@ -12,7 +12,7 @@ use std::rc::Rc;
 use smallvec::SmallVec;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::maths::{Matrix2x2, Matrix3x3, Matrix4x4, Vector2, Vector3, Vector4};
+use crate::maths::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 use super::*;
 
@@ -39,17 +39,15 @@ pub struct Shader {
 #[derive(Clone)]
 pub enum ShaderUniform {
   Bool(bool),
-  Integer(u32),
-  Floating(f32),
-  Point2(Vector2<i32>),
-  Point3(Vector3<i32>),
-  Point4(Vector4<i32>),
-  Vector2(Vector2<f32>),
-  Vector3(Vector3<f32>),
-  Vector4(Vector4<f32>),
-  Matrix2x2(Matrix2x2<f32>),
-  Matrix3x3(Matrix3x3<f32>),
-  Matrix4x4(Matrix4x4<f32>),
+  I32(i32),
+  U32(u32),
+  F32(f32),
+  Vec2(Vec2),
+  Vec3(Vec3),
+  Vec4(Vec4),
+  Mat2(Mat2),
+  Mat3(Mat3),
+  Mat4(Mat4),
   Texture(Texture, u8, Option<TextureSampler>),
   TextureArray(SmallVec<[(Texture, u8); MAX_TEXTURE_UNITS]>, Option<TextureSampler>),
 }
@@ -244,17 +242,14 @@ macro_rules! implement_uniform {
 }
 
 implement_uniform!(bool, Bool);
-implement_uniform!(u32, Integer);
-implement_uniform!(f32, Floating);
-implement_uniform!(Vector2<i32>, Point2);
-implement_uniform!(Vector3<i32>, Point3);
-implement_uniform!(Vector4<i32>, Point4);
-implement_uniform!(Vector2<f32>, Vector2);
-implement_uniform!(Vector3<f32>, Vector3);
-implement_uniform!(Vector4<f32>, Vector4);
-implement_uniform!(&Matrix2x2<f32>, Matrix2x2);
-implement_uniform!(&Matrix3x3<f32>, Matrix3x3);
-implement_uniform!(&Matrix4x4<f32>, Matrix4x4);
+implement_uniform!(u32, U32);
+implement_uniform!(f32, F32);
+implement_uniform!(Vec2, Vec2);
+implement_uniform!(Vec3, Vec3);
+implement_uniform!(Vec4, Vec4);
+implement_uniform!(&Mat2, Mat2);
+implement_uniform!(&Mat3, Mat3);
+implement_uniform!(&Mat4, Mat4);
 
 /// Parses the given raw GLSL source and performs some basic pre-processing.
 ///

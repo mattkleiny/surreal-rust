@@ -6,7 +6,7 @@ use glutin::event::{ElementState, KeyboardInput, ModifiersState, MouseScrollDelt
 pub use keyboard::*;
 pub use mouse::*;
 
-use crate::maths::{vec2, Vector2};
+use crate::maths::{vec2, Vec2};
 
 mod keyboard;
 mod mouse;
@@ -19,10 +19,10 @@ pub struct InputBackend {
 
   // egui state
   pub pixels_per_point: f32,
-  actual_mouse_pos: Vector2<f32>,
   pub raw_input: RawInput,
   pub exclusive_keyboard_input: bool,
   pub exclusive_pointer_input: bool,
+  actual_mouse_pos: Vec2,
 }
 
 impl InputBackend {
@@ -67,7 +67,7 @@ impl InputBackend {
   }
 
   /// Notifies of a mouse movement event.
-  pub fn on_mouse_move(&mut self, position: Vector2<f32>, window_size: Vector2<f32>) {
+  pub fn on_mouse_move(&mut self, position: Vec2, window_size: Vec2) {
     if let Some(mouse) = &mut self.mouse {
       let event = egui::Event::PointerMoved(egui::Pos2 {
         x: position.x as f32 / self.pixels_per_point,

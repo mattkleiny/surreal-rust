@@ -114,7 +114,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   fn write_texture_sub_data(
     &self,
     _texture: GraphicsHandle,
-    _region: &Rectangle<usize>,
+    _region: &Rectangle,
     _pixels: *const u8,
     _pixel_format: TextureFormat,
     _mip_level: usize,
@@ -191,8 +191,8 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     &self,
     _from: GraphicsHandle,
     _to: GraphicsHandle,
-    _source_rect: &Rectangle<i32>,
-    _dest_rect: &Rectangle<i32>,
+    _source_rect: &Rectangle,
+    _dest_rect: &Rectangle,
     _filter: TextureFilter,
   ) {
     // no-op
@@ -201,8 +201,8 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   fn blit_render_target_to_display(
     &self,
     _handle: GraphicsHandle,
-    _source_rect: &Rectangle<i32>,
-    _dest_rect: &Rectangle<i32>,
+    _source_rect: &Rectangle,
+    _dest_rect: &Rectangle,
     _filter: TextureFilter,
   ) {
     // no-op

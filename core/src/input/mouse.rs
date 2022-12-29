@@ -2,16 +2,16 @@
 
 use std::collections::HashSet;
 
-use crate::maths::{range, vec2, Vector2};
 use glutin::event::ElementState;
-
 pub use glutin::event::MouseButton;
+
+use crate::maths::Vec2;
 
 /// Represents a mouse device on the system.
 #[derive(Default)]
 pub struct MouseDevice {
-  position: Vector2<f32>,
-  normalised_position: Vector2<f32>,
+  position: Vec2,
+  normalised_position: Vec2,
   previous_buttons: HashSet<MouseButton>,
   current_buttons: HashSet<MouseButton>,
 }
@@ -23,7 +23,7 @@ impl MouseDevice {
   }
 
   /// Handles mouse movement.
-  pub fn on_mouse_moved(&mut self, new_position: Vector2<f32>, window_size: Vector2<f32>) {
+  pub fn on_mouse_moved(&mut self, new_position: Vec2, window_size: Vec2) {
     self.position = new_position;
     self.normalised_position = new_position / window_size;
   }
@@ -42,18 +42,13 @@ impl MouseDevice {
   }
 
   /// Gets the screen position of the mouse, origin (0, 0) in the top-left corner.
-  pub fn position(&self) -> Vector2<f32> {
+  pub fn position(&self) -> Vec2 {
     self.position
   }
 
   /// Gets the normalised screen position of the mouse, origin (0, 0) in the top-left corner.
-  pub fn normalised_position(&self) -> Vector2<f32> {
-    self.normalised_position.clamp(range(0., 1.))
-  }
-
-  /// Gets the normalised screen position of the mouse, origin (0, 0) in the top-left corner.
-  pub fn normalised_position_rescaled(&self) -> Vector2<f32> {
-    (self.normalised_position.clamp(range(0., 1.)) * 2. - vec2(1., 1.)) / 2.
+  pub fn normalised_position(&self) -> Vec2 {
+    self.normalised_position
   }
 
   /// Is the given mouse button currently up?

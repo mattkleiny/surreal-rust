@@ -6,7 +6,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::maths::{vec2, Tessellation, Vector2, Vector3};
+use crate::maths::{vec2, Tessellation, Vec2, Vec3};
 
 use super::*;
 
@@ -74,8 +74,8 @@ impl VertexKind {
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct Vertex2 {
-  pub position: Vector2<f32>,
-  pub uv: Vector2<f32>,
+  pub position: Vec2,
+  pub uv: Vec2,
   pub color: Color32,
 }
 
@@ -92,8 +92,8 @@ impl Vertex for Vertex2 {
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct Vertex3 {
-  pub position: Vector3<f32>,
-  pub uv: Vector2<f32>,
+  pub position: Vec3,
+  pub uv: Vec2,
   pub color: Color32,
 }
 

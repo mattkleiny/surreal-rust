@@ -13,7 +13,7 @@
 //! meshes.
 
 use core::graphics::{Color32, Index, Vertex, VertexDescriptor, VertexKind};
-use core::maths::{Vector2, Vector3};
+use core::maths::{vec3, Vec2, Vec3};
 
 /// A Constructive Solid Geometry (CSG) mesh.
 ///
@@ -28,8 +28,8 @@ pub struct Mesh {
 #[repr(C)]
 #[derive(Clone, Debug)]
 struct MeshVertex {
-  pub position: Vector3<f32>,
-  pub uv: Vector2<f32>,
+  pub position: Vec3,
+  pub uv: Vec2,
   pub color: Color32,
 }
 
@@ -45,8 +45,8 @@ impl Vertex for MeshVertex {
 /// A polygon representation for use in CSG [`Mesh`] construction.
 #[derive(Default, Clone)]
 pub struct Polygon {
-  _vertices: Vec<Vector3<f32>>,
-  _normal: Vector3<f32>,
+  _vertices: Vec<Vec3>,
+  _normal: Vec3,
 }
 
 impl Polygon {
@@ -59,12 +59,12 @@ impl Polygon {
 /// A helper for building up [`Polygon`]s from vertices.
 #[derive(Default, Clone)]
 pub struct PolygonBuilder {
-  vertices: Vec<Vector3<f32>>,
-  normal: Vector3<f32>,
+  vertices: Vec<Vec3>,
+  normal: Vec3,
 }
 
 impl PolygonBuilder {
-  pub fn add_vertex(&mut self, vertex: Vector3<f32>) -> &mut Self {
+  pub fn add_vertex(&mut self, vertex: Vec3) -> &mut Self {
     self.vertices.push(vertex);
     self
   }
@@ -112,14 +112,14 @@ impl Operation {
 #[derive(Clone, Debug)]
 pub struct Sphere {
   pub radius: f32,
-  pub offset: Vector3<f32>,
+  pub offset: Vec3,
 }
 
 impl Default for Sphere {
   fn default() -> Self {
     Self {
       radius: 1.0,
-      offset: Vector3::ZERO,
+      offset: Vec3::ZERO,
     }
   }
 }
@@ -127,10 +127,10 @@ impl Default for Sphere {
 impl Brush for Sphere {
   fn to_polygons(&self) -> Vec<Polygon> {
     let polygon = Polygon::create()
-      .add_vertex(Vector3::new(1.0, 0.0, 0.0))
-      .add_vertex(Vector3::new(1.0, 0.0, 0.0))
-      .add_vertex(Vector3::new(1.0, 0.0, 0.0))
-      .add_vertex(Vector3::new(1.0, 0.0, 0.0))
+      .add_vertex(vec3(1.0, 0.0, 0.0))
+      .add_vertex(vec3(1.0, 0.0, 0.0))
+      .add_vertex(vec3(1.0, 0.0, 0.0))
+      .add_vertex(vec3(1.0, 0.0, 0.0))
       .build();
 
     vec![polygon]
@@ -142,21 +142,21 @@ impl Brush for Sphere {
 pub struct Cylinder {
   pub radius: f32,
   pub height: f32,
-  pub offset: Vector3<f32>,
+  pub offset: Vec3,
 }
 
 /// A cube.
 #[derive(Clone, Debug)]
 pub struct Cube {
-  pub size: Vector3<f32>,
-  pub offset: Vector3<f32>,
+  pub size: Vec3,
+  pub offset: Vec3,
 }
 
 /// A trapezoidal prism.
 #[derive(Clone, Debug)]
 pub struct Trapezoid {
-  pub size: Vector3<f32>,
-  pub offset: Vector3<f32>,
+  pub size: Vec3,
+  pub offset: Vec3,
 }
 
 #[cfg(test)]
@@ -167,7 +167,7 @@ mod tests {
   fn sphere_should_create_a_simple_brush() {
     let sphere = Sphere {
       radius: 1.0,
-      offset: Vector3::ZERO,
+      offset: Vec3::ZERO,
     };
 
     let polygons = sphere.to_polygons();

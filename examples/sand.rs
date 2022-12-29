@@ -39,21 +39,23 @@ fn main() {
           let colors = &palette.as_slice()[1..4];
           let color = colors[usize::random() % colors.len()];
 
-          canvas.pixels.draw(
-            color,
-            &Circle {
-              center: vec2(position.x.floor() as isize, position.y.floor() as isize),
-              radius: 6,
-            },
-          );
+          for offset_y in -2..2 {
+            for offset_x in -2..2 {
+              let x = offset_x + position.x as i32;
+              let y = offset_y + position.y as i32;
+
+              canvas.pixels.set(x, y, color);
+            }
+          }
         } else if mouse.is_button_down(MouseButton::Right) {
-          canvas.pixels.draw(
-            Color32::CLEAR,
-            &Circle {
-              center: vec2(position.x.floor() as isize, position.y.floor() as isize),
-              radius: 6,
-            },
-          );
+          for offset_y in -2..2 {
+            for offset_x in -2..2 {
+              let x = offset_x + position.x as i32;
+              let y = offset_y + position.y as i32;
+
+              canvas.pixels.set(x, y, Color32::CLEAR);
+            }
+          }
         }
       }
 

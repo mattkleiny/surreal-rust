@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::maths::{FromRandom, Matrix4x4, Quaternion, Vector3};
+use crate::maths::{FromRandom, Mat4, Quat, Vec3};
 use crate::utilities::unsafe_mutable_alias;
 
 /// A unique identifier for a [`SceneNode`].
@@ -9,7 +9,7 @@ pub type SceneNodeId = crate::maths::Guid;
 /// The ID of the layer that a [`SceneNode`] inhabits.
 pub type LayerId = u16;
 
-/// A list of one or more [`Tag`]s.
+/// A set of one or more [`Tag`]s.
 pub type TagSet = HashSet<Tag>;
 
 /// A tag that can be applied to a [`SceneNode`].
@@ -65,12 +65,12 @@ pub struct SceneNode {
 /// A transform for use in [`SceneNode`] positioning.
 #[derive(Clone, Debug)]
 pub struct SceneNodeTransform {
-  pub local_position: Vector3<f32>,
-  pub local_rotation: Quaternion<f32>,
-  pub local_scale: Vector3<f32>,
-  pub global_position: Vector3<f32>,
-  pub global_rotation: Quaternion<f32>,
-  pub global_scale: Vector3<f32>,
+  pub local_position: Vec3,
+  pub local_rotation: Quat,
+  pub local_scale: Vec3,
+  pub global_position: Vec3,
+  pub global_rotation: Quat,
+  pub global_scale: Vec3,
 }
 
 /// A notification for some event that occurred in the scene.
@@ -135,19 +135,19 @@ impl Default for SceneNodeTransform {
 
 impl SceneNodeTransform {
   pub const IDENTITY: Self = Self {
-    local_position: Vector3::ZERO,
-    local_rotation: Quaternion::IDENTITY,
-    local_scale: Vector3::ONE,
-    global_position: Vector3::ZERO,
-    global_rotation: Quaternion::IDENTITY,
-    global_scale: Vector3::ONE,
+    local_position: Vec3::ZERO,
+    local_rotation: Quat::IDENTITY,
+    local_scale: Vec3::ONE,
+    global_position: Vec3::ZERO,
+    global_rotation: Quat::IDENTITY,
+    global_scale: Vec3::ONE,
   };
 
-  pub fn local_to_world(&self) -> Matrix4x4<f32> {
+  pub fn local_to_world(&self) -> Mat4 {
     todo!()
   }
 
-  pub fn world_to_local(&self) -> Matrix4x4<f32> {
+  pub fn world_to_local(&self) -> Mat4 {
     todo!()
   }
 
@@ -283,54 +283,54 @@ impl SceneNode {
     }
   }
 
-  pub fn local_position(&self) -> Vector3<f32> {
+  pub fn local_position(&self) -> Vec3 {
     self.transform.local_position
   }
 
-  pub fn set_local_position(&mut self, position: Vector3<f32>) {
+  pub fn set_local_position(&mut self, position: Vec3) {
     self.transform.local_position = position;
     self.is_transform_dirty = true;
   }
 
-  pub fn global_position(&self) -> Vector3<f32> {
+  pub fn global_position(&self) -> Vec3 {
     self.transform.global_position
   }
 
-  pub fn set_global_position(&mut self, position: Vector3<f32>) {
+  pub fn set_global_position(&mut self, position: Vec3) {
     self.transform.global_position = position;
   }
 
-  pub fn local_rotation(&self) -> Quaternion<f32> {
+  pub fn local_rotation(&self) -> Quat {
     self.transform.local_rotation
   }
 
-  pub fn set_local_rotation(&mut self, rotation: Quaternion<f32>) {
+  pub fn set_local_rotation(&mut self, rotation: Quat) {
     self.transform.local_rotation = rotation;
     self.is_transform_dirty = true;
   }
 
-  pub fn global_rotation(&self) -> Quaternion<f32> {
+  pub fn global_rotation(&self) -> Quat {
     self.transform.global_rotation
   }
 
-  pub fn set_global_rotation(&mut self, rotation: Quaternion<f32>) {
+  pub fn set_global_rotation(&mut self, rotation: Quat) {
     self.transform.global_rotation = rotation;
   }
 
-  pub fn local_scale(&self) -> Vector3<f32> {
+  pub fn local_scale(&self) -> Vec3 {
     self.transform.local_scale
   }
 
-  pub fn set_local_scale(&mut self, scale: Vector3<f32>) {
+  pub fn set_local_scale(&mut self, scale: Vec3) {
     self.transform.local_scale = scale;
     self.is_transform_dirty = true;
   }
 
-  pub fn global_scale(&self) -> Vector3<f32> {
+  pub fn global_scale(&self) -> Vec3 {
     self.transform.global_scale
   }
 
-  pub fn set_global_scale(&mut self, scale: Vector3<f32>) {
+  pub fn set_global_scale(&mut self, scale: Vec3) {
     self.transform.global_scale = scale;
   }
 
@@ -382,6 +382,36 @@ impl SceneNode {
     for child in &mut self.children {
       child.notify(event);
     }
+  }
+
+  /// Tries to locate the node with the given [`SceneNodeId`] in this hierarchy.
+  pub fn find_by_id(&self, node_id: SceneNodeId) -> Option<&SceneNode> {
+    if self.id == node_id {
+      return Some(self);
+    }
+
+    for child in &self.children {
+      if let Some(node) = child.find_by_id(node_id) {
+        return Some(node);
+      }
+    }
+
+    None
+  }
+
+  /// Tries to locate the node with the given [`SceneNodeId`] in this hierarchy.
+  pub fn find_by_id_mut(&mut self, node_id: SceneNodeId) -> Option<&mut SceneNode> {
+    if self.id == node_id {
+      return Some(self);
+    }
+
+    for child in &mut self.children {
+      if let Some(node) = child.find_by_id_mut(node_id) {
+        return Some(node);
+      }
+    }
+
+    None
   }
 
   /// Iterates all child [`SceneNode`]s of this node.

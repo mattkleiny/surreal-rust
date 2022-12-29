@@ -18,7 +18,7 @@ impl<P: Pixel + Texel> PixelCanvas<P> {
 
     let mut material = load_built_in_material(graphics, BuiltInShader::SpriteStandard);
 
-    material.set_uniform("u_projectionView", &Matrix4x4::IDENTITY);
+    material.set_uniform("u_projectionView", &Mat4::IDENTITY);
     material.set_texture("u_texture", &texture, None);
 
     material.set_blend_state(BlendState::Enabled {

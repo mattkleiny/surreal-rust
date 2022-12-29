@@ -11,23 +11,23 @@ const MAXIMUM_STEPS: usize = 128;
 pub type Cost = f32;
 
 /// A heuristic function for path-finding.
-pub type Heuristic = fn(&Vector2<i32>, &Vector2<i32>) -> Cost;
+pub type Heuristic = fn(&IVec2, &IVec2) -> Cost;
 
 /// Represents a small stack-allocated set of points used in path-finding steps.
-pub type NeighbourList = smallvec::SmallVec<[Vector2<i32>; 9]>;
+pub type NeighbourList = smallvec::SmallVec<[IVec2; 9]>;
 
 /// Permits exploratory path-finding over some connected grid.
 pub trait PathFindingGrid {
   /// Gets the pathing cost between the given two points.
-  fn get_cost(&self, _from: Vector2<i32>, _to: Vector2<i32>) -> Cost {
+  fn get_cost(&self, _from: IVec2, _to: IVec2) -> Cost {
     1. // no cost function by default
   }
 
   /// Gets the potential neighbours around the given point.
-  fn get_neighbours(&self, center: Vector2<i32>, results: &mut NeighbourList);
+  fn get_neighbours(&self, center: IVec2, results: &mut NeighbourList);
 
   /// Locates a path using A* from from the given start point to the given goal.
-  fn find_path(&self, start: Vector2<i32>, goal: Vector2<i32>, heuristic: Heuristic) -> Option<VecDeque<Vector2<i32>>> {
+  fn find_path(&self, start: IVec2, goal: IVec2, heuristic: Heuristic) -> Option<VecDeque<IVec2>> {
     let mut frontier = PriorityQueue::new();
     let mut came_from = HashMap::new();
     let mut cost_so_far = HashMap::new();
@@ -95,15 +95,15 @@ pub mod heuristics {
   use super::*;
 
   /// A constant distance
-  pub fn constant(_from: &Vector2<i32>, _to: &Vector2<i32>) -> Cost {
+  pub fn constant(_from: &IVec2, _to: &IVec2) -> Cost {
     1.
   }
 
   /// The straight-line distance between two points.
-  pub fn euclidean_distance(from: &Vector2<i32>, to: &Vector2<i32>) -> Cost {
+  pub fn euclidean_distance(from: &IVec2, to: &IVec2) -> Cost {
     let dx = to.x - from.x;
     let dy = to.y - from.y;
 
-    (dx * dx + dy * dy).to_f32()
+    (dx * dx + dy * dy) as f32
   }
 }

@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader, AssetManager};
 use crate::collections::Grid;
-use crate::maths::{vec2, Rectangle, Vector2};
+use crate::maths::{uvec2, Rectangle, UVec2};
 
 use super::*;
 
@@ -219,7 +219,7 @@ impl Texture {
 
   /// Uploads a sub-section of pixel data to the texture.
   #[profiling::function]
-  pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle<usize>, pixels: &[T]) {
+  pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle, pixels: &[T]) {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
@@ -281,13 +281,13 @@ impl AssetLoader<Texture> for TextureLoader {
 #[derive(Clone)]
 pub struct TextureRegion<'a> {
   pub texture: &'a Texture,
-  pub offset: Vector2<u32>,
-  pub size: Vector2<u32>,
+  pub offset: UVec2,
+  pub size: UVec2,
 }
 
 impl<'a> TextureRegion<'a> {
   /// Calculates the UV rectangle for the given texture region.
-  pub fn calculate_uv(&self) -> Rectangle<f32> {
+  pub fn calculate_uv(&self) -> Rectangle {
     let left = self.offset.x as f32 / self.texture.width() as f32;
     let top = self.offset.y as f32 / self.texture.height() as f32;
     let right = (self.offset.x + self.size.x) as f32 / self.texture.width() as f32;
@@ -303,13 +303,13 @@ impl<'a, R: AsRef<Texture>> From<&'a R> for TextureRegion<'a> {
 
     TextureRegion {
       texture,
-      offset: Vector2::ZERO,
-      size: vec2(texture.width(), texture.height()),
+      offset: uvec2(0, 0),
+      size: uvec2(texture.width() as u32, texture.height() as u32),
     }
   }
 }
 
-/// An atlas of textures, which is a subdivison of a texture into a smaller grid of [`TextureRegion`]s.
+/// An atlas of textures, which is a sub-division of a texture into a smaller grid of [`TextureRegion`]s.
 #[derive(Clone)]
 pub struct TextureAtlas {
   texture: Texture,
@@ -348,8 +348,8 @@ impl TextureAtlas {
   pub fn get_region(&self, x: u32, y: u32) -> TextureRegion {
     TextureRegion {
       texture: &self.texture,
-      offset: vec2(x * self.width, y * self.height),
-      size: vec2(self.width, self.height),
+      offset: uvec2(x * self.width as u32, y * self.height as u32),
+      size: uvec2(self.width as u32, self.height as u32),
     }
   }
 }
@@ -360,25 +360,25 @@ impl TextureAtlas {
 #[derive(Default)]
 pub struct TextureAtlasBuilder<T> {
   cells: Vec<TextureAtlasCell<T>>,
-  cell_size: Vector2<u32>,
-  next_offset: Vector2<u32>,
+  cell_size: UVec2,
+  next_offset: UVec2,
   stride: usize,
 }
 
 /// Represents a discrete cell in a [`TextureAtlasBuilder`].
 pub struct TextureAtlasCell<T> {
   pub pixels: Grid<T>,
-  pub offset: Vector2<u32>,
-  pub size: Vector2<u32>,
+  pub offset: UVec2,
+  pub size: UVec2,
 }
 
 impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
   /// Creates a new texture atlas builder.
-  pub fn new(stride: usize, cell_size: Vector2<u32>) -> Self {
+  pub fn new(stride: usize, cell_size: UVec2) -> Self {
     Self {
       cells: Vec::new(),
       cell_size,
-      next_offset: vec2(0, 0),
+      next_offset: uvec2(0, 0),
       stride,
     }
   }
