@@ -1,5 +1,7 @@
 use std::any::Any;
 
+// TODO: remove the need for this
+
 /// Represents a type that convertible to other types.
 pub trait Object: Any {
   fn as_any(&self) -> &dyn Any;

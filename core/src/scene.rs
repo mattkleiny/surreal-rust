@@ -29,11 +29,9 @@ pub enum SceneEvent<'a> {
   Start,
   Enable,
   Disable,
-  Update(f32),
   Destroy,
-  PreRender(&'a mut RenderContextManager),
+  Update(f32),
   Render(&'a mut RenderContextManager),
-  PostRender(&'a mut RenderContextManager),
   TransformChanged(&'a Transform),
 }
 
@@ -122,8 +120,8 @@ impl Transform {
   }
 
   /// Rebuilds this transform from the given other parent [`Transform`].
-  pub fn rebuild(&mut self, parent: &Transform) {
-    let affine = parent.world_to_local();
+  pub fn rebuild(&mut self, _parent: &Transform) {
+    // let affine = parent.world_to_local();
 
     // self.global_position = affine.transform_point3(self.local_position);
     // self.global_rotation = transform * self.local_rotation;
@@ -154,9 +152,7 @@ pub trait Component<N = SceneNode> {
       SceneEvent::Disable => self.on_disable(node),
       SceneEvent::Destroy => self.on_destroy(node),
       SceneEvent::Update(delta_time) => self.on_update(node, *delta_time),
-      SceneEvent::PreRender(manager) => self.on_pre_render(node, *manager),
       SceneEvent::Render(manager) => self.on_render(node, *manager),
-      SceneEvent::PostRender(manager) => self.on_post_render(node, *manager),
       _ => {}
     }
   }
@@ -167,9 +163,7 @@ pub trait Component<N = SceneNode> {
   fn on_disable(&mut self, _node: &mut N) {}
   fn on_destroy(&mut self, _node: &mut N) {}
   fn on_update(&mut self, _node: &mut N, _delta_time: f32) {}
-  fn on_pre_render(&mut self, _node: &mut N, _manager: &mut RenderContextManager) {}
   fn on_render(&mut self, _node: &mut N, _manager: &mut RenderContextManager) {}
-  fn on_post_render(&mut self, _node: &mut N, _manager: &mut RenderContextManager) {}
 
   /// Determines the [`ComponentKind`] of this component.
   ///
@@ -594,8 +588,6 @@ impl SceneNodeBuilder {
 
 #[cfg(test)]
 mod tests {
-  use crate::maths::vec3;
-
   use super::*;
 
   #[test]

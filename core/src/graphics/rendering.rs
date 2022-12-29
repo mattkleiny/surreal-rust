@@ -65,8 +65,16 @@ impl RenderContextManager {
     }
   }
 
-  /// Configures the manager with the given context.
-  pub fn configure<D: RenderContextDescriptor>(&mut self, descriptor: D) {
+  /// Configures the manager with the given [`RenderContext`].
+  pub fn add_context<C: RenderContext>(&mut self, context: C) {
+    let key = TypeId::of::<C>();
+    let value = Box::new(context);
+
+    self.contexts.insert(key, value);
+  }
+
+  /// Configures the manager with the given [`RenderContextDescriptor`].
+  pub fn add_descriptor<D: RenderContextDescriptor>(&mut self, descriptor: D) {
     let key = TypeId::of::<D::Context>();
     let value = Box::new(descriptor.create(&self.graphics));
 
@@ -218,7 +226,7 @@ impl RenderPipeline {
 
   /// Configures the pipeline with the given render context.
   pub fn configure<D: RenderContextDescriptor>(&mut self, descriptor: D) {
-    self.context_manager.configure(descriptor);
+    self.context_manager.add_descriptor(descriptor);
   }
 
   /// Adds a `RenderPass` to the render pipeline.

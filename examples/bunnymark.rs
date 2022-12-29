@@ -23,7 +23,7 @@ fn main() {
     let region = TextureRegion::from(&sprite);
     let mut renderer = RenderContextManager::new(graphics);
 
-    renderer.configure(SpriteBatchDescriptor {
+    renderer.add_descriptor(SpriteBatchDescriptor {
       projection_view: Mat4::orthographic_rh_gl(-WIDTH / 2., WIDTH / 2., HEIGHT / 2., -HEIGHT / 2., 0., 100.),
       ..Default::default()
     });
