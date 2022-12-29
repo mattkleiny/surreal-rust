@@ -341,7 +341,7 @@ impl SceneNode {
   pub fn set_visible_recursive(&mut self, visible: bool) {
     self.set_visible(visible);
 
-    for child in self.children.iter_mut() {
+    for child in &mut self.children {
       child.set_visible_recursive(visible);
     }
   }
@@ -602,6 +602,10 @@ impl SceneNode {
       if self.children[i].id == node_id {
         return Some(self.children.remove(i));
       }
+
+      if let Some(node) = self.children[i].take_node_by_id(node_id) {
+        return Some(node);
+      }
     }
 
     None
@@ -611,28 +615,23 @@ impl SceneNode {
   pub fn iter(&self) -> impl Iterator<Item = &SceneNode> {
     struct DirectIter<'a> {
       node: &'a SceneNode,
-      index: Option<usize>,
+      index: usize,
     }
 
     impl<'a> Iterator for DirectIter<'a> {
       type Item = &'a SceneNode;
 
       fn next(&mut self) -> Option<Self::Item> {
-        if let Some(index) = self.index {
-          if index < self.node.children.len() {
-            self.index = Some(index + 1);
-            return Some(&self.node.children[index]);
-          }
+        if self.index < self.node.children.len() {
+          self.index += 1;
+          return Some(&self.node.children[self.index]);
         }
 
         None
       }
     }
 
-    DirectIter {
-      node: self,
-      index: Some(0),
-    }
+    DirectIter { node: self, index: 0 }
   }
 
   /// Iterates all child [`SceneNode`]s of this node, recursively.
