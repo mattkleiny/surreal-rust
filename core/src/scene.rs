@@ -27,6 +27,7 @@ impl<'a> From<&'a str> for Tag {
 }
 
 /// A notification for some event that occurred in the scene.
+#[non_exhaustive]
 pub enum SceneEvent<'a> {
   Awake,
   Start,
@@ -129,9 +130,14 @@ impl SceneGraph {
 
 impl Debug for SceneGraph {
   fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-    // render a small tree view of the graph
     for (node, level) in self.root.iter_recursive() {
-      writeln!(formatter, "{}{:?}", " ".repeat(level * 2), node.id)?;
+      let indent = if level > 0 {
+        " ".repeat(level * 2) + "⤷"
+      } else {
+        " ".repeat(level * 2)
+      };
+
+      writeln!(formatter, "{}{:?}", indent, node)?;
     }
 
     Ok(())
@@ -192,33 +198,37 @@ pub enum ComponentKind {
 ///
 /// Components receive callbacks in response to scene lifecycle events, and
 /// can access information from their parent [`SceneNode`]s.
-pub trait Component<N = SceneNode> {
+pub trait Component {
+  /// Returns a friendly name for this component, for debugging/editor/etc.
+  /// TODO: automate this somehow (derive ComponentType?)
+  fn name(&self) -> &'static str;
+
   /// Invoked to handle dispatch of [`SceneEvent`]s.
-  fn on_event(&mut self, node: &mut N, event: &mut SceneEvent) {
+  fn on_event(&mut self, node: &mut SceneNode, event: &mut SceneEvent) {
     match event {
       SceneEvent::Awake => self.on_awake(node),
       SceneEvent::Start => self.on_start(node),
       SceneEvent::Enable => self.on_enable(node),
       SceneEvent::Disable => self.on_disable(node),
       SceneEvent::Destroy => self.on_destroy(node),
-      SceneEvent::Update(delta_time) => self.on_update(node, *delta_time),
-      SceneEvent::Render(manager) => self.on_render(node, *manager),
+      SceneEvent::Update(delta_time) if node.is_enabled() => self.on_update(node, *delta_time),
+      SceneEvent::Render(manager) if node.is_visible() => self.on_render(node, *manager),
       _ => {}
     }
   }
 
-  fn on_awake(&mut self, _node: &mut N) {}
-  fn on_start(&mut self, _node: &mut N) {}
-  fn on_enable(&mut self, _node: &mut N) {}
-  fn on_disable(&mut self, _node: &mut N) {}
-  fn on_destroy(&mut self, _node: &mut N) {}
-  fn on_update(&mut self, _node: &mut N, _delta_time: f32) {}
-  fn on_render(&mut self, _node: &mut N, _manager: &mut RenderContextManager) {}
+  fn on_awake(&mut self, _node: &mut SceneNode) {}
+  fn on_start(&mut self, _node: &mut SceneNode) {}
+  fn on_enable(&mut self, _node: &mut SceneNode) {}
+  fn on_disable(&mut self, _node: &mut SceneNode) {}
+  fn on_destroy(&mut self, _node: &mut SceneNode) {}
+  fn on_update(&mut self, _node: &mut SceneNode, _delta_time: f32) {}
+  fn on_render(&mut self, _node: &mut SceneNode, _manager: &mut RenderContextManager) {}
 
   /// Determines the [`ComponentKind`] of this component.
   ///
   /// The kind is used for determining which sub-trees have component types.
-  fn get_kind(&self) -> ComponentKind {
+  fn kind(&self) -> ComponentKind {
     ComponentKind::Behaviour
   }
 }
@@ -240,7 +250,7 @@ impl ComponentSet {
 
   /// Determines if the given [`ComponentKind`] is present in the set.
   pub fn has_kind(&self, kind: ComponentKind) -> bool {
-    self.components.iter().any(|c| c.get_kind() == kind)
+    self.components.iter().any(|c| c.kind() == kind)
   }
 
   /// Adds a new [`Component`] to the set.
@@ -256,6 +266,12 @@ impl ComponentSet {
   /// Mutably iterates the [`Component`]s in this set.
   pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Box<dyn Component>> {
     self.components.iter_mut()
+  }
+}
+
+impl Debug for ComponentSet {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    f.debug_list().entries(self.components.iter().map(|c| c.name())).finish()
   }
 }
 
@@ -591,7 +607,18 @@ impl SceneNode {
   }
 }
 
+impl Debug for SceneNode {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("SceneNode")
+      .field("id", &self.id)
+      .field("tags", &self.tags)
+      .field("components", &self.components)
+      .finish()
+  }
+}
+
 /// A utility builder for [`SceneNode`]s.
+#[must_use]
 #[derive(Default)]
 pub struct SceneNodeBuilder {
   layer_id: LayerId,
@@ -684,17 +711,16 @@ mod tests {
 
   #[test]
   pub fn scene_node_should_iterate_child_nodes() {
-    let node = SceneNodeBuilder::default()
-      .with_child(SceneNode::default())
-      .with_child(SceneNode::default())
-      .with_child(SceneNode::default())
-      .with_child(SceneNode::default())
-      .with_child(SceneNode::default())
-      .build();
+    let graph = SceneGraph::new(
+      SceneNodeBuilder::default()
+        .with_child(SceneNode::default())
+        .with_child(SceneNode::default())
+        .with_child(SceneNode::default())
+        .with_child(SceneNode::default())
+        .with_child(SceneNode::default()),
+    );
 
-    for child in node.iter() {
-      println!("Child: {:?}", child.local_position());
-    }
+    println!("{:?}", graph);
   }
 
   #[test]
@@ -703,23 +729,34 @@ mod tests {
     struct TestComponent2;
 
     impl Component for TestComponent1 {
+      fn name(&self) -> &'static str {
+        "TestComponent1"
+      }
+
       fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
         println!("Update component 1 on node id {} delta_time {}", node.id, delta_time);
       }
     }
 
     impl Component for TestComponent2 {
+      fn name(&self) -> &'static str {
+        "TestComponent2"
+      }
+
       fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
         println!("Update component 2 on node id {} delta_time {}", node.id, delta_time);
       }
     }
 
-    let mut node = SceneNodeBuilder::default()
-      .with_component(TestComponent1)
-      .with_component(TestComponent2)
-      .build();
+    let mut graph = SceneGraph::new(
+      SceneNodeBuilder::default()
+        .with_component(TestComponent1)
+        .with_component(TestComponent2),
+    );
 
-    node.notify(&mut SceneEvent::Update(0.16));
+    graph.notify(SceneEvent::Update(0.16));
+
+    println!("{:?}", graph);
   }
 
   // #[test]
@@ -758,6 +795,8 @@ mod tests {
 
     assert!(!node.has_tag("foo"));
     assert!(node.has_tag("bar"));
+
+    println!("{:?}", node);
   }
 
   #[test]
@@ -765,22 +804,20 @@ mod tests {
     struct TestComponent;
 
     impl Component for TestComponent {
+      fn name(&self) -> &'static str {
+        "TestComponent"
+      }
+
       fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
-        println!("Update node id {} delta_time {}", node.id, delta_time);
+        println!("Update node {:?} delta_time {}", node, delta_time);
       }
     }
 
     let mut scene = SceneGraph::new(
       SceneNodeBuilder::default()
         .with_component(TestComponent)
-        .with_component(TestComponent)
-        .with_component(TestComponent)
-        .with_component(TestComponent)
-        .with_component(TestComponent)
         .with_child(
           SceneNodeBuilder::default()
-            .with_component(TestComponent)
-            .with_component(TestComponent)
             .with_component(TestComponent)
             .with_component(TestComponent),
         )
@@ -788,12 +825,13 @@ mod tests {
           SceneNodeBuilder::default()
             .with_component(TestComponent)
             .with_component(TestComponent)
-            .with_component(TestComponent)
             .with_component(TestComponent),
         ),
     );
 
     scene.notify(SceneEvent::Update(0.16));
+
+    println!("{:?}", scene);
   }
 
   #[test]
@@ -807,11 +845,11 @@ mod tests {
     let from_id = scene.root.children[0].id;
     let to_id = scene.root.children[1].id;
 
-    println!("Before: {:?}", scene);
+    println!("Before reparent:\n{:?}", scene);
 
     scene.reparent_node(from_id, to_id).unwrap();
 
-    println!("After: {:?}", scene);
+    println!("After reparent:\n{:?}", scene);
   }
 
   #[test]
@@ -833,10 +871,10 @@ mod tests {
         ),
     );
 
-    println!("Before: {:?}", scene);
+    println!("Before delete:\n{:?}", scene);
 
     scene.delete_node(scene.root.children[2].id).unwrap();
 
-    println!("After: {:?}", scene);
+    println!("After delete:\n{:?}", scene);
   }
 }

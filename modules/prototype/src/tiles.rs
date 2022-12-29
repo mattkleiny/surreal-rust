@@ -11,12 +11,12 @@ use super::*;
 ///
 /// Internally tiles are represented by their [`Tile::Id`], but the public
 /// API allows for direct access via the `T` abstraction.
-pub struct TileMap<'a, T: Tile> {
+pub struct TileMap<T: Tile> {
   tiles: Grid<T::Id>,
-  sprites: HashMap<T::Id, TextureRegion<'a>>,
+  sprites: HashMap<T::Id, TextureRegion>,
 }
 
-impl<'a, T: Tile> TileMap<'a, T> {
+impl<T: Tile> TileMap<T> {
   /// Creates a new tile map with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
@@ -48,7 +48,7 @@ impl<'a, T: Tile> TileMap<'a, T> {
   }
 
   /// Gets the sprite to be used for the given tile.
-  pub fn get_sprite(&self, tile: T) -> Option<&TextureRegion<'a>> {
+  pub fn get_sprite(&self, tile: T) -> Option<&TextureRegion> {
     if let Some(id) = tile.to_id() {
       self.sprites.get(&id)
     } else {
@@ -57,7 +57,7 @@ impl<'a, T: Tile> TileMap<'a, T> {
   }
 
   /// Sets the sprite to be used for the given tile.
-  pub fn set_sprite(&mut self, tile: T, sprite: impl Into<TextureRegion<'a>>) {
+  pub fn set_sprite(&mut self, tile: T, sprite: impl Into<TextureRegion>) {
     if let Some(id) = tile.to_id() {
       self.sprites.insert(id, sprite.into());
     }
@@ -82,7 +82,7 @@ impl<'a, T: Tile> TileMap<'a, T> {
   }
 }
 
-impl<'a, T: Tile> Renderable<SpriteBatchContext> for TileMap<'a, T> {
+impl<T: Tile> Renderable<SpriteBatchContext> for TileMap<T> {
   /// Renders this tile map with to a sprite batch.
   fn render(&self, context: &mut SpriteBatchContext) {
     let half_width = self.tiles.width() as f32 / 2.;
@@ -162,7 +162,7 @@ pub trait PathableTile: Tile {
 }
 
 /// Allow path finding over simple tile maps.
-impl<T: PathableTile> PathFindingGrid for TileMap<'_, T> {
+impl<T: PathableTile> PathFindingGrid for TileMap<T> {
   fn get_cost(&self, _from: IVec2, to: IVec2) -> Cost {
     match self.get(to.x, to.y) {
       Some(tile) => tile.get_cost(),

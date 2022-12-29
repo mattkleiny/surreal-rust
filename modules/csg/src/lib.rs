@@ -99,7 +99,7 @@ pub enum Operation {
 
 impl Operation {
   /// Applies this operation to the given [`Brush`]es.
-  fn apply(&self, _brushes: &[&dyn Brush]) -> Box<dyn Brush> {
+  pub fn apply(&self, _brushes: &[&dyn Brush]) -> Box<dyn Brush> {
     match self {
       Operation::Union => todo!(),
       Operation::Difference => todo!(),

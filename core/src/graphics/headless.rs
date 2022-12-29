@@ -6,6 +6,11 @@ use crate::maths::Rectangle;
 
 use super::*;
 
+/// Creates a [`GraphicsServer`] from the [`HeadlessGraphicsBackend`] for testing purposes.
+pub fn create_test_graphics() -> GraphicsServer {
+  GraphicsServer::new(Box::new(HeadlessGraphicsBackend::new()))
+}
+
 /// A headless [`GraphicsBackend`] implementation.
 ///
 /// This backend does nothing (no-ops) and can be used for testing/etc.

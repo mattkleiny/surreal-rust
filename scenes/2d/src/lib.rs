@@ -8,15 +8,19 @@ use core::scene::*;
 use core::utilities::Object;
 
 /// A [`Component`] which renders a sprite in the game world.
-pub struct SpriteComponent<'a> {
-  pub region: TextureRegion<'a>,
+pub struct SpriteComponent {
+  pub region: TextureRegion,
 }
 
-impl<'a> Component for SpriteComponent<'a> {
+impl Component for SpriteComponent {
+  fn name(&self) -> &'static str {
+    "SpriteComponent"
+  }
+
   fn on_render(&mut self, node: &mut SceneNode, manager: &mut RenderContextManager) {
     let position = node.local_position();
 
-    manager.with(|context: &mut SpriteRenderContext| {
+    manager.with(|context: &mut SpriteContext| {
       context.batch.draw_sprite(
         &self.region,
         &SpriteOptions {
@@ -27,18 +31,19 @@ impl<'a> Component for SpriteComponent<'a> {
     });
   }
 
-  fn get_kind(&self) -> ComponentKind {
+  fn kind(&self) -> ComponentKind {
     ComponentKind::Renderer
   }
 }
 
 /// A [`RenderContext`] for [`SpriteComponent`]s.
-pub struct SpriteRenderContext {
+///
+pub struct SpriteContext {
   batch: SpriteBatch,
   material: Material,
 }
 
-impl RenderContext for SpriteRenderContext {
+impl RenderContext for SpriteContext {
   fn on_begin_frame(&mut self) {
     self.batch.begin(&self.material);
   }
@@ -49,7 +54,7 @@ impl RenderContext for SpriteRenderContext {
 }
 
 // TODO: find a way to get rid of this
-impl Object for SpriteRenderContext {
+impl Object for SpriteContext {
   fn as_any(&self) -> &dyn Any {
     self as &dyn Any
   }
@@ -62,16 +67,21 @@ impl Object for SpriteRenderContext {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use core::maths::vec3;
 
-  // #[test]
-  // fn sprite_should_render() {
-  //   let server = GraphicsServer::new(Box::new(HeadlessGraphicsBackend::new()));
-  //   let texture = Texture::create_colored(&server, 1, 1, Color::RED);
-  //
-  //   let node = SceneNodeBuilder::default()
-  //     .with_component(SpriteComponent {
-  //       region: TextureRegion::from(&texture),
-  //     })
-  //     .build();
-  // }
+  #[test]
+  fn sprite_should_render() {
+    let graphics = create_test_graphics();
+    let texture = Texture::create_colored(&graphics, 1, 1, Color::RED);
+
+    let graph = SceneGraph::new(
+      SceneNodeBuilder::default()
+        .with_local_position(vec3(0., 0., 0.))
+        .with_component(SpriteComponent {
+          region: TextureRegion::from(&texture),
+        }),
+    );
+
+    println!("{:?}", graph);
+  }
 }

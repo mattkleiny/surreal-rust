@@ -279,13 +279,13 @@ impl AssetLoader<Texture> for TextureLoader {
 
 /// Represents a sub-region of a [`Texture`]`.
 #[derive(Clone)]
-pub struct TextureRegion<'a> {
-  pub texture: &'a Texture,
+pub struct TextureRegion {
+  pub texture: Texture,
   pub offset: UVec2,
   pub size: UVec2,
 }
 
-impl<'a> TextureRegion<'a> {
+impl TextureRegion {
   /// Calculates the UV rectangle for the given texture region.
   pub fn calculate_uv(&self) -> Rectangle {
     let left = self.offset.x as f32 / self.texture.width() as f32;
@@ -297,12 +297,22 @@ impl<'a> TextureRegion<'a> {
   }
 }
 
-impl<'a, R: AsRef<Texture>> From<&'a R> for TextureRegion<'a> {
-  fn from(texture: &'a R) -> Self {
+impl From<&Texture> for TextureRegion {
+  fn from(texture: &Texture) -> Self {
+    TextureRegion {
+      texture: texture.clone(),
+      offset: uvec2(0, 0),
+      size: uvec2(texture.width() as u32, texture.height() as u32),
+    }
+  }
+}
+
+impl<R: AsRef<Texture>> From<&R> for TextureRegion {
+  fn from(texture: &R) -> Self {
     let texture = texture.as_ref();
 
     TextureRegion {
-      texture,
+      texture: texture.clone(),
       offset: uvec2(0, 0),
       size: uvec2(texture.width() as u32, texture.height() as u32),
     }
@@ -347,7 +357,7 @@ impl TextureAtlas {
   /// Gets a sub-region of the texture atlas at the given position.
   pub fn get_region(&self, x: u32, y: u32) -> TextureRegion {
     TextureRegion {
-      texture: &self.texture,
+      texture: self.texture.clone(),
       offset: uvec2(x * self.width as u32, y * self.height as u32),
       size: uvec2(self.width as u32, self.height as u32),
     }

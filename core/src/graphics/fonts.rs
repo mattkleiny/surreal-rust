@@ -81,7 +81,7 @@ impl Font for BitmapFont {
     let y = (character as u16 / metrics.columns) as u32 * (metrics.glyph_height + metrics.glyph_padding);
 
     Some(TextureRegion {
-      texture: &self.texture,
+      texture: self.texture.as_ref().clone(),
       offset: uvec2(x, y),
       size: uvec2(metrics.glyph_width, metrics.glyph_height),
     })
@@ -164,7 +164,7 @@ impl Font for VectorFont {
 
     if let Some(glyph_info) = state.glyphs.get(&character) {
       return Some(TextureRegion {
-        texture: &self.texture,
+        texture: self.texture.clone(),
         offset: glyph_info.offset,
         size: glyph_info.size,
       });
@@ -198,7 +198,7 @@ impl Font for VectorFont {
 
       // insert into the cache
       let region = TextureRegion {
-        texture: &self.texture,
+        texture: self.texture.clone(),
         offset: glyph_info.offset,
         size: glyph_info.size,
       };
