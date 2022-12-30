@@ -46,7 +46,11 @@ impl FileSystem for LocalFileSystem {
   }
 
   fn open_read(&self, path: &VirtualPath) -> crate::Result<Self::InputStream> {
-    let file = OpenOptions::new().read(true).write(false).open(to_path(&self.root, path))?;
+    let file = OpenOptions::new()
+      .read(true)
+      .write(false)
+      .create(false)
+      .open(to_path(&self.root, path))?;
 
     Ok(Self::InputStream {
       reader: BufReader::new(file),
@@ -54,7 +58,12 @@ impl FileSystem for LocalFileSystem {
   }
 
   fn open_write(&self, path: &VirtualPath) -> crate::Result<Self::OutputStream> {
-    let file = OpenOptions::new().read(false).write(true).open(to_path(&self.root, path))?;
+    let file = OpenOptions::new()
+      .read(false)
+      .write(true)
+      .create(true)
+      .truncate(true)
+      .open(to_path(&self.root, path))?;
 
     Ok(Self::OutputStream {
       writer: BufWriter::new(file),

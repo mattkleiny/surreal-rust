@@ -10,6 +10,7 @@ use ab_glyph::{Font as AbFont, FontVec};
 
 use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
 use crate::graphics::{Texture, TextureRegion};
+use crate::io::Deserializable;
 use crate::maths::{uvec2, UVec2};
 
 use super::{Color32, GraphicsServer, Texel, TextureAtlasBuilder};
@@ -97,7 +98,7 @@ impl Asset for BitmapFont {
 
 impl AssetLoader<BitmapFont> for BitmapFontLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<BitmapFont> {
-    let metrics: BitmapFontMetrics = context.path.deserialize_json()?;
+    let metrics = BitmapFontMetrics::load_from_json(context.path)?;
     let texture: Handle<Texture> = context.load_asset(&metrics.file_path)?;
 
     let font = BitmapFont {
