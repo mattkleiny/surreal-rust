@@ -21,7 +21,7 @@ fn main() {
 
     let mut renderer = RenderContextManager::new(graphics);
 
-    renderer.add_descriptor(SpriteBatchDescriptor {
+    renderer.add_descriptor(SpriteContextDescriptor {
       projection_view: Mat4::orthographic_rh_gl(-256. / 2., 256. / 2., 144. / 2., -144. / 2., 0., 100.),
       palette: Some(load_built_in_palette(BuiltInPalette::Hollow4)),
       ..Default::default()

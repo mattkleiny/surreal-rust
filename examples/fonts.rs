@@ -19,7 +19,7 @@ fn main() {
     let vector_font = VectorFont::load(&assets, "assets/fonts/bitboy8_v1.otf").unwrap();
     let mut renderer = RenderContextManager::new(graphics);
 
-    renderer.add_descriptor(SpriteBatchDescriptor {
+    renderer.add_descriptor(SpriteContextDescriptor {
       projection_view: Mat4::orthographic_rh_gl(-256. / 2., 256. / 2., 144. / 2., -144. / 2., 0., 100.),
       ..Default::default()
     });
@@ -35,7 +35,7 @@ fn main() {
       renderer.begin_frame();
 
       // render some text
-      renderer.with(|context: &mut SpriteBatchContext| {
+      renderer.with(|context: &mut SpriteContext| {
         context.batch.draw_text(
           bitmap_font.deref(),
           "HELLO, SURREAL!",

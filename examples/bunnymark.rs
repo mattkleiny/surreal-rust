@@ -23,7 +23,7 @@ fn main() {
     let region = TextureRegion::from(&sprite);
     let mut renderer = RenderContextManager::new(graphics);
 
-    renderer.add_descriptor(SpriteBatchDescriptor {
+    renderer.add_descriptor(SpriteContextDescriptor {
       projection_view: Mat4::orthographic_rh_gl(-WIDTH / 2., WIDTH / 2., HEIGHT / 2., -HEIGHT / 2., 0., 100.),
       ..Default::default()
     });
@@ -42,7 +42,7 @@ fn main() {
 
       // draw bunnies
       renderer.begin_frame();
-      renderer.with(|context: &mut SpriteBatchContext| {
+      renderer.with(|context: &mut SpriteContext| {
         for bunny in &bunnies {
           context.batch.draw_sprite(
             &region,

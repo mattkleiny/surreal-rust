@@ -20,7 +20,6 @@ use super::*;
 /// exposes some basic lifecycle methods. It's lazily constructed upon first use and remains
 /// alive until the [`RenderContextManager`] is dropped.
 pub trait RenderContext: Object {
-  fn on_initialize(&mut self) {}
   fn on_begin_with(&mut self) {}
   fn on_end_with(&mut self) {}
   fn on_begin_frame(&mut self) {}
@@ -95,7 +94,7 @@ impl RenderContextManager {
     }
   }
 
-  /// Acquires a context for the given descriptor.
+  /// Acquires a [`RenderContext`] and executes the body against it.
   ///
   /// If the context cannot be acquired, the body will not be run.
   pub fn with<C: RenderContext>(&mut self, body: impl FnOnce(&mut C)) {
@@ -108,19 +107,21 @@ impl RenderContextManager {
     }
   }
 
-  /// Renders the given object via the associated context.
+  /// Renders the given [`Renderable`] via the associated context.
   pub fn render<R: Renderable<C>, C: RenderContext>(&mut self, renderable: &R) {
     self.with(|context| {
       renderable.render(context);
     });
   }
 
-  /// Releases the given context from the manager.
+  /// Releases the given [`RenderContext`] from the manager.
+  ///
+  /// If it existed, the context will be dropped.
   pub fn release<C: RenderContext>(&mut self) {
     self.contexts.remove(&TypeId::of::<C>());
   }
 
-  /// Clears all contexts from the manager, resetting it to a clean state.
+  /// Clears all [`RenderContext`]s from the manager, resetting it to a clean state.
   pub fn reset(&mut self) {
     self.contexts.clear();
   }

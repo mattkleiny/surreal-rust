@@ -90,8 +90,8 @@ pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<
   palette.expect("Failed to load built-in palette")
 }
 
-/// A [`RenderContextDescriptor`] for a simple [`SpriteBatchContext`] for use in sprite rendering.
-pub struct SpriteBatchDescriptor {
+/// A [`RenderContextDescriptor`] for a simple [`SpriteContext`] for use in sprite rendering.
+pub struct SpriteContextDescriptor {
   /// A default projection-view matrix to apply.
   pub projection_view: Mat4,
 
@@ -106,7 +106,7 @@ pub struct SpriteBatchDescriptor {
   pub sprite_count: usize,
 }
 
-impl Default for SpriteBatchDescriptor {
+impl Default for SpriteContextDescriptor {
   fn default() -> Self {
     Self {
       projection_view: Mat4::IDENTITY,
@@ -117,8 +117,8 @@ impl Default for SpriteBatchDescriptor {
   }
 }
 
-impl RenderContextDescriptor for SpriteBatchDescriptor {
-  type Context = SpriteBatchContext;
+impl RenderContextDescriptor for SpriteContextDescriptor {
+  type Context = SpriteContext;
 
   fn create(&self, graphics: &GraphicsServer) -> Self::Context {
     // determine which shader we're using, prepare material
@@ -158,8 +158,8 @@ impl RenderContextDescriptor for SpriteBatchDescriptor {
   }
 }
 
-/// A simple [`RenderContext`] that allows for sprite rendering using the standard sprite shaders.
-pub struct SpriteBatchContext {
+/// A simple [`RenderContext`] that allows for sprite rendering using built-in sprite shaders.
+pub struct SpriteContext {
   /// A [`Material`] configured to render sprites.
   pub material: Material,
 
@@ -167,7 +167,7 @@ pub struct SpriteBatchContext {
   pub batch: SpriteBatch,
 }
 
-impl RenderContext for SpriteBatchContext {
+impl RenderContext for SpriteContext {
   fn on_begin_frame(&mut self) {
     self.batch.begin(&self.material);
   }
@@ -177,8 +177,8 @@ impl RenderContext for SpriteBatchContext {
   }
 }
 
-/// A descriptor for the `GeometryBatch`.
-pub struct GeometryBatchDescriptor {
+/// A [`RenderContextDescriptor`] for the [`GeometryContext`].
+pub struct GeometryContextDescriptor {
   /// A default projection-view matrix to apply.
   pub projection_view: Mat4,
 
@@ -186,7 +186,7 @@ pub struct GeometryBatchDescriptor {
   pub shader: Option<ShaderProgram>,
 }
 
-impl Default for GeometryBatchDescriptor {
+impl Default for GeometryContextDescriptor {
   fn default() -> Self {
     Self {
       projection_view: Mat4::IDENTITY,
@@ -195,8 +195,8 @@ impl Default for GeometryBatchDescriptor {
   }
 }
 
-impl RenderContextDescriptor for GeometryBatchDescriptor {
-  type Context = GeometryBatchContext;
+impl RenderContextDescriptor for GeometryContextDescriptor {
+  type Context = GeometryContext;
 
   fn create(&self, graphics: &GraphicsServer) -> Self::Context {
     // determine which shader we're using, prepare material
@@ -222,7 +222,7 @@ impl RenderContextDescriptor for GeometryBatchDescriptor {
 }
 
 /// A simple [`RenderContext`] that allows for geometry rendering using the standard wire shaders.
-pub struct GeometryBatchContext {
+pub struct GeometryContext {
   /// A material configured to render geometry.
   pub material: Material,
 
@@ -230,7 +230,7 @@ pub struct GeometryBatchContext {
   pub batch: GeometryBatch,
 }
 
-impl RenderContext for GeometryBatchContext {
+impl RenderContext for GeometryContext {
   fn on_begin_frame(&mut self) {
     self.batch.begin(&self.material);
   }

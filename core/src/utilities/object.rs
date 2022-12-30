@@ -1,12 +1,7 @@
-use std::any::{Any, TypeId};
+use std::any::Any;
 
 /// Represents a type that convertible to other types.
 pub trait Object: Any {
-  /// Retrieves the [`TypeId`] of this object.
-  fn type_id(&self) -> TypeId {
-    TypeId::of::<Self>()
-  }
-
   fn as_any(&self) -> &dyn Any;
   fn as_any_mut(&mut self) -> &mut dyn Any;
 }
