@@ -1,9 +1,6 @@
-use std::any::Any;
-
 use surreal::graphics::*;
 use surreal::maths::vec2;
 use surreal::scene::*;
-use surreal::utilities::Object;
 
 /// A [`Component`] which renders a sprite in the game world.
 pub struct SpriteComponent {
@@ -48,17 +45,6 @@ impl RenderContext for SpriteContext {
 
   fn on_end_frame(&mut self) {
     self.batch.flush();
-  }
-}
-
-// TODO: find a way to get rid of this
-impl Object for SpriteContext {
-  fn as_any(&self) -> &dyn Any {
-    self as &dyn Any
-  }
-
-  fn as_any_mut(&mut self) -> &mut dyn Any {
-    self as &mut dyn Any
   }
 }
 

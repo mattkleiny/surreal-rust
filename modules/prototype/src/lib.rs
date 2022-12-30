@@ -1,11 +1,8 @@
 //! A simple set of tools for rapid prototyping of game ideas and etc.
 
-use std::any::Any;
-
 pub use pixels::*;
 use surreal::graphics::*;
 use surreal::maths::Mat4;
-use surreal::utilities::Object;
 pub use tiles::*;
 
 mod pixels;
@@ -180,16 +177,6 @@ impl RenderContext for SpriteBatchContext {
   }
 }
 
-impl Object for SpriteBatchContext {
-  fn as_any(&self) -> &dyn Any {
-    self as &dyn Any
-  }
-
-  fn as_any_mut(&mut self) -> &mut dyn Any {
-    self as &mut dyn Any
-  }
-}
-
 /// A descriptor for the `GeometryBatch`.
 pub struct GeometryBatchDescriptor {
   /// A default projection-view matrix to apply.
@@ -250,15 +237,5 @@ impl RenderContext for GeometryBatchContext {
 
   fn on_end_frame(&mut self) {
     self.batch.flush();
-  }
-}
-
-impl Object for GeometryBatchContext {
-  fn as_any(&self) -> &dyn Any {
-    self as &dyn Any
-  }
-
-  fn as_any_mut(&mut self) -> &mut dyn Any {
-    self as &mut dyn Any
   }
 }

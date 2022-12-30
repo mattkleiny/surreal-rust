@@ -7,7 +7,7 @@ use anyhow::anyhow;
 
 use crate::graphics::RenderContextManager;
 use crate::maths::{Affine3A, FromRandom, Quat, Vec3};
-use crate::utilities::unsafe_mutable_alias;
+use crate::utilities::{unsafe_mutable_alias, Object};
 
 /// A unique identifier for a [`SceneNode`].
 pub type NodeId = crate::maths::Guid;
@@ -206,9 +206,8 @@ pub enum ComponentKind {
 ///
 /// Components receive callbacks in response to scene lifecycle events, and
 /// can access information from their parent [`SceneNode`]s.
-pub trait Component {
+pub trait Component: Object {
   /// Returns a friendly name for this component, for debugging/editor/etc.
-  /// TODO: automate this somehow (derive ComponentType?)
   fn name(&self) -> &'static str;
 
   /// Invoked to handle dispatch of [`SceneEvent`]s.
