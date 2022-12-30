@@ -1,3 +1,5 @@
+use crate::utilities::unsafe_mutable_alias;
+
 /// Represents a safe index into an [`Arena`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ArenaIndex {
@@ -185,92 +187,90 @@ impl<T> Arena<T> {
   }
 
   /// Iterates over the arena.
-  pub fn iter(&self) -> ArenaIter<T> {
-    ArenaIter { arena: self, index: 0 }
+  pub fn iter(&self) -> impl Iterator<Item = (ArenaIndex, &T)> {
+    pub struct Iter<'a, T> {
+      arena: &'a Arena<T>,
+      index: usize,
+    }
+
+    impl<'a, T> Iterator for Iter<'a, T> {
+      type Item = (ArenaIndex, &'a T);
+
+      fn next(&mut self) -> Option<Self::Item> {
+        while let Some(entry) = self.arena.entries.get(self.index) {
+          if let Some(value) = entry {
+            let arena_index = ArenaIndex {
+              index: self.index as u32,
+              generation: value.generation,
+            };
+
+            self.index += 1;
+
+            return Some((arena_index, &value.value));
+          }
+
+          self.index += 1;
+        }
+
+        None
+      }
+    }
+
+    Iter { arena: self, index: 0 }
   }
 
   /// Mutably iterates over the arena.
-  pub fn iter_mut(&mut self) -> ArenaIterMut<T> {
-    ArenaIterMut { arena: self, index: 0 }
-  }
-}
+  pub fn iter_mut(&mut self) -> impl Iterator<Item = (ArenaIndex, &mut T)> {
+    pub struct IterMut<'a, T> {
+      arena: &'a mut Arena<T>,
+      index: usize,
+    }
 
-/// An immutable iterator for the `Arena`.
-pub struct ArenaIter<'a, T> {
-  arena: &'a Arena<T>,
-  index: usize,
+    impl<'a, T> Iterator for IterMut<'a, T> {
+      type Item = (ArenaIndex, &'a mut T);
+
+      fn next(&mut self) -> Option<Self::Item> {
+        while let Some(entry) = self.arena.entries.get_mut(self.index) {
+          if let Some(value) = entry.as_mut() {
+            let arena_index = ArenaIndex {
+              index: self.index as u32,
+              generation: value.generation,
+            };
+
+            self.index += 1;
+
+            // elide the lifetime; rust has trouble with the borrow checker
+            let value = unsafe_mutable_alias(value);
+
+            return Some((arena_index, &mut value.value));
+          }
+
+          self.index += 1;
+        }
+
+        None
+      }
+    }
+
+    IterMut { arena: self, index: 0 }
+  }
 }
 
 impl<'a, T> IntoIterator for &'a Arena<T> {
   type Item = (ArenaIndex, &'a T);
-  type IntoIter = ArenaIter<'a, T>;
+  type IntoIter = impl Iterator<Item = (ArenaIndex, &'a T)>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
   }
 }
 
-impl<'a, T> Iterator for ArenaIter<'a, T> {
-  type Item = (ArenaIndex, &'a T);
-
-  fn next(&mut self) -> Option<Self::Item> {
-    while let Some(entry) = self.arena.entries.get(self.index) {
-      if let Some(value) = entry {
-        let arena_index = ArenaIndex {
-          index: self.index as u32,
-          generation: value.generation,
-        };
-
-        self.index += 1;
-
-        return Some((arena_index, &value.value));
-      }
-
-      self.index += 1;
-    }
-
-    None
-  }
-}
-
-/// A mutable iterator for the `Arena`.
-pub struct ArenaIterMut<'a, T> {
-  arena: &'a mut Arena<T>,
-  index: usize,
-}
-
 impl<'a, T> IntoIterator for &'a mut Arena<T> {
   type Item = (ArenaIndex, &'a mut T);
-  type IntoIter = ArenaIterMut<'a, T>;
+  type IntoIter = impl Iterator<Item = (ArenaIndex, &'a mut T)>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter_mut()
-  }
-}
-
-impl<'a, T> Iterator for ArenaIterMut<'a, T> {
-  type Item = (ArenaIndex, &'a mut T);
-
-  fn next(&mut self) -> Option<Self::Item> {
-    while let Some(entry) = self.arena.entries.get_mut(self.index) {
-      if let Some(value) = entry.as_mut() {
-        let arena_index = ArenaIndex {
-          index: self.index as u32,
-          generation: value.generation,
-        };
-
-        self.index += 1;
-
-        // elide the lifetime; rust has trouble with the borrow checker
-        let value = value as *mut ArenaEntry<T>;
-
-        return Some((arena_index, unsafe { &mut (*value).value }));
-      }
-
-      self.index += 1;
-    }
-
-    None
   }
 }
 

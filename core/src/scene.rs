@@ -283,6 +283,24 @@ impl Debug for ComponentSet {
   }
 }
 
+impl<'a> IntoIterator for &'a ComponentSet {
+  type Item = &'a Box<dyn Component>;
+  type IntoIter = impl Iterator<Item = &'a Box<dyn Component>>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
+  }
+}
+
+impl<'a> IntoIterator for &'a mut ComponentSet {
+  type Item = &'a mut Box<dyn Component>;
+  type IntoIter = impl Iterator<Item = &'a mut Box<dyn Component>>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter_mut()
+  }
+}
+
 /// A node in a [`SceneGraph`].
 ///
 /// A node is a sub-tree of [`SceneNode`]s that represent a scene in a [`SceneGraph`].
@@ -492,7 +510,7 @@ impl SceneNode {
     let node = unsafe_mutable_alias(self);
 
     // notify all components
-    for component in &mut self.components.iter_mut() {
+    for component in &mut self.components {
       component.on_event(node, event);
     }
 
@@ -615,12 +633,12 @@ impl SceneNode {
 
   /// Iterates all child [`SceneNode`]s of this node.
   pub fn iter(&self) -> impl Iterator<Item = &SceneNode> {
-    struct DirectIter<'a> {
+    struct Iter<'a> {
       node: &'a SceneNode,
       index: usize,
     }
 
-    impl<'a> Iterator for DirectIter<'a> {
+    impl<'a> Iterator for Iter<'a> {
       type Item = &'a SceneNode;
 
       fn next(&mut self) -> Option<Self::Item> {
@@ -633,16 +651,41 @@ impl SceneNode {
       }
     }
 
-    DirectIter { node: self, index: 0 }
+    Iter { node: self, index: 0 }
+  }
+
+  /// Mutably iterates all child [`SceneNode`]s of this node.
+  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut SceneNode> {
+    struct IterMut<'a> {
+      node: &'a mut SceneNode,
+      index: usize,
+    }
+
+    impl<'a> Iterator for IterMut<'a> {
+      type Item = &'a mut SceneNode;
+
+      fn next(&mut self) -> Option<Self::Item> {
+        if self.index < self.node.children.len() {
+          self.index += 1;
+          let item = &mut self.node.children[self.index];
+
+          return Some(unsafe_mutable_alias(item));
+        }
+
+        None
+      }
+    }
+
+    IterMut { node: self, index: 0 }
   }
 
   /// Iterates all child [`SceneNode`]s of this node, recursively.
   pub fn iter_recursive(&self) -> impl Iterator<Item = (&SceneNode, usize)> {
-    struct RecursiveIter<'a> {
+    struct IterRecurse<'a> {
       stack: Vec<(&'a SceneNode, usize)>,
     }
 
-    impl<'a> Iterator for RecursiveIter<'a> {
+    impl<'a> Iterator for IterRecurse<'a> {
       type Item = (&'a SceneNode, usize);
 
       fn next(&mut self) -> Option<Self::Item> {
@@ -658,7 +701,7 @@ impl SceneNode {
       }
     }
 
-    RecursiveIter { stack: vec![(self, 0)] }
+    IterRecurse { stack: vec![(self, 0)] }
   }
 }
 
@@ -671,6 +714,24 @@ impl Debug for SceneNode {
       .field("tags", &self.tags)
       .field("components", &self.components)
       .finish()
+  }
+}
+
+impl<'a> IntoIterator for &'a SceneNode {
+  type Item = &'a SceneNode;
+  type IntoIter = impl Iterator<Item = &'a SceneNode>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
+  }
+}
+
+impl<'a> IntoIterator for &'a mut SceneNode {
+  type Item = &'a mut SceneNode;
+  type IntoIter = impl Iterator<Item = &'a mut SceneNode>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter_mut()
   }
 }
 

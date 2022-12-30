@@ -1,3 +1,5 @@
+use crate::utilities::unsafe_mutable_alias;
+
 /// A lightweight, fast and append-only ring buffer of elements of type [`T`] .
 ///
 /// It's intended to be used for small windowed set operations, like time sampling or frequency analysis.
@@ -51,52 +53,99 @@ impl<T> RingBuffer<T> {
   }
 
   /// Permits iterating over the ring buffer.
-  pub fn iter(&self) -> RingBufferIter<T> {
-    RingBufferIter {
+  pub fn iter(&self) -> impl Iterator<Item = &T> {
+    pub struct Iter<'a, T> {
+      buffer: &'a RingBuffer<T>,
+      index: usize,
+      touched: usize,
+    }
+
+    impl<'a, T> Iterator for Iter<'a, T> {
+      type Item = &'a T;
+
+      fn next(&mut self) -> Option<Self::Item> {
+        // wrap around walking backwards
+        if self.index == 0 {
+          self.index = self.buffer.len() - 1;
+        } else {
+          self.index -= 1;
+        }
+
+        if self.touched < self.buffer.len() {
+          self.touched += 1;
+
+          match &self.buffer.elements[self.index] {
+            Some(item) => Some(item),
+            None => None,
+          }
+        } else {
+          None
+        }
+      }
+    }
+
+    Iter {
       buffer: self,
       index: self.cursor,
       touched: 0,
     }
   }
-}
 
-/// An iterator for [`RingBuffer`].
-pub struct RingBufferIter<'a, T> {
-  buffer: &'a RingBuffer<T>,
-  index: usize,
-  touched: usize,
+  /// Permits mutably iterating over the ring buffer.
+  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
+    pub struct IterMut<'a, T> {
+      buffer: &'a mut RingBuffer<T>,
+      index: usize,
+      touched: usize,
+    }
+
+    impl<'a, T> Iterator for IterMut<'a, T> {
+      type Item = &'a mut T;
+
+      fn next(&mut self) -> Option<Self::Item> {
+        // wrap around walking backwards
+        if self.index == 0 {
+          self.index = self.buffer.len() - 1;
+        } else {
+          self.index -= 1;
+        }
+
+        if self.touched < self.buffer.len() {
+          self.touched += 1;
+
+          match &mut self.buffer.elements[self.index] {
+            Some(item) => Some(unsafe_mutable_alias(item)),
+            None => None,
+          }
+        } else {
+          None
+        }
+      }
+    }
+
+    IterMut {
+      index: self.cursor,
+      buffer: self,
+      touched: 0,
+    }
+  }
 }
 
 impl<'a, T> IntoIterator for &'a RingBuffer<T> {
   type Item = &'a T;
-  type IntoIter = RingBufferIter<'a, T>;
+  type IntoIter = impl Iterator<Item = &'a T>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
   }
 }
 
-impl<'a, T> Iterator for RingBufferIter<'a, T> {
-  type Item = &'a T;
+impl<'a, T> IntoIterator for &'a mut RingBuffer<T> {
+  type Item = &'a mut T;
+  type IntoIter = impl Iterator<Item = &'a mut T>;
 
-  fn next(&mut self) -> Option<Self::Item> {
-    // wrap around walking backwards
-    if self.index == 0 {
-      self.index = self.buffer.len() - 1;
-    } else {
-      self.index -= 1;
-    }
-
-    if self.touched < self.buffer.len() {
-      self.touched += 1;
-
-      match &self.buffer.elements[self.index] {
-        Some(item) => Some(item),
-        None => None,
-      }
-    } else {
-      None
-    }
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter_mut()
   }
 }
 

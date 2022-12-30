@@ -1,13 +1,11 @@
-//! A lightweight game engine for Rust.
+//! Core components for the Surreal game engine.
 //!
-//! Surreal is designed to be a simple and flexible game engine, not unlike libGDX or MonoGame.
-//!
-//! It's opinionated, but small in scope and is intended to form a solid 'library'-like toolkit
-//! for constructing small but fast games. A lot of the work is left to the author as to how they'd
-//! like to glue things together.
+//! This crate contains common utilities, collections, diagnostics and other
+//! general purpose code for use in other systems.
 
 #![feature(anonymous_lifetime_in_impl_trait)]
 #![feature(const_refs_to_cell)]
+#![feature(type_alias_impl_trait)]
 
 #[macro_use]
 extern crate serde;
