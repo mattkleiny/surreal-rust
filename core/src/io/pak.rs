@@ -5,16 +5,23 @@ use std::collections::HashMap;
 use crate::io::{BinarySerializable, InputStream, OutputStream};
 use crate::utilities::Size;
 
+/// Compression formats for packed file entries.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+enum Compression {
+  None,
+}
+
 /// A packed file.
 pub struct PackedFile<'a> {
-  pub header: PackedFileHeader,
+  header: Header,
   pub stream: &'a mut dyn InputStream,
 }
 
 impl<'a> PackedFile<'a> {
   /// Loads a [`PackedFile`] from the given [`InputStream`].
   pub fn load(stream: &'a mut dyn InputStream) -> crate::Result<Self> {
-    let header = PackedFileHeader::read_from(stream)?;
+    let header = Header::read_from(stream)?;
 
     Ok(Self { header, stream })
   }
@@ -22,24 +29,24 @@ impl<'a> PackedFile<'a> {
 
 /// Header data for a packed file.
 #[derive(Clone, Debug)]
-pub struct PackedFileHeader {
-  pub entries: Vec<PackedFileEntry>,
+struct Header {
+  pub entries: Vec<Entry>,
 }
 
-impl PackedFileHeader {
+impl Header {
   /// Computes the [`Size`] of the entry.
   pub fn size(&self) -> Size {
     self.entries.iter().map(|entry| entry.size).sum()
   }
 }
 
-impl BinarySerializable for PackedFileHeader {
+impl BinarySerializable for Header {
   fn read_from(stream: &mut dyn InputStream) -> crate::Result<Self> {
     let entry_count = stream.read_u32()?;
     let mut entries = Vec::with_capacity(entry_count as usize);
 
     for _ in 0..entry_count {
-      entries.push(PackedFileEntry::read_from(stream)?);
+      entries.push(Entry::read_from(stream)?);
     }
 
     Ok(Self { entries })
@@ -58,7 +65,7 @@ impl BinarySerializable for PackedFileHeader {
 
 /// A packed file entry.
 #[derive(Clone, Debug)]
-pub struct PackedFileEntry {
+struct Entry {
   pub name: String,
   pub size: Size,
   pub offset: Size,
@@ -66,7 +73,7 @@ pub struct PackedFileEntry {
   pub compression: Compression,
 }
 
-impl BinarySerializable for PackedFileEntry {
+impl BinarySerializable for Entry {
   fn read_from(stream: &mut dyn InputStream) -> crate::Result<Self> {
     let name = stream.read_string()?;
     let size = Size::from(stream.read_u32()?);
@@ -105,16 +112,6 @@ impl BinarySerializable for PackedFileEntry {
   }
 }
 
-/// Compression formats for packed file entries.
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-pub enum Compression {
-  None,
-  Gzip,
-  Zlib,
-  Brotli,
-}
-
 #[cfg(test)]
 mod tests {
   use crate::io::VirtualPath;
@@ -123,16 +120,16 @@ mod tests {
 
   #[test]
   fn packed_file_should_save_and_load_to_binary() {
-    let header = PackedFileHeader {
+    let header = Header {
       entries: vec![
-        PackedFileEntry {
+        Entry {
           name: "Test 1".to_string(),
           size: Size::from_bytes(108),
           offset: Size::from_bytes(0),
           metadata: Default::default(),
           compression: Compression::None,
         },
-        PackedFileEntry {
+        Entry {
           name: "Test 2".to_string(),
           size: Size::from_kilobytes(0.8),
           offset: Size::from_bytes(108),
@@ -150,7 +147,7 @@ mod tests {
 
     // read from file
     let mut stream = path.open_input_stream().unwrap();
-    let header = PackedFileHeader::read_from(&mut stream).unwrap();
+    let header = Header::read_from(&mut stream).unwrap();
 
     println!("{:#?}", header);
   }

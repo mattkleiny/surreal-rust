@@ -15,6 +15,7 @@ pub trait Singleton: Default + 'static {
 /// accessing the singleton data.
 ///
 /// This type should be used very sparingly, and only to remove friction from the API.
+// TODO: make this safe?
 pub struct SingletonCell<T>(Lazy<UnsafeCell<T>>);
 
 impl<T: Singleton> SingletonCell<T> {

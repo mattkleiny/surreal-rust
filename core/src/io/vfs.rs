@@ -247,6 +247,7 @@ pub struct FileSystemManager {
 }
 
 // The manager is an unsafe singleton type
+// TODO: make this safe?
 crate::impl_singleton!(FileSystemManager);
 
 impl Default for FileSystemManager {
@@ -308,7 +309,7 @@ impl<'a> VirtualPath<'a> {
     if let Some(extension) = self.location.split('.').last() {
       extension
     } else {
-      self.location.as_ref()
+      ""
     }
   }
 
@@ -327,7 +328,7 @@ impl<'a> VirtualPath<'a> {
     let file_system = FileSystemManager::find_for_path(self).ok_or(anyhow::anyhow!("No file system found for scheme {}", self.scheme))?;
     let stream = file_system.open_read(self)?;
 
-    Ok(Box::new(stream))
+    Ok(stream)
   }
 
   /// Opens a writer for the given path.
@@ -335,7 +336,7 @@ impl<'a> VirtualPath<'a> {
     let file_system = FileSystemManager::find_for_path(self).ok_or(anyhow::anyhow!("No file system found for scheme {}", self.scheme))?;
     let stream = file_system.open_write(self)?;
 
-    Ok(Box::new(stream))
+    Ok(stream)
   }
 
   /// Attempts to read all bytes from the given path.
