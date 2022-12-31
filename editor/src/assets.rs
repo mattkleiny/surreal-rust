@@ -9,10 +9,12 @@
 //! artifacts and [`AssetBundle`]s for consumption by the game at runtime.
 
 use std::collections::HashSet;
+use std::fmt::{Debug, Formatter};
 
+use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use surreal::io::VirtualPath;
 
+use surreal::io::VirtualPath;
 use surreal::maths::FromRandom;
 
 /// A unique identifier for an asset.
@@ -139,8 +141,14 @@ pub trait AssetBundle {}
 /// imported. If the hash of an asset has changed, the asset will be re-imported.
 ///
 /// The hash is calculated by hashing the contents of the asset file.
-#[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Default, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct AssetHash([u8; 32]);
+
+impl Debug for AssetHash {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(formatter, "AssetHash({})", base64::encode(&self.0))
+  }
+}
 
 impl Serialize for AssetHash {
   fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
@@ -149,8 +157,31 @@ impl Serialize for AssetHash {
 }
 
 impl<'de> Deserialize<'de> for AssetHash {
-  fn deserialize<D: Deserializer<'de>>(_deserializer: D) -> Result<Self, D::Error> {
-    todo!()
+  fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+    /// A helper struct for deserializing an asset hash.
+    struct Visitor;
+
+    impl<'de> serde::de::Visitor<'de> for Visitor {
+      type Value = AssetHash;
+
+      fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        formatter.write_str("a base64-encoded string")
+      }
+
+      fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+      where
+        E: Error,
+      {
+        let bytes = base64::decode(value).map_err(Error::custom)?;
+        let mut hash = [0; 32];
+
+        hash.copy_from_slice(&bytes);
+
+        Ok(AssetHash(hash))
+      }
+    }
+
+    deserializer.deserialize_str(Visitor)
   }
 }
 
@@ -234,6 +265,8 @@ impl AssetBundle for PAK {}
 
 #[cfg(test)]
 mod tests {
+  use surreal::io::{Deserializable, Serializable};
+
   use super::*;
 
   #[test]
@@ -255,6 +288,12 @@ mod tests {
       .add_asset("assets://sounds/music.ogg")
       .build();
 
-    println!("{}", surreal::io::Serializable::to_yaml(&manifest).unwrap());
+    let yaml = manifest.to_yaml().unwrap();
+
+    println!("{}", yaml);
+
+    let manifest = AssetManifest::from_yaml(&yaml).unwrap();
+
+    println!("{:#?}", manifest);
   }
 }
