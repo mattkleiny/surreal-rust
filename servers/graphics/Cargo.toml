@@ -4,8 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
+default = ["opengl"]
 hdrp = []
 lwrp = []
+opengl = ["gl"]
 
 [dependencies]
 surreal = { package = "surreal-core", path = "../../core" }
+gl = { version = "0.14", optional = true }

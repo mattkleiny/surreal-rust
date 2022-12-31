@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Formatter};
 use std::iter::Sum;
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
 /// A canonical representation of size, with simple conversions between units.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -57,6 +57,15 @@ impl Add for Size {
   }
 }
 
+impl Add<usize> for Size {
+  type Output = Self;
+
+  #[inline]
+  fn add(self, rhs: usize) -> Self::Output {
+    Self::from_bytes(self.as_bytes() + rhs)
+  }
+}
+
 impl AddAssign for Size {
   #[inline]
   fn add_assign(&mut self, rhs: Self) {
@@ -73,10 +82,55 @@ impl Sub for Size {
   }
 }
 
+impl Sub<usize> for Size {
+  type Output = Self;
+
+  #[inline]
+  fn sub(self, rhs: usize) -> Self::Output {
+    Self::from_bytes(self.as_bytes() - rhs)
+  }
+}
+
 impl SubAssign for Size {
   #[inline]
   fn sub_assign(&mut self, rhs: Self) {
     *self = *self - rhs;
+  }
+}
+
+impl Mul for Size {
+  type Output = Self;
+
+  #[inline]
+  fn mul(self, rhs: Self) -> Self::Output {
+    Self::from_bytes(self.as_bytes() * rhs.as_bytes())
+  }
+}
+
+impl Mul<usize> for Size {
+  type Output = Self;
+
+  #[inline]
+  fn mul(self, rhs: usize) -> Self::Output {
+    Self::from_bytes(self.as_bytes() * rhs)
+  }
+}
+
+impl Div for Size {
+  type Output = Self;
+
+  #[inline]
+  fn div(self, rhs: Self) -> Self::Output {
+    Self::from_bytes(self.as_bytes() / rhs.as_bytes())
+  }
+}
+
+impl Div<usize> for Size {
+  type Output = Self;
+
+  #[inline]
+  fn div(self, rhs: usize) -> Self::Output {
+    Self::from_bytes(self.as_bytes() / rhs)
   }
 }
 

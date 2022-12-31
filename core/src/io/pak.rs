@@ -8,45 +8,30 @@ use crate::utilities::Size;
 /// Compression formats for packed file entries.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-enum Compression {
+pub enum Compression {
   None,
-}
-
-/// A packed file.
-pub struct PackedFile<'a> {
-  header: Header,
-  pub stream: &'a mut dyn InputStream,
-}
-
-impl<'a> PackedFile<'a> {
-  /// Loads a [`PackedFile`] from the given [`InputStream`].
-  pub fn load(stream: &'a mut dyn InputStream) -> crate::Result<Self> {
-    let header = Header::read_from(stream)?;
-
-    Ok(Self { header, stream })
-  }
 }
 
 /// Header data for a packed file.
 #[derive(Clone, Debug)]
-struct Header {
-  pub entries: Vec<Entry>,
+pub struct PakHeader {
+  pub entries: Vec<PakEntry>,
 }
 
-impl Header {
-  /// Computes the [`Size`] of the entry.
+impl PakHeader {
+  /// Computes the [`Size`] of all entries.
   pub fn size(&self) -> Size {
     self.entries.iter().map(|entry| entry.size).sum()
   }
 }
 
-impl BinarySerializable for Header {
+impl BinarySerializable for PakHeader {
   fn read_from(stream: &mut dyn InputStream) -> crate::Result<Self> {
     let entry_count = stream.read_u32()?;
     let mut entries = Vec::with_capacity(entry_count as usize);
 
     for _ in 0..entry_count {
-      entries.push(Entry::read_from(stream)?);
+      entries.push(PakEntry::read_from(stream)?);
     }
 
     Ok(Self { entries })
@@ -65,7 +50,7 @@ impl BinarySerializable for Header {
 
 /// A packed file entry.
 #[derive(Clone, Debug)]
-struct Entry {
+pub struct PakEntry {
   pub name: String,
   pub size: Size,
   pub offset: Size,
@@ -73,7 +58,7 @@ struct Entry {
   pub compression: Compression,
 }
 
-impl BinarySerializable for Entry {
+impl BinarySerializable for PakEntry {
   fn read_from(stream: &mut dyn InputStream) -> crate::Result<Self> {
     let name = stream.read_string()?;
     let size = Size::from(stream.read_u32()?);
@@ -120,16 +105,16 @@ mod tests {
 
   #[test]
   fn packed_file_should_save_and_load_to_binary() {
-    let header = Header {
+    let header = PakHeader {
       entries: vec![
-        Entry {
+        PakEntry {
           name: "Test 1".to_string(),
           size: Size::from_bytes(108),
           offset: Size::from_bytes(0),
           metadata: Default::default(),
           compression: Compression::None,
         },
-        Entry {
+        PakEntry {
           name: "Test 2".to_string(),
           size: Size::from_kilobytes(0.8),
           offset: Size::from_bytes(108),
@@ -147,7 +132,7 @@ mod tests {
 
     // read from file
     let mut stream = path.open_input_stream().unwrap();
-    let header = Header::read_from(&mut stream).unwrap();
+    let header = PakHeader::read_from(&mut stream).unwrap();
 
     println!("{:#?}", header);
   }

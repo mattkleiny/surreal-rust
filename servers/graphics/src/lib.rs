@@ -3,6 +3,8 @@
 //! The engine is split into different 'pipelines' to allow specific targeting
 //! of different project goals.
 
+use std::ops::Deref;
+
 use surreal::graphics::PrimitiveTopology;
 use surreal::maths::AABB;
 
@@ -11,9 +13,38 @@ pub mod hdrp;
 #[cfg(feature = "lwrp")]
 pub mod lwrp;
 
+#[cfg(feature = "opengl")]
+mod opengl;
+
+/// A unique [`surreal::utilities::RID`] for graphics resources.
 pub type GraphicsId = surreal::utilities::RID;
 
-// TODO: add wrapper/mt/command queue helper
+/// The singleton graphics server implementation for the project.
+///
+/// All instructions to the graphics server should be sent through this facade.
+/// Internally we delegate to the active [`GraphicsServerBackend`], which can
+/// vary depending on the target platform.
+struct GraphicsServer {
+  backend: Box<dyn GraphicsServerBackend>,
+}
+
+surreal::impl_singleton!(GraphicsServer);
+
+impl Default for GraphicsServer {
+  fn default() -> Self {
+    Self {
+      backend: Box::new(opengl::OpenGLBackend::default()),
+    }
+  }
+}
+
+impl Deref for GraphicsServer {
+  type Target = dyn GraphicsServerBackend;
+
+  fn deref(&self) -> &Self::Target {
+    self.backend.as_ref()
+  }
+}
 
 /// An abstraction on top of the underlying graphics system.
 ///
@@ -23,7 +54,7 @@ pub type GraphicsId = surreal::utilities::RID;
 ///
 /// Different render pipelines might offer different features and capabilities on
 /// top of those exported here.
-pub trait GraphicsServer {
+pub trait GraphicsServerBackend {
   // shader operations
   fn shader_create(&self) -> surreal::Result<GraphicsId>;
   fn shader_set_code(&self, shader_id: GraphicsId, code: &str) -> surreal::Result<()>;

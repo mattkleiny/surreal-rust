@@ -206,6 +206,7 @@ pub enum ComponentKind {
 ///
 /// Components receive callbacks in response to scene lifecycle events, and
 /// can access information from their parent [`SceneNode`]s.
+#[allow(unused_variables)]
 pub trait Component: Object {
   /// Returns a friendly name for this component, for debugging/editor/etc.
   fn name(&self) -> &'static str;
@@ -224,13 +225,13 @@ pub trait Component: Object {
     }
   }
 
-  fn on_awake(&mut self, _node: &mut SceneNode) {}
-  fn on_start(&mut self, _node: &mut SceneNode) {}
-  fn on_enable(&mut self, _node: &mut SceneNode) {}
-  fn on_disable(&mut self, _node: &mut SceneNode) {}
-  fn on_destroy(&mut self, _node: &mut SceneNode) {}
-  fn on_update(&mut self, _node: &mut SceneNode, _delta_time: f32) {}
-  fn on_render(&mut self, _node: &mut SceneNode, _manager: &mut RenderContextManager) {}
+  fn on_awake(&mut self, node: &mut SceneNode) {}
+  fn on_start(&mut self, node: &mut SceneNode) {}
+  fn on_enable(&mut self, node: &mut SceneNode) {}
+  fn on_disable(&mut self, node: &mut SceneNode) {}
+  fn on_destroy(&mut self, node: &mut SceneNode) {}
+  fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {}
+  fn on_render(&mut self, node: &mut SceneNode, manager: &mut RenderContextManager) {}
 
   /// Determines the [`ComponentKind`] of this component.
   ///

@@ -7,9 +7,10 @@ use std::ffi::c_void;
 use anyhow::anyhow;
 use glutin::{ContextWrapper, PossiblyCurrent};
 
-use super::*;
-
 use crate::maths::Rectangle;
+use crate::utilities::Size;
+
+use super::*;
 
 /// An OpenGL [`GraphicsBackend`] implementation.
 pub struct OpenGLGraphicsBackend {
@@ -197,25 +198,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn initialize_texture(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat) {
-    unsafe {
-      let (components, kind) = convert_texture_format(format);
-
-      gl::BindTexture(gl::TEXTURE_2D, texture);
-      gl::TexImage2D(
-        gl::TEXTURE_2D,
-        0,
-        format as i32,
-        width as i32,
-        height as i32,
-        0,
-        components,
-        kind,
-        std::ptr::null(),
-      );
-    }
-  }
-
   fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler) {
     unsafe {
       let min_filter = match sampler.minify_filter {
@@ -239,6 +221,25 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrap_mode as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrap_mode as i32);
+    }
+  }
+
+  fn initialize_texture(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat) {
+    unsafe {
+      let (components, kind) = convert_texture_format(format);
+
+      gl::BindTexture(gl::TEXTURE_2D, texture);
+      gl::TexImage2D(
+        gl::TEXTURE_2D,
+        0,
+        format as i32,
+        width as i32,
+        height as i32,
+        0,
+        components,
+        kind,
+        std::ptr::null(),
+      );
     }
   }
 
@@ -580,7 +581,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
       gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
 
-      let stride: usize = descriptors.iter().map(|desc| desc.size()).sum();
+      let stride: Size = descriptors.iter().map(|desc| desc.size()).sum();
       let mut offset = 0;
 
       for (index, descriptor) in descriptors.iter().enumerate() {
@@ -603,16 +604,22 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
               true => gl::TRUE,
               false => gl::FALSE,
             },
-            stride as i32,
+            stride.as_bytes() as i32,
             offset as *const _,
           );
         } else {
-          gl::VertexAttribIPointer(index as u32, descriptor.count as i32, kind, stride as i32, offset as *const _);
+          gl::VertexAttribIPointer(
+            index as u32,
+            descriptor.count as i32,
+            kind,
+            stride.as_bytes() as i32,
+            offset as *const _,
+          );
         }
 
         gl::EnableVertexAttribArray(index as u32);
 
-        offset += descriptor.size();
+        offset += descriptor.size().as_bytes();
       }
 
       gl::BindVertexArray(0);

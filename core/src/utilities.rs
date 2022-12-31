@@ -1,18 +1,20 @@
 //! General utilities.
 
 pub use object::*;
+pub use servers::*;
 pub use singleton::*;
 pub use size::*;
 pub use timing::*;
 pub use variant::*;
 
 mod object;
+mod servers;
 mod singleton;
 mod size;
 mod timing;
 mod variant;
 
-/// An opaque ID for a resource in one of the server implementations.
+/// An opaque ID for a resource in one of the [`Server`] implementations.
 ///
 /// This is an opaque handle that can be used to identify a resource in the server.
 #[repr(transparent)]

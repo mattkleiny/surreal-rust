@@ -4,7 +4,7 @@ use std::ops::{Deref, DerefMut};
 use once_cell::sync::Lazy;
 
 /// A singleton that can be referenced and mutated statically in the application.
-pub trait Singleton: Default + 'static {
+pub trait Singleton: 'static {
   /// Retrieves the static instance of this type.
   fn instance() -> &'static mut Self;
 }
@@ -18,7 +18,7 @@ pub trait Singleton: Default + 'static {
 // TODO: make this safe?
 pub struct SingletonCell<T>(Lazy<UnsafeCell<T>>);
 
-impl<T: Singleton> SingletonCell<T> {
+impl<T: Singleton + Default> SingletonCell<T> {
   /// Constructs a new [`SingletonCell`] with a default constructor.
   pub const fn new() -> Self {
     Self(Lazy::new(|| UnsafeCell::new(T::default())))
@@ -55,7 +55,7 @@ macro_rules! impl_singleton {
       fn instance() -> &'static mut Self {
         static mut INSTANCE: SingletonCell<$target> = SingletonCell::new();
 
-        unsafe { std::ops::DerefMut::deref_mut(&mut INSTANCE) }
+        unsafe { &mut INSTANCE }
       }
     }
   };

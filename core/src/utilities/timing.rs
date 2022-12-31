@@ -24,7 +24,7 @@ impl Sub for TimeStamp {
   type Output = TimeSpan;
 
   fn sub(self, rhs: Self) -> Self::Output {
-    TimeSpan::from_duration(self.instant.duration_since(rhs.instant))
+    TimeSpan::from(self.instant.duration_since(rhs.instant))
   }
 }
 
@@ -153,11 +153,6 @@ pub struct TimeSpan {
 
 impl TimeSpan {
   #[inline]
-  pub fn from_duration(duration: Duration) -> TimeSpan {
-    Self::from_millis(duration.as_nanos() as f32 / (1000. * 1000.))
-  }
-
-  #[inline]
   pub fn from_millis(milliseconds: f32) -> TimeSpan {
     Self { milliseconds }
   }
@@ -253,6 +248,13 @@ impl Sum for TimeSpan {
   #[inline]
   fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
     iter.fold(TimeSpan::from_millis(0.), |a, b| a + b)
+  }
+}
+
+impl From<Duration> for TimeSpan {
+  #[inline]
+  fn from(value: Duration) -> Self {
+    Self::from_millis(value.as_nanos() as f32 / (1000. * 1000.))
   }
 }
 

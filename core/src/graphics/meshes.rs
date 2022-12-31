@@ -7,6 +7,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::maths::{vec2, Tessellation, Vec2, Vec3};
+use crate::utilities::Size;
 
 use super::*;
 
@@ -38,8 +39,8 @@ pub struct VertexDescriptor {
 
 impl VertexDescriptor {
   /// Calculates the size of this vertex element.
-  pub fn size(&self) -> usize {
-    self.count * self.kind.size()
+  pub fn size(&self) -> Size {
+    self.kind.size() * self.count
   }
 }
 
@@ -57,8 +58,8 @@ pub enum VertexKind {
 
 impl VertexKind {
   /// Returns the size of this element type, in bytes.
-  pub const fn size(&self) -> usize {
-    match self {
+  pub const fn size(&self) -> Size {
+    Size::from_bytes(match self {
       VertexKind::U8 => std::mem::size_of::<u8>(),
       VertexKind::U16 => std::mem::size_of::<u16>(),
       VertexKind::U32 => std::mem::size_of::<u32>(),
@@ -66,7 +67,7 @@ impl VertexKind {
       VertexKind::I32 => std::mem::size_of::<i32>(),
       VertexKind::F32 => std::mem::size_of::<f32>(),
       VertexKind::F64 => std::mem::size_of::<f64>(),
-    }
+    })
   }
 }
 
@@ -147,7 +148,7 @@ impl<V: Vertex> Mesh<V> {
   }
 
   /// Constructs a mesh with the given factory method.
-  pub fn create(graphics: &GraphicsServer, factory: impl Fn(&mut Tessellator<V>)) -> Self {
+  pub fn from_tessellation(graphics: &GraphicsServer, factory: impl Fn(&mut Tessellator<V>)) -> Self {
     let mut mesh = Self::new(graphics, BufferUsage::Static);
     let mut tessellator = Tessellator::new();
 
@@ -203,7 +204,7 @@ impl<V> Drop for MeshState<V> {
 impl Mesh<Vertex2> {
   /// Constructs a simple triangle mesh of the given size.
   pub fn create_triangle(graphics: &GraphicsServer, size: f32) -> Self {
-    Self::create(graphics, |mesh| {
+    Self::from_tessellation(graphics, |mesh| {
       mesh.add_triangle(&[
         Vertex2 {
           position: vec2(-size, -size),
@@ -226,7 +227,7 @@ impl Mesh<Vertex2> {
 
   /// Constructs a simple quad mesh of the given size.
   pub fn create_quad(graphics: &GraphicsServer, size: f32) -> Self {
-    Self::create(graphics, |mesh| {
+    Self::from_tessellation(graphics, |mesh| {
       mesh.add_quad(&[
         Vertex2 {
           position: vec2(-size, -size),
@@ -254,7 +255,7 @@ impl Mesh<Vertex2> {
 
   /// Constructs a simple circle mesh of the given size.
   pub fn create_circle(graphics: &GraphicsServer, radius: f32, segments: usize) -> Self {
-    Self::create(graphics, |mesh| {
+    Self::from_tessellation(graphics, |mesh| {
       use std::f32::consts::PI;
 
       let mut vertices = Vec::with_capacity(segments);
