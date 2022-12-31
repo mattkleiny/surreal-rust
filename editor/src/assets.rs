@@ -242,4 +242,15 @@ mod tests {
 
     AssetDatabase::build_asset_bundle::<PAK>("./test.yaml", &manifest).unwrap();
   }
+
+  #[test]
+  fn asset_manifest_should_serialize_to_yaml() {
+    let manifest = AssetManifestBuilder::new()
+      .add_asset("assets://textures/floor.png")
+      .add_asset("assets://textures/wall.png")
+      .add_asset("assets://sounds/music.ogg")
+      .build();
+
+    println!("{}", surreal::io::Serializable::to_yaml(&manifest).unwrap());
+  }
 }

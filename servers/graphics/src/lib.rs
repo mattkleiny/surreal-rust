@@ -56,7 +56,7 @@ pub struct SurfaceData {
   pub topology: PrimitiveTopology,
   pub vertices: Vec<u8>,
   pub indices: Vec<u8>,
-  pub aabb: AABB<f32>,
+  pub aabb: AABB,
   pub material: GraphicsId,
 }
 

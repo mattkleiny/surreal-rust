@@ -1,6 +1,5 @@
 //! Mathematical utilities.
 
-pub use aabb::*;
 pub use curves::*;
 pub use interpolation::*;
 pub use linear::*;
@@ -12,7 +11,6 @@ pub use ranges::*;
 pub use rectangles::*;
 pub use tessellation::*;
 
-mod aabb;
 mod curves;
 mod interpolation;
 mod linear;
