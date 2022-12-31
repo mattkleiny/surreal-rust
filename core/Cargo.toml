@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["json", "ron", "toml", "yaml"]
+default = ["json", "ron", "toml", "yaml", "xml"]
 profiling = [] # TODO: get optick compilation working in actions
 
 [dependencies]
@@ -31,6 +31,7 @@ json = { package = "serde_json", version = "1.0.91", optional = true }
 ron = { version = "0.8.0", optional = true }
 toml = { version = "0.5.10", optional = true }
 yaml = { package = "serde_yaml", version = "0.9", optional = true }
+xml = { package = "serde-xml-rs", version = "0.6.0", optional = true }
 
 # platform dependencies
 gl = "0.14"

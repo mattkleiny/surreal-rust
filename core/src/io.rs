@@ -12,7 +12,7 @@ mod vfs;
 ///
 /// Implementors of this trait will gain access to basic
 /// serialization formats for free via convenience methods.
-pub trait Serializable: Serialize {
+pub trait Serializable: Serialize + Sized {
   /// Serializes the type to a `json` string.
   #[cfg(feature = "json")]
   fn to_json(&self) -> crate::Result<String> {
@@ -37,12 +37,26 @@ pub trait Serializable: Serialize {
     Ok(yaml::to_string(self)?)
   }
 
+  /// Serializes the type to a `xml` string.
+  #[cfg(feature = "xml")]
+  fn to_xml(&self) -> crate::Result<String> {
+    Ok(xml::to_string(self)?)
+  }
+
   /// Serializes the type to disk in `json` format.
   #[cfg(feature = "json")]
   fn save_to_json(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
     let mut stream = path.into().open_output_stream()?;
 
     Ok(json::to_writer(&mut stream, self)?)
+  }
+
+  /// Serializes the type to disk in `xml` format.
+  #[cfg(feature = "xml")]
+  fn save_to_xml(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
+    let mut stream = path.into().open_output_stream()?;
+
+    Ok(xml::to_writer(&mut stream, self)?)
   }
 
   /// Serializes the type to disk in `ron` format.
@@ -83,7 +97,7 @@ impl<T> Serializable for T where T: Serialize {}
 ///
 /// Implementors of this trait will gain access to basic
 /// deserialization formats for free via convenience methods.
-pub trait Deserializable: for<'de> Deserialize<'de> {
+pub trait Deserializable: for<'de> Deserialize<'de> + Sized {
   /// Deserializes from the given `json` string.
   #[cfg(feature = "json")]
   fn from_json(json: &str) -> crate::Result<Self> {
@@ -106,6 +120,12 @@ pub trait Deserializable: for<'de> Deserialize<'de> {
   #[cfg(feature = "yaml")]
   fn from_yaml(yaml: &str) -> crate::Result<Self> {
     Ok(yaml::from_str(yaml)?)
+  }
+
+  /// Deserializes from the given `xml` string.
+  #[cfg(feature = "xml")]
+  fn from_xml(yaml: &str) -> crate::Result<Self> {
+    Ok(xml::from_str(yaml)?)
   }
 
   /// Deserializes from the given `json` file.
@@ -144,6 +164,14 @@ pub trait Deserializable: for<'de> Deserialize<'de> {
     let mut stream = path.into().open_input_stream()?;
 
     Ok(yaml::from_reader(&mut stream)?)
+  }
+
+  /// Deserializes from the given `xml` file.
+  #[cfg(feature = "xml")]
+  fn load_from_xml(path: impl Into<VirtualPath>) -> crate::Result<Self> {
+    let mut stream = path.into().open_input_stream()?;
+
+    Ok(xml::from_reader(&mut stream)?)
   }
 }
 
