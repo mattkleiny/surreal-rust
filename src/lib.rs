@@ -17,8 +17,6 @@ pub extern crate core;
 pub extern crate csg;
 #[cfg(feature = "editor")]
 pub extern crate editor;
-#[cfg(feature = "macros")]
-pub extern crate macros;
 #[cfg(feature = "prototype")]
 pub extern crate prototype;
 #[cfg(feature = "scene2d")]
@@ -41,6 +39,7 @@ pub mod prelude {
   pub use core::graphics::*;
   pub use core::input::*;
   pub use core::io::*;
+  pub use core::macros::*;
   pub use core::maths::*;
   pub use core::scene::*;
   pub use core::ui::*;

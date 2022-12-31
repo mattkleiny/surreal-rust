@@ -853,6 +853,10 @@ impl Into<SceneNode> for SceneNodeBuilder {
 
 #[cfg(test)]
 mod tests {
+  use macros::Object;
+
+  use crate as surreal;
+
   use super::*;
 
   #[test]
@@ -871,8 +875,8 @@ mod tests {
 
   #[test]
   pub fn scene_node_should_notify_child_nodes() {
+    #[derive(Object)]
     struct TestComponent1;
-    struct TestComponent2;
 
     impl Component for TestComponent1 {
       fn name(&self) -> &'static str {
@@ -883,6 +887,9 @@ mod tests {
         println!("Update component 1 on node id {} delta_time {}", node.id, delta_time);
       }
     }
+
+    #[derive(Object)]
+    struct TestComponent2;
 
     impl Component for TestComponent2 {
       fn name(&self) -> &'static str {
@@ -947,6 +954,7 @@ mod tests {
 
   #[test]
   fn scene_graph_should_notify_all_child_nodes_recursively() {
+    #[derive(Object)]
     struct TestComponent;
 
     impl Component for TestComponent {

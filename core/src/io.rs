@@ -76,7 +76,10 @@ pub trait Serializable: Serialize {
   }
 }
 
-/// Allows deserialization from different types in the VFS.
+/// Blanket implementation of [`Serializable`] for any [`Serialize`]-able type.
+impl<T> Serializable for T where T: Serialize {}
+
+/// Allows deserialization from different types implicitly.
 ///
 /// Implementors of this trait will gain access to basic
 /// deserialization formats for free via convenience methods.
@@ -143,9 +146,6 @@ pub trait Deserializable: for<'de> Deserialize<'de> {
     Ok(yaml::from_reader(&mut stream)?)
   }
 }
-
-/// Blanket implementation of [`Serializable`] for any [`Serialize`]-able type.
-impl<T> Serializable for T where T: Serialize {}
 
 /// Blanket implementation of [`Deserializable`] for any [`Deserialize`]-able type.
 impl<T> Deserializable for T where T: for<'de> Deserialize<'de> {}

@@ -2,14 +2,6 @@
 //!
 //! The engine is split into different 'pipelines' to allow specific targeting
 //! of different project goals.
-//!
-//! The `lwrp` pipeline is a lightweight rendering pipeline that is designed to
-//! be fast and efficient. It is designed to be used for 2D games and other
-//! applications that do not require advanced rendering techniques.
-//!
-//! The `hdrp` pipeline is a high-definition rendering pipeline that is designed
-//! to be used for 3D games and other applications that require advanced rendering
-//! techniques such as volumetric fog and realistic lighting.
 
 use surreal::graphics::PrimitiveTopology;
 use surreal::maths::AABB;

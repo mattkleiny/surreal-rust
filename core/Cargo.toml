@@ -8,18 +8,21 @@ default = ["json", "ron", "toml", "yaml"]
 profiling = [] # TODO: get optick compilation working in actions
 
 [dependencies]
+macros = { package = "surreal-macros", path = "../macros" }
+
 # core dependencies
-anyhow = "1.0.66"
 ab_glyph = "0.2"
+anyhow = "1.0.66"
 bitflags = "1.3"
 chrono = "0.4"
-image = { version = "0.24", default-features = false, features = ["jpeg", "png", "ico"] }
 egui = "0.20.1"
 glam = { version = "0.22.0", features = ["serde"] }
-profiling = "1.0.7"
-smallvec = "1.8"
+image = { version = "0.24", default-features = false, features = ["jpeg", "png", "ico"] }
 lazy_static = "1.4.0"
 log = "0.4"
+once_cell = "1.17.0"
+profiling = "1.0.7"
+smallvec = "1.8"
 uuid = { version = "1.2.2", features = ["serde"] }
 
 # serde and friends
@@ -31,5 +34,5 @@ yaml = { package = "serde_yaml", version = "0.9", optional = true }
 
 # platform dependencies
 gl = "0.14"
-oal-sys = "0.0.2"
 glutin = { version = "0.28.0", default-features = false, features = ["x11"] }
+oal-sys = "0.0.2"

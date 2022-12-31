@@ -1,11 +1,43 @@
-/// A singleton that can be referenced statically in the application.
+use std::cell::UnsafeCell;
+use std::ops::{Deref, DerefMut};
+
+use once_cell::sync::Lazy;
+
+/// A singleton that can be referenced and mutated statically in the application.
 pub trait Singleton: Default + 'static {
   /// Retrieves the static instance of this type.
-  fn instance() -> &'static std::sync::Mutex<Self>;
+  fn instance() -> &'static mut Self;
+}
 
-  /// Locks and accesses an instance of the singleton.
-  fn lock() -> std::sync::MutexGuard<'static, Self> {
-    Self::instance().lock().unwrap()
+/// An unsafe cell for mutably alias-able singleton values.
+///
+/// This is a wrapper around [`UnsafeCell`] that provides an interface for
+/// accessing the singleton data.
+///
+/// This type should be used very sparingly, and only to remove friction from the API.
+pub struct SingletonCell<T>(Lazy<UnsafeCell<T>>);
+
+impl<T: Singleton> SingletonCell<T> {
+  /// Constructs a new [`SingletonCell`] with a default constructor.
+  pub const fn new() -> Self {
+    Self(Lazy::new(|| UnsafeCell::new(T::default())))
+  }
+}
+
+unsafe impl<T> Send for SingletonCell<T> {}
+unsafe impl<T> Sync for SingletonCell<T> {}
+
+impl<T> Deref for SingletonCell<T> {
+  type Target = T;
+
+  fn deref(&self) -> &Self::Target {
+    unsafe { &*self.0.get() }
+  }
+}
+
+impl<T> DerefMut for SingletonCell<T> {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    unsafe { &mut *self.0.get() }
   }
 }
 
@@ -14,15 +46,16 @@ pub trait Singleton: Default + 'static {
 /// The singleton can have no constructed dependencies, and is expected
 /// to run in complete isolation of the rest of the application.
 #[macro_export]
-macro_rules! singleton {
-  ($name:ident) => {
-    impl crate::utilities::Singleton for $name {
-      fn instance() -> &'static std::sync::Mutex<$name> {
-        lazy_static::lazy_static! {
-          static ref INSTANCE: std::sync::Mutex<$name> = std::sync::Mutex::new($name::default());
-        }
+macro_rules! impl_singleton {
+  ($target:ident) => {
+    use $crate::utilities::{Singleton, SingletonCell};
 
-        &INSTANCE
+    impl Singleton for $target {
+      fn instance() -> &'static mut Self {
+        use std::ops::DerefMut;
+
+        static mut INSTANCE: SingletonCell<$target> = SingletonCell::new();
+        unsafe { INSTANCE.deref_mut() }
       }
     }
   };
@@ -30,8 +63,6 @@ macro_rules! singleton {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-
   #[derive(Default)]
   struct TestSingleton;
 
@@ -41,11 +72,11 @@ mod tests {
     }
   }
 
-  singleton!(TestSingleton);
+  impl_singleton!(TestSingleton);
 
   #[test]
   fn singleton_should_access_for_read_write_usage() {
-    let test = TestSingleton::instance().lock().unwrap();
+    let test = TestSingleton::instance();
 
     assert_eq!(42, test.example_method());
   }

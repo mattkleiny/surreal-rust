@@ -231,7 +231,7 @@ impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
 }
 
 /// Implements uniform value transformation for common shader uniforms.
-macro_rules! implement_uniform {
+macro_rules! impl_uniform {
   ($type:ty, $value:ident) => {
     impl From<$type> for ShaderUniform {
       fn from(value: $type) -> Self {
@@ -241,15 +241,15 @@ macro_rules! implement_uniform {
   };
 }
 
-implement_uniform!(bool, Bool);
-implement_uniform!(u32, U32);
-implement_uniform!(f32, F32);
-implement_uniform!(Vec2, Vec2);
-implement_uniform!(Vec3, Vec3);
-implement_uniform!(Vec4, Vec4);
-implement_uniform!(&Mat2, Mat2);
-implement_uniform!(&Mat3, Mat3);
-implement_uniform!(&Mat4, Mat4);
+impl_uniform!(bool, Bool);
+impl_uniform!(u32, U32);
+impl_uniform!(f32, F32);
+impl_uniform!(Vec2, Vec2);
+impl_uniform!(Vec3, Vec3);
+impl_uniform!(Vec4, Vec4);
+impl_uniform!(&Mat2, Mat2);
+impl_uniform!(&Mat3, Mat3);
+impl_uniform!(&Mat4, Mat4);
 
 /// Parses the given raw GLSL source and performs some basic pre-processing.
 ///

@@ -1,8 +1,10 @@
 use surreal::graphics::*;
+use surreal::macros::Object;
 use surreal::maths::vec2;
 use surreal::scene::*;
 
 /// A [`Component`] which renders a sprite in the game world.
+#[derive(Object)]
 pub struct SpriteComponent {
   pub region: TextureRegion,
 }
@@ -32,7 +34,7 @@ impl Component for SpriteComponent {
 }
 
 /// A [`RenderContext`] for [`SpriteComponent`]s.
-///
+#[derive(Object)]
 pub struct SpriteContext {
   batch: SpriteBatch,
   material: Material,

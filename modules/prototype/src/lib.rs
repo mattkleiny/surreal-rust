@@ -2,6 +2,7 @@
 
 pub use pixels::*;
 use surreal::graphics::*;
+use surreal::macros::Object;
 use surreal::maths::Mat4;
 pub use tiles::*;
 
@@ -159,6 +160,7 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
 }
 
 /// A simple [`RenderContext`] that allows for sprite rendering using built-in sprite shaders.
+#[derive(Object)]
 pub struct SpriteContext {
   /// A [`Material`] configured to render sprites.
   pub material: Material,
@@ -222,6 +224,7 @@ impl RenderContextDescriptor for GeometryContextDescriptor {
 }
 
 /// A simple [`RenderContext`] that allows for geometry rendering using the standard wire shaders.
+#[derive(Object)]
 pub struct GeometryContext {
   /// A material configured to render geometry.
   pub material: Material,

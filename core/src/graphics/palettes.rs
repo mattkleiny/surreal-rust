@@ -125,6 +125,6 @@ impl<P: Pixel + 'static> Asset for ColorPalette<P> {
 
 impl<P: Pixel + 'static> AssetLoader<ColorPalette<P>> for ColorPaletteLoader<P> {
   fn load(&self, context: &AssetContext) -> crate::Result<ColorPalette<P>> {
-    ColorPalette::from_file(context.path)
+    ColorPalette::from_file(&context.path)
   }
 }

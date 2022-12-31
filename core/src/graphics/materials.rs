@@ -229,7 +229,7 @@ impl Asset for Material {
 
 impl AssetLoader<Material> for MaterialLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Material> {
-    let shader = context.load_asset(context.path)?;
+    let shader = context.load_asset(&context.path)?;
     let material = Material::new(&self.graphics, &shader);
 
     Ok(material)

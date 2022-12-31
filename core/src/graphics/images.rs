@@ -90,7 +90,7 @@ impl Asset for Image {
 
 impl AssetLoader<Image> for ImageLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Image> {
-    Image::from_path(context.path, self.format)
+    Image::from_path(&context.path, self.format)
   }
 }
 

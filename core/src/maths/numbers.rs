@@ -29,7 +29,7 @@ pub trait Numeric:
 }
 
 /// Implements the numeric traits for standard purpose a numeric type.
-macro_rules! implement_numeric {
+macro_rules! impl_numeric {
   ($type:ty) => {
     impl Numeric for $type {
       const ZERO: Self = 0 as Self;
@@ -56,19 +56,19 @@ macro_rules! implement_numeric {
   };
 }
 
-implement_numeric!(u8);
-implement_numeric!(u16);
-implement_numeric!(u32);
-implement_numeric!(u64);
-implement_numeric!(u128);
-implement_numeric!(usize);
+impl_numeric!(u8);
+impl_numeric!(u16);
+impl_numeric!(u32);
+impl_numeric!(u64);
+impl_numeric!(u128);
+impl_numeric!(usize);
 
-implement_numeric!(i8);
-implement_numeric!(i16);
-implement_numeric!(i32);
-implement_numeric!(i64);
-implement_numeric!(i128);
-implement_numeric!(isize);
+impl_numeric!(i8);
+impl_numeric!(i16);
+impl_numeric!(i32);
+impl_numeric!(i64);
+impl_numeric!(i128);
+impl_numeric!(isize);
 
-implement_numeric!(f32);
-implement_numeric!(f64);
+impl_numeric!(f32);
+impl_numeric!(f64);

@@ -85,7 +85,7 @@ pub trait FromRandom: Sized {
 }
 
 // Implements random conversion for common integer types
-macro_rules! implement_random_number {
+macro_rules! impl_random {
   ($type:ty) => {
     impl FromRandom for $type {
       fn from_random(random: &mut Random) -> Self {
@@ -95,17 +95,17 @@ macro_rules! implement_random_number {
   };
 }
 
-implement_random_number!(u8);
-implement_random_number!(u16);
-implement_random_number!(u32);
-implement_random_number!(u64);
-implement_random_number!(usize);
+impl_random!(u8);
+impl_random!(u16);
+impl_random!(u32);
+impl_random!(u64);
+impl_random!(usize);
 
-implement_random_number!(i8);
-implement_random_number!(i16);
-implement_random_number!(i32);
-implement_random_number!(i64);
-implement_random_number!(isize);
+impl_random!(i8);
+impl_random!(i16);
+impl_random!(i32);
+impl_random!(i64);
+impl_random!(isize);
 
 impl FromRandom for bool {
   fn from_random(random: &mut Random) -> Self {

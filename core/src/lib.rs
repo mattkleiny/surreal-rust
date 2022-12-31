@@ -10,6 +10,8 @@
 #[macro_use]
 extern crate serde;
 
+pub use macros;
+
 pub mod assets;
 pub mod audio;
 pub mod collections;

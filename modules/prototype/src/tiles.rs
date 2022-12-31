@@ -120,7 +120,7 @@ pub trait Tile: Clone {
 }
 
 /// Implements an implicit entry type (no abstraction).
-macro_rules! implement_tile {
+macro_rules! impl_tile {
   ($type:ty) => {
     impl Tile for $type {
       type Id = $type;
@@ -136,19 +136,19 @@ macro_rules! implement_tile {
   };
 }
 
-implement_tile!(u8);
-implement_tile!(u16);
-implement_tile!(u32);
-implement_tile!(u64);
-implement_tile!(u128);
-implement_tile!(usize);
+impl_tile!(u8);
+impl_tile!(u16);
+impl_tile!(u32);
+impl_tile!(u64);
+impl_tile!(u128);
+impl_tile!(usize);
 
-implement_tile!(i8);
-implement_tile!(i16);
-implement_tile!(i32);
-implement_tile!(i64);
-implement_tile!(i128);
-implement_tile!(isize);
+impl_tile!(i8);
+impl_tile!(i16);
+impl_tile!(i32);
+impl_tile!(i64);
+impl_tile!(i128);
+impl_tile!(isize);
 
 /// A [`Tile`] that can be used for path finding.
 pub trait PathableTile: Tile {
