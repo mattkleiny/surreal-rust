@@ -1,10 +1,10 @@
 use super::*;
 
 /// A bounded rectangle in 2 dimensions formed from the two corner points.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, PartialEq)]
 pub struct Rectangle {
-  min: Vec2,
-  max: Vec2,
+  pub min: Vec2,
+  pub max: Vec2,
 }
 
 impl Rectangle {

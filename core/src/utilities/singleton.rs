@@ -52,10 +52,9 @@ macro_rules! impl_singleton {
 
     impl Singleton for $target {
       fn instance() -> &'static mut Self {
-        use std::ops::DerefMut;
-
         static mut INSTANCE: SingletonCell<$target> = SingletonCell::new();
-        unsafe { INSTANCE.deref_mut() }
+
+        unsafe { std::ops::DerefMut::deref_mut(&mut INSTANCE) }
       }
     }
   };
