@@ -252,7 +252,11 @@ crate::impl_singleton!(FileSystemManager);
 impl Default for FileSystemManager {
   fn default() -> Self {
     Self {
-      file_systems: vec![Box::new(LocalFileSystem::new())],
+      #[rustfmt::skip]
+      file_systems: vec![
+        Box::new(LocalFileSystem::new()),
+        Box::new(MemoryFileSystem::new()),
+      ],
     }
   }
 }

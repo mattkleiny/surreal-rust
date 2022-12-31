@@ -1,6 +1,7 @@
 //! General utilities related to time.
 
 use std::fmt::{Display, Formatter};
+use std::iter::Sum;
 use std::ops::{Add, Div, Mul, Sub};
 use std::time::{Duration, Instant};
 
@@ -215,6 +216,7 @@ impl TimeSpan {
 impl Add for TimeSpan {
   type Output = TimeSpan;
 
+  #[inline]
   fn add(self, rhs: Self) -> Self::Output {
     TimeSpan::from_millis(self.milliseconds + rhs.milliseconds)
   }
@@ -223,6 +225,7 @@ impl Add for TimeSpan {
 impl Sub for TimeSpan {
   type Output = TimeSpan;
 
+  #[inline]
   fn sub(self, rhs: Self) -> Self::Output {
     TimeSpan::from_millis(self.milliseconds - rhs.milliseconds)
   }
@@ -231,6 +234,7 @@ impl Sub for TimeSpan {
 impl Mul<f32> for TimeSpan {
   type Output = TimeSpan;
 
+  #[inline]
   fn mul(self, rhs: f32) -> Self::Output {
     TimeSpan::from_millis(self.milliseconds * rhs)
   }
@@ -239,8 +243,16 @@ impl Mul<f32> for TimeSpan {
 impl Div<f32> for TimeSpan {
   type Output = TimeSpan;
 
+  #[inline]
   fn div(self, rhs: f32) -> Self::Output {
     TimeSpan::from_millis(self.milliseconds / rhs)
+  }
+}
+
+impl Sum for TimeSpan {
+  #[inline]
+  fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+    iter.fold(TimeSpan::from_millis(0.), |a, b| a + b)
   }
 }
 

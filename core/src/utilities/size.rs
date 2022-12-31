@@ -1,4 +1,6 @@
 use std::fmt::{Debug, Formatter};
+use std::iter::Sum;
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// A canonical representation of size, with simple conversions between units.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -43,6 +45,45 @@ impl Size {
   #[inline(always)]
   pub fn as_gigabytes(&self) -> f32 {
     self.as_megabytes() / 1024.
+  }
+}
+
+impl Add for Size {
+  type Output = Self;
+
+  #[inline]
+  fn add(self, rhs: Self) -> Self::Output {
+    Self::from_bytes(self.as_bytes() + rhs.as_bytes())
+  }
+}
+
+impl AddAssign for Size {
+  #[inline]
+  fn add_assign(&mut self, rhs: Self) {
+    *self = *self + rhs;
+  }
+}
+
+impl Sub for Size {
+  type Output = Self;
+
+  #[inline]
+  fn sub(self, rhs: Self) -> Self::Output {
+    Self::from_bytes(self.as_bytes() - rhs.as_bytes())
+  }
+}
+
+impl SubAssign for Size {
+  #[inline]
+  fn sub_assign(&mut self, rhs: Self) {
+    *self = *self - rhs;
+  }
+}
+
+impl Sum for Size {
+  #[inline]
+  fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+    iter.fold(Self::from_bytes(0), |a, b| a + b)
   }
 }
 

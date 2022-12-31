@@ -13,6 +13,8 @@ pub mod lwrp;
 
 pub type GraphicsId = surreal::utilities::RID;
 
+// TODO: add wrapper/mt/command queue helper
+
 /// An abstraction on top of the underlying graphics system.
 ///
 /// This is a high-level abstraction that makes use of 'opaque' [`GraphicsId`]
