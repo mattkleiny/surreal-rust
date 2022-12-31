@@ -48,6 +48,8 @@ pub enum ShaderUniform {
   Mat2(Mat2),
   Mat3(Mat3),
   Mat4(Mat4),
+  Color(Color),
+  Color32(Color32),
   Texture(Texture, u8, Option<TextureSampler>),
   TextureArray(SmallVec<[(Texture, u8); MAX_TEXTURE_UNITS]>, Option<TextureSampler>),
 }
@@ -115,6 +117,14 @@ impl ShaderProgram {
     program.load_glsl(code)?;
 
     Ok(program)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
+  pub fn from_path(graphics: &GraphicsServer, path: impl Into<VirtualPath>) -> crate::Result<Self> {
+    let path = path.into();
+    let code = path.read_all_text()?;
+
+    Ok(Self::from_glsl(graphics, &code)?)
   }
 
   /// Loads a [`ShaderProgram`] from the given discrete [`Shader`] pieces.
@@ -250,6 +260,8 @@ impl_uniform!(Vec4, Vec4);
 impl_uniform!(&Mat2, Mat2);
 impl_uniform!(&Mat3, Mat3);
 impl_uniform!(&Mat4, Mat4);
+impl_uniform!(Color, Color);
+impl_uniform!(Color32, Color32);
 
 /// Parses the given raw GLSL source and performs some basic pre-processing.
 ///

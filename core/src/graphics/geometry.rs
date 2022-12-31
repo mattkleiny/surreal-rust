@@ -157,12 +157,9 @@ impl GeometryBatch {
       return;
     };
 
-    // fetch the material out
-    let material = &mut self.material;
-    if material.is_none() {
+    if !self.material.is_some() {
       return;
     }
-    let material = material.as_mut().unwrap();
 
     // upload and draw the mesh
     self.mesh.with_buffers(|vertices, indices| {
@@ -170,9 +167,12 @@ impl GeometryBatch {
       indices.write_data(&self.indices);
     });
 
-    self
-      .mesh
-      .draw_sub(material, PrimitiveTopology::Triangles, self.vertices.len(), self.indices.len());
+    self.mesh.draw_sub(
+      self.material.as_mut().unwrap(),
+      PrimitiveTopology::Triangles,
+      self.vertices.len(),
+      self.indices.len(),
+    );
 
     self.vertices.clear();
     self.indices.clear();

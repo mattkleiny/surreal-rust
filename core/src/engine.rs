@@ -31,6 +31,7 @@ pub struct Configuration {
   pub samples: u16,
   pub update_continuously: bool,
   pub run_in_background: bool,
+  pub is_window_visible: bool,
   pub transparent_window: bool,
   pub show_fps_in_title: bool,
   pub log_level: LevelFilter,
@@ -46,6 +47,7 @@ impl Default for Configuration {
       samples: 0,
       update_continuously: true,
       run_in_background: false,
+      is_window_visible: true,
       transparent_window: false,
       show_fps_in_title: true,
       log_level: LevelFilter::Info,
@@ -150,7 +152,12 @@ impl Engine {
   /// Creates a new engine, bootstrapping all core systems and opening the main display.
   pub fn new(config: Configuration) -> Self {
     // prepare the main window and event loop
-    let event_loop = EventLoop::new();
+    let event_loop = if cfg!(windows) {
+      use winit::platform::windows::EventLoopExtWindows;
+      EventLoop::new_any_thread()
+    } else {
+      EventLoop::new()
+    };
 
     log::trace!("Building main window");
 
@@ -159,6 +166,7 @@ impl Engine {
       .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
       .with_resizable(true)
       .with_transparent(config.transparent_window)
+      .with_visible(config.is_window_visible)
       .with_window_icon(config.icon.map(|buffer| {
         let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico).expect("Failed to decode icon data");
         let rgba = image.as_rgba8().expect("Image was not in RGBA format");
@@ -170,12 +178,12 @@ impl Engine {
         Icon::from_rgba(pixels, width, height).expect("Failed to convert icon from raw image")
       }));
 
-    // glutin tries to be safe via the type system, what a mess.
+    // glutin tries to be safe via the type system
     let context = ContextBuilder::new()
       .with_vsync(config.vsync_enabled)
       .with_multisampling(config.samples)
       .build_windowed(window, &event_loop)
-      .unwrap();
+      .expect("Failed to build main window context");
 
     // unpick the window from glutin so we can manage it ourselves
     let (context, window) = unsafe { context.make_current().unwrap().split() };
@@ -270,10 +278,9 @@ impl Engine {
             self.frame_counter.tick(delta_time);
 
             if self.frame_timer.tick(delta_time) {
-              self
-                .window
-                .set_title(&format!("{} - FPS: {:.2}", self.config.title, self.frame_counter.fps()));
+              let new_title = format!("{} - FPS: {:.2}", self.config.title, self.frame_counter.fps());
 
+              self.window.set_title(&new_title);
               self.frame_timer.reset();
             }
           } else {

@@ -120,7 +120,7 @@ pub struct Material {
 }
 
 impl Material {
-  /// Constructs a new material for the given shader program.
+  /// Constructs a new material for the given [`ShaderProgram`].
   pub fn new(graphics: &GraphicsServer, shader: &ShaderProgram) -> Self {
     Self {
       graphics: graphics.clone(),

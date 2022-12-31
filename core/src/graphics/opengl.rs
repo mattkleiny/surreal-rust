@@ -447,6 +447,19 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         ShaderUniform::Mat4(value) => {
           gl::ProgramUniformMatrix4fv(shader, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
+        ShaderUniform::Color(color) => {
+          gl::ProgramUniform4f(shader, location as i32, color.r, color.g, color.b, color.a);
+        }
+        ShaderUniform::Color32(color) => {
+          gl::ProgramUniform4ui(
+            shader,
+            location as i32,
+            color.r as u32,
+            color.g as u32,
+            color.b as u32,
+            color.a as u32,
+          );
+        }
         ShaderUniform::Texture(texture, slot, sampler) => {
           gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
           gl::BindTexture(gl::TEXTURE_2D, texture.handle());

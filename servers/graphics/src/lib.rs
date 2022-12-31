@@ -28,6 +28,7 @@ struct GraphicsServer {
   backend: Box<dyn GraphicsServerBackend>,
 }
 
+// TODO: improve this?
 surreal::impl_singleton!(GraphicsServer);
 
 impl Default for GraphicsServer {

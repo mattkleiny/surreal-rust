@@ -23,14 +23,6 @@ fn main() {
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
-      // TODO: get this sort of thing working?
-      rsx! {
-        <Window title={"Hello, World"}>
-          <Label text={"Hello, egui!"} />
-          <Button text={"Click me!"} onClick={|| println!("Hello, World")} />
-        </Window>
-      }
-
       interface.run(engine, |egui| {
         egui::Window::new("Surreal ❤ egui").show(egui, |ui| {
           ui.heading("My egui Application");

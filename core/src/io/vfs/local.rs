@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use super::*;
 
-/// A virtual file system implementation that reads/writes the real local file system.
+/// A [`FileSystem`] for the local OS file system.
 pub struct LocalFileSystem {
   root: PathBuf,
 }
@@ -20,7 +20,7 @@ impl LocalFileSystem {
 
 impl FileSystem for LocalFileSystem {
   fn can_handle(&self, path: &VirtualPath) -> bool {
-    path.scheme == "local"
+    path.scheme == "local" || path.scheme == "file"
   }
 
   fn exists(&self, path: &VirtualPath) -> bool {

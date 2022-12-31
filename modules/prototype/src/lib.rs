@@ -18,6 +18,9 @@ pub const UNIFORM_PALETTE_WIDTH: UniformKey<u32> = UniformKey::new("u_paletteWid
 /// A uniform that contains the projection-view matrix for perspective adjustment.
 pub const UNIFORM_PROJECTION_VIEW: UniformKey<&Mat4> = UniformKey::new("u_projectionView");
 
+/// A uniform that contains the main texture for a shader.
+pub const UNIFORM_MAIN_TEXTURE: UniformKey<&Texture> = UniformKey::new("u_texture");
+
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BuiltInShader {

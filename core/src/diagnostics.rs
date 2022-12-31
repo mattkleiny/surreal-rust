@@ -22,8 +22,9 @@ impl ConsoleLoggerBuilder {
   pub fn install(self) {
     let logger = self.build();
 
+    // ignore this; it fails setting twice during integration tests
     log::set_max_level(LevelFilter::Trace);
-    log::set_logger(logger).expect("Failed to set logger");
+    let _ = log::set_logger(logger);
   }
 
   /// Builds a [`ConsoleLogger`] with the given configuration in static context.
