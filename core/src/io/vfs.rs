@@ -209,15 +209,6 @@ impl<T: std::io::Write + std::io::Seek> OutputStream for T {
   }
 }
 
-/// Represents a type that can be serialized/deserialized to/from a binary.
-pub trait BinarySerializable: Sized {
-  /// Reads a value from the given [`InputStream`].
-  fn read_from(stream: &mut dyn InputStream) -> crate::Result<Self>;
-
-  /// Writes this object to the given [`OutputStream`].
-  fn write_to(&self, stream: &mut dyn OutputStream) -> crate::Result<()>;
-}
-
 /// Represents a type capable of acting as a file system.
 ///
 /// File systems are resolved from the scheme used in [`VirtualPath`]s, and

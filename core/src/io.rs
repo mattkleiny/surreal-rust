@@ -13,6 +13,12 @@ mod vfs;
 /// Implementors of this trait will gain access to basic
 /// serialization formats for free via convenience methods.
 pub trait Serializable: Serialize + Sized {
+  /// Serializes the object to a byte array.
+  #[cfg(feature = "binary")]
+  fn to_binary(&self) -> crate::Result<Vec<u8>> {
+    Ok(binary::serialize(self)?)
+  }
+
   /// Serializes the type to a `json` string.
   #[cfg(feature = "json")]
   fn to_json(&self) -> crate::Result<String> {
@@ -41,6 +47,13 @@ pub trait Serializable: Serialize + Sized {
   #[cfg(feature = "xml")]
   fn to_xml(&self) -> crate::Result<String> {
     Ok(xml::to_string(self)?)
+  }
+
+  /// Serializes the type to a binary file.
+  fn save_to_binary(&self, path: &VirtualPath) -> crate::Result<()> {
+    let mut stream = path.open_output_stream()?;
+
+    Ok(binary::serialize_into(&mut stream, self)?)
   }
 
   /// Serializes the type to disk in `json` format.
@@ -98,6 +111,12 @@ impl<T> Serializable for T where T: Serialize {}
 /// Implementors of this trait will gain access to basic
 /// deserialization formats for free via convenience methods.
 pub trait Deserializable: for<'de> Deserialize<'de> + Sized {
+  /// Deserializes the object from a byte array.
+  #[cfg(feature = "binary")]
+  fn from_binary(data: &[u8]) -> crate::Result<Self> {
+    Ok(binary::deserialize(data)?)
+  }
+
   /// Deserializes from the given `json` string.
   #[cfg(feature = "json")]
   fn from_json(json: &str) -> crate::Result<Self> {
@@ -126,6 +145,14 @@ pub trait Deserializable: for<'de> Deserialize<'de> + Sized {
   #[cfg(feature = "xml")]
   fn from_xml(yaml: &str) -> crate::Result<Self> {
     Ok(xml::from_str(yaml)?)
+  }
+
+  /// Deserializes the type from a binary file.
+  #[cfg(feature = "binary")]
+  fn load_from_binary(path: &VirtualPath) -> crate::Result<Self> {
+    let mut stream = path.open_input_stream()?;
+
+    Ok(binary::deserialize_from(&mut stream)?)
   }
 
   /// Deserializes from the given `json` file.

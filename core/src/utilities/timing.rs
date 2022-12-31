@@ -146,7 +146,7 @@ impl FrameTimer {
 }
 
 /// A representation of a span of time.
-#[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, PartialOrd)]
 pub struct TimeSpan {
   milliseconds: f32,
 }

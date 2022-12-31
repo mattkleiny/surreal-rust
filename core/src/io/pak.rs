@@ -2,18 +2,17 @@
 
 use std::collections::HashMap;
 
-use crate::io::{BinarySerializable, InputStream, OutputStream};
 use crate::utilities::Size;
 
 /// Compression formats for packed file entries.
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum Compression {
   None,
 }
 
 /// Header data for a packed file.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct PakHeader {
   pub entries: Vec<PakEntry>,
 }
@@ -25,31 +24,8 @@ impl PakHeader {
   }
 }
 
-impl BinarySerializable for PakHeader {
-  fn read_from(stream: &mut dyn InputStream) -> crate::Result<Self> {
-    let entry_count = stream.read_u32()?;
-    let mut entries = Vec::with_capacity(entry_count as usize);
-
-    for _ in 0..entry_count {
-      entries.push(PakEntry::read_from(stream)?);
-    }
-
-    Ok(Self { entries })
-  }
-
-  fn write_to(&self, stream: &mut dyn OutputStream) -> crate::Result<()> {
-    stream.write_u32(self.entries.len() as u32)?;
-
-    for entry in &self.entries {
-      entry.write_to(stream)?;
-    }
-
-    Ok(())
-  }
-}
-
 /// A packed file entry.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct PakEntry {
   pub name: String,
   pub size: Size,
@@ -58,48 +34,9 @@ pub struct PakEntry {
   pub compression: Compression,
 }
 
-impl BinarySerializable for PakEntry {
-  fn read_from(stream: &mut dyn InputStream) -> crate::Result<Self> {
-    let name = stream.read_string()?;
-    let size = Size::from(stream.read_u32()?);
-    let offset = Size::from(stream.read_u32()?);
-    let metadata_count = stream.read_u32()?;
-    let mut metadata = HashMap::with_capacity(metadata_count as usize);
-
-    for _ in 0..metadata_count {
-      let key = stream.read_string()?;
-      let value = stream.read_string()?;
-
-      metadata.insert(key, value);
-    }
-
-    Ok(Self {
-      name,
-      size,
-      offset,
-      metadata,
-      compression: Compression::None,
-    })
-  }
-
-  fn write_to(&self, stream: &mut dyn OutputStream) -> crate::Result<()> {
-    stream.write_string(&self.name)?;
-    stream.write_u32(self.size.as_bytes() as u32)?;
-    stream.write_u32(self.offset.as_bytes() as u32)?;
-    stream.write_u32(self.metadata.len() as u32)?;
-
-    for (key, value) in &self.metadata {
-      stream.write_string(key)?;
-      stream.write_string(value)?;
-    }
-
-    Ok(())
-  }
-}
-
 #[cfg(test)]
 mod tests {
-  use crate::io::VirtualPath;
+  use crate::io::{Deserializable, Serializable};
 
   use super::*;
 
@@ -124,15 +61,8 @@ mod tests {
       ],
     };
 
-    let path = VirtualPath::parse("memory://test.pak");
-
-    // write to file
-    let mut stream = path.open_output_stream().unwrap();
-    header.write_to(&mut stream).unwrap();
-
-    // read from file
-    let mut stream = path.open_input_stream().unwrap();
-    let header = PakHeader::read_from(&mut stream).unwrap();
+    let buffer = header.to_binary().unwrap();
+    let header = PakHeader::from_binary(&buffer).unwrap();
 
     println!("{:#?}", header);
   }

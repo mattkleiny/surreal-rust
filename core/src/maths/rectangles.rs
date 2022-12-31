@@ -1,7 +1,7 @@
 use super::*;
 
 /// A bounded rectangle in 2 dimensions formed from the two corner points.
-#[derive(Default, Copy, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Default, Copy, Clone, Debug, PartialEq)]
 pub struct Rectangle {
   pub min: Vec2,
   pub max: Vec2,
