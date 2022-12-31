@@ -1,4 +1,4 @@
-//! The local file system implementation.
+//! The local [`FileSystem`] implementation.
 
 use std::fs::OpenOptions;
 use std::path::{Path, PathBuf};

@@ -11,6 +11,7 @@
 use std::collections::HashSet;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use surreal::io::VirtualPath;
 
 use surreal::maths::FromRandom;
 
@@ -120,11 +121,14 @@ impl AssetDatabase {
 ///
 /// The output of the importer is cached in the asset database, and is used to
 /// determine whether an asset needs to be re-imported.
-pub trait AssetImporter {}
+pub trait AssetImporter {
+  /// Determines if the importer can import the given asset.
+  fn can_handle(&self, path: &VirtualPath) -> bool;
+}
 
 /// A bundle of assets.
 ///
-/// Bundles are responsible for building assets into a form that can be consumed
+/// Bundles are responsible for composing assets into a form that can be consumed
 /// by the game at runtime. Bundles are used by the [`AssetServer`] to pack assets
 /// into central files for distribution.
 pub trait AssetBundle {}

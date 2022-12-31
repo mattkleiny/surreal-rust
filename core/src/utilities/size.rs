@@ -5,42 +5,44 @@ use std::fmt::{Debug, Formatter};
 pub struct Size(usize);
 
 impl Size {
+  #[inline(always)]
   pub const fn from_bytes(amount: usize) -> Self {
     Self(amount)
   }
 
+  #[inline(always)]
   pub fn from_kilobytes(amount: f32) -> Self {
     Self::from_bytes((amount * 1024.) as usize)
   }
 
+  #[inline(always)]
   pub fn from_megabytes(amount: f32) -> Self {
     Self::from_kilobytes(amount * 1024.)
   }
 
+  #[inline(always)]
   pub fn from_gigabytes(amount: f32) -> Self {
     Self::from_megabytes(amount * 1024.)
   }
 
+  #[inline(always)]
   pub fn as_bytes(&self) -> usize {
     self.0
   }
 
+  #[inline(always)]
   pub fn as_kilobytes(&self) -> f32 {
     self.as_bytes() as f32 / 1024.
   }
 
+  #[inline(always)]
   pub fn as_megabytes(&self) -> f32 {
     self.as_kilobytes() / 1024.
   }
 
+  #[inline(always)]
   pub fn as_gigabytes(&self) -> f32 {
     self.as_megabytes() / 1024.
-  }
-}
-
-impl From<usize> for Size {
-  fn from(amount: usize) -> Self {
-    Self::from_bytes(amount)
   }
 }
 
@@ -54,6 +56,24 @@ impl Debug for Size {
     }
   }
 }
+
+macro_rules! impl_from {
+  ($type:ty) => {
+    impl From<$type> for Size {
+      #[inline(always)]
+      fn from(bytes: $type) -> Self {
+        Self::from_bytes(bytes as usize)
+      }
+    }
+  };
+}
+
+impl_from!(u8);
+impl_from!(u16);
+impl_from!(u32);
+impl_from!(u64);
+impl_from!(u128);
+impl_from!(usize);
 
 #[cfg(test)]
 mod tests {
