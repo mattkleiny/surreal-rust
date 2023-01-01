@@ -8,3 +8,4 @@ surreal = { package = "surreal-core", path = "../core" }
 serde = { version = "1.0.152", features = ["derive"] }
 egui = "0.20.1"
 base64 = "0.20.0"
+fxhash = "0.2.1"

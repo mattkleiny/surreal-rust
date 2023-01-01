@@ -151,13 +151,20 @@ impl Engine {
 
   /// Creates a new engine, bootstrapping all core systems and opening the main display.
   pub fn new(config: Configuration) -> Self {
-    // prepare the main window and event loop
-    let event_loop = if cfg!(windows) {
+    #[cfg(target_os = "windows")]
+    fn build_event_loop() -> EventLoop<()> {
       use winit::platform::windows::EventLoopExtWindows;
       EventLoop::new_any_thread()
-    } else {
-      EventLoop::new()
-    };
+    }
+
+    #[cfg(target_os = "linux")]
+    fn build_event_loop() -> EventLoop<()> {
+      use winit::platform::unix::EventLoopExtUnix;
+      EventLoop::new_any_thread()
+    }
+
+    // prepare the main window and event loop
+    let event_loop = build_event_loop();
 
     log::trace!("Building main window");
 

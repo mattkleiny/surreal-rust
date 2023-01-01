@@ -9,12 +9,12 @@
 //! artifacts and [`AssetBundle`]s for consumption by the game at runtime.
 
 use std::collections::HashSet;
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
+use std::hash::Hasher;
 
-use serde::de::Error;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
-use surreal::io::VirtualPath;
+use surreal::io::{InputStream, VirtualPath};
 use surreal::maths::FromRandom;
 
 /// A unique identifier for an asset.
@@ -54,64 +54,15 @@ pub trait AssetServer {
 /// assets in the project, and for managing the import of assets from the file system.
 ///
 /// See [`AssetServer`], [`AssetImporter`] and [`AssetBundle`] for more details.
-pub struct AssetDatabase;
+#[derive(Default)]
+pub struct AssetDatabase {}
 
 impl AssetDatabase {
-  pub fn create_folder(_path: &str) -> surreal::Result<()> {
-    todo!()
-  }
+  /// Creates an [`AssetHash`] for the asset at the given [`VirtualPath`].
+  pub fn hash(&self, path: impl Into<VirtualPath>) -> surreal::Result<AssetHash> {
+    let mut stream = path.into().open_input_stream()?;
 
-  pub fn create_asset(_path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn import_asset(_path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn load_all_assets(_path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn load_first_asset(_path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn load_main_asset(_path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn copy_asset(_source: &str, _destination: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn rename_asset(_source: &str, _destination: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn delete_asset(_path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn delete_assets(_paths: &[&str]) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn refresh_all(&mut self) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn register_importer(_importer: Box<dyn AssetImporter>) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn unregister_importer(_importer: Box<dyn AssetImporter>) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn build_asset_bundle<B: AssetBundle + Default>(_path: &str, _manifest: &AssetManifest) -> surreal::Result<B> {
-    // TODO: implement me
-    Ok(B::default())
+    Ok(AssetHash::from_stream(&mut stream))
   }
 }
 
@@ -141,47 +92,26 @@ pub trait AssetBundle {}
 /// imported. If the hash of an asset has changed, the asset will be re-imported.
 ///
 /// The hash is calculated by hashing the contents of the asset file.
-#[derive(Default, Copy, Clone, Eq, PartialEq, Hash)]
-pub struct AssetHash([u8; 32]);
+#[derive(Serialize, Deserialize, Default, Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub struct AssetHash(u64);
 
-impl Debug for AssetHash {
-  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(formatter, "AssetHash({})", base64::encode(&self.0))
-  }
-}
+impl AssetHash {
+  /// Creates a new [`AssetHash`] from a given [`InputStream`].
+  pub fn from_stream(stream: &mut impl InputStream) -> Self {
+    let mut buffer = [0; 1024];
+    let mut hasher = fxhash::FxHasher::default();
 
-impl Serialize for AssetHash {
-  fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-    serializer.serialize_str(base64::encode(&self.0).as_str())
-  }
-}
+    loop {
+      let read = stream.read(&mut buffer).unwrap();
 
-impl<'de> Deserialize<'de> for AssetHash {
-  fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-    /// A helper struct for deserializing an asset hash.
-    struct Visitor;
-
-    impl<'de> serde::de::Visitor<'de> for Visitor {
-      type Value = AssetHash;
-
-      fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        formatter.write_str("a base64-encoded string")
+      if read == 0 {
+        break;
       }
 
-      fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-      where
-        E: Error,
-      {
-        let bytes = base64::decode(value).map_err(Error::custom)?;
-        let mut hash = [0; 32];
-
-        hash.copy_from_slice(&bytes);
-
-        Ok(AssetHash(hash))
-      }
+      hasher.write(&buffer[..read]);
     }
 
-    deserializer.deserialize_str(Visitor)
+    Self(hasher.finish())
   }
 }
 
@@ -259,26 +189,15 @@ impl AssetManifestBuilder {
 /// for distribution. The format is designed to be read-only, and is not intended
 /// to be modified at runtime.
 #[derive(Default)]
-pub struct PAK;
+pub struct PakBundle;
 
-impl AssetBundle for PAK {}
+impl AssetBundle for PakBundle {}
 
 #[cfg(test)]
 mod tests {
   use surreal::io::{Deserializable, Serializable};
 
   use super::*;
-
-  #[test]
-  fn asset_database_should_build_a_simple_asset_bundle() {
-    let manifest = AssetManifestBuilder::new()
-      .add_asset("assets://textures/floor.png")
-      .add_asset("assets://textures/wall.png")
-      .add_asset("assets://sounds/music.ogg")
-      .build();
-
-    AssetDatabase::build_asset_bundle::<PAK>("./test.yaml", &manifest).unwrap();
-  }
 
   #[test]
   fn asset_manifest_should_serialize_to_yaml() {
