@@ -5,6 +5,7 @@ use std::rc::Rc;
 
 use crate::assets::{Asset, AssetContext, AssetLoader, AssetManager};
 use crate::collections::Grid;
+use crate::diagnostics::profiling;
 use crate::maths::{uvec2, Rectangle, UVec2};
 
 use super::*;

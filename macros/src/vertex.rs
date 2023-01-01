@@ -30,13 +30,13 @@ pub fn impl_vertex_trait(input: TokenStream) -> TokenStream {
     _ => panic!("Only structs are supported"),
   };
 
-  quote! {
+  (quote! {
     impl Vertex for #name {
       const DESCRIPTORS: &'static [VertexDescriptor] = &[
         #(#descriptors),*
       ];
     }
-  }
+  })
   .into()
 }
 

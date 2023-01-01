@@ -6,6 +6,7 @@
 use std::collections::HashMap;
 
 use crate::assets::{Asset, AssetContext, AssetLoader};
+use crate::diagnostics::profiling;
 
 use super::*;
 

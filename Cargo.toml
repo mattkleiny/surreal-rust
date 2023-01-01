@@ -18,7 +18,6 @@ members = [
 
 [features]
 default = ["audio", "graphics", "input", "physics"]
-profiling = ["core/profiling"]
 hdrp = ["graphics/hdrp"]
 lwrp = ["graphics/lwrp"]
 

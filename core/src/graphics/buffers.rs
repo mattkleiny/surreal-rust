@@ -3,6 +3,7 @@
 //! Buffers typically contain vertex or index data used in mesh rendering, however
 //! they can also be used as an in intermediate store for compute shaders.
 
+use crate::diagnostics::profiling;
 use std::marker::PhantomData;
 use std::{cell::RefCell, rc::Rc};
 

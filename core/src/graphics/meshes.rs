@@ -3,6 +3,7 @@
 //! Meshes abstract over vertex and index data on the GPU as well, and
 //! provide utilities for constructing data from pieces.
 
+use crate::diagnostics::profiling;
 use std::cell::RefCell;
 use std::rc::Rc;
 

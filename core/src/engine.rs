@@ -13,8 +13,9 @@ use log::LevelFilter;
 use crate::{
   assets::AssetManager,
   audio::{AudioServer, OpenALAudioBackend},
-  diagnostics::ConsoleLoggerBuilder,
+  diagnostics::{profiling, ConsoleLoggerBuilder},
   graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend},
+  input,
   input::InputBackend,
   maths::{uvec2, vec2},
   utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
@@ -105,7 +106,7 @@ impl Engine {
 
     // set-up diagnostics
     ConsoleLoggerBuilder::new().with_level(configuration.log_level).install();
-    profiling::register_thread!("Main Thread");
+    profiling::enable_profiling();
 
     // set-up core engine
     log::trace!("Starting engine");
@@ -247,7 +248,7 @@ impl Engine {
         *control_flow = ControlFlow::Exit;
       }
 
-      profiling::finish_frame!();
+      profiling::finish_frame();
     });
   }
 
@@ -385,6 +386,15 @@ impl crate::ui::UserInterfaceHost for Engine {
 
   fn raw_input(&self) -> &egui::RawInput {
     &self.input.raw_input
+  }
+
+  // TODO: remove this?
+  fn is_key_pressed(&self, key: input::Key) -> bool {
+    if let Some(keyboard) = &self.input.keyboard {
+      keyboard.is_key_pressed(key)
+    } else {
+      false
+    }
   }
 
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool) {

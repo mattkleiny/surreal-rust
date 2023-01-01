@@ -1,7 +1,8 @@
 //! Diagnostic utilities for the engine.
 
 pub use log::{debug, error, info, trace, warn, Level, LevelFilter};
-pub use profiling;
+
+pub mod profiling;
 
 /// A builder pattern for [`ConsoleLogger`].
 pub struct ConsoleLoggerBuilder {

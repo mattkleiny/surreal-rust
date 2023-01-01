@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ffi::c_void;
 
+use crate::diagnostics::profiling;
 use anyhow::anyhow;
 use glutin::{ContextWrapper, PossiblyCurrent};
 

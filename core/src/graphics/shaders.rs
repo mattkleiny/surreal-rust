@@ -11,13 +11,14 @@ use std::rc::Rc;
 
 use smallvec::SmallVec;
 
+pub use compiler::*;
+
 use crate::assets::{Asset, AssetContext, AssetLoader};
+use crate::diagnostics::profiling;
+use crate::io::VirtualPath;
 use crate::maths::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 use super::*;
-
-use crate::io::VirtualPath;
-pub use compiler::*;
 
 mod compiler;
 

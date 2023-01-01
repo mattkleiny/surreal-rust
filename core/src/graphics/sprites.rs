@@ -2,6 +2,7 @@
 //!
 //! Sprites are very common in projects, so this is a dedicated batch to support.
 
+use crate::diagnostics::profiling;
 use crate::maths::{vec2, Mat2, Vec2};
 
 use super::*;

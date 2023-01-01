@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 
+use crate::diagnostics::profiling;
 pub use egui;
 
 use crate::graphics::*;
@@ -17,6 +18,7 @@ pub trait UserInterfaceHost {
   // ui input
   fn pixels_per_point(&self) -> f32;
   fn raw_input(&self) -> &egui::RawInput;
+  fn is_key_pressed(&self, key: crate::input::Key) -> bool;
 
   // control and platform output
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool);
@@ -32,6 +34,7 @@ pub struct UserInterface {
   material: Material,
   mesh: Mesh<Vertex2>,
   textures: HashMap<egui::TextureId, Texture>,
+  is_profiler_open: bool,
 }
 
 impl UserInterface {
@@ -53,6 +56,7 @@ impl UserInterface {
       material,
       mesh: Mesh::new(graphics, BufferUsage::Dynamic),
       textures: HashMap::new(),
+      is_profiler_open: false,
     }
   }
 
@@ -86,22 +90,39 @@ impl UserInterface {
     });
   }
 
+  /// Toggles the profiler window open/closed.
+  pub fn toggle_profiler(&mut self) {
+    self.is_profiler_open = !self.is_profiler_open;
+  }
+
   /// Propagates input into the user interface and runs the given body against the UI.
   ///
   /// Note: this is a fairly expensive operation and should ideally be done once per frame,
   ///       with as much UI work as possible within a single call.
   #[profiling::function]
-  pub fn run(&mut self, provider: &mut dyn UserInterfaceHost, body: impl FnMut(&egui::Context)) {
+  pub fn run(&mut self, provider: &mut dyn UserInterfaceHost, mut body: impl FnMut(&egui::Context)) {
     // transfer pixels-per-point to the UI
     let pixels_per_point = provider.pixels_per_point();
     self.context.set_pixels_per_point(pixels_per_point);
 
+    // toggle profiler automatically
+    if provider.is_key_pressed(crate::input::Key::F7) {
+      self.toggle_profiler();
+    }
+
     // run update, passing input and collecting output
     let raw_input = provider.raw_input().clone();
-    let full_output = self.context.run(raw_input, body);
-    let textures_delta = full_output.textures_delta;
+    let full_output = self.context.run(raw_input, |context| {
+      body(context);
+
+      if self.is_profiler_open {
+        self.is_profiler_open = puffin_egui::profiler_window(context);
+      }
+    });
 
     // apply textures delta
+    let textures_delta = full_output.textures_delta;
+
     for (id, image_delta) in textures_delta.set {
       // convert image representations to our color format and collect width and height
       let (pixels, [width, height]) = match image_delta.image {

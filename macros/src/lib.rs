@@ -3,6 +3,7 @@
 use proc_macro::TokenStream;
 
 mod object;
+mod profiling;
 mod rsx;
 mod vertex;
 
@@ -22,4 +23,10 @@ pub fn rsx(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(Vertex, attributes(vertex))]
 pub fn derive_vertex(input: TokenStream) -> TokenStream {
   vertex::impl_vertex_trait(input)
+}
+
+/// Marks a function for profiling with the profiling module
+#[proc_macro_attribute]
+pub fn profile(_attr: TokenStream, item: TokenStream) -> TokenStream {
+  profiling::impl_profiling(item)
 }
