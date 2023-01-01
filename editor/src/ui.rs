@@ -1,4 +1,4 @@
-//! The user interface for the Surreal editor
+//! The user interface for the Surreal editor.
 
 /// The main window for the editor.
 #[must_use]

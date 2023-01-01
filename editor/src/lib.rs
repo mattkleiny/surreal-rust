@@ -8,10 +8,25 @@
 
 pub use assets::*;
 pub use reflection::*;
-pub use resources::*;
+pub use serialization::*;
 pub use ui::*;
 
 mod assets;
 mod reflection;
-mod resources;
+mod serialization;
 mod ui;
+
+/// A unique identifier for a [`Resource`] in the application.
+///
+/// IDs are unique across a single instance of an application, but not
+/// necessarily across all applications.
+pub type ResourceId = surreal::maths::Guid;
+
+/// Represents a kind of resource in the application.
+///
+/// Resources are naturally serializable and can be persisted and loaded
+/// from the virtual file system.
+pub trait Resource: Sized + serde::Serialize + for<'de> serde::Deserialize<'de> {
+  fn load(path: impl Into<surreal::io::VirtualPath>) -> surreal::Result<Self>;
+  fn save(&self, path: impl Into<surreal::io::VirtualPath>) -> surreal::Result<()>;
+}

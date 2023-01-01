@@ -8,13 +8,14 @@
 //! The output of the asset database is put through a build pipeline to produce
 //! artifacts and [`AssetBundle`]s for consumption by the game at runtime.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::hash::Hasher;
 
 use serde::{Deserialize, Serialize};
 
-use surreal::io::{FileWatcher, InputStream, VirtualPath};
+use crate::Resource;
+use surreal::io::{FileWatcher, InputStream, Serializable, VirtualPath};
 use surreal::maths::FromRandom;
 
 /// A unique identifier for an asset.
@@ -56,15 +57,31 @@ pub trait AssetServer {
 /// See [`AssetServer`], [`AssetImporter`] and [`AssetBundle`] for more details.
 #[derive(Default)]
 pub struct AssetDatabase {
+  assets: HashMap<String, AssetMetadata>,
   _watcher: Option<Box<dyn FileWatcher>>,
 }
 
 impl AssetDatabase {
-  /// Creates an [`AssetHash`] for the asset at the given [`VirtualPath`].
-  pub fn hash(&self, path: impl Into<VirtualPath>) -> surreal::Result<AssetHash> {
-    let mut stream = path.into().open_input_stream()?;
+  /// Builds an [`AssetDatabase`] from an existing set of assets.
+  pub fn from_assets(assets: impl Iterator<Item = (String, AssetMetadata)>) -> Self {
+    Self {
+      assets: assets.collect(),
+      _watcher: None,
+    }
+  }
 
-    Ok(AssetHash::from_stream(&mut stream))
+  /// Creates an [`AssetHash`] for the asset at the given [`VirtualPath`] and remembers it.
+  pub fn rehash(&mut self, path: impl Into<VirtualPath>) -> surreal::Result<AssetHash> {
+    let path = path.into();
+
+    let mut stream = path.open_input_stream()?;
+    let hash = AssetHash::from_stream(&mut stream);
+
+    self.assets.entry(path.to_string()).and_modify(|entry| {
+      entry.hash = hash;
+    });
+
+    Ok(hash)
   }
 }
 
@@ -98,6 +115,20 @@ pub trait AssetBundle {}
 pub struct AssetHash(u64);
 
 impl AssetHash {
+  /// Creates an [`AssetHash`] from an existing [`Resource`].
+  pub fn from_resource(resource: &impl Resource) -> surreal::Result<Self> {
+    Ok(Self::from_bytes(&resource.to_binary()?))
+  }
+
+  /// Creates an [`AssetHash`] from the given raw slice of bytes.
+  pub fn from_bytes(bytes: &[u8]) -> Self {
+    let mut hasher = fxhash::FxHasher::default();
+
+    hasher.write(bytes);
+
+    Self(hasher.finish())
+  }
+
   /// Creates a new [`AssetHash`] from a given [`InputStream`].
   pub fn from_stream(stream: &mut impl InputStream) -> Self {
     let mut buffer = [0; 1024];
@@ -117,6 +148,20 @@ impl AssetHash {
   }
 }
 
+impl From<u64> for AssetHash {
+  #[inline(always)]
+  fn from(value: u64) -> Self {
+    Self(value)
+  }
+}
+
+impl Into<u64> for AssetHash {
+  #[inline(always)]
+  fn into(self) -> u64 {
+    self.0
+  }
+}
+
 /// Serializable metadata for an asset.
 ///
 /// This is used to store metadata about an asset in the asset database on disk.
@@ -125,13 +170,8 @@ impl AssetHash {
 #[derive(Serialize, Deserialize)]
 pub struct AssetMetadata {
   pub id: AssetId,
-  pub options: AssetImportOptions,
   pub hash: AssetHash,
 }
-
-/// Options used to import an asset from disk.
-#[derive(Serialize, Deserialize)]
-pub struct AssetImportOptions {}
 
 /// A manifest of assets.
 ///

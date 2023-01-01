@@ -10,6 +10,8 @@
 #[macro_use]
 extern crate serde;
 
+pub use anyhow::{anyhow, bail, Error, Result};
+
 pub use macros;
 
 pub mod assets;
@@ -24,6 +26,3 @@ pub mod maths;
 pub mod scene;
 pub mod ui;
 pub mod utilities;
-
-/// Represents a result type in any part of the engine.
-pub type Result<T> = anyhow::Result<T>;
