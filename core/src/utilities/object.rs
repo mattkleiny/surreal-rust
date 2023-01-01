@@ -2,7 +2,7 @@ use std::any::Any;
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use super::impl_singleton;
+use crate::impl_singleton;
 
 /// Represents an 'Object'.
 ///

@@ -74,7 +74,7 @@ impl AssetDatabase {
     let path = path.into();
 
     let mut stream = path.open_input_stream()?;
-    let hash = AssetHash::from_stream(&mut stream);
+    let hash = AssetHash::from_stream(&mut stream)?;
 
     self.metadata.entry(path.to_string()).and_modify(|entry| {
       entry.hash = hash;
@@ -129,12 +129,12 @@ impl AssetHash {
   }
 
   /// Creates a new [`AssetHash`] from a given [`InputStream`].
-  pub fn from_stream(stream: &mut impl InputStream) -> Self {
+  pub fn from_stream(stream: &mut impl InputStream) -> surreal::Result<Self> {
     let mut buffer = [0; 1024];
     let mut hasher = fxhash::FxHasher::default();
 
     loop {
-      let read = stream.read(&mut buffer).unwrap();
+      let read = stream.read(&mut buffer)?;
 
       if read == 0 {
         break;
@@ -143,7 +143,7 @@ impl AssetHash {
       hasher.write(&buffer[..read]);
     }
 
-    Self(hasher.finish())
+    Ok(Self(hasher.finish()))
   }
 }
 

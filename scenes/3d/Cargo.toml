@@ -1,5 +1,5 @@
 [package]
-name = "surreal-scene-3d"
+name = "surreal-scene3d"
 version = "0.1.0"
 edition = "2021"
 

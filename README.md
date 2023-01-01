@@ -2,35 +2,30 @@
 
 # Surreal ![Surreal Icon](./surreal.ico)
 
-A sweet little game engine built with Rust.
+A game engine built with Rust.
 
 This project is in active development.
 
-## Features
-
-* Minimal third-party dependencies.
-* Cross-platform (Windows/Mac/Linux) OpenGL abstractions.
-* Cross-platform input (Mouse, Keyboard).
-* A simple and generic built-in math library.
-* A pluggable virtual file system for various asset providers.
-* `egui` integration for immediate-mode UI rendering.
-* `log` and `profiling` integration for profiling and logging.
-* Asset management with managed ownership and hot-reloading.
-* 2d sprite batch rendering with variable shader and vertex formats.
-
 ## Design goals
 
-### Modern and performant 2d rendering
+### A usable editor
+
+Building games with code alone is fine for small projects and jams, but not
+ideal for something longer-term.
+
+One of the core goals of the project is to produce an editor in the same style
+as Unity or Unreal to allow building games ergonomically.
+
+More information on the editor can be found in [the editor crate](./editor)
+
+### Modern and approachable rendering
 
 Some example features:
-* Easy to use OpenGL bindings with support for advanced shader programs.
+* Easy to use graphics API bindings with support for advanced shader programs.
 * Real-time lighting and shadowing.
 * Smooth interpolated pixel snapping
 * SDF generation for advanced screen space effects (such as ray marching)
-* Global illumination based on 2d voxel projection planes
-
-Whilst 3d rendering is not a goal of the project, it's of course possible with some tweaks to the core pipelines.
-The intent however is to not introduce rendering complexity by implying structure about lighting, shadowing, model management, bone management, etc.
+* Global illumination based on voxel projection planes
 
 ### Pluggable and flexible scripting
 

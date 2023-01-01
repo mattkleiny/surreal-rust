@@ -1446,22 +1446,43 @@ checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 name = "surreal"
 version = "0.1.0"
 dependencies = [
+ "surreal-ai",
+ "surreal-animation",
+ "surreal-audio",
  "surreal-core",
+ "surreal-csg",
  "surreal-editor",
+ "surreal-graphics",
+ "surreal-input",
  "surreal-macros",
- "surreal-modules-ai",
- "surreal-modules-animation",
- "surreal-modules-csg",
- "surreal-modules-prototype",
- "surreal-modules-scripting",
- "surreal-modules-streaming",
- "surreal-modules-voxels",
- "surreal-scene-2d",
- "surreal-scene-3d",
- "surreal-server-audio",
- "surreal-server-graphics",
- "surreal-server-input",
- "surreal-server-physics",
+ "surreal-physics",
+ "surreal-prototype",
+ "surreal-scene2d",
+ "surreal-scene3d",
+ "surreal-scripting",
+ "surreal-streaming",
+ "surreal-voxels",
+]
+
+[[package]]
+name = "surreal-ai"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-animation"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-audio"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
 ]
 
 [[package]]
@@ -1497,6 +1518,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "surreal-csg"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
 name = "surreal-editor"
 version = "0.1.0"
 dependencies = [
@@ -1505,6 +1533,21 @@ dependencies = [
  "fxhash",
  "notify",
  "serde",
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-graphics"
+version = "0.1.0"
+dependencies = [
+ "gl",
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-input"
+version = "0.1.0"
+dependencies = [
  "surreal-core",
 ]
 
@@ -1518,35 +1561,35 @@ dependencies = [
 ]
 
 [[package]]
-name = "surreal-modules-ai"
+name = "surreal-physics"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
 ]
 
 [[package]]
-name = "surreal-modules-animation"
+name = "surreal-prototype"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
 ]
 
 [[package]]
-name = "surreal-modules-csg"
+name = "surreal-scene2d"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
 ]
 
 [[package]]
-name = "surreal-modules-prototype"
+name = "surreal-scene3d"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
 ]
 
 [[package]]
-name = "surreal-modules-scripting"
+name = "surreal-scripting"
 version = "0.1.0"
 dependencies = [
  "pest",
@@ -1555,57 +1598,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "surreal-modules-streaming"
+name = "surreal-streaming"
 version = "0.1.0"
 dependencies = [
  "surreal-core",
 ]
 
 [[package]]
-name = "surreal-modules-voxels"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-scene-2d"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-scene-3d"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-server-audio"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-server-graphics"
-version = "0.1.0"
-dependencies = [
- "gl",
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-server-input"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-server-physics"
+name = "surreal-voxels"
 version = "0.1.0"
 dependencies = [
  "surreal-core",

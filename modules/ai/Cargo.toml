@@ -1,5 +1,5 @@
 [package]
-name = "surreal-modules-ai"
+name = "surreal-ai"
 version = "0.1.0"
 edition = "2021"
 
