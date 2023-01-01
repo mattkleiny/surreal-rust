@@ -66,6 +66,8 @@ impl FileSystem for MemoryFileSystem {
     let storage = unsafe { &mut *self.storage.get() };
     let file = storage.files.entry(path.location.to_string()).or_default();
 
+    file.data.clear(); // truncate existing file
+
     Ok(Box::new(std::io::Cursor::new(&mut file.data)))
   }
 }

@@ -14,9 +14,12 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
+
+    env:
+      HEADLESS_ENVIRONMENT: true
 
     steps:
       - name: Checkout

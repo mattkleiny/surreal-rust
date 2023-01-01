@@ -1,5 +1,3 @@
-#![cfg(target_os = "windows")]
-
 use surreal_core::graphics::{BlendFactor, BlendState, Color32, Material, Mesh, PrimitiveTopology, ShaderProgram, Texture, Vertex2};
 use surreal_core::maths::{vec2, Mat4, Tessellation};
 
