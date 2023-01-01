@@ -55,6 +55,10 @@ impl FileSystem for LocalFileSystem {
 
     Ok(Box::new(std::io::BufWriter::new(file)))
   }
+
+  fn watch(&self, _path: &VirtualPath) -> crate::Result<Box<dyn FileWatcher>> {
+    todo!()
+  }
 }
 
 /// Converts a [`VirtualPath`] into a [`Path`].

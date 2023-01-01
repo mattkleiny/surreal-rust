@@ -70,6 +70,10 @@ impl FileSystem for MemoryFileSystem {
 
     Ok(Box::new(std::io::Cursor::new(&mut file.data)))
   }
+
+  fn watch(&self, _path: &VirtualPath) -> crate::Result<Box<dyn FileWatcher>> {
+    todo!()
+  }
 }
 
 #[cfg(test)]

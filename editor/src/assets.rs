@@ -14,7 +14,7 @@ use std::hash::Hasher;
 
 use serde::{Deserialize, Serialize};
 
-use surreal::io::{InputStream, VirtualPath};
+use surreal::io::{FileWatcher, InputStream, VirtualPath};
 use surreal::maths::FromRandom;
 
 /// A unique identifier for an asset.
@@ -55,7 +55,9 @@ pub trait AssetServer {
 ///
 /// See [`AssetServer`], [`AssetImporter`] and [`AssetBundle`] for more details.
 #[derive(Default)]
-pub struct AssetDatabase {}
+pub struct AssetDatabase {
+  _watcher: Option<Box<dyn FileWatcher>>,
+}
 
 impl AssetDatabase {
   /// Creates an [`AssetHash`] for the asset at the given [`VirtualPath`].

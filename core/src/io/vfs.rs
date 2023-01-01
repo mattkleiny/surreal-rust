@@ -226,7 +226,18 @@ pub trait FileSystem {
   // read and write
   fn open_read(&self, path: &VirtualPath) -> crate::Result<Box<dyn InputStream>>;
   fn open_write(&self, path: &VirtualPath) -> crate::Result<Box<dyn OutputStream>>;
+
+  /// Watches for changes to the given [`VirtualPath`].
+  ///
+  /// Not all file systems implement this, and will return an error if they do not.
+  fn watch(&self, path: &VirtualPath) -> crate::Result<Box<dyn FileWatcher>>;
 }
+
+/// A watcher for actions in a [`FileSystem`].
+///
+/// This is used to watch for changes in a [`FileSystem`], and is used to
+/// implement [`FileSystem::watch`].
+pub trait FileWatcher {}
 
 /// Static central manager for [`FileSystem`] implementations.
 ///
