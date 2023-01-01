@@ -23,6 +23,18 @@ pub fn impl_object_trait(input: TokenStream) -> TokenStream {
       fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
       }
+
+      #[inline(always)]
+      fn get_type(&self) -> surreal::utilities::Type {
+        surreal::utilities::Type::from(stringify!(#name))
+      }
+    }
+
+    impl surreal::utilities::TypeOf for #name {
+      #[inline(always)]
+      fn type_of() -> surreal::utilities::Type {
+        surreal::utilities::Type::from(stringify!(#name))
+      }
     }
   })
   .into()

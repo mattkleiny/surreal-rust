@@ -8,15 +8,16 @@
 //! The output of the asset database is put through a build pipeline to produce
 //! artifacts and [`AssetBundle`]s for consumption by the game at runtime.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hasher;
 
 use serde::{Deserialize, Serialize};
 
-use crate::Resource;
-use surreal::io::{FileWatcher, InputStream, Serializable, VirtualPath};
-use surreal::maths::FromRandom;
+use surreal::io::{Deserializable, InputStream, Serializable, VirtualPath};
+use surreal::utilities::Type;
+
+use super::Resource;
 
 /// A unique identifier for an asset.
 pub type AssetId = surreal::maths::Guid;
@@ -55,18 +56,16 @@ pub trait AssetServer {
 /// assets in the project, and for managing the import of assets from the file system.
 ///
 /// See [`AssetServer`], [`AssetImporter`] and [`AssetBundle`] for more details.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct AssetDatabase {
-  assets: HashMap<String, AssetMetadata>,
-  _watcher: Option<Box<dyn FileWatcher>>,
+  metadata: HashMap<String, AssetMetadata>,
 }
 
 impl AssetDatabase {
-  /// Builds an [`AssetDatabase`] from an existing set of assets.
-  pub fn from_assets(assets: impl Iterator<Item = (String, AssetMetadata)>) -> Self {
+  /// Builds an [`AssetDatabase`] from an existing set of [`AssetMetadata`].
+  pub fn from_metadata(metadata: impl Iterator<Item = (String, AssetMetadata)>) -> Self {
     Self {
-      assets: assets.collect(),
-      _watcher: None,
+      metadata: metadata.collect(),
     }
   }
 
@@ -77,7 +76,7 @@ impl AssetDatabase {
     let mut stream = path.open_input_stream()?;
     let hash = AssetHash::from_stream(&mut stream);
 
-    self.assets.entry(path.to_string()).and_modify(|entry| {
+    self.metadata.entry(path.to_string()).and_modify(|entry| {
       entry.hash = hash;
     });
 
@@ -167,10 +166,18 @@ impl Into<u64> for AssetHash {
 /// This is used to store metadata about an asset in the asset database on disk.
 /// This includes the asset's unique identifier, the import options for the asset,
 /// and the hash of the asset.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AssetMetadata {
   pub id: AssetId,
   pub hash: AssetHash,
+  pub assets: Vec<AssetTypeMetadata>,
+}
+
+/// Describes the kinds of assets that are present at a particular path.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AssetTypeMetadata {
+  pub offset: u16,
+  pub kind: Type,
 }
 
 /// A manifest of assets.
@@ -178,50 +185,36 @@ pub struct AssetMetadata {
 /// Manifests are used to describe the contents of an asset bundle. They are
 /// used by the [`AssetServer`] to determine which assets are contained in a
 /// bundle, and to determine whether a bundle needs to be rebuilt.
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct AssetManifest {
-  assets: HashSet<AssetManifestEntry>,
-}
-
-/// A single entry in an [`AssetManifest`].
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct AssetManifestEntry {
-  id: AssetId,
-  path: String,
-  hash: AssetHash,
-}
-
-impl AssetManifestEntry {
-  pub fn new(path: String) -> Self {
-    // TODO: load from database
-    Self {
-      id: AssetId::random(),
-      path,
-      hash: AssetHash::default(),
-    }
-  }
+  assets: HashMap<String, AssetMetadata>,
 }
 
 /// A builder pattern for [`AssetManifest`]s.
 #[must_use]
+#[derive(Default)]
 pub struct AssetManifestBuilder {
-  assets: HashSet<String>,
+  manifest: AssetManifest,
 }
 
 impl AssetManifestBuilder {
-  pub fn new() -> Self {
-    Self { assets: HashSet::new() }
-  }
+  /// Adds an existing asset to the [`AssetManifest`].
+  ///
+  /// If the asset does not exist, or the metadata cannot be found, it will be ignored.
+  pub fn add_asset(mut self, path: impl Into<VirtualPath>) -> Self {
+    let asset_path = path.into();
+    let metadata_path = asset_path.change_extension("meta");
 
-  pub fn add_asset(mut self, path: &str) -> Self {
-    self.assets.insert(path.to_string());
+    if let Ok(metadata) = AssetMetadata::from_yaml_file(metadata_path) {
+      self.manifest.assets.insert(asset_path.to_string(), metadata);
+    }
+
     self
   }
 
+  /// Builds the resultant [`AssetManifest`].
   pub fn build(self) -> AssetManifest {
-    AssetManifest {
-      assets: self.assets.into_iter().map(|path| AssetManifestEntry::new(path)).collect(),
-    }
+    self.manifest
   }
 }
 
@@ -237,16 +230,17 @@ impl AssetBundle for PakBundle {}
 
 #[cfg(test)]
 mod tests {
-  use surreal::io::{Deserializable, Serializable};
+  use surreal::macros::Object;
 
   use super::*;
 
+  #[derive(Object)]
+  struct SpriteResource;
+
   #[test]
   fn asset_manifest_should_serialize_to_yaml() {
-    let manifest = AssetManifestBuilder::new()
-      .add_asset("assets://textures/floor.png")
-      .add_asset("assets://textures/wall.png")
-      .add_asset("assets://sounds/music.ogg")
+    let manifest = AssetManifestBuilder::default()
+      .add_asset("local://../assets/sprites/bunny.png")
       .build();
 
     let yaml = manifest.to_yaml().unwrap();

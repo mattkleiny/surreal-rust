@@ -5,8 +5,9 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use surreal::io::{Deserializable, Serializable, VirtualPath};
+use surreal::macros::Object;
 use surreal::maths::FromRandom;
-use surreal_editor::{AssetDatabase, AssetHash, AssetId, AssetMetadata, Resource};
+use surreal_editor::{AssetDatabase, AssetHash, AssetId, AssetMetadata, AssetTypeMetadata, Resource};
 
 #[test]
 fn resources_with_differences_should_hash_differently() {
@@ -47,6 +48,10 @@ impl AssetDatabaseBuilder {
       AssetMetadata {
         id: AssetId::random(),
         hash: AssetHash::from_resource(&resource).expect("Failed to hash asset"),
+        assets: vec![AssetTypeMetadata {
+          offset: 0,
+          kind: resource.get_type(),
+        }],
       },
     );
 
@@ -57,22 +62,22 @@ impl AssetDatabaseBuilder {
 
   /// Builds the resultant [`AssetDatabase`].
   pub fn build(self) -> AssetDatabase {
-    AssetDatabase::from_assets(self.assets.into_iter())
+    AssetDatabase::from_metadata(self.assets.into_iter())
   }
 }
 
 /// A simple test [`Resource`] for use in the [`AssetDatabase`].
-#[derive(Serialize, Deserialize)]
+#[derive(Object, Serialize, Deserialize)]
 pub struct TestResource {
   value: usize,
 }
 
 impl Resource for TestResource {
   fn load(path: impl Into<VirtualPath>) -> surreal::Result<Self> {
-    Self::load_from_json(path)
+    Self::from_json_file(path)
   }
 
   fn save(&self, path: impl Into<VirtualPath>) -> surreal::Result<()> {
-    self.save_to_json(path)
+    self.to_json_file(path)
   }
 }

@@ -26,7 +26,7 @@ pub type ResourceId = surreal::maths::Guid;
 ///
 /// Resources are naturally serializable and can be persisted and loaded
 /// from the virtual file system.
-pub trait Resource: Sized + serde::Serialize + for<'de> serde::Deserialize<'de> {
+pub trait Resource: Sized + surreal::utilities::Object + serde::Serialize + for<'de> serde::Deserialize<'de> {
   fn load(path: impl Into<surreal::io::VirtualPath>) -> surreal::Result<Self>;
   fn save(&self, path: impl Into<surreal::io::VirtualPath>) -> surreal::Result<()>;
 }

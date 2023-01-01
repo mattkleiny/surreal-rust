@@ -98,7 +98,7 @@ impl Asset for BitmapFont {
 
 impl AssetLoader<BitmapFont> for BitmapFontLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<BitmapFont> {
-    let metrics = BitmapFontMetrics::load_from_json(&context.path)?;
+    let metrics = BitmapFontMetrics::from_json_file(&context.path)?;
     let texture: Handle<Texture> = context.load_asset(&metrics.file_path)?;
 
     let font = BitmapFont {
