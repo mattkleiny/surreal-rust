@@ -1,14 +1,12 @@
 use surreal_core::graphics::{BlendFactor, BlendState, Color32, Material, Mesh, PrimitiveTopology, ShaderProgram, Texture, Vertex2};
 use surreal_core::maths::{vec2, Mat4, Tessellation};
 
-use crate::common::bootstrap;
-
 mod common;
 
 /// Ensure basic [`Texture`] access doesn't crash and can read/write pixel data.
 #[test]
 fn texture_read_write() {
-  bootstrap(|graphics| {
+  common::bootstrap(|graphics| {
     let texture = Texture::new(graphics);
 
     texture.write_pixels(16, 16, &[Color32::WHITE; 16 * 16]);
@@ -22,7 +20,7 @@ fn texture_read_write() {
 /// Ensure that [`ShaderProgram`]s compile, and [`Material`]s can access uniforms.
 #[test]
 fn shader_and_material_uniform_access() {
-  bootstrap(|graphics| {
+  common::bootstrap(|graphics| {
     let shader = ShaderProgram::from_glsl(
       graphics,
       r#"
@@ -69,7 +67,7 @@ fn shader_and_material_uniform_access() {
 /// Ensure basic [`Mesh`]es can be constructed and can be rendered.
 #[test]
 fn mesh_rendering() {
-  bootstrap(|graphics| {
+  common::bootstrap(|graphics| {
     let mesh: Mesh<Vertex2> = Mesh::from_tessellation(graphics, |tessellator| {
       #[rustfmt::skip]
       tessellator.add_quad(&[
