@@ -17,11 +17,17 @@ classDiagram
 
 class Engine
 class Editor
-class AssetDatabase
+class Project
 class TypeDatabase
+class AssetContext
+class AssetDatabase
+class AssetServer
 
 Engine <|-- Editor
-Editor *-- AssetDatabase
 Editor *-- TypeDatabase
+Editor *-- Project
+Project *-- AssetContext
+AssetContext *-- AssetServer
+AssetContext *-- AssetDatabase
 ```
 

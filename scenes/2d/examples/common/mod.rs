@@ -1,6 +1,6 @@
 use surreal::assets::AssetManager;
 use surreal::engine::{Configuration, Engine};
-use surreal::graphics::{Color, GraphicsServer, RenderContextManager};
+use surreal::graphics::{Color, RenderContextManager};
 use surreal::input::Key;
 use surreal::scene::{SceneEvent, SceneGraph};
 

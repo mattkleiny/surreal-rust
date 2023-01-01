@@ -4,7 +4,7 @@ use surreal::scene::{SceneGraph, SceneNodeBuilder};
 mod common;
 
 pub fn main() {
-  common::bootstrap("Sprites", |engine, _| {
+  common::bootstrap("Sprites", |_, _| {
     SceneGraph::new(
       SceneNodeBuilder::default()
         .with_name("Sprite")
