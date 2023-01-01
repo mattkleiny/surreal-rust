@@ -163,6 +163,11 @@ impl Engine {
       EventLoop::new_any_thread()
     }
 
+    #[cfg(target_os = "macos")]
+    fn build_event_loop() -> EventLoop<()> {
+      EventLoop::new()
+    }
+
     // prepare the main window and event loop
     let event_loop = build_event_loop();
 
