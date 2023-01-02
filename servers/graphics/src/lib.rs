@@ -3,8 +3,6 @@
 //! The engine is split into different 'pipelines' to allow specific targeting
 //! of different project goals.
 
-use std::ops::Deref;
-
 use surreal::graphics::PrimitiveTopology;
 use surreal::maths::AABB;
 
@@ -25,26 +23,7 @@ pub type GraphicsId = surreal::utilities::RID;
 /// Internally we delegate to the active [`GraphicsServerBackend`], which can
 /// vary depending on the target platform.
 struct GraphicsServer {
-  backend: Box<dyn GraphicsServerBackend>,
-}
-
-// TODO: improve this?
-surreal::impl_singleton!(GraphicsServer);
-
-impl Default for GraphicsServer {
-  fn default() -> Self {
-    Self {
-      backend: Box::new(opengl::OpenGLBackend::default()),
-    }
-  }
-}
-
-impl Deref for GraphicsServer {
-  type Target = dyn GraphicsServerBackend;
-
-  fn deref(&self) -> &Self::Target {
-    self.backend.as_ref()
-  }
+  _backend: Box<dyn GraphicsServerBackend>,
 }
 
 /// An abstraction on top of the underlying graphics system.

@@ -42,28 +42,13 @@ impl<T> DerefMut for SingletonCell<T> {
   }
 }
 
-/// Declares a singleton instance of the given type.
-///
-/// The singleton can have no constructed dependencies, and is expected
-/// to run in complete isolation of the rest of the application.
-#[macro_export]
-macro_rules! impl_singleton {
-  ($target:ident) => {
-    use $crate::utilities::{Singleton, SingletonCell};
-
-    impl Singleton for $target {
-      fn instance() -> &'static mut Self {
-        static mut INSTANCE: SingletonCell<$target> = SingletonCell::new();
-
-        unsafe { &mut INSTANCE }
-      }
-    }
-  };
-}
-
 #[cfg(test)]
 mod tests {
-  #[derive(Default)]
+  use macros::Singleton;
+
+  use crate as surreal;
+
+  #[derive(Singleton, Default)]
   struct TestSingleton;
 
   impl TestSingleton {
@@ -71,8 +56,6 @@ mod tests {
       42u32
     }
   }
-
-  impl_singleton!(TestSingleton);
 
   #[test]
   fn singleton_should_access_for_read_write_usage() {

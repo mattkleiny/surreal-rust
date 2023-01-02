@@ -2,7 +2,9 @@ use std::any::Any;
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use crate::impl_singleton;
+use macros::Singleton;
+
+use crate as surreal;
 
 /// Represents an 'Object'.
 ///
@@ -69,7 +71,7 @@ pub struct TypeMetadata {}
 ///
 /// The database carries information about [`Object`]s and allows reflection and
 /// introspection of all available objects in a project (that have been registered).
-#[derive(Default, Debug)]
+#[derive(Singleton, Default, Debug)]
 pub struct TypeDatabase {
   types: HashMap<Type, TypeMetadata>,
 }
@@ -88,8 +90,6 @@ impl TypeDatabase {
     self.types.get(key)
   }
 }
-
-impl_singleton!(TypeDatabase);
 
 #[cfg(test)]
 mod tests {

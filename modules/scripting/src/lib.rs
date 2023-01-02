@@ -1,34 +1,18 @@
-//! A scripting language for Surreal.
+//! Scripting support for Surreal.
 
-#[macro_use]
-extern crate pest_derive;
+use surreal::utilities::{Variant, RID};
 
-#[derive(Parser)]
-#[grammar = "gdscript.pest"]
-struct GDScriptParser;
+#[cfg(feature = "mlua")]
+pub mod lua;
 
-#[cfg(test)]
-mod tests {
-  use pest::Parser;
+/// The [`RID`] for a script in a [`ScriptServer`].
+pub type ScriptId = RID;
 
-  use super::*;
-
-  #[test]
-  fn it_should_parse_a_simple_expression() {
-    let pairs = GDScriptParser::parse(Rule::ident_list, "a1 b2").unwrap_or_else(|e| panic!("{}", e));
-
-    for pair in pairs {
-      println!("Rule: {:?}", pair.as_rule());
-      println!("Span: {:?}", pair.as_span());
-      println!("Text: {}", pair.as_str());
-
-      for inner_pair in pair.into_inner() {
-        match inner_pair.as_rule() {
-          Rule::alpha => println!("Letter: {}", inner_pair.as_str()),
-          Rule::digit => println!("Digit: {}", inner_pair.as_str()),
-          _ => unreachable!(),
-        };
-      }
-    }
-  }
+/// A server abstraction for managing application scripts.
+pub trait ScriptServer {
+  // script management
+  fn create_script(&self, prelude: &str) -> surreal::Result<ScriptId>;
+  fn update_script(&self, script_id: ScriptId, source_code: &str) -> surreal::Result<()>;
+  fn execute_script(&self, script_id: ScriptId, parameters: &[Variant]) -> surreal::Result<Variant>;
+  fn delete_script(&self, script_id: ScriptId) -> surreal::Result<()>;
 }

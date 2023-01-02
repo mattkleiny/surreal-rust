@@ -1,7 +1,10 @@
 //! A virtual file system with paths and common operations.
 
 pub use local::*;
+use macros::Singleton;
 pub use memory::*;
+
+use crate as surreal;
 
 mod local;
 mod memory;
@@ -244,13 +247,10 @@ pub trait FileWatcher {}
 /// This is a singleton that is used to manage [`FileSystem`] implementations.
 /// File systems can be registered here, and will be used subsequently for file
 /// operations on [`VirtualPath`] instances.
+#[derive(Singleton)]
 pub struct FileSystemManager {
   file_systems: Vec<Box<dyn FileSystem>>,
 }
-
-// The manager is an unsafe singleton type
-// TODO: make this safe?
-crate::impl_singleton!(FileSystemManager);
 
 impl Default for FileSystemManager {
   fn default() -> Self {

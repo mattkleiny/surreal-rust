@@ -5,12 +5,19 @@ use proc_macro::TokenStream;
 mod object;
 mod profiling;
 mod rsx;
+mod singleton;
 mod vertex;
 
 /// Builds an [`Object`] trait implementation for the associated struct.
 #[proc_macro_derive(Object)]
 pub fn derive_object(input: TokenStream) -> TokenStream {
   object::impl_object_trait(input)
+}
+
+/// Builds an [`Singleton`] trait implementation for the associated struct.
+#[proc_macro_derive(Singleton)]
+pub fn derive_singleton(input: TokenStream) -> TokenStream {
+  singleton::impl_singleton_trait(input)
 }
 
 /// Builds a tree of `egui` node constructions based on a React-like markup language.
