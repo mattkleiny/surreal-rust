@@ -3,8 +3,13 @@
 use super::*;
 
 /// A [`GraphicsServerBackend`] implementation for OpenGL.
-#[derive(Default)]
 pub struct OpenGLBackend;
+
+impl OpenGLBackend {
+  pub fn new(_window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
+    todo!()
+  }
+}
 
 #[allow(unused_variables)]
 impl GraphicsServerBackend for OpenGLBackend {

@@ -1,20 +1,36 @@
 //! Vulkan support for the engine.
 
-use ash as vk;
-use raw_window_handle::HasRawWindowHandle;
+use ash::vk;
 
 use super::*;
 
 /// A [`GraphicsServerBackend`] implementation for Vulkan.
-#[derive(Default)]
 pub struct VulkanBackend {
-  instance: vk::Instance,
+  entry: ash::Entry,
+  instance: ash::Instance,
+  surface: ash::extensions::khr::Surface,
 }
 
 impl VulkanBackend {
   /// Creates a [`VulkanBackend`] for the given window.
-  pub fn new(_window: &impl HasRawWindowHandle) -> surreal::Result<Self> {
-    todo!()
+  pub fn new(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
+    unsafe {
+      let entry = ash::Entry::load()?;
+      let app_info = vk::ApplicationInfo {
+        api_version: vk::make_api_version(0, 1, 0, 0),
+        ..Default::default()
+      };
+
+      let create_info = vk::InstanceCreateInfo {
+        p_application_info: &app_info,
+        ..Default::default()
+      };
+
+      let instance = entry.create_instance(&create_info, None)?;
+      let surface = ash::extensions::khr::Surface::new(&entry, &instance);
+
+      Ok(Self { entry, instance, surface })
+    }
   }
 }
 

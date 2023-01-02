@@ -3,6 +3,8 @@
 //! The engine is split into different 'pipelines' to allow specific targeting
 //! of different project goals.
 
+use raw_window_handle::{HasRawDisplayHandle, HasRawWindowHandle};
+
 use surreal::graphics::PrimitiveTopology;
 use surreal::maths::AABB;
 
@@ -26,42 +28,32 @@ pub type GraphicsId = surreal::utilities::RID;
 /// Internally we delegate to the active [`GraphicsServerBackend`], which can
 /// vary depending on the target platform.
 pub struct GraphicsServer {
-  backend: Box<dyn GraphicsServerBackend>,
+  _backend: Box<dyn GraphicsServerBackend>,
 }
 
 impl GraphicsServer {
   /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
-  pub fn from_backend(backend: Box<dyn GraphicsServerBackend>) -> Self {
-    GraphicsServer { backend }
+  pub fn from_backend(backend: impl GraphicsServerBackend + 'static) -> Self {
+    GraphicsServer {
+      _backend: Box::new(backend),
+    }
   }
 
   /// Creates a [`GraphicsServer`] for OpenGL.
   #[cfg(feature = "opengl")]
-  pub fn from_opengl() -> surreal::Result<Self> {
-    let server = GraphicsServer {
-      backend: Box::new(opengl::OpenGLBackend::default()),
-    };
-
-    Ok(server)
+  pub fn from_opengl(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
+    Ok(Self::from_backend(opengl::OpenGLBackend::new(window)?))
   }
 
   /// Creates a [`GraphicsServer`] for Vulkan.
   #[cfg(feature = "vulkan")]
-  pub fn from_vulkan() -> surreal::Result<Self> {
-    let server = GraphicsServer {
-      backend: Box::new(opengl::OpenGLBackend::default()),
-    };
-
-    Ok(server)
+  pub fn from_vulkan(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
+    Ok(Self::from_backend(vulkan::VulkanBackend::new(window)?))
   }
 
   /// Creates a [`GraphicsServer`] for headless.
   pub fn from_headless() -> surreal::Result<Self> {
-    let server = GraphicsServer {
-      backend: Box::new(headless::HeadlessBackend::default()),
-    };
-
-    Ok(server)
+    Ok(Self::from_backend(headless::HeadlessBackend::default()))
   }
 }
 
