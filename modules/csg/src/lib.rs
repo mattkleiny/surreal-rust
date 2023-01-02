@@ -7,15 +7,16 @@
 //! that can be constructed from a set of [`Face`]s.
 //!
 //! [`CsgBrush`]es can be combined with [`CsgOperation`]s to produce new
-//! [`CsgBrush`] which can be further combined, and so on.
+//! [`CsgBrush`]es which can be further combined, and so on.
 
 use surreal::maths::{Vec2, Vec3};
 
-/// A face representation for use in CSG [`CsgBrush`] construction.
+/// A face representation for use in [`CsgBrush`] construction.
 #[derive(Default, Clone)]
 pub struct Face {
-  _uvs: [Vec2; 3],
   _vertices: [Vec3; 3],
+  _uvs: [Vec2; 3],
+  _normal: Vec3,
 }
 
 impl Face {
@@ -32,9 +33,11 @@ impl Face {
 
 /// A Constructive Solid Geometry (CSG) brush.
 ///
-/// A brush is an input to a [`CsgMerge`] operation. It represents a shape
-/// that produces a collection of polygons that can be used to build a final
-/// shape and mesh.
+/// A brush produces a collection of [`Face`]s. It represents a shape that produces
+/// a collection of polygons that can be used to build a final shape and mesh.
+///
+/// Brushes can be combined by a [`CsgMerge`] operation to produce another [`CsgBrush`],
+/// allowing the set-theoretic combination of geometry.
 pub trait CsgBrush {
   /// Returns the [`Face`]s that make up this brush.
   fn faces(&self) -> Vec<Face>;
