@@ -8,41 +8,10 @@
 //!
 //! [`Brush`]es can be combined with [`Operation`]s to produce new [`Brush`] which
 //! can be further combined, and so on.
-//!
-//! A dedicated [`Mesh`] type is also available to optimize the rendering of CSG
-//! meshes.
 
-use surreal::graphics::{Color32, Index, Vertex, VertexDescriptor, VertexKind};
-use surreal::maths::{vec3, Vec2, Vec3};
+use surreal::maths::{vec3, Vec3};
 
-/// A Constructive Solid Geometry (CSG) mesh.
-///
-/// A mesh can be built from a series of CSG operations and brushes.
-#[derive(Default)]
-pub struct Mesh {
-  _vertices: Vec<MeshVertex>,
-  _indices: Vec<Index>,
-}
-
-/// Vertex representation for the [`Mesh`] type used in this module.
-#[repr(C)]
-#[derive(Clone, Debug)]
-struct MeshVertex {
-  pub position: Vec3,
-  pub uv: Vec2,
-  pub color: Color32,
-}
-
-impl Vertex for MeshVertex {
-  #[rustfmt::skip]
-  const DESCRIPTORS: &'static [VertexDescriptor] = &[
-    VertexDescriptor { count: 3, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-  ];
-}
-
-/// A polygon representation for use in CSG [`Mesh`] construction.
+/// A polygon representation for use in CSG [`FromPolygon`] construction.
 #[derive(Default, Clone)]
 pub struct Polygon {
   _vertices: Vec<Vec3>,
@@ -57,6 +26,7 @@ impl Polygon {
 }
 
 /// A helper for building up [`Polygon`]s from vertices.
+#[must_use]
 #[derive(Default, Clone)]
 pub struct PolygonBuilder {
   vertices: Vec<Vec3>,
@@ -64,7 +34,14 @@ pub struct PolygonBuilder {
 }
 
 impl PolygonBuilder {
-  pub fn add_vertex(&mut self, vertex: Vec3) -> &mut Self {
+  /// Sets the normal of the [`Polygon`] being built.
+  pub fn with_normal(mut self, normal: Vec3) -> Self {
+    self.normal = normal;
+    self
+  }
+
+  /// Adds a vertex to the [`Polygon`].
+  pub fn add_vertex(mut self, vertex: Vec3) -> Self {
     self.vertices.push(vertex);
     self
   }
@@ -75,6 +52,26 @@ impl PolygonBuilder {
       _vertices: self.vertices.clone(),
       _normal: self.normal,
     }
+  }
+
+  /// Moves the data into the resultant [`Polygon`].
+  pub fn into_polygon(self) -> Polygon {
+    Polygon {
+      _vertices: self.vertices,
+      _normal: self.normal,
+    }
+  }
+}
+
+impl From<&PolygonBuilder> for Polygon {
+  fn from(value: &PolygonBuilder) -> Self {
+    value.build()
+  }
+}
+
+impl From<PolygonBuilder> for Polygon {
+  fn from(value: PolygonBuilder) -> Self {
+    value.into_polygon()
   }
 }
 
@@ -91,20 +88,30 @@ pub trait Brush {
 ///
 /// An operation is a function that takes a collection of brushes and produces
 /// a new brush representing their logical combination.
-pub enum Operation {
-  Union,
-  Difference,
-  Intersection,
+pub trait Operation {
+  /// Applies this operation to the given [`Brush`]es.
+  fn apply(&self, a: &impl Brush, b: &impl Brush) -> Vec<Polygon>;
 }
 
-impl Operation {
-  /// Applies this operation to the given [`Brush`]es.
-  pub fn apply(&self, _brushes: &[&dyn Brush]) -> Box<dyn Brush> {
-    match self {
-      Operation::Union => todo!(),
-      Operation::Difference => todo!(),
-      Operation::Intersection => todo!(),
-    }
+pub struct Union;
+pub struct Difference;
+pub struct Intersection;
+
+impl Operation for Union {
+  fn apply(&self, _a: &impl Brush, _b: &impl Brush) -> Vec<Polygon> {
+    todo!()
+  }
+}
+
+impl Operation for Difference {
+  fn apply(&self, _a: &impl Brush, _b: &impl Brush) -> Vec<Polygon> {
+    todo!()
+  }
+}
+
+impl Operation for Intersection {
+  fn apply(&self, _a: &impl Brush, _b: &impl Brush) -> Vec<Polygon> {
+    todo!()
   }
 }
 
@@ -127,11 +134,12 @@ impl Default for Sphere {
 impl Brush for Sphere {
   fn to_polygons(&self) -> Vec<Polygon> {
     let polygon = Polygon::create()
+      .with_normal(vec3(0.0, 0.0, 1.0))
       .add_vertex(vec3(1.0, 0.0, 0.0))
       .add_vertex(vec3(1.0, 0.0, 0.0))
       .add_vertex(vec3(1.0, 0.0, 0.0))
       .add_vertex(vec3(1.0, 0.0, 0.0))
-      .build();
+      .into_polygon();
 
     vec![polygon]
   }
