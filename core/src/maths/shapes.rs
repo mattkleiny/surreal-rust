@@ -34,6 +34,20 @@ impl Default for Cube {
   }
 }
 
+impl Cube {
+  /// The minimum point of the cube.
+  #[inline]
+  pub fn min(&self) -> Vec3 {
+    self.offset - self.size / 2.0
+  }
+
+  /// The maximum point of the cube.
+  #[inline]
+  pub fn max(&self) -> Vec3 {
+    self.offset + self.size / 2.0
+  }
+}
+
 /// A cylinder in 3-space.
 #[derive(Clone, Debug)]
 pub struct Cylinder {

@@ -70,6 +70,12 @@ impl CsgMerge for CsgOperation {
   }
 }
 
+impl CsgBrush for surreal::maths::Plane {
+  fn faces(&self) -> Vec<Face> {
+    todo!()
+  }
+}
+
 impl CsgBrush for surreal::maths::Sphere {
   fn faces(&self) -> Vec<Face> {
     todo!()

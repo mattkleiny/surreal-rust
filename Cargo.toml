@@ -57,6 +57,10 @@ name = "bunnymark"
 required-features = ["prototype"]
 
 [[example]]
+name = "cube"
+required-features = ["prototype"]
+
+[[example]]
 name = "egui"
 required-features = ["prototype"]
 

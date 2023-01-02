@@ -128,6 +128,12 @@ impl VoxelBrush for Chunk {
   }
 }
 
+impl VoxelBrush for surreal::maths::Plane {
+  fn size(&self) -> (usize, usize, usize) {
+    todo!()
+  }
+}
+
 impl VoxelBrush for surreal::maths::Sphere {
   fn size(&self) -> (usize, usize, usize) {
     todo!()

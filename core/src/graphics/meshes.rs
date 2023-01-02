@@ -3,11 +3,11 @@
 //! Meshes abstract over vertex and index data on the GPU as well, and
 //! provide utilities for constructing data from pieces.
 
-use crate::diagnostics::profiling;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::maths::{vec2, Tessellation, Vec2, Vec3};
+use crate::diagnostics::profiling;
+use crate::maths::{vec2, Vec2, Vec3};
 use crate::utilities::Size;
 
 use super::*;
@@ -23,7 +23,7 @@ pub enum PrimitiveTopology {
 /// Describes a kind of vertex.
 ///
 /// Vertices provide a set of [`VertexDescriptor`]s which are used for binding vertex data to a mesh.
-pub trait Vertex {
+pub trait Vertex: Clone {
   const DESCRIPTORS: &'static [VertexDescriptor];
 }
 
@@ -81,6 +81,17 @@ pub struct Vertex2 {
   pub color: Color32,
 }
 
+impl Vertex2 {
+  /// Creates a vertex from the given raw parts.
+  pub fn new(position: impl Into<Vec2>, uv: impl Into<Vec2>, color: impl Into<Color32>) -> Self {
+    Self {
+      position: position.into(),
+      uv: uv.into(),
+      color: color.into(),
+    }
+  }
+}
+
 impl Vertex for Vertex2 {
   #[rustfmt::skip]
   const DESCRIPTORS: &'static [VertexDescriptor] = &[
@@ -97,6 +108,17 @@ pub struct Vertex3 {
   pub position: Vec3,
   pub uv: Vec2,
   pub color: Color32,
+}
+
+impl Vertex3 {
+  /// Creates a vertex from the given raw parts.
+  pub fn new(position: impl Into<Vec3>, uv: impl Into<Vec2>, color: impl Into<Color32>) -> Self {
+    Self {
+      position: position.into(),
+      uv: uv.into(),
+      color: color.into(),
+    }
+  }
 }
 
 impl Vertex for Vertex3 {
@@ -148,16 +170,20 @@ impl<V: Vertex> Mesh<V> {
     }
   }
 
-  /// Constructs a mesh with the given factory method.
-  pub fn from_tessellation(graphics: &GraphicsServer, factory: impl Fn(&mut Tessellator<V>)) -> Self {
-    let mut mesh = Self::new(graphics, BufferUsage::Static);
-    let mut tessellator = Tessellator::new();
+  /// Constructs a mesh with the given [`MeshBuilder`] factory method.
+  pub fn from_builder(graphics: &GraphicsServer, factory: impl Fn(&mut MeshBuilder<V>)) -> Self {
+    let mut builder = MeshBuilder::new();
 
-    factory(&mut tessellator);
+    factory(&mut builder);
 
-    tessellator.upload_to(&mut mesh);
+    builder.to_mesh(graphics)
+  }
 
-    mesh
+  /// Constructs a new mesh from the [`MeshBrush`].
+  pub fn from_brush(graphics: &GraphicsServer, brush: &impl MeshBrush<V>) -> Self {
+    Self::from_builder(graphics, move |builder| {
+      brush.build(builder);
+    })
   }
 
   /// Acquires mutable write access the mesh buffers.
@@ -201,11 +227,159 @@ impl<V> Drop for MeshState<V> {
   }
 }
 
+/// A builder pattern for [`Mesh`]es.
+#[derive(Default)]
+pub struct MeshBuilder<V> {
+  vertices: Vec<V>,
+  indices: Vec<Index>,
+}
+
+impl<V: Vertex> MeshBuilder<V> {
+  /// Creates a new empty tessellator.
+  pub fn new() -> Self {
+    Self {
+      vertices: Vec::new(),
+      indices: Vec::new(),
+    }
+  }
+
+  /// Returns the number of vertices in the mesh.
+  pub fn vertex_count(&self) -> Index {
+    self.vertices.len() as Index
+  }
+
+  /// Returns the number of indices in the mesh.
+  pub fn index_count(&self) -> usize {
+    self.indices.len()
+  }
+
+  /// Adds a single vertex to the mesh.
+  pub fn add_vertex(&mut self, vertex: V) {
+    self.vertices.push(vertex);
+  }
+
+  /// Adds a single index to the mesh.
+  pub fn add_index(&mut self, index: u32) {
+    self.indices.push(index);
+  }
+
+  /// Adds a line of vertices to the mesh.
+  pub fn add_line(&mut self, vertices: &[V; 2]) {
+    let offset = self.vertex_count();
+
+    self.add_vertex(vertices[0].clone());
+    self.add_vertex(vertices[1].clone());
+
+    self.add_index(offset + 0);
+    self.add_index(offset + 1);
+    self.add_index(offset + 1);
+  }
+
+  /// Adds a triangle of vertices to the mesh.
+  pub fn add_triangle(&mut self, vertices: &[V; 3]) {
+    let offset = self.vertex_count();
+
+    self.add_vertex(vertices[0].clone());
+    self.add_vertex(vertices[1].clone());
+    self.add_vertex(vertices[2].clone());
+
+    self.add_index(offset + 0);
+    self.add_index(offset + 1);
+    self.add_index(offset + 2);
+  }
+
+  /// Adds a triangle fan of vertices to the mesh.
+  pub fn add_triangle_fan(&mut self, vertices: &[V]) {
+    let first = self.vertex_count();
+
+    self.add_vertex(vertices[0].clone());
+
+    for i in 1..vertices.len() - 1 {
+      let offset = self.vertex_count();
+
+      self.add_vertex(vertices[i + 0].clone());
+      self.add_vertex(vertices[i + 1].clone());
+
+      self.add_index(first);
+      self.add_index(offset + 0);
+      self.add_index(offset + 1);
+    }
+  }
+
+  /// Adds a quad of vertices to the mesh.
+  pub fn add_quad(&mut self, vertices: &[V; 4]) {
+    let offset = self.vertex_count();
+
+    self.add_vertex(vertices[0].clone());
+    self.add_vertex(vertices[1].clone());
+    self.add_vertex(vertices[2].clone());
+    self.add_vertex(vertices[3].clone());
+
+    self.add_index(offset + 0);
+    self.add_index(offset + 1);
+    self.add_index(offset + 2);
+
+    self.add_index(offset + 0);
+    self.add_index(offset + 2);
+    self.add_index(offset + 3);
+  }
+
+  /// Uploads the contents of the tessellator to the given [`Mesh`].
+  pub fn upload_to(&self, mesh: &mut Mesh<V>) {
+    mesh.with_buffers(|vertices, indices| {
+      vertices.write_data(self.vertices.as_slice());
+      indices.write_data(self.indices.as_slice());
+    });
+  }
+
+  /// Builds a new [`Mesh`] and returns it.
+  pub fn to_mesh(&self, graphics: &GraphicsServer) -> Mesh<V> {
+    let mut mesh = Mesh::new(graphics, BufferUsage::Static);
+    self.upload_to(&mut mesh);
+    mesh
+  }
+}
+
+/// Represents a type that can be tessellated into [`V`]ertices via a [`MeshBuilder`].
+pub trait MeshBrush<V> {
+  /// Tessellates this object into the given [`MeshBuilder`].
+  fn build(&self, builder: &mut MeshBuilder<V>);
+}
+
+impl MeshBrush<Vertex2> for crate::maths::Cube {
+  fn build(&self, builder: &mut MeshBuilder<Vertex2>) {
+    let min = self.min();
+    let max = self.max();
+
+    builder.add_quad(&[
+      Vertex2::new([min.x, min.y], [0.0, 0.0], Color32::WHITE),
+      Vertex2::new([max.x, min.y], [1.0, 0.0], Color32::WHITE),
+      Vertex2::new([max.x, max.y], [1.0, 1.0], Color32::WHITE),
+      Vertex2::new([min.x, max.y], [0.0, 1.0], Color32::WHITE),
+    ]);
+  }
+}
+
+impl MeshBrush<Vertex3> for crate::maths::Cube {
+  fn build(&self, builder: &mut MeshBuilder<Vertex3>) {
+    let min = self.min();
+    let max = self.max();
+
+    // TODO: add our 6 cube faces
+    builder.add_quad(&[
+      Vertex3::new([min.x, min.y, min.z], [0.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, min.y, min.z], [0.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, max.y, min.z], [0.0, 0.0], Color32::WHITE),
+      Vertex3::new([min.x, max.y, min.z], [0.0, 0.0], Color32::WHITE),
+    ]);
+  }
+}
+
 /// Specialization for standard 2d meshes.
 impl Mesh<Vertex2> {
   /// Constructs a simple triangle mesh of the given size.
   pub fn create_triangle(graphics: &GraphicsServer, size: f32) -> Self {
-    Self::from_tessellation(graphics, |mesh| {
+    Self::from_builder(graphics, |mesh| {
       mesh.add_triangle(&[
         Vertex2 {
           position: vec2(-size, -size),
@@ -228,7 +402,7 @@ impl Mesh<Vertex2> {
 
   /// Constructs a simple quad mesh of the given size.
   pub fn create_quad(graphics: &GraphicsServer, size: f32) -> Self {
-    Self::from_tessellation(graphics, |mesh| {
+    Self::from_builder(graphics, |mesh| {
       mesh.add_quad(&[
         Vertex2 {
           position: vec2(-size, -size),
@@ -256,7 +430,7 @@ impl Mesh<Vertex2> {
 
   /// Constructs a simple circle mesh of the given size.
   pub fn create_circle(graphics: &GraphicsServer, radius: f32, segments: usize) -> Self {
-    Self::from_tessellation(graphics, |mesh| {
+    Self::from_builder(graphics, |mesh| {
       use std::f32::consts::PI;
 
       let mut vertices = Vec::with_capacity(segments);
@@ -283,51 +457,6 @@ impl Mesh<Vertex2> {
 
       mesh.add_triangle_fan(&vertices);
     })
-  }
-}
-
-/// A simple tessellator for mesh shapes.
-#[derive(Default)]
-pub struct Tessellator<V> {
-  vertices: Vec<V>,
-  indices: Vec<Index>,
-}
-
-impl<V: Vertex> Tessellator<V> {
-  /// Creates a new empty tessellator.
-  pub fn new() -> Self {
-    Self {
-      vertices: Vec::new(),
-      indices: Vec::new(),
-    }
-  }
-
-  /// Uploads the contents of the tessellator to the given [`Mesh`].
-  pub fn upload_to(&self, mesh: &mut Mesh<V>) {
-    mesh.with_buffers(|vertices, indices| {
-      vertices.write_data(self.vertices.as_slice());
-      indices.write_data(self.indices.as_slice());
-    });
-  }
-}
-
-impl<V: Vertex + Clone> Tessellation for Tessellator<V> {
-  type Vertex = V;
-
-  fn vertex_count(&self) -> Index {
-    self.vertices.len() as Index
-  }
-
-  fn index_count(&self) -> usize {
-    self.indices.len()
-  }
-
-  fn add_vertex(&mut self, vertex: Self::Vertex) {
-    self.vertices.push(vertex);
-  }
-
-  fn add_index(&mut self, index: Index) {
-    self.indices.push(index);
   }
 }
 
