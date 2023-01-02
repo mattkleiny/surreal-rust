@@ -9,6 +9,7 @@ pub use paths::*;
 pub use random::*;
 pub use ranges::*;
 pub use rectangles::*;
+pub use shapes::*;
 pub use tessellation::*;
 
 mod curves;
@@ -20,6 +21,7 @@ mod paths;
 mod random;
 mod ranges;
 mod rectangles;
+mod shapes;
 mod tessellation;
 
 const EPSILON: f32 = 0.00001;
