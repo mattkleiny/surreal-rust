@@ -1,4 +1,15 @@
-//! Voxel support for Surreal, with voxel palettes, chunking, mesh generation and path tracing.
+//! Voxel management and mesh conversion for Surreal.
+//!
+//! This module provides a series of operations for working with voxel-based
+//! data structures, converting voxel representations, chunking and meshing and
+//! palette indexing.
+//!
+//! The core of the module is the [`Voxel`] type, which represents a single voxel
+//! in a larger [`VoxelChunk`]. A voxel indicates the kind of type or material
+//! present at any 3d point in a discretized space.
+//!
+//! [`VoxelChunk`]s can be combined with [`VoxelMerge`] operations, and templated
+//! via [`VoxelBrush`] types.
 
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
@@ -6,185 +17,137 @@
 /// A voxel in a chunk.
 pub type Voxel = u8;
 
-/// Represents a chunk of [`Voxel`]s.
-pub trait Chunk {
-  /// The width of the chunk, in units.
-  fn width(&self) -> usize;
+/// A type that can be expanded to fill an existing [`VoxelChunk`] with data.
+pub trait VoxelBrush {
+  /// The size of the volume of the brush, in (width, height, depth) units.
+  fn size(&self) -> (usize, usize, usize);
 
-  /// The height of the chunk, in units.
-  fn height(&self) -> usize;
-
-  /// The depth of the chunk, in units.
-  fn depth(&self) -> usize;
-
-  /// The total volume of the chunk, in units.
-  fn volume(&self) -> usize {
-    self.width() * self.height() * self.depth()
+  /// The width of the brush, in units.
+  fn width(&self) -> usize {
+    self.size().0
   }
 
-  /// Reads a value from the chunk.
-  fn get(&self, x: usize, y: usize, z: usize) -> Option<Voxel>;
+  /// The height of the brush, in units.
+  fn height(&self) -> usize {
+    self.size().1
+  }
 
-  /// Sets a value in the chunk.
-  fn set(&mut self, x: usize, y: usize, z: usize, value: Voxel);
+  /// The depth of the brush, in units.
+  fn depth(&self) -> usize {
+    self.size().2
+  }
 
-  /// Fills the chunk with a value.
-  fn fill(&mut self, value: Voxel);
+  /// The total volume of the brush, in units.
+  fn volume(&self) -> usize {
+    let (width, height, depth) = self.size();
+
+    width * height * depth
+  }
 }
 
-/// A statically sized chunk of [`Voxel`]s.
-pub struct StaticChunk<const W: usize, const H: usize, const D: usize>
-where
-  [(); W * H * D]: Sized,
-{
-  voxels: [Voxel; W * H * D],
+/// An operation that permits merging [`VoxelBrush`]es to produce new [`VoxelBrush`]es.
+pub trait VoxelMerge {
+  /// Merge the given two [`VoxelBrush`]es to produce a new [`VoxelBrush`].
+  fn merge(&self, a: &dyn VoxelBrush, b: &dyn VoxelBrush) -> Box<dyn VoxelBrush>;
+
+  /// Merges the given other [`VoxelBrush`] into the given [`VoxelChunk`].
+  fn merge_in_place(&self, into: &mut dyn VoxelChunk, other: &dyn VoxelBrush);
 }
 
-impl<const W: usize, const H: usize, const D: usize> Default for StaticChunk<W, H, D>
-where
-  [(); W * H * D]: Sized,
-{
-  /// Creates a new empty [`StaticChunk`].
+/// Default, commonly-used [`VoxelMerge`] operations.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum VoxelOperation {
+  Union,
+  Intersection,
+  Subtraction,
+}
+
+impl VoxelMerge for VoxelOperation {
+  fn merge(&self, _a: &dyn VoxelBrush, _b: &dyn VoxelBrush) -> Box<dyn VoxelBrush> {
+    match self {
+      VoxelOperation::Union => todo!(),
+      VoxelOperation::Intersection => todo!(),
+      VoxelOperation::Subtraction => todo!(),
+    }
+  }
+
+  fn merge_in_place(&self, _chunk: &mut dyn VoxelChunk, _brush: &dyn VoxelBrush) {
+    match self {
+      VoxelOperation::Union => todo!(),
+      VoxelOperation::Intersection => todo!(),
+      VoxelOperation::Subtraction => todo!(),
+    }
+  }
+}
+
+/// Represents a chunk of [`Voxel`]s.
+///
+/// A chunk is a 3D grid of [`Voxel`]s, which can be used to represent a discrete
+/// volume of space.
+pub trait VoxelChunk: VoxelBrush {}
+
+/// A default [`VoxelChunk`] implementation backed by a [`Vec`].
+///
+/// [`Voxel`]s are stored in a flat array, with the first dimension being the
+/// width, the second being the height, and the third being the depth.
+///
+/// The origin of the chunk is at the bottom left corner, with the positive X
+/// axis pointing right, the positive Y axis pointing up, and the positive Z axis
+/// pointing out of the screen.
+#[derive(Clone)]
+pub struct Chunk {
+  size: (u16, u16, u16),
+  _voxels: Vec<Voxel>,
+}
+
+impl Chunk {
+  pub const DEFAULT_WIDTH: usize = 16;
+  pub const DEFAULT_HEIGHT: usize = 128;
+  pub const DEFAULT_DEPTH: usize = 16;
+
+  /// The default size of a chunk, in (width, height, depth) units.
+  pub const DEFAULT_SIZE: (usize, usize, usize) = (Self::DEFAULT_WIDTH, Self::DEFAULT_HEIGHT, Self::DEFAULT_DEPTH);
+}
+
+impl Default for Chunk {
   fn default() -> Self {
     Self {
-      voxels: [Voxel::default(); W * H * D],
+      size: (Self::DEFAULT_WIDTH as u16, Self::DEFAULT_HEIGHT as u16, Self::DEFAULT_DEPTH as u16),
+      _voxels: Vec::new(),
     }
   }
 }
 
-impl<const W: usize, const H: usize, const D: usize> Chunk for StaticChunk<W, H, D>
-where
-  [(); W * H * D]: Sized,
-{
-  #[inline(always)]
-  fn width(&self) -> usize {
-    W
-  }
+impl VoxelChunk for Chunk {}
 
-  #[inline(always)]
-  fn height(&self) -> usize {
-    H
-  }
+impl VoxelBrush for Chunk {
+  fn size(&self) -> (usize, usize, usize) {
+    let (width, height, depth) = self.size;
 
-  #[inline(always)]
-  fn depth(&self) -> usize {
-    D
-  }
-
-  /// Reads a value from the chunk.
-  fn get(&self, x: usize, y: usize, z: usize) -> Option<Voxel> {
-    if x < W && y < H && z < D {
-      Some(self.voxels[x + y * W + z * W * H])
-    } else {
-      None
-    }
-  }
-
-  /// Sets a value in the chunk.
-  fn set(&mut self, x: usize, y: usize, z: usize, value: Voxel) {
-    if x >= W || y >= H || z >= D {
-      return;
-    }
-
-    self.voxels[x + y * W + z * W * H] = value
-  }
-
-  /// Fills the chunk with a value.
-  fn fill(&mut self, value: Voxel) {
-    self.voxels.fill(value);
+    (width as usize, height as usize, depth as usize)
   }
 }
 
-/// A dynamically sized chunk of [`Voxel`]s.
-pub struct DynamicChunk {
-  width: usize,
-  height: usize,
-  depth: usize,
-  voxels: Vec<Voxel>,
-}
-
-impl DynamicChunk {
-  /// Creates a new empty chunk.
-  pub fn new(width: usize, height: usize, depth: usize) -> Self {
-    Self {
-      width,
-      height,
-      depth,
-      voxels: vec![Voxel::default(); width * height * depth],
-    }
-  }
-
-  /// Resizes the chunk to the given new dimensions.
-  pub fn resize(&mut self, width: usize, height: usize, depth: usize) {
-    self.width = width;
-    self.height = height;
-    self.depth = depth;
-
-    self.voxels.resize(width * height * depth, Voxel::default());
+impl VoxelBrush for surreal::maths::Sphere {
+  fn size(&self) -> (usize, usize, usize) {
+    todo!()
   }
 }
 
-impl Chunk for DynamicChunk {
-  /// The width of the chunk, in units.
-  #[inline]
-  fn width(&self) -> usize {
-    self.width
-  }
-
-  /// The height of the chunk, in units.
-  #[inline]
-  fn height(&self) -> usize {
-    self.height
-  }
-
-  /// The depth of the chunk, in units.
-  #[inline]
-  fn depth(&self) -> usize {
-    self.depth
-  }
-
-  fn get(&self, x: usize, y: usize, z: usize) -> Option<Voxel> {
-    if x < self.width && y < self.height && z < self.depth {
-      Some(self.voxels[x + y * self.width + z * self.width * self.height])
-    } else {
-      None
-    }
-  }
-
-  fn set(&mut self, x: usize, y: usize, z: usize, value: Voxel) {
-    if x >= self.width || y >= self.height || z >= self.depth {
-      return;
-    }
-
-    self.voxels[x + y * self.width + z * self.width * self.height] = value
-  }
-
-  fn fill(&mut self, value: Voxel) {
-    self.voxels.fill(value);
+impl VoxelBrush for surreal::maths::Cube {
+  fn size(&self) -> (usize, usize, usize) {
+    todo!()
   }
 }
 
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn static_chunk_should_read_and_write_standard_data() {
-    let mut chunk = StaticChunk::<16, 128, 16>::default();
-
-    chunk.fill(32);
-
-    assert_eq!(chunk.get(0, 0, 0), Some(32u8));
-    assert_eq!(chunk.get(15, 127, 15), Some(32u8));
+impl VoxelBrush for surreal::maths::Cylinder {
+  fn size(&self) -> (usize, usize, usize) {
+    todo!()
   }
+}
 
-  #[test]
-  fn dynamic_chunk_should_read_and_write_standard_data() {
-    let mut chunk = DynamicChunk::new(16, 128, 16);
-
-    chunk.fill(32);
-
-    assert_eq!(chunk.get(0, 0, 0), Some(32u8));
-    assert_eq!(chunk.get(15, 127, 15), Some(32u8));
+impl VoxelBrush for surreal::maths::Trapezoid {
+  fn size(&self) -> (usize, usize, usize) {
+    todo!()
   }
 }

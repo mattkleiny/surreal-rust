@@ -22,7 +22,7 @@ pub type GraphicsId = surreal::utilities::RID;
 /// All instructions to the graphics server should be sent through this facade.
 /// Internally we delegate to the active [`GraphicsServerBackend`], which can
 /// vary depending on the target platform.
-struct GraphicsServer {
+pub struct GraphicsServer {
   _backend: Box<dyn GraphicsServerBackend>,
 }
 
