@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 surreal = { package = "surreal-core", path = "../../core" }
-mlua =  { version = "0.8.6", features = ["vendored", "lua54"], optional = true }
+mlua =  { version = "0.8.6", features = ["vendored", "lua54"] }

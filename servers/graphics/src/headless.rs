@@ -1,13 +1,13 @@
-//! OpenGL support for the engine.
+//! Headless graphics support for the engine.
 
 use super::*;
 
-/// A [`GraphicsServerBackend`] implementation for OpenGL.
+/// A headless, no-op [`GraphicsServerBackend`].
 #[derive(Default)]
-pub struct OpenGLBackend;
+pub struct HeadlessBackend;
 
 #[allow(unused_variables)]
-impl GraphicsServerBackend for OpenGLBackend {
+impl GraphicsServerBackend for HeadlessBackend {
   fn shader_create(&self) -> surreal::Result<GraphicsId> {
     todo!()
   }

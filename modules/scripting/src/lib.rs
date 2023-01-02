@@ -2,7 +2,6 @@
 
 use surreal::utilities::{Variant, RID};
 
-#[cfg(feature = "mlua")]
 pub mod lua;
 
 /// The [`RID`] for a script in a [`ScriptServer`].

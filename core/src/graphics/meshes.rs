@@ -361,17 +361,12 @@ impl MeshBrush<Vertex2> for crate::maths::Cube {
 }
 
 impl MeshBrush<Vertex3> for crate::maths::Cube {
-  fn build(&self, builder: &mut MeshBuilder<Vertex3>) {
-    let min = self.min();
-    let max = self.max();
+  fn build(&self, _builder: &mut MeshBuilder<Vertex3>) {
+    let _min = self.min();
+    let _max = self.max();
 
     // TODO: add our 6 cube faces
-    builder.add_quad(&[
-      Vertex3::new([min.x, min.y, min.z], [0.0, 0.0], Color32::WHITE),
-      Vertex3::new([max.x, min.y, min.z], [0.0, 0.0], Color32::WHITE),
-      Vertex3::new([max.x, max.y, min.z], [0.0, 0.0], Color32::WHITE),
-      Vertex3::new([min.x, max.y, min.z], [0.0, 0.0], Color32::WHITE),
-    ]);
+    todo!()
   }
 }
 

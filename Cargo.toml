@@ -23,7 +23,7 @@ opt-level = 3
 opt-level = 1
 
 [features]
-default = ["audio", "graphics", "input", "physics", "scripting/mlua"]
+default = ["audio", "graphics", "input", "physics"]
 hdrp = ["graphics/hdrp"]
 lwrp = ["graphics/lwrp"]
 

@@ -1,13 +1,25 @@
-//! OpenGL support for the engine.
+//! Vulkan support for the engine.
+
+use ash as vk;
+use raw_window_handle::HasRawWindowHandle;
 
 use super::*;
 
-/// A [`GraphicsServerBackend`] implementation for OpenGL.
+/// A [`GraphicsServerBackend`] implementation for Vulkan.
 #[derive(Default)]
-pub struct OpenGLBackend;
+pub struct VulkanBackend {
+  instance: vk::Instance,
+}
+
+impl VulkanBackend {
+  /// Creates a [`VulkanBackend`] for the given window.
+  pub fn new(_window: &impl HasRawWindowHandle) -> surreal::Result<Self> {
+    todo!()
+  }
+}
 
 #[allow(unused_variables)]
-impl GraphicsServerBackend for OpenGLBackend {
+impl GraphicsServerBackend for VulkanBackend {
   fn shader_create(&self) -> surreal::Result<GraphicsId> {
     todo!()
   }

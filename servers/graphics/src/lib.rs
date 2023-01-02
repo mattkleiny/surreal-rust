@@ -11,8 +11,11 @@ pub mod hdrp;
 #[cfg(feature = "lwrp")]
 pub mod lwrp;
 
+mod headless;
 #[cfg(feature = "opengl")]
 mod opengl;
+#[cfg(feature = "vulkan")]
+mod vulkan;
 
 /// A unique [`surreal::utilities::RID`] for graphics resources.
 pub type GraphicsId = surreal::utilities::RID;
@@ -23,7 +26,43 @@ pub type GraphicsId = surreal::utilities::RID;
 /// Internally we delegate to the active [`GraphicsServerBackend`], which can
 /// vary depending on the target platform.
 pub struct GraphicsServer {
-  _backend: Box<dyn GraphicsServerBackend>,
+  backend: Box<dyn GraphicsServerBackend>,
+}
+
+impl GraphicsServer {
+  /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
+  pub fn from_backend(backend: Box<dyn GraphicsServerBackend>) -> Self {
+    GraphicsServer { backend }
+  }
+
+  /// Creates a [`GraphicsServer`] for OpenGL.
+  #[cfg(feature = "opengl")]
+  pub fn from_opengl() -> surreal::Result<Self> {
+    let server = GraphicsServer {
+      backend: Box::new(opengl::OpenGLBackend::default()),
+    };
+
+    Ok(server)
+  }
+
+  /// Creates a [`GraphicsServer`] for Vulkan.
+  #[cfg(feature = "vulkan")]
+  pub fn from_vulkan() -> surreal::Result<Self> {
+    let server = GraphicsServer {
+      backend: Box::new(opengl::OpenGLBackend::default()),
+    };
+
+    Ok(server)
+  }
+
+  /// Creates a [`GraphicsServer`] for headless.
+  pub fn from_headless() -> surreal::Result<Self> {
+    let server = GraphicsServer {
+      backend: Box::new(headless::HeadlessBackend::default()),
+    };
+
+    Ok(server)
+  }
 }
 
 /// An abstraction on top of the underlying graphics system.
