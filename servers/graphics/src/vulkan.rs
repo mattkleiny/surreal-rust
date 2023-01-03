@@ -1,6 +1,7 @@
 //! Vulkan support for the engine.
 
 use ash::vk;
+use std::ffi::CString;
 
 use super::*;
 
@@ -16,10 +17,14 @@ impl VulkanBackend {
   pub fn new(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
     unsafe {
       let entry = ash::Entry::load()?;
-      let app_info = vk::ApplicationInfo {
-        api_version: vk::make_api_version(0, 1, 0, 0),
-        ..Default::default()
-      };
+
+      let app_info = vk::ApplicationInfo::builder()
+        .application_name(CString::new("Surreal Engine").unwrap().as_c_str())
+        .application_version(vk::make_version(0, 1, 0))
+        .engine_name(CString::new("Surreal Engine").unwrap().as_c_str())
+        .engine_version(vk::make_version(0, 1, 0))
+        .api_version(vk::make_version(1, 2, 0))
+        .build();
 
       let create_info = vk::InstanceCreateInfo {
         p_application_info: &app_info,

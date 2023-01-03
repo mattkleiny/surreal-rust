@@ -1,13 +1,36 @@
 //! OpenGL support for the engine.
 
 use super::*;
+use raw_window_handle::RawWindowHandle;
 
 /// A [`GraphicsServerBackend`] implementation for OpenGL.
-pub struct OpenGLBackend;
+pub struct OpenGLBackend {
+  context: glutin::ContextWrapper<glutin::PossiblyCurrent, ()>,
+}
 
 impl OpenGLBackend {
-  pub fn new(_window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
-    todo!()
+  /// Builds a new [`OpenGLBackend`] for the given raw window handles.
+  pub fn new(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
+    use glutin::platform::windows::RawContextExt;
+
+    let context = unsafe {
+      glutin::ContextBuilder::new()
+        .with_vsync(true)
+        .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 3)))
+        .with_gl_profile(glutin::GlProfile::Core)
+        .with_gl_debug_flag(true)
+        .build_raw_context(match window.raw_window_handle() {
+          RawWindowHandle::Win32(handle) => handle.hwnd,
+          RawWindowHandle::WinRt(handle) => handle.core_window,
+          _ => surreal::bail!("Unsupported window handle"),
+        })?
+        .make_current()
+        .map_err(|(_, err)| err)?
+    };
+
+    gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
+
+    Ok(Self { context })
   }
 }
 
