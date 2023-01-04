@@ -5,8 +5,8 @@ edition = "2021"
 
 [features]
 default = ["opengl", "vulkan"]
-hdrp = []
-lwrp = []
+universal = []
+highdef = []
 opengl = ["gl", "glutin"]
 vulkan = ["ash", "ash-window"]
 

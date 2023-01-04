@@ -1,11 +1,12 @@
 //! OpenGL support for the engine.
 
-use super::*;
 use raw_window_handle::RawWindowHandle;
+
+use super::*;
 
 /// A [`GraphicsServerBackend`] implementation for OpenGL.
 pub struct OpenGLBackend {
-  context: glutin::ContextWrapper<glutin::PossiblyCurrent, ()>,
+  _context: glutin::ContextWrapper<glutin::PossiblyCurrent, ()>,
 }
 
 impl OpenGLBackend {
@@ -22,6 +23,8 @@ impl OpenGLBackend {
         .build_raw_context(match window.raw_window_handle() {
           RawWindowHandle::Win32(handle) => handle.hwnd,
           RawWindowHandle::WinRt(handle) => handle.core_window,
+          RawWindowHandle::Xlib(handle) => handle.window as *mut std::ffi::c_void,
+          RawWindowHandle::Wayland(handle) => handle.surface,
           _ => surreal::bail!("Unsupported window handle"),
         })?
         .make_current()
@@ -30,7 +33,7 @@ impl OpenGLBackend {
 
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
-    Ok(Self { context })
+    Ok(Self { _context: context })
   }
 }
 

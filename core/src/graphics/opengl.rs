@@ -39,7 +39,6 @@ impl OpenGLGraphicsBackend {
 }
 
 impl GraphicsBackend for OpenGLGraphicsBackend {
-  #[profiling::function]
   fn begin_frame(&self) {
     // no-op
   }

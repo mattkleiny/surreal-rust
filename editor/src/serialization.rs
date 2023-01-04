@@ -2,7 +2,6 @@
 
 use std::collections::HashMap;
 
-use serde::ser::SerializeMap;
 use serde::{Deserialize, Serialize};
 
 /// A dynamic object that can be serialized/deserialized.

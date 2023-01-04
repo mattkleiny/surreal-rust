@@ -7,14 +7,14 @@ use super::*;
 
 /// A [`GraphicsServerBackend`] implementation for Vulkan.
 pub struct VulkanBackend {
-  entry: ash::Entry,
-  instance: ash::Instance,
-  surface: ash::extensions::khr::Surface,
+  _entry: ash::Entry,
+  _instance: ash::Instance,
+  _surface: ash::extensions::khr::Surface,
 }
 
 impl VulkanBackend {
   /// Creates a [`VulkanBackend`] for the given window.
-  pub fn new(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
+  pub fn new(_window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
     unsafe {
       let entry = ash::Entry::load()?;
 
@@ -34,7 +34,11 @@ impl VulkanBackend {
       let instance = entry.create_instance(&create_info, None)?;
       let surface = ash::extensions::khr::Surface::new(&entry, &instance);
 
-      Ok(Self { entry, instance, surface })
+      Ok(Self {
+        _entry: entry,
+        _instance: instance,
+        _surface: surface,
+      })
     }
   }
 }
