@@ -30,18 +30,20 @@ impl Sub for TimeStamp {
 
 /// A simple clock for measuring the time between ticks.
 #[derive(Debug)]
-pub struct Clock {
+pub struct DeltaClock {
   start_time: TimeStamp,
   last_time: TimeStamp,
+  last_delta_time: f32,
   max_delta_time: f32,
 }
 
-impl Clock {
+impl DeltaClock {
   /// Creates a new clock.
   pub fn new() -> Self {
     Self {
       start_time: TimeStamp::now(),
       last_time: TimeStamp::now(),
+      last_delta_time: 0.,
       max_delta_time: 0.16 * 2.,
     }
   }
@@ -56,6 +58,13 @@ impl Clock {
     delta_time.total_seconds().min(self.max_delta_time)
   }
 
+  /// The last delta time observed on the [`DeltaClock`], in seconds.
+  #[inline]
+  pub fn last_delta_time(&self) -> f32 {
+    self.last_delta_time
+  }
+
+  /// The total time observed since the [`DeltaClock`] was created.
   pub fn total_time(&self) -> f32 {
     let now = TimeStamp::now();
 

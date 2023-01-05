@@ -1,4 +1,4 @@
-//! A simple Hello, World for Surreal.
+//! A simple 'Hello, World' for Surreal.
 
 use surreal::prelude::*;
 use surreal::prototype::*;

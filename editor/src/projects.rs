@@ -1,14 +1,21 @@
 //! Project management for Surreal
 
+use std::fmt::{Display, Formatter};
+
+use thiserror::Error;
+
 use surreal::diagnostics::info;
 use surreal::utilities::TypeDatabase;
 
 use super::*;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+/// Possible errors when loading a project.
+#[derive(Error, Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ProjectError {
+  #[error("An invalid project format was detected")]
   InvalidFormat,
-  InvalidVersion,
+  #[error("The project version is incompatible with the current editor version")]
+  IncompatibleVersion,
 }
 
 /// Represents a project in the Surreal editor.

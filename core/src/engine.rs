@@ -3,23 +3,24 @@
 //! Bootstrapping and other framework systems for common projects.
 
 use glutin::{
-  ContextBuilder,
   dpi::LogicalSize,
   event_loop::{ControlFlow, EventLoop},
   window::{Icon, Window, WindowBuilder},
+  ContextBuilder,
 };
 use log::LevelFilter;
+use winit::event::WindowEvent;
 
 use crate::{
   assets::AssetManager,
   audio::{AudioServer, OpenALAudioBackend},
-  diagnostics::{ConsoleLoggerBuilder, profiling},
+  diagnostics::{profiling, ConsoleLoggerBuilder},
   graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend, RenderContextManager},
   input,
   input::InputBackend,
   maths::{uvec2, vec2},
   scene::{SceneEvent, SceneGraph},
-  utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
+  utilities::{DeltaClock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
 /// Configuration for the `Engine`.
@@ -32,7 +33,6 @@ pub struct Configuration {
   pub vsync_enabled: bool,
   pub samples: u16,
   pub update_continuously: bool,
-  pub run_in_background: bool,
   pub is_window_visible: bool,
   pub transparent_window: bool,
   pub show_fps_in_title: bool,
@@ -48,7 +48,6 @@ impl Default for Configuration {
       vsync_enabled: true,
       samples: 0,
       update_continuously: true,
-      run_in_background: false,
       is_window_visible: true,
       transparent_window: false,
       show_fps_in_title: true,
@@ -78,6 +77,41 @@ impl GameTick {
   }
 }
 
+/// Different kinds of events that can be dispatched to an application.
+pub enum ApplicationLoopEvent<'a> {
+  /// Indicating the application should update.
+  Update,
+  /// Indicating the application should draw.
+  Draw,
+  /// An event from the underlying window platform.
+  Window(&'a winit::event::WindowEvent<'a>),
+}
+
+/// Represents an application that can be used in an [`Engine`].
+#[allow(unused_variables)]
+pub trait Application: Sized {
+  /// Builds the [`Application`] instance.
+  fn new(engine: &Engine, assets: &AssetManager) -> crate::Result<Self>;
+
+  /// Called when the application is to be updated.
+  fn on_update(&mut self, engine: &mut Engine, tick: &mut GameTick) {}
+
+  /// Called when the application is to be drawn.
+  fn on_draw(&mut self, engine: &mut Engine, tick: &mut GameTick) {}
+
+  /// Invoked when a [`WindowEvent`] is received.
+  fn on_window_event(&mut self, engine: &mut Engine, event: &WindowEvent) {}
+
+  /// Notifies the application of an [`ApplicationLoopEvent`]. l
+  fn notify(&mut self, engine: &mut Engine, tick: &mut GameTick, event: ApplicationLoopEvent) {
+    match event {
+      ApplicationLoopEvent::Update => self.on_update(engine, tick),
+      ApplicationLoopEvent::Draw => self.on_draw(engine, tick),
+      ApplicationLoopEvent::Window(event) => self.on_window_event(engine, event),
+    }
+  }
+}
+
 /// The core engine for Surreal.
 ///
 /// This struct manages core systems and facilitates the main game loop.
@@ -95,7 +129,7 @@ pub struct Engine {
   is_focused: bool,
 
   // timing
-  clock: Clock,
+  clock: DeltaClock,
   frame_timer: IntervalTimer,
   frame_counter: FrameCounter,
 }
@@ -170,7 +204,7 @@ impl Engine {
       is_focused: true,
 
       // timing
-      clock: Clock::new(),
+      clock: DeltaClock::new(),
       frame_timer: IntervalTimer::new(TimeSpan::from_seconds(1.)),
       frame_counter: FrameCounter::new(32),
     }
@@ -243,37 +277,74 @@ impl Engine {
     });
   }
 
+  /// Builds a [`Engine`] that runs the given [`Application`].  
+  pub fn from_application<A: Application>(configuration: Configuration) {
+    Engine::start(configuration, |engine, assets| {
+      let mut timer = DeltaClock::new();
+      let mut application = A::new(&engine, &assets).expect("Failed to create application");
+
+      engine.run(|engine, control_flow, event| {
+        // capture timing information
+        let mut tick = GameTick {
+          time: GameTime {
+            delta_time: timer.tick(),
+            total_time: timer.total_time(),
+          },
+          is_exiting: false,
+        };
+
+        application.notify(engine, &mut tick, event);
+
+        if tick.is_exiting {
+          *control_flow = ControlFlow::Exit;
+        }
+
+        profiling::finish_frame();
+      });
+    })
+  }
+
   /// Runs a variable step game loop against the engine.
   ///
   /// This method will block until the game is closed.
   pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, &mut GameTick)) {
-    let mut timer = Clock::new();
+    let mut delta_clock = DeltaClock::new();
 
-    self.run(move |engine, control_flow| {
-      // capture timing information
-      let mut tick = GameTick {
-        time: GameTime {
-          delta_time: timer.tick(),
-          total_time: timer.total_time(),
-        },
-        is_exiting: false,
-      };
-
+    self.run(move |engine, control_flow, event| {
       // run main loop
-      body(engine, &mut tick);
+      match event {
+        ApplicationLoopEvent::Update => {
+          // no-op; in this model tie updates to renderings
+        }
+        ApplicationLoopEvent::Draw => {
+          // capture timing information
+          let mut tick = GameTick {
+            time: GameTime {
+              delta_time: delta_clock.tick(),
+              total_time: delta_clock.total_time(),
+            },
+            is_exiting: false,
+          };
 
-      if tick.is_exiting {
-        *control_flow = ControlFlow::Exit;
+          body(engine, &mut tick);
+
+          if tick.is_exiting {
+            *control_flow = ControlFlow::Exit;
+          }
+
+          profiling::finish_frame();
+        }
+        ApplicationLoopEvent::Window(_) => {
+          // no-op; we don't care about platform events
+        }
       }
-
-      profiling::finish_frame();
     });
   }
 
   /// Runs the given delegate as the main loop for the engine.
   ///
   /// This method will block until the game is closed.
-  pub fn run(mut self, mut body: impl FnMut(&mut Self, &mut ControlFlow)) {
+  pub fn run(mut self, mut body: impl FnMut(&mut Self, &mut ControlFlow, ApplicationLoopEvent)) {
     use glutin::event::*;
     use glutin::platform::run_return::EventLoopExtRunReturn;
 
@@ -290,11 +361,9 @@ impl Engine {
       match event {
         Event::RedrawRequested(window_id) => {
           if window_id == self.window.id() {
-            // update graphics and run main loop
+            // update graphics and run draw loop
             self.graphics.begin_frame();
-            {
-              body(&mut self, control_flow);
-            }
+            body(&mut self, control_flow, ApplicationLoopEvent::Draw);
             self.graphics.end_frame();
 
             // update input devices
@@ -303,23 +372,10 @@ impl Engine {
         }
         Event::MainEventsCleared => {
           // update the fps counter, if enabled
-          if self.config.update_continuously && self.config.show_fps_in_title && self.is_focused {
-            let delta_time = self.clock.tick();
-
-            self.frame_counter.tick(delta_time);
-
-            if self.frame_timer.tick(delta_time) {
-              let new_title = format!("{} - FPS: {:.2}", self.config.title, self.frame_counter.fps());
-
-              self.window.set_title(&new_title);
-              self.frame_timer.reset();
-            }
-          } else {
-            self.window.set_title(self.config.title);
-          }
+          self.update_frame_counter();
 
           // main control flow
-          if (self.config.update_continuously && self.is_focused) || self.config.run_in_background {
+          if self.config.update_continuously && self.is_focused {
             *control_flow = ControlFlow::Poll;
             self.window.request_redraw();
           } else {
@@ -329,58 +385,65 @@ impl Engine {
               self.window.request_redraw();
             }
           }
+
+          // run update logic
+          body(&mut self, control_flow, ApplicationLoopEvent::Update);
         }
-        Event::WindowEvent { window_id, event } if window_id == self.window.id() => match event {
-          WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
-            self.input.pixels_per_point = scale_factor as f32;
+        Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
+          body(&mut self, control_flow, ApplicationLoopEvent::Window(&event));
 
-            log::trace!("Window scale factor changed to {}", scale_factor);
-          }
-          WindowEvent::CursorMoved { position, .. } => {
-            let size = self.window.inner_size();
+          match event {
+            WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
+              self.input.pixels_per_point = scale_factor as f32;
 
-            self.input.on_mouse_move(
-              vec2(position.x as f32, position.y as f32),
-              vec2(size.width as f32, size.height as f32),
-            );
-          }
-          WindowEvent::MouseWheel { delta, .. } => {
-            self.input.on_mouse_wheel(&delta);
-          }
-          WindowEvent::MouseInput { button, state, .. } => {
-            self.input.on_mouse_button(button, state);
-          }
-          WindowEvent::KeyboardInput { input, .. } => {
-            self.input.on_keyboard_event(&input);
-          }
-          WindowEvent::ReceivedCharacter(character) => {
-            self.input.on_character_received(character);
-          }
-          WindowEvent::ModifiersChanged(modifiers) => {
-            self.input.on_modifiers_changed(modifiers);
-          }
-          WindowEvent::Focused(focused) => {
-            self.is_focused = focused;
-            self.input.on_modifiers_changed(ModifiersState::default());
-
-            if focused {
-              log::trace!("Window gained focus");
-            } else {
-              log::trace!("Window lost focus");
+              log::trace!("Window scale factor changed to {}", scale_factor);
             }
-          }
-          WindowEvent::Resized(size) => {
-            let size = (size.width as usize, size.height as usize);
+            WindowEvent::CursorMoved { position, .. } => {
+              let size = self.window.inner_size();
 
-            self.graphics.set_viewport_size(size);
+              self.input.on_mouse_move(
+                vec2(position.x as f32, position.y as f32),
+                vec2(size.width as f32, size.height as f32),
+              );
+            }
+            WindowEvent::MouseWheel { delta, .. } => {
+              self.input.on_mouse_wheel(&delta);
+            }
+            WindowEvent::MouseInput { button, state, .. } => {
+              self.input.on_mouse_button(button, state);
+            }
+            WindowEvent::KeyboardInput { input, .. } => {
+              self.input.on_keyboard_event(&input);
+            }
+            WindowEvent::ReceivedCharacter(character) => {
+              self.input.on_character_received(character);
+            }
+            WindowEvent::ModifiersChanged(modifiers) => {
+              self.input.on_modifiers_changed(modifiers);
+            }
+            WindowEvent::Focused(focused) => {
+              self.is_focused = focused;
+              self.input.on_modifiers_changed(ModifiersState::default());
 
-            log::trace!("Window resized to {}x{}", size.0, size.1);
+              if focused {
+                log::trace!("Window gained focus");
+              } else {
+                log::trace!("Window lost focus");
+              }
+            }
+            WindowEvent::Resized(size) => {
+              let size = (size.width as usize, size.height as usize);
+
+              self.graphics.set_viewport_size(size);
+
+              log::trace!("Window resized to {}x{}", size.0, size.1);
+            }
+            WindowEvent::CloseRequested => {
+              *control_flow = ControlFlow::Exit;
+            }
+            _ => {}
           }
-          WindowEvent::CloseRequested => {
-            *control_flow = ControlFlow::Exit;
-          }
-          _ => {}
-        },
+        }
         _ => {}
       }
     });
@@ -393,6 +456,24 @@ impl Engine {
     let inner_size = self.window.inner_size();
 
     (inner_size.width as usize, inner_size.height as usize)
+  }
+
+  /// Updates the main window frame counter.
+  fn update_frame_counter(&mut self) {
+    if self.config.update_continuously && self.config.show_fps_in_title && self.is_focused {
+      let delta_time = self.clock.last_delta_time();
+
+      self.frame_counter.tick(delta_time);
+
+      if self.frame_timer.tick(delta_time) {
+        let new_title = format!("{} - FPS: {:.2}", self.config.title, self.frame_counter.fps());
+
+        self.window.set_title(&new_title);
+        self.frame_timer.reset();
+      }
+    } else {
+      self.window.set_title(self.config.title);
+    }
   }
 }
 

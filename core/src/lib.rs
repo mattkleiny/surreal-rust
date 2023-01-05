@@ -4,7 +4,6 @@
 //! general purpose code for use in other systems.
 
 #![feature(anonymous_lifetime_in_impl_trait)]
-#![feature(const_refs_to_cell)]
 #![feature(type_alias_impl_trait)]
 
 #[macro_use]

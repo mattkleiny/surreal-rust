@@ -1,6 +1,6 @@
 use surreal::graphics::*;
 use surreal::macros::Object;
-use surreal::maths::{Mat4, vec2};
+use surreal::maths::{EulerRot, Mat4, Vec3Swizzles};
 use surreal::scene::*;
 
 /// A [`Component`] which renders a sprite in the game world.
@@ -15,12 +15,13 @@ impl Component for SpriteComponent {
   }
 
   fn on_render(&mut self, node: &mut SceneNode, manager: &mut RenderContextManager) {
-    let position = node.local_position();
-
     manager.with(|context: &mut SpriteContext| {
       context.batch.draw_sprite(
         &self.region,
         &SpriteOptions {
+          position: node.local_position().xy(),
+          rotation: node.local_rotation().to_euler(EulerRot::XYZ).1,
+          scale: node.local_scale().xy(),
           ..Default::default()
         },
       );
@@ -40,9 +41,6 @@ const UNIFORM_PALETTE_WIDTH: UniformKey<u32> = UniformKey::new("u_paletteWidth")
 
 /// A uniform that contains the projection-view matrix for perspective adjustment.
 const UNIFORM_PROJECTION_VIEW: UniformKey<&Mat4> = UniformKey::new("u_projectionView");
-
-/// A uniform that contains the main texture for a shader.
-const UNIFORM_MAIN_TEXTURE: UniformKey<&Texture> = UniformKey::new("u_texture");
 
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -174,7 +172,7 @@ impl RenderContext for SpriteContext {
 
 #[cfg(test)]
 mod tests {
-  use surreal::maths::{Quat, vec3};
+  use surreal::maths::{vec3, Quat};
 
   use super::*;
 

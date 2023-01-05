@@ -11,9 +11,6 @@
 //! [`VoxelChunk`]s can be combined with [`VoxelMerge`] operations, and templated
 //! via [`VoxelBrush`] types.
 
-#![allow(incomplete_features)]
-#![feature(generic_const_exprs)]
-
 /// A voxel in a chunk.
 pub type Voxel = u8;
 

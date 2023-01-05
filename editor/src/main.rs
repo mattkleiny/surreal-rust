@@ -1,40 +1,57 @@
+use surreal::assets::AssetManager;
 use surreal::diagnostics::profiling;
-use surreal::engine::{Configuration, Engine};
+use surreal::engine::{Application, Configuration, Engine, GameTick};
 use surreal::ui::UserInterface;
 use surreal_editor::{EditorWindow, Project};
-
-// TODO: consider using the windows APIs directly to allow better integration with the platform?
 
 /// Entry point for the Surreal editor application.
 fn main() {
   let configuration = Configuration {
     title: "Surreal Editor",
-    size: (1280, 1024),
+    size: (1920, 1080),
     vsync_enabled: true,
     update_continuously: false,
-    run_in_background: false,
     transparent_window: true,
     ..Default::default()
   };
 
-  Engine::start(configuration, |engine, _| {
-    let mut interface = UserInterface::new(&engine.graphics);
-    let mut editor_window = EditorWindow::default();
+  Engine::from_application::<EditorApplication>(configuration);
+}
 
-    let _project = Project::open(
-      std::env::current_dir()
-        .expect("Unable to get working directory")
+/// Top-level [`Application`] for the editor.
+struct EditorApplication {
+  user_interface: UserInterface,
+  editor_window: EditorWindow,
+  active_project: Option<Project>,
+}
+
+impl Application for EditorApplication {
+  fn new(engine: &Engine, _assets: &AssetManager) -> surreal::Result<Self> {
+    let user_interface = UserInterface::new(&engine.graphics);
+    let editor_window = EditorWindow::default();
+
+    let project = Project::open(
+      std::env::current_dir()?
         .to_str()
-        .expect("Failed to get working directory"),
-    )
-    .expect("Unable to open project");
+        .ok_or(surreal::anyhow!("Failed to determine current directory"))?,
+    )?;
 
-    engine.run_variable_step(|engine, _| {
-      profiling::profile_scope!("Editor loop");
+    Ok(Self {
+      user_interface,
+      editor_window,
+      active_project: Some(project),
+    })
+  }
 
-      interface.run(engine, |egui| {
-        editor_window.show(egui);
-      });
+  fn on_update(&mut self, _engine: &mut Engine, _tick: &mut GameTick) {
+    profiling::profile_scope!("Editor loop");
+  }
+
+  fn on_draw(&mut self, engine: &mut Engine, _tick: &mut GameTick) {
+    profiling::profile_scope!("Editor draw");
+
+    self.user_interface.run(engine, |egui| {
+      self.editor_window.show(egui);
     });
-  });
+  }
 }
