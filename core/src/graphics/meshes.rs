@@ -174,14 +174,18 @@ impl<V: Vertex> Mesh<V> {
   /// Constructs a mesh with the given [`MeshBuilder`] factory method.
   pub fn from_factory(graphics: &GraphicsServer, factory: impl Fn(&mut MeshBuilder<V>)) -> Self {
     let mut builder = MeshBuilder::new();
+
     factory(&mut builder);
+
     Self::from_builder(graphics, &builder)
   }
 
   /// Constructs a new mesh from the [`MeshBrush`].
   pub fn from_brush(graphics: &GraphicsServer, brush: &impl MeshBrush<V>) -> Self {
     let mut builder = MeshBuilder::new();
+
     brush.build(&mut builder);
+
     Self::from_builder(graphics, &builder)
   }
 

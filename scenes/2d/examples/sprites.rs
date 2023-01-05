@@ -7,7 +7,7 @@ use surreal_scene2d::SpriteComponent;
 mod common;
 
 pub fn main() {
-  common::bootstrap("Sprites", |_, assets| {
+  common::run_example("Sprites", |_, assets| {
     let texture = Texture::load(assets, "local://assets/sprites/bunny.png").unwrap();
     let region = TextureRegion::from(&texture);
 

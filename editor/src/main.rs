@@ -3,6 +3,8 @@ use surreal::engine::{Configuration, Engine};
 use surreal::ui::UserInterface;
 use surreal_editor::EditorWindow;
 
+// TODO: consider using the windows APIs directly to allow better integration with the platform?
+
 /// Entry point for the Surreal editor application.
 fn main() {
   let configuration = Configuration {

@@ -13,7 +13,7 @@ fn main() {
   Engine::start(configuration, |engine, _| {
     let graphics = &engine.graphics;
 
-    let mesh: Mesh<Vertex3> = Mesh::from_brush(graphics, &Cube::default());
+    let mesh: Mesh<Vertex2> = Mesh::from_brush(graphics, &Cube::default());
     let material = load_built_in_material(graphics, BuiltInShader::Wire);
 
     engine.run_variable_step(|engine, tick| {

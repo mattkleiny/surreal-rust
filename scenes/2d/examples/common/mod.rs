@@ -9,7 +9,7 @@ const WIDTH: f32 = 1920.;
 const HEIGHT: f32 = 1080.;
 
 /// Bootstraps an example for the module
-pub fn bootstrap(name: &'static str, factory: impl Fn(&Engine, &AssetManager) -> SceneGraph) {
+pub fn run_example(name: &'static str, factory: impl Fn(&Engine, &AssetManager) -> SceneGraph) {
   let configuration = Configuration {
     title: name,
     size: (WIDTH as u32, HEIGHT as u32),
@@ -21,7 +21,7 @@ pub fn bootstrap(name: &'static str, factory: impl Fn(&Engine, &AssetManager) ->
     let mut scene = factory(&engine, &assets);
     let mut renderer = RenderContextManager::new(&engine.graphics);
 
-    renderer.add_descriptor(surreal_scene2d::rendering::sprites::SpriteContextDescriptor {
+    renderer.add_descriptor(surreal_scene2d::SpriteContextDescriptor {
       projection_view: Mat4::orthographic_rh_gl(-WIDTH / 2., WIDTH / 2., HEIGHT / 2., -HEIGHT / 2., 0., 100.),
       ..Default::default()
     });

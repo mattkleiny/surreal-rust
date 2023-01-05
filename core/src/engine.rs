@@ -232,7 +232,7 @@ impl Engine {
       let mut scene_graph = setup(&engine, &assets);
       let mut render_manager = RenderContextManager::new(&engine.graphics);
 
-      engine.run_variable_step(|engine, tick| {
+      engine.run_variable_step(|_, tick| {
         render_manager.begin_frame();
 
         scene_graph.notify(SceneEvent::Update(tick.time.delta_time));

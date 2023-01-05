@@ -1,22 +1,52 @@
 use surreal::graphics::*;
 use surreal::macros::Object;
-use surreal::maths::Mat4;
+use surreal::maths::{Mat4, vec2};
+use surreal::scene::*;
+
+/// A [`Component`] which renders a sprite in the game world.
+#[derive(Object)]
+pub struct SpriteComponent {
+  pub region: TextureRegion,
+}
+
+impl Component for SpriteComponent {
+  fn name(&self) -> &'static str {
+    "SpriteComponent"
+  }
+
+  fn on_render(&mut self, node: &mut SceneNode, manager: &mut RenderContextManager) {
+    let position = node.local_position();
+
+    manager.with(|context: &mut SpriteContext| {
+      context.batch.draw_sprite(
+        &self.region,
+        &SpriteOptions {
+          ..Default::default()
+        },
+      );
+    });
+  }
+
+  fn kind(&self) -> ComponentKind {
+    ComponentKind::Renderer
+  }
+}
 
 /// A uniform that contains the [`ColorPalette`] texture for sprite rendering.
-pub const UNIFORM_PALETTE: UniformKey<&Texture> = UniformKey::new("u_palette");
+const UNIFORM_PALETTE: UniformKey<&Texture> = UniformKey::new("u_palette");
 
 /// A uniform that contains the width of the value in [`UNIFORM_PALETTE`].
-pub const UNIFORM_PALETTE_WIDTH: UniformKey<u32> = UniformKey::new("u_paletteWidth");
+const UNIFORM_PALETTE_WIDTH: UniformKey<u32> = UniformKey::new("u_paletteWidth");
 
 /// A uniform that contains the projection-view matrix for perspective adjustment.
-pub const UNIFORM_PROJECTION_VIEW: UniformKey<&Mat4> = UniformKey::new("u_projectionView");
+const UNIFORM_PROJECTION_VIEW: UniformKey<&Mat4> = UniformKey::new("u_projectionView");
 
 /// A uniform that contains the main texture for a shader.
-pub const UNIFORM_MAIN_TEXTURE: UniformKey<&Texture> = UniformKey::new("u_texture");
+const UNIFORM_MAIN_TEXTURE: UniformKey<&Texture> = UniformKey::new("u_texture");
 
 /// Represents one of the built-in shaders.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum BuiltInShader {
+enum BuiltInShader {
   /// Simple purpose projected sprite shader.
   SpriteStandard,
   /// Palette-shifted sprite shader.
@@ -24,24 +54,18 @@ pub enum BuiltInShader {
 }
 
 // built-in shaders
-const SHADER_SPRITE_STANDARD: &str = include_str!("../../assets/shaders/sprite-standard.glsl");
-const SHADER_SPRITE_PALETTE: &str = include_str!("../../assets/shaders/sprite-palette.glsl");
+const SHADER_SPRITE_STANDARD: &str = include_str!("../assets/shaders/sprite-standard.glsl");
+const SHADER_SPRITE_PALETTE: &str = include_str!("../assets/shaders/sprite-palette.glsl");
 
 /// Loads a built-in [`ShaderProgram`].
-pub fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
-  let shader = match shader {
+fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
+  let program = match shader {
     BuiltInShader::SpriteStandard => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_STANDARD),
     BuiltInShader::SpritePalette => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_PALETTE),
   };
 
-  shader.expect("Failed to load build-in shader")
+  program.expect(&format!("Failed to load build-in shader {:?}", shader))
 }
-
-/// Loads a built-in [`Material`].
-pub fn load_built_in_material(graphics: &GraphicsServer, shader: BuiltInShader) -> Material {
-  Material::new(graphics, &load_built_in_shader(graphics, shader))
-}
-
 
 /// A [`RenderContextDescriptor`] for a simple [`SpriteContext`] for use in sprite rendering.
 pub struct SpriteContextDescriptor {
@@ -121,6 +145,23 @@ pub struct SpriteContext {
   pub batch: SpriteBatch,
 }
 
+impl SpriteContext {
+  /// Sets the palette texture on the shader.
+  pub fn set_palette(&mut self, palette: &Texture) {
+    self.material.set_texture(UNIFORM_PALETTE, palette, None);
+  }
+
+  /// Sets the palette width on the shader.
+  pub fn set_palette_width(&mut self, width: u32) {
+    self.material.set_uniform(UNIFORM_PALETTE_WIDTH, width);
+  }
+
+  /// Sets the projection-view matrix on the shader.
+  pub fn set_projection_view(&mut self, projection_view: &Mat4) {
+    self.material.set_uniform(UNIFORM_PROJECTION_VIEW, projection_view);
+  }
+}
+
 impl RenderContext for SpriteContext {
   fn on_begin_frame(&mut self) {
     self.batch.begin(&self.material);
@@ -128,5 +169,30 @@ impl RenderContext for SpriteContext {
 
   fn on_end_frame(&mut self) {
     self.batch.flush();
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use surreal::maths::{Quat, vec3};
+
+  use super::*;
+
+  #[test]
+  fn sprite_should_render() {
+    let graphics = create_test_graphics();
+    let texture = Texture::create_colored(&graphics, 1, 1, Color::RED);
+
+    let graph = SceneGraph::new(
+      SceneNodeBuilder::default()
+        .with_name("Test")
+        .with_local_position(vec3(0., 0., 0.))
+        .with_local_rotation(Quat::from_rotation_z(std::f32::consts::PI))
+        .with_component(SpriteComponent {
+          region: TextureRegion::from(texture),
+        }),
+    );
+
+    println!("{:?}", graph);
   }
 }
