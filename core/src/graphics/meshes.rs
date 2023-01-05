@@ -13,10 +13,11 @@ use crate::utilities::Size;
 use super::*;
 
 /// Represents the different topologies supported for a mesh.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PrimitiveTopology {
   Points,
   Lines,
+  #[default]
   Triangles,
 }
 

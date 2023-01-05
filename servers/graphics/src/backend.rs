@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use raw_window_handle::{HasRawDisplayHandle, HasRawWindowHandle};
 
 use surreal::graphics::PrimitiveTopology;
@@ -18,7 +19,7 @@ pub type GraphicsId = surreal::utilities::RID;
 /// Internally we delegate to the active [`GraphicsServerBackend`], which can
 /// vary depending on the target platform.
 pub struct GraphicsServer {
-  _backend: Box<dyn GraphicsServerBackend>,
+  backend: Box<dyn GraphicsServerBackend>,
 }
 
 impl GraphicsServer {
@@ -42,8 +43,16 @@ impl GraphicsServer {
   /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
   pub fn from_backend(backend: impl GraphicsServerBackend + 'static) -> Self {
     GraphicsServer {
-      _backend: Box::new(backend),
+      backend: Box::new(backend),
     }
+  }
+}
+
+impl Deref for GraphicsServer {
+  type Target = dyn GraphicsServerBackend;
+
+  fn deref(&self) -> &Self::Target {
+    self.backend.as_ref()
   }
 }
 
@@ -85,7 +94,7 @@ pub trait GraphicsServerBackend {
 }
 
 /// Surface data used for mesh creation.
-#[derive(Clone)]
+#[derive(Default, Clone)]
 pub struct SurfaceData {
   pub topology: PrimitiveTopology,
   pub vertices: Vec<u8>,

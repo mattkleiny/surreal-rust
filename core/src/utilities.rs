@@ -18,7 +18,7 @@ mod variant;
 ///
 /// This is an opaque handle that can be used to identify a resource in the server.
 #[repr(transparent)]
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct RID(pub u64);
 
 impl RID {
