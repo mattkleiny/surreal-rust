@@ -1,4 +1,5 @@
 use std::ops::Deref;
+
 use raw_window_handle::{HasRawDisplayHandle, HasRawWindowHandle};
 
 use surreal::graphics::PrimitiveTopology;

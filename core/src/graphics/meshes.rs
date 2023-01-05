@@ -172,19 +172,22 @@ impl<V: Vertex> Mesh<V> {
   }
 
   /// Constructs a mesh with the given [`MeshBuilder`] factory method.
-  pub fn from_builder(graphics: &GraphicsServer, factory: impl Fn(&mut MeshBuilder<V>)) -> Self {
+  pub fn from_factory(graphics: &GraphicsServer, factory: impl Fn(&mut MeshBuilder<V>)) -> Self {
     let mut builder = MeshBuilder::new();
-
     factory(&mut builder);
-
-    builder.to_mesh(graphics)
+    Self::from_builder(graphics, &builder)
   }
 
   /// Constructs a new mesh from the [`MeshBrush`].
   pub fn from_brush(graphics: &GraphicsServer, brush: &impl MeshBrush<V>) -> Self {
-    Self::from_builder(graphics, move |builder| {
-      brush.build(builder);
-    })
+    let mut builder = MeshBuilder::new();
+    brush.build(&mut builder);
+    Self::from_builder(graphics, &builder)
+  }
+
+  /// Constructs a mesh with the given [`MeshBuilder`] factory method.
+  pub fn from_builder(graphics: &GraphicsServer, builder: &MeshBuilder<V>) -> Self {
+    builder.to_mesh(graphics)
   }
 
   /// Acquires mutable write access the mesh buffers.
@@ -236,7 +239,7 @@ pub struct MeshBuilder<V> {
 }
 
 impl<V: Vertex> MeshBuilder<V> {
-  /// Creates a new empty tessellator.
+  /// Creates a new empty [`MeshBuilder`].
   pub fn new() -> Self {
     Self {
       vertices: Vec::new(),
@@ -375,8 +378,8 @@ impl MeshBrush<Vertex3> for crate::maths::Cube {
 impl Mesh<Vertex2> {
   /// Constructs a simple triangle mesh of the given size.
   pub fn create_triangle(graphics: &GraphicsServer, size: f32) -> Self {
-    Self::from_builder(graphics, |mesh| {
-      mesh.add_triangle(&[
+    Self::from_factory(graphics, |builder| {
+      builder.add_triangle(&[
         Vertex2 {
           position: vec2(-size, -size),
           color: Color32::WHITE,
@@ -398,8 +401,8 @@ impl Mesh<Vertex2> {
 
   /// Constructs a simple quad mesh of the given size.
   pub fn create_quad(graphics: &GraphicsServer, size: f32) -> Self {
-    Self::from_builder(graphics, |mesh| {
-      mesh.add_quad(&[
+    Self::from_factory(graphics, |builder| {
+      builder.add_quad(&[
         Vertex2 {
           position: vec2(-size, -size),
           color: Color32::WHITE,
@@ -426,7 +429,7 @@ impl Mesh<Vertex2> {
 
   /// Constructs a simple circle mesh of the given size.
   pub fn create_circle(graphics: &GraphicsServer, radius: f32, segments: usize) -> Self {
-    Self::from_builder(graphics, |mesh| {
+    Self::from_factory(graphics, |builder| {
       use std::f32::consts::PI;
 
       let mut vertices = Vec::with_capacity(segments);
@@ -451,7 +454,7 @@ impl Mesh<Vertex2> {
         })
       }
 
-      mesh.add_triangle_fan(&vertices);
+      builder.add_triangle_fan(&vertices);
     })
   }
 }

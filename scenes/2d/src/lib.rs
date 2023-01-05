@@ -3,6 +3,8 @@ use surreal::macros::Object;
 use surreal::maths::vec2;
 use surreal::scene::*;
 
+pub mod rendering;
+
 /// A [`Component`] which renders a sprite in the game world.
 #[derive(Object)]
 pub struct SpriteComponent {
@@ -17,7 +19,7 @@ impl Component for SpriteComponent {
   fn on_render(&mut self, node: &mut SceneNode, manager: &mut RenderContextManager) {
     let position = node.local_position();
 
-    manager.with(|context: &mut SpriteContext| {
+    manager.with(|context: &mut rendering::sprites::SpriteContext| {
       context.batch.draw_sprite(
         &self.region,
         &SpriteOptions {
@@ -33,26 +35,10 @@ impl Component for SpriteComponent {
   }
 }
 
-/// A [`RenderContext`] for [`SpriteComponent`]s.
-#[derive(Object)]
-pub struct SpriteContext {
-  batch: SpriteBatch,
-  material: Material,
-}
-
-impl RenderContext for SpriteContext {
-  fn on_begin_frame(&mut self) {
-    self.batch.begin(&self.material);
-  }
-
-  fn on_end_frame(&mut self) {
-    self.batch.flush();
-  }
-}
 
 #[cfg(test)]
 mod tests {
-  use surreal::maths::{vec3, Quat};
+  use surreal::maths::{Quat, vec3};
 
   use super::*;
 

@@ -3,21 +3,22 @@
 //! Bootstrapping and other framework systems for common projects.
 
 use glutin::{
+  ContextBuilder,
   dpi::LogicalSize,
   event_loop::{ControlFlow, EventLoop},
   window::{Icon, Window, WindowBuilder},
-  ContextBuilder,
 };
 use log::LevelFilter;
 
 use crate::{
   assets::AssetManager,
   audio::{AudioServer, OpenALAudioBackend},
-  diagnostics::{profiling, ConsoleLoggerBuilder},
-  graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend},
+  diagnostics::{ConsoleLoggerBuilder, profiling},
+  graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend, RenderContextManager},
   input,
   input::InputBackend,
   maths::{uvec2, vec2},
+  scene::{SceneEvent, SceneGraph},
   utilities::{Clock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
@@ -100,56 +101,6 @@ pub struct Engine {
 }
 
 impl Engine {
-  /// Starts the engine with the given configuration.
-  pub fn start(configuration: Configuration, setup: impl FnOnce(Engine, AssetManager)) {
-    use crate::graphics::*;
-
-    // set-up diagnostics
-    ConsoleLoggerBuilder::new().with_level(configuration.log_level).install();
-    profiling::enable_profiling();
-
-    // set-up core engine
-    log::trace!("Starting engine");
-
-    let engine = Engine::new(configuration);
-    let graphics = &engine.graphics;
-
-    // set-up asset manager
-    log::trace!("Building asset manager");
-
-    let mut assets = AssetManager::new();
-
-    assets.add_loader(BitmapFontLoader {});
-    assets.add_loader(VectorFontLoader {
-      graphics: graphics.clone(),
-      font_size: 16.,
-      atlas_stride: 16,
-      atlas_cell_size: uvec2(16, 16),
-    });
-
-    assets.add_loader(ImageLoader { format: None });
-
-    assets.add_loader(TextureLoader {
-      graphics: graphics.clone(),
-      options: TextureOptions::default(),
-    });
-
-    assets.add_loader(ShaderProgramLoader {
-      graphics: graphics.clone(),
-    });
-
-    assets.add_loader(MaterialLoader {
-      graphics: graphics.clone(),
-    });
-
-    assets.add_loader(ColorPaletteLoader::<Color>::default());
-    assets.add_loader(ColorPaletteLoader::<Color32>::default());
-
-    log::trace!("Running engine setup");
-
-    setup(engine, assets);
-  }
-
   /// Creates a new engine, bootstrapping all core systems and opening the main display.
   pub fn new(config: Configuration) -> Self {
     #[cfg(target_os = "windows")]
@@ -223,6 +174,73 @@ impl Engine {
       frame_timer: IntervalTimer::new(TimeSpan::from_seconds(1.)),
       frame_counter: FrameCounter::new(32),
     }
+  }
+
+  /// Starts the engine with the given configuration.
+  pub fn start(configuration: Configuration, setup: impl FnOnce(Engine, AssetManager)) {
+    use crate::graphics::*;
+
+    // set-up diagnostics
+    ConsoleLoggerBuilder::new().with_level(configuration.log_level).install();
+    profiling::enable_profiling();
+
+    // set-up core engine
+    log::trace!("Starting engine");
+
+    let engine = Engine::new(configuration);
+    let graphics = &engine.graphics;
+
+    // set-up asset manager
+    log::trace!("Building asset manager");
+
+    let mut assets = AssetManager::new();
+
+    assets.add_loader(BitmapFontLoader {});
+    assets.add_loader(VectorFontLoader {
+      graphics: graphics.clone(),
+      font_size: 16.,
+      atlas_stride: 16,
+      atlas_cell_size: uvec2(16, 16),
+    });
+
+    assets.add_loader(ImageLoader { format: None });
+
+    assets.add_loader(TextureLoader {
+      graphics: graphics.clone(),
+      options: TextureOptions::default(),
+    });
+
+    assets.add_loader(ShaderProgramLoader {
+      graphics: graphics.clone(),
+    });
+
+    assets.add_loader(MaterialLoader {
+      graphics: graphics.clone(),
+    });
+
+    assets.add_loader(ColorPaletteLoader::<Color>::default());
+    assets.add_loader(ColorPaletteLoader::<Color32>::default());
+
+    log::trace!("Running engine setup");
+
+    setup(engine, assets);
+  }
+
+  /// Builds a [`Engine`] that runs the given [`SceneGraph`].
+  pub fn from_scene(configuration: Configuration, setup: impl Fn(&Engine, &AssetManager) -> SceneGraph) {
+    Engine::start(configuration, |engine, assets| {
+      let mut scene_graph = setup(&engine, &assets);
+      let mut render_manager = RenderContextManager::new(&engine.graphics);
+
+      engine.run_variable_step(|engine, tick| {
+        render_manager.begin_frame();
+
+        scene_graph.notify(SceneEvent::Update(tick.time.delta_time));
+        scene_graph.notify(SceneEvent::Render(&mut render_manager));
+
+        render_manager.end_frame();
+      });
+    });
   }
 
   /// Runs a variable step game loop against the engine.
