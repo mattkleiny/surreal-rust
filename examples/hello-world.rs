@@ -1,7 +1,5 @@
 //! A simple Hello, World for Surreal.
 
-mod helpers;
-
 use surreal::prelude::*;
 use surreal::prototype::*;
 

@@ -20,7 +20,7 @@ pub struct UniversalRenderPipeline {
 }
 
 /// The per-frame rendering context for a [`UniversalRenderPipeline`].
-struct UniversalContext {}
+pub struct UniversalContext {}
 
 impl UniversalRenderPipeline {
   pub fn new() -> Self {

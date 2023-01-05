@@ -45,10 +45,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
   #[profiling::function]
   fn end_frame(&self) {
-    unsafe {
-      gl::Flush();
-    }
-
     self.context.swap_buffers().expect("Failed to swap buffers");
   }
 
