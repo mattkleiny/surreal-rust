@@ -94,6 +94,16 @@ impl<T> Grid<T> {
     self.items[x as usize + y as usize * self.stride] = value
   }
 
+  /// Swaps two items in the grid.
+  pub fn swap(&mut self, x1: i32, y1: i32, x2: i32, y2: i32) {
+    if self.is_valid_position(x1, y1) && self.is_valid_position(x2, y2) {
+      let index1 = x1 as usize + y1 as usize * self.stride;
+      let index2 = x2 as usize + y2 as usize * self.stride;
+
+      self.items.swap(index1, index2);
+    }
+  }
+
   /// Fills the grid with the given value.
   pub fn fill(&mut self, value: T)
   where
@@ -122,22 +132,20 @@ impl<T> Grid<T> {
 
   /// Flips the grid horizontally.
   pub fn flip_horizontally(&mut self) {
-    todo!()
+    for y in 0..self.height() {
+      for x in 0..self.width() / 2 {
+        self.swap(x as i32, y as i32, (self.width() - x - 1) as i32, y as i32);
+      }
+    }
   }
 
   /// Flips the grid vertically.
   pub fn flip_vertically(&mut self) {
-    todo!()
-  }
-
-  /// Mirrors the grid horizontally.
-  pub fn mirror_horizontal(&mut self) {
-    todo!()
-  }
-
-  /// Mirrors the grid vertically.
-  pub fn mirror_vertically(&mut self) {
-    todo!()
+    for y in 0..self.height() / 2 {
+      for x in 0..self.width() {
+        self.swap(x as i32, y as i32, x as i32, (self.height() - y - 1) as i32);
+      }
+    }
   }
 }
 

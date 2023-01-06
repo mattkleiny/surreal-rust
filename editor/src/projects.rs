@@ -1,7 +1,5 @@
 //! Project management for Surreal
 
-use std::fmt::{Display, Formatter};
-
 use thiserror::Error;
 
 use surreal::diagnostics::info;

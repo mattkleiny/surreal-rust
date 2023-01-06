@@ -41,7 +41,7 @@ impl UserInterface {
   /// Creates a new user interface.
   pub fn new(graphics: &GraphicsServer) -> Self {
     // load and configure material
-    let shader = ShaderProgram::from_glsl(graphics, SHADER_CANVAS_STANDARD).unwrap();
+    let shader = ShaderProgram::from_code(graphics, SHADER_CANVAS_STANDARD).unwrap();
     let mut material = Material::new(graphics, &shader);
 
     material.set_culling_mode(CullingMode::Disabled);

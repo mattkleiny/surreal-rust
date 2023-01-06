@@ -58,8 +58,8 @@ const SHADER_SPRITE_PALETTE: &str = include_str!("../assets/shaders/sprite-palet
 /// Loads a built-in [`ShaderProgram`].
 fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let program = match shader {
-    BuiltInShader::SpriteStandard => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_STANDARD),
-    BuiltInShader::SpritePalette => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_PALETTE),
+    BuiltInShader::SpriteStandard => ShaderProgram::from_code(graphics, SHADER_SPRITE_STANDARD),
+    BuiltInShader::SpritePalette => ShaderProgram::from_code(graphics, SHADER_SPRITE_PALETTE),
   };
 
   program.expect(&format!("Failed to load build-in shader {:?}", shader))

@@ -21,7 +21,7 @@ fn texture_read_write() {
 #[test]
 fn shader_and_material_uniform_access() {
   common::bootstrap(|graphics| {
-    let shader = ShaderProgram::from_glsl(
+    let shader = ShaderProgram::from_code(
       graphics,
       r#"
         #version 330 core

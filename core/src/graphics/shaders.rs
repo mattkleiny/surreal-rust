@@ -11,16 +11,12 @@ use std::rc::Rc;
 
 use smallvec::SmallVec;
 
-pub use compiler::*;
-
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::diagnostics::profiling;
 use crate::io::VirtualPath;
 use crate::maths::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 use super::*;
-
-mod compiler;
 
 /// Different types of shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -34,6 +30,75 @@ pub enum ShaderKind {
 pub struct Shader {
   pub kind: ShaderKind,
   pub code: String,
+}
+
+/// Represents a language for [`Shader`] compilation.
+///
+/// Abstracting over shader languages allows us to build out new language
+/// paradigms in the future.
+pub trait ShaderLanguage {
+  fn parse(source_code: &str) -> crate::Result<Vec<Shader>>;
+}
+
+/// The OpenGL [`ShaderLanguage`] implementation.
+pub struct GLSL;
+
+impl ShaderLanguage for GLSL {
+  /// Parses the given raw GLSL source and performs some basic pre-processing.
+  ///
+  /// Allows for the following basic transformations:
+  ///
+  /// * Multiple shader types per file (separated with #shader_type directives).
+  /// * Shared code amongst each shader definition by placing it prior to the #shader_type directives.
+  /// * Allows #include directives to fetch other files.
+  fn parse(source_code: &str) -> crate::Result<Vec<Shader>> {
+    use crate::io::*;
+
+    let mut result = Vec::with_capacity(2); // usually 2 shaders per file
+    let mut shared_code = String::new();
+
+    for line in source_code.lines() {
+      if line.trim().starts_with("#shader_type") {
+        // determine shader type
+        let kind = match line.split_whitespace().nth(1) {
+          Some("vertex") => ShaderKind::Vertex,
+          Some("fragment") => ShaderKind::Fragment,
+          Some("compute") => ShaderKind::Compute,
+          _ => continue,
+        };
+
+        result.push(Shader {
+          kind,
+          code: shared_code.clone(),
+        });
+      } else if line.trim().starts_with("#include") {
+        if let Some(path) = line.split_whitespace().nth(1) {
+          // trim the fat from the include path
+          let path = path.replace('"', "").replace('"', "").replace(';', "");
+
+          // fetch and splat the dependent shader
+          let dependent_file = VirtualPath::parse(&path);
+          let dependent_code = dependent_file.read_all_text()?;
+
+          if let Some(shader) = result.last_mut() {
+            shader.code.push_str(&dependent_code);
+          } else {
+            shared_code.push_str(&dependent_code);
+          }
+        }
+      } else if let Some(shader) = result.last_mut() {
+        // build up the active shader unit
+        shader.code.push_str(line);
+        shader.code.push('\n');
+      } else {
+        // build up the shared code unit
+        shared_code.push_str(line);
+        shared_code.push('\n');
+      };
+    }
+
+    Ok(result)
+  }
 }
 
 /// Representation of a single value that can be used in a shader.
@@ -80,9 +145,9 @@ impl<U> From<&'static str> for UniformKey<U> {
 }
 
 /// Represents a single compiled shader program.
-#[derive(Clone)]
-pub struct ShaderProgram {
+pub struct ShaderProgram<S: ShaderLanguage = GLSL> {
   state: Rc<RefCell<ShaderProgramState>>,
+  _language: std::marker::PhantomData<S>,
 }
 
 /// The internal state for a [`ShaderProgram`] .
@@ -92,7 +157,16 @@ struct ShaderProgramState {
   location_cache: HashMap<String, Option<usize>>,
 }
 
-impl ShaderProgram {
+impl<S: ShaderLanguage> Clone for ShaderProgram<S> {
+  fn clone(&self) -> Self {
+    Self {
+      state: self.state.clone(),
+      _language: std::marker::PhantomData,
+    }
+  }
+}
+
+impl<S: ShaderLanguage> ShaderProgram<S> {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
@@ -101,21 +175,15 @@ impl ShaderProgram {
         handle: graphics.create_shader(),
         location_cache: HashMap::new(),
       })),
+      _language: std::marker::PhantomData,
     }
   }
 
-  /// Compiles a [`ShaderProgram`] from the given raw string.
-  pub fn compile<S: ShaderLanguage>(graphics: &GraphicsServer, source: &str) -> crate::Result<Self> {
-    let shaders = S::compile_shader(source)?;
-
-    Self::from_shaders(graphics, &shaders)
-  }
-
-  /// Loads a [`ShaderProgram`] from the given raw 'glsl' code.
-  pub fn from_glsl(graphics: &GraphicsServer, code: &str) -> crate::Result<Self> {
+  /// Loads a [`ShaderProgram`] from the given raw shader code.
+  pub fn from_code(graphics: &GraphicsServer, code: &str) -> crate::Result<Self> {
     let program = Self::new(graphics);
 
-    program.load_glsl(code)?;
+    program.load_code(code)?;
 
     Ok(program)
   }
@@ -125,16 +193,7 @@ impl ShaderProgram {
     let path = path.into();
     let code = path.read_all_text()?;
 
-    Ok(Self::from_glsl(graphics, &code)?)
-  }
-
-  /// Loads a [`ShaderProgram`] from the given discrete [`Shader`] pieces.
-  pub fn from_shaders(graphics: &GraphicsServer, shaders: &[Shader]) -> crate::Result<Self> {
-    let program = Self::new(graphics);
-
-    program.load_shaders(shaders)?;
-
-    Ok(program)
+    Ok(Self::from_code(graphics, &code)?)
   }
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.
@@ -178,22 +237,12 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from the given 'glsl' program code.
-  pub fn load_glsl(&self, text: &str) -> crate::Result<()> {
+  pub fn load_code(&self, text: &str) -> crate::Result<()> {
     let state = self.state.borrow();
     let graphics = &state.graphics;
-    let shaders = parse_glsl_source(text)?;
+    let shaders = S::parse(text)?;
 
     graphics.link_shaders(state.handle, &shaders)?;
-
-    Ok(())
-  }
-
-  /// Reloads the [`ShaderProgram`] from the given [`Shader`] pieces.
-  pub fn load_shaders(&self, shaders: &[Shader]) -> crate::Result<()> {
-    let state = self.state.borrow();
-    let graphics = &state.graphics;
-
-    graphics.link_shaders(state.handle, shaders)?;
 
     Ok(())
   }
@@ -203,7 +252,7 @@ impl ShaderProgram {
     let path = path.into();
     let source_code = path.read_all_text()?;
 
-    self.load_glsl(&source_code)?;
+    self.load_code(&source_code)?;
 
     Ok(())
   }
@@ -235,7 +284,7 @@ impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
     let program = ShaderProgram::new(&self.graphics);
     let source_code = context.path.read_all_text()?;
 
-    program.load_glsl(&source_code)?;
+    program.load_code(&source_code)?;
 
     Ok(program)
   }
@@ -264,69 +313,13 @@ impl_uniform!(&Mat4, Mat4);
 impl_uniform!(Color, Color);
 impl_uniform!(Color32, Color32);
 
-/// Parses the given raw GLSL source and performs some basic pre-processing.
-///
-/// Allows for the following basic transformations:
-///
-/// * Multiple shader types per file (separated with #shader_type directives).
-/// * Shared code amongst each shader definition by placing it prior to the #shader_type directives.
-/// * Allows #include directives to fetch other files.
-fn parse_glsl_source(source: &str) -> crate::Result<Vec<Shader>> {
-  use crate::io::*;
-
-  let mut result = Vec::with_capacity(2); // usually 2 shaders per file
-  let mut shared_code = String::new();
-
-  for line in source.lines() {
-    if line.trim().starts_with("#shader_type") {
-      // determine shader type
-      let kind = match line.split_whitespace().nth(1) {
-        Some("vertex") => ShaderKind::Vertex,
-        Some("fragment") => ShaderKind::Fragment,
-        Some("compute") => ShaderKind::Compute,
-        _ => continue,
-      };
-
-      result.push(Shader {
-        kind,
-        code: shared_code.clone(),
-      });
-    } else if line.trim().starts_with("#include") {
-      if let Some(path) = line.split_whitespace().nth(1) {
-        // trim the fat from the include path
-        let path = path.replace('"', "").replace('"', "").replace(';', "");
-
-        // fetch and splat the dependent shader
-        let dependent_file = VirtualPath::parse(&path);
-        let dependent_code = dependent_file.read_all_text()?;
-
-        if let Some(shader) = result.last_mut() {
-          shader.code.push_str(&dependent_code);
-        } else {
-          shared_code.push_str(&dependent_code);
-        }
-      }
-    } else if let Some(shader) = result.last_mut() {
-      // build up the active shader unit
-      shader.code.push_str(line);
-      shader.code.push('\n');
-    } else {
-      // build up the shared code unit
-      shared_code.push_str(line);
-      shared_code.push('\n');
-    };
-  }
-
-  Ok(result)
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
 
   #[test]
   fn parse_glsl_source_should_build_valid_code() {
-    let result = parse_glsl_source(
+    let result = GLSL::parse(
       r"
       #version 330 core
 
