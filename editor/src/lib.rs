@@ -8,13 +8,13 @@
 
 pub use assets::*;
 pub use projects::*;
-pub use reflection::*;
+pub use reflect::*;
 pub use serialization::*;
 pub use ui::*;
 
 mod assets;
 mod projects;
-mod reflection;
+mod reflect;
 mod serialization;
 mod ui;
 

@@ -1,3 +1,5 @@
+//! Graph widget for graph editing.
+
 use egui::*;
 
 use surreal::graphs::*;
@@ -6,12 +8,12 @@ const ZOOM_MIN: f32 = 0.5;
 const ZOOM_MAX: f32 = 5.0;
 
 /// An `egui` editor for [`Graph`]s.
-pub struct GraphEditor<D> {
+pub struct GraphEditorWidget<D> {
   graph: Graph<D>,
   zoom: f32,
 }
 
-/// Internal messages for the [`GraphEditor`].
+/// Internal messages for the [`GraphEditorWidget`].
 #[derive(Debug)]
 enum GraphEditorMessage {
   SelectNode(NodeId),
@@ -22,8 +24,8 @@ enum GraphEditorMessage {
   ConnectPortEnded { input: PortId, output: PortId },
 }
 
-impl<D> GraphEditor<D> {
-  /// Creates a [`GraphEditor`] for the given [`Graph`].
+impl<D> GraphEditorWidget<D> {
+  /// Creates a [`GraphEditorWidget`] for the given [`Graph`].
   pub fn from_graph(graph: Graph<D>) -> Self {
     Self { graph, zoom: 1.0 }
   }
@@ -32,9 +34,9 @@ impl<D> GraphEditor<D> {
   pub fn show(&mut self, ui: &mut Ui, rect: Rect) {
     ui.allocate_rect(rect, Sense::hover());
 
-    let cursor_pos = ui.ctx().input().pointer.hover_pos().unwrap_or(egui::Pos2::ZERO);
-    let cursor_in_editor = rect.contains(cursor_pos);
-    let cursor_in_finder = false;
+    // let cursor_pos = ui.ctx().input().pointer.hover_pos().unwrap_or(egui::Pos2::ZERO);
+    // let cursor_in_editor = rect.contains(cursor_pos);
+    // let cursor_in_finder = false;
 
     self.zoom = (self.zoom + ui.ctx().input().zoom_delta() - 1.).clamp(ZOOM_MIN, ZOOM_MAX);
 
