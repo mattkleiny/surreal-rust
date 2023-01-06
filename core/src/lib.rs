@@ -19,6 +19,7 @@ pub mod collections;
 pub mod diagnostics;
 pub mod engine;
 pub mod graphics;
+pub mod graphs;
 pub mod input;
 pub mod io;
 pub mod maths;

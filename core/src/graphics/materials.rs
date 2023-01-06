@@ -68,22 +68,6 @@ impl MaterialUniformSet {
     self.uniforms.insert(key.into().name.to_string(), uniform);
   }
 
-  /// Sets the given name as a uniform with an array of textures.
-  pub fn set_texture_array(&mut self, name: &str, textures: &[&Texture], sampler: Option<TextureSampler>) {
-    let mut bindings = smallvec::SmallVec::<[(Texture, u8); MAX_TEXTURE_UNITS]>::new();
-
-    for texture in textures {
-      let slot = self.allocate_texture_slot(texture);
-      let texture = (*texture).clone();
-
-      bindings.push((texture, slot));
-    }
-
-    let uniform = ShaderUniform::TextureArray(bindings, sampler);
-
-    self.uniforms.insert(name.to_string(), uniform);
-  }
-
   /// Applies all of the uniforms to the given shader program.
   pub fn apply_to_shader(&self, shader: &ShaderProgram) {
     for (name, uniform) in self.uniforms.iter() {
@@ -172,11 +156,6 @@ impl Material {
   /// Sets the given [`UniformKey`] with a single texture.
   pub fn set_texture(&mut self, key: impl Into<UniformKey<&Texture>>, texture: &Texture, sampler: Option<TextureSampler>) {
     self.uniforms.set_texture(key, texture, sampler);
-  }
-
-  /// Sets the given name as a uniform with an array of textures.
-  pub fn set_texture_array(&mut self, name: &str, textures: &[&Texture], sampler: Option<TextureSampler>) {
-    self.uniforms.set_texture_array(name, textures, sampler);
   }
 
   /// Removes all uniforms from the material.

@@ -9,8 +9,6 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use smallvec::SmallVec;
-
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::diagnostics::profiling;
 use crate::io::VirtualPath;
@@ -27,9 +25,52 @@ pub enum ShaderKind {
 }
 
 /// Defines a single shader kernel in a shader program.
+#[derive(Debug)]
 pub struct Shader {
   pub kind: ShaderKind,
   pub code: String,
+}
+
+/// Representation of a single value that can be used in a shader.
+#[derive(Clone)]
+pub enum ShaderUniform {
+  Bool(bool),
+  I32(i32),
+  U32(u32),
+  F32(f32),
+  Vec2(Vec2),
+  Vec3(Vec3),
+  Vec4(Vec4),
+  Mat2(Mat2),
+  Mat3(Mat3),
+  Mat4(Mat4),
+  Color(Color),
+  Color32(Color32),
+  Texture(Texture, u8, Option<TextureSampler>),
+}
+
+/// Identifies a kind of [`ShaderUniform`] for strongly-typed assignment.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub struct UniformKey<U> {
+  pub name: &'static str,
+  _phantom: std::marker::PhantomData<U>,
+}
+
+impl<U> UniformKey<U> {
+  /// Creates a new uniform key with the given name.
+  #[inline(always)]
+  pub const fn new(name: &'static str) -> Self {
+    Self {
+      name,
+      _phantom: std::marker::PhantomData,
+    }
+  }
+}
+
+impl<U> From<&'static str> for UniformKey<U> {
+  fn from(name: &'static str) -> Self {
+    UniformKey::new(name)
+  }
 }
 
 /// Represents a language for [`Shader`] compilation.
@@ -102,53 +143,10 @@ impl ShaderLanguage for GLSL {
   }
 }
 
-/// Representation of a single value that can be used in a shader.
-#[derive(Clone)]
-pub enum ShaderUniform {
-  Bool(bool),
-  I32(i32),
-  U32(u32),
-  F32(f32),
-  Vec2(Vec2),
-  Vec3(Vec3),
-  Vec4(Vec4),
-  Mat2(Mat2),
-  Mat3(Mat3),
-  Mat4(Mat4),
-  Color(Color),
-  Color32(Color32),
-  Texture(Texture, u8, Option<TextureSampler>),
-  TextureArray(SmallVec<[(Texture, u8); MAX_TEXTURE_UNITS]>, Option<TextureSampler>),
-}
-
-/// Identifies a kind of [`ShaderUniform`] for strongly-typed assignment.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct UniformKey<U> {
-  pub name: &'static str,
-  _phantom: std::marker::PhantomData<U>,
-}
-
-impl<U> UniformKey<U> {
-  /// Creates a new uniform key with the given name.
-  #[inline(always)]
-  pub const fn new(name: &'static str) -> Self {
-    Self {
-      name,
-      _phantom: std::marker::PhantomData,
-    }
-  }
-}
-
-impl<U> From<&'static str> for UniformKey<U> {
-  fn from(name: &'static str) -> Self {
-    UniformKey::new(name)
-  }
-}
-
 /// Represents a single compiled shader program.
-pub struct ShaderProgram<S: ShaderLanguage = GLSL> {
+#[derive(Clone)]
+pub struct ShaderProgram {
   state: Rc<RefCell<ShaderProgramState>>,
-  _language: std::marker::PhantomData<S>,
 }
 
 /// The internal state for a [`ShaderProgram`] .
@@ -158,16 +156,7 @@ struct ShaderProgramState {
   location_cache: HashMap<String, Option<usize>>,
 }
 
-impl<S: ShaderLanguage> Clone for ShaderProgram<S> {
-  fn clone(&self) -> Self {
-    Self {
-      state: self.state.clone(),
-      _language: std::marker::PhantomData,
-    }
-  }
-}
-
-impl<S: ShaderLanguage> ShaderProgram<S> {
+impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
@@ -176,25 +165,34 @@ impl<S: ShaderLanguage> ShaderProgram<S> {
         handle: graphics.create_shader(),
         location_cache: HashMap::new(),
       })),
-      _language: std::marker::PhantomData,
     }
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code(graphics: &GraphicsServer, code: &str) -> crate::Result<Self> {
+  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsServer, code: &str) -> crate::Result<Self> {
     let program = Self::new(graphics);
 
-    program.load_code(code)?;
+    program.load_code::<S>(code)?;
 
     Ok(program)
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_path(graphics: &GraphicsServer, path: impl Into<VirtualPath>) -> crate::Result<Self> {
+  pub fn from_path<S: ShaderLanguage>(graphics: &GraphicsServer, path: impl Into<VirtualPath>) -> crate::Result<Self> {
     let path = path.into();
     let code = path.read_all_text()?;
 
-    Ok(Self::from_code(graphics, &code)?)
+    Ok(Self::from_code::<S>(graphics, &code)?)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
+  pub fn from_glsl(graphics: &GraphicsServer, code: &str) -> crate::Result<Self> {
+    Self::from_code::<GLSL>(graphics, code)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
+  pub fn from_glsl_path(graphics: &GraphicsServer, path: impl Into<VirtualPath>) -> crate::Result<Self> {
+    Self::from_path::<GLSL>(graphics, path)
   }
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.
@@ -238,7 +236,7 @@ impl<S: ShaderLanguage> ShaderProgram<S> {
   }
 
   /// Reloads the [`ShaderProgram`] from the given 'glsl' program code.
-  pub fn load_code(&self, text: &str) -> crate::Result<()> {
+  pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> crate::Result<()> {
     let state = self.state.borrow();
     let graphics = &state.graphics;
     let shaders = S::parse(text)?;
@@ -249,11 +247,11 @@ impl<S: ShaderLanguage> ShaderProgram<S> {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
+  pub fn load_from_path<S: ShaderLanguage>(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
     let path = path.into();
     let source_code = path.read_all_text()?;
 
-    self.load_code(&source_code)?;
+    self.load_code::<S>(&source_code)?;
 
     Ok(())
   }
@@ -285,7 +283,7 @@ impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
     let program = ShaderProgram::new(&self.graphics);
     let source_code = context.path.read_all_text()?;
 
-    program.load_code(&source_code)?;
+    program.load_code::<GLSL>(&source_code)?;
 
     Ok(program)
   }
@@ -368,5 +366,7 @@ mod tests {
     assert_eq!(result[1].kind, ShaderKind::Fragment);
     assert!(result[1].code.trim().starts_with("#version 330 core"));
     assert!(result[1].code.contains("gl_Frag"));
+
+    println!("{:#?}", result);
   }
 }

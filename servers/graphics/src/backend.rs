@@ -5,10 +5,11 @@ use raw_window_handle::{HasRawDisplayHandle, HasRawWindowHandle};
 use surreal::graphics::PrimitiveTopology;
 use surreal::maths::AABB;
 
+#[cfg(feature = "backend-headless")]
 mod headless;
-#[cfg(feature = "opengl")]
+#[cfg(feature = "backend-opengl")]
 mod opengl;
-#[cfg(feature = "vulkan")]
+#[cfg(feature = "backend-vulkan")]
 mod vulkan;
 
 /// A unique [`surreal::utilities::RID`] for graphics resources.
@@ -25,18 +26,19 @@ pub struct GraphicsServer {
 
 impl GraphicsServer {
   /// Creates a [`GraphicsServer`] for a Headless, no-op backend.
-  pub fn from_headless() -> surreal::Result<Self> {
-    Ok(Self::from_backend(headless::HeadlessBackend::default()))
+  #[cfg(feature = "backend-headless")]
+  pub fn from_headless() -> Self {
+    Self::from_backend(headless::HeadlessBackend::default())
   }
 
   /// Creates a [`GraphicsServer`] for OpenGL.
-  #[cfg(feature = "opengl")]
+  #[cfg(feature = "backend-opengl")]
   pub fn from_opengl(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
     Ok(Self::from_backend(opengl::OpenGLBackend::new(window)?))
   }
 
   /// Creates a [`GraphicsServer`] for Vulkan.
-  #[cfg(feature = "vulkan")]
+  #[cfg(feature = "backend-vulkan")]
   pub fn from_vulkan(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
     Ok(Self::from_backend(vulkan::VulkanBackend::new(window)?))
   }

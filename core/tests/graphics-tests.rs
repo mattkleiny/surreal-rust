@@ -1,4 +1,4 @@
-use surreal_core::graphics::{BlendFactor, BlendState, Color32, Material, Mesh, PrimitiveTopology, ShaderProgram, Texture, Vertex2};
+use surreal_core::graphics::{BlendFactor, BlendState, Color32, Material, Mesh, PrimitiveTopology, ShaderProgram, Texture, Vertex2, GLSL};
 use surreal_core::maths::{Cube, Mat4};
 
 mod common;
@@ -21,7 +21,7 @@ fn texture_read_write() {
 #[test]
 fn shader_and_material_uniform_access() {
   common::bootstrap(|graphics| {
-    let shader = ShaderProgram::from_code(
+    let shader = ShaderProgram::from_glsl(
       graphics,
       r#"
         #version 330 core
@@ -70,7 +70,7 @@ fn mesh_rendering() {
   common::bootstrap(|graphics| {
     let mesh: Mesh<Vertex2> = Mesh::from_brush(graphics, &Cube::default());
 
-    let shader = ShaderProgram::from_path(graphics, "local://../assets/shaders/canvas-standard.glsl").unwrap();
+    let shader = ShaderProgram::from_glsl_path(graphics, "local://../assets/shaders/canvas-standard.glsl").unwrap();
     let material = Material::new(graphics, &shader);
 
     mesh.draw(&material, PrimitiveTopology::Triangles);

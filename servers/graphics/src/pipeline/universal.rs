@@ -13,9 +13,7 @@ use super::*;
 /// Simple 2D graphics, low-poly 3D graphics, basic environment, sky,
 /// tone-mapping and post-processing effects.
 pub struct UniversalRenderPipeline {
-  environment: Option<Box<dyn Environment>>,
-  tone_mapper: Box<dyn ToneMapper>,
-  post_effects: Vec<Box<dyn PostEffect>>,
+  effects: Vec<Box<dyn PostEffect>>,
   context: UniversalContext,
 }
 
@@ -25,9 +23,7 @@ pub struct UniversalContext {}
 impl UniversalRenderPipeline {
   pub fn new() -> Self {
     Self {
-      environment: None,
-      tone_mapper: Box::new(ACES::default()),
-      post_effects: vec![],
+      effects: vec![],
       context: UniversalContext {},
     }
   }
@@ -41,7 +37,7 @@ impl RenderPipeline for UniversalRenderPipeline {
       context: &self.context,
     };
 
-    for effect in &self.post_effects {
+    for effect in &self.effects {
       effect.begin_frame(self, &frame);
     }
   }
@@ -53,22 +49,11 @@ impl RenderPipeline for UniversalRenderPipeline {
       context: &self.context,
     };
 
-    for effect in &self.post_effects {
+    for effect in &self.effects {
       effect.end_frame(self, &frame);
     }
   }
 }
-
-/// Different render stages used in the `lwrp` [`RenderPipeline`].
-enum RenderStage {
-  Cubemap,
-  Forward,
-  Deferred,
-  PostProcessing,
-}
-
-/// Allows a type to participate in the environment stages of the render pipeline.
-pub trait Environment {}
 
 /// Allows a type to acts as a post-processing effect in the [`UniversalRenderPipeline`].
 pub trait PostEffect {
@@ -76,17 +61,9 @@ pub trait PostEffect {
   fn end_frame(&self, pipeline: &UniversalRenderPipeline, frame: &RenderFrame<UniversalContext>);
 }
 
-/// Allows a type to participate in the tone-mapping post process of the pipeline.
-pub trait ToneMapper {
-  fn prepare(&self, pipeline: &UniversalRenderPipeline, frame: &RenderFrame<UniversalContext>);
-}
-
-/// A default `ACES` [`ToneMapper`] implementation.
+/// The tone-mapper to use in the [`UniversalRenderPipeline`].
 #[derive(Default)]
-pub struct ACES {}
-
-impl ToneMapper for ACES {
-  fn prepare(&self, _pipeline: &UniversalRenderPipeline, _frame: &RenderFrame<UniversalContext>) {
-    todo!()
-  }
+pub enum ToneMapper {
+  #[default]
+  ACES,
 }

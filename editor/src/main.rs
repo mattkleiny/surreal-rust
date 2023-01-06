@@ -22,7 +22,7 @@ fn main() {
 struct EditorApplication {
   user_interface: UserInterface,
   editor_window: EditorWindow,
-  current_project: Option<Project>,
+  _current_project: Option<Project>,
 }
 
 impl Application for EditorApplication {
@@ -39,7 +39,7 @@ impl Application for EditorApplication {
     Ok(Self {
       user_interface,
       editor_window,
-      current_project: Some(project),
+      _current_project: Some(project),
     })
   }
 

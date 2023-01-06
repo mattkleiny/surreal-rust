@@ -4,11 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["opengl", "vulkan"]
-universal = []
-highdef = []
-opengl = ["gl", "glutin"]
-vulkan = ["ash", "ash-window"]
+default = ["backend-headless", "backend-opengl", "backend-vulkan"]
+
+# rendering pipelines
+pipeline-universal = []
+pipeline-highdef = []
+
+# rendering backends
+backend-headless = []
+backend-opengl = ["gl", "glutin"]
+backend-vulkan = ["ash", "ash-window"]
 
 [dependencies]
 surreal = { package = "surreal-core", path = "../../core" }

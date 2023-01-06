@@ -22,9 +22,9 @@ pub enum ProjectError {
 /// edited in the editor. Projects are stored in the _local_ file system and
 /// can be loaded from any location.
 pub struct Project {
-  root_path: String,
-  asset_database: AssetDatabase,
-  type_database: TypeDatabase,
+  _root_path: String,
+  _asset_database: AssetDatabase,
+  _type_database: TypeDatabase,
 }
 
 impl Project {
@@ -34,9 +34,9 @@ impl Project {
     info!("Opening project at path {}", root_path.as_ref());
 
     let project = Self {
-      root_path: root_path.as_ref().to_string(),
-      asset_database: AssetDatabase::default(),
-      type_database: TypeDatabase::default(),
+      _root_path: root_path.as_ref().to_string(),
+      _asset_database: AssetDatabase::default(),
+      _type_database: TypeDatabase::default(),
     };
 
     Ok(project)

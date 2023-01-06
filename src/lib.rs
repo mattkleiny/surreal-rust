@@ -37,6 +37,7 @@ pub mod prelude {
   pub use core::diagnostics::*;
   pub use core::engine::*;
   pub use core::graphics::*;
+  pub use core::graphs::*;
   pub use core::input::*;
   pub use core::io::*;
   pub use core::macros::*;

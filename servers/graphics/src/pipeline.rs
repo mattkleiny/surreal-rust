@@ -2,9 +2,9 @@
 
 use surreal::scene::SceneGraph;
 
-#[cfg(feature = "highdef")]
+#[cfg(feature = "pipeline-highdef")]
 pub mod highdef;
-#[cfg(feature = "universal")]
+#[cfg(feature = "pipeline-universal")]
 pub mod universal;
 
 /// Allows a type to acts as input to the camera pipeline for a perspective or

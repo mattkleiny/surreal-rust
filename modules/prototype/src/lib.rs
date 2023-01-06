@@ -65,11 +65,11 @@ const PALETTE_SPACE_DUST_9: &[u8] = include_bytes!("../assets/palettes/space-dus
 /// Loads a built-in [`ShaderProgram`].
 pub fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) -> ShaderProgram {
   let shader = match shader {
-    BuiltInShader::Canvas => ShaderProgram::from_code(graphics, SHADER_CANVAS_STANDARD),
-    BuiltInShader::SpriteStandard => ShaderProgram::from_code(graphics, SHADER_SPRITE_STANDARD),
-    BuiltInShader::SpritePalette => ShaderProgram::from_code(graphics, SHADER_SPRITE_PALETTE),
-    BuiltInShader::Wire => ShaderProgram::from_code(graphics, SHADER_WIRE_STANDARD),
-    BuiltInShader::AberrationEffect => ShaderProgram::from_code(graphics, SHADER_EFFECT_ABERRATION),
+    BuiltInShader::Canvas => ShaderProgram::from_glsl(graphics, SHADER_CANVAS_STANDARD),
+    BuiltInShader::SpriteStandard => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_STANDARD),
+    BuiltInShader::SpritePalette => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_PALETTE),
+    BuiltInShader::Wire => ShaderProgram::from_glsl(graphics, SHADER_WIRE_STANDARD),
+    BuiltInShader::AberrationEffect => ShaderProgram::from_glsl(graphics, SHADER_EFFECT_ABERRATION),
   };
 
   shader.expect("Failed to load build-in shader")
