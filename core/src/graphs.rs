@@ -1,73 +1,73 @@
-//! Graph management tools
+use std::borrow::Cow;
 
 use slotmap::{SecondaryMap, SlotMap};
 
 slotmap::new_key_type! {
-  /// The ID for a [`GraphNode`].
+  /// A [`slotmap::Key`] for [`GraphNode`]s.
   pub struct NodeId;
 
-  /// The ID for a [`GraphInput`].
-  struct InputId;
-
-  /// The ID for a [`GraphOutput`].
-  struct OutputId;
+  /// A [`slotmap::Key`] for [`GraphPort`]s.
+  pub struct PortId;
 }
 
-/// A graph of [`GraphNode`]s.
-#[derive(Serialize, Deserialize)]
+/// A managed graph of [`GraphNode`]s.
+///
+/// Nodes and ports are stored in an adjacency list via [`SlotMap`].
+/// Each node is capable of persisting arbitrary data of type `D`.
+///
+/// Graphs are serializable for persistence.
+#[derive(Serialize, Deserialize, Default)]
 pub struct Graph<D = ()> {
-  /// The [`GraphNode`]s themselves.
   nodes: SlotMap<NodeId, GraphNode<D>>,
-  inputs: SlotMap<InputId, Input<D>>,
-  outputs: SlotMap<OutputId, Output<D>>,
-  connections: SecondaryMap<InputId, OutputId>,
+  ports: SlotMap<PortId, GraphPort<D>>,
+  inputs: SlotMap<PortId, GraphInput<D>>,
+  outputs: SlotMap<PortId, GraphOutput<D>>,
+  connections: SecondaryMap<PortId, PortId>,
 }
 
 /// A single node in a [`Graph`].
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GraphNode<D = ()> {
   id: NodeId,
-  label: Option<String>,
-  inputs: Vec<(String, InputId)>,
-  outputs: Vec<(String, OutputId)>,
+  label: Cow<'static, str>,
+  user_data: D,
+}
+
+/// A single port in a [`Graph`].
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GraphPort<D> {
+  id: PortId,
+  label: Cow<'static, str>,
+  value: D,
+}
+
+/// An input to a [`Graph`].
+#[derive(Serialize, Deserialize, Default)]
+pub struct GraphInput<D> {
+  port: PortId,
   data: D,
 }
 
-/// An input into a [`Graph`].
-#[derive(Serialize, Deserialize, Debug)]
-struct Input<D> {
-  id: InputId,
-  value: Option<D>,
-}
-
 /// An output from a [`Graph`].
-#[derive(Serialize, Deserialize, Debug)]
-struct Output<D> {
-  id: OutputId,
-  value: Option<D>,
-}
-
-impl<D> Default for Graph<D> {
-  fn default() -> Self {
-    Self {
-      nodes: SlotMap::with_key(),
-      inputs: SlotMap::with_key(),
-      outputs: SlotMap::with_key(),
-      connections: SecondaryMap::new(),
-    }
-  }
+#[derive(Serialize, Deserialize, Default)]
+pub struct GraphOutput<D> {
+  port: PortId,
+  data: D,
 }
 
 impl<D> Graph<D> {
   /// Adds a new [`GraphNode`] to the graph.
-  pub fn add_node(&mut self, label: String, user_data: D) {
-    self.nodes.insert_with_key(|node_id| GraphNode {
-      id: node_id,
-      label: Some(label),
-      inputs: Vec::default(),
-      outputs: Vec::default(),
-      data: user_data,
-    });
+  pub fn add_node(&mut self, label: impl Into<Cow<'static, str>>, user_data: D) {
+    let label = label.into();
+
+    self.nodes.insert_with_key(|id| GraphNode { id, label, user_data });
+  }
+
+  /// Removes an existing [`GraphNode`] from the graph.
+  pub fn remove_node(&mut self, node_id: NodeId) {
+    if let Some(_node) = self.nodes.remove(node_id) {
+      // TODO: remove any connections, too
+    }
   }
 
   /// Iterates the [`GraphNode`]s of this graph.
@@ -107,10 +107,10 @@ mod tests {
 
   #[test]
   fn graph_should_build_simple_connections() {
-    let mut graph = Graph::<String>::default();
+    let mut graph = Graph::<u32>::default();
 
-    graph.add_node("Node 1".to_string(), "Value 1".to_string());
-    graph.add_node("Node 2".to_string(), "Value 2".to_string());
+    graph.add_node("Node 1", 1);
+    graph.add_node("Node 2", 2);
 
     for node in &graph {
       println!("Node: {:#?}", node);

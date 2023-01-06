@@ -1,5 +1,5 @@
-use surreal_core::graphics::{BlendFactor, BlendState, Color32, Material, Mesh, PrimitiveTopology, ShaderProgram, Texture, Vertex2, GLSL};
-use surreal_core::maths::{Cube, Mat4};
+use surreal_core::graphics::*;
+use surreal_core::maths::*;
 
 mod common;
 

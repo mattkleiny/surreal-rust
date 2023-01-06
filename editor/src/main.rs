@@ -28,7 +28,7 @@ struct EditorApplication {
 impl Application for EditorApplication {
   fn new(engine: &Engine, _assets: &AssetManager) -> surreal::Result<Self> {
     let user_interface = UserInterface::new(&engine.graphics);
-    let editor_window = EditorWindow::default();
+    let editor_window = EditorWindow::new();
 
     let project = Project::open(
       std::env::current_dir()?
