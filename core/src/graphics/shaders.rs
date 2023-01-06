@@ -37,6 +37,7 @@ pub struct Shader {
 /// Abstracting over shader languages allows us to build out new language
 /// paradigms in the future.
 pub trait ShaderLanguage {
+  /// Parses the given raw source code into one or more [`Shader`]s.
   fn parse(source_code: &str) -> crate::Result<Vec<Shader>>;
 }
 
@@ -359,9 +360,11 @@ mod tests {
     .expect("Failed to parse simple program");
 
     assert_eq!(result.len(), 2);
+
     assert_eq!(result[0].kind, ShaderKind::Vertex);
     assert!(result[0].code.trim().starts_with("#version 330 core"));
     assert!(result[0].code.contains("gl_Position"));
+
     assert_eq!(result[1].kind, ShaderKind::Fragment);
     assert!(result[1].code.trim().starts_with("#version 330 core"));
     assert!(result[1].code.contains("gl_Frag"));

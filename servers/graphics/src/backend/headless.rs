@@ -16,7 +16,9 @@ pub struct HeadlessBackend {
 #[allow(unused_variables)]
 impl GraphicsServerBackend for HeadlessBackend {
   fn shader_create(&self) -> surreal::Result<GraphicsId> {
-    Ok(GraphicsId::new(self.next_shader_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed)))
+    Ok(GraphicsId::new(
+      self.next_shader_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+    ))
   }
 
   fn shader_set_code(&self, shader_id: GraphicsId, code: &str) -> surreal::Result<()> {
@@ -32,7 +34,9 @@ impl GraphicsServerBackend for HeadlessBackend {
   }
 
   fn material_create(&self) -> surreal::Result<GraphicsId> {
-    Ok(GraphicsId::new(self.next_material_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed)))
+    Ok(GraphicsId::new(
+      self.next_material_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+    ))
   }
 
   fn material_set_shader(&self, material_id: GraphicsId, shader_id: GraphicsId) -> surreal::Result<()> {
@@ -44,7 +48,9 @@ impl GraphicsServerBackend for HeadlessBackend {
   }
 
   fn mesh_create(&self) -> surreal::Result<GraphicsId> {
-    Ok(GraphicsId::new(self.next_mesh_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed)))
+    Ok(GraphicsId::new(
+      self.next_mesh_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+    ))
   }
 
   fn mesh_get_surface_count(&self, mesh_id: GraphicsId) -> surreal::Result<usize> {
@@ -76,7 +82,9 @@ impl GraphicsServerBackend for HeadlessBackend {
   }
 
   fn light_create(&self, light_type: LightType) -> surreal::Result<GraphicsId> {
-    Ok(GraphicsId::new(self.next_light_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed)))
+    Ok(GraphicsId::new(
+      self.next_light_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+    ))
   }
 
   fn light_get_type(&self, light_id: GraphicsId) -> surreal::Result<LightType> {
