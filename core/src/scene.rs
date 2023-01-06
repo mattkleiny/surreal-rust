@@ -649,6 +649,11 @@ impl SceneNode {
 
         None
       }
+
+      fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.node.children.len() - self.index;
+        (remaining, Some(remaining))
+      }
     }
 
     Iter { node: self, index: 0 }
@@ -674,6 +679,11 @@ impl SceneNode {
 
         None
       }
+
+      fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.node.children.len() - self.index;
+        (remaining, Some(remaining))
+      }
     }
 
     IterMut { node: self, index: 0 }
@@ -681,11 +691,11 @@ impl SceneNode {
 
   /// Iterates all child [`SceneNode`]s of this node, recursively.
   pub fn iter_recursive(&self) -> impl Iterator<Item = (&SceneNode, usize)> {
-    struct IterRecurse<'a> {
+    struct IterRecursive<'a> {
       stack: Vec<(&'a SceneNode, usize)>,
     }
 
-    impl<'a> Iterator for IterRecurse<'a> {
+    impl<'a> Iterator for IterRecursive<'a> {
       type Item = (&'a SceneNode, usize);
 
       fn next(&mut self) -> Option<Self::Item> {
@@ -701,7 +711,7 @@ impl SceneNode {
       }
     }
 
-    IterRecurse { stack: vec![(self, 0)] }
+    IterRecursive { stack: vec![(self, 0)] }
   }
 }
 

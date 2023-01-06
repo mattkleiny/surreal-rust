@@ -212,6 +212,11 @@ impl<T> Arena<T> {
 
         None
       }
+
+      fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.arena.entries.len() - self.index;
+        (remaining, Some(remaining))
+      }
     }
 
     Iter { arena: self, index: 0 }
@@ -247,6 +252,11 @@ impl<T> Arena<T> {
         }
 
         None
+      }
+
+      fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.arena.entries.len() - self.index;
+        (remaining, Some(remaining))
       }
     }
 

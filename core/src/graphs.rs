@@ -24,7 +24,7 @@ pub struct Graph<D = ()> {
 }
 
 /// A single node in a [`Graph`].
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GraphNode<D = ()> {
   id: NodeId,
   label: Option<String>,
@@ -34,14 +34,14 @@ pub struct GraphNode<D = ()> {
 }
 
 /// An input into a [`Graph`].
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Input<D> {
   id: InputId,
   value: Option<D>,
 }
 
 /// An output from a [`Graph`].
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Output<D> {
   id: OutputId,
   value: Option<D>,
@@ -107,10 +107,14 @@ mod tests {
 
   #[test]
   fn graph_should_build_simple_connections() {
-    let graph = Graph::<String>::default();
+    let mut graph = Graph::<String>::default();
 
-    // graph.add_node("Node 1".to_string(), "Value 1".to_string());
-    // graph.add_node("Node 2".to_string(), "Value 2".to_string());
+    graph.add_node("Node 1".to_string(), "Value 1".to_string());
+    graph.add_node("Node 2".to_string(), "Value 2".to_string());
+
+    for node in &graph {
+      println!("Node: {:#?}", node);
+    }
 
     println!("{}", graph.to_json().unwrap());
   }

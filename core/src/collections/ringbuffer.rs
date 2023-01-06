@@ -80,6 +80,11 @@ impl<T> RingBuffer<T> {
           None
         }
       }
+
+      fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.buffer.len() - self.touched;
+        (remaining, Some(remaining))
+      }
     }
 
     Iter {
@@ -118,6 +123,11 @@ impl<T> RingBuffer<T> {
         } else {
           None
         }
+      }
+
+      fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.buffer.len() - self.touched;
+        (remaining, Some(remaining))
       }
     }
 
