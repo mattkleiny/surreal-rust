@@ -1,5 +1,3 @@
-use crate::utilities::unsafe_mutable_alias;
-
 /// A lightweight, fast and append-only ring buffer of elements of type [`T`] .
 ///
 /// It's intended to be used for small windowed set operations, like time sampling or frequency analysis.
@@ -114,7 +112,7 @@ impl<T> RingBuffer<T> {
           self.touched += 1;
 
           match &mut self.buffer.elements[self.index] {
-            Some(item) => Some(unsafe_mutable_alias(item)),
+            Some(item) => Some(crate::utilities::unsafe_mutable_alias(item)),
             None => None,
           }
         } else {

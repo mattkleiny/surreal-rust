@@ -1,5 +1,3 @@
-use crate::utilities::unsafe_mutable_alias;
-
 /// Represents a safe index into an [`Arena`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ArenaIndex {
@@ -240,7 +238,7 @@ impl<T> Arena<T> {
             self.index += 1;
 
             // elide the lifetime; rust has trouble with the borrow checker
-            let value = unsafe_mutable_alias(value);
+            let value = crate::utilities::unsafe_mutable_alias(value);
 
             return Some((arena_index, &mut value.value));
           }
