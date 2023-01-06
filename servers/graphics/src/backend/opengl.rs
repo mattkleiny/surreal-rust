@@ -11,6 +11,7 @@ pub struct OpenGLBackend {
 
 impl OpenGLBackend {
   /// Builds a new [`OpenGLBackend`] for the given raw window handles.
+  #[cfg(target_os = "windows")]
   pub fn new(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
     use glutin::platform::windows::RawContextExt;
 
@@ -34,6 +35,12 @@ impl OpenGLBackend {
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
     Ok(Self { _context: context })
+  }
+
+  /// Builds a new [`OpenGLBackend`] for the given raw window handles.
+  #[cfg(not(target_os = "windows"))]
+  pub fn new(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
+    todo!()
   }
 }
 

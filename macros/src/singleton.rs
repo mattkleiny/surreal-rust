@@ -8,11 +8,11 @@ pub fn impl_singleton_trait(input: TokenStream) -> TokenStream {
   let name = &input.ident;
 
   (quote! {
-    use surreal::utilities::{Singleton, SingletonCell};
+    use surreal::utilities::{Singleton, UnsafeLazyCell};
 
     impl Singleton for #name {
       fn instance() -> &'static mut Self {
-        static mut INSTANCE: SingletonCell<#name> = SingletonCell::new();
+        static mut INSTANCE: UnsafeLazyCell<#name> = UnsafeLazyCell::new();
 
         unsafe { &mut INSTANCE }
       }

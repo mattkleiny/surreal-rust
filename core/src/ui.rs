@@ -242,8 +242,6 @@ impl UserInterface {
       }
     }
 
-    // TODO: support duration based repaints?
-
     let platform_output = full_output.platform_output;
     let needs_repaint = full_output.repaint_after.as_secs_f32() > 0.;
 
@@ -252,6 +250,7 @@ impl UserInterface {
     provider.set_cursor_icon(platform_output.cursor_icon);
 
     // TODO: handle clipboard, too
+    // TODO: support duration based repaints?
 
     if needs_repaint {
       provider.request_redraw();

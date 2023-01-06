@@ -9,26 +9,22 @@ pub trait Singleton: 'static {
   fn instance() -> &'static mut Self;
 }
 
-/// An unsafe cell for mutably alias-able singleton values.
-///
-/// This is a wrapper around [`UnsafeCell`] that provides an interface for
-/// accessing the singleton data.
+/// An unsafe cell for mutably alias-able [`Lazy`] values.
 ///
 /// This type should be used very sparingly, and only to remove friction from the API.
-// TODO: make this safe?
-pub struct SingletonCell<T>(Lazy<UnsafeCell<T>>);
+pub struct UnsafeLazyCell<T>(Lazy<UnsafeCell<T>>);
 
-impl<T: Singleton + Default> SingletonCell<T> {
-  /// Constructs a new [`SingletonCell`] with a default constructor.
+impl<T: Default> UnsafeLazyCell<T> {
+  /// Constructs a new [`UnsafeLazyCell`] with a [`Default::default`] constructor.
   pub const fn new() -> Self {
     Self(Lazy::new(|| UnsafeCell::new(T::default())))
   }
 }
 
-unsafe impl<T> Send for SingletonCell<T> {}
-unsafe impl<T> Sync for SingletonCell<T> {}
+unsafe impl<T: Send> Send for UnsafeLazyCell<T> {}
+unsafe impl<T: Sync> Sync for UnsafeLazyCell<T> {}
 
-impl<T> Deref for SingletonCell<T> {
+impl<T> Deref for UnsafeLazyCell<T> {
   type Target = T;
 
   fn deref(&self) -> &Self::Target {
@@ -36,7 +32,7 @@ impl<T> Deref for SingletonCell<T> {
   }
 }
 
-impl<T> DerefMut for SingletonCell<T> {
+impl<T> DerefMut for UnsafeLazyCell<T> {
   fn deref_mut(&mut self) -> &mut Self::Target {
     unsafe { &mut *self.0.get() }
   }

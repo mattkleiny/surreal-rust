@@ -205,7 +205,6 @@ impl Material {
   }
 
   /// Draws a fullscreen quad with this material.
-  /// TODO: maybe this would make sense in a dedicated render pipeline or manager?
   #[profiling::function]
   pub fn draw_fullscreen_quad(&mut self) {
     match &self.fullscreen_quad {

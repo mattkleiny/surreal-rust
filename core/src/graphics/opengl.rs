@@ -276,7 +276,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         TextureFormat::RGB32 => gl::RGB32F,
         TextureFormat::RGBA32 => gl::RGBA32F,
         TextureFormat::A8 => gl::ALPHA,
-        TextureFormat::A32 => todo!(),
+        TextureFormat::A32 => gl::ALPHA,
       };
 
       let (components, kind) = convert_texture_format(pixel_format);

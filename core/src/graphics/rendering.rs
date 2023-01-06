@@ -127,8 +127,6 @@ impl RenderContextManager {
   }
 }
 
-// TODO: global material properties for this particular frame?
-
 /// A context for a single frame, for use in [`RenderPass`] operations.
 pub struct RenderFrame<'a> {
   pub graphics: &'a GraphicsServer,
@@ -241,7 +239,7 @@ impl RenderPipeline {
   pub fn render(&mut self, scene: &dyn RenderScene, camera: &dyn RenderCamera, time: &GameTime) {
     // compute frustum for this frame, and collect visible objects
     let frustum = camera.compute_frustum();
-    let mut visible_objects = Vec::new(); // TODO: use the graphics arena here?
+    let mut visible_objects = Vec::new();
 
     scene.cull_visible_objects(&frustum, &mut visible_objects);
     visible_objects.sort_by_key(|it| it.material_key);
@@ -259,7 +257,6 @@ impl RenderPipeline {
         uniforms: &mut self.frame_uniforms,
       };
 
-      // TODO: make this more customizable?
       let (width, height) = self.graphics.get_viewport_size();
 
       frame.uniforms.set_uniform("u_viewportSize", vec2(width as f32, height as f32));

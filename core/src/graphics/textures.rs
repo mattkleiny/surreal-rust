@@ -376,8 +376,6 @@ impl TextureAtlas {
 }
 
 /// A utility for building texture atlases procedurally.
-///
-/// TODO: make this more robust (and safe)?
 #[derive(Default)]
 pub struct TextureAtlasBuilder<T> {
   cells: Vec<TextureAtlasCell<T>>,

@@ -1,14 +1,12 @@
 //! General utilities.
 
 pub use object::*;
-pub use servers::*;
 pub use singleton::*;
 pub use size::*;
 pub use timing::*;
 pub use variant::*;
 
 mod object;
-mod servers;
 mod singleton;
 mod size;
 mod timing;

@@ -99,7 +99,6 @@ pub trait AssetImporter {
 
 // TODO: import into in-memory cache, and expand on the file system
 // TODO: use object ids to look-up instances depending on access patterns
-// TODO:
 
 /// A bundle of assets.
 ///
