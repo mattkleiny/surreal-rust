@@ -2,14 +2,17 @@
 //!
 //! Bootstrapping and other framework systems for common projects.
 
+use std::time::Duration;
+
 use glutin::{
   dpi::LogicalSize,
+  event::WindowEvent,
   event_loop::{ControlFlow, EventLoop},
   window::{Icon, Window, WindowBuilder},
   ContextBuilder,
 };
 use log::LevelFilter;
-use winit::event::WindowEvent;
+use winit::event_loop::EventLoopProxy;
 
 use crate::{
   assets::AssetManager,
@@ -58,33 +61,28 @@ impl Default for Configuration {
 }
 
 /// Contains information on the game's timing state.
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct GameTime {
   pub delta_time: f32,
   pub total_time: f32,
 }
 
-/// The context for a single tick of the main loop.
-pub struct GameTick {
-  pub time: GameTime,
-  is_exiting: bool,
-}
-
-impl GameTick {
-  /// Exits the engine at the end of the current tick.
-  pub fn exit(&mut self) {
-    self.is_exiting = true;
-  }
-}
-
 /// Different kinds of events that can be dispatched to an application.
-pub enum ApplicationLoopEvent<'a> {
+pub enum TickEvent<'a> {
   /// Indicating the application should update.
-  Update,
+  Update(GameTime),
   /// Indicating the application should draw.
-  Draw,
+  Draw(GameTime),
   /// An event from the underlying window platform.
-  Window(&'a winit::event::WindowEvent<'a>),
+  Window(&'a WindowEvent<'a>),
+}
+
+/// A response for a tick in the application.
+pub enum TickResponse {
+  /// The application should continue.
+  Continue,
+  /// The application should stop.
+  Exit,
 }
 
 /// Represents an application that can be used in an [`Engine`].
@@ -94,21 +92,23 @@ pub trait Application: Sized {
   fn new(engine: &Engine, assets: &AssetManager) -> crate::Result<Self>;
 
   /// Called when the application is to be updated.
-  fn on_update(&mut self, engine: &mut Engine, tick: &mut GameTick) {}
+  fn on_update(&mut self, engine: &mut Engine, time: GameTime) {}
 
   /// Called when the application is to be drawn.
-  fn on_draw(&mut self, engine: &mut Engine, tick: &mut GameTick) {}
+  fn on_draw(&mut self, engine: &mut Engine, time: GameTime) {}
 
   /// Invoked when a [`WindowEvent`] is received.
   fn on_window_event(&mut self, engine: &mut Engine, event: &WindowEvent) {}
 
-  /// Notifies the application of an [`ApplicationLoopEvent`]. l
-  fn notify(&mut self, engine: &mut Engine, tick: &mut GameTick, event: ApplicationLoopEvent) {
+  /// Notifies the application of an [`TickEvent`]. l
+  fn notify(&mut self, engine: &mut Engine, event: TickEvent) -> TickResponse {
     match event {
-      ApplicationLoopEvent::Update => self.on_update(engine, tick),
-      ApplicationLoopEvent::Draw => self.on_draw(engine, tick),
-      ApplicationLoopEvent::Window(event) => self.on_window_event(engine, event),
+      TickEvent::Update(time) => self.on_update(engine, time),
+      TickEvent::Draw(time) => self.on_draw(engine, time),
+      TickEvent::Window(event) => self.on_window_event(engine, event),
     }
+
+    TickResponse::Continue
   }
 }
 
@@ -125,8 +125,10 @@ pub struct Engine {
   config: Configuration,
   window: Window,
   cursor_icon: egui::CursorIcon,
+  event_loop_proxy: EventLoopProxy<()>,
   event_loop: Option<EventLoop<()>>,
   is_focused: bool,
+  repaint_after: Option<Duration>,
 
   // timing
   clock: DeltaClock,
@@ -200,8 +202,10 @@ impl Engine {
       config,
       window,
       cursor_icon: egui::CursorIcon::None,
+      event_loop_proxy: event_loop.create_proxy(),
       event_loop: Some(event_loop),
       is_focused: true,
+      repaint_after: None,
 
       // timing
       clock: DeltaClock::new(),
@@ -266,13 +270,15 @@ impl Engine {
       let mut scene_graph = setup(&engine, &assets);
       let mut render_manager = RenderContextManager::new(&engine.graphics);
 
-      engine.run_variable_step(|_, tick| {
+      engine.run_variable_step(|_, time| {
         render_manager.begin_frame();
 
-        scene_graph.notify(SceneEvent::Update(tick.time.delta_time));
+        scene_graph.notify(SceneEvent::Update(time.delta_time));
         scene_graph.notify(SceneEvent::Render(&mut render_manager));
 
         render_manager.end_frame();
+
+        TickResponse::Continue
       });
     });
   }
@@ -280,71 +286,26 @@ impl Engine {
   /// Builds a [`Engine`] that runs the given [`Application`].  
   pub fn from_application<A: Application>(configuration: Configuration) {
     Engine::start(configuration, |engine, assets| {
-      let mut timer = DeltaClock::new();
       let mut application = A::new(&engine, &assets).expect("Failed to create application");
 
-      engine.run(|engine, control_flow, event| {
-        // capture timing information
-        let mut tick = GameTick {
-          time: GameTime {
-            delta_time: timer.tick(),
-            total_time: timer.total_time(),
-          },
-          is_exiting: false,
-        };
-
-        application.notify(engine, &mut tick, event);
-
-        if tick.is_exiting {
-          *control_flow = ControlFlow::Exit;
-        }
-
-        profiling::finish_frame();
-      });
+      engine.run(|engine, event| application.notify(engine, event));
     })
   }
 
   /// Runs a variable step game loop against the engine.
   ///
   /// This method will block until the game is closed.
-  pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, &mut GameTick)) {
-    let mut delta_clock = DeltaClock::new();
-
-    self.run(move |engine, control_flow, event| {
-      // run main loop
-      match event {
-        ApplicationLoopEvent::Update => {
-          // no-op; in this model tie updates to renderings
-        }
-        ApplicationLoopEvent::Draw => {
-          // capture timing information
-          let mut tick = GameTick {
-            time: GameTime {
-              delta_time: delta_clock.tick(),
-              total_time: delta_clock.total_time(),
-            },
-            is_exiting: false,
-          };
-
-          body(engine, &mut tick);
-
-          if tick.is_exiting {
-            *control_flow = ControlFlow::Exit;
-          }
-
-          profiling::finish_frame();
-        }
-        ApplicationLoopEvent::Window(_) => {
-          // no-op; we don't care about platform events
-        }
-      }
+  pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, GameTime) -> TickResponse) {
+    self.run(move |engine, event| match event {
+      TickEvent::Update(time) => body(engine, time),
+      _ => TickResponse::Continue,
     });
   }
 
   /// Runs the given delegate as the main loop for the engine.
   ///
   /// This method will block until the game is closed.
-  pub fn run(mut self, mut body: impl FnMut(&mut Self, &mut ControlFlow, ApplicationLoopEvent)) {
+  pub fn run(mut self, mut body: impl FnMut(&mut Self, TickEvent) -> TickResponse) {
     use glutin::event::*;
     use glutin::platform::run_return::EventLoopExtRunReturn;
 
@@ -363,34 +324,50 @@ impl Engine {
           if window_id == self.window.id() {
             // update graphics and run draw loop
             self.graphics.begin_frame();
-            body(&mut self, control_flow, ApplicationLoopEvent::Draw);
-            self.graphics.end_frame();
 
-            // update input devices
-            self.input.tick();
+            let time = GameTime {
+              delta_time: self.clock.last_delta_time(),
+              total_time: self.clock.total_time(),
+            };
+
+            body(&mut self, TickEvent::Draw(time));
+            self.input.tick(self.clock.total_time());
+
+            self.graphics.end_frame();
           }
         }
         Event::MainEventsCleared => {
-          // update the fps counter, if enabled
-          self.update_frame_counter();
+          self.clock.tick();
 
-          // main control flow
-          if self.config.update_continuously && self.is_focused {
-            *control_flow = ControlFlow::Poll;
-            self.window.request_redraw();
-          } else {
-            *control_flow = ControlFlow::Wait;
+          let time = GameTime {
+            delta_time: self.clock.last_delta_time(),
+            total_time: self.clock.total_time(),
+          };
 
-            if self.is_focused {
+          // update core systems
+          match body(&mut self, TickEvent::Update(time)) {
+            TickResponse::Continue => {
+              // main control flow
+              if self.config.update_continuously && self.is_focused {
+                self.update_frame_counter();
+                *control_flow = ControlFlow::Poll;
+              } else if let Some(duration) = self.repaint_after.take() {
+                *control_flow = ControlFlow::WaitUntil(std::time::Instant::now() + duration);
+              } else {
+                *control_flow = ControlFlow::Wait;
+              }
+
               self.window.request_redraw();
             }
-          }
+            TickResponse::Exit => {
+              *control_flow = ControlFlow::Exit;
+            }
+          };
 
-          // run update logic
-          body(&mut self, control_flow, ApplicationLoopEvent::Update);
+          profiling::finish_frame();
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
-          body(&mut self, control_flow, ApplicationLoopEvent::Window(&event));
+          body(&mut self, TickEvent::Window(&event));
 
           match event {
             WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
@@ -460,7 +437,7 @@ impl Engine {
 
   /// Updates the main window frame counter.
   fn update_frame_counter(&mut self) {
-    if self.config.update_continuously && self.config.show_fps_in_title && self.is_focused {
+    if self.config.show_fps_in_title {
       let delta_time = self.clock.last_delta_time();
 
       self.frame_counter.tick(delta_time);
@@ -471,8 +448,6 @@ impl Engine {
         self.window.set_title(&new_title);
         self.frame_timer.reset();
       }
-    } else {
-      self.window.set_title(self.config.title);
     }
   }
 }
@@ -567,5 +542,10 @@ impl crate::ui::UserInterfaceHost for Engine {
 
   fn request_redraw(&self) {
     self.window.request_redraw();
+  }
+
+  fn request_redraw_after(&mut self, duration: Duration) {
+    self.repaint_after = Some(duration);
+    self.event_loop_proxy.send_event(()).unwrap();
   }
 }

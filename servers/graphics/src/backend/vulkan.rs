@@ -14,6 +14,7 @@ pub struct VulkanBackend {
 
 impl VulkanBackend {
   /// Creates a [`VulkanBackend`] for the given window.
+  #[allow(deprecated)]
   pub fn new(_window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
     unsafe {
       let entry = ash::Entry::load()?;

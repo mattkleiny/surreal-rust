@@ -1,6 +1,6 @@
 use surreal::assets::AssetManager;
 use surreal::diagnostics::profiling;
-use surreal::engine::{Application, Configuration, Engine, GameTick};
+use surreal::engine::{Application, Configuration, Engine, GameTime};
 use surreal::ui::UserInterface;
 use surreal_editor::{EditorWindow, Project};
 
@@ -11,7 +11,6 @@ fn main() {
     size: (1920, 1080),
     vsync_enabled: true,
     update_continuously: false,
-    transparent_window: true,
     ..Default::default()
   };
 
@@ -43,11 +42,11 @@ impl Application for EditorApplication {
     })
   }
 
-  fn on_update(&mut self, _engine: &mut Engine, _tick: &mut GameTick) {
+  fn on_update(&mut self, _engine: &mut Engine, _time: GameTime) {
     profiling::profile_scope!("Editor loop");
   }
 
-  fn on_draw(&mut self, engine: &mut Engine, _tick: &mut GameTick) {
+  fn on_draw(&mut self, engine: &mut Engine, _time: GameTime) {
     profiling::profile_scope!("Editor draw");
 
     self.user_interface.run(engine, |egui| {

@@ -1,5 +1,3 @@
-//! Graph widget for graph editing.
-
 use egui::*;
 
 use surreal::graphs::*;
@@ -8,31 +6,37 @@ const ZOOM_MIN: f32 = 0.5;
 const ZOOM_MAX: f32 = 5.0;
 
 /// An `egui` editor for [`Graph`]s.
-pub struct GraphEditorWidget<D> {
-  graph: Graph<D>,
+pub struct GraphEditor<D> {
+  _graph: Graph<D>,
   zoom: f32,
 }
 
-/// Internal messages for the [`GraphEditorWidget`].
-#[derive(Debug)]
-enum GraphEditorMessage {
-  SelectNode(NodeId),
-  DeleteNode(NodeId),
-  DisconnectPort { input: PortId, output: PortId },
-  MoveNode { node: NodeId, delta: Vec2 },
-  ConnectPortStarted { port: PortId },
-  ConnectPortEnded { input: PortId, output: PortId },
-}
+/// Internal messages for the [`GraphEditor`].
+// #[derive(Debug)]
+// enum GraphEditorMessage {
+//   SelectNode(NodeId),
+//   DeleteNode(NodeId),
+//   DisconnectPort { input: PortId, output: PortId },
+//   MoveNode { node: NodeId, delta: Vec2 },
+//   ConnectPortStarted { port: PortId },
+//   ConnectPortEnded { input: PortId, output: PortId },
+// }
 
-impl<D> GraphEditorWidget<D> {
-  /// Creates a [`GraphEditorWidget`] for the given [`Graph`].
+impl<D> GraphEditor<D> {
+  /// Creates a [`GraphEditor`] for the given [`Graph`].
   pub fn from_graph(graph: Graph<D>) -> Self {
-    Self { graph, zoom: 1.0 }
+    Self { _graph: graph, zoom: 1.0 }
   }
 
   /// Renders the graph editor in the given [`Context`] .
   pub fn show(&mut self, ui: &mut Ui, rect: Rect) {
-    ui.allocate_rect(rect, Sense::hover());
+    let response = ui.allocate_rect(rect, Sense::hover());
+
+    let background_color = if response.hovered() {
+      Color32::from_rgb(0x1c, 0x1c, 0x1c)
+    } else {
+      Color32::from_rgb(0x1b, 0x1b, 0x1b)
+    };
 
     // let cursor_pos = ui.ctx().input().pointer.hover_pos().unwrap_or(egui::Pos2::ZERO);
     // let cursor_in_editor = rect.contains(cursor_pos);
@@ -42,20 +46,24 @@ impl<D> GraphEditorWidget<D> {
 
     let painter = ui.painter();
 
-    Self::paint_grid(painter, rect, self.zoom);
+    Self::paint_grid(painter, rect, self.zoom, background_color);
+
     // TODO: paint nodes
     // TODO: paint connections
+    // TODO: paint finder (if open)
+    // TODO: paint blackboard (if open)
+    // TODO: paint minimap (if open)
+    // TODO: paint inspector (if open)
   }
 
-  fn paint_grid(painter: &Painter, rect: Rect, zoom: f32) {
+  fn paint_grid(painter: &Painter, rect: Rect, zoom: f32, background_color: Color32) {
     let spacing = zoom * 10.0;
     let thick_spacing = spacing * 10.0;
 
-    let fill_color = Color32::from_rgb(0x20, 0x20, 0x20);
     let line_color = Color32::from_rgb(0x2b, 0x2b, 0x2b);
     let thick_color = Color32::from_rgb(0x3a, 0x3a, 0x3a);
 
-    painter.rect_filled(rect, Rounding::none(), fill_color);
+    painter.rect_filled(rect, Rounding::none(), background_color);
 
     Self::paint_grid_lines(painter, rect, spacing, line_color);
     Self::paint_grid_lines(painter, rect, thick_spacing, thick_color);

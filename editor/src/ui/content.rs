@@ -1,4 +1,2 @@
-//! Asset list
-
 #[derive(Default)]
-pub struct ContentBrowserWidget {}
+pub struct ContentBrowser {}

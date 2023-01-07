@@ -1,5 +1,5 @@
 use surreal::assets::AssetManager;
-use surreal::engine::{Configuration, Engine};
+use surreal::engine::{Configuration, Engine, TickResponse};
 use surreal::graphics::{Color, RenderContextManager};
 use surreal::input::Key;
 use surreal::maths::Mat4;
@@ -26,21 +26,23 @@ pub fn run_example(name: &'static str, factory: impl Fn(&Engine, &AssetManager) 
       ..Default::default()
     });
 
-    engine.run_variable_step(|engine, tick| {
+    engine.run_variable_step(|engine, time| {
       engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       renderer.begin_frame();
 
-      scene.notify(SceneEvent::Update(tick.time.delta_time));
+      scene.notify(SceneEvent::Update(time.delta_time));
       scene.notify(SceneEvent::Render(&mut renderer));
 
       renderer.end_frame();
 
       if let Some(keyboard) = &engine.input.keyboard {
         if keyboard.is_key_pressed(Key::Escape) {
-          tick.exit();
+          return TickResponse::Exit;
         }
       }
+
+      TickResponse::Continue
     });
   });
 }

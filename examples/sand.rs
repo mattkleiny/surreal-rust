@@ -19,12 +19,12 @@ fn main() {
     let mut canvas = PixelCanvas::new(graphics, 256, 144);
     let mut timer = IntervalTimer::new(TimeSpan::from_millis(10.));
 
-    engine.run_variable_step(|engine, tick| {
+    engine.run_variable_step(|engine, time| {
       let graphics = &engine.graphics;
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
-      if timer.tick(tick.time.delta_time) {
+      if timer.tick(time.delta_time) {
         simulate_sand(&mut canvas.pixels);
         timer.reset();
       }
@@ -65,9 +65,11 @@ fn main() {
         }
 
         if keyboard.is_key_pressed(Key::Escape) {
-          tick.exit();
+          return TickResponse::Exit;
         }
       }
+
+      TickResponse::Continue
     });
   });
 }

@@ -18,7 +18,7 @@ fn main() {
     let mut name = "Matt".to_string();
     let mut age = 33;
 
-    engine.run_variable_step(|engine, tick| {
+    engine.run_variable_step(|engine, _| {
       let graphics = &engine.graphics;
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
@@ -44,9 +44,11 @@ fn main() {
 
       if let Some(keyboard) = &engine.input.keyboard {
         if keyboard.is_key_pressed(Key::Escape) {
-          tick.exit();
+          return TickResponse::Exit;
         }
       }
+
+      TickResponse::Continue
     });
   });
 }

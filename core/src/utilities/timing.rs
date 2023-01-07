@@ -54,8 +54,9 @@ impl DeltaClock {
     let delta_time = current_time - self.last_time;
 
     self.last_time = current_time;
+    self.last_delta_time = delta_time.total_seconds().min(self.max_delta_time);
 
-    delta_time.total_seconds().min(self.max_delta_time)
+    self.last_delta_time
   }
 
   /// The last delta time observed on the [`DeltaClock`], in seconds.

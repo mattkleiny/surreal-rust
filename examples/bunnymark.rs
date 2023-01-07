@@ -32,12 +32,12 @@ fn main() {
     let mut random = Random::with_thread_local_seed();
     let mut bunnies = Vec::<Bunny>::new();
 
-    engine.run_variable_step(move |engine, tick| {
+    engine.run_variable_step(move |engine, time| {
       engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       // update bunnies
       for bunny in &mut bunnies {
-        bunny.update(tick.time.delta_time);
+        bunny.update(time.delta_time);
       }
 
       // draw bunnies
@@ -67,7 +67,7 @@ fn main() {
       // handle input
       if let Some(keyboard) = &engine.input.keyboard {
         if keyboard.is_key_pressed(Key::Escape) {
-          tick.exit();
+          return TickResponse::Exit;
         }
       }
 
@@ -96,6 +96,8 @@ fn main() {
           info!("There are {:?} bunnies", bunnies.len());
         }
       }
+
+      TickResponse::Continue
     });
   });
 }

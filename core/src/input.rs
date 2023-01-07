@@ -41,7 +41,7 @@ impl InputBackend {
   }
 
   /// Ticks the input system, apply state changes.
-  pub fn tick(&mut self) {
+  pub fn tick(&mut self, total_time: f32) {
     if let Some(keyboard) = &mut self.keyboard {
       if !self.exclusive_keyboard_input {
         keyboard.tick();
@@ -56,6 +56,7 @@ impl InputBackend {
 
     // reset egui events
     self.raw_input.events.clear();
+    self.raw_input.time = Some(total_time as f64);
   }
 
   /// Notifies of a change to keyboard modifiers.

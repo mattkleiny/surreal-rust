@@ -71,12 +71,12 @@ impl<D> Graph<D> {
   }
 
   /// Iterates the [`GraphNode`]s of this graph.
-  pub fn iter(&self) -> impl Iterator<Item = &GraphNode<D>> {
+  pub fn nodes(&self) -> impl Iterator<Item = &GraphNode<D>> {
     self.nodes.iter().map(|(_, node)| node)
   }
 
   /// Mutably iterates the [`GraphNode`]s of this graph.
-  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut GraphNode<D>> {
+  pub fn nodes_mut(&mut self) -> impl Iterator<Item = &mut GraphNode<D>> {
     self.nodes.iter_mut().map(|(_, node)| node)
   }
 }
@@ -86,7 +86,7 @@ impl<'a, D> IntoIterator for &'a Graph<D> {
   type IntoIter = impl Iterator<Item = &'a GraphNode<D>>;
 
   fn into_iter(self) -> Self::IntoIter {
-    self.iter()
+    self.nodes()
   }
 }
 
@@ -95,7 +95,7 @@ impl<'a, D> IntoIterator for &'a mut Graph<D> {
   type IntoIter = impl Iterator<Item = &'a mut GraphNode<D>>;
 
   fn into_iter(self) -> Self::IntoIter {
-    self.iter_mut()
+    self.nodes_mut()
   }
 }
 

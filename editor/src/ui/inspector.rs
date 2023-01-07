@@ -1,16 +1,16 @@
-//! Inspector widget for object editing.
-
-/// Represents a type that can be inspected by an [`InspectorWidget`].
+/// Represents a type that can be inspected by an [`Inspector`].
 pub trait Inspectable {
-  fn inspect(&mut self, inspector: &mut InspectorWidget);
+  fn inspect(&mut self, inspector: &mut Inspector);
 }
 
 /// A widget for editing objects in-situ.
 #[derive(Default)]
-pub struct InspectorWidget {}
+pub struct Inspector {}
 
-impl InspectorWidget {
-  pub fn show(&mut self, _ui: &mut egui::Ui, _inspectable: &mut impl Inspectable) {
-    todo!()
+impl Inspector {
+  pub fn show(&mut self, ui: &mut egui::Ui) {
+    ui.heading("Inspector");
+    ui.label("Inspecting objects");
+    // no-op
   }
 }

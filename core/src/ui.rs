@@ -1,6 +1,7 @@
 //! User interface rendering and widgets.
 
 use std::collections::HashMap;
+use std::time::Duration;
 
 use crate::diagnostics::profiling;
 pub use egui;
@@ -25,6 +26,7 @@ pub trait UserInterfaceHost {
   fn set_exclusive_pointer_input(&mut self, exclusive: bool);
   fn set_cursor_icon(&mut self, cursor_icon: egui::CursorIcon);
   fn request_redraw(&self);
+  fn request_redraw_after(&mut self, duration: Duration);
 }
 
 /// A canvas for immediate mode user interface rendering via `egui`.
@@ -243,17 +245,18 @@ impl UserInterface {
     }
 
     let platform_output = full_output.platform_output;
-    let needs_repaint = full_output.repaint_after.as_secs_f32() > 0.;
+    let repaint_after = full_output.repaint_after;
 
     provider.set_exclusive_keyboard_input(self.context.wants_keyboard_input());
     provider.set_exclusive_pointer_input(self.context.wants_pointer_input());
     provider.set_cursor_icon(platform_output.cursor_icon);
 
     // TODO: handle clipboard, too
-    // TODO: support duration based repaints?
 
-    if needs_repaint {
+    if repaint_after.is_zero() {
       provider.request_redraw();
+    } else if repaint_after.as_secs() > 0 && repaint_after.as_secs() < Duration::MAX.as_secs() {
+      provider.request_redraw_after(full_output.repaint_after);
     }
   }
 }

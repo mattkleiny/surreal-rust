@@ -27,9 +27,9 @@ fn main() {
     let color1 = Color32::random();
     let color2 = Color32::random();
 
-    engine.run_variable_step(|engine, tick| {
+    engine.run_variable_step(|engine, time| {
       let graphics = &engine.graphics;
-      let time_step = (tick.time.total_time.sin() + 1.) / 2.;
+      let time_step = (time.total_time.sin() + 1.) / 2.;
 
       graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
       renderer.begin_frame();
@@ -61,9 +61,11 @@ fn main() {
 
       if let Some(keyboard) = &engine.input.keyboard {
         if keyboard.is_key_pressed(Key::Escape) {
-          tick.exit();
+          return TickResponse::Exit;
         }
       }
+
+      TickResponse::Continue
     });
   });
 }
