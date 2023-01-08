@@ -1,5 +1,6 @@
 //! Geometry batching for common shapes and polygon rendering.
 
+use crate as surreal;
 use crate::diagnostics::profiling;
 use crate::maths::{vec2, Rectangle, Vec2};
 

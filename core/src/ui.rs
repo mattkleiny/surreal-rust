@@ -3,9 +3,10 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
-use crate::diagnostics::profiling;
 pub use egui;
 
+use crate as surreal;
+use crate::diagnostics::profiling;
 use crate::graphics::*;
 use crate::maths::{vec2, Rectangle};
 
@@ -25,7 +26,7 @@ pub trait UserInterfaceHost {
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool);
   fn set_exclusive_pointer_input(&mut self, exclusive: bool);
   fn set_cursor_icon(&mut self, cursor_icon: egui::CursorIcon);
-  fn request_redraw(&self);
+  fn request_redraw(&mut self);
   fn request_redraw_after(&mut self, duration: Duration);
 }
 
@@ -95,6 +96,12 @@ impl UserInterface {
   /// Toggles the profiler window open/closed.
   pub fn toggle_profiler(&mut self) {
     self.is_profiler_open = !self.is_profiler_open;
+
+    if self.is_profiler_open {
+      profiling::enable_profiling()
+    } else {
+      profiling::disable_profiling()
+    }
   }
 
   /// Propagates input into the user interface and runs the given body against the UI.

@@ -3,6 +3,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate as surreal;
 use crate::assets::{Asset, AssetContext, AssetLoader, AssetManager};
 use crate::collections::Grid;
 use crate::diagnostics::profiling;

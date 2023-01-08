@@ -82,7 +82,7 @@ pub trait GraphicsBackend {
 
   // intrinsics
   fn get_viewport_size(&self) -> (usize, usize);
-  fn set_viewport_size(&self, viewport: (usize, usize));
+  fn set_viewport_size(&self, size: winit::dpi::PhysicalSize<u32>);
   fn set_blend_state(&self, blend_state: BlendState);
   fn set_culling_mode(&self, culling_mode: CullingMode);
   fn set_scissor_mode(&self, scissor_mode: ScissorMode);

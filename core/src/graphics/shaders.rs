@@ -9,6 +9,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use crate as surreal;
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::diagnostics::profiling;
 use crate::io::VirtualPath;

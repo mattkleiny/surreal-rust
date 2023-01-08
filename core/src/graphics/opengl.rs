@@ -4,10 +4,11 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ffi::c_void;
 
-use crate::diagnostics::profiling;
 use anyhow::anyhow;
 use glutin::{ContextWrapper, PossiblyCurrent};
 
+use crate as surreal;
+use crate::diagnostics::profiling;
 use crate::maths::Rectangle;
 use crate::utilities::Size;
 
@@ -21,17 +22,19 @@ pub struct OpenGLGraphicsBackend {
 
 /// Interior mutable state for the backend.
 struct InternalState {
+  vsync_enabled: bool,
   sampler_cache: HashMap<TextureSampler, u32>,
 }
 
 impl OpenGLGraphicsBackend {
   /// Creates a new OpenGL backend.
-  pub fn new(context: ContextWrapper<PossiblyCurrent, ()>) -> Self {
+  pub fn new(context: ContextWrapper<PossiblyCurrent, ()>, vsync_enabled: bool) -> Self {
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
     Self {
       context,
       state: RefCell::new(InternalState {
+        vsync_enabled,
         sampler_cache: HashMap::new(),
       }),
     }
@@ -45,7 +48,10 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
   #[profiling::function]
   fn end_frame(&self) {
-    self.context.swap_buffers().expect("Failed to swap buffers");
+    if self.state.borrow().vsync_enabled {
+      profiling::profile_scope!("Vertical Sync");
+      self.context.swap_buffers().expect("Failed to swap buffers");
+    }
   }
 
   fn get_viewport_size(&self) -> (usize, usize) {
@@ -57,9 +63,11 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn set_viewport_size(&self, (width, height): (usize, usize)) {
+  fn set_viewport_size(&self, size: winit::dpi::PhysicalSize<u32>) {
+    self.context.resize(size);
+
     unsafe {
-      gl::Viewport(0, 0, width as i32, height as i32);
+      gl::Viewport(0, 0, size.width as i32, size.height as i32);
     }
   }
 

@@ -5,6 +5,7 @@
 
 use std::collections::HashMap;
 
+use crate as surreal;
 use crate::assets::{Asset, AssetContext, AssetLoader};
 use crate::diagnostics::profiling;
 

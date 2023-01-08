@@ -47,7 +47,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     (1920, 1080)
   }
 
-  fn set_viewport_size(&self, _viewport: (usize, usize)) {
+  fn set_viewport_size(&self, _size: winit::dpi::PhysicalSize<u32>) {
     // no-op
   }
 
@@ -91,11 +91,11 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     self.next_texture_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn initialize_texture(&self, _texture: GraphicsHandle, _width: u32, _height: u32, _format: TextureFormat) {
+  fn set_texture_options(&self, _texture: GraphicsHandle, _sampler: &TextureSampler) {
     // no-op
   }
 
-  fn set_texture_options(&self, _texture: GraphicsHandle, _sampler: &TextureSampler) {
+  fn initialize_texture(&self, _texture: GraphicsHandle, _width: u32, _height: u32, _format: TextureFormat) {
     // no-op
   }
 

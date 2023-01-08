@@ -86,19 +86,18 @@ pub enum TickResponse {
 }
 
 /// Represents an application that can be used in an [`Engine`].
-#[allow(unused_variables)]
 pub trait Application: Sized {
   /// Builds the [`Application`] instance.
   fn new(engine: &Engine, assets: &AssetManager) -> crate::Result<Self>;
 
   /// Called when the application is to be updated.
-  fn on_update(&mut self, engine: &mut Engine, time: GameTime) {}
+  fn on_update(&mut self, _engine: &mut Engine, _time: GameTime) {}
 
   /// Called when the application is to be drawn.
-  fn on_draw(&mut self, engine: &mut Engine, time: GameTime) {}
+  fn on_draw(&mut self, _engine: &mut Engine, _time: GameTime) {}
 
   /// Invoked when a [`WindowEvent`] is received.
-  fn on_window_event(&mut self, engine: &mut Engine, event: &WindowEvent) {}
+  fn on_window_event(&mut self, _engine: &mut Engine, _event: &WindowEvent) {}
 
   /// Notifies the application of an [`TickEvent`]. l
   fn notify(&mut self, engine: &mut Engine, event: TickEvent) -> TickResponse {
@@ -190,7 +189,7 @@ impl Engine {
 
     let pixels_per_point = window.scale_factor() as f32;
     let audio = OpenALAudioBackend::new();
-    let graphics = OpenGLGraphicsBackend::new(context);
+    let graphics = OpenGLGraphicsBackend::new(context, config.vsync_enabled);
 
     Self {
       // servers
@@ -220,7 +219,6 @@ impl Engine {
 
     // set-up diagnostics
     ConsoleLoggerBuilder::new().with_level(configuration.log_level).install();
-    profiling::enable_profiling();
 
     // set-up core engine
     log::trace!("Starting engine");
@@ -322,6 +320,8 @@ impl Engine {
       match event {
         Event::RedrawRequested(window_id) => {
           if window_id == self.window.id() {
+            profiling::profile_scope!("Draw");
+
             // update graphics and run draw loop
             self.graphics.begin_frame();
 
@@ -345,6 +345,8 @@ impl Engine {
           };
 
           // update core systems
+          profiling::profile_scope!("Update");
+
           match body(&mut self, TickEvent::Update(time)) {
             TickResponse::Continue => {
               // main control flow
@@ -409,11 +411,9 @@ impl Engine {
               }
             }
             WindowEvent::Resized(size) => {
-              let size = (size.width as usize, size.height as usize);
-
               self.graphics.set_viewport_size(size);
 
-              log::trace!("Window resized to {}x{}", size.0, size.1);
+              log::trace!("Window resized to {}x{}", size.width, size.height);
             }
             WindowEvent::CloseRequested => {
               *control_flow = ControlFlow::Exit;
@@ -540,7 +540,7 @@ impl crate::ui::UserInterfaceHost for Engine {
     }
   }
 
-  fn request_redraw(&self) {
+  fn request_redraw(&mut self) {
     self.window.request_redraw();
   }
 

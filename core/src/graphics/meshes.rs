@@ -6,6 +6,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate as surreal;
 use crate::diagnostics::profiling;
 use crate::maths::{vec2, Vec2, Vec3};
 use crate::utilities::Size;

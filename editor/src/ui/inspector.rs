@@ -1,3 +1,5 @@
+use surreal::diagnostics::profiling;
+
 use super::EditorContext;
 
 /// Represents a type that can be inspected by an [`Inspector`].
@@ -10,10 +12,9 @@ pub trait Inspectable {
 pub struct Inspector {}
 
 impl Inspector {
-  /// Shows the [`Inspector`] in the given context.
+  #[profiling::function]
   pub fn show(&mut self, ui: &mut egui::Ui, _context: &mut EditorContext) {
     ui.heading("Inspector");
     ui.label("Inspecting objects");
-    // no-op
   }
 }
