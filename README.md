@@ -2,7 +2,7 @@
 
 # Surreal ![Surreal Icon](./surreal.ico)
 
-A game engine built with Rust.
+A capable game engine built with Rust.
 
 This project is in active development.
 
@@ -18,27 +18,29 @@ as Unity or Unreal to allow building games ergonomically.
 
 More information on the editor can be found in [the editor crate](./editor)
 
-### Modern and approachable rendering
+### Simple and extendable rendering
 
 Some example features:
-* Easy to use graphics API bindings with support for advanced shader programs.
-* Real-time lighting and shadowing.
-* Smooth interpolated pixel snapping
-* SDF generation for advanced screen space effects (such as ray marching)
+* Easy to use graphics API bindings with support for custom shader programs and visual shader construction.
+* SDF generation for advanced screen space effects (such as ray marching) with built-in techniques.
 * Global illumination based on voxel projection planes
 
 ### Pluggable and flexible scripting
 
 Writing games is hard, writing games in a highly rigid language like C/C++/Rust/etc is even harder.
 
-Scripting allows for DSL to take the brunt of the work required in game development. DSLs can be used for all sorts of scenarios:
+Scripting allows for various DSLs to take the brunt of the work required in game development.
+
+DSLs can be used for all sorts of scenarios:
 
 * Dialogue
 * Coordination
-* Blueprints/Procedural generation
+* Blueprints
+* Procedural generation
 * Behaviour trees
 * State machines
-* Game events and scripting
+* Triggers and Actuators
+* etc
 
 A goal of this project is to implement a shared virtual machine for executable scripts and offer a variety of different front-ends for different scripting languages; the goal is to allow the best tool for the job.
 
