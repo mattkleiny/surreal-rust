@@ -2,23 +2,21 @@
 //!
 //! Bootstrapping and other framework systems for common projects.
 
-use glutin::{
+use std::time::Duration;
+
+use winit::{
   dpi::LogicalSize,
   event::WindowEvent,
   event_loop::{ControlFlow, EventLoop},
   window::{Window, WindowBuilder},
-  ContextBuilder,
 };
-use log::LevelFilter;
-use std::time::Duration;
 
-use crate::input::Key;
 use crate::{
   assets::AssetManager,
   audio::{AudioServer, OpenALAudioBackend},
-  diagnostics::{profiling, ConsoleLoggerBuilder},
+  diagnostics::{profiling, ConsoleLoggerBuilder, LevelFilter},
   graphics::{GraphicsServer, Image, ImageFormat, OpenGLGraphicsBackend, Renderer},
-  input::InputServer,
+  input::{InputServer, Key},
   maths::{uvec2, vec2},
   scene::{SceneEvent, SceneGraph},
   utilities::{DeltaClock, FrameCounter, IntervalTimer, TimeSpan},
@@ -170,7 +168,7 @@ impl Engine {
       }));
 
     // glutin tries to be safe via the type system
-    let context = ContextBuilder::new()
+    let context = glutin::ContextBuilder::new()
       .with_vsync(config.vsync_enabled)
       .with_multisampling(config.samples)
       .build_windowed(window, &event_loop)
@@ -179,12 +177,12 @@ impl Engine {
     // unpick the window from glutin so we can manage it ourselves
     let (context, window) = unsafe { context.make_current().unwrap().split() };
     let audio_server = OpenALAudioBackend::new();
-    let graphics_server = OpenGLGraphicsBackend::new(context, config.vsync_enabled);
+    let graphics_server = OpenGLGraphicsBackend::new(context);
 
     Self {
       // servers
       audio: AudioServer::new(Box::new(audio_server)),
-      graphics: GraphicsServer::new(Box::new(graphics_server)),
+      graphics: GraphicsServer::new(graphics_server),
       input: InputServer::new(window.scale_factor() as f32),
 
       // window management

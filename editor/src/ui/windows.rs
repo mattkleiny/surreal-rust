@@ -92,8 +92,9 @@ impl EditorWindowHost {
 
     // set-up graphics server and user interface
     let (context, window) = unsafe { context.make_current().expect("Failed to build window OpenGL context").split() };
-    let graphics_server = GraphicsServer::new(Box::new(OpenGLGraphicsBackend::new(context, true)));
+
     let pixels_per_point = window.scale_factor() as f32;
+    let graphics_server = GraphicsServer::new(OpenGLGraphicsBackend::new(context));
     let input_server = InputServer::new(pixels_per_point);
     let user_interface = UserInterface::new(&graphics_server);
 
@@ -122,6 +123,8 @@ impl EditorWindowHost {
   ///
   /// This method will block the current thread until the application is closed.
   pub fn run(mut self) {
+    surreal::diagnostics::trace!("Entering editor window loop");
+
     self.event_loop.run(move |event, _, control_flow| match event {
       Event::MainEventsCleared => {
         for (window_id, state) in &mut self.windows {

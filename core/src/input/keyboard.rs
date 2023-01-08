@@ -2,8 +2,8 @@
 
 use std::collections::HashSet;
 
-pub use glutin::event::VirtualKeyCode as Key;
-use glutin::event::{ElementState, KeyboardInput};
+pub use winit::event::VirtualKeyCode as Key;
+use winit::event::{ElementState, KeyboardInput};
 
 /// Represents a keyboard device in the system.
 #[derive(Default)]

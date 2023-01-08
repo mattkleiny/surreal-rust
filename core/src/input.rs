@@ -1,7 +1,7 @@
 //! A lightweight and cross-platform input engine.
 
 use egui::RawInput;
-use glutin::event::{ElementState, KeyboardInput, ModifiersState, MouseScrollDelta};
+use winit::event::{ElementState, KeyboardInput, ModifiersState, MouseScrollDelta};
 
 pub use keyboard::*;
 pub use mouse::*;
@@ -181,7 +181,7 @@ fn is_printable_char(chr: char) -> bool {
 /// Translates a virtual key code from winit to an egui key.
 fn translate_virtual_key_code_to_egui(key: Key) -> Option<egui::Key> {
   use egui::Key;
-  use glutin::event::VirtualKeyCode;
+  use winit::event::VirtualKeyCode;
 
   Some(match key {
     VirtualKeyCode::Down => Key::ArrowDown,

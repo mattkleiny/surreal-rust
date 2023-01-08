@@ -2,8 +2,8 @@
 
 use std::collections::HashSet;
 
-use glutin::event::ElementState;
-pub use glutin::event::MouseButton;
+use winit::event::ElementState;
+pub use winit::event::MouseButton;
 
 use crate::maths::Vec2;
 

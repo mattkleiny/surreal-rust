@@ -43,6 +43,10 @@ fn main() {
       });
 
       if let Some(keyboard) = &engine.input.keyboard {
+        if keyboard.is_key_pressed(Key::F7) {
+          interface.toggle_profiler();
+        }
+
         if keyboard.is_key_pressed(Key::Escape) {
           engine.quit();
         }

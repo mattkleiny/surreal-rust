@@ -101,7 +101,7 @@ impl AssetServer {
 /// assets in the project, and for managing the import of assets from the file system.
 ///
 /// See [`AssetServer`], [`AssetImporter`] and [`AssetBundle`] for more details.
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct AssetDatabase {
   metadata: HashMap<String, AssetMetadata>,
 }

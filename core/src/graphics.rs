@@ -47,10 +47,28 @@ mod textures;
 /// An opaque handle to a resource in the graphics subsystem.
 pub type GraphicsHandle = u32;
 
-/// A pointer to the core [`GraphicsBackend`] implementation.
-///
-/// This pointer is safe to pass around the application.
-pub type GraphicsServer = std::rc::Rc<Box<dyn GraphicsBackend>>;
+/// A wrapper for the core [`GraphicsBackend`] implementation.
+#[derive(Clone)]
+pub struct GraphicsServer {
+  backend: std::rc::Rc<Box<dyn GraphicsBackend>>,
+}
+
+impl GraphicsServer {
+  /// Creates a new [`GraphicsServer`] for the given [`GraphicsBackend`].
+  pub fn new(backend: impl GraphicsBackend + 'static) -> Self {
+    Self {
+      backend: std::rc::Rc::new(Box::new(backend)),
+    }
+  }
+}
+
+impl std::ops::Deref for GraphicsServer {
+  type Target = dyn GraphicsBackend;
+
+  fn deref(&self) -> &Self::Target {
+    self.backend.as_ref().as_ref()
+  }
+}
 
 /// The nominal max number of texture units that might be be bound in the GPU.
 ///

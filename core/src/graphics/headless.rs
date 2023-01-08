@@ -8,7 +8,7 @@ use super::*;
 
 /// Creates a [`GraphicsServer`] from the [`HeadlessGraphicsBackend`] for testing purposes.
 pub fn create_test_graphics() -> GraphicsServer {
-  GraphicsServer::new(Box::new(HeadlessGraphicsBackend::new()))
+  GraphicsServer::new(HeadlessGraphicsBackend::new())
 }
 
 /// A headless [`GraphicsBackend`] implementation.

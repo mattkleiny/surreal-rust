@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use std::ffi::c_void;
 
 use anyhow::anyhow;
-use glutin::{ContextWrapper, PossiblyCurrent};
 
 use crate as surreal;
 use crate::diagnostics::profiling;
@@ -16,25 +15,23 @@ use super::*;
 
 /// An OpenGL [`GraphicsBackend`] implementation.
 pub struct OpenGLGraphicsBackend {
-  context: ContextWrapper<PossiblyCurrent, ()>,
   state: RefCell<InternalState>,
 }
 
 /// Interior mutable state for the backend.
 struct InternalState {
-  vsync_enabled: bool,
+  context: Option<glutin::ContextWrapper<glutin::PossiblyCurrent, ()>>,
   sampler_cache: HashMap<TextureSampler, u32>,
 }
 
 impl OpenGLGraphicsBackend {
   /// Creates a new OpenGL backend.
-  pub fn new(context: ContextWrapper<PossiblyCurrent, ()>, vsync_enabled: bool) -> Self {
+  pub fn new(context: glutin::ContextWrapper<glutin::PossiblyCurrent, ()>) -> Self {
     gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
 
     Self {
-      context,
       state: RefCell::new(InternalState {
-        vsync_enabled,
+        context: Some(context),
         sampler_cache: HashMap::new(),
       }),
     }
@@ -42,15 +39,21 @@ impl OpenGLGraphicsBackend {
 }
 
 impl GraphicsBackend for OpenGLGraphicsBackend {
+  #[profiling::function]
   fn begin_frame(&self) {
-    // no-op
+    let mut state = self.state.borrow_mut();
+
+    if let Some(context) = state.context.take() {
+      state.context = Some(unsafe { context.make_current().unwrap() });
+    }
   }
 
   #[profiling::function]
   fn end_frame(&self) {
-    if self.state.borrow().vsync_enabled {
-      profiling::profile_scope!("Vertical Sync");
-      self.context.swap_buffers().expect("Failed to swap buffers");
+    let state = self.state.borrow();
+
+    if let Some(context) = &state.context {
+      context.swap_buffers().expect("Failed to swap buffers");
     }
   }
 
@@ -64,7 +67,11 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
   }
 
   fn set_viewport_size(&self, size: winit::dpi::PhysicalSize<u32>) {
-    self.context.resize(size);
+    let state = self.state.borrow();
+
+    if let Some(context) = &state.context {
+      context.resize(size);
+    }
 
     unsafe {
       gl::Viewport(0, 0, size.width as i32, size.height as i32);

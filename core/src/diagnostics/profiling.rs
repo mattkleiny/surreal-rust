@@ -4,6 +4,12 @@ pub use puffin::{profile_function, profile_scope};
 
 pub use macros::profile as function;
 
+/// Is the profiler enabled?
+#[inline]
+pub fn is_profiling_enabled() -> bool {
+  puffin::are_scopes_on()
+}
+
 /// Enables the profiler.
 #[inline]
 pub fn enable_profiling() {
