@@ -2,6 +2,7 @@ use surreal::diagnostics::profiling;
 
 use super::*;
 
+/// An [`EditorPanel`] that renders a list of all known application assets.
 #[derive(Default)]
 pub struct ContentBrowser {}
 

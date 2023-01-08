@@ -5,13 +5,13 @@ use surreal::scene::*;
 
 use super::*;
 
-/// A [`Component`] which renders a sprite in the game world.
+/// A [`SceneComponent`] which renders a sprite in the game world.
 #[derive(Object)]
 pub struct SpriteComponent {
   pub region: TextureRegion,
 }
 
-impl Component for SpriteComponent {
+impl SceneComponent for SpriteComponent {
   fn name(&self) -> &'static str {
     "SpriteComponent"
   }
@@ -30,8 +30,8 @@ impl Component for SpriteComponent {
     });
   }
 
-  fn kind(&self) -> ComponentKind {
-    ComponentKind::Renderer
+  fn kind(&self) -> SceneComponentKind {
+    SceneComponentKind::Renderer
   }
 }
 

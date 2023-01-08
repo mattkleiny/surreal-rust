@@ -2,6 +2,7 @@ use surreal::diagnostics::profiling;
 
 use super::*;
 
+/// An [`EditorPanel`] that renders an editable view of the current scene.
 #[derive(Default)]
 pub struct SceneView {}
 

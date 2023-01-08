@@ -2,6 +2,7 @@ use surreal::diagnostics::profiling;
 
 use super::*;
 
+/// An [`EditorPanel`] that renders a view of the actively running game and scene.
 #[derive(Default)]
 pub struct GameView {}
 

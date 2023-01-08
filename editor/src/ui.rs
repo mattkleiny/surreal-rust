@@ -2,12 +2,12 @@
 
 use serde::{Deserialize, Serialize};
 
-use content::*;
-use game::*;
-use graphs::*;
-use inspector::*;
-use scene::*;
-use undo::*;
+pub use content::*;
+pub use game::*;
+pub use graphs::*;
+pub use inspector::*;
+pub use scene::*;
+pub use undo::*;
 
 mod content;
 mod game;
@@ -36,6 +36,12 @@ pub struct EditorWindow {
 #[derive(Default)]
 pub struct EditorContext {
   _undo_manager: UndoManager,
+}
+
+/// Represents a panel that can be rendered in the [`EditorWindow`].
+pub trait EditorPanel {
+  /// Renders the active panel in-context.
+  fn show(&mut self, ui: &mut egui::Ui, context: &mut EditorContext);
 }
 
 impl EditorWindow {

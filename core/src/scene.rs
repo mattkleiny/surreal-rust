@@ -193,9 +193,9 @@ impl Transform {
   }
 }
 
-/// A flag that indicates what kind of [`Component`]s are present in a [`ComponentSet`].
+/// A flag that indicates what kind of [`SceneComponent`]s are present in a [`SceneComponentSet`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub enum ComponentKind {
+pub enum SceneComponentKind {
   /// This component has standard 'update' behaviour, but doesn't need to render.
   Behaviour,
   /// This component needs to render and wants access to the [`Renderer`].
@@ -207,7 +207,7 @@ pub enum ComponentKind {
 /// Components receive callbacks in response to scene lifecycle events, and
 /// can access information from their parent [`SceneNode`]s.
 #[allow(unused_variables)]
-pub trait Component: Object {
+pub trait SceneComponent: Object {
   /// Returns a friendly name for this component, for debugging/editor/etc.
   fn name(&self) -> &'static str;
 
@@ -233,68 +233,68 @@ pub trait Component: Object {
   fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {}
   fn on_render(&mut self, node: &mut SceneNode, renderer: &mut Renderer) {}
 
-  /// Determines the [`ComponentKind`] of this component.
+  /// Determines the [`SceneComponentKind`] of this component.
   ///
   /// The kind is used for determining which sub-trees have component types.
-  fn kind(&self) -> ComponentKind {
-    ComponentKind::Behaviour
+  fn kind(&self) -> SceneComponentKind {
+    SceneComponentKind::Behaviour
   }
 }
 
-/// A set of [`Component`]s in a [`SceneNode`].
+/// A set of [`SceneComponent`]s in a [`SceneNode`].
 #[derive(Default)]
-pub struct ComponentSet {
+pub struct SceneComponentSet {
   // TODO: hierarchical bit mask over ComponentKind
-  components: Vec<Box<dyn Component>>,
+  components: Vec<Box<dyn SceneComponent>>,
 }
 
-impl ComponentSet {
-  /// Builds a [`ComponentSet`] from the given array.
-  pub fn from_array<const S: usize>(components: [Box<dyn Component>; S]) -> Self {
+impl SceneComponentSet {
+  /// Builds a [`SceneComponentSet`] from the given array.
+  pub fn from_array<const S: usize>(components: [Box<dyn SceneComponent>; S]) -> Self {
     Self {
       components: Vec::from(components),
     }
   }
 
-  /// Determines if the given [`ComponentKind`] is present in the set.
-  pub fn has_kind(&self, kind: ComponentKind) -> bool {
+  /// Determines if the given [`SceneComponentKind`] is present in the set.
+  pub fn has_kind(&self, kind: SceneComponentKind) -> bool {
     self.components.iter().any(|c| c.kind() == kind)
   }
 
-  /// Adds a new [`Component`] to the set.
-  pub fn push<C: Component + 'static>(&mut self, component: C) {
+  /// Adds a new [`SceneComponent`] to the set.
+  pub fn push<C: SceneComponent + 'static>(&mut self, component: C) {
     self.components.push(Box::new(component));
   }
 
-  /// Iterates the [`Component`]s in this set.
-  pub fn iter(&self) -> impl Iterator<Item = &Box<dyn Component>> {
+  /// Iterates the [`SceneComponent`]s in this set.
+  pub fn iter(&self) -> impl Iterator<Item = &Box<dyn SceneComponent>> {
     self.components.iter()
   }
 
-  /// Mutably iterates the [`Component`]s in this set.
-  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Box<dyn Component>> {
+  /// Mutably iterates the [`SceneComponent`]s in this set.
+  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Box<dyn SceneComponent>> {
     self.components.iter_mut()
   }
 }
 
-impl Debug for ComponentSet {
+impl Debug for SceneComponentSet {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     f.debug_list().entries(self.components.iter().map(|c| c.name())).finish()
   }
 }
 
-impl<'a> IntoIterator for &'a ComponentSet {
-  type Item = &'a Box<dyn Component>;
-  type IntoIter = impl Iterator<Item = &'a Box<dyn Component>>;
+impl<'a> IntoIterator for &'a SceneComponentSet {
+  type Item = &'a Box<dyn SceneComponent>;
+  type IntoIter = impl Iterator<Item = &'a Box<dyn SceneComponent>>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
   }
 }
 
-impl<'a> IntoIterator for &'a mut ComponentSet {
-  type Item = &'a mut Box<dyn Component>;
-  type IntoIter = impl Iterator<Item = &'a mut Box<dyn Component>>;
+impl<'a> IntoIterator for &'a mut SceneComponentSet {
+  type Item = &'a mut Box<dyn SceneComponent>;
+  type IntoIter = impl Iterator<Item = &'a mut Box<dyn SceneComponent>>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter_mut()
@@ -304,7 +304,7 @@ impl<'a> IntoIterator for &'a mut ComponentSet {
 /// A node in a [`SceneGraph`].
 ///
 /// A node is a sub-tree of [`SceneNode`]s that represent a scene in a [`SceneGraph`].
-/// Each node can contain one or more [`Component`]s to build up logic from pieces.
+/// Each node can contain one or more [`SceneComponent`]s to build up logic from pieces.
 ///
 /// A node has a position, orientation, and scale relative to its parent node.
 pub struct SceneNode {
@@ -316,7 +316,7 @@ pub struct SceneNode {
   layer_id: LayerId,
   tags: TagSet,
   transform: Transform,
-  components: ComponentSet,
+  components: SceneComponentSet,
   children: Vec<SceneNode>,
 }
 
@@ -331,7 +331,7 @@ impl Default for SceneNode {
       layer_id: 0,
       tags: HashSet::new(),
       transform: Default::default(),
-      components: ComponentSet::default(),
+      components: SceneComponentSet::default(),
       children: Vec::with_capacity(0),
     }
   }
@@ -500,12 +500,12 @@ impl SceneNode {
     self.children.push(child);
   }
 
-  /// Adds a new [`Component`] to the node.
-  pub fn add_component<C: Component + 'static>(&mut self, component: C) {
+  /// Adds a new [`SceneComponent`] to the node.
+  pub fn add_component<C: SceneComponent + 'static>(&mut self, component: C) {
     self.components.push(component);
   }
 
-  /// Notify this node's [`Component`] and all of it's child [`SceneNode`]s.
+  /// Notify this node's [`SceneComponent`] and all of it's child [`SceneNode`]s.
   fn notify(&mut self, event: &mut SceneEvent) {
     let node = unsafe_mutable_alias(self);
 
@@ -775,7 +775,7 @@ pub struct SceneNodeBuilder {
   layer_id: LayerId,
   tags: TagSet,
   transform: Transform,
-  components: ComponentSet,
+  components: SceneComponentSet,
   children: Vec<SceneNode>,
 }
 
@@ -825,7 +825,7 @@ impl SceneNodeBuilder {
     self
   }
 
-  pub fn with_component(mut self, component: impl Component + 'static) -> Self {
+  pub fn with_component(mut self, component: impl SceneComponent + 'static) -> Self {
     self.components.push(component);
     self
   }
@@ -889,7 +889,7 @@ mod tests {
     #[derive(Object)]
     struct TestComponent1;
 
-    impl Component for TestComponent1 {
+    impl SceneComponent for TestComponent1 {
       fn name(&self) -> &'static str {
         "TestComponent1"
       }
@@ -902,7 +902,7 @@ mod tests {
     #[derive(Object)]
     struct TestComponent2;
 
-    impl Component for TestComponent2 {
+    impl SceneComponent for TestComponent2 {
       fn name(&self) -> &'static str {
         "TestComponent2"
       }
@@ -968,7 +968,7 @@ mod tests {
     #[derive(Object)]
     struct TestComponent;
 
-    impl Component for TestComponent {
+    impl SceneComponent for TestComponent {
       fn name(&self) -> &'static str {
         "TestComponent"
       }

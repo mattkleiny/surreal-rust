@@ -148,7 +148,7 @@ pub trait AssetImporter {
 /// A bundle of assets.
 ///
 /// Bundles are responsible for composing assets into a form that can be consumed
-/// by the game at runtime. Bundles are used by the [`AssetServerBackend`] to pack assets
+/// by the game at runtime. Bundles are used by the [`AssetServer`] to pack assets
 /// into central files for distribution.
 pub trait AssetBundle {}
 
@@ -231,7 +231,7 @@ pub struct AssetTypeMetadata {
 /// A manifest of assets.
 ///
 /// Manifests are used to describe the contents of an asset bundle. They are
-/// used by the [`AssetServerBackend`] to determine which assets are contained in a
+/// used by the [`AssetServer`] to determine which assets are contained in a
 /// bundle, and to determine whether a bundle needs to be rebuilt.
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct AssetManifest {
