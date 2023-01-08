@@ -8,6 +8,7 @@ surreal = { package = "surreal-core", path = "../core" }
 
 # core dependencies
 serde = { version = "1.0.152", features = ["derive"] }
+clap = { version = "4.0.32", features = ["derive"] }
 base64 = "0.20.0"
 egui = "0.20.1"
 fxhash = "0.2.1"

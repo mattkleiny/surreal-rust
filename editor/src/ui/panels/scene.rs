@@ -1,5 +1,3 @@
-use surreal::diagnostics::profiling;
-
 use super::*;
 
 /// An [`EditorPanel`] that renders an editable view of the current scene.
@@ -7,8 +5,8 @@ use super::*;
 pub struct SceneView {}
 
 impl SceneView {
-  #[profiling::function]
   pub fn show(&mut self, _ui: &mut egui::Ui, _context: &mut EditorContext) {
+    surreal::diagnostics::profiling::profile_scope!("SceneView::show");
     // no-op
   }
 }

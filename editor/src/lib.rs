@@ -7,12 +7,14 @@
 #![feature(anonymous_lifetime_in_impl_trait)]
 
 pub use assets::*;
+pub use domain::*;
 pub use projects::*;
 pub use reflect::*;
 pub use serialize::*;
 pub use ui::*;
 
 mod assets;
+mod domain;
 mod projects;
 mod reflect;
 mod serialize;

@@ -9,7 +9,6 @@
 
 use egui::*;
 
-use surreal::diagnostics::profiling;
 use surreal::graphs::*;
 
 use super::*;
@@ -21,6 +20,51 @@ const ZOOM_MAX: f32 = 5.0;
 pub struct GraphEditor<D> {
   _graph: UndoScope<Graph<D>>,
   zoom: f32,
+}
+
+/// Internal messages for the [`GraphEditor`].
+// #[derive(Debug)]
+// enum GraphEditorMessage {
+//   SelectNode(NodeId),
+//   DeleteNode(NodeId),
+//   DisconnectPort { input: PortId, output: PortId },
+//   MoveNode { node: NodeId, delta: Vec2 },
+//   ConnectPortStarted { port: PortId },
+//   ConnectPortEnded { input: PortId, output: PortId },
+// }
+
+impl<D> EditorPanel for GraphEditor<D> {
+  fn show(&mut self, ui: &mut Ui, _context: &mut EditorContext) {
+    surreal::diagnostics::profiling::profile_scope!("GraphEditor::show");
+
+    ui.push_id("graph_editor", |ui| {
+      let rect = ui.available_rect_before_wrap();
+      let response = ui.allocate_rect(rect, Sense::click());
+
+      let background_color = if response.hovered() {
+        Color32::from_rgb(0x1c, 0x1c, 0x1c)
+      } else {
+        Color32::from_rgb(0x1b, 0x1b, 0x1b)
+      };
+
+      // let cursor_pos = ui.ctx().input().pointer.hover_pos().unwrap_or(egui::Pos2::ZERO);
+      // let cursor_in_editor = rect.contains(cursor_pos);
+      // let cursor_in_finder = false;
+
+      self.zoom = (self.zoom + ui.ctx().input().zoom_delta() - 1.).clamp(ZOOM_MIN, ZOOM_MAX);
+
+      let painter = ui.painter();
+
+      Self::paint_grid(painter, rect, self.zoom, background_color);
+
+      // TODO: paint nodes
+      // TODO: paint connections
+      // TODO: paint finder (if open)
+      // TODO: paint blackboard (if open)
+      // TODO: paint minimap (if open)
+      // TODO: paint inspector (if open)
+    });
+  }
 }
 
 impl<D> GraphEditor<D> {
@@ -60,49 +104,5 @@ impl<D> GraphEditor<D> {
       painter.hline(rect.left()..=rect.right(), y, stroke);
       y += spacing;
     }
-  }
-}
-
-/// Internal messages for the [`GraphEditor`].
-// #[derive(Debug)]
-// enum GraphEditorMessage {
-//   SelectNode(NodeId),
-//   DeleteNode(NodeId),
-//   DisconnectPort { input: PortId, output: PortId },
-//   MoveNode { node: NodeId, delta: Vec2 },
-//   ConnectPortStarted { port: PortId },
-//   ConnectPortEnded { input: PortId, output: PortId },
-// }
-
-impl<D> EditorPanel for GraphEditor<D> {
-  #[profiling::function]
-  fn show(&mut self, ui: &mut Ui, _context: &mut EditorContext) {
-    ui.push_id("graph_editor", |ui| {
-      let rect = ui.available_rect_before_wrap();
-      let response = ui.allocate_rect(rect, Sense::click());
-
-      let background_color = if response.hovered() {
-        Color32::from_rgb(0x1c, 0x1c, 0x1c)
-      } else {
-        Color32::from_rgb(0x1b, 0x1b, 0x1b)
-      };
-
-      // let cursor_pos = ui.ctx().input().pointer.hover_pos().unwrap_or(egui::Pos2::ZERO);
-      // let cursor_in_editor = rect.contains(cursor_pos);
-      // let cursor_in_finder = false;
-
-      self.zoom = (self.zoom + ui.ctx().input().zoom_delta() - 1.).clamp(ZOOM_MIN, ZOOM_MAX);
-
-      let painter = ui.painter();
-
-      Self::paint_grid(painter, rect, self.zoom, background_color);
-
-      // TODO: paint nodes
-      // TODO: paint connections
-      // TODO: paint finder (if open)
-      // TODO: paint blackboard (if open)
-      // TODO: paint minimap (if open)
-      // TODO: paint inspector (if open)
-    });
   }
 }

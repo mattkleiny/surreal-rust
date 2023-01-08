@@ -1,5 +1,3 @@
-use surreal::diagnostics::profiling;
-
 use super::*;
 
 /// An [`EditorPanel`] that renders a list of all known application assets.
@@ -7,8 +5,9 @@ use super::*;
 pub struct ContentBrowser {}
 
 impl ContentBrowser {
-  #[profiling::function]
   pub fn show(&mut self, _ui: &mut egui::Ui, _context: &mut EditorContext) {
+    surreal::diagnostics::profiling::profile_scope!("ContentBrowser::show");
+
     // no-op
   }
 }
