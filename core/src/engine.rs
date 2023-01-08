@@ -26,12 +26,12 @@ use crate::{
   utilities::{DeltaClock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
-/// Configuration for the `Engine`.
+/// Configuration for the [`Engine`].
 ///
 /// This struct defines how to set-up the game and initial settings.
 #[derive(Clone, Debug)]
-pub struct Configuration {
-  pub title: &'static str,
+pub struct EngineConfig {
+  pub title: String,
   pub size: (u32, u32),
   pub vsync_enabled: bool,
   pub samples: u16,
@@ -43,10 +43,10 @@ pub struct Configuration {
   pub icon: Option<&'static [u8]>,
 }
 
-impl Default for Configuration {
+impl Default for EngineConfig {
   fn default() -> Self {
     Self {
-      title: "Surreal",
+      title: "Surreal".to_string(),
       size: (1280, 720),
       vsync_enabled: true,
       samples: 0,
@@ -88,7 +88,7 @@ pub enum TickResponse {
 /// Represents an application that can be used in an [`Engine`].
 pub trait Application: Sized {
   /// Builds the [`Application`] instance.
-  fn new(engine: &Engine, assets: &AssetManager) -> crate::Result<Self>;
+  fn new(engine: &mut Engine, assets: &mut AssetManager) -> crate::Result<Self>;
 
   /// Called when the application is to be updated.
   fn on_update(&mut self, _engine: &mut Engine, _time: GameTime) {}
@@ -121,7 +121,7 @@ pub struct Engine {
   pub input: InputBackend,
 
   // window management
-  config: Configuration,
+  config: EngineConfig,
   window: Window,
   cursor_icon: egui::CursorIcon,
   event_loop_proxy: EventLoopProxy<()>,
@@ -133,11 +133,12 @@ pub struct Engine {
   clock: DeltaClock,
   frame_timer: IntervalTimer,
   frame_counter: FrameCounter,
+  is_quitting: bool,
 }
 
 impl Engine {
   /// Creates a new engine, bootstrapping all core systems and opening the main display.
-  pub fn new(config: Configuration) -> Self {
+  pub fn new(config: EngineConfig) -> Self {
     #[cfg(target_os = "windows")]
     fn build_event_loop() -> EventLoop<()> {
       use winit::platform::windows::EventLoopExtWindows;
@@ -161,7 +162,7 @@ impl Engine {
     log::trace!("Building main window");
 
     let window = WindowBuilder::new()
-      .with_title(config.title)
+      .with_title(&config.title)
       .with_inner_size(LogicalSize::new(config.size.0, config.size.1))
       .with_resizable(true)
       .with_transparent(config.transparent_window)
@@ -210,11 +211,12 @@ impl Engine {
       clock: DeltaClock::new(),
       frame_timer: IntervalTimer::new(TimeSpan::from_seconds(1.)),
       frame_counter: FrameCounter::new(32),
+      is_quitting: false,
     }
   }
 
   /// Starts the engine with the given configuration.
-  pub fn start(configuration: Configuration, setup: impl FnOnce(Engine, AssetManager)) {
+  pub fn start(configuration: EngineConfig, setup: impl FnOnce(Engine, AssetManager)) {
     use crate::graphics::*;
 
     // set-up diagnostics
@@ -263,7 +265,7 @@ impl Engine {
   }
 
   /// Builds a [`Engine`] that runs the given [`SceneGraph`].
-  pub fn from_scene(configuration: Configuration, setup: impl Fn(&Engine, &AssetManager) -> SceneGraph) {
+  pub fn from_scene(configuration: EngineConfig, setup: impl Fn(&Engine, &AssetManager) -> SceneGraph) {
     Engine::start(configuration, |engine, assets| {
       let mut scene_graph = setup(&engine, &assets);
       let mut renderer = Renderer::new(&engine.graphics);
@@ -275,35 +277,35 @@ impl Engine {
         scene_graph.notify(SceneEvent::Render(&mut renderer));
 
         renderer.end_frame();
-
-        TickResponse::Continue
       });
     });
   }
 
   /// Builds a [`Engine`] that runs the given [`Application`].  
-  pub fn from_application<A: Application>(configuration: Configuration) {
-    Engine::start(configuration, |engine, assets| {
-      let mut application = A::new(&engine, &assets).expect("Failed to create application");
+  pub fn from_application<A: Application>(configuration: EngineConfig) {
+    Engine::start(configuration, |mut engine, mut assets| {
+      let mut application = A::new(&mut engine, &mut assets).expect("Failed to create application");
 
-      engine.run(|engine, event| application.notify(engine, event));
+      engine.run(|engine, event| {
+        application.notify(engine, event);
+      });
     })
   }
 
   /// Runs a variable step game loop against the engine.
   ///
   /// This method will block until the game is closed.
-  pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, GameTime) -> TickResponse) {
+  pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, GameTime)) {
     self.run(move |engine, event| match event {
       TickEvent::Update(time) => body(engine, time),
-      _ => TickResponse::Continue,
+      _ => {} // no-op,
     });
   }
 
   /// Runs the given delegate as the main loop for the engine.
   ///
   /// This method will block until the game is closed.
-  pub fn run(mut self, mut body: impl FnMut(&mut Self, TickEvent) -> TickResponse) {
+  pub fn run(mut self, mut body: impl FnMut(&mut Self, TickEvent)) {
     use glutin::event::*;
     use glutin::platform::run_return::EventLoopExtRunReturn;
 
@@ -347,26 +349,24 @@ impl Engine {
           // update core systems
           profiling::profile_scope!("Update");
 
-          match body(&mut self, TickEvent::Update(time)) {
-            TickResponse::Continue => {
-              // main control flow
-              if self.config.update_continuously && self.is_focused {
-                self.update_frame_counter();
-                *control_flow = ControlFlow::Poll;
-              } else if let Some(duration) = self.repaint_after.take() {
-                *control_flow = ControlFlow::WaitUntil(std::time::Instant::now() + duration);
-              } else {
-                *control_flow = ControlFlow::Wait;
-              }
+          body(&mut self, TickEvent::Update(time));
 
-              self.window.request_redraw();
-            }
-            TickResponse::Exit => {
-              *control_flow = ControlFlow::Exit;
-            }
-          };
+          // main control flow
+          if self.config.update_continuously && self.is_focused {
+            self.update_frame_counter();
+            *control_flow = ControlFlow::Poll;
+          } else if let Some(duration) = self.repaint_after.take() {
+            *control_flow = ControlFlow::WaitUntil(std::time::Instant::now() + duration);
+          } else {
+            *control_flow = ControlFlow::Wait;
+          }
 
+          self.window.request_redraw();
           profiling::finish_frame();
+
+          if self.is_quitting {
+            *control_flow = ControlFlow::Exit;
+          }
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
           body(&mut self, TickEvent::Window(&event));
@@ -449,6 +449,27 @@ impl Engine {
         self.frame_timer.reset();
       }
     }
+  }
+
+  /// Gets the title of the window.
+  pub fn title(&self) -> &str {
+    &self.config.title
+  }
+
+  /// Sets the title of the window.
+  pub fn set_title(&mut self, title: &str) {
+    self.config.title = title.to_string();
+    self.window.set_title(title);
+  }
+
+  /// Determines if the cursor is currently visible.
+  pub fn set_cursor_visible(&mut self, visible: bool) {
+    self.window.set_cursor_visible(visible);
+  }
+
+  /// Quits the engine at the next loop.
+  pub fn quit(&mut self) {
+    self.is_quitting = true;
   }
 }
 

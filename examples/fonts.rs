@@ -5,8 +5,8 @@ use surreal::prelude::*;
 use surreal::prototype::*;
 
 fn main() {
-  let configuration = Configuration {
-    title: "Font ",
+  let configuration = EngineConfig {
+    title: "Fonts".to_string(),
     transparent_window: true,
     ..Default::default()
   };
@@ -61,11 +61,9 @@ fn main() {
 
       if let Some(keyboard) = &engine.input.keyboard {
         if keyboard.is_key_pressed(Key::Escape) {
-          return TickResponse::Exit;
+          engine.quit();
         }
       }
-
-      TickResponse::Continue
     });
   });
 }

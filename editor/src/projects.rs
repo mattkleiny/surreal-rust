@@ -1,5 +1,6 @@
 //! Project management for Surreal
 
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use surreal::diagnostics::info;
@@ -26,27 +27,56 @@ pub enum ProjectError {
 /// edited in the editor. Projects are stored in the _local_ file system and
 /// can be loaded from any location.
 pub struct Project {
-  root_path: String,
+  /// The top-level details for this project.
+  pub details: ProjectDetails,
   _asset_database: AssetDatabase,
+}
+
+/// Top-level details for a [`Project`].
+#[derive(Serialize, Deserialize)]
+pub struct ProjectDetails {
+  pub name: String,
+  pub version: Version,
+  pub path: String,
 }
 
 impl Project {
   /// Opens a project at the given path.
-  pub fn open(root_path: impl AsRef<str>) -> surreal::Result<Self> {
-    // TODO: verify that the project is valid and the version is valid
-    info!("Opening project at path {}", root_path.as_ref());
+  pub fn open(_root_path: impl AsRef<str>) -> surreal::Result<Self> {
+    todo!()
+  }
+
+  /// Creates a project at the given path, removing any old project data if it already exists.
+  pub fn create(_root_path: impl AsRef<str>) -> surreal::Result<Self> {
+    todo!()
+  }
+
+  /// Opens a project at the given path, or creates a new one if it doesn't exist.
+  pub fn open_or_create(name: impl AsRef<str>, root_path: impl AsRef<str>) -> surreal::Result<Self> {
+    info!("Opening project {} at path {}", name.as_ref(), root_path.as_ref());
 
     let project = Self {
-      root_path: root_path.as_ref().to_string(),
+      details: ProjectDetails {
+        name: name.as_ref().to_string(),
+        version: DEFAULT_PROJECT_VERSION,
+        path: root_path.as_ref().to_string(),
+      },
       _asset_database: AssetDatabase::default(),
     };
+
+    // TODO: verify that the project is valid and the version is valid
 
     Ok(project)
   }
 
+  /// Discovers all available projects beneath a given path.
+  pub fn discover(_root_path: impl AsRef<str>) -> surreal::Result<Vec<ProjectDetails>> {
+    todo!()
+  }
+
   /// The root [`VirtualPath`] for the project.
   pub fn root_path(&self) -> VirtualPath {
-    VirtualPath::from(&self.root_path)
+    VirtualPath::from(&self.details.path)
   }
 
   /// Reads the [`Version`] of the project from the settings file.

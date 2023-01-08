@@ -4,8 +4,8 @@ use surreal::prelude::*;
 use surreal::prototype::*;
 
 fn main() {
-  let configuration = Configuration {
-    title: "Tile-maps",
+  let configuration = EngineConfig {
+    title: "Tile Maps".to_string(),
     transparent_window: true,
     log_level: LevelFilter::Trace,
     ..Default::default()
@@ -51,11 +51,9 @@ fn main() {
         }
 
         if keyboard.is_key_pressed(Key::Escape) {
-          return TickResponse::Exit;
+          engine.quit();
         }
       }
-
-      TickResponse::Continue
     });
   });
 }

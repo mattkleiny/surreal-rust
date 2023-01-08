@@ -4,8 +4,8 @@ use surreal::prelude::*;
 use surreal::prototype::*;
 
 fn main() {
-  let configuration = Configuration {
-    title: "Hello, World!",
+  let configuration = EngineConfig {
+    title: "Hello, World!".to_string(),
     transparent_window: true,
     ..Default::default()
   };
@@ -28,11 +28,9 @@ fn main() {
 
       if let Some(keyboard) = &engine.input.keyboard {
         if keyboard.is_key_pressed(Key::Escape) {
-          return TickResponse::Exit;
+          engine.quit();
         }
       }
-
-      TickResponse::Continue
     });
   });
 }

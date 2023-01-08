@@ -3,8 +3,8 @@
 use surreal::prelude::*;
 
 fn main() {
-  let configuration = Configuration {
-    title: "Hello, egui",
+  let configuration = EngineConfig {
+    title: "Hello, egui".to_string(),
     size: (1920, 1080),
     transparent_window: true,
     update_continuously: false,
@@ -44,11 +44,9 @@ fn main() {
 
       if let Some(keyboard) = &engine.input.keyboard {
         if keyboard.is_key_pressed(Key::Escape) {
-          return TickResponse::Exit;
+          engine.quit();
         }
       }
-
-      TickResponse::Continue
     });
   });
 }

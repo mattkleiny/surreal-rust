@@ -7,8 +7,8 @@ const WIDTH: f32 = 1920.;
 const HEIGHT: f32 = 1080.;
 
 fn main() {
-  let configuration = Configuration {
-    title: "Bunnymark",
+  let configuration = EngineConfig {
+    title: "Bunnymark".to_string(),
     size: (WIDTH as u32, HEIGHT as u32),
     transparent_window: true,
     ..Default::default()
@@ -67,7 +67,7 @@ fn main() {
       // handle input
       if let Some(keyboard) = &engine.input.keyboard {
         if keyboard.is_key_pressed(Key::Escape) {
-          return TickResponse::Exit;
+          engine.quit();
         }
       }
 
@@ -96,8 +96,6 @@ fn main() {
           info!("There are {:?} bunnies", bunnies.len());
         }
       }
-
-      TickResponse::Continue
     });
   });
 }

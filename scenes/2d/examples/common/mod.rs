@@ -1,5 +1,5 @@
 use surreal::assets::AssetManager;
-use surreal::engine::{Configuration, Engine, TickResponse};
+use surreal::engine::{Engine, EngineConfig};
 use surreal::graphics::{Color, Renderer};
 use surreal::input::Key;
 use surreal::maths::Mat4;
@@ -10,8 +10,8 @@ const HEIGHT: f32 = 1080.;
 
 /// Bootstraps an example for the module
 pub fn run_example(name: &'static str, factory: impl Fn(&Engine, &AssetManager) -> SceneGraph) {
-  let configuration = Configuration {
-    title: name,
+  let configuration = EngineConfig {
+    title: name.to_string(),
     size: (WIDTH as u32, HEIGHT as u32),
     transparent_window: true,
     ..Default::default()
@@ -38,11 +38,9 @@ pub fn run_example(name: &'static str, factory: impl Fn(&Engine, &AssetManager) 
 
       if let Some(keyboard) = &engine.input.keyboard {
         if keyboard.is_key_pressed(Key::Escape) {
-          return TickResponse::Exit;
+          engine.quit();
         }
       }
-
-      TickResponse::Continue
     });
   });
 }

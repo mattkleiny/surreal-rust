@@ -4,8 +4,8 @@ use surreal::prelude::*;
 use surreal::prototype::*;
 
 fn main() {
-  let configuration = Configuration {
-    title: "Falling Sand",
+  let configuration = EngineConfig {
+    title: "Falling Sand".to_string(),
     log_level: LevelFilter::Trace,
     transparent_window: true,
     ..Default::default()
@@ -65,11 +65,9 @@ fn main() {
         }
 
         if keyboard.is_key_pressed(Key::Escape) {
-          return TickResponse::Exit;
+          engine.quit();
         }
       }
-
-      TickResponse::Continue
     });
   });
 }
