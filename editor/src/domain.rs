@@ -2,15 +2,20 @@
 
 use std::ffi::c_void;
 
+/// The domain for runtime execution of a project.
+///
+/// Used to provide descriptors to the editor for use in the UI.
 #[derive(Default, Debug)]
 pub struct RuntimeDomain {
   pub components: Vec<ComponentDescriptor>,
   pub importers: Vec<ImporterDescriptor>,
 }
 
+/// A descriptor for an component in project code.
 #[derive(Default, Debug)]
 pub struct ComponentDescriptor {}
 
+/// A descriptor for an asset importer in project code.
 #[derive(Default, Debug)]
 pub struct ImporterDescriptor {}
 

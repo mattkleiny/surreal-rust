@@ -1,7 +1,7 @@
 //! Undo/Redo support for the Surreal editor.
 //!
 //! This module provides the [`UndoManager`] type, which is responsible for managing the
-//! undo/redo stack for the editor.
+//! undo/redo.
 
 use std::ops::Deref;
 
@@ -9,8 +9,7 @@ use std::ops::Deref;
 #[derive(Default)]
 pub struct UndoManager {}
 
-/// A scope wrapper for a type that can be rolled backwards/forwards via [`EditorCommand`]s,
-/// for use in undo/redo scenarios.
+/// A scope wrapper for a type that can be rolled backwards/forwards with commands.
 pub struct UndoScope<T> {
   pub value: T,
 }
@@ -28,13 +27,4 @@ impl<T> Deref for UndoScope<T> {
   fn deref(&self) -> &Self::Target {
     &self.value
   }
-}
-
-/// A command that can be undone/redone in the editor.
-pub trait EditorCommand<T> {
-  /// Redoes the command/rolls forward.
-  fn redo(&self, value: &mut T) -> surreal::Result<()>;
-
-  /// Undoes the command/rolls backward.
-  fn undo(&self, value: &mut T) -> surreal::Result<()>;
 }
