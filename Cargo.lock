@@ -1753,7 +1753,6 @@ dependencies = [
  "ab_glyph",
  "anyhow",
  "bincode",
- "bitflags",
  "chrono",
  "egui",
  "gl",
@@ -1805,6 +1804,7 @@ version = "0.1.0"
 dependencies = [
  "ash",
  "ash-window",
+ "bitflags",
  "gl",
  "glutin",
  "raw-window-handle 0.5.0",

@@ -9,13 +9,13 @@
 pub use assets::*;
 pub use projects::*;
 pub use reflect::*;
-pub use serialization::*;
+pub use serialize::*;
 pub use ui::*;
 
 mod assets;
 mod projects;
 mod reflect;
-mod serialization;
+mod serialize;
 mod ui;
 
 /// A unique identifier for a [`Resource`] in the application.

@@ -37,7 +37,7 @@ pub struct Graph<D = ()> {
 }
 
 /// A single node in a [`Graph`].
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct GraphNode<D = ()> {
   id: NodeId,
   label: Cow<'static, str>,
@@ -45,7 +45,7 @@ pub struct GraphNode<D = ()> {
 }
 
 /// A single port in a [`Graph`].
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct GraphPort<D> {
   id: PortId,
   label: Cow<'static, str>,
@@ -122,10 +122,6 @@ mod tests {
 
     graph.add_node("Node 1", 1);
     graph.add_node("Node 2", 2);
-
-    for node in &graph {
-      println!("Node: {:#?}", node);
-    }
 
     println!("{}", graph.to_json().unwrap());
   }

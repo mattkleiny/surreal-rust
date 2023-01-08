@@ -1,13 +1,24 @@
+//! Graph editor UI for the Surreal editor.
+//!
+//! This module provides a [`GraphEditor`] widget for the [`egui`] UI framework, as well
+//! as supporting tools for creating, editing, saving and loading graphs.
+//!
+//! The [`GraphEditor`] widget is a first-class citizen in the Surreal editor, and is
+//! used to create and edit graphs for use in procedural generation, visual scripting,
+//! and other tasks.
+
 use egui::*;
 
 use surreal::graphs::*;
+
+use super::*;
 
 const ZOOM_MIN: f32 = 0.5;
 const ZOOM_MAX: f32 = 5.0;
 
 /// An `egui` editor for [`Graph`]s.
 pub struct GraphEditor<D> {
-  _graph: Graph<D>,
+  _graph: UndoScope<Graph<D>>,
   zoom: f32,
 }
 
@@ -25,11 +36,15 @@ pub struct GraphEditor<D> {
 impl<D> GraphEditor<D> {
   /// Creates a [`GraphEditor`] for the given [`Graph`].
   pub fn from_graph(graph: Graph<D>) -> Self {
-    Self { _graph: graph, zoom: 1.0 }
+    Self {
+      _graph: UndoScope::new(graph),
+      zoom: 1.0,
+    }
   }
 
-  /// Renders the graph editor in the given [`Context`] .
-  pub fn show(&mut self, ui: &mut Ui, rect: Rect) {
+  /// Shows the [`GraphEditor`] in the given context.
+  pub fn show(&mut self, ui: &mut Ui, _context: &mut EditorContext) {
+    let rect = ui.available_rect_before_wrap();
     let response = ui.allocate_rect(rect, Sense::hover());
 
     let background_color = if response.hovered() {

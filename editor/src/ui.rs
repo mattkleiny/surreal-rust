@@ -7,16 +7,22 @@ use game::*;
 use graphs::*;
 use inspector::*;
 use scene::*;
+use undo::*;
 
 mod content;
 mod game;
 mod graphs;
 mod inspector;
 mod scene;
+mod undo;
 
 /// The main window for the editor.
+///
+/// The editor window contains state for all panels in the editor UI, as well
+/// as metadata about the current project and open scene.
 pub struct EditorWindow {
-  _editor_layout: WindowLayout,
+  editor_context: EditorContext,
+  _editor_layout: EditorWindowLayout,
   inspector: Inspector,
   _content_browser: ContentBrowser,
   _scene_view: SceneView,
@@ -24,11 +30,20 @@ pub struct EditorWindow {
   graph_editor: GraphEditor<u32>,
 }
 
+/// Top-level contextual information for the application editor state.
+///
+/// The context provides access to central persistence, settings, undo/redo, etc.
+#[derive(Default)]
+pub struct EditorContext {
+  _undo_manager: UndoManager,
+}
+
 impl EditorWindow {
   /// Builds a new [`EditorWindow`].
   pub fn new() -> Self {
     Self {
-      _editor_layout: WindowLayout::default(),
+      editor_context: EditorContext::default(),
+      _editor_layout: EditorWindowLayout::default(),
       inspector: Inspector::default(),
       _content_browser: ContentBrowser::default(),
       _scene_view: SceneView::default(),
@@ -39,40 +54,42 @@ impl EditorWindow {
 }
 
 impl EditorWindow {
-  /// Renders the [`EditorWindow`] in the given context.
+  /// Shows the [`EditorWindow`] in the given context.
   pub fn show(&mut self, egui: &egui::Context) {
     egui::SidePanel::new(egui::panel::Side::Right, "inspector")
       .frame(egui::Frame::none())
       .show(egui, |ui| {
-        self.inspector.show(ui);
+        self.inspector.show(ui, &mut self.editor_context);
       });
 
     egui::CentralPanel::default().frame(egui::Frame::none()).show(egui, |ui| {
-      self.graph_editor.show(ui, ui.available_rect_before_wrap());
+      self.graph_editor.show(ui, &mut self.editor_context);
     });
   }
 }
 
-/// The layout for the [`EditorWindow`] and it's components.
+/// The layout for the [`EditorWindow`] and it's panels.
+///
+/// Layouts are saved to disk per-project, and loaded when the editor is opened.
 #[derive(Serialize, Deserialize)]
-pub struct WindowLayout {
-  pub primary_inspector: WidgetLayout,
-  pub content_browser: WidgetLayout,
-  pub scene_view: WidgetLayout,
-  pub preview_view: WidgetLayout,
-  pub graph_editor: WidgetLayout,
+pub struct EditorWindowLayout {
+  pub primary_inspector: PanelLayout,
+  pub content_browser: PanelLayout,
+  pub scene_view: PanelLayout,
+  pub preview_view: PanelLayout,
+  pub graph_editor: PanelLayout,
 }
 
-/// Where to position a single window within an [`WindowLayout`].
+/// Where to position a single panel within an [`EditorWindowLayout`].
 #[derive(Serialize, Deserialize)]
-pub struct WidgetLayout {
-  position: WidgetPosition,
+pub struct PanelLayout {
+  position: PanelPosition,
   size: Option<surreal::maths::Vec2>,
 }
 
-/// Where to position a window within an [`EditorWindow`].
+/// Where to position a panel within an [`EditorWindow`].
 #[derive(Serialize, Deserialize)]
-pub enum WidgetPosition {
+pub enum PanelPosition {
   Floating,
   Center,
   LeftTopInner,
@@ -85,27 +102,27 @@ pub enum WidgetPosition {
   RightBottomOuter,
 }
 
-impl Default for WindowLayout {
+impl Default for EditorWindowLayout {
   fn default() -> Self {
     Self {
-      primary_inspector: WidgetLayout {
-        position: WidgetPosition::RightTopInner,
+      primary_inspector: PanelLayout {
+        position: PanelPosition::RightTopInner,
         size: None,
       },
-      content_browser: WidgetLayout {
-        position: WidgetPosition::RightTopOuter,
+      content_browser: PanelLayout {
+        position: PanelPosition::RightTopOuter,
         size: None,
       },
-      scene_view: WidgetLayout {
-        position: WidgetPosition::Center,
+      scene_view: PanelLayout {
+        position: PanelPosition::Center,
         size: None,
       },
-      preview_view: WidgetLayout {
-        position: WidgetPosition::Center,
+      preview_view: PanelLayout {
+        position: PanelPosition::Center,
         size: None,
       },
-      graph_editor: WidgetLayout {
-        position: WidgetPosition::LeftTopInner,
+      graph_editor: PanelLayout {
+        position: PanelPosition::LeftTopInner,
         size: None,
       },
     }

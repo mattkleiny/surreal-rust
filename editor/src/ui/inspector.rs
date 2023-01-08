@@ -1,3 +1,5 @@
+use super::EditorContext;
+
 /// Represents a type that can be inspected by an [`Inspector`].
 pub trait Inspectable {
   fn inspect(&mut self, inspector: &mut Inspector);
@@ -8,7 +10,8 @@ pub trait Inspectable {
 pub struct Inspector {}
 
 impl Inspector {
-  pub fn show(&mut self, ui: &mut egui::Ui) {
+  /// Shows the [`Inspector`] in the given context.
+  pub fn show(&mut self, ui: &mut egui::Ui, _context: &mut EditorContext) {
     ui.heading("Inspector");
     ui.label("Inspecting objects");
     // no-op
