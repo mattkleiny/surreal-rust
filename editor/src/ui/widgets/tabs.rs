@@ -6,12 +6,12 @@ pub struct TabControl {
 
 /// A single tab in a [`TabControl`].
 struct Tab {
-  name: &'static str,
+  _name: &'static str,
 }
 
 impl TabControl {
   pub fn with_tab(mut self, name: &'static str) -> Self {
-    self.tabs.push(Tab { name });
+    self.tabs.push(Tab { _name: name });
     self
   }
 }

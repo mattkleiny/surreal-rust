@@ -23,8 +23,8 @@ pub struct ProjectWindow {
   _editor_layout: EditorWindowLayout,
   inspector: Inspector,
   content_browser: ContentBrowser,
-  scene_view: SceneView,
-  game_view: GameView,
+  _scene_view: SceneView,
+  _game_view: GameView,
   graph_editor: GraphEditor<u32>,
 }
 
@@ -90,8 +90,8 @@ impl ProjectWindow {
       _editor_layout: EditorWindowLayout::default(),
       inspector: Inspector::default(),
       content_browser: ContentBrowser::default(),
-      scene_view: SceneView::default(),
-      game_view: GameView::default(),
+      _scene_view: SceneView::default(),
+      _game_view: GameView::default(),
       graph_editor: GraphEditor::from_graph(surreal::graphs::Graph::default()),
     }
   }

@@ -16,7 +16,7 @@ use crate::{
   audio::{AudioServer, OpenALAudioBackend},
   diagnostics::{profiling, ConsoleLoggerBuilder, LevelFilter},
   graphics::{GraphicsServer, Image, ImageFormat, OpenGLGraphicsBackend, Renderer},
-  input::{InputServer, Key},
+  input::InputServer,
   maths::{uvec2, vec2},
   scene::{SceneEvent, SceneGraph},
   utilities::{DeltaClock, FrameCounter, IntervalTimer, TimeSpan},
@@ -464,10 +464,6 @@ impl crate::ui::UserInterfaceHost for Engine {
 
   fn raw_input(&self) -> &egui::RawInput {
     &self.input.raw_input
-  }
-
-  fn is_key_pressed(&self, key: Key) -> bool {
-    self.input.keyboard.as_ref().map(|it| it.is_key_pressed(key)).unwrap_or_default()
   }
 
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool) {

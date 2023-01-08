@@ -20,7 +20,6 @@ pub trait UserInterfaceHost {
   // ui input
   fn pixels_per_point(&self) -> f32;
   fn raw_input(&self) -> &egui::RawInput;
-  fn is_key_pressed(&self, key: crate::input::Key) -> bool;
 
   // control and platform output
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool);

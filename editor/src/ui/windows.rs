@@ -246,10 +246,6 @@ impl surreal::ui::UserInterfaceHost for UserInterfaceState {
     &self.raw_input
   }
 
-  fn is_key_pressed(&self, _key: Key) -> bool {
-    false
-  }
-
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool) {
     self.exclusive_keyboard_input = exclusive;
   }
