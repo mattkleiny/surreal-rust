@@ -23,8 +23,8 @@ pub struct ProjectWindow {
   _editor_layout: EditorWindowLayout,
   inspector: Inspector,
   content_browser: ContentBrowser,
-  _scene_view: SceneView,
-  _preview_view: GameView,
+  scene_view: SceneView,
+  game_view: GameView,
   graph_editor: GraphEditor<u32>,
 }
 
@@ -57,6 +57,9 @@ impl EditorWindow for ProjectWindow {
 
     egui::CentralPanel::default().frame(egui::Frame::none()).show(ctx, |ui| {
       // TODO: render tabs for each panel
+
+      // self.scene_view.show(ui, &mut self.editor_context);
+      // self.game_view.show(ui, &mut self.editor_context);
       self.graph_editor.show(ui, &mut self.editor_context);
     });
   }
@@ -87,8 +90,8 @@ impl ProjectWindow {
       _editor_layout: EditorWindowLayout::default(),
       inspector: Inspector::default(),
       content_browser: ContentBrowser::default(),
-      _scene_view: SceneView::default(),
-      _preview_view: GameView::default(),
+      scene_view: SceneView::default(),
+      game_view: GameView::default(),
       graph_editor: GraphEditor::from_graph(surreal::graphs::Graph::default()),
     }
   }
