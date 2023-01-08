@@ -1,3 +1,14 @@
+//! Node-based graphs, for use in procedural and visual scripting and generation tasks.
+//!
+//! The core type of this module is the [`Graph`], which contains a set of [`Node`]s and
+//! the links between them. Each node has a unique identifier [`NodeId`] , and can contain any type
+//! of data. Nodes are linked via their [`GraphPort`]s, which are identified by a [`PortId`].
+//!
+//! The creation and editing of [`Graph`]s is a first-class concept in the Surreal editor, and there
+//! are a variety of tools and UI to support this process.
+//!
+//! Graphs can be serialized/deserialized directly via Serde to any desired format.
+
 use std::borrow::Cow;
 
 use slotmap::{SecondaryMap, SlotMap};
