@@ -32,8 +32,8 @@ fn main() -> surreal::Result<()> {
   )?;
 
   host.add_window(ProjectWindow::new(project.clone()));
-  host.add_window(ProjectWindow::new(project.clone()));
-  host.add_window(ProjectWindow::new(project.clone()));
+  // host.add_window(ProjectWindow::new(project.clone()));
+  // host.add_window(ProjectWindow::new(project.clone()));
 
   Ok(host.run())
 }

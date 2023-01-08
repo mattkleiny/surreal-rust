@@ -14,50 +14,68 @@ mod timing;
 mod variant;
 mod version;
 
-/// An opaque ID for a resource in one of the [`Server`] implementations.
+/// Abstracts over resource IDs.
+pub trait RID {
+  /// Converts the resource to it's base `u64`.
+  fn to_u64(&self) -> u64;
+}
+
+/// Creates An opaque ID for a resource in one of the [`Server`] implementations.
 ///
 /// This is an opaque handle that can be used to identify a resource in the server.
-#[repr(transparent)]
-#[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct RID(pub u64);
-
-impl RID {
-  #[inline(always)]
-  pub const fn new(id: u64) -> Self {
-    Self(id)
-  }
-}
-
+#[macro_export]
 macro_rules! impl_rid_type {
-  ($type:ty) => {
-    impl From<$type> for RID {
+  ($name:ident) => {
+    #[repr(transparent)]
+    #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
+    pub struct $name(pub u64);
+
+    impl $name {
       #[inline(always)]
-      fn from(value: $type) -> Self {
-        Self(value as u64)
+      pub const fn new(id: u64) -> Self {
+        Self(id)
       }
     }
 
-    impl Into<$type> for RID {
+    impl $crate::utilities::RID for $name {
       #[inline(always)]
-      fn into(self) -> $type {
-        self.0 as $type
+      fn to_u64(&self) -> u64 {
+        self.0
       }
     }
+
+    macro_rules! impl_rid_conversion {
+      ($type:ty) => {
+        impl From<$type> for $name {
+          #[inline(always)]
+          fn from(value: $type) -> Self {
+            Self(value as u64)
+          }
+        }
+
+        impl Into<$type> for $name {
+          #[inline(always)]
+          fn into(self) -> $type {
+            self.0 as $type
+          }
+        }
+      };
+    }
+
+    impl_rid_conversion!(i8);
+    impl_rid_conversion!(i16);
+    impl_rid_conversion!(i32);
+    impl_rid_conversion!(i64);
+    impl_rid_conversion!(i128);
+
+    impl_rid_conversion!(u8);
+    impl_rid_conversion!(u16);
+    impl_rid_conversion!(u32);
+    impl_rid_conversion!(u64);
+    impl_rid_conversion!(u128);
+    impl_rid_conversion!(usize);
   };
 }
-
-impl_rid_type!(i8);
-impl_rid_type!(i16);
-impl_rid_type!(i32);
-impl_rid_type!(i64);
-impl_rid_type!(i128);
-
-impl_rid_type!(u8);
-impl_rid_type!(u16);
-impl_rid_type!(u32);
-impl_rid_type!(u64);
-impl_rid_type!(u128);
-impl_rid_type!(usize);
 
 /// Creates an unsafe mutable alias to the given value.
 ///

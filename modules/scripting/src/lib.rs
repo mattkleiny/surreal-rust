@@ -1,11 +1,12 @@
 //! Scripting support for Surreal.
 
-use surreal::utilities::{Variant, RID};
+use surreal::impl_rid_type;
+use surreal::utilities::Variant;
 
 pub mod lua;
 
-/// The [`RID`] for a script in a [`ScriptServer`].
-pub type ScriptId = RID;
+// A unique ID for a script in a [`ScriptServer`].
+impl_rid_type!(ScriptId);
 
 /// A server abstraction for managing application scripts.
 pub trait ScriptServer {

@@ -3,6 +3,7 @@ use std::ops::Deref;
 use raw_window_handle::{HasRawDisplayHandle, HasRawWindowHandle};
 
 use surreal::graphics::PrimitiveTopology;
+use surreal::impl_rid_type;
 use surreal::maths::AABB;
 
 #[cfg(feature = "backend-headless")]
@@ -12,8 +13,8 @@ mod opengl;
 #[cfg(feature = "backend-vulkan")]
 mod vulkan;
 
-/// A unique [`surreal::utilities::RID`] for graphics resources.
-pub type GraphicsId = surreal::utilities::RID;
+// A unique ID for graphics resources.
+impl_rid_type!(GraphicsId);
 
 /// The singleton graphics server implementation for the project.
 ///
