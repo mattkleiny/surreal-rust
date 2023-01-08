@@ -2,19 +2,13 @@
 
 use serde::{Deserialize, Serialize};
 
-pub use content::*;
-pub use game::*;
-pub use graphs::*;
-pub use inspector::*;
-pub use scene::*;
+pub use panels::*;
 pub use undo::*;
+pub use widgets::*;
 
-mod content;
-mod game;
-mod graphs;
-mod inspector;
-mod scene;
+mod panels;
 mod undo;
+mod widgets;
 
 /// The main window for the editor.
 ///
@@ -24,7 +18,7 @@ pub struct EditorWindow {
   editor_context: EditorContext,
   _editor_layout: EditorWindowLayout,
   inspector: Inspector,
-  _content_browser: ContentBrowser,
+  content_browser: ContentBrowser,
   _scene_view: SceneView,
   _preview_view: GameView,
   graph_editor: GraphEditor<u32>,
@@ -51,7 +45,7 @@ impl EditorWindow {
       editor_context: EditorContext::default(),
       _editor_layout: EditorWindowLayout::default(),
       inspector: Inspector::default(),
-      _content_browser: ContentBrowser::default(),
+      content_browser: ContentBrowser::default(),
       _scene_view: SceneView::default(),
       _preview_view: GameView::default(),
       graph_editor: GraphEditor::from_graph(surreal::graphs::Graph::default()),
@@ -68,7 +62,15 @@ impl EditorWindow {
         self.inspector.show(ui, &mut self.editor_context);
       });
 
+    egui::TopBottomPanel::new(egui::panel::TopBottomSide::Bottom, "content")
+      .frame(egui::Frame::none())
+      .show(egui, |ui| {
+        self.content_browser.show(ui, &mut self.editor_context);
+      });
+
     egui::CentralPanel::default().frame(egui::Frame::none()).show(egui, |ui| {
+      // TODO: render tabs for each panel
+
       self.graph_editor.show(ui, &mut self.editor_context);
     });
   }
