@@ -44,6 +44,14 @@ impl Image {
     Ok(Self { buffer })
   }
 
+  /// Attempts to load an image from the given reader.
+  pub fn from_buffer(buffer: &[u8], format: ImageFormat) -> crate::Result<Self> {
+    let image = image::load_from_memory_with_format(buffer, format).expect("Failed to decode icon data");
+    let rgba = image.as_rgba8().expect("Image was not in RGBA format");
+
+    Ok(Self { buffer: rgba.clone() })
+  }
+
   /// Returns the width of the image.
   pub fn width(&self) -> usize {
     self.buffer.width() as usize
@@ -75,6 +83,16 @@ impl Image {
     self.buffer.write_to(&mut stream, format)?;
 
     Ok(())
+  }
+
+  /// Converts this [`Image`] to an [`winit::window::Icon`].
+  pub fn to_icon(&self) -> crate::Result<winit::window::Icon> {
+    let pixels = self.buffer.pixels().flat_map(|pixel| pixel.0).collect();
+
+    let width = self.buffer.width();
+    let height = self.buffer.height();
+
+    Ok(winit::window::Icon::from_rgba(pixels, width, height)?)
   }
 }
 

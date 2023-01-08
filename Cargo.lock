@@ -1792,10 +1792,12 @@ dependencies = [
  "base64 0.20.0",
  "egui",
  "fxhash",
+ "glutin",
  "notify",
  "serde",
  "surreal-core",
  "thiserror",
+ "winit 0.26.1",
 ]
 
 [[package]]

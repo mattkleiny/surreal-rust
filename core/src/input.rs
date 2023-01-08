@@ -12,7 +12,7 @@ mod keyboard;
 mod mouse;
 
 /// The input management backend implementation for the underlying input API.
-pub struct InputBackend {
+pub struct InputServer {
   // devices
   pub keyboard: Option<KeyboardDevice>,
   pub mouse: Option<MouseDevice>,
@@ -25,7 +25,7 @@ pub struct InputBackend {
   actual_mouse_pos: Vec2,
 }
 
-impl InputBackend {
+impl InputServer {
   /// Creates a new input backend.
   pub fn new(pixels_per_point: f32) -> Self {
     Self {
@@ -41,7 +41,7 @@ impl InputBackend {
   }
 
   /// Ticks the input system, apply state changes.
-  pub fn tick(&mut self, total_time: f32) {
+  pub fn tick(&mut self) {
     if let Some(keyboard) = &mut self.keyboard {
       if !self.exclusive_keyboard_input {
         keyboard.tick();
@@ -54,9 +54,7 @@ impl InputBackend {
       }
     }
 
-    // reset egui events
     self.raw_input.events.clear();
-    self.raw_input.time = Some(total_time as f64);
   }
 
   /// Notifies of a change to keyboard modifiers.

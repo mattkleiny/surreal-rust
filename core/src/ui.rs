@@ -114,11 +114,6 @@ impl UserInterface {
     let pixels_per_point = provider.pixels_per_point();
     self.context.set_pixels_per_point(pixels_per_point);
 
-    // toggle profiler automatically
-    if provider.is_key_pressed(crate::input::Key::F7) {
-      self.toggle_profiler();
-    }
-
     // run update, passing input and collecting output
     let raw_input = provider.raw_input().clone();
     let full_output = self.context.run(raw_input, |context| {

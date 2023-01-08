@@ -2,25 +2,23 @@
 //!
 //! Bootstrapping and other framework systems for common projects.
 
-use std::time::Duration;
-
 use glutin::{
   dpi::LogicalSize,
   event::WindowEvent,
   event_loop::{ControlFlow, EventLoop},
-  window::{Icon, Window, WindowBuilder},
+  window::{Window, WindowBuilder},
   ContextBuilder,
 };
 use log::LevelFilter;
-use winit::event_loop::EventLoopProxy;
+use std::time::Duration;
 
+use crate::input::Key;
 use crate::{
   assets::AssetManager,
   audio::{AudioServer, OpenALAudioBackend},
   diagnostics::{profiling, ConsoleLoggerBuilder},
-  graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend, Renderer},
-  input,
-  input::InputBackend,
+  graphics::{GraphicsServer, Image, ImageFormat, OpenGLGraphicsBackend, Renderer},
+  input::InputServer,
   maths::{uvec2, vec2},
   scene::{SceneEvent, SceneGraph},
   utilities::{DeltaClock, FrameCounter, IntervalTimer, TimeSpan},
@@ -118,16 +116,14 @@ pub struct Engine {
   // core systems
   pub audio: AudioServer,
   pub graphics: GraphicsServer,
-  pub input: InputBackend,
+  pub input: InputServer,
 
   // window management
   config: EngineConfig,
   window: Window,
   cursor_icon: egui::CursorIcon,
-  event_loop_proxy: EventLoopProxy<()>,
   event_loop: Option<EventLoop<()>>,
   is_focused: bool,
-  repaint_after: Option<Duration>,
 
   // timing
   clock: DeltaClock,
@@ -168,14 +164,9 @@ impl Engine {
       .with_transparent(config.transparent_window)
       .with_visible(config.is_window_visible)
       .with_window_icon(config.icon.map(|buffer| {
-        let image = image::load_from_memory_with_format(buffer, ImageFormat::Ico).expect("Failed to decode icon data");
-        let rgba = image.as_rgba8().expect("Image was not in RGBA format");
-
-        let pixels = rgba.pixels().flat_map(|pixel| pixel.0).collect();
-        let width = rgba.width();
-        let height = rgba.height();
-
-        Icon::from_rgba(pixels, width, height).expect("Failed to convert icon from raw image")
+        Image::from_buffer(buffer, ImageFormat::Ico)
+          .and_then(|image| image.to_icon())
+          .expect("Failed to convert icon from raw image")
       }));
 
     // glutin tries to be safe via the type system
@@ -187,25 +178,21 @@ impl Engine {
 
     // unpick the window from glutin so we can manage it ourselves
     let (context, window) = unsafe { context.make_current().unwrap().split() };
-
-    let pixels_per_point = window.scale_factor() as f32;
-    let audio = OpenALAudioBackend::new();
-    let graphics = OpenGLGraphicsBackend::new(context, config.vsync_enabled);
+    let audio_server = OpenALAudioBackend::new();
+    let graphics_server = OpenGLGraphicsBackend::new(context, config.vsync_enabled);
 
     Self {
       // servers
-      audio: AudioServer::new(Box::new(audio)),
-      graphics: GraphicsServer::new(Box::new(graphics)),
-      input: InputBackend::new(pixels_per_point),
+      audio: AudioServer::new(Box::new(audio_server)),
+      graphics: GraphicsServer::new(Box::new(graphics_server)),
+      input: InputServer::new(window.scale_factor() as f32),
 
       // window management
       config,
       window,
       cursor_icon: egui::CursorIcon::None,
-      event_loop_proxy: event_loop.create_proxy(),
       event_loop: Some(event_loop),
       is_focused: true,
-      repaint_after: None,
 
       // timing
       clock: DeltaClock::new(),
@@ -320,24 +307,6 @@ impl Engine {
 
     event_loop.run_return(move |event, _, control_flow| {
       match event {
-        Event::RedrawRequested(window_id) => {
-          if window_id == self.window.id() {
-            profiling::profile_scope!("Draw");
-
-            // update graphics and run draw loop
-            self.graphics.begin_frame();
-
-            let time = GameTime {
-              delta_time: self.clock.last_delta_time(),
-              total_time: self.clock.total_time(),
-            };
-
-            body(&mut self, TickEvent::Draw(time));
-            self.input.tick(self.clock.total_time());
-
-            self.graphics.end_frame();
-          }
-        }
         Event::MainEventsCleared => {
           self.clock.tick();
 
@@ -355,8 +324,6 @@ impl Engine {
           if self.config.update_continuously && self.is_focused {
             self.update_frame_counter();
             *control_flow = ControlFlow::Poll;
-          } else if let Some(duration) = self.repaint_after.take() {
-            *control_flow = ControlFlow::WaitUntil(std::time::Instant::now() + duration);
           } else {
             *control_flow = ControlFlow::Wait;
           }
@@ -366,6 +333,24 @@ impl Engine {
 
           if self.is_quitting {
             *control_flow = ControlFlow::Exit;
+          }
+        }
+        Event::RedrawRequested(window_id) => {
+          if window_id == self.window.id() {
+            profiling::profile_scope!("Draw");
+
+            // update graphics and run draw loop
+            self.graphics.begin_frame();
+
+            let time = GameTime {
+              delta_time: self.clock.last_delta_time(),
+              total_time: self.clock.total_time(),
+            };
+
+            body(&mut self, TickEvent::Draw(time));
+            self.input.tick();
+
+            self.graphics.end_frame();
           }
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
@@ -483,13 +468,8 @@ impl crate::ui::UserInterfaceHost for Engine {
     &self.input.raw_input
   }
 
-  // TODO: remove this?
-  fn is_key_pressed(&self, key: input::Key) -> bool {
-    if let Some(keyboard) = &self.input.keyboard {
-      keyboard.is_key_pressed(key)
-    } else {
-      false
-    }
+  fn is_key_pressed(&self, key: Key) -> bool {
+    self.input.keyboard.as_ref().map(|it| it.is_key_pressed(key)).unwrap_or_default()
   }
 
   fn set_exclusive_keyboard_input(&mut self, exclusive: bool) {
@@ -565,8 +545,7 @@ impl crate::ui::UserInterfaceHost for Engine {
     self.window.request_redraw();
   }
 
-  fn request_redraw_after(&mut self, duration: Duration) {
-    self.repaint_after = Some(duration);
-    self.event_loop_proxy.send_event(()).unwrap();
+  fn request_redraw_after(&mut self, _duration: Duration) {
+    self.window.request_redraw(); // TODO: implement me
   }
 }
