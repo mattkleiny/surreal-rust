@@ -3,9 +3,13 @@
 use thiserror::Error;
 
 use surreal::diagnostics::info;
-use surreal::utilities::TypeDatabase;
+use surreal::io::VirtualPath;
+use surreal::utilities::Version;
 
 use super::*;
+
+/// The current [`Version`] of the [`Project`] schema.
+const DEFAULT_VERSION: Version = Version::new(0, 0, 1);
 
 /// Possible errors when loading a project.
 #[derive(Error, Debug, Copy, Clone, Eq, PartialEq)]
@@ -22,23 +26,34 @@ pub enum ProjectError {
 /// edited in the editor. Projects are stored in the _local_ file system and
 /// can be loaded from any location.
 pub struct Project {
-  _root_path: String,
+  root_path: String,
   _asset_database: AssetDatabase,
-  _type_database: TypeDatabase,
 }
 
 impl Project {
   /// Opens a project at the given path.
-  pub fn open(root_path: impl AsRef<str>) -> Result<Self, ProjectError> {
+  pub fn open(root_path: impl AsRef<str>) -> surreal::Result<Self> {
     // TODO: verify that the project is valid and the version is valid
     info!("Opening project at path {}", root_path.as_ref());
 
     let project = Self {
-      _root_path: root_path.as_ref().to_string(),
+      root_path: root_path.as_ref().to_string(),
       _asset_database: AssetDatabase::default(),
-      _type_database: TypeDatabase::default(),
     };
 
     Ok(project)
+  }
+
+  /// The root [`VirtualPath`] for the project.
+  pub fn root_path(&self) -> VirtualPath {
+    VirtualPath::from(&self.root_path)
+  }
+
+  /// Reads the [`Version`] of the project from the settings file.
+  pub fn version(&self) -> surreal::Result<Version> {
+    let path = self.root_path().resolve("/Settings/ProjectVersion.txt");
+    let raw = path.read_all_text()?;
+
+    Ok(Version::from_str(&raw)?)
   }
 }

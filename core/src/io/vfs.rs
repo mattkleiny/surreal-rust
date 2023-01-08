@@ -325,10 +325,28 @@ impl<'a> VirtualPath<'a> {
     }
   }
 
+  /// Resolves a [`VirtualPath`] relative to the current path.
+  pub fn resolve(&self, relative: &str) -> Self {
+    let mut path = self.location.to_string();
+
+    if !path.ends_with("/") {
+      path.push_str("/");
+    }
+
+    path.push_str(relative);
+
+    Self {
+      scheme: self.scheme,
+      location: std::borrow::Cow::Owned(path),
+    }
+  }
+
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
     let file_system = FileSystemManager::find_for_path(self).ok_or(anyhow::anyhow!("No file system found for scheme {}", self.scheme))?;
-    let stream = file_system.open_read(self)?;
+    let stream = file_system
+      .open_read(self)
+      .map_err(|_| surreal::anyhow!("Unable to open input stream for {}", self))?;
 
     Ok(stream)
   }
@@ -336,7 +354,9 @@ impl<'a> VirtualPath<'a> {
   /// Opens a writer for the given path.
   pub fn open_output_stream(&self) -> crate::Result<Box<dyn OutputStream>> {
     let file_system = FileSystemManager::find_for_path(self).ok_or(anyhow::anyhow!("No file system found for scheme {}", self.scheme))?;
-    let stream = file_system.open_write(self)?;
+    let stream = file_system
+      .open_write(self)
+      .map_err(|_| surreal::anyhow!("Unable to open output stream for {}", self))?;
 
     Ok(stream)
   }

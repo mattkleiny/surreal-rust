@@ -8,7 +8,7 @@ use crate as surreal;
 
 /// Represents an 'Object'.
 ///
-/// Objects are polymorphically cast-able at runtime and carry
+/// Objects are poly-morphically cast-able at runtime and carry
 /// [`Type`] information. They also participate in the reflection
 /// system and allow arbitrary access to fields and methods.
 pub trait Object: Any {
@@ -42,11 +42,6 @@ impl Type {
   pub fn of<T: TypeOf>() -> Self {
     T::type_of()
   }
-
-  /// Retrieves the [`TypeMetadata`] for the type.
-  pub fn metadata(&self) -> Option<&TypeMetadata> {
-    TypeDatabase::instance().get(self)
-  }
 }
 
 impl From<&'static str> for Type {
@@ -60,34 +55,6 @@ impl From<String> for Type {
   #[inline(always)]
   fn from(value: String) -> Self {
     Self(Cow::Owned(value))
-  }
-}
-
-/// Metadata about a [`Type`].
-#[derive(Debug)]
-pub struct TypeMetadata {}
-
-/// A static [`Type`] database.
-///
-/// The database carries information about [`Object`]s and allows reflection and
-/// introspection of all available objects in a project (that have been registered).
-#[derive(Singleton, Default, Debug)]
-pub struct TypeDatabase {
-  types: HashMap<Type, TypeMetadata>,
-}
-
-impl TypeDatabase {
-  /// Registers the given [`Type`] in the database.
-  pub fn register<T: TypeOf>(&mut self) {
-    let key = Type::of::<T>();
-    let value = TypeMetadata {};
-
-    self.types.insert(key, value);
-  }
-
-  /// Tries to get the [`TypeMetadata`] for the given [`Type`].
-  pub fn get(&self, key: &Type) -> Option<&TypeMetadata> {
-    self.types.get(key)
   }
 }
 
@@ -109,14 +76,5 @@ mod tests {
     assert_eq!(object.get_type(), Type::from("TestObject"));
     assert_eq!(Type::of::<TestObject>(), Type::from("TestObject"));
     assert_eq!(TestObject::type_of(), Type::from("TestObject"));
-  }
-
-  #[test]
-  fn type_database_should_register_types() {
-    let database = TypeDatabase::instance();
-
-    database.register::<TestObject>();
-
-    println!("{:#?}", database);
   }
 }
