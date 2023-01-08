@@ -19,7 +19,7 @@ fn main() {
     let sprites2 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-idle.png").unwrap();
     let sprites3 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-walk.png").unwrap();
 
-    let mut renderer = RenderContextManager::new(graphics);
+    let mut renderer = Renderer::new(graphics);
 
     renderer.add_descriptor(SpriteContextDescriptor {
       projection_view: Mat4::orthographic_rh_gl(-256. / 2., 256. / 2., 144. / 2., -144. / 2., 0., 100.),

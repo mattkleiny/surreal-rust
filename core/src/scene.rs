@@ -5,7 +5,7 @@ use std::fmt::{Debug, Formatter};
 
 use anyhow::anyhow;
 
-use crate::graphics::RenderContextManager;
+use crate::graphics::Renderer;
 use crate::maths::{Affine3A, FromRandom, Quat, Vec3};
 use crate::utilities::{unsafe_mutable_alias, Object};
 
@@ -37,7 +37,7 @@ pub enum SceneEvent<'a> {
   Disable,
   Destroy,
   Update(f32),
-  Render(&'a mut RenderContextManager),
+  Render(&'a mut Renderer),
   TransformChanged(&'a Transform),
 }
 
@@ -198,7 +198,7 @@ impl Transform {
 pub enum ComponentKind {
   /// This component has standard 'update' behaviour, but doesn't need to render.
   Behaviour,
-  /// This component needs to render and wants access to the [`RenderContextManager`].
+  /// This component needs to render and wants access to the [`Renderer`].
   Renderer,
 }
 
@@ -231,7 +231,7 @@ pub trait Component: Object {
   fn on_disable(&mut self, node: &mut SceneNode) {}
   fn on_destroy(&mut self, node: &mut SceneNode) {}
   fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {}
-  fn on_render(&mut self, node: &mut SceneNode, manager: &mut RenderContextManager) {}
+  fn on_render(&mut self, node: &mut SceneNode, renderer: &mut Renderer) {}
 
   /// Determines the [`ComponentKind`] of this component.
   ///

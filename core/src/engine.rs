@@ -18,7 +18,7 @@ use crate::{
   assets::AssetManager,
   audio::{AudioServer, OpenALAudioBackend},
   diagnostics::{profiling, ConsoleLoggerBuilder},
-  graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend, RenderContextManager},
+  graphics::{GraphicsServer, ImageFormat, OpenGLGraphicsBackend, Renderer},
   input,
   input::InputBackend,
   maths::{uvec2, vec2},
@@ -268,15 +268,15 @@ impl Engine {
   pub fn from_scene(configuration: Configuration, setup: impl Fn(&Engine, &AssetManager) -> SceneGraph) {
     Engine::start(configuration, |engine, assets| {
       let mut scene_graph = setup(&engine, &assets);
-      let mut render_manager = RenderContextManager::new(&engine.graphics);
+      let mut renderer = Renderer::new(&engine.graphics);
 
       engine.run_variable_step(|_, time| {
-        render_manager.begin_frame();
+        renderer.begin_frame();
 
         scene_graph.notify(SceneEvent::Update(time.delta_time));
-        scene_graph.notify(SceneEvent::Render(&mut render_manager));
+        scene_graph.notify(SceneEvent::Render(&mut renderer));
 
-        render_manager.end_frame();
+        renderer.end_frame();
 
         TickResponse::Continue
       });

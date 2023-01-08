@@ -16,11 +16,11 @@ mod scene;
 
 /// The main window for the editor.
 pub struct EditorWindow {
-  editor_layout: WindowLayout,
-  primary_inspector: Inspector,
-  content_browser: ContentBrowser,
-  scene_view: SceneView,
-  preview_view: GameView,
+  _editor_layout: WindowLayout,
+  inspector: Inspector,
+  _content_browser: ContentBrowser,
+  _scene_view: SceneView,
+  _preview_view: GameView,
   graph_editor: GraphEditor<u32>,
 }
 
@@ -28,11 +28,11 @@ impl EditorWindow {
   /// Builds a new [`EditorWindow`].
   pub fn new() -> Self {
     Self {
-      editor_layout: WindowLayout::default(),
-      primary_inspector: Inspector::default(),
-      content_browser: ContentBrowser::default(),
-      scene_view: SceneView::default(),
-      preview_view: GameView::default(),
+      _editor_layout: WindowLayout::default(),
+      inspector: Inspector::default(),
+      _content_browser: ContentBrowser::default(),
+      _scene_view: SceneView::default(),
+      _preview_view: GameView::default(),
       graph_editor: GraphEditor::from_graph(surreal::graphs::Graph::default()),
     }
   }
@@ -44,7 +44,7 @@ impl EditorWindow {
     egui::SidePanel::new(egui::panel::Side::Right, "inspector")
       .frame(egui::Frame::none())
       .show(egui, |ui| {
-        self.primary_inspector.show(ui);
+        self.inspector.show(ui);
       });
 
     egui::CentralPanel::default().frame(egui::Frame::none()).show(egui, |ui| {

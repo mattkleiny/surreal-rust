@@ -1,10 +1,5 @@
 use std::any::Any;
 use std::borrow::Cow;
-use std::collections::HashMap;
-
-use macros::Singleton;
-
-use crate as surreal;
 
 /// Represents an 'Object'.
 ///

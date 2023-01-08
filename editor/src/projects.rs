@@ -9,7 +9,7 @@ use surreal::utilities::Version;
 use super::*;
 
 /// The current [`Version`] of the [`Project`] schema.
-const DEFAULT_VERSION: Version = Version::new(0, 0, 1);
+pub const DEFAULT_PROJECT_VERSION: Version = Version::new(0, 0, 1);
 
 /// Possible errors when loading a project.
 #[derive(Error, Debug, Copy, Clone, Eq, PartialEq)]

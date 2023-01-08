@@ -1,6 +1,6 @@
 use surreal::assets::AssetManager;
 use surreal::engine::{Configuration, Engine, TickResponse};
-use surreal::graphics::{Color, RenderContextManager};
+use surreal::graphics::{Color, Renderer};
 use surreal::input::Key;
 use surreal::maths::Mat4;
 use surreal::scene::{SceneEvent, SceneGraph};
@@ -19,7 +19,7 @@ pub fn run_example(name: &'static str, factory: impl Fn(&Engine, &AssetManager) 
 
   Engine::start(configuration, |engine, assets| {
     let mut scene = factory(&engine, &assets);
-    let mut renderer = RenderContextManager::new(&engine.graphics);
+    let mut renderer = Renderer::new(&engine.graphics);
 
     renderer.add_descriptor(surreal_scene2d::SpriteContextDescriptor {
       projection_view: Mat4::orthographic_rh_gl(-WIDTH / 2., WIDTH / 2., HEIGHT / 2., -HEIGHT / 2., 0., 100.),

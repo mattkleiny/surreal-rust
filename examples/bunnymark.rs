@@ -21,7 +21,7 @@ fn main() {
     // set-up assets and rendering
     let sprite = Texture::load(&assets, "assets/sprites/bunny.png").unwrap();
     let region = TextureRegion::from(&sprite);
-    let mut renderer = RenderContextManager::new(graphics);
+    let mut renderer = Renderer::new(graphics);
 
     renderer.add_descriptor(SpriteContextDescriptor {
       projection_view: Mat4::orthographic_rh_gl(-WIDTH / 2., WIDTH / 2., HEIGHT / 2., -HEIGHT / 2., 0., 100.),

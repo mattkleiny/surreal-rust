@@ -6,7 +6,7 @@
 //! swap the internal graphics implementation through a single dynamic pointer.
 //!
 //! On top of the these lower-level primitives, we also build up to some more useful abstractions,
-//! such as the [`RenderContextManager`]. This manager types allow for the creation of context objects
+//! such as the [`Renderer`]. This types allow for the creation of context objects
 //! and simplifies the work required to initialize all the OpenGL resources required to pull off some
 //! sort of meaningful rendering step.
 
