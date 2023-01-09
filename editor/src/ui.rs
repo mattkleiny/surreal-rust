@@ -57,7 +57,6 @@ impl EditorWindow for ProjectWindow {
 
     egui::CentralPanel::default().frame(egui::Frame::none()).show(ctx, |ui| {
       // TODO: render tabs for each panel
-
       // self.scene_view.show(ui, &mut self.editor_context);
       // self.game_view.show(ui, &mut self.editor_context);
       self.graph_editor.show(ui, &mut self.editor_context);

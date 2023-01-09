@@ -9,14 +9,14 @@ use super::*;
 
 /// An image of RGBA pixels, loadable from a variety of different formats.
 pub struct Image {
-  buffer: image::RgbaImage,
+  image: image::RgbaImage,
 }
 
 impl Image {
   /// Creates a new empty image with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self {
     Self {
-      buffer: image::RgbaImage::new(width as u32, height as u32),
+      image: image::RgbaImage::new(width as u32, height as u32),
     }
   }
 
@@ -39,39 +39,37 @@ impl Image {
     }
 
     let image = reader.decode()?;
-    let buffer = image.to_rgba8();
 
-    Ok(Self { buffer })
+    Ok(Self { image: image.into_rgba8() })
   }
 
   /// Attempts to load an image from the given reader.
   pub fn from_buffer(buffer: &[u8], format: ImageFormat) -> crate::Result<Self> {
     let image = image::load_from_memory_with_format(buffer, format).expect("Failed to decode icon data");
-    let rgba = image.as_rgba8().expect("Image was not in RGBA format");
 
-    Ok(Self { buffer: rgba.clone() })
+    Ok(Self { image: image.into_rgba8() })
   }
 
   /// Returns the width of the image.
   pub fn width(&self) -> usize {
-    self.buffer.width() as usize
+    self.image.width() as usize
   }
 
   /// Returns the height of the image.
   pub fn height(&self) -> usize {
-    self.buffer.height() as usize
+    self.image.height() as usize
   }
 
   /// Retrieves the pixels of the image as a slice of [`Color32`]s.
   pub fn as_slice(&self) -> &[Color32] {
-    let rgba = &self.buffer;
+    let rgba = &self.image;
 
     unsafe { std::slice::from_raw_parts(rgba.as_ptr() as *const Color32, rgba.len() / 4) }
   }
 
   /// Retrieves the pixels of the image as a mutable slice of [`Color32`]s.
   pub fn as_slice_mut(&mut self) -> &mut [Color32] {
-    let rgba = &mut self.buffer;
+    let rgba = &mut self.image;
 
     unsafe { std::slice::from_raw_parts_mut(rgba.as_ptr() as *mut Color32, rgba.len() / 4) }
   }
@@ -80,17 +78,17 @@ impl Image {
   pub fn save_to(&self, path: impl Into<VirtualPath>, format: ImageFormat) -> crate::Result<()> {
     let mut stream = path.into().open_output_stream()?;
 
-    self.buffer.write_to(&mut stream, format)?;
+    self.image.write_to(&mut stream, format)?;
 
     Ok(())
   }
 
   /// Converts this [`Image`] to an [`winit::window::Icon`].
   pub fn to_icon(&self) -> crate::Result<winit::window::Icon> {
-    let pixels = self.buffer.pixels().flat_map(|pixel| pixel.0).collect();
+    let pixels = self.image.pixels().flat_map(|pixel| pixel.0).collect();
 
-    let width = self.buffer.width();
-    let height = self.buffer.height();
+    let width = self.image.width();
+    let height = self.image.height();
 
     Ok(winit::window::Icon::from_rgba(pixels, width, height)?)
   }

@@ -313,9 +313,13 @@ impl surreal::ui::UserInterfaceHost for UserInterfaceState {
     }
   }
 
-  fn request_redraw(&mut self) {}
+  fn request_redraw(&mut self) {
+    // TODO: implement me
+  }
 
-  fn request_redraw_after(&mut self, _duration: Duration) {}
+  fn request_redraw_after(&mut self, _duration: Duration) {
+    // TODO: implement me
+  }
 }
 
 /// Loads the default [`Icon`] for the editor.

@@ -268,6 +268,13 @@ impl From<Duration> for TimeSpan {
   }
 }
 
+impl From<TimeSpan> for Duration {
+  #[inline]
+  fn from(value: TimeSpan) -> Self {
+    Duration::from_secs_f32(value.milliseconds / 1000.)
+  }
+}
+
 impl Display for TimeSpan {
   fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
@@ -279,6 +286,60 @@ impl Display for TimeSpan {
     }
   }
 }
+
+/// Allows a type to be converted into a [`TimeSpan`].
+pub trait IntoTimeSpan {
+  /// Creates a [`TimeSpan`] representing milliseconds.
+  fn milliseconds(&self) -> TimeSpan;
+
+  /// Creates a [`TimeSpan`] representing seconds.
+  fn seconds(&self) -> TimeSpan;
+
+  /// Creates a [`TimeSpan`] representing minutes.
+  fn minutes(&self) -> TimeSpan;
+
+  /// Creates a [`TimeSpan`] representing hours.
+  fn hours(&self) -> TimeSpan;
+}
+
+macro_rules! impl_into_time_span {
+  ($type:ty) => {
+    impl IntoTimeSpan for $type {
+      #[inline]
+      fn milliseconds(&self) -> TimeSpan {
+        TimeSpan::from_millis(*self as f32)
+      }
+
+      #[inline]
+      fn seconds(&self) -> TimeSpan {
+        TimeSpan::from_seconds(*self as f32)
+      }
+
+      #[inline]
+      fn minutes(&self) -> TimeSpan {
+        TimeSpan::from_minutes(*self as f32)
+      }
+
+      #[inline]
+      fn hours(&self) -> TimeSpan {
+        TimeSpan::from_hours(*self as f32)
+      }
+    }
+  };
+}
+
+impl_into_time_span!(u8);
+impl_into_time_span!(u16);
+impl_into_time_span!(u32);
+impl_into_time_span!(u64);
+impl_into_time_span!(usize);
+impl_into_time_span!(i8);
+impl_into_time_span!(i16);
+impl_into_time_span!(i32);
+impl_into_time_span!(i64);
+impl_into_time_span!(isize);
+impl_into_time_span!(f32);
+impl_into_time_span!(f64);
 
 #[cfg(test)]
 mod tests {
