@@ -16,11 +16,14 @@ mod version;
 
 /// Abstracts over resource IDs.
 pub trait RID {
-  /// Converts the resource to it's base `u64`.
+  /// Converts the given `u64` to a resource ID.
+  fn from_u64(id: u64) -> Self;
+
+  /// Converts the resource ID to it's base `u64`.
   fn to_u64(&self) -> u64;
 }
 
-/// Creates An opaque ID for a resource in one of the [`Server`] implementations.
+/// Creates An opaque ID for a resource in a implementation.
 ///
 /// This is an opaque handle that can be used to identify a resource in the server.
 #[macro_export]
@@ -39,41 +42,15 @@ macro_rules! impl_rid_type {
 
     impl $crate::utilities::RID for $name {
       #[inline(always)]
+      fn from_u64(id: u64) -> Self {
+        Self(id)
+      }
+
+      #[inline(always)]
       fn to_u64(&self) -> u64 {
         self.0
       }
     }
-
-    macro_rules! impl_rid_conversion {
-      ($type:ty) => {
-        impl From<$type> for $name {
-          #[inline(always)]
-          fn from(value: $type) -> Self {
-            Self(value as u64)
-          }
-        }
-
-        impl Into<$type> for $name {
-          #[inline(always)]
-          fn into(self) -> $type {
-            self.0 as $type
-          }
-        }
-      };
-    }
-
-    impl_rid_conversion!(i8);
-    impl_rid_conversion!(i16);
-    impl_rid_conversion!(i32);
-    impl_rid_conversion!(i64);
-    impl_rid_conversion!(i128);
-
-    impl_rid_conversion!(u8);
-    impl_rid_conversion!(u16);
-    impl_rid_conversion!(u32);
-    impl_rid_conversion!(u64);
-    impl_rid_conversion!(u128);
-    impl_rid_conversion!(usize);
   };
 }
 

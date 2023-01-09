@@ -9,36 +9,8 @@ pub struct OpenGLBackend {
 
 impl OpenGLBackend {
   /// Builds a new [`OpenGLBackend`] for the given raw window handles.
-  #[cfg(target_os = "windows")]
-  pub fn new(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
-    use glutin::platform::windows::RawContextExt;
-
-    let context = unsafe {
-      glutin::ContextBuilder::new()
-        .with_vsync(true)
-        .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 3)))
-        .with_gl_profile(glutin::GlProfile::Core)
-        .with_gl_debug_flag(true)
-        .build_raw_context(match window.raw_window_handle() {
-          RawWindowHandle::Win32(handle) => handle.hwnd,
-          RawWindowHandle::WinRt(handle) => handle.core_window,
-          RawWindowHandle::Xlib(handle) => handle.window as *mut std::ffi::c_void,
-          RawWindowHandle::Wayland(handle) => handle.surface,
-          _ => surreal::bail!("Unsupported window handle"),
-        })?
-        .make_current()
-        .map_err(|(_, err)| err)?
-    };
-
-    gl::load_with(|symbol| context.get_proc_address(symbol) as *const _);
-
-    Ok(Self { _context: context })
-  }
-
-  /// Builds a new [`OpenGLBackend`] for the given raw window handles.
-  #[cfg(not(target_os = "windows"))]
-  pub fn new(_window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
-    todo!()
+  pub fn new(_window: winit::window::WindowBuilder) -> surreal::Result<Self> {
+    todo!();
   }
 }
 
@@ -56,6 +28,14 @@ impl GraphicsServerBackend for OpenGLBackend {
     todo!()
   }
 
+  fn shader_set_metadata(&self, shader_id: GraphicsId, metadata: ShaderMetadata) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn shader_get_metadata(&self, shader_id: GraphicsId) -> surreal::Result<ShaderMetadata> {
+    todo!()
+  }
+
   fn shader_delete(&self, shader_id: GraphicsId) -> surreal::Result<()> {
     todo!()
   }
@@ -65,6 +45,18 @@ impl GraphicsServerBackend for OpenGLBackend {
   }
 
   fn material_set_shader(&self, material_id: GraphicsId, shader_id: GraphicsId) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn material_get_shader(&self, material_id: GraphicsId) -> surreal::Result<GraphicsId> {
+    todo!()
+  }
+
+  fn material_set_metadata(&self, material_id: GraphicsId, metadata: MaterialMetadata) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn material_get_metadata(&self, material_id: GraphicsId) -> surreal::Result<MaterialMetadata> {
     todo!()
   }
 

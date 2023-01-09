@@ -2,12 +2,8 @@
 
 fn main() {
   let event_loop = winit::event_loop::EventLoop::new();
-  let window = winit::window::WindowBuilder::new()
-    .with_title("Hello, Vulkan!")
-    .build(&event_loop)
-    .unwrap();
-
-  let _backend = surreal_graphics::GraphicsServer::from_vulkan(&window).unwrap();
+  let window = winit::window::WindowBuilder::new().with_title("Hello, Vulkan!");
+  let _backend = surreal_graphics::GraphicsServer::from_vulkan(window, &event_loop).unwrap();
 
   event_loop.run(move |event, _, control_flow| {
     *control_flow = winit::event_loop::ControlFlow::Wait;

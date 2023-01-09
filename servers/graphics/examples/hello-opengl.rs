@@ -2,12 +2,8 @@
 
 fn main() {
   let event_loop = winit::event_loop::EventLoop::new();
-  let window = winit::window::WindowBuilder::new()
-    .with_title("Hello, OpenGL!")
-    .build(&event_loop)
-    .unwrap();
-
-  let _backend = surreal_graphics::GraphicsServer::from_opengl(&window).unwrap();
+  let window = winit::window::WindowBuilder::new().with_title("Hello, OpenGL!");
+  let _backend = surreal_graphics::GraphicsServer::from_opengl(window).unwrap();
 
   event_loop.run(move |event, _, control_flow| {
     *control_flow = winit::event_loop::ControlFlow::Wait;
