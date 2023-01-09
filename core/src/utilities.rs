@@ -15,7 +15,7 @@ mod variant;
 mod version;
 
 /// Abstracts over resource IDs.
-pub trait ResourceId {
+pub trait RID: Eq + std::hash::Hash {
   /// Converts the given `u64` to a resource ID.
   fn from_u64(id: u64) -> Self;
 
@@ -40,7 +40,7 @@ macro_rules! impl_rid_type {
       }
     }
 
-    impl $crate::utilities::ResourceId for $name {
+    impl $crate::utilities::RID for $name {
       #[inline]
       fn from_u64(id: u64) -> Self {
         Self(id)

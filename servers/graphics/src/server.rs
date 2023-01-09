@@ -1,3 +1,4 @@
+use std::hash::Hash;
 use std::ops::Deref;
 use std::sync::Arc;
 
@@ -11,34 +12,10 @@ mod opengl;
 #[cfg(feature = "backend-vulkan")]
 mod vulkan;
 
-// A unique ID for graphics resources in the [`GraphicsServerBackend`].
 surreal::impl_rid_type!(ShaderId);
 surreal::impl_rid_type!(MaterialId);
 surreal::impl_rid_type!(MeshId);
 surreal::impl_rid_type!(LightId);
-
-/// Storage for a resource, keyed by it's [`GraphicsId`].
-#[derive(Default)]
-struct GraphicsStorage<T> {
-  entries: std::collections::HashMap<GraphicsId, T>,
-}
-
-impl<T> GraphicsStorage<T> {
-  /// Retrieves an item from storage.
-  pub fn get(&self, id: GraphicsId) -> Option<&T> {
-    self.entries.get(&id)
-  }
-
-  /// Inserts an item into storage.
-  pub fn insert(&mut self, id: GraphicsId, entry: T) {
-    self.entries.insert(id, entry);
-  }
-
-  /// Removes an item from storage.
-  pub fn remove(&mut self, id: GraphicsId) -> Option<T> {
-    self.entries.remove(&id)
-  }
-}
 
 /// Surface data used for mesh creation.
 #[derive(Default, Clone)]
@@ -47,7 +24,7 @@ pub struct SurfaceData {
   pub vertices: Vec<u8>,
   pub indices: Vec<u8>,
   pub aabb: AABB,
-  pub material: GraphicsId,
+  pub material: MaterialId,
 }
 
 /// Different kinds of lights supported.
@@ -131,8 +108,8 @@ impl GraphicsServer {
 
   /// Creates a [`GraphicsServer`] for Vulkan.
   #[cfg(feature = "backend-vulkan")]
-  pub fn from_vulkan(window: winit::window::WindowBuilder, event_loop: &winit::event_loop::EventLoop<()>) -> surreal::Result<Self> {
-    Ok(Self::from_backend(vulkan::VulkanBackend::new(window, event_loop)?))
+  pub fn from_vulkan(window: Arc<winit::window::Window>) -> surreal::Result<Self> {
+    Ok(Self::from_backend(vulkan::VulkanBackend::new(window)?))
   }
 
   /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
@@ -164,6 +141,10 @@ impl Deref for GraphicsServer {
 /// * It allows us to build an API that spans lifetime requirements. Whilst some API
 ///   methods will be
 pub trait GraphicsServerBackend {
+  // general operations
+  fn begin_frame(&self);
+  fn end_frame(&self);
+
   // shader operations
   fn shader_create(&self) -> surreal::Result<ShaderId>;
   fn shader_set_code(&self, shader_id: ShaderId, code: &str) -> surreal::Result<()>;

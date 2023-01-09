@@ -1,33 +1,46 @@
 //! Vulkan support for the engine.
 
+use std::cell::RefCell;
 use std::sync::Arc;
 
-use vulkano::device::physical::PhysicalDeviceType;
-use vulkano::device::{Device, DeviceCreateInfo, DeviceExtensions, Queue, QueueCreateInfo, QueueFlags};
-use vulkano::image::{ImageUsage, SwapchainImage};
-use vulkano::instance::{Instance, InstanceCreateInfo};
-use vulkano::memory::allocator::StandardMemoryAllocator;
-use vulkano::swapchain::{Swapchain, SwapchainCreateInfo};
-use vulkano::VulkanLibrary;
+use vulkano::{
+  device::{physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue, QueueCreateInfo, QueueFlags},
+  image::{ImageUsage, SwapchainImage},
+  instance::{Instance, InstanceCreateInfo},
+  memory::allocator::StandardMemoryAllocator,
+  render_pass::RenderPass,
+  swapchain::{acquire_next_image, AcquireError},
+  swapchain::{Swapchain, SwapchainCreateInfo},
+  sync::{self, GpuFuture},
+  VulkanLibrary,
+};
 use winit::window::Window;
 
 use super::*;
 
 /// A [`GraphicsServerBackend`] implementation for Vulkan.
 pub struct VulkanBackend {
-  instance: Arc<Instance>,
-  device: Arc<Device>,
-  queue: Arc<Queue>,
+  _window: Arc<Window>,
+  _instance: Arc<Instance>,
+  _device: Arc<Device>,
+  _queue: Arc<Queue>,
+  _images: Vec<Arc<SwapchainImage>>,
+  _render_pass: Arc<RenderPass>,
+  _allocator: StandardMemoryAllocator,
+  state: RefCell<VulkanState>,
+}
+
+/// Internal state for hte [`VulkanBackend`].
+struct VulkanState {
   swapchain: Arc<Swapchain>,
-  images: Vec<Arc<SwapchainImage>>,
-  allocator: StandardMemoryAllocator,
+  previous_frame_end: Option<Box<dyn GpuFuture>>,
+  swapchain_needs_rebuild: bool,
 }
 
 impl VulkanBackend {
   /// Creates a [`VulkanBackend`] for the given window.
-  pub fn new(window: winit::window::WindowBuilder, event_loop: &winit::event_loop::EventLoop<()>) -> surreal::Result<Self> {
-    use vulkano_win::VkSurfaceBuild;
-
+  pub fn new(window: Arc<Window>) -> surreal::Result<Self> {
+    // prepare vulkan instance
     let library = VulkanLibrary::new()?;
     let extensions = vulkano_win::required_extensions(&library);
 
@@ -40,28 +53,30 @@ impl VulkanBackend {
       },
     )?;
 
-    let surface = window.build_vk_surface(&event_loop, instance.clone())?;
-
-    let window = surface
-      .object()
-      .ok_or(surreal::anyhow!("Unable to access main window"))?
-      .downcast_ref::<Window>()
-      .ok_or(surreal::anyhow!("Unable to access main window"))?;
+    // convert window to vulkan surface and retain it
+    let surface = vulkano_win::create_surface_from_winit(window.clone(), instance.clone())?;
 
     let device_extensions = DeviceExtensions {
       khr_swapchain: true,
       ..DeviceExtensions::empty()
     };
 
+    // query for the best physical device; prefer discrete GPUs
     let (physical_device, queue_family_index) = instance
       .enumerate_physical_devices()?
       .filter(|it| it.supported_extensions().contains(&device_extensions))
-      .filter_map(|it| {
-        it.queue_family_properties()
+      .filter_map(|device| {
+        device
+          .queue_family_properties()
           .iter()
           .enumerate()
-          .position(|(i, it)| it.queue_flags.intersects(QueueFlags::GRAPHICS) && it.surface_support(i as u32, &surface).unwrap_or(false))
-          .map(|i| (it, i as u32))
+          .position(|(i, it)| {
+            it.queue_flags.intersects(&QueueFlags {
+              graphics: true,
+              ..QueueFlags::default()
+            }) && device.surface_support(i as u32, &surface).unwrap_or(false)
+          })
+          .map(|i| (device, i as u32))
       })
       .min_by_key(|(p, _)| match p.properties().device_type {
         PhysicalDeviceType::DiscreteGpu => 0,
@@ -79,6 +94,7 @@ impl VulkanBackend {
       physical_device.properties().device_type
     );
 
+    // build the vulkan device and prepare it's queues
     let (device, mut queues) = Device::new(
       physical_device,
       DeviceCreateInfo {
@@ -93,12 +109,9 @@ impl VulkanBackend {
 
     let queue = queues.next().ok_or(surreal::anyhow!("No suitable queue found"))?;
 
-    let (mut swapchain, images) = {
-      let surface_capabilities = device
-        .physical_device()
-        .surface_capabilities(&surface, Default::default())
-        .ok_or(surreal::anyhow!("Unable to find surface capabilities"))?;
-
+    // build the main swapchain and get default swapchain images
+    let (swapchain, images) = {
+      let surface_capabilities = device.physical_device().surface_capabilities(&surface, Default::default())?;
       let image_format = Some(device.physical_device().surface_formats(&surface, Default::default())?[0].0);
 
       Swapchain::new(
@@ -108,121 +121,195 @@ impl VulkanBackend {
           min_image_count: surface_capabilities.min_image_count,
           image_format,
           image_extent: window.inner_size().into(),
-          image_usage: ImageUsage::COLOR_ATTACHMENT,
-          // composite_alpha: surface_capabilities.supported_composite_alpha.into_iter().next()?,
+          image_usage: ImageUsage {
+            color_attachment: true,
+            ..ImageUsage::default()
+          },
           ..Default::default()
         },
       )?
     };
 
+    // prepare allocator and main render pass
     let allocator = StandardMemoryAllocator::new_default(device.clone());
 
+    let render_pass = vulkano::single_pass_renderpass!(
+      device.clone(),
+      attachments: {
+        color: {
+          load: Clear,
+          store: Store,
+          format: swapchain.image_format(),
+          samples: 1,
+        }
+      },
+      pass: {
+        color: [color],
+        depth_stencil: {}
+      }
+    )?;
+
+    let previous_frame_end = Some(sync::now(device.clone()).boxed());
+
     Ok(Self {
-      instance,
-      device,
-      queue,
-      swapchain,
-      images,
-      allocator,
+      _window: window,
+      _instance: instance,
+      _device: device,
+      _queue: queue,
+      _images: images,
+      _allocator: allocator,
+      _render_pass: render_pass,
+      state: RefCell::new(VulkanState {
+        swapchain,
+        previous_frame_end,
+        swapchain_needs_rebuild: false,
+      }),
     })
   }
 }
 
 #[allow(unused_variables)]
 impl GraphicsServerBackend for VulkanBackend {
-  fn shader_create(&self) -> surreal::Result<GraphicsId> {
+  fn begin_frame(&self) {
+    let mut state = self.state.borrow_mut();
+    let dimensions = self._window.inner_size();
+
+    state.previous_frame_end.as_mut().unwrap().cleanup_finished();
+
+    if state.swapchain_needs_rebuild {
+      let (new_swapchain, new_images) = match state.swapchain.recreate(SwapchainCreateInfo {
+        image_extent: dimensions.into(),
+        ..state.swapchain.create_info()
+      }) {
+        Ok(result) => result,
+        Err(error) => panic!("{:?}", error),
+      };
+
+      state.swapchain = new_swapchain;
+      state.swapchain_needs_rebuild = false;
+    }
+
+    let swapchain = &state.swapchain;
+
+    let (image_index, suboptimal, acquire_future) = match acquire_next_image(swapchain.clone(), None) {
+      Ok(result) => result,
+      Err(AcquireError::OutOfDate) => {
+        state.swapchain_needs_rebuild = true;
+        return;
+      }
+      Err(error) => panic!("Failed to acquire next image: {:?}", error),
+    };
+
+    if suboptimal {
+      state.swapchain_needs_rebuild = true;
+    }
+  }
+
+  fn end_frame(&self) {
+    // no-op
+  }
+
+  fn shader_create(&self) -> surreal::Result<ShaderId> {
     todo!()
   }
 
-  fn shader_set_code(&self, shader_id: GraphicsId, code: &str) -> surreal::Result<()> {
+  fn shader_set_code(&self, shader_id: ShaderId, code: &str) -> surreal::Result<()> {
     todo!()
   }
 
-  fn shader_get_code(&self, shader_id: GraphicsId) -> surreal::Result<String> {
+  fn shader_get_code(&self, shader_id: ShaderId) -> surreal::Result<String> {
     todo!()
   }
 
-  fn shader_set_metadata(&self, shader_id: GraphicsId, metadata: ShaderMetadata) -> surreal::Result<()> {
+  fn shader_set_metadata(&self, shader_id: ShaderId, metadata: ShaderMetadata) -> surreal::Result<()> {
     todo!()
   }
 
-  fn shader_get_metadata(&self, shader_id: GraphicsId) -> surreal::Result<ShaderMetadata> {
+  fn shader_get_metadata(&self, shader_id: ShaderId) -> surreal::Result<ShaderMetadata> {
     todo!()
   }
 
-  fn shader_delete(&self, shader_id: GraphicsId) -> surreal::Result<()> {
+  fn shader_delete(&self, shader_id: ShaderId) -> surreal::Result<()> {
     todo!()
   }
 
-  fn material_create(&self) -> surreal::Result<GraphicsId> {
+  fn material_create(&self) -> surreal::Result<MaterialId> {
     todo!()
   }
 
-  fn material_set_shader(&self, material_id: GraphicsId, shader_id: GraphicsId) -> surreal::Result<()> {
+  fn material_set_shader(&self, material_id: MaterialId, shader_id: MaterialId) -> surreal::Result<()> {
     todo!()
   }
 
-  fn material_get_shader(&self, material_id: GraphicsId) -> surreal::Result<GraphicsId> {
+  fn material_get_shader(&self, material_id: MaterialId) -> surreal::Result<MaterialId> {
     todo!()
   }
 
-  fn material_set_metadata(&self, material_id: GraphicsId, metadata: MaterialMetadata) -> surreal::Result<()> {
+  fn material_set_metadata(&self, material_id: MaterialId, metadata: MaterialMetadata) -> surreal::Result<()> {
     todo!()
   }
 
-  fn material_get_metadata(&self, material_id: GraphicsId) -> surreal::Result<MaterialMetadata> {
+  fn material_get_metadata(&self, material_id: MaterialId) -> surreal::Result<MaterialMetadata> {
     todo!()
   }
 
-  fn material_delete(&self, material_id: GraphicsId) -> surreal::Result<()> {
+  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()> {
     todo!()
   }
 
-  fn mesh_create(&self) -> surreal::Result<GraphicsId> {
+  fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>> {
     todo!()
   }
 
-  fn mesh_get_surface_count(&self, mesh_id: GraphicsId) -> surreal::Result<usize> {
+  fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()> {
     todo!()
   }
 
-  fn mesh_add_surface(&self, mesh_id: GraphicsId, surface_data: SurfaceData) -> surreal::Result<()> {
+  fn mesh_create(&self) -> surreal::Result<MeshId> {
     todo!()
   }
 
-  fn mesh_get_surface(&self, mesh_id: GraphicsId, surface_index: usize) -> surreal::Result<SurfaceData> {
+  fn mesh_get_surface_count(&self, mesh_id: MeshId) -> surreal::Result<usize> {
     todo!()
   }
 
-  fn mesh_get_surface_material(&self, mesh_id: GraphicsId, surface_index: usize) -> surreal::Result<GraphicsId> {
+  fn mesh_add_surface(&self, mesh_id: MeshId, surface_data: SurfaceData) -> surreal::Result<()> {
     todo!()
   }
 
-  fn mesh_set_surface_material(&self, mesh_id: GraphicsId, surface_index: usize, material_id: GraphicsId) -> surreal::Result<()> {
+  fn mesh_get_surface(&self, mesh_id: MeshId, surface_index: usize) -> surreal::Result<SurfaceData> {
     todo!()
   }
 
-  fn mesh_clear(&self, mesh_id: GraphicsId) -> surreal::Result<()> {
+  fn mesh_get_surface_material(&self, mesh_id: MeshId, surface_index: usize) -> surreal::Result<MeshId> {
     todo!()
   }
 
-  fn mesh_delete(&self, mesh_id: GraphicsId) -> surreal::Result<()> {
+  fn mesh_set_surface_material(&self, mesh_id: MeshId, surface_index: usize, material_id: MeshId) -> surreal::Result<()> {
     todo!()
   }
 
-  fn light_create(&self, light_type: LightType) -> surreal::Result<GraphicsId> {
+  fn mesh_clear(&self, mesh_id: MeshId) -> surreal::Result<()> {
     todo!()
   }
 
-  fn light_get_type(&self, light_id: GraphicsId) -> surreal::Result<LightType> {
+  fn mesh_delete(&self, mesh_id: MeshId) -> surreal::Result<()> {
     todo!()
   }
 
-  fn light_set_parameter(&self, light_id: GraphicsId, parameter: LightParameter) -> surreal::Result<()> {
+  fn light_create(&self, light_type: LightType) -> surreal::Result<LightId> {
     todo!()
   }
 
-  fn light_delete(&self, light_id: GraphicsId) -> surreal::Result<()> {
+  fn light_get_type(&self, light_id: LightId) -> surreal::Result<LightType> {
+    todo!()
+  }
+
+  fn light_set_parameter(&self, light_id: LightId, parameter: LightParameter) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn light_delete(&self, light_id: LightId) -> surreal::Result<()> {
     todo!()
   }
 }

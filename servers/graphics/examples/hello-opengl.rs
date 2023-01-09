@@ -2,9 +2,14 @@
 
 #![cfg(feature = "backend-opengl")]
 
+use winit::dpi::PhysicalSize;
+
 fn main() {
   let event_loop = winit::event_loop::EventLoop::new();
-  let window = winit::window::WindowBuilder::new().with_title("Hello, OpenGL!");
+  let window = winit::window::WindowBuilder::new()
+    .with_inner_size(PhysicalSize::new(1920, 1080))
+    .with_title("Hello, OpenGL!");
+
   let _backend = surreal_graphics::GraphicsServer::from_opengl(window).unwrap();
 
   event_loop.run(move |event, _, control_flow| {

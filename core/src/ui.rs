@@ -33,16 +33,16 @@ pub trait UserInterfaceHost {
 
 /// A hosting container for [`UserInterface`] construction.
 pub struct UserInterfaceContainer {
-  user_interface: UserInterface,
+  _user_interface: UserInterface,
 }
 
 impl UserInterfaceContainer {
   /// Creates a new [`UserInterfaceContainer`].
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
-      user_interface: UserInterface::new(graphics),
+      _user_interface: UserInterface::new(graphics),
     }
-   }
+  }
 
   /// Receives and processes a [`winit::event::WindowEvent`].
   pub fn receive_event(&mut self, _window_event: &winit::event::WindowEvent) {
