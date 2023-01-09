@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use std::sync::Arc;
 
 use surreal::graphics::PrimitiveTopology;
 use surreal::maths::AABB;
@@ -11,7 +12,10 @@ mod opengl;
 mod vulkan;
 
 // A unique ID for graphics resources in the [`GraphicsServerBackend`].
-surreal::impl_rid_type!(GraphicsId);
+surreal::impl_rid_type!(ShaderId);
+surreal::impl_rid_type!(MaterialId);
+surreal::impl_rid_type!(MeshId);
+surreal::impl_rid_type!(LightId);
 
 /// Storage for a resource, keyed by it's [`GraphicsId`].
 #[derive(Default)]
@@ -96,13 +100,20 @@ pub enum MaterialQueue {
   Compute,
 }
 
+pub enum UniformValue {
+  F32(f32),
+  F64(f64),
+  Vec2,
+  Vec3,
+}
+
 /// The singleton graphics server implementation for the project.
 ///
 /// All instructions to the graphics server should be sent through this facade.
 /// Internally we delegate to the active [`GraphicsServerBackend`], which can
 /// vary depending on the target platform.
 pub struct GraphicsServer {
-  backend: Box<dyn GraphicsServerBackend>,
+  backend: Arc<dyn GraphicsServerBackend>,
 }
 
 impl GraphicsServer {
@@ -127,7 +138,7 @@ impl GraphicsServer {
   /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
   pub fn from_backend(backend: impl GraphicsServerBackend + 'static) -> Self {
     GraphicsServer {
-      backend: Box::new(backend),
+      backend: Arc::new(backend),
     }
   }
 }
@@ -140,44 +151,50 @@ impl Deref for GraphicsServer {
   }
 }
 
-/// An abstraction on top of the underlying graphics system.
+/// An abstraction on top of the underlying graphics API.
 ///
 /// This is a high-level abstraction that makes use of 'opaque' [`GraphicsId`]
 /// to hide away implementation details. The server is intended to be a low-level
 /// implementation abstraction.
 ///
-/// Different render pipelines might offer different features and capabilities on
-/// top of those exported here.
+/// This achieves a number of goals for us. In particular:
+///
+/// * It allows us to depend on abstractions instead of concretions; important since
+///   graphics API landscape continues to change, especially in Rust.
+/// * It allows us to build an API that spans lifetime requirements. Whilst some API
+///   methods will be
 pub trait GraphicsServerBackend {
   // shader operations
-  fn shader_create(&self) -> surreal::Result<GraphicsId>;
-  fn shader_set_code(&self, shader_id: GraphicsId, code: &str) -> surreal::Result<()>;
-  fn shader_get_code(&self, shader_id: GraphicsId) -> surreal::Result<String>;
-  fn shader_set_metadata(&self, shader_id: GraphicsId, metadata: ShaderMetadata) -> surreal::Result<()>;
-  fn shader_get_metadata(&self, shader_id: GraphicsId) -> surreal::Result<ShaderMetadata>;
-  fn shader_delete(&self, shader_id: GraphicsId) -> surreal::Result<()>;
+  fn shader_create(&self) -> surreal::Result<ShaderId>;
+  fn shader_set_code(&self, shader_id: ShaderId, code: &str) -> surreal::Result<()>;
+  fn shader_get_code(&self, shader_id: ShaderId) -> surreal::Result<String>;
+  fn shader_set_metadata(&self, shader_id: ShaderId, metadata: ShaderMetadata) -> surreal::Result<()>;
+  fn shader_get_metadata(&self, shader_id: ShaderId) -> surreal::Result<ShaderMetadata>;
+  fn shader_delete(&self, shader_id: ShaderId) -> surreal::Result<()>;
 
   // material operations
-  fn material_create(&self) -> surreal::Result<GraphicsId>;
-  fn material_set_shader(&self, material_id: GraphicsId, shader_id: GraphicsId) -> surreal::Result<()>;
-  fn material_get_shader(&self, material_id: GraphicsId) -> surreal::Result<GraphicsId>;
-  fn material_set_metadata(&self, material_id: GraphicsId, metadata: MaterialMetadata) -> surreal::Result<()>;
-  fn material_get_metadata(&self, material_id: GraphicsId) -> surreal::Result<MaterialMetadata>;
-  fn material_delete(&self, material_id: GraphicsId) -> surreal::Result<()>;
+  fn material_create(&self) -> surreal::Result<MaterialId>;
+  fn material_set_shader(&self, material_id: MaterialId, shader_id: MaterialId) -> surreal::Result<()>;
+  fn material_get_shader(&self, material_id: MaterialId) -> surreal::Result<MaterialId>;
+  fn material_set_metadata(&self, material_id: MaterialId, metadata: MaterialMetadata) -> surreal::Result<()>;
+  fn material_get_metadata(&self, material_id: MaterialId) -> surreal::Result<MaterialMetadata>;
+  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()>;
+  fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>>;
+  fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()>;
 
   // mesh operations
-  fn mesh_create(&self) -> surreal::Result<GraphicsId>;
-  fn mesh_get_surface_count(&self, mesh_id: GraphicsId) -> surreal::Result<usize>;
-  fn mesh_add_surface(&self, mesh_id: GraphicsId, surface_data: SurfaceData) -> surreal::Result<()>;
-  fn mesh_get_surface(&self, mesh_id: GraphicsId, surface_index: usize) -> surreal::Result<SurfaceData>;
-  fn mesh_get_surface_material(&self, mesh_id: GraphicsId, surface_index: usize) -> surreal::Result<GraphicsId>;
-  fn mesh_set_surface_material(&self, mesh_id: GraphicsId, surface_index: usize, material_id: GraphicsId) -> surreal::Result<()>;
-  fn mesh_clear(&self, mesh_id: GraphicsId) -> surreal::Result<()>;
-  fn mesh_delete(&self, mesh_id: GraphicsId) -> surreal::Result<()>;
+  fn mesh_create(&self) -> surreal::Result<MeshId>;
+  fn mesh_get_surface_count(&self, mesh_id: MeshId) -> surreal::Result<usize>;
+  fn mesh_add_surface(&self, mesh_id: MeshId, surface_data: SurfaceData) -> surreal::Result<()>;
+  fn mesh_get_surface(&self, mesh_id: MeshId, surface_index: usize) -> surreal::Result<SurfaceData>;
+  fn mesh_get_surface_material(&self, mesh_id: MeshId, surface_index: usize) -> surreal::Result<MeshId>;
+  fn mesh_set_surface_material(&self, mesh_id: MeshId, surface_index: usize, material_id: MeshId) -> surreal::Result<()>;
+  fn mesh_clear(&self, mesh_id: MeshId) -> surreal::Result<()>;
+  fn mesh_delete(&self, mesh_id: MeshId) -> surreal::Result<()>;
 
   // light operations
-  fn light_create(&self, light_type: LightType) -> surreal::Result<GraphicsId>;
-  fn light_get_type(&self, light_id: GraphicsId) -> surreal::Result<LightType>;
-  fn light_set_parameter(&self, light_id: GraphicsId, parameter: LightParameter) -> surreal::Result<()>;
-  fn light_delete(&self, light_id: GraphicsId) -> surreal::Result<()>;
+  fn light_create(&self, light_type: LightType) -> surreal::Result<LightId>;
+  fn light_get_type(&self, light_id: LightId) -> surreal::Result<LightType>;
+  fn light_set_parameter(&self, light_id: LightId, parameter: LightParameter) -> surreal::Result<()>;
+  fn light_delete(&self, light_id: LightId) -> surreal::Result<()>;
 }

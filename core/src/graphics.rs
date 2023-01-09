@@ -86,6 +86,8 @@ pub enum GraphicsBarrier {
   ImageAccess,
 }
 
+// TODO: replace me with mid-level implementation.
+
 /// Represents a backend implementation for the underlying graphics API.
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation

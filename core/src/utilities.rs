@@ -34,19 +34,19 @@ macro_rules! impl_rid_type {
     pub struct $name(pub u64);
 
     impl $name {
-      #[inline(always)]
+      #[inline]
       pub const fn new(id: u64) -> Self {
         Self(id)
       }
     }
 
     impl $crate::utilities::ResourceId for $name {
-      #[inline(always)]
+      #[inline]
       fn from_u64(id: u64) -> Self {
         Self(id)
       }
 
-      #[inline(always)]
+      #[inline]
       fn to_u64(&self) -> u64 {
         self.0
       }
