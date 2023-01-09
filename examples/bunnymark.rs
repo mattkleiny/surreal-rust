@@ -31,36 +31,47 @@ fn main() {
     // set-up state
     let mut random = Random::with_thread_local_seed();
     let mut bunnies = Vec::<Bunny>::new();
+    let mut is_updating = true;
+    let mut is_rendering = true;
 
     engine.run_variable_step(move |engine, time| {
       engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
 
       // update bunnies
-      for bunny in &mut bunnies {
-        bunny.update(time.delta_time);
+      if is_updating {
+        for bunny in &mut bunnies {
+          bunny.update(time.delta_time);
+        }
       }
 
       // draw bunnies
-      renderer.begin_frame();
-      renderer.with(|context: &mut SpriteContext| {
-        for bunny in &bunnies {
-          context.batch.draw_sprite(
-            &region,
-            &SpriteOptions {
-              position: bunny.position,
-              color: bunny.color,
-              rotation: bunny.rotation,
-              ..Default::default()
-            },
-          );
-        }
-      });
-      renderer.end_frame();
+      if is_rendering {
+        renderer.begin_frame();
+        renderer.with(|context: &mut SpriteContext| {
+          for bunny in &bunnies {
+            context.batch.draw_sprite(
+              &region,
+              &SpriteOptions {
+                position: bunny.position,
+                color: bunny.color,
+                rotation: bunny.rotation,
+                ..Default::default()
+              },
+            );
+          }
+        });
+        renderer.end_frame();
+      }
 
       interface.run(engine, |egui| {
         egui::Window::new("Bunnymark").show(egui, |ui| {
           ui.heading("Statistics");
+
           ui.label(format!("There are {} bunnies on screen", bunnies.len()));
+          ui.label(format!("Running at {:.2} frames per second", 1.0 / time.delta_time));
+
+          ui.checkbox(&mut is_updating, "Update bunnies");
+          ui.checkbox(&mut is_rendering, "Render bunnies");
         });
       });
 
