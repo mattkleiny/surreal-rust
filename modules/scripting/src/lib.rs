@@ -5,7 +5,7 @@ use surreal::utilities::Variant;
 pub mod lua;
 
 // A unique ID for a script in a [`ScriptServer`].
-surreal::impl_rid_type!(ScriptId);
+surreal::impl_rid!(ScriptId);
 
 /// A server abstraction for managing application scripts.
 pub trait ScriptServer {

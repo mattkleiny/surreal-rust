@@ -3,6 +3,7 @@
 pub use local::*;
 use macros::Singleton;
 pub use memory::*;
+use std::borrow::Borrow;
 
 use crate as surreal;
 
@@ -306,6 +307,16 @@ impl<'a> VirtualPath<'a> {
     }
   }
 
+  /// The scheme of the path.
+  pub fn scheme(&'a self) -> &'a str {
+    self.scheme
+  }
+
+  /// The location of the path.
+  pub fn location(&'a self) -> &'a str {
+    self.location.borrow()
+  }
+
   /// Returns the file extension of the path.
   pub fn extension(&'a self) -> &'a str {
     if let Some(extension) = self.location.split('.').last() {
@@ -384,13 +395,13 @@ impl<'a> VirtualPath<'a> {
 
 impl<'a> std::fmt::Debug for VirtualPath<'a> {
   fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    Ok(write!(formatter, "{:}://{:}", self.scheme, self.location)?)
+    Ok(write!(formatter, "{:}://{:}", self.scheme, self.location.replace("\\", "/"))?)
   }
 }
 
 impl<'a> std::fmt::Display for VirtualPath<'a> {
   fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    Ok(write!(formatter, "{:}://{:}", self.scheme, self.location)?)
+    Ok(write!(formatter, "{:}://{:}", self.scheme, self.location.replace("\\", "/"))?)
   }
 }
 

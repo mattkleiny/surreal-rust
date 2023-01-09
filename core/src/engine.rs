@@ -11,9 +11,10 @@ use winit::{
   window::{Window, WindowBuilder},
 };
 
+use crate::audio::HeadlessAudioBackend;
 use crate::{
   assets::AssetManager,
-  audio::{AudioServer, OpenALAudioBackend},
+  audio::AudioServer,
   diagnostics::{profiling, ConsoleLoggerBuilder, LevelFilter},
   graphics::{GraphicsServer, Image, ImageFormat, OpenGLGraphicsBackend, Renderer},
   input::InputServer,
@@ -118,7 +119,7 @@ pub struct Engine {
 
   // window management
   config: EngineConfig,
-  window: Window,
+  pub window: Window,
   cursor_icon: egui::CursorIcon,
   event_loop: Option<EventLoop<()>>,
   is_focused: bool,
@@ -176,7 +177,7 @@ impl Engine {
 
     // unpick the window from glutin so we can manage it ourselves
     let (context, window) = unsafe { context.make_current().unwrap().split() };
-    let audio_server = OpenALAudioBackend::new();
+    let audio_server = HeadlessAudioBackend::new();
     let graphics_server = OpenGLGraphicsBackend::new(context);
 
     Self {

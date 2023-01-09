@@ -12,10 +12,10 @@ mod opengl;
 #[cfg(feature = "backend-vulkan")]
 mod vulkan;
 
-surreal::impl_rid_type!(ShaderId);
-surreal::impl_rid_type!(MaterialId);
-surreal::impl_rid_type!(MeshId);
-surreal::impl_rid_type!(LightId);
+surreal::impl_rid!(ShaderId);
+surreal::impl_rid!(MaterialId);
+surreal::impl_rid!(MeshId);
+surreal::impl_rid!(LightId);
 
 /// Surface data used for mesh creation.
 #[derive(Default, Clone)]

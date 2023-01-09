@@ -8,13 +8,13 @@
 //! The output of the asset database is put through a build pipeline to produce
 //! artifacts and [`AssetBundle`]s for consumption by the game at runtime.
 
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::fmt::Debug;
 use std::hash::Hasher;
 
 use serde::{Deserialize, Serialize};
 
-use surreal::io::{Deserializable, InputStream, Serializable, VirtualPath};
+use surreal::io::{InputStream, Serializable, VirtualPath};
 use surreal::utilities::Type;
 
 use super::Resource;
@@ -101,17 +101,33 @@ impl AssetServer {
 /// assets in the project, and for managing the import of assets from the file system.
 ///
 /// See [`AssetServer`], [`AssetImporter`] and [`AssetBundle`] for more details.
-#[derive(Default, Debug, Clone)]
+#[derive(Default)]
 pub struct AssetDatabase {
   metadata: HashMap<String, AssetMetadata>,
+  importers: Vec<Box<dyn AssetImporter>>,
 }
 
 impl AssetDatabase {
+  /// Builds an [`AssetDatabase`] from the given root project path.
+  pub fn from_root_path(path: impl AsRef<str>) -> Self {
+    let _manifest = AssetManifestBuilder::default()
+      .add_assets(&format!("{}/assets/**/*", path.as_ref()))
+      .build();
+
+    Self::default() // TODO: implement me
+  }
+
   /// Builds an [`AssetDatabase`] from an existing set of [`AssetMetadata`].
   pub fn from_metadata(metadata: impl Iterator<Item = (String, AssetMetadata)>) -> Self {
     Self {
       metadata: metadata.collect(),
+      importers: Vec::new(),
     }
+  }
+
+  /// Registers an [`AssetImporter`] with the database.
+  pub fn register_importer(&mut self, importer: impl AssetImporter + 'static) {
+    self.importers.push(Box::new(importer));
   }
 
   /// Creates an [`AssetHash`] for the asset at the given [`VirtualPath`] and remembers it.
@@ -235,7 +251,7 @@ pub struct AssetTypeMetadata {
 /// bundle, and to determine whether a bundle needs to be rebuilt.
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct AssetManifest {
-  assets: HashMap<String, AssetMetadata>,
+  assets: BTreeSet<String>,
 }
 
 /// A builder pattern for [`AssetManifest`]s.
@@ -246,15 +262,25 @@ pub struct AssetManifestBuilder {
 }
 
 impl AssetManifestBuilder {
-  /// Adds an existing asset to the [`AssetManifest`].
-  ///
-  /// If the asset does not exist, or the metadata cannot be found, it will be ignored.
+  /// Adds an existing asset to the manifest.
   pub fn add_asset(mut self, path: impl Into<VirtualPath>) -> Self {
-    let asset_path = path.into();
-    let metadata_path = asset_path.change_extension("meta");
+    self.manifest.assets.insert(path.into().to_string());
+    self
+  }
 
-    if let Ok(metadata) = AssetMetadata::from_yaml_file(metadata_path) {
-      self.manifest.assets.insert(asset_path.to_string(), metadata);
+  /// Adds all assets that match the given pattern to the manifest.
+  pub fn add_assets(mut self, pattern: &str) -> Self {
+    if let Ok(paths) = glob::glob(pattern) {
+      for path in paths {
+        match path {
+          Ok(path) => {
+            let path = VirtualPath::from(path.to_str().unwrap()).to_string();
+
+            self.manifest.assets.insert(path);
+          }
+          Err(_) => {}
+        }
+      }
     }
 
     self
@@ -278,6 +304,7 @@ impl AssetBundle for PakBundle {}
 
 #[cfg(test)]
 mod tests {
+  use surreal::io::Deserializable;
   use surreal::macros::Object;
 
   use super::*;

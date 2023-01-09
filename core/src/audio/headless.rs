@@ -1,56 +1,47 @@
-//! A headless audio backend for testing and etc.
-
-use std::sync::atomic::{AtomicU32, Ordering};
-
 use super::*;
 
 /// A headless [`AudioBackend`] implementation.
 ///
 /// This backend does nothing (no-ops) and can be used for testing/etc.
-pub struct HeadlessAudioBackend {
-  next_clip_id: AtomicU32,
-  next_source_id: AtomicU32,
-}
+pub struct HeadlessAudioBackend {}
 
 impl HeadlessAudioBackend {
   pub fn new() -> Self {
-    Self {
-      next_clip_id: AtomicU32::new(0),
-      next_source_id: AtomicU32::new(0),
-    }
+    Self {}
   }
 }
 
+#[allow(unused_variables)]
 impl AudioBackend for HeadlessAudioBackend {
-  fn create_clip(&self) -> AudioHandle {
-    self.next_clip_id.fetch_add(1, Ordering::Relaxed)
+  fn clip_create(&self) -> AudioClipId {
+    todo!()
   }
 
-  fn upload_clip_data(&self, _handle: AudioHandle, _data: *const u8, _length: usize) {
-    // no-op
+  fn clip_write_data(&self, clip: AudioClipId, data: *const u8, length: usize) {
+    todo!()
   }
 
-  fn delete_clip(&self, _handle: AudioHandle) {
-    // no-op
+  fn clip_delete(&self, clip: AudioClipId) {
+    todo!()
   }
 
-  fn create_source(&self) -> AudioHandle {
-    self.next_source_id.fetch_add(1, Ordering::Relaxed)
+  fn source_create(&self) -> AudioSourceId {
+    todo!()
   }
 
-  fn is_source_playing(&self, _source: AudioHandle) -> bool {
-    false
+  fn source_is_playing(&self, source: AudioSourceId) -> bool {
+    todo!()
   }
 
-  fn get_source_volume(&self, _source: AudioHandle) -> f32 {
-    1.
+  fn source_get_volume(&self, source: AudioSourceId) -> f32 {
+    todo!()
   }
 
-  fn set_source_volume(&self, _source: AudioHandle, _volume: f32) {
-    // no-op
+  fn source_set_volume(&self, source: AudioSourceId, volume: f32) {
+    todo!()
   }
 
-  fn delete_source(&self, _handle: AudioHandle) {
-    // no-op
+  fn source_delete(&self, source: AudioSourceId) {
+    todo!()
   }
 }

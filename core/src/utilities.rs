@@ -23,11 +23,9 @@ pub trait RID: Eq + std::hash::Hash {
   fn to_u64(&self) -> u64;
 }
 
-/// Creates An opaque ID for a resource in a implementation.
-///
-/// This is an opaque handle that can be used to identify a resource in the server.
+/// Creates an opaque ID for a resource in a implementation.
 #[macro_export]
-macro_rules! impl_rid_type {
+macro_rules! impl_rid {
   ($name:ident) => {
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -49,6 +47,35 @@ macro_rules! impl_rid_type {
       #[inline]
       fn to_u64(&self) -> u64 {
         self.0
+      }
+    }
+  };
+}
+
+/// Creates a server wrapper for some server backend.
+#[macro_export]
+macro_rules! impl_server {
+  ($server:ident, $backend:ty) => {
+    /// A wrapper for the core [`$backend`] implementation.
+    #[derive(Clone)]
+    pub struct $server {
+      backend: std::rc::Rc<Box<$backend>>,
+    }
+
+    impl $server {
+      /// Creates a new [`$server`] for the given [`$backend`].
+      pub fn from_backend(backend: impl $backend + 'static) -> Self {
+        Self {
+          backend: std::rc::Rc::new(Box::new(backend)),
+        }
+      }
+    }
+
+    impl std::ops::Deref for $server {
+      type Target = $backend;
+
+      fn deref(&self) -> &Self::Target {
+        self.backend.as_ref().as_ref()
       }
     }
   };

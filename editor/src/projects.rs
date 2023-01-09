@@ -26,7 +26,6 @@ pub enum ProjectError {
 /// A project is a collection of assets and settings that can be loaded and
 /// edited in the editor. Projects are stored in the _local_ file system and
 /// can be loaded from any location.
-#[derive(Clone)]
 pub struct Project {
   /// The top-level details for this project.
   pub details: ProjectDetails,
