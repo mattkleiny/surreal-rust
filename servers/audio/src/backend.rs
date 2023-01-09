@@ -1,10 +1,9 @@
 use std::ops::Deref;
-use surreal::impl_rid_type;
 
 mod headless;
 
 // A unique [`RID`] for audio resources.
-impl_rid_type!(AudioId);
+surreal::impl_rid_type!(AudioId);
 
 /// The singleton audio server implementation for the project.
 ///

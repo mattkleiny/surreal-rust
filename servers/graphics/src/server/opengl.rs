@@ -1,7 +1,5 @@
 //! OpenGL support for the engine.
 
-use raw_window_handle::RawWindowHandle;
-
 use super::*;
 
 /// A [`GraphicsServerBackend`] implementation for OpenGL.
@@ -39,7 +37,7 @@ impl OpenGLBackend {
 
   /// Builds a new [`OpenGLBackend`] for the given raw window handles.
   #[cfg(not(target_os = "windows"))]
-  pub fn new(window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
+  pub fn new(_window: &(impl HasRawWindowHandle + HasRawDisplayHandle)) -> surreal::Result<Self> {
     todo!()
   }
 }
