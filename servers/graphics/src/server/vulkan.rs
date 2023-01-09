@@ -42,14 +42,19 @@ impl VulkanBackend {
 
     let surface = window.build_vk_surface(&event_loop, instance.clone())?;
 
+    let window = surface
+      .object()
+      .ok_or(surreal::anyhow!("Unable to access main window"))?
+      .downcast_ref::<Window>()
+      .ok_or(surreal::anyhow!("Unable to access main window"))?;
+
     let device_extensions = DeviceExtensions {
       khr_swapchain: true,
       ..DeviceExtensions::empty()
     };
 
     let (physical_device, queue_family_index) = instance
-      .enumerate_physical_devices()
-      .unwrap()
+      .enumerate_physical_devices()?
       .filter(|it| it.supported_extensions().contains(&device_extensions))
       .filter_map(|it| {
         it.queue_family_properties()
@@ -95,12 +100,6 @@ impl VulkanBackend {
         .ok_or(surreal::anyhow!("Unable to find surface capabilities"))?;
 
       let image_format = Some(device.physical_device().surface_formats(&surface, Default::default())?[0].0);
-
-      let window = surface
-        .object()
-        .ok_or(surreal::anyhow!("Unable to access main window"))?
-        .downcast_ref::<Window>()
-        .ok_or(surreal::anyhow!("Unable to access main window"))?;
 
       Swapchain::new(
         device.clone(),

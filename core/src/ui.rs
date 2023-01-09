@@ -29,6 +29,27 @@ pub trait UserInterfaceHost {
   fn request_redraw_after(&mut self, duration: Duration);
 }
 
+// TODO: implement me, remove old host interface
+
+/// A hosting container for [`UserInterface`] construction.
+pub struct UserInterfaceContainer {
+  user_interface: UserInterface,
+}
+
+impl UserInterfaceContainer {
+  /// Creates a new [`UserInterfaceContainer`].
+  pub fn new(graphics: &GraphicsServer) -> Self {
+    Self {
+      user_interface: UserInterface::new(graphics),
+    }
+   }
+
+  /// Receives and processes a [`winit::event::WindowEvent`].
+  pub fn receive_event(&mut self, _window_event: &winit::event::WindowEvent) {
+    todo!()
+  }
+}
+
 /// A canvas for immediate mode user interface rendering via `egui`.
 pub struct UserInterface {
   graphics: GraphicsServer,

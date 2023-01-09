@@ -13,6 +13,29 @@ mod vulkan;
 // A unique ID for graphics resources in the [`GraphicsServerBackend`].
 surreal::impl_rid_type!(GraphicsId);
 
+/// Storage for a resource, keyed by it's [`GraphicsId`].
+#[derive(Default)]
+struct GraphicsStorage<T> {
+  entries: std::collections::HashMap<GraphicsId, T>,
+}
+
+impl<T> GraphicsStorage<T> {
+  /// Retrieves an item from storage.
+  pub fn get(&self, id: GraphicsId) -> Option<&T> {
+    self.entries.get(&id)
+  }
+
+  /// Inserts an item into storage.
+  pub fn insert(&mut self, id: GraphicsId, entry: T) {
+    self.entries.insert(id, entry);
+  }
+
+  /// Removes an item from storage.
+  pub fn remove(&mut self, id: GraphicsId) -> Option<T> {
+    self.entries.remove(&id)
+  }
+}
+
 /// Surface data used for mesh creation.
 #[derive(Default, Clone)]
 pub struct SurfaceData {

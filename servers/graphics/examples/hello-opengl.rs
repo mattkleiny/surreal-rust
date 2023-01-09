@@ -1,5 +1,7 @@
 //! An example of the OpenGL [`surreal_graphics::GraphicsServerBackend`].
 
+#![cfg(feature = "backend-opengl")]
+
 fn main() {
   let event_loop = winit::event_loop::EventLoop::new();
   let window = winit::window::WindowBuilder::new().with_title("Hello, OpenGL!");
