@@ -9,17 +9,18 @@
 //! artifacts and [`AssetBundle`]s for consumption by the game at runtime.
 
 use std::any::Any;
-use std::collections::{BTreeSet, HashMap};
+use std::collections::BTreeSet;
 use std::fmt::Debug;
 use std::hash::Hasher;
 
 use serde::{Deserialize, Serialize};
-use surreal::io::{InputStream, Serializable, VirtualPath};
+
+use surreal::io::{Deserializable, InputStream, Serializable, VirtualPath};
 use surreal::utilities::Type;
 
-use super::Resource;
-
 surreal::impl_guid!(AssetId);
+
+// TODO: improve the virtual path helpers; it's not a great API to work with
 
 /// A database for assets in a project.
 ///
@@ -29,50 +30,52 @@ surreal::impl_guid!(AssetId);
 /// See [`AssetImporter`] and [`AssetBundle`] for more details.
 #[derive(Default)]
 pub struct AssetDatabase {
-  _root_path: String,
+  _asset_path: String,
+  target_path: String,
   manifest: AssetManifest,
-  metadata: HashMap<String, AssetMetadata>,
   importers: Vec<Box<dyn AssetImporter>>,
   pending_changes: Vec<AssetDatabaseChange>,
 }
 
 /// A change to the asset database.
 enum AssetDatabaseChange {
-  /// Creates [`AssetMetadata`] for a file at a given path.
-  CreateMetadata(String, AssetMetadata),
+  WriteMetadata(String, AssetMetadata),
+  SaveManifest,
 }
 
 impl AssetDatabase {
   /// Builds an [`AssetDatabase`] from the given root project path.
-  pub fn new(path: impl AsRef<str>) -> Self {
-    Self {
-      _root_path: path.as_ref().to_owned(),
-      manifest: AssetManifest::default(),
-      metadata: HashMap::new(),
+  pub fn new(asset_path: impl AsRef<str>, target_path: impl AsRef<str>) -> surreal::Result<Self> {
+    let mut database = Self {
+      _asset_path: asset_path.as_ref().to_owned(),
+      target_path: target_path.as_ref().to_owned(),
+      manifest: AssetManifestBuilder::default()
+        .add_assets(&format!("{}/**/*", asset_path.as_ref()))
+        .build(),
       importers: Vec::new(),
       pending_changes: Vec::new(),
-    }
-  }
+    };
 
-  /// Builds an [`AssetDatabase`] from the given [`AssetManifest`].
-  pub fn from_manifest(root_path: impl AsRef<str>, manifest: impl Into<AssetManifest>) -> Self {
-    let mut database = Self::new(root_path);
-    database.manifest = manifest.into();
-
+    // process initial asset changes
     for path in &database.manifest.assets {
-      let metadata = AssetMetadata {
-        id: AssetId::random(),
-        hash: AssetHash::default(),
-        assets: Vec::default(),
-      };
+      let metadata = AssetMetadata::from_path(path)?;
+      let hash = AssetHash::from_path(path)?;
 
-      let path = VirtualPath::from(path);
-      let path = path.change_extension("meta");
+      // the file hash has changed, update it
+      if metadata.hash != hash {
+        let path = VirtualPath::from(path);
+        let path = path.change_extension("meta");
 
-      database.pending_changes.push(AssetDatabaseChange::CreateMetadata(path.to_string(), metadata));
+        database
+          .pending_changes
+          .push(AssetDatabaseChange::WriteMetadata(path.to_string(), metadata));
+      }
     }
 
-    database
+    // save pending manifest changes
+    database.pending_changes.push(AssetDatabaseChange::SaveManifest);
+
+    Ok(database)
   }
 
   /// Returns the [`AssetManifest`] for the entire database.
@@ -83,6 +86,14 @@ impl AssetDatabase {
   /// Adds an [`AssetImporter`] with the database.
   pub fn add_importer(&mut self, importer: impl AssetImporter + 'static) {
     self.importers.push(Box::new(importer));
+  }
+
+  /// Loads an [`Asset`] of the given type from the given [`VirtualPath`].
+  pub fn load_asset<A: Asset>(&mut self, path: impl Into<VirtualPath>) -> surreal::Result<A> {
+    let boxed = self.load_asset_boxed(path)?;
+    let asset = Box::into_inner(boxed);
+
+    Ok(asset)
   }
 
   /// Loads a [`Box`]ed [`Asset`] of the given type from the given [`VirtualPath`].
@@ -101,34 +112,18 @@ impl AssetDatabase {
     Err(surreal::anyhow!("Asset cannot be imported at path '{}'", path))
   }
 
-  /// Loads an [`Asset`] of the given type from the given [`VirtualPath`].
-  pub fn load_asset<A: Asset>(&mut self, path: impl Into<VirtualPath>) -> surreal::Result<A> {
-    let boxed = self.load_asset_boxed(path)?;
-    let asset = Box::into_inner(boxed);
-
-    Ok(asset)
-  }
-
-  /// Creates an [`AssetHash`] for the [`Asset`] at the given [`VirtualPath`] and remembers it.
-  pub fn rehash(&mut self, path: impl Into<VirtualPath>) -> surreal::Result<AssetHash> {
-    let path = path.into();
-
-    let mut stream = path.open_input_stream()?;
-    let hash = AssetHash::from_stream(&mut stream)?;
-
-    self.metadata.entry(path.to_string()).and_modify(|entry| {
-      entry.hash = hash;
-    });
-
-    Ok(hash)
-  }
-
   /// Saves any pending changes out to disk.
   pub fn flush_changes(&mut self) -> surreal::Result<()> {
     while let Some(change) = self.pending_changes.pop() {
       match change {
-        AssetDatabaseChange::CreateMetadata(path, metadata) => {
-          metadata.to_yaml_file(VirtualPath::from(&path))?
+        AssetDatabaseChange::WriteMetadata(path, metadata) => {
+          metadata.to_yaml_file(VirtualPath::from(&path))?;
+        }
+        AssetDatabaseChange::SaveManifest => {
+          let manifest = &self.manifest;
+          let manifest_path = format!("{}/manifest.yaml", self.target_path);
+
+          manifest.to_yaml_file(VirtualPath::from(&manifest_path))?
         }
       }
     }
@@ -187,9 +182,11 @@ pub trait AssetBundle {}
 pub struct AssetHash(u64);
 
 impl AssetHash {
-  /// Creates an [`AssetHash`] from an existing [`Resource`].
-  pub fn from_resource(resource: &impl Resource) -> surreal::Result<Self> {
-    Ok(Self::from_bytes(&resource.to_binary()?))
+  /// Creates an [`AssetHash`] from the given [`VirtualPath`].
+  pub fn from_path(path: impl Into<VirtualPath>) -> surreal::Result<Self> {
+    let mut stream = path.into().open_input_stream()?;
+
+    Ok(Self::from_stream(&mut stream)?)
   }
 
   /// Creates an [`AssetHash`] from the given raw slice of bytes.
@@ -244,6 +241,26 @@ pub struct AssetMetadata {
   pub id: AssetId,
   pub hash: AssetHash,
   pub assets: Vec<AssetTypeMetadata>,
+}
+
+impl AssetMetadata {
+  /// Creates [`AssetMetadata`] from the given asset path; if the metadata does not exist it will be created anew.
+  pub fn from_path(path: impl Into<VirtualPath>) -> surreal::Result<Self> {
+    let asset_path = path.into();
+    let meta_path = asset_path.change_extension("meta");
+
+    let metadata = if meta_path.exists()? {
+      Self::from_yaml_file(&meta_path)?
+    } else {
+      Self {
+        id: AssetId::random(),
+        hash: AssetHash::from_path(asset_path)?,
+        assets: vec![],
+      }
+    };
+
+    Ok(metadata)
+  }
 }
 
 /// Describes the kinds of assets that are present at a particular path.

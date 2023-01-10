@@ -274,7 +274,7 @@ impl FileSystemManager {
   }
 
   /// Finds the appropriate [`FileSystem`] for the given [`VirtualPath`].
-  pub fn find_for_path(path: &VirtualPath) -> Option<&'static dyn FileSystem> {
+  pub fn find(path: &VirtualPath) -> Option<&'static dyn FileSystem> {
     let manager = FileSystemManager::instance();
 
     manager.file_systems.iter().find(|fs| fs.can_handle(path)).map(|fs| fs.as_ref())
@@ -352,22 +352,29 @@ impl<'a> VirtualPath<'a> {
     }
   }
 
+  /// Determines if the path exists.
+  pub fn exists(&self) -> crate::Result<bool> {
+    let file_system = FileSystemManager::find(self).ok_or(anyhow::anyhow!("No file system found for scheme {}", self.scheme))?;
+
+    Ok(file_system.exists(self))
+  }
+
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
-    let file_system = FileSystemManager::find_for_path(self).ok_or(anyhow::anyhow!("No file system found for scheme {}", self.scheme))?;
+    let file_system = FileSystemManager::find(self).ok_or(anyhow::anyhow!("No file system found for scheme {}", self.scheme))?;
     let stream = file_system
       .open_read(self)
-      .map_err(|_| surreal::anyhow!("Unable to open input stream for {}", self))?;
+      .map_err(|error| surreal::anyhow!("Unable to open input stream for {}. Error {}", self, error))?;
 
     Ok(stream)
   }
 
   /// Opens a writer for the given path.
   pub fn open_output_stream(&self) -> crate::Result<Box<dyn OutputStream>> {
-    let file_system = FileSystemManager::find_for_path(self).ok_or(anyhow::anyhow!("No file system found for scheme {}", self.scheme))?;
+    let file_system = FileSystemManager::find(self).ok_or(anyhow::anyhow!("No file system found for scheme {}", self.scheme))?;
     let stream = file_system
       .open_write(self)
-      .map_err(|_| surreal::anyhow!("Unable to open output stream for {}", self))?;
+      .map_err(|error| surreal::anyhow!("Unable to open output stream for {}. Error {}", self, error))?;
 
     Ok(stream)
   }
