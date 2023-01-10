@@ -178,6 +178,7 @@ pub trait AssetBundle {}
 /// imported. If the hash of an asset has changed, the asset will be re-imported.
 ///
 /// The hash is calculated by hashing the contents of the asset file.
+#[repr(transparent)]
 #[derive(Serialize, Deserialize, Default, Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct AssetHash(u64);
 
@@ -288,16 +289,11 @@ pub struct AssetManifestBuilder {
 }
 
 impl AssetManifestBuilder {
-  /// Determines if the given path can be added to the [`AssetManifest`].
-  pub fn can_import(&self, path: &VirtualPath) -> bool {
-    path.extension() != "meta"
-  }
-
   /// Adds an existing asset to the manifest.
   pub fn add_asset(mut self, path: impl Into<VirtualPath>) -> Self {
     let path = path.into();
 
-    if self.can_import(&path) {
+    if path.extension() != "meta" {
       self.manifest.assets.insert(path.to_string());
     }
 

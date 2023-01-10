@@ -19,7 +19,6 @@ fn main() -> surreal::Result<()> {
 
   let args = Arguments::parse();
 
-  let mut host = EditorWindowHost::new();
   let project = Project::open_or_create(
     args.project_name.unwrap_or_else(|| "Untitled".to_string()),
     args.project_path.unwrap_or_else(|| {
@@ -30,6 +29,8 @@ fn main() -> surreal::Result<()> {
         .to_string()
     }),
   )?;
+
+  let mut host = EditorWindowHost::new();
 
   host.add_window(ProjectWindow::new(project));
   // host.add_window(ProjectWindow::new(project.clone()));
