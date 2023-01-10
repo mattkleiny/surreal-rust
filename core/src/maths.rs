@@ -27,6 +27,39 @@ const EPSILON: f32 = 0.00001;
 /// A globally unique identifier.
 pub type Guid = uuid::Uuid;
 
+/// Creates a new opaque [`Guid`] type for unique object representation.
+#[macro_export]
+macro_rules! impl_guid {
+  ($name:ident) => {
+    use $crate::maths::{FromRandom, Guid, Random};
+
+    #[repr(transparent)]
+    #[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq, Hash)]
+    pub struct $name(Guid);
+
+    impl FromRandom for $name {
+      #[inline(always)]
+      fn from_random(random: &mut Random) -> Self {
+        Self(random.next())
+      }
+    }
+
+    impl From<Guid> for $name {
+      #[inline(always)]
+      fn from(value: Guid) -> Self {
+        Self(value)
+      }
+    }
+
+    impl Into<Guid> for $name {
+      #[inline(always)]
+      fn into(self) -> Guid {
+        self.0
+      }
+    }
+  };
+}
+
 /// Converts the given value to radians from degrees.
 #[inline]
 pub fn to_radians(degrees: f32) -> f32 {

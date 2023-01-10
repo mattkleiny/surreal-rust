@@ -5,6 +5,7 @@
 //! can be composed for differing workflows depending on the game being built.
 
 #![feature(anonymous_lifetime_in_impl_trait)]
+#![feature(box_into_inner)]
 
 pub use assets::*;
 pub use domain::*;

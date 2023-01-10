@@ -8,129 +8,108 @@
 //! The output of the asset database is put through a build pipeline to produce
 //! artifacts and [`AssetBundle`]s for consumption by the game at runtime.
 
+use std::any::Any;
 use std::collections::{BTreeSet, HashMap};
 use std::fmt::Debug;
 use std::hash::Hasher;
 
 use serde::{Deserialize, Serialize};
-
 use surreal::io::{InputStream, Serializable, VirtualPath};
 use surreal::utilities::Type;
 
 use super::Resource;
 
-/// A unique identifier for an asset.
-pub type AssetId = surreal::maths::Guid;
+surreal::impl_guid!(AssetId);
 
-/// A server for managing assets in the project.
-///
-/// The asset server is responsible for managing the asset database, providing
-/// access to assets in the project, managing asset importers and triggering
-/// imports when assets are modified, and for invoking the build pipeline.
-pub struct AssetServer {}
-
-#[allow(unused_variables)]
-impl AssetServer {
-  /// Creates an [`AssetServer`] for the local file path path.
-  pub fn from_path(path: impl AsRef<str>) -> Self {
-    todo!()
-  }
-
-  // file management
-  pub fn create_folder(&mut self, path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn create_asset(&mut self, path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn import_asset(&mut self, path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn load_all_assets(&mut self, path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn load_first_asset(&mut self, path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn load_main_asset(&mut self, path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn copy_asset(&mut self, source: &str, destination: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn rename_asset(&mut self, source: &str, destination: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn delete_asset(&mut self, path: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn delete_assets(&mut self, paths: &[&str]) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn refresh_all(&mut self) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn register_importer(&mut self, importer: Box<dyn AssetImporter>) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn unregister_importer(&mut self, importer: Box<dyn AssetImporter>) -> surreal::Result<()> {
-    todo!()
-  }
-
-  pub fn build_asset_bundle<B: AssetBundle>(&mut self, path: &str, manifest: &AssetManifest) -> surreal::Result<()> {
-    todo!()
-  }
-}
-
-/// The singleton asset database facade; this is the central point of access for all
-/// asset-related operations.
+/// A database for assets in a project.
 ///
 /// The asset database is responsible for maintaining a flat-file database of all
 /// assets in the project, and for managing the import of assets from the file system.
 ///
-/// See [`AssetServer`], [`AssetImporter`] and [`AssetBundle`] for more details.
+/// See [`AssetImporter`] and [`AssetBundle`] for more details.
 #[derive(Default)]
 pub struct AssetDatabase {
+  _root_path: String,
+  manifest: AssetManifest,
   metadata: HashMap<String, AssetMetadata>,
   importers: Vec<Box<dyn AssetImporter>>,
+  pending_changes: Vec<AssetDatabaseChange>,
+}
+
+/// A change to the asset database.
+enum AssetDatabaseChange {
+  /// Creates [`AssetMetadata`] for a file at a given path.
+  CreateMetadata(String, AssetMetadata),
 }
 
 impl AssetDatabase {
   /// Builds an [`AssetDatabase`] from the given root project path.
-  pub fn from_root_path(path: impl AsRef<str>) -> Self {
-    let _manifest = AssetManifestBuilder::default()
-      .add_assets(&format!("{}/assets/**/*", path.as_ref()))
-      .build();
-
-    Self::default() // TODO: implement me
-  }
-
-  /// Builds an [`AssetDatabase`] from an existing set of [`AssetMetadata`].
-  pub fn from_metadata(metadata: impl Iterator<Item = (String, AssetMetadata)>) -> Self {
+  pub fn new(path: impl AsRef<str>) -> Self {
     Self {
-      metadata: metadata.collect(),
+      _root_path: path.as_ref().to_owned(),
+      manifest: AssetManifest::default(),
+      metadata: HashMap::new(),
       importers: Vec::new(),
+      pending_changes: Vec::new(),
     }
   }
 
-  /// Registers an [`AssetImporter`] with the database.
-  pub fn register_importer(&mut self, importer: impl AssetImporter + 'static) {
+  /// Builds an [`AssetDatabase`] from the given [`AssetManifest`].
+  pub fn from_manifest(root_path: impl AsRef<str>, manifest: impl Into<AssetManifest>) -> Self {
+    let mut database = Self::new(root_path);
+    database.manifest = manifest.into();
+
+    for path in &database.manifest.assets {
+      let metadata = AssetMetadata {
+        id: AssetId::random(),
+        hash: AssetHash::default(),
+        assets: Vec::default(),
+      };
+
+      let path = VirtualPath::from(path);
+      let path = path.change_extension("meta");
+
+      database.pending_changes.push(AssetDatabaseChange::CreateMetadata(path.to_string(), metadata));
+    }
+
+    database
+  }
+
+  /// Returns the [`AssetManifest`] for the entire database.
+  pub fn manifest(&self) -> &AssetManifest {
+    &self.manifest
+  }
+
+  /// Adds an [`AssetImporter`] with the database.
+  pub fn add_importer(&mut self, importer: impl AssetImporter + 'static) {
     self.importers.push(Box::new(importer));
   }
 
-  /// Creates an [`AssetHash`] for the asset at the given [`VirtualPath`] and remembers it.
+  /// Loads a [`Box`]ed [`Asset`] of the given type from the given [`VirtualPath`].
+  pub fn load_asset_boxed<A: Asset>(&mut self, path: impl Into<VirtualPath>) -> surreal::Result<Box<A>> {
+    let path = path.into();
+
+    for importer in &self.importers {
+      if importer.can_handle(&path) {
+        let asset = importer.import(&path)?;
+        let asset = asset.into_any().downcast().expect("Failed to downcast asset to expected type");
+
+        return Ok(asset);
+      }
+    }
+
+    Err(surreal::anyhow!("Asset cannot be imported at path '{}'", path))
+  }
+
+  /// Loads an [`Asset`] of the given type from the given [`VirtualPath`].
+  pub fn load_asset<A: Asset>(&mut self, path: impl Into<VirtualPath>) -> surreal::Result<A> {
+    let boxed = self.load_asset_boxed(path)?;
+    let asset = Box::into_inner(boxed);
+
+    Ok(asset)
+  }
+
+  /// Creates an [`AssetHash`] for the [`Asset`] at the given [`VirtualPath`] and remembers it.
   pub fn rehash(&mut self, path: impl Into<VirtualPath>) -> surreal::Result<AssetHash> {
     let path = path.into();
 
@@ -142,6 +121,19 @@ impl AssetDatabase {
     });
 
     Ok(hash)
+  }
+
+  /// Saves any pending changes out to disk.
+  pub fn flush_changes(&mut self) -> surreal::Result<()> {
+    while let Some(change) = self.pending_changes.pop() {
+      match change {
+        AssetDatabaseChange::CreateMetadata(path, metadata) => {
+          metadata.to_yaml_file(VirtualPath::from(&path))?
+        }
+      }
+    }
+
+    Ok(())
   }
 }
 
@@ -156,10 +148,27 @@ impl AssetDatabase {
 pub trait AssetImporter {
   /// Determines if the importer can import the given asset.
   fn can_handle(&self, path: &VirtualPath) -> bool;
+
+  /// Imports the asset at the given path.
+  fn import(&self, path: &VirtualPath) -> surreal::Result<Box<dyn Asset>>;
 }
 
 // TODO: import into in-memory cache, and expand on the file system
 // TODO: use object ids to look-up instances depending on access patterns
+
+/// Represents an asset type that can be imported by an [`AssetImporter`].
+pub trait Asset: Any {
+  /// Converts this asset to a [`Box`] of [`Any`].
+  fn into_any(self: Box<Self>) -> Box<dyn Any>;
+}
+
+/// Blanket [`Asset`] implementation for sized types.
+impl<A: Any + Sized> Asset for A {
+  #[inline(always)]
+  fn into_any(self: Box<Self>) -> Box<dyn Any> {
+    self
+  }
+}
 
 /// A bundle of assets.
 ///
@@ -262,22 +271,37 @@ pub struct AssetManifestBuilder {
 }
 
 impl AssetManifestBuilder {
+  /// Determines if the given path can be added to the [`AssetManifest`].
+  pub fn can_import(&self, path: &VirtualPath) -> bool {
+    path.extension() != "meta"
+  }
+
   /// Adds an existing asset to the manifest.
   pub fn add_asset(mut self, path: impl Into<VirtualPath>) -> Self {
-    self.manifest.assets.insert(path.into().to_string());
+    let path = path.into();
+
+    if self.can_import(&path) {
+      self.manifest.assets.insert(path.to_string());
+    }
+
     self
   }
 
   /// Adds all assets that match the given pattern to the manifest.
   pub fn add_assets(mut self, pattern: &str) -> Self {
-    if let Ok(paths) = glob::glob(pattern) {
+    let options = glob::MatchOptions {
+      case_sensitive: false,
+      require_literal_separator: false,
+      require_literal_leading_dot: false,
+    };
+
+    if let Ok(paths) = glob::glob_with(pattern, options) {
       for path in paths {
         match path {
-          Ok(path) => {
-            let path = VirtualPath::from(path.to_str().unwrap()).to_string();
-
-            self.manifest.assets.insert(path);
+          Ok(path) if path.is_file() => {
+            self = self.add_asset(&VirtualPath::from(path.to_str().unwrap()).to_string());
           }
+          Ok(_) => {}
           Err(_) => {}
         }
       }
@@ -289,6 +313,12 @@ impl AssetManifestBuilder {
   /// Builds the resultant [`AssetManifest`].
   pub fn build(self) -> AssetManifest {
     self.manifest
+  }
+}
+
+impl From<AssetManifestBuilder> for AssetManifest {
+  fn from(value: AssetManifestBuilder) -> Self {
+    value.build()
   }
 }
 

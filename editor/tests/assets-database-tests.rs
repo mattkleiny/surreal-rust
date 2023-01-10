@@ -11,8 +11,8 @@ mod common;
 #[test]
 fn resources_with_differences_should_hash_differently() {
   let mut database = common::AssetDatabaseBuilder::default()
-    .with_resource("memory://test1.json", TestResource { value: 1 })
-    .with_resource("memory://test2.json", TestResource { value: 2 })
+    .add_resource("memory://test1.json", TestResource { value: 1 })
+    .add_resource("memory://test2.json", TestResource { value: 2 })
     .build();
 
   let hash1 = database.rehash("memory://test1.json").unwrap();
