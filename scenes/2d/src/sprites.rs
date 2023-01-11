@@ -16,7 +16,9 @@ impl SceneComponent for SpriteComponent {
     "SpriteComponent"
   }
 
-  fn on_render(&mut self, node: &mut SceneNode, renderer: &mut Renderer) {
+  fn on_render(&mut self, context: SceneContext, renderer: &mut Renderer) {
+    let node = context.node;
+
     renderer.with(|context: &mut SpriteContext| {
       context.batch.draw_sprite(
         &self.region,

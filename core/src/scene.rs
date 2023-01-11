@@ -6,11 +6,11 @@ use std::fmt::{Debug, Formatter};
 use anyhow::anyhow;
 
 use crate::graphics::Renderer;
-use crate::maths::{Affine3A, FromRandom, Quat, Vec3};
-use crate::utilities::{unsafe_mutable_alias, Object};
+use crate::maths::{Affine3A, Quat, Vec3};
+use crate::utilities::{unsafe_mutable_alias, Object, ServiceContainer};
 
-/// A unique identifier for a [`SceneNode`].
-pub type NodeId = crate::maths::Guid;
+// A unique identifier for a [`SceneNode`].
+crate::impl_guid!(SceneNodeId);
 
 /// The ID of the layer that a [`SceneNode`] inhabits.
 pub type LayerId = u16;
@@ -50,13 +50,14 @@ pub enum SceneEvent<'a> {
 /// used to inform recursive operations on the graph and it's children.
 pub struct SceneGraph {
   pub root: SceneNode,
+  services: ServiceContainer,
   groups: HashMap<String, SceneGroup>,
 }
 
 /// A grouping of nodes in a [`SceneGraph`].
 #[derive(Default)]
 struct SceneGroup {
-  members: HashSet<NodeId>,
+  members: HashSet<SceneNodeId>,
 }
 
 impl SceneGraph {
@@ -65,16 +66,17 @@ impl SceneGraph {
     Self {
       root: root.into(),
       groups: HashMap::new(),
+      services: ServiceContainer::default(),
     }
   }
 
   /// Notifies all nodes in the scene graph of a [`SceneEvent`].
   pub fn notify(&mut self, mut event: SceneEvent) {
-    self.root.notify(&mut event);
+    self.root.notify(&mut self.services, &mut event);
   }
 
   /// Adds a [`SceneNode`] to a [`SceneGroup`], or creates the group anew.
-  pub fn add_to_group(&mut self, name: impl Into<String>, node_id: NodeId) {
+  pub fn add_to_group(&mut self, name: impl Into<String>, node_id: SceneNodeId) {
     let name = name.into();
     let group = self.groups.entry(name).or_default();
 
@@ -82,7 +84,7 @@ impl SceneGraph {
   }
 
   /// Removes a [`SceneNode`] from a [`SceneGroup`].
-  pub fn remove_from_group(&mut self, name: impl Into<String>, node_id: NodeId) {
+  pub fn remove_from_group(&mut self, name: impl Into<String>, node_id: SceneNodeId) {
     let name = name.into();
 
     if let Some(group) = self.groups.get_mut(&name) {
@@ -95,7 +97,7 @@ impl SceneGraph {
   }
 
   /// Re-parents a [`SceneNode`] to a new parent.
-  pub fn reparent_node(&mut self, node_to_move_id: NodeId, new_parent_id: NodeId) -> crate::Result<()> {
+  pub fn reparent_node(&mut self, node_to_move_id: SceneNodeId, new_parent_id: SceneNodeId) -> crate::Result<()> {
     let node_to_move = self
       .root
       .take_node_by_id(node_to_move_id)
@@ -111,19 +113,19 @@ impl SceneGraph {
     }
 
     new_parent.children.push(node_to_move);
-    new_parent.update_child_transforms();
+    new_parent.update_child_transforms(&mut self.services);
 
     Ok(())
   }
 
   /// Destroys a [`SceneNode`] and all of it's children.
-  pub fn delete_node(&mut self, node_to_delete_id: NodeId) -> crate::Result<()> {
+  pub fn delete_node(&mut self, node_to_delete_id: SceneNodeId) -> crate::Result<()> {
     let mut node_to_delete = self
       .root
       .take_node_by_id(node_to_delete_id)
       .ok_or(anyhow!("Unable to find node to delete"))?;
 
-    node_to_delete.notify(&mut SceneEvent::Destroy);
+    node_to_delete.notify(&mut self.services, &mut SceneEvent::Destroy);
     drop(node_to_delete);
 
     Ok(())
@@ -132,7 +134,7 @@ impl SceneGraph {
 
 impl Drop for SceneGraph {
   fn drop(&mut self) {
-    self.root.notify(&mut SceneEvent::Destroy);
+    self.root.notify(&mut self.services, &mut SceneEvent::Destroy);
   }
 }
 
@@ -202,6 +204,14 @@ pub enum SceneComponentKind {
   Renderer,
 }
 
+/// Context for a [`SceneEvent`].
+pub struct SceneContext<'a> {
+  /// The [`SceneNode`] being updated.
+  pub node: &'a mut SceneNode,
+  /// The [`ServiceContainer`] for the scene graph.
+  pub services: &'a mut ServiceContainer,
+}
+
 /// Represents a component in a scene.
 ///
 /// Components receive callbacks in response to scene lifecycle events, and
@@ -212,26 +222,26 @@ pub trait SceneComponent: Object {
   fn name(&self) -> &'static str;
 
   /// Invoked to handle dispatch of [`SceneEvent`]s.
-  fn on_event(&mut self, node: &mut SceneNode, event: &mut SceneEvent) {
+  fn on_event(&mut self, context: SceneContext, event: &mut SceneEvent) {
     match event {
-      SceneEvent::Awake => self.on_awake(node),
-      SceneEvent::Start => self.on_start(node),
-      SceneEvent::Enable => self.on_enable(node),
-      SceneEvent::Disable => self.on_disable(node),
-      SceneEvent::Destroy => self.on_destroy(node),
-      SceneEvent::Update(delta_time) if node.is_enabled() => self.on_update(node, *delta_time),
-      SceneEvent::Render(manager) if node.is_visible() => self.on_render(node, *manager),
+      SceneEvent::Awake => self.on_awake(context),
+      SceneEvent::Start => self.on_start(context),
+      SceneEvent::Enable => self.on_enable(context),
+      SceneEvent::Disable => self.on_disable(context),
+      SceneEvent::Destroy => self.on_destroy(context),
+      SceneEvent::Update(delta_time) if context.node.is_enabled() => self.on_update(context, *delta_time),
+      SceneEvent::Render(manager) if context.node.is_visible() => self.on_render(context, *manager),
       _ => {}
     }
   }
 
-  fn on_awake(&mut self, node: &mut SceneNode) {}
-  fn on_start(&mut self, node: &mut SceneNode) {}
-  fn on_enable(&mut self, node: &mut SceneNode) {}
-  fn on_disable(&mut self, node: &mut SceneNode) {}
-  fn on_destroy(&mut self, node: &mut SceneNode) {}
-  fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {}
-  fn on_render(&mut self, node: &mut SceneNode, renderer: &mut Renderer) {}
+  fn on_awake(&mut self, context: SceneContext) {}
+  fn on_start(&mut self, context: SceneContext) {}
+  fn on_enable(&mut self, context: SceneContext) {}
+  fn on_disable(&mut self, context: SceneContext) {}
+  fn on_destroy(&mut self, context: SceneContext) {}
+  fn on_update(&mut self, context: SceneContext, delta_time: f32) {}
+  fn on_render(&mut self, context: SceneContext, renderer: &mut Renderer) {}
 
   /// Determines the [`SceneComponentKind`] of this component.
   ///
@@ -308,7 +318,7 @@ impl<'a> IntoIterator for &'a mut SceneComponentSet {
 ///
 /// A node has a position, orientation, and scale relative to its parent node.
 pub struct SceneNode {
-  id: NodeId,
+  id: SceneNodeId,
   name: Option<String>,
   is_visible: bool,
   is_enabled: bool,
@@ -323,7 +333,7 @@ pub struct SceneNode {
 impl Default for SceneNode {
   fn default() -> Self {
     Self {
-      id: NodeId::random(),
+      id: SceneNodeId::random(),
       name: None,
       is_visible: true,
       is_enabled: true,
@@ -338,7 +348,7 @@ impl Default for SceneNode {
 }
 
 impl SceneNode {
-  pub fn id(&self) -> NodeId {
+  pub fn id(&self) -> SceneNodeId {
     self.id
   }
 
@@ -506,12 +516,14 @@ impl SceneNode {
   }
 
   /// Notify this node's [`SceneComponent`] and all of it's child [`SceneNode`]s.
-  fn notify(&mut self, event: &mut SceneEvent) {
+  fn notify(&mut self, services: &mut ServiceContainer, event: &mut SceneEvent) {
     let node = unsafe_mutable_alias(self);
 
     // notify all components
     for component in &mut self.components {
-      component.on_event(node, event);
+      let context = SceneContext { node, services };
+
+      component.on_event(context, event);
     }
 
     // propagate to child nodes
@@ -519,36 +531,36 @@ impl SceneNode {
       SceneEvent::Update(_) => {
         // if our transform is dirty, on the next update we need to notify all children
         if self.is_transform_dirty {
-          self.update_child_transforms();
+          self.update_child_transforms(services);
         }
-        self.notify_children(event);
+        self.notify_children(event, services);
       }
       SceneEvent::TransformChanged(parent_transform) => {
         // propagate transform information down the hierarchy
         self.transform.rebuild(&parent_transform);
-        self.update_child_transforms();
+        self.update_child_transforms(services);
       }
-      _ => self.notify_children(event),
+      _ => self.notify_children(event, services),
     }
   }
 
   /// Updates the transform of all of this node's child [`SceneNode`]s.
-  fn update_child_transforms(&mut self) {
+  fn update_child_transforms(&mut self, services: &mut ServiceContainer) {
     let node = unsafe_mutable_alias(self);
 
     self.is_transform_dirty = false;
-    node.notify_children(&mut SceneEvent::TransformChanged(&self.transform));
+    node.notify_children(&mut SceneEvent::TransformChanged(&self.transform), services);
   }
 
   /// Notifies this node's child [`SceneNode`]s of the given [`SceneEvent`].
-  fn notify_children(&mut self, event: &mut SceneEvent) {
+  fn notify_children(&mut self, event: &mut SceneEvent, services: &mut ServiceContainer) {
     for child in &mut self.children {
-      child.notify(event);
+      child.notify(services, event);
     }
   }
 
-  /// Tries to locate the node with the given [`NodeId`] in this hierarchy.
-  pub fn find_by_id(&self, node_id: NodeId) -> Option<&SceneNode> {
+  /// Tries to locate the node with the given [`SceneNodeId`] in this hierarchy.
+  pub fn find_by_id(&self, node_id: SceneNodeId) -> Option<&SceneNode> {
     if self.id == node_id {
       return Some(self);
     }
@@ -562,8 +574,8 @@ impl SceneNode {
     None
   }
 
-  /// Tries to locate the node with the given [`NodeId`] in this hierarchy.
-  pub fn find_by_id_mut(&mut self, node_id: NodeId) -> Option<&mut SceneNode> {
+  /// Tries to locate the node with the given [`SceneNodeId`] in this hierarchy.
+  pub fn find_by_id_mut(&mut self, node_id: SceneNodeId) -> Option<&mut SceneNode> {
     if self.id == node_id {
       return Some(self);
     }
@@ -615,9 +627,9 @@ impl SceneNode {
     find_recursive(self, node_path)
   }
 
-  /// Tries to locate the [`SceneNode`] with the given [`NodeId`] in this hierarchy.
+  /// Tries to locate the [`SceneNode`] with the given [`SceneNodeId`] in this hierarchy.
   /// If the node is found, remove it from it's parent and return it.
-  fn take_node_by_id(&mut self, node_id: NodeId) -> Option<SceneNode> {
+  fn take_node_by_id(&mut self, node_id: SceneNodeId) -> Option<SceneNode> {
     for i in 0..self.children.len() {
       if self.children[i].id == node_id {
         return Some(self.children.remove(i));
@@ -837,8 +849,8 @@ impl SceneNodeBuilder {
 
   /// Builds the resultant [`SceneNode`].
   pub fn build(self) -> SceneNode {
-    let mut node = SceneNode {
-      id: NodeId::random(),
+    SceneNode {
+      id: SceneNodeId::random(),
       name: self.name,
       is_visible: true,
       is_enabled: true,
@@ -848,11 +860,7 @@ impl SceneNodeBuilder {
       transform: self.transform,
       components: self.components,
       children: self.children,
-    };
-
-    // initial transform propagation
-    node.update_child_transforms();
-    node
+    }
   }
 }
 
@@ -894,8 +902,8 @@ mod tests {
         "TestComponent1"
       }
 
-      fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
-        println!("Update component 1 on node id {} delta_time {}", node.id, delta_time);
+      fn on_update(&mut self, context: SceneContext, delta_time: f32) {
+        println!("Update component 1 on node id {} delta_time {}", context.node.id, delta_time);
       }
     }
 
@@ -907,8 +915,8 @@ mod tests {
         "TestComponent2"
       }
 
-      fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
-        println!("Update component 2 on node id {} delta_time {}", node.id, delta_time);
+      fn on_update(&mut self, context: SceneContext, delta_time: f32) {
+        println!("Update component 2 on node id {} delta_time {}", context.node.id, delta_time);
       }
     }
 
@@ -973,8 +981,8 @@ mod tests {
         "TestComponent"
       }
 
-      fn on_update(&mut self, node: &mut SceneNode, delta_time: f32) {
-        println!("Update node {:?} delta_time {}", node, delta_time);
+      fn on_update(&mut self, context: SceneContext, delta_time: f32) {
+        println!("Update node {:?} delta_time {}", context.node, delta_time);
       }
     }
 

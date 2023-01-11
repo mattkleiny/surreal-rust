@@ -2660,6 +2660,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "surreal-wind"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
 name = "syn"
 version = "1.0.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"

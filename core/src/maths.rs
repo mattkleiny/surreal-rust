@@ -57,6 +57,13 @@ macro_rules! impl_guid {
         self.0
       }
     }
+
+    impl std::fmt::Display for $name {
+      #[inline(always)]
+      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+      }
+    }
   };
 }
 
