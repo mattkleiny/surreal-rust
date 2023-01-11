@@ -1,6 +1,7 @@
 //! Headless graphics support for the engine.
 
 use super::*;
+use winit::dpi::PhysicalSize;
 
 /// A headless, no-op [`GraphicsServerBackend`].
 #[derive(Default)]
@@ -8,11 +9,15 @@ pub struct HeadlessBackend {}
 
 #[allow(unused_variables)]
 impl GraphicsServerBackend for HeadlessBackend {
-  fn begin_frame(&self) {
+  fn begin_frame(&self) -> surreal::Result<()> {
     todo!()
   }
 
-  fn end_frame(&self) {
+  fn end_frame(&self) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn resize_viewport(&mut self, new_size: PhysicalSize<u32>) -> surreal::Result<()> {
     todo!()
   }
 

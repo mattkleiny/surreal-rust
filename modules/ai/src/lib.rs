@@ -97,7 +97,7 @@ mod tests {
     }
 
     impl State<()> for TestState {
-      fn think(&mut self, memory: &mut (), delta_time: f32) -> StateTransition<()> {
+      fn think(&mut self, _memory: &mut (), _delta_time: f32) -> StateTransition<()> {
         println!("Thinking! {}", self.counter);
         StateTransition::Replace(Box::new(TestState { counter: self.counter + 1 }))
       }

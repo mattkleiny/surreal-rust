@@ -1,8 +1,8 @@
 use std::hash::Hash;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
-use surreal::graphics::PrimitiveTopology;
+use surreal::graphics::{Color, PrimitiveTopology};
 use surreal::maths::AABB;
 
 #[cfg(feature = "backend-headless")]
@@ -11,6 +11,8 @@ mod headless;
 mod opengl;
 #[cfg(feature = "backend-vulkan")]
 mod vulkan;
+#[cfg(feature = "backend-wgpu")]
+mod wgpu;
 
 surreal::impl_rid!(ShaderId);
 surreal::impl_rid!(MaterialId);
@@ -90,7 +92,7 @@ pub enum UniformValue {
 /// Internally we delegate to the active [`GraphicsServerBackend`], which can
 /// vary depending on the target platform.
 pub struct GraphicsServer {
-  backend: Arc<dyn GraphicsServerBackend>,
+  backend: Box<dyn GraphicsServerBackend>,
 }
 
 impl GraphicsServer {
@@ -112,10 +114,16 @@ impl GraphicsServer {
     Ok(Self::from_backend(vulkan::VulkanBackend::new(window)?))
   }
 
+  /// Creates a [`GraphicsServer`] for WGPU.
+  #[cfg(feature = "backend-wgpu")]
+  pub async fn from_wgpu(window: Arc<winit::window::Window>) -> surreal::Result<Self> {
+    Ok(Self::from_backend(wgpu::WgpuBackend::new(window).await?))
+  }
+
   /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
   pub fn from_backend(backend: impl GraphicsServerBackend + 'static) -> Self {
     GraphicsServer {
-      backend: Arc::new(backend),
+      backend: Box::new(backend),
     }
   }
 }
@@ -125,6 +133,12 @@ impl Deref for GraphicsServer {
 
   fn deref(&self) -> &Self::Target {
     self.backend.as_ref()
+  }
+}
+
+impl DerefMut for GraphicsServer {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    self.backend.as_mut()
   }
 }
 
@@ -142,8 +156,9 @@ impl Deref for GraphicsServer {
 ///   methods will be
 pub trait GraphicsServerBackend {
   // general operations
-  fn begin_frame(&self);
-  fn end_frame(&self);
+  fn begin_frame(&self, color: Color) -> surreal::Result<()>;
+  fn end_frame(&self) -> surreal::Result<()>;
+  fn resize_viewport(&mut self, new_size: winit::dpi::PhysicalSize<u32>) -> surreal::Result<()>;
 
   // shader operations
   fn shader_create(&self) -> surreal::Result<ShaderId>;

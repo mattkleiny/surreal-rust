@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 surreal = { package = "surreal-core", path = "../../core" }
+rodio = "0.16.0"
