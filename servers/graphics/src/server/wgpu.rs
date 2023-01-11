@@ -1,13 +1,30 @@
+use std::sync::Mutex;
+
 use winit::dpi::PhysicalSize;
 
 use super::*;
 
-/// Re-export of [`wgpu`] crate.
+/// Re-export the [`wgpu`] crate for consumers of Surreal.
 pub mod wgpu {
   pub use wgpu::*;
 }
 
+type ShaderStorage = Storage<ShaderId, WgpuShader>;
+type MaterialStorage = Storage<MaterialId, WgpuMaterial>;
+type MeshStorage = Storage<MeshId, WgpuMesh>;
+type LightStorage = Storage<LightId, WgpuLight>;
+
+/// The [`GraphicsServerBackend`] for WGPU.
 pub struct WgpuBackend {
+  state: Mutex<WgpuState>,
+  shader_storage: ShaderStorage,
+  _material_storage: MaterialStorage,
+  _mesh_storage: MeshStorage,
+  _light_storage: LightStorage,
+}
+
+/// Top-level lockable state for the [`WgpuBackend`].
+struct WgpuState {
   surface: wgpu::Surface,
   device: wgpu::Device,
   queue: wgpu::Queue,
@@ -15,14 +32,31 @@ pub struct WgpuBackend {
   render_pipeline: wgpu::RenderPipeline,
 }
 
+/// Internal data for a shader in the [`WgpuBackend`].
+struct WgpuShader {
+  label: Option<String>,
+  shader_module: wgpu::ShaderModule,
+  bind_group_layout: wgpu::BindGroupLayout,
+}
+
+/// Internal data for a material in the [`WgpuBackend`].
+struct WgpuMaterial {}
+
+/// Internal data for a mesh in the [`WgpuBackend`].
+struct WgpuMesh {}
+
+/// Internal data for a light in the [`WgpuBackend`].
+struct WgpuLight {}
+
 impl WgpuBackend {
-  pub async fn new(window: Arc<winit::window::Window>) -> surreal::Result<Self> {
+  /// Creates a new [`WgpuBackend`] for the given [`winit::window::Window`].
+  pub async fn new(window: &winit::window::Window) -> surreal::Result<Self> {
     let size = window.inner_size();
 
     // The instance is a handle to our GPU
     // Backends::all => Vulkan + Metal + DX12 + Browser WebGPU
     let instance = wgpu::Instance::new(wgpu::Backends::all());
-    let surface = unsafe { instance.create_surface(window.as_ref()) };
+    let surface = unsafe { instance.create_surface(window) };
 
     let adapter = instance
       .request_adapter(&wgpu::RequestAdapterOptions {
@@ -102,22 +136,29 @@ impl WgpuBackend {
     });
 
     Ok(Self {
-      surface,
-      device,
-      queue,
-      config,
-      render_pipeline,
+      state: Mutex::new(WgpuState {
+        surface,
+        device,
+        queue,
+        config,
+        render_pipeline,
+      }),
+      shader_storage: ShaderStorage::default(),
+      _material_storage: MaterialStorage::default(),
+      _mesh_storage: MeshStorage::default(),
+      _light_storage: LightStorage::default(),
     })
   }
 }
 
-#[allow(unused_variables)]
 impl GraphicsServerBackend for WgpuBackend {
   fn begin_frame(&self, color: Color) -> surreal::Result<()> {
-    let output_surface = self.surface.get_current_texture()?;
+    let state = self.state.lock().unwrap();
+
+    let output_surface = state.surface.get_current_texture()?;
     let output_view = output_surface.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-    let mut encoder = self
+    let mut encoder = state
       .device
       .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("Surreal") });
 
@@ -140,11 +181,11 @@ impl GraphicsServerBackend for WgpuBackend {
         depth_stencil_attachment: None,
       });
 
-      render_pass.set_pipeline(&self.render_pipeline);
+      render_pass.set_pipeline(&state.render_pipeline);
       render_pass.draw(0..3, 0..1);
     }
 
-    self.queue.submit(Some(encoder.finish()));
+    state.queue.submit(Some(encoder.finish()));
     output_surface.present();
 
     Ok(())
@@ -154,116 +195,63 @@ impl GraphicsServerBackend for WgpuBackend {
     Ok(())
   }
 
-  fn resize_viewport(&mut self, new_size: PhysicalSize<u32>) -> surreal::Result<()> {
-    self.config.width = new_size.width;
-    self.config.height = new_size.height;
+  fn resize_viewport(&self, new_size: PhysicalSize<u32>) -> surreal::Result<()> {
+    if new_size.width > 0 && new_size.height > 0 {
+      let mut state = self.state.lock().unwrap();
 
-    self.surface.configure(&self.device, &self.config);
+      state.config.width = new_size.width;
+      state.config.height = new_size.height;
+
+      state.surface.configure(&state.device, &state.config);
+    }
 
     Ok(())
   }
 
-  fn shader_create(&self) -> surreal::Result<ShaderId> {
-    todo!()
+  fn shader_create(&self, name: Option<&str>) -> surreal::Result<ShaderId> {
+    let shader_id = self.shader_storage.create(|_| {
+      let state = self.state.lock().unwrap();
+
+      let shader_module = state.device.create_shader_module(wgpu::ShaderModuleDescriptor {
+        label: name,
+        source: wgpu::ShaderSource::Wgsl(include_str!("../../shaders/standard.wgsl").into()),
+      });
+
+      let bind_group_layout = state
+        .device
+        .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { label: name, entries: &[] });
+
+      WgpuShader {
+        label: name.map(|it| it.to_string()),
+        shader_module,
+        bind_group_layout,
+      }
+    });
+
+    Ok(shader_id)
   }
 
   fn shader_set_code(&self, shader_id: ShaderId, code: &str) -> surreal::Result<()> {
-    todo!()
-  }
+    self.shader_storage.write(shader_id, |shader| {
+      let state = self.state.lock().unwrap();
 
-  fn shader_get_code(&self, shader_id: ShaderId) -> surreal::Result<String> {
-    todo!()
-  }
+      shader.shader_module = state.device.create_shader_module(wgpu::ShaderModuleDescriptor {
+        label: shader.label.as_deref(),
+        source: wgpu::ShaderSource::Wgsl(code.into()),
+      });
 
-  fn shader_set_metadata(&self, shader_id: ShaderId, metadata: ShaderMetadata) -> surreal::Result<()> {
-    todo!()
-  }
+      shader.bind_group_layout = state.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        label: shader.label.as_deref(),
+        entries: &[],
+      });
+    });
 
-  fn shader_get_metadata(&self, shader_id: ShaderId) -> surreal::Result<ShaderMetadata> {
-    todo!()
+    Ok(())
   }
 
   fn shader_delete(&self, shader_id: ShaderId) -> surreal::Result<()> {
-    todo!()
-  }
+    self.shader_storage.remove(shader_id);
 
-  fn material_create(&self) -> surreal::Result<MaterialId> {
-    todo!()
-  }
-
-  fn material_set_shader(&self, material_id: MaterialId, shader_id: MaterialId) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn material_get_shader(&self, material_id: MaterialId) -> surreal::Result<MaterialId> {
-    todo!()
-  }
-
-  fn material_set_metadata(&self, material_id: MaterialId, metadata: MaterialMetadata) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn material_get_metadata(&self, material_id: MaterialId) -> surreal::Result<MaterialMetadata> {
-    todo!()
-  }
-
-  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>> {
-    todo!()
-  }
-
-  fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn mesh_create(&self) -> surreal::Result<MeshId> {
-    todo!()
-  }
-
-  fn mesh_get_surface_count(&self, mesh_id: MeshId) -> surreal::Result<usize> {
-    todo!()
-  }
-
-  fn mesh_add_surface(&self, mesh_id: MeshId, surface_data: SurfaceData) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn mesh_get_surface(&self, mesh_id: MeshId, surface_index: usize) -> surreal::Result<SurfaceData> {
-    todo!()
-  }
-
-  fn mesh_get_surface_material(&self, mesh_id: MeshId, surface_index: usize) -> surreal::Result<MeshId> {
-    todo!()
-  }
-
-  fn mesh_set_surface_material(&self, mesh_id: MeshId, surface_index: usize, material_id: MeshId) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn mesh_clear(&self, mesh_id: MeshId) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn mesh_delete(&self, mesh_id: MeshId) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn light_create(&self, light_type: LightType) -> surreal::Result<LightId> {
-    todo!()
-  }
-
-  fn light_get_type(&self, light_id: LightId) -> surreal::Result<LightType> {
-    todo!()
-  }
-
-  fn light_set_parameter(&self, light_id: LightId, parameter: LightParameter) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn light_delete(&self, light_id: LightId) -> surreal::Result<()> {
-    todo!()
+    Ok(())
   }
 }

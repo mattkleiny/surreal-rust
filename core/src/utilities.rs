@@ -15,7 +15,7 @@ mod variant;
 mod version;
 
 /// Abstracts over resource IDs.
-pub trait RID: Eq + std::hash::Hash {
+pub trait RID: Copy + Eq + std::hash::Hash {
   /// Converts the given `u64` to a resource ID.
   fn from_u64(id: u64) -> Self;
 

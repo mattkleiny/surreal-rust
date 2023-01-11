@@ -4,8 +4,10 @@
 //! of different project goals, and `server`s to allow decouple from underlying
 //! graphics APIs.
 
-pub use server::*;
-pub use pipeline::*;
+#![feature(type_alias_impl_trait)]
 
-mod server;
+pub use pipeline::*;
+pub use server::*;
+
 mod pipeline;
+mod server;
