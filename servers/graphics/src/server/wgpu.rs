@@ -13,6 +13,7 @@ pub struct WgpuBackend {
   material_storage: Storage<MaterialId, WgpuMaterial>,
   _mesh_storage: Storage<MeshId, WgpuMesh>,
   _light_storage: Storage<LightId, WgpuLight>,
+  texture_storage: Storage<TextureId, WgpuTexture>,
 }
 
 /// Top-level lockable state for the [`WgpuBackend`].
@@ -36,6 +37,11 @@ struct WgpuMesh {}
 
 /// Internal data for a light in the [`WgpuBackend`].
 struct WgpuLight {}
+
+/// Internal data for a texture in the [`WgpuBackend`].
+struct WgpuTexture {
+  texture: wgpu::Texture,
+}
 
 impl WgpuBackend {
   /// Creates a new [`WgpuBackend`] for the given [`winit::window::Window`].
@@ -91,6 +97,7 @@ impl WgpuBackend {
       material_storage: Storage::default(),
       _mesh_storage: Storage::default(),
       _light_storage: Storage::default(),
+      texture_storage: Storage::default(),
     })
   }
 }
@@ -146,6 +153,56 @@ impl GraphicsServerBackend for WgpuBackend {
 
       state.surface.configure(&state.device, &state.surface_config);
     }
+
+    Ok(())
+  }
+
+  fn texture_create(&self) -> surreal::Result<TextureId> {
+    let texture_id = self.texture_storage.create(|_| {
+      let state = self.state.lock().unwrap();
+
+      let texture = state.device.create_texture(&wgpu::TextureDescriptor {
+        label: None,
+        size: Default::default(),
+        mip_level_count: 1,
+        sample_count: 1,
+        dimension: wgpu::TextureDimension::D2,
+        format: wgpu::TextureFormat::Rgba8Unorm,
+        usage: wgpu::TextureUsages::TEXTURE_BINDING,
+      });
+
+      WgpuTexture { texture }
+    });
+
+    Ok(texture_id)
+  }
+
+  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()> {
+    self.texture_storage.read(texture_id, |texture| {
+      let state = self.state.lock().unwrap();
+
+      state.queue.write_texture(
+        wgpu::ImageCopyTexture {
+          texture: &texture.texture,
+          mip_level: 0,
+          origin: wgpu::Origin3d::ZERO,
+          aspect: wgpu::TextureAspect::All,
+        },
+        pixels,
+        wgpu::ImageDataLayout::default(),
+        wgpu::Extent3d {
+          width: 1024,
+          height: 1024,
+          depth_or_array_layers: 0,
+        },
+      );
+    });
+
+    Ok(())
+  }
+
+  fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()> {
+    self.texture_storage.remove(texture_id);
 
     Ok(())
   }

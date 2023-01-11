@@ -17,4 +17,16 @@ impl GraphicsServerBackend for HeadlessBackend {
   fn resize_viewport(&self, new_size: PhysicalSize<u32>) -> surreal::Result<()> {
     Ok(()) // no-op
   }
+
+  fn texture_create(&self) -> surreal::Result<TextureId> {
+    todo!()
+  }
+
+  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()> {
+    todo!()
+  }
 }

@@ -7,8 +7,9 @@ use winit::{
   window::WindowBuilder,
 };
 
+use surreal::graphics::Color32;
 use surreal::utilities::DeltaClock;
-use surreal_graphics::{CommandBuffer, GraphicsBackendKind};
+use surreal_graphics::{CommandBuffer, GraphicsBackendKind, Texture};
 
 fn main() {
   let event_loop = EventLoop::new();
@@ -22,6 +23,12 @@ fn main() {
 
   let mut commands = CommandBuffer::default();
   let mut delta_clock = DeltaClock::new();
+
+  let mut texture = Texture::new(&graphics).expect("Failed to create texture");
+
+  texture
+    .write_pixels(&[Color32::BLACK, Color32::BLACK, Color32::BLACK, Color32::BLACK])
+    .expect("Failed to write texture data");
 
   macro_rules! attempt {
     ($body:expr) => {

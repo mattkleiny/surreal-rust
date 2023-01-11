@@ -1,6 +1,9 @@
 use std::ops::Range;
 
+pub use primitives::*;
+
 mod headless;
+mod primitives;
 mod utilities;
 mod wgpu;
 
@@ -19,6 +22,9 @@ pub enum GraphicsBackendKind {
 pub struct GraphicsServer {
   backend: std::sync::Arc<dyn GraphicsServerBackend>,
 }
+
+unsafe impl Send for GraphicsServer {}
+unsafe impl Sync for GraphicsServer {}
 
 impl GraphicsServer {
   /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
@@ -123,9 +129,15 @@ pub trait GraphicsServerBackend {
   // fn light_get_type(&self, light_id: LightId) -> surreal::Result<LightType>;
   // fn light_set_parameter(&self, light_id: LightId, parameter: LightParameter) -> surreal::Result<()>;
   // fn light_delete(&self, light_id: LightId) -> surreal::Result<()>;
+
+  // texture operations
+  fn texture_create(&self) -> surreal::Result<TextureId>;
+  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()>;
+  fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()>;
 }
 
 surreal::impl_rid!(ShaderId);
 surreal::impl_rid!(MaterialId);
+surreal::impl_rid!(TextureId);
 surreal::impl_rid!(MeshId);
 surreal::impl_rid!(LightId);
