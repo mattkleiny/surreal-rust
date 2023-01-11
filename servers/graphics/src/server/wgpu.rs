@@ -1,26 +1,18 @@
-use std::sync::Mutex;
-
-use winit::dpi::PhysicalSize;
+use crate::server::utilities::Storage;
 
 use super::*;
 
-/// Re-export the [`wgpu`] crate for consumers of Surreal.
-pub mod wgpu {
+mod wgpu {
   pub use wgpu::*;
 }
 
-type ShaderStorage = Storage<ShaderId, WgpuShader>;
-type MaterialStorage = Storage<MaterialId, WgpuMaterial>;
-type MeshStorage = Storage<MeshId, WgpuMesh>;
-type LightStorage = Storage<LightId, WgpuLight>;
-
 /// The [`GraphicsServerBackend`] for WGPU.
 pub struct WgpuBackend {
-  state: Mutex<WgpuState>,
-  shader_storage: ShaderStorage,
-  _material_storage: MaterialStorage,
-  _mesh_storage: MeshStorage,
-  _light_storage: LightStorage,
+  state: std::sync::Mutex<WgpuState>,
+  _shader_storage: Storage<ShaderId, WgpuShader>,
+  material_storage: Storage<MaterialId, WgpuMaterial>,
+  _mesh_storage: Storage<MeshId, WgpuMesh>,
+  _light_storage: Storage<LightId, WgpuLight>,
 }
 
 /// Top-level lockable state for the [`WgpuBackend`].
@@ -28,19 +20,16 @@ struct WgpuState {
   surface: wgpu::Surface,
   device: wgpu::Device,
   queue: wgpu::Queue,
-  config: wgpu::SurfaceConfiguration,
-  render_pipeline: wgpu::RenderPipeline,
+  surface_config: wgpu::SurfaceConfiguration,
 }
 
 /// Internal data for a shader in the [`WgpuBackend`].
-struct WgpuShader {
-  label: Option<String>,
-  shader_module: wgpu::ShaderModule,
-  bind_group_layout: wgpu::BindGroupLayout,
-}
+struct WgpuShader {}
 
 /// Internal data for a material in the [`WgpuBackend`].
-struct WgpuMaterial {}
+struct WgpuMaterial {
+  render_pipeline: wgpu::RenderPipeline,
+}
 
 /// Internal data for a mesh in the [`WgpuBackend`].
 struct WgpuMesh {}
@@ -51,13 +40,11 @@ struct WgpuLight {}
 impl WgpuBackend {
   /// Creates a new [`WgpuBackend`] for the given [`winit::window::Window`].
   pub async fn new(window: &winit::window::Window) -> surreal::Result<Self> {
-    let size = window.inner_size();
-
-    // The instance is a handle to our GPU
-    // Backends::all => Vulkan + Metal + DX12 + Browser WebGPU
+    // initialize the wgpu backend
     let instance = wgpu::Instance::new(wgpu::Backends::all());
     let surface = unsafe { instance.create_surface(window) };
 
+    // determine physical adapter
     let adapter = instance
       .request_adapter(&wgpu::RequestAdapterOptions {
         power_preference: wgpu::PowerPreference::default(),
@@ -67,6 +54,7 @@ impl WgpuBackend {
       .await
       .ok_or(surreal::anyhow!("Unable to select appropriate adapter"))?;
 
+    // create main device and queue
     let (device, queue) = adapter
       .request_device(
         &wgpu::DeviceDescriptor {
@@ -78,7 +66,10 @@ impl WgpuBackend {
       )
       .await?;
 
-    let config = wgpu::SurfaceConfiguration {
+    // build the main render surface
+    let size = window.inner_size();
+
+    let surface_config = wgpu::SurfaceConfiguration {
       usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
       format: surface.get_supported_formats(&adapter)[0],
       width: size.width,
@@ -87,170 +78,74 @@ impl WgpuBackend {
       alpha_mode: wgpu::CompositeAlphaMode::Auto,
     };
 
-    surface.configure(&device, &config);
-
-    let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-      label: Some("Test Shader"),
-      source: wgpu::ShaderSource::Wgsl(include_str!("../../shaders/standard.wgsl").into()),
-    });
-
-    let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-      label: Some("Render Pipeline Layout"),
-      bind_group_layouts: &[],
-      push_constant_ranges: &[],
-    });
-
-    let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-      label: Some("Render Pipeline"),
-      layout: Some(&render_pipeline_layout),
-      vertex: wgpu::VertexState {
-        module: &shader,
-        entry_point: "vs_main",
-        buffers: &[],
-      },
-      fragment: Some(wgpu::FragmentState {
-        module: &shader,
-        entry_point: "fs_main",
-        targets: &[Some(wgpu::ColorTargetState {
-          format: config.format,
-          blend: Some(wgpu::BlendState::REPLACE),
-          write_mask: wgpu::ColorWrites::ALL,
-        })],
-      }),
-      primitive: wgpu::PrimitiveState {
-        topology: wgpu::PrimitiveTopology::TriangleList,
-        strip_index_format: None,
-        front_face: wgpu::FrontFace::Ccw,
-        cull_mode: Some(wgpu::Face::Back),
-        polygon_mode: wgpu::PolygonMode::Fill,
-        unclipped_depth: false,
-        conservative: false,
-      },
-      depth_stencil: None,
-      multisample: wgpu::MultisampleState {
-        count: 1,
-        mask: !0,
-        alpha_to_coverage_enabled: false,
-      },
-      multiview: None,
-    });
+    surface.configure(&device, &surface_config);
 
     Ok(Self {
-      state: Mutex::new(WgpuState {
+      state: std::sync::Mutex::new(WgpuState {
         surface,
         device,
         queue,
-        config,
-        render_pipeline,
+        surface_config,
       }),
-      shader_storage: ShaderStorage::default(),
-      _material_storage: MaterialStorage::default(),
-      _mesh_storage: MeshStorage::default(),
-      _light_storage: LightStorage::default(),
+      _shader_storage: Storage::default(),
+      material_storage: Storage::default(),
+      _mesh_storage: Storage::default(),
+      _light_storage: Storage::default(),
     })
   }
 }
 
 impl GraphicsServerBackend for WgpuBackend {
-  fn begin_frame(&self, color: Color) -> surreal::Result<()> {
-    let state = self.state.lock().unwrap();
+  fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
+    while let Some(command) = commands.dequeue() {
+      match command {
+        Command::DrawIndirect {
+          material_id,
+          vertices,
+          instances,
+        } => {
+          let state = self.state.lock().unwrap();
 
-    let output_surface = state.surface.get_current_texture()?;
-    let output_view = output_surface.texture.create_view(&wgpu::TextureViewDescriptor::default());
+          let surface = state.surface.get_current_texture()?;
+          let view = surface.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-    let mut encoder = state
-      .device
-      .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("Surreal") });
+          let mut encoder = state.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-    {
-      let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-        label: Some("Forward Opaque"),
-        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-          view: &output_view,
-          resolve_target: None,
-          ops: wgpu::Operations {
-            load: wgpu::LoadOp::Clear(wgpu::Color {
-              r: color.r as f64,
-              g: color.g as f64,
-              b: color.b as f64,
-              a: color.a as f64,
-            }),
-            store: true,
-          },
-        })],
-        depth_stencil_attachment: None,
-      });
+          self.material_storage.read(material_id, |material| {
+            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+              label: Some("Draw Indirect"),
+              color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                view: &view,
+                resolve_target: None,
+                ops: wgpu::Operations {
+                  load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                  store: true,
+                },
+              })],
+              depth_stencil_attachment: None,
+            });
 
-      render_pass.set_pipeline(&state.render_pipeline);
-      render_pass.draw(0..3, 0..1);
+            render_pass.set_pipeline(&material.render_pipeline);
+            render_pass.draw(vertices.clone(), instances.clone());
+          });
+
+          state.queue.submit(Some(encoder.finish()));
+        }
+      }
     }
 
-    state.queue.submit(Some(encoder.finish()));
-    output_surface.present();
-
     Ok(())
   }
 
-  fn end_frame(&self) -> surreal::Result<()> {
-    Ok(())
-  }
-
-  fn resize_viewport(&self, new_size: PhysicalSize<u32>) -> surreal::Result<()> {
+  fn resize_viewport(&self, new_size: winit::dpi::PhysicalSize<u32>) -> surreal::Result<()> {
     if new_size.width > 0 && new_size.height > 0 {
       let mut state = self.state.lock().unwrap();
 
-      state.config.width = new_size.width;
-      state.config.height = new_size.height;
+      state.surface_config.width = new_size.width;
+      state.surface_config.height = new_size.height;
 
-      state.surface.configure(&state.device, &state.config);
+      state.surface.configure(&state.device, &state.surface_config);
     }
-
-    Ok(())
-  }
-
-  fn shader_create(&self, name: Option<&str>) -> surreal::Result<ShaderId> {
-    let shader_id = self.shader_storage.create(|_| {
-      let state = self.state.lock().unwrap();
-
-      let shader_module = state.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-        label: name,
-        source: wgpu::ShaderSource::Wgsl(include_str!("../../shaders/standard.wgsl").into()),
-      });
-
-      let bind_group_layout = state
-        .device
-        .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { label: name, entries: &[] });
-
-      WgpuShader {
-        label: name.map(|it| it.to_string()),
-        shader_module,
-        bind_group_layout,
-      }
-    });
-
-    Ok(shader_id)
-  }
-
-  fn shader_set_code(&self, shader_id: ShaderId, code: &str) -> surreal::Result<()> {
-    self.shader_storage.write(shader_id, |shader| {
-      let state = self.state.lock().unwrap();
-
-      shader.shader_module = state.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-        label: shader.label.as_deref(),
-        source: wgpu::ShaderSource::Wgsl(code.into()),
-      });
-
-      shader.bind_group_layout = state.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-        label: shader.label.as_deref(),
-        entries: &[],
-      });
-    });
-
-    Ok(())
-  }
-
-  fn shader_delete(&self, shader_id: ShaderId) -> surreal::Result<()> {
-    self.shader_storage.remove(shader_id);
 
     Ok(())
   }

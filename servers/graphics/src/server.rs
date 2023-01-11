@@ -1,26 +1,33 @@
-use surreal::graphics::Color;
-use utilities::*;
+use std::ops::Range;
 
 mod headless;
+mod utilities;
 mod wgpu;
 
-mod utilities;
-
-surreal::impl_rid!(ShaderId);
-surreal::impl_rid!(MaterialId);
-surreal::impl_rid!(MeshId);
-surreal::impl_rid!(LightId);
+/// Possible kinds of [`GraphicsServerBackend`]s.
+pub enum GraphicsBackendKind {
+  Headless,
+  WGPU,
+}
 
 /// The singleton graphics server implementation for the project.
 ///
 /// All instructions to the graphics server should be sent through this facade.
 /// Internally we delegate to the active [`GraphicsServerBackend`], which can
 /// vary depending on the target platform.
+#[derive(Clone)]
 pub struct GraphicsServer {
   backend: std::sync::Arc<dyn GraphicsServerBackend>,
 }
 
 impl GraphicsServer {
+  /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
+  pub fn from_backend(backend: impl GraphicsServerBackend + 'static) -> Self {
+    GraphicsServer {
+      backend: std::sync::Arc::new(backend),
+    }
+  }
+
   /// Creates a [`GraphicsServer`] for a Headless, no-op backend.
   pub fn from_headless() -> Self {
     Self::from_backend(headless::HeadlessBackend::default())
@@ -31,10 +38,11 @@ impl GraphicsServer {
     Ok(Self::from_backend(wgpu::WgpuBackend::new(window).await?))
   }
 
-  /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
-  pub fn from_backend(backend: impl GraphicsServerBackend + 'static) -> Self {
-    GraphicsServer {
-      backend: std::sync::Arc::new(backend),
+  /// Creates a [`GraphicsServer`] for the given [`GraphicsBackendKind`].
+  pub async fn from_kind(kind: GraphicsBackendKind, window: &winit::window::Window) -> surreal::Result<Self> {
+    match kind {
+      GraphicsBackendKind::Headless => Ok(Self::from_headless()),
+      GraphicsBackendKind::WGPU => Self::from_wgpu(window).await,
     }
   }
 }
@@ -47,28 +55,48 @@ impl std::ops::Deref for GraphicsServer {
   }
 }
 
+/// A buffer of [`Command`]s for execution in the [`GraphicsServerBackend`].
+#[derive(Default, Clone)]
+pub struct CommandBuffer {
+  commands: Vec<Command>,
+}
+
+impl CommandBuffer {
+  /// Enqueues a [`Command`] to the buffer.
+  pub fn enqueue(&mut self, command: Command) {
+    self.commands.push(command);
+  }
+
+  /// Dequeues a [`Command`] to the buffer.
+  pub fn dequeue(&mut self) -> Option<Command> {
+    self.commands.pop()
+  }
+}
+
+/// A single command in a [`CommandBuffer`].
+#[derive(Clone)]
+pub enum Command {
+  /// Performs an indirect draw with the given material.
+  DrawIndirect {
+    material_id: MaterialId,
+    vertices: Range<u32>,
+    instances: Range<u32>,
+  },
+}
+
 /// An abstraction on top of the underlying graphics API.
 ///
-/// This is a high-level abstraction that makes use of 'opaque' [`GraphicsId`]
-/// to hide away implementation details. The server is intended to be a low-level
-/// implementation abstraction.
-///
-/// This achieves a number of goals for us. In particular:
-///
-/// * It allows us to depend on abstractions instead of concretions; important since
-///   graphics API landscape continues to change, especially in Rust.
-/// * It allows us to build an API that spans lifetime requirements. Whilst some API
-///   methods will be
+/// This is a high-level abstraction that makes use of 'opaque' [`RID`] to hide away implementation
+/// details. The server is intended to be a mid-level implementation abstraction.
 pub trait GraphicsServerBackend {
-  // general operations
-  fn begin_frame(&self, color: Color) -> surreal::Result<()>;
-  fn end_frame(&self) -> surreal::Result<()>;
-  fn resize_viewport(&self, new_size: winit::dpi::PhysicalSize<u32>) -> surreal::Result<()>;
+  /// Executes the given [`CommandBuffer`] against the backend.
+  ///
+  /// This is the main entry point for the graphics server.
+  /// All commands will be drained from the [`CommandBuffer`] and executed in sequence.
+  fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()>;
 
-  // shader operations
-  fn shader_create(&self, name: Option<&str>) -> surreal::Result<ShaderId>;
-  fn shader_set_code(&self, shader_id: ShaderId, code: &str) -> surreal::Result<()>;
-  fn shader_delete(&self, shader_id: ShaderId) -> surreal::Result<()>;
+  /// Notifies the backend that the main viewport has resized to a new physical size.
+  fn resize_viewport(&self, new_size: winit::dpi::PhysicalSize<u32>) -> surreal::Result<()>;
 
   // material operations
   // fn material_create(&self) -> surreal::Result<MaterialId>;
@@ -96,3 +124,8 @@ pub trait GraphicsServerBackend {
   // fn light_set_parameter(&self, light_id: LightId, parameter: LightParameter) -> surreal::Result<()>;
   // fn light_delete(&self, light_id: LightId) -> surreal::Result<()>;
 }
+
+surreal::impl_rid!(ShaderId);
+surreal::impl_rid!(MaterialId);
+surreal::impl_rid!(MeshId);
+surreal::impl_rid!(LightId);

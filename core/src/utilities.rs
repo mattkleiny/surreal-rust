@@ -15,13 +15,7 @@ mod variant;
 mod version;
 
 /// Abstracts over resource IDs.
-pub trait RID: Copy + Eq + std::hash::Hash {
-  /// Converts the given `u64` to a resource ID.
-  fn from_u64(id: u64) -> Self;
-
-  /// Converts the resource ID to it's base `u64`.
-  fn to_u64(&self) -> u64;
-}
+pub trait RID: Copy + Eq + std::hash::Hash + From<u64> {}
 
 /// Creates an opaque ID for a resource in a implementation.
 #[macro_export]
@@ -38,15 +32,12 @@ macro_rules! impl_rid {
       }
     }
 
-    impl $crate::utilities::RID for $name {
-      #[inline]
-      fn from_u64(id: u64) -> Self {
-        Self(id)
-      }
+    impl $crate::utilities::RID for $name {}
 
+    impl From<u64> for $name {
       #[inline]
-      fn to_u64(&self) -> u64 {
-        self.0
+      fn from(id: u64) -> Self {
+        Self(id)
       }
     }
   };

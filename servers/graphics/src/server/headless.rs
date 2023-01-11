@@ -10,27 +10,11 @@ pub struct HeadlessBackend {}
 
 #[allow(unused_variables)]
 impl GraphicsServerBackend for HeadlessBackend {
-  fn begin_frame(&self, color: Color) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn end_frame(&self) -> surreal::Result<()> {
-    todo!()
+  fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
+    Ok(()) // no-op
   }
 
   fn resize_viewport(&self, new_size: PhysicalSize<u32>) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn shader_create(&self, name: Option<&str>) -> surreal::Result<ShaderId> {
-    todo!()
-  }
-
-  fn shader_set_code(&self, shader_id: ShaderId, code: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn shader_delete(&self, shader_id: ShaderId) -> surreal::Result<()> {
-    todo!()
+    Ok(()) // no-op
   }
 }

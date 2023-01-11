@@ -24,8 +24,8 @@ opt-level = 3
 
 [features]
 default = ["audio", "graphics", "input", "physics"]
-pipeline-universal = ["graphics/pipeline-universal"]
-pipeline-highdef = ["graphics/pipeline-highdef"]
+urp = ["graphics/urp"]
+hdrp = ["graphics/hdrp"]
 
 [dependencies]
 # core

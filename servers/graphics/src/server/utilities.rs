@@ -26,7 +26,7 @@ impl<K: RID, V> Storage<K, V> {
   pub fn create(&self, factory: impl Fn(K) -> V) -> K {
     let next_id = self.next_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
-    let key = K::from_u64(next_id);
+    let key = K::from(next_id);
     let value = factory(key);
 
     self.insert(key, value);
@@ -35,14 +35,14 @@ impl<K: RID, V> Storage<K, V> {
   }
 
   /// Reads the [`V`] associated with the given key.
-  pub fn read<R>(&self, key: K, body: impl Fn(&V) -> R) -> Option<R> {
+  pub fn read<R>(&self, key: K, body: impl FnMut(&V) -> R) -> Option<R> {
     let entries = self.entries.read().unwrap();
 
     entries.get(&key).map(body)
   }
 
   /// Writes the [`V`] associated with the given key.
-  pub fn write<R>(&self, key: K, body: impl Fn(&mut V) -> R) -> Option<R> {
+  pub fn write<R>(&self, key: K, body: impl FnMut(&mut V) -> R) -> Option<R> {
     let mut entries = self.entries.write().unwrap();
 
     entries.get_mut(&key).map(body)
