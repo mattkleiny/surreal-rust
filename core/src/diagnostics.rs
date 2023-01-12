@@ -2,7 +2,11 @@
 
 pub use log::{debug, error, info, trace, warn, Level, LevelFilter};
 
+pub use console::*;
+
 pub mod profiling;
+
+mod console;
 
 /// A builder pattern for [`ConsoleLogger`].
 pub struct ConsoleLoggerBuilder {

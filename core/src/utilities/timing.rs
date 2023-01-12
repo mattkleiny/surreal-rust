@@ -8,6 +8,7 @@ use std::time::{Duration, Instant};
 use crate::collections::RingBuffer;
 
 /// A high resolution timestamp that can be used to calculate intervals.
+#[repr(transparent)]
 #[derive(Copy, Clone, Debug)]
 pub struct TimeStamp {
   instant: Instant,
@@ -15,6 +16,7 @@ pub struct TimeStamp {
 
 impl TimeStamp {
   /// Creates a new timestamp from the current time.
+  #[inline]
   pub fn now() -> Self {
     TimeStamp { instant: Instant::now() }
   }
@@ -23,6 +25,7 @@ impl TimeStamp {
 impl Sub for TimeStamp {
   type Output = TimeSpan;
 
+  #[must_use]
   fn sub(self, rhs: Self) -> Self::Output {
     TimeSpan::from(self.instant.duration_since(rhs.instant))
   }
@@ -87,7 +90,7 @@ impl FrameCounter {
   }
 
   pub fn tick(&mut self, delta_time: f32) {
-    self.samples.append(delta_time);
+    self.samples.push(delta_time);
   }
 
   pub fn average_frame_time(&self) -> f32 {
@@ -158,18 +161,18 @@ impl FrameTimer {
 /// A representation of a span of time.
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, PartialOrd)]
 pub struct TimeSpan {
-  milliseconds: f32,
+  seconds: f32,
 }
 
 impl TimeSpan {
   #[inline]
   pub fn from_millis(milliseconds: f32) -> TimeSpan {
-    Self { milliseconds }
+    Self::from_seconds(milliseconds / 1000.)
   }
 
   #[inline]
   pub fn from_seconds(seconds: f32) -> TimeSpan {
-    Self::from_millis(seconds * 1000.)
+    Self { seconds }
   }
 
   #[inline]
@@ -189,17 +192,17 @@ impl TimeSpan {
 
   #[inline]
   pub fn total_duration(&self) -> Duration {
-    Duration::from_micros((self.milliseconds * 1000.) as u64)
+    Duration::from_micros((self.seconds * 1000.) as u64)
   }
 
   #[inline]
   pub fn total_millis(&self) -> f32 {
-    self.milliseconds
+    self.total_seconds() * 1000.
   }
 
   #[inline]
   pub fn total_seconds(&self) -> f32 {
-    self.total_millis() / 1000.
+    self.seconds
   }
 
   #[inline]
@@ -223,7 +226,7 @@ impl Add for TimeSpan {
 
   #[inline]
   fn add(self, rhs: Self) -> Self::Output {
-    TimeSpan::from_millis(self.milliseconds + rhs.milliseconds)
+    TimeSpan::from_seconds(self.seconds + rhs.seconds)
   }
 }
 
@@ -232,7 +235,7 @@ impl Sub for TimeSpan {
 
   #[inline]
   fn sub(self, rhs: Self) -> Self::Output {
-    TimeSpan::from_millis(self.milliseconds - rhs.milliseconds)
+    TimeSpan::from_seconds(self.seconds - rhs.seconds)
   }
 }
 
@@ -241,7 +244,7 @@ impl Mul<f32> for TimeSpan {
 
   #[inline]
   fn mul(self, rhs: f32) -> Self::Output {
-    TimeSpan::from_millis(self.milliseconds * rhs)
+    TimeSpan::from_seconds(self.seconds * rhs)
   }
 }
 
@@ -250,14 +253,14 @@ impl Div<f32> for TimeSpan {
 
   #[inline]
   fn div(self, rhs: f32) -> Self::Output {
-    TimeSpan::from_millis(self.milliseconds / rhs)
+    TimeSpan::from_seconds(self.seconds / rhs)
   }
 }
 
 impl Sum for TimeSpan {
   #[inline]
   fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-    iter.fold(TimeSpan::from_millis(0.), |a, b| a + b)
+    iter.fold(TimeSpan::from_seconds(0.), |a, b| a + b)
   }
 }
 
@@ -271,7 +274,7 @@ impl From<Duration> for TimeSpan {
 impl From<TimeSpan> for Duration {
   #[inline]
   fn from(value: TimeSpan) -> Self {
-    Duration::from_secs_f32(value.milliseconds / 1000.)
+    Duration::from_secs_f32(value.seconds)
   }
 }
 

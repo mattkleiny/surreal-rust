@@ -124,27 +124,20 @@ impl UserInterface {
     }
   }
 
-  /// Propagates input into the user interface and runs the given body against the UI.
-  ///
-  /// Note: this is a fairly expensive operation and should ideally be done once per frame,
-  ///       with as much UI work as possible within a single call.
+  /// Begins a new frame.
   #[profiling::function]
-  pub fn run(&mut self, provider: &mut dyn UserInterfaceHost, mut body: impl FnMut(&egui::Context)) {
-    // transfer pixels-per-point to the UI
-    let pixels_per_point = provider.pixels_per_point();
+  pub fn begin_frame(&mut self, host: &mut dyn UserInterfaceHost) {
+    let raw_input = host.raw_input();
+    let pixels_per_point = host.pixels_per_point();
+
     self.context.set_pixels_per_point(pixels_per_point);
+    self.context.begin_frame(raw_input.clone());
+  }
 
-    // run update, passing input and collecting output
-    let raw_input = provider.raw_input().clone();
-    let full_output = self.context.run(raw_input, |context| {
-      body(context);
-
-      if self.is_profiler_open {
-        self.is_profiler_open = puffin_egui::profiler_window(context);
-      }
-    });
-
-    // apply textures delta
+  /// Ends the current frame.
+  #[profiling::function]
+  pub fn end_frame(&mut self, host: &mut dyn UserInterfaceHost) {
+    let full_output = self.context.end_frame();
     let textures_delta = full_output.textures_delta;
 
     for (id, image_delta) in textures_delta.set {
@@ -269,16 +262,33 @@ impl UserInterface {
     let platform_output = full_output.platform_output;
     let repaint_after = full_output.repaint_after;
 
-    provider.set_exclusive_keyboard_input(self.context.wants_keyboard_input());
-    provider.set_exclusive_pointer_input(self.context.wants_pointer_input());
-    provider.set_cursor_icon(platform_output.cursor_icon);
+    host.set_exclusive_keyboard_input(self.context.wants_keyboard_input());
+    host.set_exclusive_pointer_input(self.context.wants_pointer_input());
+    host.set_cursor_icon(platform_output.cursor_icon);
 
     // TODO: handle clipboard, too
 
     if repaint_after.is_zero() {
-      provider.request_redraw();
+      host.request_redraw();
     } else if repaint_after.as_secs() > 0 && repaint_after.as_secs() < Duration::MAX.as_secs() {
-      provider.request_redraw_after(full_output.repaint_after);
+      host.request_redraw_after(full_output.repaint_after);
     }
+  }
+
+  /// Propagates input into the user interface and runs the given body against the UI.
+  ///
+  /// Note: this is a fairly expensive operation and should ideally be done once per frame,
+  ///       with as much UI work as possible within a single call.
+  #[profiling::function]
+  pub fn run(&mut self, host: &mut dyn UserInterfaceHost, mut body: impl FnMut(&egui::Context)) {
+    self.begin_frame(host);
+
+    body(&self.context);
+
+    if self.is_profiler_open {
+      self.is_profiler_open = puffin_egui::profiler_window(&self.context);
+    }
+
+    self.end_frame(host);
   }
 }

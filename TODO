@@ -6,17 +6,18 @@ Core:
   [ ] Get hot reload for assets working
     [ ] Dependent file hot reloads (for shader includes, etc?)
   [✔] Generalized object loading? @done(22-06-05 14:12)
-  [ ] Fix virtual file system (registry + more formats)
+  [✔] Fix virtual file system (registry + more formats)
   [ ] Get top-level crash handler working
   [✔] Allow reads from buffers and textures @done(22-06-05 14:12)
-  [ ] Finalize core maths library
+  [✔] Finalize core maths library
   [ ] Add lots of tests
   [✔] Reify Grid and add drawing helpers for common shapes (lines, curves, etc) @done(22-06-05 14:12)
   [✔] Fix up lifetimes for core types (graphics, etc) @done(22-06-05 14:12)
-  [ ] Give documentation a bit of love
+  [✔] Give documentation a bit of love
   [✔] Get egui text input working (and platform output handled) @done(22-06-05 23:46)
   [✔] Swap to stable (instead of nightly)? @done(22-06-10 17:20)
-  [ ] Scene management and loading
+  [✔] Scene graph
+  [ ] Scene graph loader
   [ ] Symmetric matrices for intersection tests, etc?
   [ ] Support for custom allocators? (A frame arena for scratch work, perhaps?)
   [ ] Use static pointers for graphics server, audio server, etc?

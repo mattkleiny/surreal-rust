@@ -34,8 +34,8 @@ impl<T> RingBuffer<T> {
     self.elements.capacity()
   }
 
-  /// Appends an element to the buffer.
-  pub fn append(&mut self, element: T) {
+  /// Pushes an element to the buffer.
+  pub fn push(&mut self, element: T) {
     self.elements[self.cursor] = Some(element);
     self.cursor += 1;
 
@@ -166,7 +166,7 @@ mod tests {
     let mut buffer = RingBuffer::new(16);
 
     for i in 0..1000 {
-      buffer.append(i);
+      buffer.push(i);
     }
 
     assert_eq!(buffer.len(), 16);
@@ -177,7 +177,7 @@ mod tests {
     let mut buffer = RingBuffer::new(16);
 
     for i in 0..1000 {
-      buffer.append(i);
+      buffer.push(i);
     }
 
     buffer.clear();
@@ -189,10 +189,10 @@ mod tests {
   fn ringbuffer_should_iterate_backwards() {
     let mut buffer: RingBuffer<u32> = RingBuffer::new(16);
 
-    buffer.append(1);
-    buffer.append(2);
-    buffer.append(3);
-    buffer.append(4);
+    buffer.push(1);
+    buffer.push(2);
+    buffer.push(3);
+    buffer.push(4);
 
     let results: Vec<&u32> = buffer.iter().collect();
 

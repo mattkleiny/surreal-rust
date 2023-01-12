@@ -2515,6 +2515,7 @@ dependencies = [
  "surreal-scripting",
  "surreal-streaming",
  "surreal-voxels",
+ "surreal-wind",
 ]
 
 [[package]]

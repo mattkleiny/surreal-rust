@@ -41,6 +41,7 @@ scripting = { package = "surreal-scripting", path = "modules/scripting", optiona
 prototype = { package = "surreal-prototype", path = "./modules/prototype", optional = true }
 streaming = { package = "surreal-streaming", path = "./modules/streaming", optional = true }
 voxels = { package = "surreal-voxels", path = "./modules/voxels", optional = true }
+wind = { package = "surreal-wind", path = "./modules/wind", optional = true }
 
 # scenes
 scene2d = { package = "surreal-scene2d", path = "./scenes/2d", optional = true }
