@@ -1,5 +1,6 @@
 //! An example of the WGPU [`surreal_graphics::GraphicsBackend`].
 
+use surreal::graphics::TextureFormat;
 use winit::{
   dpi::PhysicalSize,
   event::{Event, WindowEvent},
@@ -23,6 +24,16 @@ fn main() {
   let graphics = pollster::block_on(GraphicsServer::from_wgpu(&window)).unwrap();
   let mut manager = UniversalPipeline::new(&graphics).unwrap();
   let mut delta_clock = DeltaClock::new();
+
+  let texture = graphics
+    .texture_create(&TextureDescriptor {
+      label: Some("Test texture"),
+      size: (16, 16, 0),
+      format: TextureFormat::RGBA8,
+    })
+    .unwrap();
+
+  graphics.texture_delete(texture).unwrap();
 
   event_loop.run(move |event, _, control_flow| match event {
     Event::RedrawRequested(window_id) => {

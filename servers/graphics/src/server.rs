@@ -163,6 +163,19 @@ pub enum UniformValue<'a> {
   Texture(TextureId),
 }
 
+/// A descriptor for how to build a material in the [`GraphicsBackend`].
+pub struct MaterialDescriptor {
+  pub label: Option<&'static str>,
+  pub shader_code: &'static str,
+}
+
+/// A descriptor for how to build a texture in the [`GraphicsBackend`].
+pub struct TextureDescriptor {
+  pub label: Option<&'static str>,
+  pub size: (u32, u32, u32),
+  pub format: TextureFormat,
+}
+
 /// An abstraction on top of the underlying graphics API.
 ///
 /// This is a mid-level abstraction that makes use of 'opaque' resource IDs to hide away
@@ -178,15 +191,11 @@ pub trait GraphicsBackend {
   fn resize_viewport(&self, new_size: winit::dpi::PhysicalSize<u32>) -> surreal::Result<()>;
 
   // material operations
-  // fn material_create(&self) -> surreal::Result<MaterialId>;
-  // fn material_set_shader(&self, material_id: MaterialId, shader_id: MaterialId) -> surreal::Result<()>;
-  // fn material_get_shader(&self, material_id: MaterialId) -> surreal::Result<MaterialId>;
-  // fn material_set_metadata(&self, material_id: MaterialId, metadata: MaterialMetadata) -> surreal::Result<()>;
-  // fn material_get_metadata(&self, material_id: MaterialId) -> surreal::Result<MaterialMetadata>;
-  // fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()>;
-  // fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>>;
-  // fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()>;
-  //
+  fn material_create(&self, descriptor: &MaterialDescriptor) -> surreal::Result<MaterialId>;
+  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()>;
+  fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>>;
+  fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()>;
+
   // // mesh operations
   // fn mesh_create(&self) -> surreal::Result<MeshId>;
   // fn mesh_get_surface_count(&self, mesh_id: MeshId) -> surreal::Result<usize>;
@@ -196,17 +205,9 @@ pub trait GraphicsBackend {
   // fn mesh_set_surface_material(&self, mesh_id: MeshId, surface_index: usize, material_id: MeshId) -> surreal::Result<()>;
   // fn mesh_clear(&self, mesh_id: MeshId) -> surreal::Result<()>;
   // fn mesh_delete(&self, mesh_id: MeshId) -> surreal::Result<()>;
-  //
-  // // light operations
-  // fn light_create(&self, light_type: LightType) -> surreal::Result<LightId>;
-  // fn light_get_type(&self, light_id: LightId) -> surreal::Result<LightType>;
-  // fn light_set_parameter(&self, light_id: LightId, parameter: LightParameter) -> surreal::Result<()>;
-  // fn light_delete(&self, light_id: LightId) -> surreal::Result<()>;
 
   // texture operations
-  fn texture_create_1d(&self, label: Option<&str>, size: u32, format: TextureFormat) -> surreal::Result<TextureId>;
-  fn texture_create_2d(&self, label: Option<&str>, size: (u32, u32), format: TextureFormat) -> surreal::Result<TextureId>;
-  fn texture_create_3d(&self, label: Option<&str>, size: (u32, u32, u32), format: TextureFormat) -> surreal::Result<TextureId>;
+  fn texture_create(&self, descriptor: &TextureDescriptor) -> surreal::Result<TextureId>;
   fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Box<[u8]>>;
   fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()>;
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()>;
@@ -214,6 +215,10 @@ pub trait GraphicsBackend {
   // render target operations
   fn render_target_create(&self, label: Option<&str>, size: (u32, u32), format: TextureFormat) -> surreal::Result<RenderTargetId>;
   fn render_target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()>;
+
+  // TODO: lighting
+  // TODO: sdf
+  // TODO: skybox
 }
 
 surreal::impl_rid!(MaterialId);

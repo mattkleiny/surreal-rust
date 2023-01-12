@@ -9,10 +9,9 @@ mod wgpu {
 /// The [`GraphicsBackend`] for WGPU.
 pub struct WgpuBackend {
   state: std::sync::Mutex<WgpuState>,
-  _material_storage: ResourceStorage<MaterialId, WgpuMaterial>,
-  _mesh_storage: ResourceStorage<MeshId, WgpuMesh>,
+  material_storage: ResourceStorage<MaterialId, WgpuMaterial>,
   texture_storage: ResourceStorage<TextureId, WgpuTexture>,
-  target_storage: ResourceStorage<RenderTargetId, WgpuRenderTarget>,
+  render_target_storage: ResourceStorage<RenderTargetId, WgpuRenderTarget>,
 }
 
 /// Top-level lockable state for the [`WgpuBackend`].
@@ -24,10 +23,11 @@ struct WgpuState {
 }
 
 /// Internal data for a material in the [`WgpuBackend`].
-struct WgpuMaterial {}
-
-/// Internal data for a mesh in the [`WgpuBackend`].
-struct WgpuMesh {}
+struct WgpuMaterial {
+  _uniform_buffer: wgpu::Buffer,
+  _bind_group: wgpu::BindGroup,
+  _shader_module: wgpu::ShaderModule,
+}
 
 /// Internal data for a texture in the [`WgpuBackend`].
 struct WgpuTexture {
@@ -87,10 +87,9 @@ impl WgpuBackend {
         _queue: queue,
         surface_config,
       }),
-      _material_storage: ResourceStorage::default(),
-      _mesh_storage: ResourceStorage::default(),
+      material_storage: ResourceStorage::default(),
       texture_storage: ResourceStorage::default(),
-      target_storage: ResourceStorage::default(),
+      render_target_storage: ResourceStorage::default(),
     })
   }
 }
@@ -160,65 +159,87 @@ impl GraphicsBackend for WgpuBackend {
     Ok(())
   }
 
-  fn texture_create_1d(&self, label: Option<&str>, size: u32, format: TextureFormat) -> surreal::Result<TextureId> {
+  fn material_create(&self, descriptor: &MaterialDescriptor) -> surreal::Result<MaterialId> {
+    use ::wgpu::util::DeviceExt;
+
     let state = self.state.lock().unwrap();
 
-    let texture = state.device.create_texture(&wgpu::TextureDescriptor {
-      label,
-      size: wgpu::Extent3d {
-        width: size,
-        height: 1,
-        depth_or_array_layers: 1,
-      },
-      mip_level_count: 1,
-      sample_count: 1,
-      dimension: wgpu::TextureDimension::D1,
-      format: match format {
-        TextureFormat::RGBA8 => wgpu::TextureFormat::Rgba8Unorm,
-        _ => todo!("Not yet implemented"),
-      },
-      usage: wgpu::TextureUsages::TEXTURE_BINDING,
+    // build primary shader module (TODO: support centrally managed modules)
+    let shader_module = state.device.create_shader_module(wgpu::ShaderModuleDescriptor {
+      label: descriptor.label,
+      source: wgpu::ShaderSource::Wgsl(Cow::from(descriptor.shader_code)),
     });
 
-    Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
-  }
-
-  fn texture_create_2d(&self, label: Option<&str>, size: (u32, u32), format: TextureFormat) -> surreal::Result<TextureId> {
-    let state = self.state.lock().unwrap();
-
-    let texture = state.device.create_texture(&wgpu::TextureDescriptor {
-      label,
-      size: wgpu::Extent3d {
-        width: size.0,
-        height: size.1,
-        depth_or_array_layers: 1,
-      },
-      mip_level_count: 1,
-      sample_count: 1,
-      dimension: wgpu::TextureDimension::D2,
-      format: match format {
-        TextureFormat::RGBA8 => wgpu::TextureFormat::Rgba8Unorm,
-        _ => todo!("Not yet implemented"),
-      },
-      usage: wgpu::TextureUsages::TEXTURE_BINDING,
+    // build uniform buffer
+    let uniform_buffer = state.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+      label: descriptor.label,
+      contents: &[0u8; 0],
+      usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
     });
 
-    Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
+    // build bind group
+    let bind_group_layout = state.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+      label: descriptor.label,
+      entries: &[wgpu::BindGroupLayoutEntry {
+        binding: 0,
+        visibility: wgpu::ShaderStages::all(),
+        ty: wgpu::BindingType::Buffer {
+          ty: wgpu::BufferBindingType::Uniform,
+          has_dynamic_offset: false,
+          min_binding_size: None,
+        },
+        count: None,
+      }],
+    });
+
+    let bind_group = state.device.create_bind_group(&wgpu::BindGroupDescriptor {
+      label: descriptor.label,
+      layout: &bind_group_layout,
+      entries: &[wgpu::BindGroupEntry {
+        binding: 0,
+        resource: uniform_buffer.as_entire_binding(),
+      }],
+    });
+
+    Ok(self.material_storage.insert(WgpuMaterial {
+      _uniform_buffer: uniform_buffer,
+      _bind_group: bind_group,
+      _shader_module: shader_module,
+    }))
   }
 
-  fn texture_create_3d(&self, label: Option<&str>, size: (u32, u32, u32), format: TextureFormat) -> surreal::Result<TextureId> {
+  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>> {
+    todo!()
+  }
+
+  fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn texture_create(&self, descriptor: &TextureDescriptor) -> surreal::Result<TextureId> {
     let state = self.state.lock().unwrap();
 
+    let (width, height, depth) = descriptor.size;
+    let format = descriptor.format;
+
     let texture = state.device.create_texture(&wgpu::TextureDescriptor {
-      label,
+      label: descriptor.label,
       size: wgpu::Extent3d {
-        width: size.0,
-        height: size.1,
-        depth_or_array_layers: size.2,
+        width,
+        height: if height == 0 { 1 } else { height },
+        depth_or_array_layers: if depth == 0 { 1 } else { depth },
       },
       mip_level_count: 1,
       sample_count: 1,
-      dimension: wgpu::TextureDimension::D3,
+      dimension: match () {
+        _ if height > 0 && depth > 0 => wgpu::TextureDimension::D3,
+        _ if height > 0 => wgpu::TextureDimension::D2,
+        _ => wgpu::TextureDimension::D1,
+      },
       format: match format {
         TextureFormat::RGBA8 => wgpu::TextureFormat::Rgba8Unorm,
         _ => todo!("Not yet implemented"),
@@ -244,11 +265,11 @@ impl GraphicsBackend for WgpuBackend {
   }
 
   fn render_target_create(&self, _label: Option<&str>, _size: (u32, u32), _format: TextureFormat) -> surreal::Result<RenderTargetId> {
-    Ok(self.target_storage.insert(WgpuRenderTarget {}))
+    Ok(self.render_target_storage.insert(WgpuRenderTarget {}))
   }
 
   fn render_target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()> {
-    self.target_storage.remove(render_target_id);
+    self.render_target_storage.remove(render_target_id);
 
     Ok(())
   }

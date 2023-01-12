@@ -18,15 +18,23 @@ impl GraphicsBackend for HeadlessBackend {
     Ok(()) // no-op
   }
 
-  fn texture_create_1d(&self, label: Option<&str>, size: u32, format: TextureFormat) -> surreal::Result<TextureId> {
+  fn material_create(&self, descriptor: &MaterialDescriptor) -> surreal::Result<MaterialId> {
     todo!()
   }
 
-  fn texture_create_2d(&self, label: Option<&str>, size: (u32, u32), format: TextureFormat) -> surreal::Result<TextureId> {
+  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()> {
     todo!()
   }
 
-  fn texture_create_3d(&self, label: Option<&str>, size: (u32, u32, u32), format: TextureFormat) -> surreal::Result<TextureId> {
+  fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>> {
+    todo!()
+  }
+
+  fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn texture_create(&self, descriptor: &TextureDescriptor) -> surreal::Result<TextureId> {
     todo!()
   }
 
