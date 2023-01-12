@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use surreal::{
   graphics::{RenderContext, Renderer},
   macros::Object,
-  maths::{Guid, Vec3},
-  scene::{SceneComponent, SceneContext, SceneNode, SceneNodeId},
+  maths::Vec3,
+  scene::{SceneComponent, SceneContext, SceneNodeId},
   utilities::ServiceProvider,
 };
 
@@ -23,7 +23,7 @@ impl SceneComponent for WindEmitter {
   }
 
   fn on_render(&mut self, _context: SceneContext, renderer: &mut Renderer) {
-    renderer.with(|context: &mut WindContext| {
+    renderer.with(|_context: &mut WindContext| {
       // TODO: render wind
     });
   }
@@ -50,8 +50,8 @@ impl SceneComponent for WindReceiver {
     wind_manager.vorticles.insert(
       context.node.id(),
       Vorticle {
-        position: context.node.local_position(),
-        velocity: Vec3::ZERO,
+        _position: context.node.local_position(),
+        _velocity: Vec3::ZERO,
       },
     );
   }
@@ -64,8 +64,8 @@ struct WindManager {
 }
 
 struct Vorticle {
-  position: Vec3,
-  velocity: Vec3,
+  _position: Vec3,
+  _velocity: Vec3,
 }
 
 /// A [`RenderContext`] for wind rendering.

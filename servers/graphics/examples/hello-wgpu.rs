@@ -9,7 +9,7 @@ use winit::{
 
 use surreal::graphics::Color32;
 use surreal::utilities::{bytemuck::cast_slice, DeltaClock};
-use surreal_graphics::{Command, CommandBuffer, GraphicsBackendKind, Texture};
+use surreal_graphics::{Command, CommandBuffer, GraphicsBackendKind};
 
 fn main() {
   let event_loop = EventLoop::new();
@@ -20,16 +20,9 @@ fn main() {
     .unwrap();
 
   let graphics = pollster::block_on(surreal_graphics::GraphicsServer::from_kind(GraphicsBackendKind::WGPU, &window)).unwrap();
+  let texture_id = graphics.texture_create().expect("Failed to create texture");
 
-  let mut commands = CommandBuffer::default();
   let mut delta_clock = DeltaClock::new();
-
-  let texture = Texture::new(&graphics).expect("Failed to create texture");
-
-  commands.enqueue(Command::WriteTexture {
-    texture_id: texture.id(),
-    pixels: cast_slice(&[Color32::BLACK; 1920 * 1080]),
-  });
 
   macro_rules! attempt {
     ($body:expr) => {
@@ -42,6 +35,19 @@ fn main() {
   event_loop.run(move |event, _, control_flow| match event {
     Event::RedrawRequested(window_id) => {
       if window_id == window.id() {
+        let mut commands = CommandBuffer::default();
+        let mut pixel_data = Vec::new();
+
+        commands.enqueue(Command::WriteTexturePixels {
+          texture_id,
+          pixels: cast_slice(&[Color32::WHITE; 256 * 144]),
+        });
+
+        commands.enqueue(Command::ReadTexturePixels {
+          texture_id,
+          pixels: &mut pixel_data,
+        });
+
         attempt!(graphics.execute_commands(&mut commands));
       }
     }

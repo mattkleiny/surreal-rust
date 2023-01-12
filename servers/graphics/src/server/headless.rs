@@ -26,6 +26,10 @@ impl GraphicsServerBackend for HeadlessBackend {
     todo!()
   }
 
+  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Vec<u8>> {
+    todo!()
+  }
+
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()> {
     todo!()
   }

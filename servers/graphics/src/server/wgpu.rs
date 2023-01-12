@@ -1,4 +1,4 @@
-use crate::server::utilities::Storage;
+use crate::server::utilities::ResourceStorage;
 
 use super::*;
 
@@ -9,11 +9,11 @@ mod wgpu {
 /// The [`GraphicsServerBackend`] for WGPU.
 pub struct WgpuBackend {
   state: std::sync::Mutex<WgpuState>,
-  _shader_storage: Storage<ShaderId, WgpuShader>,
-  material_storage: Storage<MaterialId, WgpuMaterial>,
-  _mesh_storage: Storage<MeshId, WgpuMesh>,
-  _light_storage: Storage<LightId, WgpuLight>,
-  texture_storage: Storage<TextureId, WgpuTexture>,
+  _shader_storage: ResourceStorage<ShaderId, WgpuShader>,
+  material_storage: ResourceStorage<MaterialId, WgpuMaterial>,
+  _mesh_storage: ResourceStorage<MeshId, WgpuMesh>,
+  _light_storage: ResourceStorage<LightId, WgpuLight>,
+  texture_storage: ResourceStorage<TextureId, WgpuTexture>,
 }
 
 /// Top-level lockable state for the [`WgpuBackend`].
@@ -93,11 +93,11 @@ impl WgpuBackend {
         queue,
         surface_config,
       }),
-      _shader_storage: Storage::default(),
-      material_storage: Storage::default(),
-      _mesh_storage: Storage::default(),
-      _light_storage: Storage::default(),
-      texture_storage: Storage::default(),
+      _shader_storage: ResourceStorage::default(),
+      material_storage: ResourceStorage::default(),
+      _mesh_storage: ResourceStorage::default(),
+      _light_storage: ResourceStorage::default(),
+      texture_storage: ResourceStorage::default(),
     })
   }
 }
@@ -111,25 +111,16 @@ impl GraphicsServerBackend for WgpuBackend {
 
     while let Some(command) = commands.dequeue() {
       match command {
-        Command::WriteTexture { texture_id, pixels } => {
-          self.texture_storage.read(texture_id, |texture| {
-            state.queue.write_texture(
-              wgpu::ImageCopyTexture {
-                texture: &texture.texture,
-                mip_level: 0,
-                origin: wgpu::Origin3d::ZERO,
-                aspect: wgpu::TextureAspect::All,
-              },
-              pixels,
-              wgpu::ImageDataLayout::default(),
-              wgpu::Extent3d {
-                width: 1024,
-                height: 1024,
-                depth_or_array_layers: 0,
-              },
-            );
-          });
-        }
+        Command::WriteTexturePixels { .. } => {}
+        Command::ReadTexturePixels { .. } => {}
+        Command::SetGlobalUniform { .. } => {}
+        Command::SetViewMatrix { .. } => {}
+        Command::SetProjectionMatrix { .. } => {}
+        Command::SetViewport { .. } => {}
+        Command::SetRenderTarget { .. } => {}
+        Command::BeginSample { .. } => {}
+        Command::EndSample { .. } => {}
+        Command::DrawMesh { .. } => {}
         Command::DrawIndirect {
           material_id,
           vertices,
@@ -198,27 +189,11 @@ impl GraphicsServerBackend for WgpuBackend {
   }
 
   fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()> {
-    self.texture_storage.read(texture_id, |texture| {
-      let state = self.state.lock().unwrap();
+    todo!()
+  }
 
-      state.queue.write_texture(
-        wgpu::ImageCopyTexture {
-          texture: &texture.texture,
-          mip_level: 0,
-          origin: wgpu::Origin3d::ZERO,
-          aspect: wgpu::TextureAspect::All,
-        },
-        pixels,
-        wgpu::ImageDataLayout::default(),
-        wgpu::Extent3d {
-          width: 1024,
-          height: 1024,
-          depth_or_array_layers: 0,
-        },
-      );
-    });
-
-    Ok(())
+  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Vec<u8>> {
+    todo!()
   }
 
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()> {

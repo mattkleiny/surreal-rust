@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::ops::Range;
 
 pub use primitives::*;
@@ -62,7 +63,7 @@ impl std::ops::Deref for GraphicsServer {
 }
 
 /// A buffer of [`Command`]s for execution in the [`GraphicsServerBackend`].
-#[derive(Default, Clone)]
+#[derive(Default)]
 pub struct CommandBuffer<'a> {
   commands: Vec<Command<'a>>,
 }
@@ -80,18 +81,53 @@ impl<'a> CommandBuffer<'a> {
 }
 
 /// A single command in a [`CommandBuffer`].
-#[derive(Clone)]
 pub enum Command<'a> {
-  WriteTexture {
-    texture_id: TextureId,
-    pixels: &'a [u8],
+  /// Reads the contents of the given [`TextureId`] into a [`Vec`] of [`u8`].
+  ReadTexturePixels { texture_id: TextureId, pixels: &'a mut Vec<u8> },
+  /// Writes the given [`Vec`] of [`u8`] pixel data into the given [`TextureId`].
+  WriteTexturePixels { texture_id: TextureId, pixels: &'a [u8] },
+  /// Sets the view matrix on the underlying pipeline.
+  SetViewMatrix { view_matrix: &'a [f32; 4 * 4] },
+  /// Sets the projection matrix on the underlying pipeline.
+  SetProjectionMatrix { projection_matrix: &'a [f32; 4 * 4] },
+  /// Sets the given global [`UniformValue`] for all materials.
+  SetGlobalUniform {
+    uniform_name: &'a str,
+    uniform_value: UniformValue<'a>,
   },
-  /// Performs an indirect draw with the given material.
+  /// Sets the given viewport size on the underlying pipeline.
+  SetViewport { viewport_size: winit::dpi::PhysicalSize<u32> },
+  /// Sets the given render target as the active one for rendering.
+  SetRenderTarget { render_target_id: Option<RenderTargetId> },
+  /// Begins sampling command information in the profiling system with the given name.
+  BeginSample { sample_name: Cow<'a, str> },
+  /// Stops sampling command information in the profiling system with the given name.
+  EndSample { sample_name: Cow<'a, str> },
+  /// Draws a mesh with the given material and optional material properties.
+  DrawMesh {
+    mesh_id: MeshId,
+    material_id: MaterialId,
+    material_props: &'a [UniformValue<'a>],
+    sub_mesh_index: usize,
+  },
+  /// Performs an indirect draw call with the given material and vertex/index counts.
   DrawIndirect {
     material_id: MaterialId,
     vertices: Range<u32>,
     instances: Range<u32>,
   },
+}
+
+/// A possible value for a uniform in a [`Command`].
+pub enum UniformValue<'a> {
+  Float(f32),
+  Vec2([f32; 2]),
+  Vec3([f32; 3]),
+  Vec4([f32; 4]),
+  Mat2(&'a [f32; 2 * 2]),
+  Mat3(&'a [f32; 3 * 3]),
+  Mat4(&'a [f32; 4 * 4]),
+  Texture(TextureId),
 }
 
 /// An abstraction on top of the underlying graphics API.
@@ -137,6 +173,7 @@ pub trait GraphicsServerBackend {
   // texture operations
   fn texture_create(&self) -> surreal::Result<TextureId>;
   fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()>;
+  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Vec<u8>>;
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()>;
 }
 
@@ -145,3 +182,4 @@ surreal::impl_rid!(MaterialId);
 surreal::impl_rid!(TextureId);
 surreal::impl_rid!(MeshId);
 surreal::impl_rid!(LightId);
+surreal::impl_rid!(RenderTargetId);

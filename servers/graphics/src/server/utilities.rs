@@ -6,12 +6,12 @@ use surreal::utilities::ResourceId;
 /// Thread-safe storage for [`ResourceId`] [`K`] to some internal data structure [`V`].
 ///
 /// This allows for opaque decoupling of user-facing resource IDs and internal data structures.
-pub struct Storage<K, V> {
+pub struct ResourceStorage<K, V> {
   entries: RwLock<Arena<V>>,
   _key: std::marker::PhantomData<K>,
 }
 
-impl<K: ResourceId, V> Default for Storage<K, V> {
+impl<K: ResourceId, V> Default for ResourceStorage<K, V> {
   fn default() -> Self {
     Self {
       entries: RwLock::new(Arena::new()),
@@ -20,7 +20,7 @@ impl<K: ResourceId, V> Default for Storage<K, V> {
   }
 }
 
-impl<K: ResourceId, V> Storage<K, V> {
+impl<K: ResourceId, V> ResourceStorage<K, V> {
   /// Creates a new [`V`] in the storage with the given factory method.
   pub fn create(&self, factory: impl Fn() -> V) -> K {
     self.insert(factory())

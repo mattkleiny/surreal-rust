@@ -1,5 +1,7 @@
 //! Collections and data structures.
 
+pub use smallvec::{smallvec, SmallVec};
+
 pub use anymap::*;
 pub use arena::*;
 pub use grid::*;
