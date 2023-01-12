@@ -4,12 +4,12 @@ use winit::dpi::PhysicalSize;
 
 use super::*;
 
-/// A headless, no-op [`GraphicsServerBackend`].
+/// A headless, no-op [`GraphicsBackend`].
 #[derive(Default)]
 pub struct HeadlessBackend {}
 
 #[allow(unused_variables)]
-impl GraphicsServerBackend for HeadlessBackend {
+impl GraphicsBackend for HeadlessBackend {
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
     Ok(()) // no-op
   }
@@ -18,7 +18,15 @@ impl GraphicsServerBackend for HeadlessBackend {
     Ok(()) // no-op
   }
 
-  fn texture_create(&self) -> surreal::Result<TextureId> {
+  fn texture_create_1d(&self, label: Option<&str>, size: u32, format: TextureFormat) -> surreal::Result<TextureId> {
+    todo!()
+  }
+
+  fn texture_create_2d(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<TextureId> {
+    todo!()
+  }
+
+  fn texture_create_3d(&self, label: Option<&str>, size: UVec3, format: TextureFormat) -> surreal::Result<TextureId> {
     todo!()
   }
 
@@ -31,6 +39,14 @@ impl GraphicsServerBackend for HeadlessBackend {
   }
 
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()> {
+    todo!()
+  }
+
+  fn target_create(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<RenderTargetId> {
+    todo!()
+  }
+
+  fn target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()> {
     todo!()
   }
 }

@@ -1,4 +1,4 @@
-//! An example of the WGPU [`surreal_graphics::GraphicsServerBackend`].
+//! An example of the WGPU [`surreal_graphics::GraphicsBackend`].
 
 use winit::{
   dpi::PhysicalSize,
@@ -7,9 +7,8 @@ use winit::{
   window::WindowBuilder,
 };
 
-use surreal::graphics::Color32;
-use surreal::utilities::{bytemuck::cast_slice, DeltaClock};
-use surreal_graphics::{Command, CommandBuffer, GraphicsBackendKind};
+use surreal::utilities::DeltaClock;
+use surreal_graphics::{urp::*, *};
 
 fn main() {
   let event_loop = EventLoop::new();
@@ -19,9 +18,8 @@ fn main() {
     .build(&event_loop)
     .unwrap();
 
-  let graphics = pollster::block_on(surreal_graphics::GraphicsServer::from_kind(GraphicsBackendKind::WGPU, &window)).unwrap();
-  let texture_id = graphics.texture_create().expect("Failed to create texture");
-
+  let graphics = pollster::block_on(GraphicsServer::from_kind(GraphicsBackendKind::WGPU, &window)).unwrap();
+  let mut manager = UniversalPipeline::new(&graphics).unwrap();
   let mut delta_clock = DeltaClock::new();
 
   macro_rules! attempt {
@@ -35,20 +33,8 @@ fn main() {
   event_loop.run(move |event, _, control_flow| match event {
     Event::RedrawRequested(window_id) => {
       if window_id == window.id() {
-        let mut commands = CommandBuffer::default();
-        let mut pixel_data = Vec::new();
-
-        commands.enqueue(Command::WriteTexturePixels {
-          texture_id,
-          pixels: cast_slice(&[Color32::WHITE; 256 * 144]),
-        });
-
-        commands.enqueue(Command::ReadTexturePixels {
-          texture_id,
-          pixels: &mut pixel_data,
-        });
-
-        attempt!(graphics.execute_commands(&mut commands));
+        manager.begin_frame();
+        manager.end_frame().expect("Failed to render frame");
       }
     }
     Event::MainEventsCleared => {

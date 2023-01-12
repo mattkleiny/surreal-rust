@@ -195,15 +195,6 @@ impl Transform {
   }
 }
 
-/// A flag that indicates what kind of [`SceneComponent`]s are present in a [`SceneComponentSet`].
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub enum SceneComponentKind {
-  /// This component has standard 'update' behaviour, but doesn't need to render.
-  Behaviour,
-  /// This component needs to render and wants access to the [`Renderer`].
-  Renderer,
-}
-
 /// Context for a [`SceneEvent`].
 pub struct SceneContext<'a> {
   /// The [`SceneNode`] being updated.
@@ -242,13 +233,6 @@ pub trait SceneComponent: Object {
   fn on_destroy(&mut self, context: SceneContext) {}
   fn on_update(&mut self, context: SceneContext, delta_time: f32) {}
   fn on_render(&mut self, context: SceneContext, renderer: &mut Renderer) {}
-
-  /// Determines the [`SceneComponentKind`] of this component.
-  ///
-  /// The kind is used for determining which sub-trees have component types.
-  fn kind(&self) -> SceneComponentKind {
-    SceneComponentKind::Behaviour
-  }
 }
 
 /// A set of [`SceneComponent`]s in a [`SceneNode`].
@@ -264,11 +248,6 @@ impl SceneComponentSet {
     Self {
       components: Vec::from(components),
     }
-  }
-
-  /// Determines if the given [`SceneComponentKind`] is present in the set.
-  pub fn has_kind(&self, kind: SceneComponentKind) -> bool {
-    self.components.iter().any(|c| c.kind() == kind)
   }
 
   /// Adds a new [`SceneComponent`] to the set.

@@ -1,7 +1,35 @@
 use std::sync::RwLock;
 
-use surreal::collections::Arena;
-use surreal::utilities::ResourceId;
+use crate::collections::{Arena, ArenaIndex};
+
+/// Abstracts over resource IDs.
+pub trait ResourceId: Copy + Eq + From<ArenaIndex> + Into<ArenaIndex> {}
+
+/// Creates a new, opaque [`ResourceId`] type.
+#[macro_export]
+macro_rules! impl_rid {
+  ($name:ident) => {
+    #[repr(transparent)]
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub struct $name($crate::collections::ArenaIndex);
+
+    impl $crate::utilities::ResourceId for $name {}
+
+    impl From<$crate::collections::ArenaIndex> for $name {
+      #[inline]
+      fn from(id: $crate::collections::ArenaIndex) -> Self {
+        Self(id)
+      }
+    }
+
+    impl From<$name> for $crate::collections::ArenaIndex {
+      #[inline]
+      fn from(id: $name) -> Self {
+        id.0
+      }
+    }
+  };
+}
 
 /// Thread-safe storage for [`ResourceId`] [`K`] to some internal data structure [`V`].
 ///

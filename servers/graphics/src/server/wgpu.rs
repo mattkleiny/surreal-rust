@@ -1,4 +1,4 @@
-use crate::server::utilities::ResourceStorage;
+use surreal::utilities::ResourceStorage;
 
 use super::*;
 
@@ -6,21 +6,22 @@ mod wgpu {
   pub use wgpu::*;
 }
 
-/// The [`GraphicsServerBackend`] for WGPU.
+/// The [`GraphicsBackend`] for WGPU.
 pub struct WgpuBackend {
   state: std::sync::Mutex<WgpuState>,
   _shader_storage: ResourceStorage<ShaderId, WgpuShader>,
-  material_storage: ResourceStorage<MaterialId, WgpuMaterial>,
+  _material_storage: ResourceStorage<MaterialId, WgpuMaterial>,
   _mesh_storage: ResourceStorage<MeshId, WgpuMesh>,
   _light_storage: ResourceStorage<LightId, WgpuLight>,
   texture_storage: ResourceStorage<TextureId, WgpuTexture>,
+  target_storage: ResourceStorage<RenderTargetId, WgpuRenderTarget>,
 }
 
 /// Top-level lockable state for the [`WgpuBackend`].
 struct WgpuState {
   surface: wgpu::Surface,
   device: wgpu::Device,
-  queue: wgpu::Queue,
+  _queue: wgpu::Queue,
   surface_config: wgpu::SurfaceConfiguration,
 }
 
@@ -28,9 +29,7 @@ struct WgpuState {
 struct WgpuShader {}
 
 /// Internal data for a material in the [`WgpuBackend`].
-struct WgpuMaterial {
-  render_pipeline: wgpu::RenderPipeline,
-}
+struct WgpuMaterial {}
 
 /// Internal data for a mesh in the [`WgpuBackend`].
 struct WgpuMesh {}
@@ -40,8 +39,11 @@ struct WgpuLight {}
 
 /// Internal data for a texture in the [`WgpuBackend`].
 struct WgpuTexture {
-  texture: wgpu::Texture,
+  _texture: wgpu::Texture,
 }
+
+/// Internal data for a render target in the [`WgpuBackend`].
+struct WgpuRenderTarget {}
 
 impl WgpuBackend {
   /// Creates a new [`WgpuBackend`] for the given [`winit::window::Window`].
@@ -90,67 +92,67 @@ impl WgpuBackend {
       state: std::sync::Mutex::new(WgpuState {
         surface,
         device,
-        queue,
+        _queue: queue,
         surface_config,
       }),
       _shader_storage: ResourceStorage::default(),
-      material_storage: ResourceStorage::default(),
+      _material_storage: ResourceStorage::default(),
       _mesh_storage: ResourceStorage::default(),
       _light_storage: ResourceStorage::default(),
       texture_storage: ResourceStorage::default(),
+      target_storage: ResourceStorage::default(),
     })
   }
 }
 
-impl GraphicsServerBackend for WgpuBackend {
+impl GraphicsBackend for WgpuBackend {
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
-    let state = self.state.lock().unwrap();
-
-    let surface = state.surface.get_current_texture()?;
-    let mut encoder = state.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
-    while let Some(command) = commands.dequeue() {
-      match command {
-        Command::WriteTexturePixels { .. } => {}
-        Command::ReadTexturePixels { .. } => {}
-        Command::SetGlobalUniform { .. } => {}
-        Command::SetViewMatrix { .. } => {}
-        Command::SetProjectionMatrix { .. } => {}
-        Command::SetViewport { .. } => {}
-        Command::SetRenderTarget { .. } => {}
-        Command::BeginSample { .. } => {}
-        Command::EndSample { .. } => {}
-        Command::DrawMesh { .. } => {}
-        Command::DrawIndirect {
-          material_id,
-          vertices,
-          instances,
-        } => {
-          let view = surface.texture.create_view(&wgpu::TextureViewDescriptor::default());
-
-          self.material_storage.read(material_id, |material| {
-            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-              label: Some("Draw Indirect"),
-              color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                view: &view,
-                resolve_target: None,
-                ops: wgpu::Operations {
-                  load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
-                  store: true,
-                },
-              })],
-              depth_stencil_attachment: None,
-            });
-
-            render_pass.set_pipeline(&material.render_pipeline);
-            render_pass.draw(vertices.clone(), instances.clone());
-          });
-        }
-      }
-    }
-
-    state.queue.submit(Some(encoder.finish()));
-    surface.present();
+    // let state = self.state.lock().unwrap();
+    //
+    // let surface = state.surface.get_current_texture()?;
+    // let descriptor = wgpu::CommandEncoderDescriptor { label: commands.label };
+    //
+    // let mut encoder = state.device.create_command_encoder(&descriptor);
+    //
+    // while let Some(command) = commands.dequeue() {
+    //   match command {
+    //     Command::WriteTexturePixels { .. } => {}
+    //     Command::ReadTexturePixels { .. } => {}
+    //     Command::SetGlobalUniform { .. } => {}
+    //     Command::SetViewMatrix { .. } => {}
+    //     Command::SetProjectionMatrix { .. } => {}
+    //     Command::SetViewport { .. } => {}
+    //     Command::SetRenderTarget { .. } => {}
+    //     Command::BeginSample { .. } => {}
+    //     Command::EndSample { .. } => {}
+    //     Command::DrawMesh { .. } => {}
+    //     Command::DrawIndirect {
+    //       material_id,
+    //       vertices,
+    //       instances,
+    //     } => {
+    //       let view = surface.texture.create_view(&wgpu::TextureViewDescriptor::default());
+    //
+    //       let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+    //         label: Some("Draw Indirect"),
+    //         color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+    //           view: &view,
+    //           resolve_target: None,
+    //           ops: wgpu::Operations {
+    //             load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+    //             store: true,
+    //           },
+    //         })],
+    //         depth_stencil_attachment: None,
+    //       });
+    //
+    //       render_pass.draw(vertices.clone(), instances.clone());
+    //     }
+    //   }
+    // }
+    //
+    // state.queue.submit(Some(encoder.finish()));
+    // surface.present();
 
     Ok(())
   }
@@ -168,36 +170,95 @@ impl GraphicsServerBackend for WgpuBackend {
     Ok(())
   }
 
-  fn texture_create(&self) -> surreal::Result<TextureId> {
-    let texture_id = self.texture_storage.create(|| {
-      let state = self.state.lock().unwrap();
+  fn texture_create_1d(&self, label: Option<&str>, size: u32, format: TextureFormat) -> surreal::Result<TextureId> {
+    let state = self.state.lock().unwrap();
 
-      let texture = state.device.create_texture(&wgpu::TextureDescriptor {
-        label: None,
-        size: wgpu::Extent3d::default(),
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: wgpu::TextureUsages::TEXTURE_BINDING,
-      });
-
-      WgpuTexture { texture }
+    let texture = state.device.create_texture(&wgpu::TextureDescriptor {
+      label,
+      size: wgpu::Extent3d {
+        width: size,
+        height: 1,
+        depth_or_array_layers: 1,
+      },
+      mip_level_count: 1,
+      sample_count: 1,
+      dimension: wgpu::TextureDimension::D1,
+      format: match format {
+        TextureFormat::RGBA8 => wgpu::TextureFormat::Rgba8Unorm,
+        _ => todo!("Not yet implemented"),
+      },
+      usage: wgpu::TextureUsages::TEXTURE_BINDING,
     });
 
-    Ok(texture_id)
+    Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
   }
 
-  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()> {
-    todo!()
+  fn texture_create_2d(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<TextureId> {
+    let state = self.state.lock().unwrap();
+
+    let texture = state.device.create_texture(&wgpu::TextureDescriptor {
+      label,
+      size: wgpu::Extent3d {
+        width: size.x,
+        height: size.y,
+        depth_or_array_layers: 1,
+      },
+      mip_level_count: 1,
+      sample_count: 1,
+      dimension: wgpu::TextureDimension::D2,
+      format: match format {
+        TextureFormat::RGBA8 => wgpu::TextureFormat::Rgba8Unorm,
+        _ => todo!("Not yet implemented"),
+      },
+      usage: wgpu::TextureUsages::TEXTURE_BINDING,
+    });
+
+    Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
+  }
+
+  fn texture_create_3d(&self, label: Option<&str>, size: UVec3, format: TextureFormat) -> surreal::Result<TextureId> {
+    let state = self.state.lock().unwrap();
+
+    let texture = state.device.create_texture(&wgpu::TextureDescriptor {
+      label,
+      size: wgpu::Extent3d {
+        width: size.x,
+        height: size.y,
+        depth_or_array_layers: size.z,
+      },
+      mip_level_count: 1,
+      sample_count: 1,
+      dimension: wgpu::TextureDimension::D3,
+      format: match format {
+        TextureFormat::RGBA8 => wgpu::TextureFormat::Rgba8Unorm,
+        _ => todo!("Not yet implemented"),
+      },
+      usage: wgpu::TextureUsages::TEXTURE_BINDING,
+    });
+
+    Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
   }
 
   fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Vec<u8>> {
     todo!()
   }
 
+  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()> {
+    todo!()
+  }
+
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()> {
     self.texture_storage.remove(texture_id);
+
+    Ok(())
+  }
+
+  fn target_create(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<RenderTargetId> {
+    Ok(self.target_storage.insert(WgpuRenderTarget {}))
+  }
+
+  fn target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()> {
+    self.target_storage.remove(render_target_id);
 
     Ok(())
   }

@@ -1,14 +1,13 @@
 use std::borrow::Cow;
 use std::ops::Range;
 
-pub use primitives::*;
+use surreal::graphics::{Color, TextureFormat};
+use surreal::maths::{Mat4, UVec2, UVec3};
 
 mod headless;
-mod primitives;
-mod utilities;
 mod wgpu;
 
-/// Possible kinds of [`GraphicsServerBackend`]s.
+/// Possible kinds of [`GraphicsBackend`]s.
 pub enum GraphicsBackendKind {
   Headless,
   WGPU,
@@ -17,19 +16,19 @@ pub enum GraphicsBackendKind {
 /// The singleton graphics server implementation for the project.
 ///
 /// All instructions to the graphics server should be sent through this facade.
-/// Internally we delegate to the active [`GraphicsServerBackend`], which can
+/// Internally we delegate to the active [`GraphicsBackend`], which can
 /// vary depending on the target platform.
 #[derive(Clone)]
 pub struct GraphicsServer {
-  backend: std::sync::Arc<dyn GraphicsServerBackend>,
+  backend: std::sync::Arc<dyn GraphicsBackend>,
 }
 
 unsafe impl Send for GraphicsServer {}
 unsafe impl Sync for GraphicsServer {}
 
 impl GraphicsServer {
-  /// Create a [`GraphicsServer`] from the given [`GraphicsServerBackend`].
-  pub fn from_backend(backend: impl GraphicsServerBackend + 'static) -> Self {
+  /// Create a [`GraphicsServer`] from the given [`GraphicsBackend`].
+  pub fn from_backend(backend: impl GraphicsBackend + 'static) -> Self {
     GraphicsServer {
       backend: std::sync::Arc::new(backend),
     }
@@ -55,16 +54,17 @@ impl GraphicsServer {
 }
 
 impl std::ops::Deref for GraphicsServer {
-  type Target = dyn GraphicsServerBackend;
+  type Target = dyn GraphicsBackend;
 
   fn deref(&self) -> &Self::Target {
     self.backend.as_ref()
   }
 }
 
-/// A buffer of [`Command`]s for execution in the [`GraphicsServerBackend`].
+/// A buffer of [`Command`]s for execution in the [`GraphicsBackend`].
 #[derive(Default)]
 pub struct CommandBuffer<'a> {
+  _label: Option<&'a str>,
   commands: Vec<Command<'a>>,
 }
 
@@ -80,6 +80,36 @@ impl<'a> CommandBuffer<'a> {
   }
 }
 
+/// Builder pattern for [`CommandBuffer`]s.
+#[must_use]
+#[derive(Default)]
+pub struct CommandBufferBuilder<'a> {
+  label: Option<&'a str>,
+  capacity: Option<usize>,
+}
+
+impl<'a> CommandBufferBuilder<'a> {
+  /// Creates a new [`CommandBufferBuilder`].
+  pub fn with_label(mut self, label: &'a str) -> Self {
+    self.label = Some(label);
+    self
+  }
+
+  /// Sets the capacity of the [`CommandBuffer`] to be built.
+  pub fn with_capacity(mut self, capacity: usize) -> Self {
+    self.capacity = Some(capacity);
+    self
+  }
+
+  /// Builds the resultant [`CommandBuffer`].
+  pub fn build(self) -> CommandBuffer<'a> {
+    CommandBuffer {
+      _label: self.label,
+      commands: Vec::with_capacity(self.capacity.unwrap_or(0)),
+    }
+  }
+}
+
 /// A single command in a [`CommandBuffer`].
 pub enum Command<'a> {
   /// Reads the contents of the given [`TextureId`] into a [`Vec`] of [`u8`].
@@ -87,9 +117,9 @@ pub enum Command<'a> {
   /// Writes the given [`Vec`] of [`u8`] pixel data into the given [`TextureId`].
   WriteTexturePixels { texture_id: TextureId, pixels: &'a [u8] },
   /// Sets the view matrix on the underlying pipeline.
-  SetViewMatrix { view_matrix: &'a [f32; 4 * 4] },
+  SetViewMatrix { view_matrix: Mat4 },
   /// Sets the projection matrix on the underlying pipeline.
-  SetProjectionMatrix { projection_matrix: &'a [f32; 4 * 4] },
+  SetProjectionMatrix { projection_matrix: Mat4 },
   /// Sets the given global [`UniformValue`] for all materials.
   SetGlobalUniform {
     uniform_name: &'a str,
@@ -98,7 +128,11 @@ pub enum Command<'a> {
   /// Sets the given viewport size on the underlying pipeline.
   SetViewport { viewport_size: winit::dpi::PhysicalSize<u32> },
   /// Sets the given render target as the active one for rendering.
-  SetRenderTarget { render_target_id: Option<RenderTargetId> },
+  SetRenderTarget {
+    render_target_id: Option<RenderTargetId>,
+    clear_color: Option<Color>,
+    depth_value: Option<f32>,
+  },
   /// Begins sampling command information in the profiling system with the given name.
   BeginSample { sample_name: Cow<'a, str> },
   /// Stops sampling command information in the profiling system with the given name.
@@ -134,7 +168,7 @@ pub enum UniformValue<'a> {
 ///
 /// This is a high-level abstraction that makes use of 'opaque' [`RID`] to hide away implementation
 /// details. The server is intended to be a mid-level implementation abstraction.
-pub trait GraphicsServerBackend {
+pub trait GraphicsBackend {
   /// Executes the given [`CommandBuffer`] against the backend.
   ///
   /// This is the main entry point for the graphics server.
@@ -171,10 +205,16 @@ pub trait GraphicsServerBackend {
   // fn light_delete(&self, light_id: LightId) -> surreal::Result<()>;
 
   // texture operations
-  fn texture_create(&self) -> surreal::Result<TextureId>;
-  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()>;
+  fn texture_create_1d(&self, label: Option<&str>, size: u32, format: TextureFormat) -> surreal::Result<TextureId>;
+  fn texture_create_2d(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<TextureId>;
+  fn texture_create_3d(&self, label: Option<&str>, size: UVec3, format: TextureFormat) -> surreal::Result<TextureId>;
   fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Vec<u8>>;
+  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()>;
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()>;
+
+  // render target operations
+  fn target_create(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<RenderTargetId>;
+  fn target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()>;
 }
 
 surreal::impl_rid!(ShaderId);

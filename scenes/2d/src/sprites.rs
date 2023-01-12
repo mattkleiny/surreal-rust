@@ -31,10 +31,6 @@ impl SceneComponent for SpriteComponent {
       );
     });
   }
-
-  fn kind(&self) -> SceneComponentKind {
-    SceneComponentKind::Renderer
-  }
 }
 
 /// A [`RenderContextDescriptor`] for a simple [`SpriteContext`] for use in sprite rendering.
