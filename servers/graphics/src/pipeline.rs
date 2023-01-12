@@ -1,6 +1,6 @@
 //! Rendering pipeline abstractions.
 
-use crate::{CommandBuffer, CommandBufferBuilder, GraphicsServer};
+use crate::{CommandBuffer, GraphicsServer};
 use surreal::maths::Mat4;
 
 #[cfg(feature = "hdrp")]
@@ -48,11 +48,9 @@ pub struct RenderManager<'a, P: RenderPipeline> {
 impl<'a, P: RenderPipeline> RenderManager<'a, P> {
   /// Creates a new [`RenderManager`] on the given [`GraphicsServer`].
   pub fn new(label: &'a str, graphics: &GraphicsServer, pipeline: P, passes: Vec<Box<dyn RenderPass<P>>>) -> Self {
-    let command_buffer = CommandBufferBuilder::default().with_label(label).with_capacity(16).build();
-
     Self {
       graphics: graphics.clone(),
-      command_buffer,
+      command_buffer: CommandBuffer::new(label),
       pipeline,
       passes,
     }

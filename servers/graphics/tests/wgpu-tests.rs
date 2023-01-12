@@ -19,12 +19,7 @@ fn test_graphics_operations() {
 }
 
 mod common {
-  use winit::{
-    dpi::PhysicalSize,
-    event::{Event, WindowEvent},
-    event_loop::{EventLoop, EventLoopBuilder},
-    window::WindowBuilder,
-  };
+  use winit::{dpi::PhysicalSize, event_loop::EventLoopBuilder, window::WindowBuilder};
 
   use super::*;
 
@@ -43,7 +38,7 @@ mod common {
     let graphics = pollster::block_on(GraphicsServer::from_wgpu(&window)).unwrap();
     let mut delta_clock = surreal::utilities::DeltaClock::new();
 
-    event_loop.run_return(move |event, _, control_flow| {
+    event_loop.run_return(move |_, _, control_flow| {
       delta_clock.tick();
       window.request_redraw();
 

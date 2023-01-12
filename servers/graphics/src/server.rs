@@ -6,12 +6,6 @@ use surreal::graphics::{Color, TextureFormat};
 mod headless;
 mod wgpu;
 
-/// Possible kinds of [`GraphicsBackend`]s.
-pub enum GraphicsBackendKind {
-  Headless,
-  WGPU,
-}
-
 /// The singleton graphics server implementation for the project.
 ///
 /// All instructions to the graphics server should be sent through this facade.
@@ -39,14 +33,6 @@ impl GraphicsServer {
   pub async fn from_wgpu(window: &winit::window::Window) -> surreal::Result<Self> {
     Ok(Self::from_backend(wgpu::WgpuBackend::new(window).await?))
   }
-
-  /// Creates a [`GraphicsServer`] for the given [`GraphicsBackendKind`].
-  pub async fn from_kind(window: &winit::window::Window, kind: GraphicsBackendKind) -> surreal::Result<Self> {
-    match kind {
-      GraphicsBackendKind::Headless => Ok(Self::from_headless()),
-      GraphicsBackendKind::WGPU => Self::from_wgpu(window).await,
-    }
-  }
 }
 
 unsafe impl Send for GraphicsServer {}
@@ -68,6 +54,14 @@ pub struct CommandBuffer<'a> {
 }
 
 impl<'a> CommandBuffer<'a> {
+  /// Creates a new [`CommandBuffer`].
+  pub fn new(label: &'a str) -> Self {
+    Self {
+      _label: Some(label),
+      commands: Vec::new(),
+    }
+  }
+
   /// Enqueues a [`Command`] to the buffer.
   pub fn enqueue(&mut self, command: Command<'a>) {
     self.commands.push(command);
@@ -76,36 +70,6 @@ impl<'a> CommandBuffer<'a> {
   /// Dequeues a [`Command`] to the buffer.
   pub fn dequeue(&mut self) -> Option<Command<'a>> {
     self.commands.pop()
-  }
-}
-
-/// Builder pattern for [`CommandBuffer`]s.
-#[must_use]
-#[derive(Default)]
-pub struct CommandBufferBuilder<'a> {
-  label: Option<&'a str>,
-  capacity: Option<usize>,
-}
-
-impl<'a> CommandBufferBuilder<'a> {
-  /// Creates a new [`CommandBufferBuilder`].
-  pub fn with_label(mut self, label: &'a str) -> Self {
-    self.label = Some(label);
-    self
-  }
-
-  /// Sets the capacity of the [`CommandBuffer`] to be built.
-  pub fn with_capacity(mut self, capacity: usize) -> Self {
-    self.capacity = Some(capacity);
-    self
-  }
-
-  /// Builds the resultant [`CommandBuffer`].
-  pub fn build(self) -> CommandBuffer<'a> {
-    CommandBuffer {
-      _label: self.label,
-      commands: Vec::with_capacity(self.capacity.unwrap_or(0)),
-    }
   }
 }
 
@@ -163,10 +127,16 @@ pub enum UniformValue {
   Texture(TextureId),
 }
 
+/// A descriptor for how to build a shader in the [`GraphicsBackend`].
+pub struct ShaderDescriptor {
+  pub label: Option<&'static str>,
+  pub shader_code: &'static str,
+}
+
 /// A descriptor for how to build a material in the [`GraphicsBackend`].
 pub struct MaterialDescriptor {
   pub label: Option<&'static str>,
-  pub shader_code: &'static str,
+  pub shader_id: ShaderId,
 }
 
 /// A descriptor for how to build a texture in the [`GraphicsBackend`].
@@ -190,26 +160,20 @@ pub trait GraphicsBackend {
   /// Notifies the backend that the main viewport has resized to a new physical size.
   fn resize_viewport(&self, new_size: winit::dpi::PhysicalSize<u32>) -> surreal::Result<()>;
 
+  // shader operations
+  fn shader_create(&self, descriptor: &ShaderDescriptor) -> surreal::Result<ShaderId>;
+  fn shader_delete(&self, shader_id: ShaderId) -> surreal::Result<()>;
+
   // material operations
   fn material_create(&self, descriptor: &MaterialDescriptor) -> surreal::Result<MaterialId>;
-  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: UniformValue) -> surreal::Result<()>;
-  fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>>;
   fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()>;
 
-  // // mesh operations
+  // mesh operations
   // fn mesh_create(&self) -> surreal::Result<MeshId>;
-  // fn mesh_get_surface_count(&self, mesh_id: MeshId) -> surreal::Result<usize>;
-  // fn mesh_add_surface(&self, mesh_id: MeshId, surface_data: SurfaceData) -> surreal::Result<()>;
-  // fn mesh_get_surface(&self, mesh_id: MeshId, surface_index: usize) -> surreal::Result<SurfaceData>;
-  // fn mesh_get_surface_material(&self, mesh_id: MeshId, surface_index: usize) -> surreal::Result<MeshId>;
-  // fn mesh_set_surface_material(&self, mesh_id: MeshId, surface_index: usize, material_id: MeshId) -> surreal::Result<()>;
-  // fn mesh_clear(&self, mesh_id: MeshId) -> surreal::Result<()>;
   // fn mesh_delete(&self, mesh_id: MeshId) -> surreal::Result<()>;
 
   // texture operations
   fn texture_create(&self, descriptor: &TextureDescriptor) -> surreal::Result<TextureId>;
-  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Box<[u8]>>;
-  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()>;
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()>;
 
   // render target operations
@@ -221,7 +185,8 @@ pub trait GraphicsBackend {
   // TODO: skybox
 }
 
+surreal::impl_rid!(ShaderId);
 surreal::impl_rid!(MaterialId);
-surreal::impl_rid!(TextureId);
 surreal::impl_rid!(MeshId);
+surreal::impl_rid!(TextureId);
 surreal::impl_rid!(RenderTargetId);

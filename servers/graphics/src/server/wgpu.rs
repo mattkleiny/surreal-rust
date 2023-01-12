@@ -10,6 +10,7 @@ mod wgpu {
 /// The [`GraphicsBackend`] for WGPU.
 pub struct WgpuBackend {
   state: std::sync::Mutex<WgpuState>,
+  shader_storage: ResourceStorage<ShaderId, WgpuShader>,
   material_storage: ResourceStorage<MaterialId, WgpuMaterial>,
   texture_storage: ResourceStorage<TextureId, WgpuTexture>,
   render_target_storage: ResourceStorage<RenderTargetId, WgpuRenderTarget>,
@@ -18,9 +19,14 @@ pub struct WgpuBackend {
 /// Top-level lockable state for the [`WgpuBackend`].
 struct WgpuState {
   device: wgpu::Device,
-  queue: wgpu::Queue,
+  _queue: wgpu::Queue,
   surface: wgpu::Surface,
   surface_config: wgpu::SurfaceConfiguration,
+}
+
+/// Internal data for a shader in the [`WgpuBackend`].
+struct WgpuShader {
+  _shader_module: wgpu::ShaderModule,
 }
 
 /// Internal data for a material in the [`WgpuBackend`].
@@ -28,7 +34,6 @@ struct WgpuMaterial {
   _uniform_buffer: wgpu::Buffer,
   _uniforms: HashMap<String, UniformValue>,
   _bind_group: wgpu::BindGroup,
-  _shader_module: wgpu::ShaderModule,
 }
 
 /// Internal data for a texture in the [`WgpuBackend`].
@@ -85,10 +90,11 @@ impl WgpuBackend {
     Ok(Self {
       state: std::sync::Mutex::new(WgpuState {
         device,
-        queue,
+        _queue: queue,
         surface,
         surface_config,
       }),
+      shader_storage: ResourceStorage::default(),
       material_storage: ResourceStorage::default(),
       texture_storage: ResourceStorage::default(),
       render_target_storage: ResourceStorage::default(),
@@ -161,16 +167,31 @@ impl GraphicsBackend for WgpuBackend {
     Ok(())
   }
 
-  fn material_create(&self, descriptor: &MaterialDescriptor) -> surreal::Result<MaterialId> {
-    use ::wgpu::util::DeviceExt;
-
+  fn shader_create(&self, descriptor: &ShaderDescriptor) -> surreal::Result<ShaderId> {
     let state = self.state.lock().unwrap();
 
-    // build primary shader module (TODO: support centrally managed modules)
+    // build shader module
     let shader_module = state.device.create_shader_module(wgpu::ShaderModuleDescriptor {
       label: descriptor.label,
       source: wgpu::ShaderSource::Wgsl(Cow::from(descriptor.shader_code)),
     });
+
+    let shader_id = self.shader_storage.insert(WgpuShader {
+      _shader_module: shader_module,
+    });
+
+    Ok(shader_id)
+  }
+
+  fn shader_delete(&self, shader_id: ShaderId) -> surreal::Result<()> {
+    self.shader_storage.remove(shader_id);
+    Ok(())
+  }
+
+  fn material_create(&self, descriptor: &MaterialDescriptor) -> surreal::Result<MaterialId> {
+    use ::wgpu::util::DeviceExt;
+
+    let state = self.state.lock().unwrap();
 
     // build uniform buffer
     let uniform_buffer = state.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -207,20 +228,12 @@ impl GraphicsBackend for WgpuBackend {
       _uniform_buffer: uniform_buffer,
       _uniforms: HashMap::default(),
       _bind_group: bind_group,
-      _shader_module: shader_module,
     }))
   }
 
-  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: UniformValue) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>> {
-    todo!()
-  }
-
   fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()> {
-    todo!()
+    self.material_storage.remove(material_id);
+    Ok(())
   }
 
   fn texture_create(&self, descriptor: &TextureDescriptor) -> surreal::Result<TextureId> {
@@ -253,17 +266,8 @@ impl GraphicsBackend for WgpuBackend {
     Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
   }
 
-  fn texture_read(&self, _texture_id: TextureId) -> surreal::Result<Box<[u8]>> {
-    todo!()
-  }
-
-  fn texture_write(&self, _texture_id: TextureId, _pixels: &[u8]) -> surreal::Result<()> {
-    todo!()
-  }
-
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()> {
     self.texture_storage.remove(texture_id);
-
     Ok(())
   }
 
@@ -273,7 +277,6 @@ impl GraphicsBackend for WgpuBackend {
 
   fn render_target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()> {
     self.render_target_storage.remove(render_target_id);
-
     Ok(())
   }
 }

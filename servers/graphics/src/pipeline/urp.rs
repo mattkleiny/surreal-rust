@@ -19,7 +19,7 @@ pub struct UniversalPipeline {
 impl UniversalPipeline {
   /// Creates a new managed [`UniversalPipeline`].
   pub fn new<'a>(graphics: &GraphicsServer) -> surreal::Result<RenderManager<'a, UniversalPipeline>> {
-    Ok(RenderManager::new(
+    let manager = RenderManager::new(
       "Universal Render Pipeline",
       graphics,
       Self {
@@ -33,7 +33,9 @@ impl UniversalPipeline {
         Box::new(PostEffectPass::default()),
         Box::new(ToneMapperPass::default()),
       ],
-    ))
+    );
+
+    Ok(manager)
   }
 }
 

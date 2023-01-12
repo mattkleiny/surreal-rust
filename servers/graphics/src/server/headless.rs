@@ -18,15 +18,15 @@ impl GraphicsBackend for HeadlessBackend {
     Ok(()) // no-op
   }
 
+  fn shader_create(&self, descriptor: &ShaderDescriptor) -> surreal::Result<ShaderId> {
+    todo!()
+  }
+
+  fn shader_delete(&self, shader_id: ShaderId) -> surreal::Result<()> {
+    todo!()
+  }
+
   fn material_create(&self, descriptor: &MaterialDescriptor) -> surreal::Result<MaterialId> {
-    todo!()
-  }
-
-  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: UniformValue) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>> {
     todo!()
   }
 
@@ -35,14 +35,6 @@ impl GraphicsBackend for HeadlessBackend {
   }
 
   fn texture_create(&self, descriptor: &TextureDescriptor) -> surreal::Result<TextureId> {
-    todo!()
-  }
-
-  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Box<[u8]>> {
-    todo!()
-  }
-
-  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()> {
     todo!()
   }
 
