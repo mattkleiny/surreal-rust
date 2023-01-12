@@ -5,9 +5,13 @@ use std::fmt::{Debug, Formatter};
 
 use anyhow::anyhow;
 
-use crate::graphics::Renderer;
-use crate::maths::{Affine3A, Quat, Vec3};
-use crate::utilities::{unsafe_mutable_alias, Object, ServiceContainer};
+use crate::{
+  graphics::Renderer,
+  maths::{Affine3A, Quat, Vec3},
+  utilities::{unsafe_mutable_alias, Object, ServiceContainer},
+};
+
+// TODO: embed hecs and use a mixed model scene graph/ecs?
 
 // A unique identifier for a [`SceneNode`].
 crate::impl_guid!(SceneNodeId);

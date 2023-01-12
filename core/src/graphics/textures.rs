@@ -6,7 +6,7 @@ use std::rc::Rc;
 use crate as surreal;
 use crate::assets::{Asset, AssetContext, AssetLoader, AssetManager};
 use crate::collections::Grid;
-use crate::diagnostics::profiling;
+use crate::diagnostics;
 use crate::maths::{uvec2, Rectangle, UVec2};
 
 use super::*;
@@ -171,7 +171,7 @@ impl Texture {
   }
 
   /// Downloads pixel data from the texture.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn read_pixels<T: Texel>(&self) -> Vec<T> {
     let state = self.state.borrow();
 
@@ -196,7 +196,7 @@ impl Texture {
   }
 
   /// Uploads pixel data to the texture.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn write_pixels<T: Texel>(&self, width: usize, height: usize, pixels: &[T]) {
     let mut state = self.state.borrow_mut();
 
@@ -220,7 +220,7 @@ impl Texture {
   }
 
   /// Uploads a sub-section of pixel data to the texture.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle, pixels: &[T]) {
     let state = self.state.borrow();
     let graphics = &state.graphics;

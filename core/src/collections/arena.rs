@@ -1,22 +1,24 @@
 /// Represents a safe index into an [`Arena`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ArenaIndex {
-  pub index: u32,
-  pub generation: u16,
-}
-
-impl Into<u64> for ArenaIndex {
-  fn into(self) -> u64 {
-    (self.generation as u64) << 32 | self.index as u64
-  }
+  index: u32,
+  generation: u16,
 }
 
 impl From<u64> for ArenaIndex {
+  #[inline]
   fn from(packed: u64) -> Self {
     let generation = (packed >> 32) as u16;
     let index = packed as u32;
 
     ArenaIndex { index, generation }
+  }
+}
+
+impl From<ArenaIndex> for u64 {
+  #[inline]
+  fn from(value: ArenaIndex) -> Self {
+    (value.generation as u64) << 32 | value.index as u64
   }
 }
 
@@ -86,15 +88,15 @@ impl<T> Arena<T> {
   }
 
   /// Returns a reference to the item at the given index.
-  pub fn get(&self, index: ArenaIndex) -> Option<&T> {
+  pub fn get(&self, ArenaIndex { index, generation }: ArenaIndex) -> Option<&T> {
     // sanity check external index
-    if index.index as usize >= self.entries.len() {
+    if index as usize >= self.entries.len() {
       return None;
     }
 
     // if this entry exists and the generation matches
-    if let Some(Some(entry)) = self.entries.get(index.index as usize) {
-      if entry.generation == index.generation {
+    if let Some(Some(entry)) = self.entries.get(index as usize) {
+      if entry.generation == generation {
         return Some(&entry.value);
       }
     }
@@ -103,15 +105,15 @@ impl<T> Arena<T> {
   }
 
   /// Returns a mutable reference to the item at the given index.
-  pub fn get_mut(&mut self, index: ArenaIndex) -> Option<&mut T> {
+  pub fn get_mut(&mut self, ArenaIndex { index, generation }: ArenaIndex) -> Option<&mut T> {
     // sanity check external index
-    if index.index as usize >= self.entries.len() {
+    if index as usize >= self.entries.len() {
       return None;
     }
 
     // if this entry exists and the generation matches
-    if let Some(Some(entry)) = self.entries.get_mut(index.index as usize) {
-      if entry.generation == index.generation {
+    if let Some(Some(entry)) = self.entries.get_mut(index as usize) {
+      if entry.generation == generation {
         return Some(&mut entry.value);
       }
     }

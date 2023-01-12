@@ -45,14 +45,6 @@ impl ScriptServer for LuaScriptServer {
     todo!()
   }
 
-  fn update_script(&self, script_id: ScriptId, source_code: &str) -> surreal::Result<()> {
-    todo!()
-  }
-
-  fn execute_script(&self, script_id: ScriptId, parameters: &[Variant]) -> surreal::Result<Variant> {
-    todo!()
-  }
-
   fn delete_script(&self, script_id: ScriptId) -> surreal::Result<()> {
     todo!()
   }

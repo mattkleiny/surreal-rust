@@ -7,7 +7,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate as surreal;
-use crate::diagnostics::profiling;
+use crate::diagnostics;
 use crate::maths::{vec2, Vec2, Vec3};
 use crate::utilities::Size;
 
@@ -211,7 +211,7 @@ impl<V: Vertex> Mesh<V> {
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn draw_sub(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     material.bind();
 

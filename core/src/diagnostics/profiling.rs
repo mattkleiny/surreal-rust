@@ -2,7 +2,7 @@
 
 pub use puffin::{profile_function, profile_scope};
 
-pub use macros::profile as function;
+pub use macros::profile as profiling;
 
 /// Is the profiler enabled?
 #[inline]

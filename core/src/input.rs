@@ -1,4 +1,4 @@
-//! A lightweight and cross-platform input engine.
+//! A lightweight and cross-platform input server.
 
 use egui::RawInput;
 use winit::event::{ElementState, KeyboardInput, ModifiersState, MouseScrollDelta};

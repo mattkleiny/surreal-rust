@@ -6,7 +6,7 @@ pub struct ContentBrowser {}
 
 impl ContentBrowser {
   pub fn show(&mut self, _ui: &mut egui::Ui, _context: &mut EditorContext) {
-    surreal::diagnostics::profiling::profile_scope!("ContentBrowser::show");
+    surreal::diagnostics::profile_scope!("ContentBrowser::show");
 
     // no-op
   }

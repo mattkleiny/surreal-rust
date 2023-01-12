@@ -152,7 +152,7 @@ impl Debug for Size {
   }
 }
 
-macro_rules! impl_from {
+macro_rules! impl_size_from {
   ($type:ty) => {
     impl From<$type> for Size {
       #[inline(always)]
@@ -163,12 +163,12 @@ macro_rules! impl_from {
   };
 }
 
-impl_from!(u8);
-impl_from!(u16);
-impl_from!(u32);
-impl_from!(u64);
-impl_from!(u128);
-impl_from!(usize);
+impl_size_from!(u8);
+impl_size_from!(u16);
+impl_size_from!(u32);
+impl_size_from!(u64);
+impl_size_from!(u128);
+impl_size_from!(usize);
 
 #[cfg(test)]
 mod tests {

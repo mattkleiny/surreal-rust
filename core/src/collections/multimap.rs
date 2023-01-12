@@ -1,6 +1,6 @@
 use std::{collections::HashMap, hash::Hash};
 
-/// A hash map with multiple values per key.
+/// A simple [`HashMap]  with multiple values per key.
 #[derive(Default, Debug)]
 pub struct MultiMap<K, V> {
   entries: HashMap<K, Vec<V>>,

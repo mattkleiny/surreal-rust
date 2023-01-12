@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 /// An any-map is a hash map that can contain a single value per unique [`TypeId`].
 ///
-/// That is to say, a hash map that associates [`TypeId`] to [`Box<dyn Any>>`].
+/// That is to say, a hash map that associates [`TypeId`] to [`Box<dyn T>>`].
 #[derive(Default)]
 pub struct AnyMap {
   entries: HashMap<TypeId, Box<dyn Any>>,

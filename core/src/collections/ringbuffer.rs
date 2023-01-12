@@ -1,6 +1,7 @@
 /// A lightweight, fast and append-only ring buffer of elements of type [`T`] .
 ///
-/// It's intended to be used for small windowed set operations, like time sampling or frequency analysis.
+/// It's intended to be used for small windowed set operations, like time sampling or
+/// frequency analysis.
 #[derive(Debug)]
 pub struct RingBuffer<T> {
   cursor: usize,
@@ -50,7 +51,7 @@ impl<T> RingBuffer<T> {
     self.elements.clear();
   }
 
-  /// Permits iterating over the ring buffer.
+  /// Iterates over the ring buffer.
   pub fn iter(&self) -> impl Iterator<Item = &T> {
     pub struct Iter<'a, T> {
       buffer: &'a RingBuffer<T>,
@@ -94,7 +95,7 @@ impl<T> RingBuffer<T> {
     }
   }
 
-  /// Permits mutably iterating over the ring buffer.
+  /// Mutably iterates over the ring buffer.
   pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
     pub struct IterMut<'a, T> {
       buffer: &'a mut RingBuffer<T>,

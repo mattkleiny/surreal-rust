@@ -5,10 +5,11 @@ use std::time::Duration;
 
 pub use egui;
 
-use crate as surreal;
-use crate::diagnostics::profiling;
-use crate::graphics::*;
-use crate::maths::{vec2, Rectangle};
+use crate::{
+  self as surreal, diagnostics,
+  graphics::*,
+  maths::{vec2, Rectangle},
+};
 
 /// A shader program to use for egui canvas rendering.
 const SHADER_CANVAS_STANDARD: &str = include_str!("../../assets/shaders/canvas-standard.glsl");
@@ -83,20 +84,6 @@ impl UserInterface {
     }
   }
 
-  /// Creates a new user interface in light mode.
-  pub fn with_light_mode(graphics: &GraphicsServer) -> Self {
-    let mut interface = Self::new(graphics);
-    interface.set_light_mode();
-    interface
-  }
-
-  /// Creates a new user interface in dark mode.
-  pub fn with_dark_mode(graphics: &GraphicsServer) -> Self {
-    let mut interface = Self::new(graphics);
-    interface.set_dark_mode();
-    interface
-  }
-
   /// Sets the style of the user interface to a light mode.
   pub fn set_light_mode(&mut self) {
     self.context.set_style(egui::Style {
@@ -118,14 +105,14 @@ impl UserInterface {
     self.is_profiler_open = !self.is_profiler_open;
 
     if self.is_profiler_open {
-      profiling::enable_profiling()
+      diagnostics::enable_profiling()
     } else {
-      profiling::disable_profiling()
+      diagnostics::disable_profiling()
     }
   }
 
   /// Begins a new frame.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn begin_frame(&mut self, host: &mut dyn UserInterfaceHost) {
     let raw_input = host.raw_input();
     let pixels_per_point = host.pixels_per_point();
@@ -135,7 +122,7 @@ impl UserInterface {
   }
 
   /// Ends the current frame.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn end_frame(&mut self, host: &mut dyn UserInterfaceHost) {
     let full_output = self.context.end_frame();
     let textures_delta = full_output.textures_delta;
@@ -279,7 +266,7 @@ impl UserInterface {
   ///
   /// Note: this is a fairly expensive operation and should ideally be done once per frame,
   ///       with as much UI work as possible within a single call.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn run(&mut self, host: &mut dyn UserInterfaceHost, mut body: impl FnMut(&egui::Context)) {
     self.begin_frame(host);
 

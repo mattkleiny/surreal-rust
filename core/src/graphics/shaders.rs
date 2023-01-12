@@ -11,7 +11,7 @@ use std::rc::Rc;
 
 use crate as surreal;
 use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::diagnostics::profiling;
+use crate::diagnostics;
 use crate::io::VirtualPath;
 use crate::maths::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
@@ -197,7 +197,7 @@ impl ShaderProgram {
   }
 
   /// Retrieves the binding location of the given shader uniform in the underlying program.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
     let state = self.state.borrow();
 
@@ -217,7 +217,7 @@ impl ShaderProgram {
   }
 
   /// Sets the given uniform value in the underlying program.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn set_uniform(&self, name: &str, value: &ShaderUniform) {
     if let Some(location) = self.get_uniform_location(name) {
       let state = self.state.borrow();

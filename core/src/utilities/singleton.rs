@@ -14,9 +14,12 @@ pub trait Singleton: 'static {
 /// This type should be used very sparingly, and only to remove friction from the API.
 pub struct UnsafeLazyCell<T>(Lazy<UnsafeCell<T>>);
 
-impl<T: Default> UnsafeLazyCell<T> {
+impl<T> UnsafeLazyCell<T> {
   /// Constructs a new [`UnsafeLazyCell`] with a [`Default::default`] constructor.
-  pub const fn new() -> Self {
+  pub const fn new() -> Self
+  where
+    T: Default,
+  {
     Self(Lazy::new(|| UnsafeCell::new(T::default())))
   }
 }

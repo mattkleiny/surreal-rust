@@ -6,7 +6,7 @@ pub struct SceneView {}
 
 impl SceneView {
   pub fn show(&mut self, _ui: &mut egui::Ui, _context: &mut EditorContext) {
-    surreal::diagnostics::profiling::profile_scope!("SceneView::show");
+    surreal::diagnostics::profile_scope!("SceneView::show");
     // no-op
   }
 }

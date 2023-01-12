@@ -82,3 +82,34 @@ impl<K: ResourceId, V> ResourceStorage<K, V> {
     entries.remove(key.into())
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  impl_rid!(TestId);
+
+  pub struct TestResource {
+    value: u16,
+  }
+
+  #[test]
+  fn resource_storage_should_read_and_write_entries() {
+    let storage = ResourceStorage::<TestId, TestResource>::default();
+
+    let id1 = storage.insert(TestResource { value: 0 });
+    let id2 = storage.insert(TestResource { value: 1 });
+
+    storage.read(id1, |entry| {
+      assert_eq!(entry.value, 0);
+    });
+
+    storage.write(id2, |entry| {
+      entry.value = 2;
+    });
+
+    storage.read(id2, |entry| {
+      assert_eq!(entry.value, 2);
+    });
+  }
+}

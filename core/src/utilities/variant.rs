@@ -3,7 +3,7 @@ use crate::{
   maths::{Quat, Vec2, Vec3, Vec4},
 };
 
-/// Different kinds of variant supported.
+/// Different kinds of [`Variant`]s that are supported.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum VariantKind {
   Bool,
@@ -24,10 +24,9 @@ pub enum VariantKind {
   Quat,
   Color,
   Color32,
-  Enum,
 }
 
-/// A variant type that can hold common values.
+/// A type that can hold varying different values.
 #[derive(Clone, Debug)]
 pub enum Variant {
   Bool(bool),
@@ -48,11 +47,10 @@ pub enum Variant {
   Quat(Quat),
   Color(Color),
   Color32(Color32),
-  Enum(u32),
 }
 
 impl Variant {
-  /// Determines the kind of this value.
+  /// Determines the [`VariantKind`] of this value.
   pub const fn kind(&self) -> VariantKind {
     match self {
       Variant::Bool(_) => VariantKind::Bool,
@@ -73,7 +71,61 @@ impl Variant {
       Variant::Quat(_) => VariantKind::Quat,
       Variant::Color(_) => VariantKind::Color,
       Variant::Color32(_) => VariantKind::Color32,
-      Variant::Enum(_) => VariantKind::Enum,
     }
+  }
+}
+
+macro_rules! impl_variant {
+  ($type:ty, $kind:ident) => {
+    impl From<$type> for Variant {
+      #[inline]
+      fn from(value: $type) -> Self {
+        Self::$kind(value)
+      }
+    }
+
+    impl TryFrom<Variant> for $type {
+      type Error = anyhow::Error;
+
+      fn try_from(value: Variant) -> Result<Self, Self::Error> {
+        match value {
+          Variant::$kind(value) => Ok(value),
+          _ => Err(anyhow::anyhow!("Variant is not a string")),
+        }
+      }
+    }
+  };
+}
+
+impl_variant!(bool, Bool);
+impl_variant!(u8, U8);
+impl_variant!(u16, U16);
+impl_variant!(u32, U32);
+impl_variant!(u64, U64);
+impl_variant!(i8, I8);
+impl_variant!(i16, I16);
+impl_variant!(i32, I32);
+impl_variant!(i64, I64);
+impl_variant!(f32, F32);
+impl_variant!(f64, F64);
+impl_variant!(String, String);
+impl_variant!(Vec2, Vec2);
+impl_variant!(Vec3, Vec3);
+impl_variant!(Vec4, Vec4);
+impl_variant!(Quat, Quat);
+impl_variant!(Color, Color);
+impl_variant!(Color32, Color32);
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn variant_should_convert_from_values() {
+    let value = Variant::from(Color32::WHITE);
+    assert_eq!(value.kind(), VariantKind::Color32);
+
+    let color: Color32 = value.try_into().expect("Failed to convert");
+    assert_eq!(color, Color32::WHITE);
   }
 }

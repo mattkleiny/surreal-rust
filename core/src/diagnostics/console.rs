@@ -1,5 +1,3 @@
-//! In-process console with commands for diagnostics and changing state.
-
 use crate::collections::RingBuffer;
 
 /// A managed `egui` panel for the in-game console.

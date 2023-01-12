@@ -3,10 +3,10 @@
 pub use log::{debug, error, info, trace, warn, Level, LevelFilter};
 
 pub use console::*;
-
-pub mod profiling;
+pub use profiling::*;
 
 mod console;
+mod profiling;
 
 /// A builder pattern for [`ConsoleLogger`].
 pub struct ConsoleLoggerBuilder {

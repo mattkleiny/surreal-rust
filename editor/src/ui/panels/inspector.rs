@@ -8,7 +8,7 @@ pub struct Inspector {}
 
 impl EditorPanel for Inspector {
   fn show(&mut self, ui: &mut Ui, _context: &mut EditorContext) {
-    surreal::diagnostics::profiling::profile_scope!("Inspector::show");
+    surreal::diagnostics::profile_scope!("Inspector::show");
 
     ui.heading("Inspector");
     ui.label("Inspecting objects");

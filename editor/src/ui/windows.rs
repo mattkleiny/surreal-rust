@@ -121,7 +121,7 @@ impl EditorWindowHost {
     self.event_loop.run(move |event, _, control_flow| match event {
       Event::MainEventsCleared => {
         for (window_id, state) in &mut self.windows {
-          surreal::diagnostics::profiling::profile_scope!("Update window", &format!("{:?}", window_id));
+          surreal::diagnostics::profile_scope!("Update window", &format!("{:?}", window_id));
 
           // TODO: clean this up
           state.user_interface_state.raw_input = state.input_server.raw_input.clone();
@@ -136,11 +136,11 @@ impl EditorWindowHost {
           }
         }
 
-        surreal::diagnostics::profiling::finish_frame();
+        surreal::diagnostics::finish_frame();
       }
       Event::RedrawRequested(window_id) => {
         if let Some(state) = self.windows.get_mut(&window_id) {
-          surreal::diagnostics::profiling::profile_scope!("Redraw window", &format!("{:?}", window_id));
+          surreal::diagnostics::profile_scope!("Redraw window", &format!("{:?}", window_id));
 
           state.graphics_server.begin_frame();
 

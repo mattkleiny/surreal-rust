@@ -2,10 +2,12 @@ use std::collections::BinaryHeap;
 
 use crate::maths::ApproxEq;
 
-/// A lightweight priority queue with per-element ordering based on single floating point value.
+/// A lightweight priority queue with per-element ordering based on single [`f32`].
 ///
-/// This is a lightweight wrapper over the built in `BinaryHeap`
-/// with an internal node ordering explicitly defined.
+/// This is a lightweight wrapper over the built in [`BinaryHeap`] with an internal node
+/// ordering explicitly defined at the point of insertion.
+///
+/// We use [`f32`] values because they work well for scoring algorithms and similar.
 pub struct PriorityQueue<T> {
   elements: BinaryHeap<Node<T>>,
 }

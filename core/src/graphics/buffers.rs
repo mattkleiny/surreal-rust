@@ -7,7 +7,7 @@ use std::marker::PhantomData;
 use std::{cell::RefCell, rc::Rc};
 
 use crate as surreal;
-use crate::diagnostics::profiling;
+use crate::diagnostics;
 
 use super::*;
 
@@ -67,7 +67,7 @@ impl<T> Buffer<T> {
   }
 
   /// Reads all data from the buffer.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn read_data(&self) -> Vec<T> {
     let state = self.state.borrow();
     let length = state.length;
@@ -89,7 +89,7 @@ impl<T> Buffer<T> {
   }
 
   /// Uploads the given data to the buffer.
-  #[profiling::function]
+  #[diagnostics::profiling]
   pub fn write_data(&mut self, data: &[T]) {
     let mut state = self.state.borrow_mut();
 

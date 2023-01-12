@@ -35,7 +35,7 @@ pub struct GraphEditor<D> {
 
 impl<D> EditorPanel for GraphEditor<D> {
   fn show(&mut self, ui: &mut Ui, _context: &mut EditorContext) {
-    surreal::diagnostics::profiling::profile_scope!("GraphEditor::show");
+    surreal::diagnostics::profile_scope!("GraphEditor::show");
 
     ui.push_id("graph_editor", |ui| {
       let rect = ui.available_rect_before_wrap();

@@ -11,10 +11,10 @@ use winit::{
   window::{Window, WindowBuilder},
 };
 
-use crate::graphics::HeadlessGraphicsBackend;
 use crate::{
   assets::AssetManager,
-  diagnostics::{profiling, ConsoleLoggerBuilder, LevelFilter},
+  diagnostics::{self, ConsoleLoggerBuilder, LevelFilter},
+  graphics::HeadlessGraphicsBackend,
   graphics::{GraphicsServer, Image, ImageFormat, Renderer},
   input::InputServer,
   maths::{uvec2, vec2},
@@ -69,16 +69,8 @@ pub enum TickEvent<'a> {
   Update(GameTime),
   /// Indicating the application should draw.
   Draw(GameTime),
-  /// An event from the underlying window platform.
+  /// An event from the underlying window.
   Window(&'a WindowEvent<'a>),
-}
-
-/// A response for a tick in the application.
-pub enum TickResponse {
-  /// The application should continue.
-  Continue,
-  /// The application should stop.
-  Exit,
 }
 
 /// Represents an application that can be used in an [`Engine`].
@@ -96,14 +88,12 @@ pub trait Application: Sized {
   fn on_window_event(&mut self, _engine: &mut Engine, _event: &WindowEvent) {}
 
   /// Notifies the application of an [`TickEvent`]. l
-  fn notify(&mut self, engine: &mut Engine, event: TickEvent) -> TickResponse {
+  fn notify(&mut self, engine: &mut Engine, event: TickEvent) {
     match event {
       TickEvent::Update(time) => self.on_update(engine, time),
       TickEvent::Draw(time) => self.on_draw(engine, time),
       TickEvent::Window(event) => self.on_window_event(engine, event),
     }
-
-    TickResponse::Continue
   }
 }
 
@@ -277,15 +267,13 @@ impl Engine {
     event_loop.run_return(move |event, _, control_flow| {
       match event {
         Event::MainEventsCleared => {
-          self.clock.tick();
+          // update core systems
+          diagnostics::profile_scope!("Update");
 
           let time = GameTime {
-            delta_time: self.clock.last_delta_time(),
+            delta_time: self.clock.tick(),
             total_time: self.clock.total_time(),
           };
-
-          // update core systems
-          profiling::profile_scope!("Update");
 
           body(&mut self, TickEvent::Update(time));
 
@@ -298,7 +286,7 @@ impl Engine {
           }
 
           self.window.request_redraw();
-          profiling::finish_frame();
+          diagnostics::finish_frame();
 
           if self.is_quitting {
             *control_flow = ControlFlow::Exit;
@@ -306,7 +294,7 @@ impl Engine {
         }
         Event::RedrawRequested(window_id) => {
           if window_id == self.window.id() {
-            profiling::profile_scope!("Draw");
+            diagnostics::profile_scope!("Redraw");
 
             // update graphics and run draw loop
             self.graphics.begin_frame();
@@ -317,14 +305,16 @@ impl Engine {
             };
 
             body(&mut self, TickEvent::Draw(time));
-            self.input.tick();
+            self.input.tick(); // TODO: why does this need to live here?
 
             self.graphics.end_frame();
           }
         }
         Event::WindowEvent { window_id, event } if window_id == self.window.id() => {
+          // pass raw events down the application
           body(&mut self, TickEvent::Window(&event));
 
+          // also apply some of our own processing
           match event {
             WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
               self.input.pixels_per_point = scale_factor as f32;
@@ -370,6 +360,8 @@ impl Engine {
               log::trace!("Window resized to {}x{}", size.width, size.height);
             }
             WindowEvent::CloseRequested => {
+              log::trace!("Window close requested");
+
               *control_flow = ControlFlow::Exit;
             }
             _ => {}
@@ -380,29 +372,6 @@ impl Engine {
     });
 
     log::trace!("Stopping engine")
-  }
-
-  /// Gets the size of the window
-  pub fn window_size(&self) -> (usize, usize) {
-    let inner_size = self.window.inner_size();
-
-    (inner_size.width as usize, inner_size.height as usize)
-  }
-
-  /// Updates the main window frame counter.
-  fn update_frame_counter(&mut self) {
-    if self.config.show_fps_in_title {
-      let delta_time = self.clock.last_delta_time();
-
-      self.frame_counter.tick(delta_time);
-
-      if self.frame_timer.tick(delta_time) {
-        let new_title = format!("{} - FPS: {:.2}", self.config.title, self.frame_counter.fps());
-
-        self.window.set_title(&new_title);
-        self.frame_timer.reset();
-      }
-    }
   }
 
   /// Gets the title of the window.
@@ -425,9 +394,25 @@ impl Engine {
   pub fn quit(&mut self) {
     self.is_quitting = true;
   }
+
+  /// Updates the main window frame counter.
+  fn update_frame_counter(&mut self) {
+    if self.config.show_fps_in_title {
+      let delta_time = self.clock.last_delta_time();
+
+      self.frame_counter.tick(delta_time);
+
+      if self.frame_timer.tick(delta_time) {
+        let new_title = format!("{} - FPS: {:.2}", self.config.title, self.frame_counter.fps());
+
+        self.window.set_title(&new_title);
+        self.frame_timer.reset();
+      }
+    }
+  }
 }
 
-/// Allow the engine to be used in egui rendering.
+/// Allow the engine to be used hooked into `egui` rendering.
 impl crate::ui::UserInterfaceHost for Engine {
   fn pixels_per_point(&self) -> f32 {
     self.window.scale_factor() as f32
