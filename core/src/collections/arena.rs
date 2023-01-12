@@ -119,8 +119,8 @@ impl<T> Arena<T> {
     None
   }
 
-  /// Adds an entry to the arena and returns it's index.
-  pub fn add(&mut self, value: T) -> ArenaIndex {
+  /// Inserts an entry to the arena and returns it's index.
+  pub fn insert(&mut self, value: T) -> ArenaIndex {
     let index = self.allocate_index();
 
     self.entries[index.index as usize] = Some(ArenaEntry {
@@ -290,9 +290,9 @@ mod tests {
   fn arena_should_add_item() {
     let mut arena = Arena::new();
 
-    let index1 = arena.add("Item 1");
-    let index2 = arena.add("Item 2");
-    let index3 = arena.add("Item 3");
+    let index1 = arena.insert("Item 1");
+    let index2 = arena.insert("Item 2");
+    let index3 = arena.insert("Item 3");
 
     assert_ne!(index1, index2);
     assert_ne!(index2, index3);
@@ -302,8 +302,8 @@ mod tests {
   fn arena_should_remove_item() {
     let mut arena = Arena::new();
 
-    let index1 = arena.add("Item 1");
-    let index2 = arena.add("Item 2");
+    let index1 = arena.insert("Item 1");
+    let index2 = arena.insert("Item 2");
 
     arena.remove(index1);
 
@@ -315,8 +315,8 @@ mod tests {
   fn arena_should_access_item() {
     let mut arena = Arena::new();
 
-    let index1 = arena.add("Item 1");
-    let index2 = arena.add("Item 2");
+    let index1 = arena.insert("Item 1");
+    let index2 = arena.insert("Item 2");
 
     let index3 = ArenaIndex { index: 23, generation: 0 };
 
@@ -329,13 +329,13 @@ mod tests {
   fn arena_should_reuse_old_spaces() {
     let mut arena = Arena::new();
 
-    let _index1 = arena.add("Item 1");
-    let index2 = arena.add("Item 2");
-    let _index3 = arena.add("Item 3");
+    let _index1 = arena.insert("Item 1");
+    let index2 = arena.insert("Item 2");
+    let _index3 = arena.insert("Item 3");
 
     arena.remove(index2);
 
-    let index4 = arena.add("Item 4");
+    let index4 = arena.insert("Item 4");
 
     assert_eq!(index2.index, index4.index);
     assert_ne!(index2.generation, index4.generation);
@@ -345,10 +345,10 @@ mod tests {
   fn arena_should_iterate() {
     let mut arena = Arena::new();
 
-    arena.add("Item 1");
-    let index2 = arena.add("Item 2");
-    arena.add("Item 3");
-    arena.add("Item 4");
+    arena.insert("Item 1");
+    let index2 = arena.insert("Item 2");
+    arena.insert("Item 3");
+    arena.insert("Item 4");
 
     arena.remove(index2);
 
@@ -361,10 +361,10 @@ mod tests {
   fn arena_should_iterate_mutably() {
     let mut arena = Arena::new();
 
-    arena.add("Item 1");
-    let index2 = arena.add("Item 2");
-    arena.add("Item 3");
-    arena.add("Item 4");
+    arena.insert("Item 1");
+    let index2 = arena.insert("Item 2");
+    arena.insert("Item 3");
+    arena.insert("Item 4");
 
     arena.remove(index2);
 

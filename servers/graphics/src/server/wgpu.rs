@@ -158,7 +158,7 @@ impl GraphicsServerBackend for WgpuBackend {
   }
 
   fn texture_create(&self) -> surreal::Result<TextureId> {
-    let texture_id = self.texture_storage.create(|_| {
+    let texture_id = self.texture_storage.create(|| {
       let state = self.state.lock().unwrap();
 
       let texture = state.device.create_texture(&wgpu::TextureDescriptor {

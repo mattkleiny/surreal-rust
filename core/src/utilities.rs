@@ -8,6 +8,8 @@ pub use timing::*;
 pub use variant::*;
 pub use version::*;
 
+use crate::collections::ArenaIndex;
+
 mod object;
 mod services;
 mod singleton;
@@ -17,29 +19,29 @@ mod variant;
 mod version;
 
 /// Abstracts over resource IDs.
-pub trait RID: Copy + Eq + std::hash::Hash + From<u64> {}
+pub trait ResourceId: Copy + Eq + From<ArenaIndex> + Into<ArenaIndex> {}
 
-/// Creates an opaque ID for a resource in a implementation.
+/// Creates a new, opaque [`ResourceId`] type.
 #[macro_export]
 macro_rules! impl_rid {
   ($name:ident) => {
     #[repr(transparent)]
-    #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-    pub struct $name(pub u64);
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub struct $name($crate::collections::ArenaIndex);
 
-    impl $name {
+    impl $crate::utilities::ResourceId for $name {}
+
+    impl From<$crate::collections::ArenaIndex> for $name {
       #[inline]
-      pub const fn new(id: u64) -> Self {
+      fn from(id: $crate::collections::ArenaIndex) -> Self {
         Self(id)
       }
     }
 
-    impl $crate::utilities::RID for $name {}
-
-    impl From<u64> for $name {
+    impl From<$name> for $crate::collections::ArenaIndex {
       #[inline]
-      fn from(id: u64) -> Self {
-        Self(id)
+      fn from(id: $name) -> Self {
+        id.0
       }
     }
   };

@@ -1,64 +1,56 @@
-use std::collections::HashMap;
-use std::sync::atomic::AtomicU64;
 use std::sync::RwLock;
 
-use surreal::utilities::RID;
+use surreal::collections::Arena;
+use surreal::utilities::ResourceId;
 
-/// Thread-safe storage for [`RID`] [`K`] to some internal data structure [`V`].
+/// Thread-safe storage for [`ResourceId`] [`K`] to some internal data structure [`V`].
 ///
 /// This allows for opaque decoupling of user-facing resource IDs and internal data structures.
 pub struct Storage<K, V> {
-  next_id: AtomicU64,
-  entries: RwLock<HashMap<K, V>>,
+  entries: RwLock<Arena<V>>,
+  _key: std::marker::PhantomData<K>,
 }
 
-impl<K: RID, V> Default for Storage<K, V> {
+impl<K: ResourceId, V> Default for Storage<K, V> {
   fn default() -> Self {
     Self {
-      next_id: AtomicU64::new(1),
-      entries: RwLock::new(HashMap::new()),
+      entries: RwLock::new(Arena::new()),
+      _key: std::marker::PhantomData,
     }
   }
 }
 
-impl<K: RID, V> Storage<K, V> {
+impl<K: ResourceId, V> Storage<K, V> {
   /// Creates a new [`V`] in the storage with the given factory method.
-  pub fn create(&self, factory: impl Fn(K) -> V) -> K {
-    let next_id = self.next_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-
-    let key = K::from(next_id);
-    let value = factory(key);
-
-    self.insert(key, value);
-
-    key
+  pub fn create(&self, factory: impl Fn() -> V) -> K {
+    self.insert(factory())
   }
 
   /// Reads the [`V`] associated with the given key.
   pub fn read<R>(&self, key: K, body: impl FnMut(&V) -> R) -> Option<R> {
     let entries = self.entries.read().unwrap();
 
-    entries.get(&key).map(body)
+    entries.get(key.into()).map(body)
   }
 
   /// Writes the [`V`] associated with the given key.
   pub fn write<R>(&self, key: K, body: impl FnMut(&mut V) -> R) -> Option<R> {
     let mut entries = self.entries.write().unwrap();
 
-    entries.get_mut(&key).map(body)
+    entries.get_mut(key.into()).map(body)
   }
 
-  /// Inserts a [`V`] into storage.
-  pub fn insert(&self, key: K, value: V) {
+  /// Inserts a [`V`] into storage and returns it's [`K`].
+  pub fn insert(&self, value: V) -> K {
     let mut entries = self.entries.write().unwrap();
 
-    entries.insert(key, value);
+    entries.insert(value).into()
   }
 
   /// Removes a [`V`] from storage.
   pub fn remove(&self, key: K) -> Option<V> {
     let mut entries = self.entries.write().unwrap();
 
-    entries.remove(&key)
+    entries.remove(key.into())
   }
 }
