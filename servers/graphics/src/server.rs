@@ -63,25 +63,29 @@ impl std::ops::Deref for GraphicsServer {
 
 /// A buffer of [`Command`]s for execution in the [`GraphicsServerBackend`].
 #[derive(Default, Clone)]
-pub struct CommandBuffer {
-  commands: Vec<Command>,
+pub struct CommandBuffer<'a> {
+  commands: Vec<Command<'a>>,
 }
 
-impl CommandBuffer {
+impl<'a> CommandBuffer<'a> {
   /// Enqueues a [`Command`] to the buffer.
-  pub fn enqueue(&mut self, command: Command) {
+  pub fn enqueue(&mut self, command: Command<'a>) {
     self.commands.push(command);
   }
 
   /// Dequeues a [`Command`] to the buffer.
-  pub fn dequeue(&mut self) -> Option<Command> {
+  pub fn dequeue(&mut self) -> Option<Command<'a>> {
     self.commands.pop()
   }
 }
 
 /// A single command in a [`CommandBuffer`].
 #[derive(Clone)]
-pub enum Command {
+pub enum Command<'a> {
+  WriteTexture {
+    texture_id: TextureId,
+    pixels: &'a [u8],
+  },
   /// Performs an indirect draw with the given material.
   DrawIndirect {
     material_id: MaterialId,

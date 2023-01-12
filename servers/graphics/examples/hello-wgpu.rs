@@ -8,8 +8,8 @@ use winit::{
 };
 
 use surreal::graphics::Color32;
-use surreal::utilities::DeltaClock;
-use surreal_graphics::{CommandBuffer, GraphicsBackendKind, Texture};
+use surreal::utilities::{bytemuck::cast_slice, DeltaClock};
+use surreal_graphics::{Command, CommandBuffer, GraphicsBackendKind, Texture};
 
 fn main() {
   let event_loop = EventLoop::new();
@@ -24,11 +24,12 @@ fn main() {
   let mut commands = CommandBuffer::default();
   let mut delta_clock = DeltaClock::new();
 
-  let mut texture = Texture::new(&graphics).expect("Failed to create texture");
+  let texture = Texture::new(&graphics).expect("Failed to create texture");
 
-  texture
-    .write_pixels(&[Color32::BLACK, Color32::BLACK, Color32::BLACK, Color32::BLACK])
-    .expect("Failed to write texture data");
+  commands.enqueue(Command::WriteTexture {
+    texture_id: texture.id(),
+    pixels: cast_slice(&[Color32::BLACK; 1920 * 1080]),
+  });
 
   macro_rules! attempt {
     ($body:expr) => {

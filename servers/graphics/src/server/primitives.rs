@@ -16,6 +16,10 @@ impl Texture {
     })
   }
 
+  pub fn id(&self) -> TextureId {
+    self.texture_id
+  }
+
   pub fn write_pixels<P: Texel>(&mut self, pixels: &[P]) -> surreal::Result<()> {
     let pixels = unsafe { std::slice::from_raw_parts(pixels.as_ptr() as *const u8, pixels.len() * std::mem::size_of::<P>()) };
 

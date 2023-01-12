@@ -3,6 +3,7 @@
 //! We support the two most common color types, a 32-bit integral RGBA color,
 //! and a 32-bit floating point per-channel representation for more precise rendering.
 
+use bytemuck::{Pod, Zeroable};
 use std::ops::{Add, Div, Mul, Sub};
 
 use crate::maths::{ApproxEq, FromRandom, Lerp, Numeric, Random};
@@ -24,7 +25,7 @@ pub trait Pixel: Copy + Default {
 
 /// A simple floating point color value with 4 channels (RGBA).
 #[repr(C)]
-#[derive(Copy, Clone, Default, Debug)]
+#[derive(Pod, Zeroable, Copy, Clone, Default, Debug)]
 pub struct Color {
   pub r: f32,
   pub g: f32,
@@ -175,7 +176,7 @@ impl FromRandom for Color {
 
 /// A simple 32-bit color value with 4 channels (RGBA).
 #[repr(C)]
-#[derive(Copy, Clone, Default, Debug, Eq)]
+#[derive(Pod, Zeroable, Copy, Clone, Default, Debug, Eq)]
 pub struct Color32 {
   pub r: u8,
   pub g: u8,

@@ -18,6 +18,11 @@ mod timing;
 mod variant;
 mod version;
 
+/// Re-export `bytemuck` for consumers of Surreal.
+pub mod bytemuck {
+  pub use bytemuck::*;
+}
+
 /// Abstracts over resource IDs.
 pub trait ResourceId: Copy + Eq + From<ArenaIndex> + Into<ArenaIndex> {}
 

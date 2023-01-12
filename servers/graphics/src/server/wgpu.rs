@@ -104,19 +104,38 @@ impl WgpuBackend {
 
 impl GraphicsServerBackend for WgpuBackend {
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
+    let state = self.state.lock().unwrap();
+
+    let surface = state.surface.get_current_texture()?;
+    let mut encoder = state.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+
     while let Some(command) = commands.dequeue() {
       match command {
+        Command::WriteTexture { texture_id, pixels } => {
+          self.texture_storage.read(texture_id, |texture| {
+            state.queue.write_texture(
+              wgpu::ImageCopyTexture {
+                texture: &texture.texture,
+                mip_level: 0,
+                origin: wgpu::Origin3d::ZERO,
+                aspect: wgpu::TextureAspect::All,
+              },
+              pixels,
+              wgpu::ImageDataLayout::default(),
+              wgpu::Extent3d {
+                width: 1024,
+                height: 1024,
+                depth_or_array_layers: 0,
+              },
+            );
+          });
+        }
         Command::DrawIndirect {
           material_id,
           vertices,
           instances,
         } => {
-          let state = self.state.lock().unwrap();
-
-          let surface = state.surface.get_current_texture()?;
           let view = surface.texture.create_view(&wgpu::TextureViewDescriptor::default());
-
-          let mut encoder = state.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
           self.material_storage.read(material_id, |material| {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -135,11 +154,12 @@ impl GraphicsServerBackend for WgpuBackend {
             render_pass.set_pipeline(&material.render_pipeline);
             render_pass.draw(vertices.clone(), instances.clone());
           });
-
-          state.queue.submit(Some(encoder.finish()));
         }
       }
     }
+
+    state.queue.submit(Some(encoder.finish()));
+    surface.present();
 
     Ok(())
   }
@@ -163,7 +183,7 @@ impl GraphicsServerBackend for WgpuBackend {
 
       let texture = state.device.create_texture(&wgpu::TextureDescriptor {
         label: None,
-        size: Default::default(),
+        size: wgpu::Extent3d::default(),
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
