@@ -336,8 +336,8 @@ impl<'a> VirtualPath<'a> {
     }
   }
 
-  /// Resolves a [`VirtualPath`] relative to the current path.
-  pub fn resolve(&self, relative: &str) -> Self {
+  /// Joins a [`VirtualPath`] relative to the current path.
+  pub fn join(&self, relative: &str) -> Self {
     let mut path = self.location.to_string();
 
     if !path.ends_with("/") {

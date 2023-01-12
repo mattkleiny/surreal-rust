@@ -8,7 +8,7 @@ use winit::event::{Event, ModifiersState, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Icon, Window, WindowId};
 
-use surreal::graphics::{Color, GraphicsServer, Image, ImageFormat, OpenGLGraphicsBackend};
+use surreal::graphics::{Color, GraphicsServer, HeadlessGraphicsBackend, Image, ImageFormat};
 use surreal::input::{InputServer, Key};
 use surreal::maths::vec2;
 use surreal::ui::UserInterface;
@@ -51,7 +51,6 @@ pub trait EditorWindow {
       .with_title("Surreal")
       .with_inner_size(winit::dpi::LogicalSize::new(1920, 1080))
       .with_resizable(true)
-      .with_transparent(true)
       .with_visible(true)
       .with_window_icon(Some(load_editor_icon()))
   }
@@ -83,18 +82,14 @@ impl EditorWindowHost {
   /// Adds a new [`EditorWindow`] to the manager.
   pub fn add_window(&mut self, editor_window: impl EditorWindow + 'static) {
     // set-up the OpenGL context for the window, too
-    let builder = editor_window.create_window();
-    let context = glutin::ContextBuilder::new()
-      .with_vsync(true)
-      .with_multisampling(0)
-      .build_windowed(builder, &self.event_loop)
-      .expect("Failed to build main window");
+    let window = editor_window
+      .create_window()
+      .build(&self.event_loop)
+      .expect("Failed to build window window");
 
     // set-up graphics server and user interface
-    let (context, window) = unsafe { context.make_current().expect("Failed to build window OpenGL context").split() };
-
     let pixels_per_point = window.scale_factor() as f32;
-    let graphics_server = GraphicsServer::new(OpenGLGraphicsBackend::new(context));
+    let graphics_server = GraphicsServer::new(HeadlessGraphicsBackend::new());
     let input_server = InputServer::new(pixels_per_point);
     let user_interface = UserInterface::new(&graphics_server);
 

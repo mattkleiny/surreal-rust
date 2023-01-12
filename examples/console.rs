@@ -6,7 +6,6 @@ fn main() {
   let configuration = EngineConfig {
     title: "In-game console".to_string(),
     size: (1920, 1080),
-    transparent_window: true,
     log_level: LevelFilter::Trace,
     ..Default::default()
   };
@@ -16,10 +15,6 @@ fn main() {
     let mut console_panel = ConsolePanel::new();
 
     engine.run_variable_step(|engine, _| {
-      let graphics = &engine.graphics;
-
-      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
-
       interface.run(engine, |egui| {
         egui::CentralPanel::default().show(egui, |ui| {
           ui.heading("In-game console");

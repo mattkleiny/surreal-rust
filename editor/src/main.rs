@@ -20,8 +20,8 @@ fn main() -> surreal::Result<()> {
   let args = Arguments::parse();
 
   let project = Project::open_or_create(
-    args.project_name.unwrap_or_else(|| "Untitled".to_string()),
-    args.project_path.unwrap_or_else(|| {
+    &args.project_name.unwrap_or_else(|| "Untitled".to_string()),
+    &args.project_path.unwrap_or_else(|| {
       std::env::current_dir()
         .expect("Failed to get current directory")
         .to_str()

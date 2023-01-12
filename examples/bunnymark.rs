@@ -10,7 +10,6 @@ fn main() {
   let configuration = EngineConfig {
     title: "Bunnymark".to_string(),
     size: (WIDTH as u32, HEIGHT as u32),
-    transparent_window: true,
     ..Default::default()
   };
 
@@ -35,8 +34,6 @@ fn main() {
     let mut is_rendering = true;
 
     engine.run_variable_step(move |engine, time| {
-      engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
-
       // update bunnies
       if is_updating {
         for bunny in &mut bunnies {

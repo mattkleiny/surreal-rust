@@ -6,14 +6,6 @@ use crate::utilities::{Size, TimeSpan};
 
 mod headless;
 
-crate::impl_rid!(AudioClipId);
-crate::impl_rid!(AudioSourceId);
-
-/// A pointer to the core [`AudioBackend`] implementation.
-///
-/// This pointer is safe to pass around the application.
-pub type AudioServer = std::rc::Rc<Box<dyn AudioBackend>>;
-
 /// Describes sampling rates for an audio clip.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct AudioSampleRate {
@@ -50,9 +42,6 @@ impl AudioSampleRate {
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
 /// details. The server is intended to be a low-level implementation abstraction.
-///
-/// Theoretically different backends could be supported; though it's unlikely to be anything other
-/// than OpenAL. We do provide a headless backend to facilitate testing and related, however.
 pub trait AudioBackend {
   // clips
   fn clip_create(&self) -> AudioClipId;
@@ -66,3 +55,6 @@ pub trait AudioBackend {
   fn source_set_volume(&self, source: AudioSourceId, volume: f32);
   fn source_delete(&self, source: AudioSourceId);
 }
+
+crate::impl_rid!(AudioClipId);
+crate::impl_rid!(AudioSourceId);

@@ -2,7 +2,6 @@ use std::borrow::Cow;
 use std::ops::Range;
 
 use surreal::graphics::{Color, TextureFormat};
-use surreal::maths::{Mat4, UVec2, UVec3};
 
 mod headless;
 mod wgpu;
@@ -45,7 +44,7 @@ impl GraphicsServer {
   }
 
   /// Creates a [`GraphicsServer`] for the given [`GraphicsBackendKind`].
-  pub async fn from_kind(kind: GraphicsBackendKind, window: &winit::window::Window) -> surreal::Result<Self> {
+  pub async fn from_kind(window: &winit::window::Window, kind: GraphicsBackendKind) -> surreal::Result<Self> {
     match kind {
       GraphicsBackendKind::Headless => Ok(Self::from_headless()),
       GraphicsBackendKind::WGPU => Self::from_wgpu(window).await,
@@ -117,9 +116,9 @@ pub enum Command<'a> {
   /// Writes the given [`Vec`] of [`u8`] pixel data into the given [`TextureId`].
   WriteTexturePixels { texture_id: TextureId, pixels: &'a [u8] },
   /// Sets the view matrix on the underlying pipeline.
-  SetViewMatrix { view_matrix: Mat4 },
+  SetViewMatrix { view_matrix: [f32; 4 * 4] },
   /// Sets the projection matrix on the underlying pipeline.
-  SetProjectionMatrix { projection_matrix: Mat4 },
+  SetProjectionMatrix { projection_matrix: [f32; 4 * 4] },
   /// Sets the given global [`UniformValue`] for all materials.
   SetGlobalUniform {
     uniform_name: &'a str,
@@ -206,20 +205,18 @@ pub trait GraphicsBackend {
 
   // texture operations
   fn texture_create_1d(&self, label: Option<&str>, size: u32, format: TextureFormat) -> surreal::Result<TextureId>;
-  fn texture_create_2d(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<TextureId>;
-  fn texture_create_3d(&self, label: Option<&str>, size: UVec3, format: TextureFormat) -> surreal::Result<TextureId>;
-  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Vec<u8>>;
+  fn texture_create_2d(&self, label: Option<&str>, size: (u32, u32), format: TextureFormat) -> surreal::Result<TextureId>;
+  fn texture_create_3d(&self, label: Option<&str>, size: (u32, u32, u32), format: TextureFormat) -> surreal::Result<TextureId>;
+  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Box<[u8]>>;
   fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()>;
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()>;
 
   // render target operations
-  fn target_create(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<RenderTargetId>;
-  fn target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()>;
+  fn render_target_create(&self, label: Option<&str>, size: (u32, u32), format: TextureFormat) -> surreal::Result<RenderTargetId>;
+  fn render_target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()>;
 }
 
-surreal::impl_rid!(ShaderId);
 surreal::impl_rid!(MaterialId);
 surreal::impl_rid!(TextureId);
 surreal::impl_rid!(MeshId);
-surreal::impl_rid!(LightId);
 surreal::impl_rid!(RenderTargetId);

@@ -22,11 +22,15 @@ impl GraphicsBackend for HeadlessBackend {
     todo!()
   }
 
-  fn texture_create_2d(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<TextureId> {
+  fn texture_create_2d(&self, label: Option<&str>, size: (u32, u32), format: TextureFormat) -> surreal::Result<TextureId> {
     todo!()
   }
 
-  fn texture_create_3d(&self, label: Option<&str>, size: UVec3, format: TextureFormat) -> surreal::Result<TextureId> {
+  fn texture_create_3d(&self, label: Option<&str>, size: (u32, u32, u32), format: TextureFormat) -> surreal::Result<TextureId> {
+    todo!()
+  }
+
+  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Box<[u8]>> {
     todo!()
   }
 
@@ -34,19 +38,15 @@ impl GraphicsBackend for HeadlessBackend {
     todo!()
   }
 
-  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Vec<u8>> {
-    todo!()
-  }
-
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()> {
     todo!()
   }
 
-  fn target_create(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<RenderTargetId> {
+  fn render_target_create(&self, label: Option<&str>, size: (u32, u32), format: TextureFormat) -> surreal::Result<RenderTargetId> {
     todo!()
   }
 
-  fn target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()> {
+  fn render_target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()> {
     todo!()
   }
 }

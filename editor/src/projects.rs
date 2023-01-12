@@ -41,27 +41,21 @@ pub struct ProjectDetails {
 }
 
 impl Project {
-  /// Opens a project at the given path.
-  pub fn open(_root_path: impl AsRef<str>) -> surreal::Result<Self> {
-    todo!()
-  }
-
-  /// Creates a project at the given path, removing any old project data if it already exists.
-  pub fn create(_root_path: impl AsRef<str>) -> surreal::Result<Self> {
-    todo!()
-  }
-
   /// Opens a project at the given path, or creates a new one if it doesn't exist.
-  pub fn open_or_create(name: impl AsRef<str>, root_path: impl AsRef<str>) -> surreal::Result<Self> {
-    info!("Opening project {} at path {}", name.as_ref(), root_path.as_ref());
+  pub fn open_or_create(name: &str, root_path: &str) -> surreal::Result<Self> {
+    let root_path = VirtualPath::from(root_path);
+    let asset_path = root_path.join("assets");
+    let target_path = root_path.join("target");
+
+    info!("Opening project {} at path {}", name, root_path);
 
     let project = Self {
       details: ProjectDetails {
-        name: name.as_ref().to_string(),
+        name: name.to_string(),
         version: DEFAULT_PROJECT_VERSION,
-        path: root_path.as_ref().to_string(),
+        path: root_path.to_string(),
       },
-      _asset_database: AssetDatabase::default(),
+      _asset_database: AssetDatabase::new(&asset_path.to_string(), &target_path.to_string())?,
     };
 
     // TODO: verify that the project is valid and the version is valid
@@ -81,7 +75,7 @@ impl Project {
 
   /// Reads the [`Version`] of the project from the settings file.
   pub fn version(&self) -> surreal::Result<Version> {
-    let path = self.root_path().resolve("/Settings/ProjectVersion.txt");
+    let path = self.root_path().join("/Settings/ProjectVersion.txt");
     let raw = path.read_all_text()?;
 
     Ok(Version::from_str(&raw)?)

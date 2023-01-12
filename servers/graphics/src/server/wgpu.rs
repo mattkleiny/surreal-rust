@@ -9,10 +9,8 @@ mod wgpu {
 /// The [`GraphicsBackend`] for WGPU.
 pub struct WgpuBackend {
   state: std::sync::Mutex<WgpuState>,
-  _shader_storage: ResourceStorage<ShaderId, WgpuShader>,
   _material_storage: ResourceStorage<MaterialId, WgpuMaterial>,
   _mesh_storage: ResourceStorage<MeshId, WgpuMesh>,
-  _light_storage: ResourceStorage<LightId, WgpuLight>,
   texture_storage: ResourceStorage<TextureId, WgpuTexture>,
   target_storage: ResourceStorage<RenderTargetId, WgpuRenderTarget>,
 }
@@ -25,17 +23,11 @@ struct WgpuState {
   surface_config: wgpu::SurfaceConfiguration,
 }
 
-/// Internal data for a shader in the [`WgpuBackend`].
-struct WgpuShader {}
-
 /// Internal data for a material in the [`WgpuBackend`].
 struct WgpuMaterial {}
 
 /// Internal data for a mesh in the [`WgpuBackend`].
 struct WgpuMesh {}
-
-/// Internal data for a light in the [`WgpuBackend`].
-struct WgpuLight {}
 
 /// Internal data for a texture in the [`WgpuBackend`].
 struct WgpuTexture {
@@ -95,10 +87,8 @@ impl WgpuBackend {
         _queue: queue,
         surface_config,
       }),
-      _shader_storage: ResourceStorage::default(),
       _material_storage: ResourceStorage::default(),
       _mesh_storage: ResourceStorage::default(),
-      _light_storage: ResourceStorage::default(),
       texture_storage: ResourceStorage::default(),
       target_storage: ResourceStorage::default(),
     })
@@ -106,7 +96,7 @@ impl WgpuBackend {
 }
 
 impl GraphicsBackend for WgpuBackend {
-  fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
+  fn execute_commands(&self, _commands: &mut CommandBuffer) -> surreal::Result<()> {
     // let state = self.state.lock().unwrap();
     //
     // let surface = state.surface.get_current_texture()?;
@@ -193,14 +183,14 @@ impl GraphicsBackend for WgpuBackend {
     Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
   }
 
-  fn texture_create_2d(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<TextureId> {
+  fn texture_create_2d(&self, label: Option<&str>, size: (u32, u32), format: TextureFormat) -> surreal::Result<TextureId> {
     let state = self.state.lock().unwrap();
 
     let texture = state.device.create_texture(&wgpu::TextureDescriptor {
       label,
       size: wgpu::Extent3d {
-        width: size.x,
-        height: size.y,
+        width: size.0,
+        height: size.1,
         depth_or_array_layers: 1,
       },
       mip_level_count: 1,
@@ -216,15 +206,15 @@ impl GraphicsBackend for WgpuBackend {
     Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
   }
 
-  fn texture_create_3d(&self, label: Option<&str>, size: UVec3, format: TextureFormat) -> surreal::Result<TextureId> {
+  fn texture_create_3d(&self, label: Option<&str>, size: (u32, u32, u32), format: TextureFormat) -> surreal::Result<TextureId> {
     let state = self.state.lock().unwrap();
 
     let texture = state.device.create_texture(&wgpu::TextureDescriptor {
       label,
       size: wgpu::Extent3d {
-        width: size.x,
-        height: size.y,
-        depth_or_array_layers: size.z,
+        width: size.0,
+        height: size.1,
+        depth_or_array_layers: size.2,
       },
       mip_level_count: 1,
       sample_count: 1,
@@ -239,11 +229,11 @@ impl GraphicsBackend for WgpuBackend {
     Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
   }
 
-  fn texture_read(&self, texture_id: TextureId) -> surreal::Result<Vec<u8>> {
+  fn texture_read(&self, _texture_id: TextureId) -> surreal::Result<Box<[u8]>> {
     todo!()
   }
 
-  fn texture_write(&self, texture_id: TextureId, pixels: &[u8]) -> surreal::Result<()> {
+  fn texture_write(&self, _texture_id: TextureId, _pixels: &[u8]) -> surreal::Result<()> {
     todo!()
   }
 
@@ -253,11 +243,11 @@ impl GraphicsBackend for WgpuBackend {
     Ok(())
   }
 
-  fn target_create(&self, label: Option<&str>, size: UVec2, format: TextureFormat) -> surreal::Result<RenderTargetId> {
+  fn render_target_create(&self, _label: Option<&str>, _size: (u32, u32), _format: TextureFormat) -> surreal::Result<RenderTargetId> {
     Ok(self.target_storage.insert(WgpuRenderTarget {}))
   }
 
-  fn target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()> {
+  fn render_target_delete(&self, render_target_id: RenderTargetId) -> surreal::Result<()> {
     self.target_storage.remove(render_target_id);
 
     Ok(())

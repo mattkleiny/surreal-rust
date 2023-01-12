@@ -16,7 +16,6 @@ use std::hash::Hasher;
 use serde::{Deserialize, Serialize};
 
 use surreal::io::{Deserializable, InputStream, Serializable, VirtualPath};
-use surreal::utilities::Type;
 
 surreal::impl_guid!(AssetId);
 
@@ -28,7 +27,6 @@ surreal::impl_guid!(AssetId);
 /// assets in the project, and for managing the import of assets from the file system.
 ///
 /// See [`AssetImporter`] and [`AssetBundle`] for more details.
-#[derive(Default)]
 pub struct AssetDatabase {
   _asset_path: String,
   target_path: String,
@@ -45,13 +43,13 @@ enum AssetDatabaseChange {
 
 impl AssetDatabase {
   /// Builds an [`AssetDatabase`] from the given root project path.
-  pub fn new(asset_path: impl AsRef<str>, target_path: impl AsRef<str>) -> surreal::Result<Self> {
+  pub fn new(asset_path: &str, target_path: &str) -> surreal::Result<Self> {
+    surreal::diagnostics::trace!("Creating asset database at path {} with target path {}", asset_path, target_path);
+
     let mut database = Self {
-      _asset_path: asset_path.as_ref().to_owned(),
-      target_path: target_path.as_ref().to_owned(),
-      manifest: AssetManifestBuilder::default()
-        .add_assets(&format!("{}/**/*", asset_path.as_ref()))
-        .build(),
+      _asset_path: asset_path.to_owned(),
+      target_path: target_path.to_owned(),
+      manifest: AssetManifest::from_pattern(&format!("{}/**/*", asset_path)),
       importers: Vec::new(),
       pending_changes: Vec::new(),
     };
@@ -59,17 +57,13 @@ impl AssetDatabase {
     // process initial asset changes
     for path in &database.manifest.assets {
       let metadata = AssetMetadata::from_path(path)?;
-      let hash = AssetHash::from_path(path)?;
 
-      // the file hash has changed, update it
-      if metadata.hash != hash {
-        let path = VirtualPath::from(path);
-        let path = path.change_extension("meta");
+      let path = VirtualPath::from(path);
+      let path = path.change_extension("meta");
 
-        database
-          .pending_changes
-          .push(AssetDatabaseChange::WriteMetadata(path.to_string(), metadata));
-      }
+      database
+        .pending_changes
+        .push(AssetDatabaseChange::WriteMetadata(path.to_string(), metadata));
     }
 
     // save pending manifest changes
@@ -117,11 +111,15 @@ impl AssetDatabase {
     while let Some(change) = self.pending_changes.pop() {
       match change {
         AssetDatabaseChange::WriteMetadata(path, metadata) => {
+          surreal::diagnostics::trace!("Writing asset metadata {} to path: {}", metadata.id, path);
+
           metadata.to_yaml_file(VirtualPath::from(&path))?;
         }
         AssetDatabaseChange::SaveManifest => {
           let manifest = &self.manifest;
           let manifest_path = format!("{}/manifest.yaml", self.target_path);
+
+          surreal::diagnostics::trace!("Saving asset manifest to path {}", manifest_path);
 
           manifest.to_yaml_file(VirtualPath::from(&manifest_path))?
         }
@@ -268,7 +266,6 @@ impl AssetMetadata {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AssetTypeMetadata {
   pub offset: u16,
-  pub kind: Type,
 }
 
 /// A manifest of assets.
@@ -281,27 +278,16 @@ pub struct AssetManifest {
   assets: BTreeSet<String>,
 }
 
-/// A builder pattern for [`AssetManifest`]s.
-#[must_use]
-#[derive(Default)]
-pub struct AssetManifestBuilder {
-  manifest: AssetManifest,
-}
-
-impl AssetManifestBuilder {
-  /// Adds an existing asset to the manifest.
-  pub fn add_asset(mut self, path: impl Into<VirtualPath>) -> Self {
-    let path = path.into();
-
-    if path.extension() != "meta" {
-      self.manifest.assets.insert(path.to_string());
-    }
-
-    self
+impl AssetManifest {
+  /// Builds an [`AssetManifest`] from the given root pattern.
+  pub fn from_pattern(pattern: &str) -> Self {
+    let mut builder = Self::default();
+    builder.add_assets(pattern);
+    builder
   }
 
   /// Adds all assets that match the given pattern to the manifest.
-  pub fn add_assets(mut self, pattern: &str) -> Self {
+  pub fn add_assets(&mut self, pattern: &str) {
     let options = glob::MatchOptions {
       case_sensitive: false,
       require_literal_separator: false,
@@ -312,61 +298,21 @@ impl AssetManifestBuilder {
       for path in paths {
         match path {
           Ok(path) if path.is_file() => {
-            self = self.add_asset(&VirtualPath::from(path.to_str().unwrap()).to_string());
+            self.add_asset(&VirtualPath::from(path.to_str().unwrap()).to_string());
           }
           Ok(_) => {}
           Err(_) => {}
         }
       }
     }
-
-    self
   }
 
-  /// Builds the resultant [`AssetManifest`].
-  pub fn build(self) -> AssetManifest {
-    self.manifest
-  }
-}
+  /// Adds an existing asset to the manifest.
+  pub fn add_asset(&mut self, path: impl Into<VirtualPath>) {
+    let path = path.into();
 
-impl From<AssetManifestBuilder> for AssetManifest {
-  fn from(value: AssetManifestBuilder) -> Self {
-    value.build()
-  }
-}
-
-/// A '.pak' file; a compressed bundle of assets.
-///
-/// This file format is a binary encoded stream of assets, efficiently packed
-/// for distribution. The format is designed to be read-only, and is not intended
-/// to be modified at runtime.
-#[derive(Default)]
-pub struct PakBundle;
-
-impl AssetBundle for PakBundle {}
-
-#[cfg(test)]
-mod tests {
-  use surreal::io::Deserializable;
-  use surreal::macros::Object;
-
-  use super::*;
-
-  #[derive(Object)]
-  struct SpriteResource;
-
-  #[test]
-  fn asset_manifest_should_serialize_to_yaml() {
-    let manifest = AssetManifestBuilder::default()
-      .add_asset("local://../assets/sprites/bunny.png")
-      .build();
-
-    let yaml = manifest.to_yaml().unwrap();
-
-    println!("{}", yaml);
-
-    let manifest = AssetManifest::from_yaml(&yaml).unwrap();
-
-    println!("{:#?}", manifest);
+    if path.extension() != "meta" {
+      self.assets.insert(path.to_string());
+    }
   }
 }

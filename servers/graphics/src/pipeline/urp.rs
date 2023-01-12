@@ -5,7 +5,6 @@
 //! games and other applications that do not require advanced rendering techniques.
 
 use surreal::graphics::{Color, TextureFormat};
-use surreal::maths::uvec2;
 
 use crate::{Command, CommandBuffer, GraphicsServer, RenderCamera, RenderManager, RenderPipeline, RenderTargetId};
 
@@ -24,8 +23,8 @@ impl UniversalPipeline {
       "Universal Render Pipeline",
       graphics,
       Self {
-        color_target: graphics.target_create(Some("Color Target"), uvec2(1920, 1080), TextureFormat::RGBA8)?,
-        depth_target: graphics.target_create(Some("Depth Target"), uvec2(1920, 1080), TextureFormat::R32)?,
+        color_target: graphics.render_target_create(Some("Color Target"), (1920, 1080), TextureFormat::RGBA8)?,
+        depth_target: graphics.render_target_create(Some("Depth Target"), (1920, 1080), TextureFormat::R32)?,
       },
       vec![
         Box::new(DepthPass::default()),
@@ -67,16 +66,12 @@ impl RenderPass<UniversalPipeline> for OpaquePass {
     });
 
     commands.enqueue(Command::SetViewMatrix {
-      view_matrix: camera.view_matrix(),
+      view_matrix: camera.view_matrix().to_cols_array(),
     });
 
     commands.enqueue(Command::SetProjectionMatrix {
-      projection_matrix: camera.projection_matrix(),
+      projection_matrix: camera.projection_matrix().to_cols_array(),
     })
-  }
-
-  fn render_camera(&mut self, commands: &mut CommandBuffer, camera: &dyn RenderCamera, pipeline: &mut UniversalPipeline) {
-    todo!()
   }
 }
 
@@ -93,16 +88,12 @@ impl RenderPass<UniversalPipeline> for TransparentPass {
     });
 
     commands.enqueue(Command::SetViewMatrix {
-      view_matrix: camera.view_matrix(),
+      view_matrix: camera.view_matrix().to_cols_array(),
     });
 
     commands.enqueue(Command::SetProjectionMatrix {
-      projection_matrix: camera.projection_matrix(),
+      projection_matrix: camera.projection_matrix().to_cols_array(),
     })
-  }
-
-  fn render_camera(&mut self, commands: &mut CommandBuffer, camera: &dyn RenderCamera, pipeline: &mut UniversalPipeline) {
-    todo!()
   }
 }
 

@@ -6,7 +6,6 @@ fn main() {
   let configuration = EngineConfig {
     title: "Hello, egui".to_string(),
     size: (1920, 1080),
-    transparent_window: true,
     update_continuously: false,
     log_level: LevelFilter::Trace,
     ..Default::default()
@@ -19,10 +18,6 @@ fn main() {
     let mut age = 33;
 
     engine.run_variable_step(|engine, _| {
-      let graphics = &engine.graphics;
-
-      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
-
       interface.run(engine, |egui| {
         egui::Window::new("Surreal ❤ egui").show(egui, |ui| {
           ui.heading("My egui Application");

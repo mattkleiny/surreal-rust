@@ -11,12 +11,11 @@ use winit::{
   window::{Window, WindowBuilder},
 };
 
-use crate::audio::HeadlessAudioBackend;
+use crate::graphics::HeadlessGraphicsBackend;
 use crate::{
   assets::AssetManager,
-  audio::AudioServer,
   diagnostics::{profiling, ConsoleLoggerBuilder, LevelFilter},
-  graphics::{GraphicsServer, Image, ImageFormat, OpenGLGraphicsBackend, Renderer},
+  graphics::{GraphicsServer, Image, ImageFormat, Renderer},
   input::InputServer,
   maths::{uvec2, vec2},
   scene::{SceneEvent, SceneGraph},
@@ -113,7 +112,6 @@ pub trait Application: Sized {
 /// This struct manages core systems and facilitates the main game loop.
 pub struct Engine {
   // core systems
-  pub audio: AudioServer,
   pub graphics: GraphicsServer,
   pub input: InputServer,
 
@@ -134,25 +132,8 @@ pub struct Engine {
 impl Engine {
   /// Creates a new engine, bootstrapping all core systems and opening the main display.
   pub fn new(config: EngineConfig) -> Self {
-    #[cfg(target_os = "windows")]
-    fn build_event_loop() -> EventLoop<()> {
-      use winit::platform::windows::EventLoopExtWindows;
-      EventLoop::new_any_thread()
-    }
-
-    #[cfg(target_os = "linux")]
-    fn build_event_loop() -> EventLoop<()> {
-      use winit::platform::unix::EventLoopExtUnix;
-      EventLoop::new_any_thread()
-    }
-
-    #[cfg(target_os = "macos")]
-    fn build_event_loop() -> EventLoop<()> {
-      EventLoop::new()
-    }
-
     // prepare the main window and event loop
-    let event_loop = build_event_loop();
+    let event_loop = EventLoop::new();
 
     log::trace!("Building main window");
 
@@ -166,24 +147,13 @@ impl Engine {
         Image::from_buffer(buffer, ImageFormat::Ico)
           .and_then(|image| image.to_icon())
           .expect("Failed to convert icon from raw image")
-      }));
-
-    // glutin tries to be safe via the type system
-    let context = glutin::ContextBuilder::new()
-      .with_vsync(config.vsync_enabled)
-      .with_multisampling(config.samples)
-      .build_windowed(window, &event_loop)
-      .expect("Failed to build main window context");
-
-    // unpick the window from glutin so we can manage it ourselves
-    let (context, window) = unsafe { context.make_current().unwrap().split() };
-    let audio_server = HeadlessAudioBackend::new();
-    let graphics_server = OpenGLGraphicsBackend::new(context);
+      }))
+      .build(&event_loop)
+      .expect("Failed to build main window");
 
     Self {
       // servers
-      audio: AudioServer::new(Box::new(audio_server)),
-      graphics: GraphicsServer::new(graphics_server),
+      graphics: GraphicsServer::new(HeadlessGraphicsBackend::new()),
       input: InputServer::new(window.scale_factor() as f32),
 
       // window management
@@ -292,8 +262,8 @@ impl Engine {
   ///
   /// This method will block until the game is closed.
   pub fn run(mut self, mut body: impl FnMut(&mut Self, TickEvent)) {
-    use glutin::event::*;
-    use glutin::platform::run_return::EventLoopExtRunReturn;
+    use winit::event::*;
+    use winit::platform::run_return::EventLoopExtRunReturn;
 
     log::trace!("Entering main event loop");
 
@@ -477,47 +447,47 @@ impl crate::ui::UserInterfaceHost for Engine {
 
   fn set_cursor_icon(&mut self, cursor_icon: egui::CursorIcon) {
     /// Converts an egui cursor to a winit cursor.
-    fn convert_cursor(cursor_icon: egui::CursorIcon) -> Option<glutin::window::CursorIcon> {
+    fn convert_cursor(cursor_icon: egui::CursorIcon) -> Option<winit::window::CursorIcon> {
       match cursor_icon {
         egui::CursorIcon::None => None,
 
-        egui::CursorIcon::Alias => Some(glutin::window::CursorIcon::Alias),
-        egui::CursorIcon::AllScroll => Some(glutin::window::CursorIcon::AllScroll),
-        egui::CursorIcon::Cell => Some(glutin::window::CursorIcon::Cell),
-        egui::CursorIcon::ContextMenu => Some(glutin::window::CursorIcon::ContextMenu),
-        egui::CursorIcon::Copy => Some(glutin::window::CursorIcon::Copy),
-        egui::CursorIcon::Crosshair => Some(glutin::window::CursorIcon::Crosshair),
-        egui::CursorIcon::Default => Some(glutin::window::CursorIcon::Default),
-        egui::CursorIcon::Grab => Some(glutin::window::CursorIcon::Grab),
-        egui::CursorIcon::Grabbing => Some(glutin::window::CursorIcon::Grabbing),
-        egui::CursorIcon::Help => Some(glutin::window::CursorIcon::Help),
-        egui::CursorIcon::Move => Some(glutin::window::CursorIcon::Move),
-        egui::CursorIcon::NoDrop => Some(glutin::window::CursorIcon::NoDrop),
-        egui::CursorIcon::NotAllowed => Some(glutin::window::CursorIcon::NotAllowed),
-        egui::CursorIcon::PointingHand => Some(glutin::window::CursorIcon::Hand),
-        egui::CursorIcon::Progress => Some(glutin::window::CursorIcon::Progress),
+        egui::CursorIcon::Alias => Some(winit::window::CursorIcon::Alias),
+        egui::CursorIcon::AllScroll => Some(winit::window::CursorIcon::AllScroll),
+        egui::CursorIcon::Cell => Some(winit::window::CursorIcon::Cell),
+        egui::CursorIcon::ContextMenu => Some(winit::window::CursorIcon::ContextMenu),
+        egui::CursorIcon::Copy => Some(winit::window::CursorIcon::Copy),
+        egui::CursorIcon::Crosshair => Some(winit::window::CursorIcon::Crosshair),
+        egui::CursorIcon::Default => Some(winit::window::CursorIcon::Default),
+        egui::CursorIcon::Grab => Some(winit::window::CursorIcon::Grab),
+        egui::CursorIcon::Grabbing => Some(winit::window::CursorIcon::Grabbing),
+        egui::CursorIcon::Help => Some(winit::window::CursorIcon::Help),
+        egui::CursorIcon::Move => Some(winit::window::CursorIcon::Move),
+        egui::CursorIcon::NoDrop => Some(winit::window::CursorIcon::NoDrop),
+        egui::CursorIcon::NotAllowed => Some(winit::window::CursorIcon::NotAllowed),
+        egui::CursorIcon::PointingHand => Some(winit::window::CursorIcon::Hand),
+        egui::CursorIcon::Progress => Some(winit::window::CursorIcon::Progress),
 
-        egui::CursorIcon::ResizeHorizontal => Some(glutin::window::CursorIcon::EwResize),
-        egui::CursorIcon::ResizeNeSw => Some(glutin::window::CursorIcon::NeswResize),
-        egui::CursorIcon::ResizeNwSe => Some(glutin::window::CursorIcon::NwseResize),
-        egui::CursorIcon::ResizeVertical => Some(glutin::window::CursorIcon::NsResize),
+        egui::CursorIcon::ResizeHorizontal => Some(winit::window::CursorIcon::EwResize),
+        egui::CursorIcon::ResizeNeSw => Some(winit::window::CursorIcon::NeswResize),
+        egui::CursorIcon::ResizeNwSe => Some(winit::window::CursorIcon::NwseResize),
+        egui::CursorIcon::ResizeVertical => Some(winit::window::CursorIcon::NsResize),
 
-        egui::CursorIcon::ResizeEast => Some(glutin::window::CursorIcon::EResize),
-        egui::CursorIcon::ResizeSouthEast => Some(glutin::window::CursorIcon::SeResize),
-        egui::CursorIcon::ResizeSouth => Some(glutin::window::CursorIcon::SResize),
-        egui::CursorIcon::ResizeSouthWest => Some(glutin::window::CursorIcon::SwResize),
-        egui::CursorIcon::ResizeWest => Some(glutin::window::CursorIcon::WResize),
-        egui::CursorIcon::ResizeNorthWest => Some(glutin::window::CursorIcon::NwResize),
-        egui::CursorIcon::ResizeNorth => Some(glutin::window::CursorIcon::NResize),
-        egui::CursorIcon::ResizeNorthEast => Some(glutin::window::CursorIcon::NeResize),
-        egui::CursorIcon::ResizeColumn => Some(glutin::window::CursorIcon::ColResize),
-        egui::CursorIcon::ResizeRow => Some(glutin::window::CursorIcon::RowResize),
+        egui::CursorIcon::ResizeEast => Some(winit::window::CursorIcon::EResize),
+        egui::CursorIcon::ResizeSouthEast => Some(winit::window::CursorIcon::SeResize),
+        egui::CursorIcon::ResizeSouth => Some(winit::window::CursorIcon::SResize),
+        egui::CursorIcon::ResizeSouthWest => Some(winit::window::CursorIcon::SwResize),
+        egui::CursorIcon::ResizeWest => Some(winit::window::CursorIcon::WResize),
+        egui::CursorIcon::ResizeNorthWest => Some(winit::window::CursorIcon::NwResize),
+        egui::CursorIcon::ResizeNorth => Some(winit::window::CursorIcon::NResize),
+        egui::CursorIcon::ResizeNorthEast => Some(winit::window::CursorIcon::NeResize),
+        egui::CursorIcon::ResizeColumn => Some(winit::window::CursorIcon::ColResize),
+        egui::CursorIcon::ResizeRow => Some(winit::window::CursorIcon::RowResize),
 
-        egui::CursorIcon::Text => Some(glutin::window::CursorIcon::Text),
-        egui::CursorIcon::VerticalText => Some(glutin::window::CursorIcon::VerticalText),
-        egui::CursorIcon::Wait => Some(glutin::window::CursorIcon::Wait),
-        egui::CursorIcon::ZoomIn => Some(glutin::window::CursorIcon::ZoomIn),
-        egui::CursorIcon::ZoomOut => Some(glutin::window::CursorIcon::ZoomOut),
+        egui::CursorIcon::Text => Some(winit::window::CursorIcon::Text),
+        egui::CursorIcon::VerticalText => Some(winit::window::CursorIcon::VerticalText),
+        egui::CursorIcon::Wait => Some(winit::window::CursorIcon::Wait),
+        egui::CursorIcon::ZoomIn => Some(winit::window::CursorIcon::ZoomIn),
+        egui::CursorIcon::ZoomOut => Some(winit::window::CursorIcon::ZoomOut),
       }
     }
 

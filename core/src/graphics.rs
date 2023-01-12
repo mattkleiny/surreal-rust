@@ -1,14 +1,4 @@
 //! A lightweight cross-platform graphics engine.
-//!
-//! This engine is a light abstraction on top of OpenGL; it offers basic lifecycle management
-//! of common OpenGL primitives (textures, buffers, vertex array/meshes, etc). These primitives
-//! are backed by a particular [`GraphicsBackend`] implementation, which allows us to gracefully
-//! swap the internal graphics implementation through a single dynamic pointer.
-//!
-//! On top of the these lower-level primitives, we also build up to some more useful abstractions,
-//! such as the [`Renderer`]. This types allow for the creation of context objects
-//! and simplifies the work required to initialize all the OpenGL resources required to pull off some
-//! sort of meaningful rendering step.
 
 pub use buffers::*;
 pub use colors::*;
@@ -18,7 +8,6 @@ pub use headless::*;
 pub use images::*;
 pub use materials::*;
 pub use meshes::*;
-pub use opengl::*;
 pub use palettes::*;
 pub use rendering::*;
 pub use shaders::*;
@@ -36,7 +25,6 @@ mod headless;
 mod images;
 mod materials;
 mod meshes;
-mod opengl;
 mod palettes;
 mod rendering;
 mod shaders;

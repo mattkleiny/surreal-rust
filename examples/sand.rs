@@ -7,7 +7,6 @@ fn main() {
   let configuration = EngineConfig {
     title: "Falling Sand".to_string(),
     log_level: LevelFilter::Trace,
-    transparent_window: true,
     ..Default::default()
   };
 
@@ -20,10 +19,6 @@ fn main() {
     let mut timer = IntervalTimer::new(TimeSpan::from_millis(10.));
 
     engine.run_variable_step(|engine, time| {
-      let graphics = &engine.graphics;
-
-      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
-
       if timer.tick(time.delta_time) {
         simulate_sand(&mut canvas.pixels);
         timer.reset();

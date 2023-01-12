@@ -6,7 +6,6 @@ use surreal::prototype::*;
 fn main() {
   let configuration = EngineConfig {
     title: "Tile Maps".to_string(),
-    transparent_window: true,
     log_level: LevelFilter::Trace,
     ..Default::default()
   };
@@ -37,10 +36,6 @@ fn main() {
     map.fill(|_, _| u8::random() % 4);
 
     engine.run_variable_step(|engine, _| {
-      let graphics = &engine.graphics;
-
-      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
-
       renderer.begin_frame();
       renderer.render(&map);
       renderer.end_frame();

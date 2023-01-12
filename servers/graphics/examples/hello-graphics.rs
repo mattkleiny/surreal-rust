@@ -11,6 +11,7 @@ use surreal::utilities::DeltaClock;
 use surreal_graphics::{urp::*, *};
 
 fn main() {
+  // build window
   let event_loop = EventLoop::new();
   let window = WindowBuilder::new()
     .with_inner_size(PhysicalSize::new(1920, 1080))
@@ -18,23 +19,16 @@ fn main() {
     .build(&event_loop)
     .unwrap();
 
-  let graphics = pollster::block_on(GraphicsServer::from_kind(GraphicsBackendKind::WGPU, &window)).unwrap();
+  // build graphics server and pipeline
+  let graphics = pollster::block_on(GraphicsServer::from_wgpu(&window)).unwrap();
   let mut manager = UniversalPipeline::new(&graphics).unwrap();
   let mut delta_clock = DeltaClock::new();
-
-  macro_rules! attempt {
-    ($body:expr) => {
-      if let Err(error) = $body {
-        surreal::diagnostics::error!("{}", error);
-      }
-    };
-  }
 
   event_loop.run(move |event, _, control_flow| match event {
     Event::RedrawRequested(window_id) => {
       if window_id == window.id() {
         manager.begin_frame();
-        manager.end_frame().expect("Failed to render frame");
+        manager.end_frame().unwrap();
       }
     }
     Event::MainEventsCleared => {
@@ -45,10 +39,10 @@ fn main() {
     }
     Event::WindowEvent { event, .. } => match event {
       WindowEvent::Resized(new_size) => {
-        attempt!(graphics.resize_viewport(new_size));
+        graphics.resize_viewport(new_size).unwrap();
       }
       WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-        attempt!(graphics.resize_viewport(*new_inner_size));
+        graphics.resize_viewport(*new_inner_size).unwrap();
       }
       WindowEvent::CloseRequested => *control_flow = winit::event_loop::ControlFlow::Exit,
       _ => (),

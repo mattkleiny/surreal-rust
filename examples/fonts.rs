@@ -7,7 +7,6 @@ use surreal::prototype::*;
 fn main() {
   let configuration = EngineConfig {
     title: "Fonts".to_string(),
-    transparent_window: true,
     ..Default::default()
   };
 
@@ -28,10 +27,8 @@ fn main() {
     let color2 = Color32::random();
 
     engine.run_variable_step(|engine, time| {
-      let graphics = &engine.graphics;
       let time_step = (time.total_time.sin() + 1.) / 2.;
 
-      graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
       renderer.begin_frame();
 
       // render some text
