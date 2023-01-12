@@ -14,8 +14,9 @@ use std::fmt::Debug;
 use std::hash::Hasher;
 
 use serde::{Deserialize, Serialize};
-
 use surreal::io::{Deserializable, InputStream, Serializable, VirtualPath};
+
+pub mod importers;
 
 surreal::impl_guid!(AssetId);
 
@@ -78,8 +79,9 @@ impl AssetDatabase {
   }
 
   /// Adds an [`AssetImporter`] with the database.
-  pub fn add_importer(&mut self, importer: impl AssetImporter + 'static) {
+  pub fn add_importer(&mut self, importer: impl AssetImporter + 'static) -> &mut Self {
     self.importers.push(Box::new(importer));
+    self
   }
 
   /// Loads an [`Asset`] of the given type from the given [`VirtualPath`].
