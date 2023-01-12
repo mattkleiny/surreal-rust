@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use surreal::utilities::ResourceStorage;
 
 use super::*;
@@ -16,15 +17,16 @@ pub struct WgpuBackend {
 
 /// Top-level lockable state for the [`WgpuBackend`].
 struct WgpuState {
-  surface: wgpu::Surface,
   device: wgpu::Device,
-  _queue: wgpu::Queue,
+  queue: wgpu::Queue,
+  surface: wgpu::Surface,
   surface_config: wgpu::SurfaceConfiguration,
 }
 
 /// Internal data for a material in the [`WgpuBackend`].
 struct WgpuMaterial {
   _uniform_buffer: wgpu::Buffer,
+  _uniforms: HashMap<String, UniformValue>,
   _bind_group: wgpu::BindGroup,
   _shader_module: wgpu::ShaderModule,
 }
@@ -82,9 +84,9 @@ impl WgpuBackend {
 
     Ok(Self {
       state: std::sync::Mutex::new(WgpuState {
-        surface,
         device,
-        _queue: queue,
+        queue,
+        surface,
         surface_config,
       }),
       material_storage: ResourceStorage::default(),
@@ -203,12 +205,13 @@ impl GraphicsBackend for WgpuBackend {
 
     Ok(self.material_storage.insert(WgpuMaterial {
       _uniform_buffer: uniform_buffer,
+      _uniforms: HashMap::default(),
       _bind_group: bind_group,
       _shader_module: shader_module,
     }))
   }
 
-  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()> {
+  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: UniformValue) -> surreal::Result<()> {
     todo!()
   }
 

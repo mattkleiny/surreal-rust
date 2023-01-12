@@ -122,7 +122,7 @@ pub enum Command<'a> {
   /// Sets the given global [`UniformValue`] for all materials.
   SetGlobalUniform {
     uniform_name: &'a str,
-    uniform_value: UniformValue<'a>,
+    uniform_value: UniformValue,
   },
   /// Sets the given viewport size on the underlying pipeline.
   SetViewport { viewport_size: winit::dpi::PhysicalSize<u32> },
@@ -140,7 +140,7 @@ pub enum Command<'a> {
   DrawMesh {
     mesh_id: MeshId,
     material_id: MaterialId,
-    material_props: &'a [UniformValue<'a>],
+    material_props: &'a [UniformValue],
     sub_mesh_index: usize,
   },
   /// Performs an indirect draw call with the given material and vertex/index counts.
@@ -151,15 +151,15 @@ pub enum Command<'a> {
   },
 }
 
-/// A possible value for a uniform in a [`Command`].
-pub enum UniformValue<'a> {
+/// A possible value for a uniform in a shader program.
+pub enum UniformValue {
   Float(f32),
   Vec2([f32; 2]),
   Vec3([f32; 3]),
   Vec4([f32; 4]),
-  Mat2(&'a [f32; 2 * 2]),
-  Mat3(&'a [f32; 3 * 3]),
-  Mat4(&'a [f32; 4 * 4]),
+  Mat2([f32; 2 * 2]),
+  Mat3([f32; 3 * 3]),
+  Mat4([f32; 4 * 4]),
   Texture(TextureId),
 }
 
@@ -192,7 +192,7 @@ pub trait GraphicsBackend {
 
   // material operations
   fn material_create(&self, descriptor: &MaterialDescriptor) -> surreal::Result<MaterialId>;
-  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()>;
+  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: UniformValue) -> surreal::Result<()>;
   fn material_get_uniform(&self, material_id: MaterialId, uniform_name: &str) -> surreal::Result<Option<UniformValue>>;
   fn material_delete(&self, material_id: MaterialId) -> surreal::Result<()>;
 

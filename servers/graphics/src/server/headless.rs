@@ -22,7 +22,7 @@ impl GraphicsBackend for HeadlessBackend {
     todo!()
   }
 
-  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: &UniformValue) -> surreal::Result<()> {
+  fn material_set_uniform(&self, material_id: MaterialId, uniform_name: &str, value: UniformValue) -> surreal::Result<()> {
     todo!()
   }
 
