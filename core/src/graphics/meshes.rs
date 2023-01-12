@@ -165,7 +165,7 @@ impl<V: Vertex> Mesh<V> {
     Self {
       state: Rc::new(RefCell::new(MeshState {
         graphics: graphics.clone(),
-        handle: graphics.create_mesh(vertices.handle(), indices.handle(), V::DESCRIPTORS),
+        handle: graphics.mesh_create(vertices.handle(), indices.handle(), V::DESCRIPTORS),
         vertices,
         indices,
       })),
@@ -218,7 +218,7 @@ impl<V: Vertex> Mesh<V> {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.draw_mesh(state.handle, topology, vertex_count, index_count);
+    graphics.mesh_draw(state.handle, topology, vertex_count, index_count);
 
     material.unbind();
   }
@@ -232,7 +232,7 @@ impl<V> GraphicsResource for Mesh<V> {
 
 impl<V> Drop for MeshState<V> {
   fn drop(&mut self) {
-    self.graphics.delete_mesh(self.handle);
+    self.graphics.mesh_delete(self.handle);
   }
 }
 

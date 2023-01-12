@@ -1,6 +1,6 @@
 use surreal::assets::AssetManager;
 use surreal::engine::{Engine, EngineConfig};
-use surreal::graphics::{Color, Renderer};
+use surreal::graphics::Renderer;
 use surreal::input::Key;
 use surreal::maths::Mat4;
 use surreal::scene::{SceneEvent, SceneGraph};
@@ -27,8 +27,6 @@ pub fn run_example(name: &'static str, factory: impl Fn(&Engine, &AssetManager) 
     });
 
     engine.run_variable_step(|engine, time| {
-      engine.graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
-
       renderer.begin_frame();
 
       scene.notify(SceneEvent::Update(time.delta_time));

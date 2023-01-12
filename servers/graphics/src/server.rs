@@ -22,9 +22,6 @@ pub struct GraphicsServer {
   backend: std::sync::Arc<dyn GraphicsBackend>,
 }
 
-unsafe impl Send for GraphicsServer {}
-unsafe impl Sync for GraphicsServer {}
-
 impl GraphicsServer {
   /// Create a [`GraphicsServer`] from the given [`GraphicsBackend`].
   pub fn from_backend(backend: impl GraphicsBackend + 'static) -> Self {
@@ -51,6 +48,9 @@ impl GraphicsServer {
     }
   }
 }
+
+unsafe impl Send for GraphicsServer {}
+unsafe impl Sync for GraphicsServer {}
 
 impl std::ops::Deref for GraphicsServer {
   type Target = dyn GraphicsBackend;
@@ -165,12 +165,12 @@ pub enum UniformValue<'a> {
 
 /// An abstraction on top of the underlying graphics API.
 ///
-/// This is a high-level abstraction that makes use of 'opaque' [`RID`] to hide away implementation
-/// details. The server is intended to be a mid-level implementation abstraction.
+/// This is a mid-level abstraction that makes use of 'opaque' resource IDs to hide away
+/// implementation details and lifetimes. The backend forms the foundation of higher-level
+/// abstractions that make it simpler to build graphics programs.
 pub trait GraphicsBackend {
   /// Executes the given [`CommandBuffer`] against the backend.
   ///
-  /// This is the main entry point for the graphics server.
   /// All commands will be drained from the [`CommandBuffer`] and executed in sequence.
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()>;
 

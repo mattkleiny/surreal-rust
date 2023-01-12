@@ -30,7 +30,10 @@ pub trait RenderPass<P> {
 
 /// A camera type that can be used in [`RenderManager`]s.
 pub trait RenderCamera<'a> {
+  /// Retrieves the projection matrix for the camera.
   fn projection_matrix(&self) -> &Mat4;
+
+  /// Retrieves the view matrix for the camera.
   fn view_matrix(&self) -> &Mat4;
 }
 

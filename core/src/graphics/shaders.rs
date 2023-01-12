@@ -25,9 +25,9 @@ pub enum ShaderKind {
   Compute,
 }
 
-/// Defines a single shader kernel in a shader program.
+/// Defines a single kernel function in a shader program.
 #[derive(Debug)]
-pub struct Shader {
+pub struct ShaderKernel {
   pub kind: ShaderKind,
   pub code: String,
 }
@@ -74,13 +74,13 @@ impl<U> From<&'static str> for UniformKey<U> {
   }
 }
 
-/// Represents a language for [`Shader`] compilation.
+/// Represents a language for [`ShaderKernel`] compilation.
 ///
 /// Abstracting over shader languages allows us to build out new language
 /// paradigms in the future.
 pub trait ShaderLanguage {
-  /// Parses the given raw source code into one or more [`Shader`]s.
-  fn parse(source_code: &str) -> crate::Result<Vec<Shader>>;
+  /// Parses the given raw source code into one or more [`ShaderKernel`]s.
+  fn parse(source_code: &str) -> crate::Result<Vec<ShaderKernel>>;
 }
 
 /// The OpenGL [`ShaderLanguage`] implementation.
@@ -94,7 +94,7 @@ impl ShaderLanguage for GLSL {
   /// * Multiple shader types per file (separated with #shader_type directives).
   /// * Shared code amongst each shader definition by placing it prior to the #shader_type directives.
   /// * Allows #include directives to fetch other files.
-  fn parse(source_code: &str) -> crate::Result<Vec<Shader>> {
+  fn parse(source_code: &str) -> crate::Result<Vec<ShaderKernel>> {
     use crate::io::*;
 
     let mut result = Vec::with_capacity(2); // usually 2 shaders per file
@@ -110,7 +110,7 @@ impl ShaderLanguage for GLSL {
           _ => continue,
         };
 
-        result.push(Shader {
+        result.push(ShaderKernel {
           kind,
           code: shared_code.clone(),
         });
@@ -163,7 +163,7 @@ impl ShaderProgram {
     Self {
       state: Rc::new(RefCell::new(ShaderProgramState {
         graphics: graphics.clone(),
-        handle: graphics.create_shader(),
+        handle: graphics.shader_create(),
         location_cache: HashMap::new(),
       })),
     }
@@ -209,7 +209,7 @@ impl ShaderProgram {
 
     let mut state = self.state.borrow_mut();
     let graphics = &state.graphics;
-    let location = graphics.get_shader_uniform_location(state.handle, name);
+    let location = graphics.shader_uniform_location(state.handle, name);
 
     state.location_cache.insert(name.to_string(), location);
 
@@ -223,17 +223,8 @@ impl ShaderProgram {
       let state = self.state.borrow();
       let graphics = &state.graphics;
 
-      graphics.set_shader_uniform(state.handle, location, value);
+      graphics.shader_set_uniform(state.handle, location, value);
     }
-  }
-
-  /// Dispatches compute work to the GPU for this shader program.
-  #[profiling::function]
-  pub fn dispatch_compute(&self, x: u32, y: u32, z: u32) {
-    let state = self.state.borrow();
-    let graphics = &state.graphics;
-
-    graphics.dispatch_compute(state.handle, x, y, z);
   }
 
   /// Reloads the [`ShaderProgram`] from the given 'glsl' program code.
@@ -242,7 +233,7 @@ impl ShaderProgram {
     let graphics = &state.graphics;
     let shaders = S::parse(text)?;
 
-    graphics.link_shaders(state.handle, &shaders)?;
+    graphics.shader_link(state.handle, &shaders)?;
 
     Ok(())
   }
@@ -266,7 +257,7 @@ impl GraphicsResource for ShaderProgram {
 
 impl Drop for ShaderProgramState {
   fn drop(&mut self) {
-    self.graphics.delete_shader(self.handle);
+    self.graphics.shader_delete(self.handle);
   }
 }
 

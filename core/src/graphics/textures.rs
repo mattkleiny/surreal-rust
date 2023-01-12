@@ -105,7 +105,7 @@ impl Texture {
     Self {
       state: Rc::new(RefCell::new(TextureState {
         graphics: graphics.clone(),
-        handle: graphics.create_texture(&options.sampler),
+        handle: graphics.texture_create(&options.sampler),
         options: options.clone(),
         width: 0,
         height: 0,
@@ -144,7 +144,7 @@ impl Texture {
 
     let graphics = &state.graphics;
 
-    graphics.set_texture_options(state.handle, &state.options.sampler);
+    graphics.texture_set_options(state.handle, &state.options.sampler);
   }
 
   /// Initializes the texture with the given width and height.
@@ -158,7 +158,7 @@ impl Texture {
 
     let graphics = &state.graphics;
 
-    graphics.initialize_texture(state.handle, width, height, format);
+    graphics.texture_initialize(state.handle, width, height, format);
   }
 
   /// Resizes the texture in-place.
@@ -183,7 +183,7 @@ impl Texture {
     unsafe {
       buffer.set_len(size);
 
-      graphics.read_texture_data(
+      graphics.texture_read_data(
         state.handle,
         size * std::mem::size_of::<T>(),
         T::FORMAT,
@@ -205,7 +205,7 @@ impl Texture {
 
     let graphics = &state.graphics;
 
-    graphics.write_texture_data(
+    graphics.texture_write_data(
       state.handle,
       width as u32,
       height as u32,
@@ -225,7 +225,7 @@ impl Texture {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.write_texture_sub_data(
+    graphics.texture_write_sub_data(
       state.handle,
       region,
       pixels.as_ptr() as *const u8,
@@ -254,7 +254,7 @@ impl GraphicsResource for Texture {
 
 impl Drop for TextureState {
   fn drop(&mut self) {
-    self.graphics.delete_texture(self.handle);
+    self.graphics.texture_delete(self.handle);
   }
 }
 

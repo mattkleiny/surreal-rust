@@ -8,7 +8,7 @@ use winit::event::{Event, ModifiersState, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Icon, Window, WindowId};
 
-use surreal::graphics::{Color, GraphicsServer, HeadlessGraphicsBackend, Image, ImageFormat};
+use surreal::graphics::{GraphicsServer, HeadlessGraphicsBackend, Image, ImageFormat};
 use surreal::input::{InputServer, Key};
 use surreal::maths::vec2;
 use surreal::ui::UserInterface;
@@ -59,9 +59,7 @@ pub trait EditorWindow {
   fn on_update(&mut self) {}
 
   /// Called when the window should redraw.
-  fn on_draw(&mut self, graphics: &GraphicsServer) {
-    graphics.clear_color_buffer(Color::rgba(0.2, 0.2, 0.2, 0.8));
-  }
+  fn on_draw(&mut self, _graphics: &GraphicsServer) {}
 
   /// Called when the window should render it's UI.
   fn on_ui(&mut self, _ctx: &egui::Context) {}

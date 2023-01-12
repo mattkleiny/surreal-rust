@@ -146,8 +146,7 @@ mod tests {
 
   #[test]
   fn sprite_should_render() {
-    let graphics = create_test_graphics();
-    let texture = Texture::create_colored(&graphics, 1, 1, Color::RED);
+    let texture = Texture::create_colored(&create_test_graphics(), 1, 1, Color::RED);
 
     let graph = SceneGraph::new(
       SceneNodeBuilder::default()

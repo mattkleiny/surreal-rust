@@ -196,7 +196,7 @@ impl UserInterface {
 
     // compute display size
     let pixels_per_point = self.context.pixels_per_point();
-    let (width_in_pixels, height_in_pixels) = self.graphics.get_viewport_size();
+    let (width_in_pixels, height_in_pixels) = self.graphics.viewport_size();
     let (width_in_points, height_in_points) = (
       width_in_pixels as f32 / pixels_per_point,
       height_in_pixels as f32 / pixels_per_point,

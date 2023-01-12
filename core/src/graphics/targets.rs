@@ -55,7 +55,7 @@ impl RenderTarget {
     let depth_attachment = descriptor.depth_attachment.as_ref().map(|it| it.to_texture(graphics));
     let stencil_attachment = descriptor.stencil_attachment.as_ref().map(|it| it.to_texture(graphics));
 
-    let handle = graphics.create_render_target(
+    let handle = graphics.target_create(
       color_attachment.handle(),
       depth_attachment.as_ref().map(|it| it.handle()),
       stencil_attachment.as_ref().map(|it| it.handle()),
@@ -98,7 +98,7 @@ impl RenderTarget {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.set_active_render_target(state.handle);
+    graphics.target_activate(state.handle);
   }
 
   /// Deactivates the [`RenderTarget`].
@@ -106,7 +106,7 @@ impl RenderTarget {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.set_default_render_target();
+    graphics.target_set_default();
   }
 
   /// Blits this render target to the given other target.
@@ -121,7 +121,7 @@ impl RenderTarget {
 
     let graphics = &state.graphics;
 
-    graphics.blit_render_target(state.handle, other.handle(), &source, &dest, filter);
+    graphics.target_blit(state.handle, other.handle(), &source, &dest, filter);
   }
 
   /// Blits this render target to the active display.
@@ -129,14 +129,14 @@ impl RenderTarget {
     let state = self.state.borrow();
     let color = &state.color_attachment;
 
-    let (width, height) = state.graphics.get_viewport_size();
+    let (width, height) = state.graphics.viewport_size();
 
     let source = Rectangle::from_corner_points(0., 0., color.width() as f32, color.height() as f32);
     let dest = Rectangle::from_corner_points(0., 0., width as f32, height as f32);
 
     let graphics = &state.graphics;
 
-    graphics.blit_render_target_to_display(state.handle, &source, &dest, filter);
+    graphics.target_blit_to_display(state.handle, &source, &dest, filter);
   }
 }
 
@@ -148,6 +148,6 @@ impl GraphicsResource for RenderTarget {
 
 impl Drop for RenderTargetState {
   fn drop(&mut self) {
-    self.graphics.delete_render_target(self.handle);
+    self.graphics.target_delete(self.handle);
   }
 }

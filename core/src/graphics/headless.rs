@@ -34,6 +34,7 @@ impl HeadlessGraphicsBackend {
   }
 }
 
+#[allow(unused_variables)]
 impl GraphicsBackend for HeadlessGraphicsBackend {
   fn begin_frame(&self) {
     // no-op
@@ -43,177 +44,148 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn get_viewport_size(&self) -> (usize, usize) {
+  fn viewport_size(&self) -> (usize, usize) {
     (1920, 1080)
   }
 
-  fn set_viewport_size(&self, _size: winit::dpi::PhysicalSize<u32>) {
+  fn set_viewport_size(&self, size: winit::dpi::PhysicalSize<u32>) {
     // no-op
   }
 
-  fn set_blend_state(&self, _blend_state: BlendState) {
+  fn set_blend_state(&self, blend_state: BlendState) {
     // no-op
   }
 
-  fn set_culling_mode(&self, _culling_mode: CullingMode) {
+  fn set_culling_mode(&self, culling_mode: CullingMode) {
     // no-op
   }
 
-  fn set_scissor_mode(&self, _scissor_mode: ScissorMode) {
+  fn set_scissor_mode(&self, scissor_mode: ScissorMode) {
     // no-op
   }
 
-  fn clear_color_buffer(&self, _color: Color) {
-    // no-op
-  }
-
-  fn clear_depth_buffer(&self) {
-    // no-op
-  }
-
-  fn create_buffer(&self) -> GraphicsHandle {
+  fn buffer_create(&self) -> GraphicsHandle {
     self.next_buffer_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn read_buffer_data(&self, _buffer: GraphicsHandle, _offset: usize, _length: usize, _pointer: *mut u8) {
+  fn buffer_read_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8) {
     // no-op
   }
 
-  fn write_buffer_data(&self, _buffer: GraphicsHandle, _usage: BufferUsage, _kind: BufferKind, _length: usize, _pointer: *const u8) {
+  fn buffer_write_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
     // no-op
   }
 
-  fn delete_buffer(&self, _buffer: GraphicsHandle) {
+  fn buffer_delete(&self, buffer: GraphicsHandle) {
     // no-op
   }
 
-  fn create_texture(&self, _sampler: &TextureSampler) -> GraphicsHandle {
+  fn texture_create(&self, sampler: &TextureSampler) -> GraphicsHandle {
     self.next_texture_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn set_texture_options(&self, _texture: GraphicsHandle, _sampler: &TextureSampler) {
+  fn texture_set_options(&self, texture: GraphicsHandle, sampler: &TextureSampler) {
     // no-op
   }
 
-  fn initialize_texture(&self, _texture: GraphicsHandle, _width: u32, _height: u32, _format: TextureFormat) {
+  fn texture_initialize(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat) {
     // no-op
   }
 
-  fn read_texture_data(&self, _texture: GraphicsHandle, _length: usize, _pixel_format: TextureFormat, _pixels: *mut u8, _mip_level: usize) {
+  fn texture_read_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
     // no-op
   }
 
-  fn write_texture_data(
+  fn texture_write_data(
     &self,
-    _texture: GraphicsHandle,
-    _width: u32,
-    _height: u32,
-    _pixels: *const u8,
-    _internal_format: TextureFormat,
-    _pixel_format: TextureFormat,
-    _mip_level: usize,
+    texture: GraphicsHandle,
+    width: u32,
+    height: u32,
+    pixels: *const u8,
+    internal_format: TextureFormat,
+    pixel_format: TextureFormat,
+    mip_level: usize,
   ) {
     // no-op
   }
 
-  fn write_texture_sub_data(
+  fn texture_write_sub_data(
     &self,
-    _texture: GraphicsHandle,
-    _region: &Rectangle,
-    _pixels: *const u8,
-    _pixel_format: TextureFormat,
-    _mip_level: usize,
+    texture: GraphicsHandle,
+    region: &Rectangle,
+    pixels: *const u8,
+    pixel_format: TextureFormat,
+    mip_level: usize,
   ) {
     // no-op
   }
 
-  fn delete_texture(&self, _texture: GraphicsHandle) {
+  fn texture_delete(&self, texture: GraphicsHandle) {
     // no-op
   }
 
-  fn create_shader(&self) -> GraphicsHandle {
+  fn shader_create(&self) -> GraphicsHandle {
     self.next_shader_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn link_shaders(&self, _shader: GraphicsHandle, _shaders: &[Shader]) -> crate::Result<()> {
+  fn shader_link(&self, shader: GraphicsHandle, kernels: &[ShaderKernel]) -> crate::Result<()> {
     Ok(())
   }
 
-  fn get_shader_uniform_location(&self, _shader: GraphicsHandle, _name: &str) -> Option<usize> {
+  fn shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
     None
   }
 
-  fn set_shader_uniform(&self, _shader: GraphicsHandle, _location: usize, _value: &ShaderUniform) {
+  fn shader_set_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform) {
     // no-op
   }
 
-  fn set_active_shader(&self, _shader: GraphicsHandle) {
+  fn shader_activate(&self, shader: GraphicsHandle) {
     // no-op
   }
 
-  fn delete_shader(&self, _shader: GraphicsHandle) {
+  fn shader_delete(&self, shader: GraphicsHandle) {
     // no-op
   }
 
-  fn dispatch_compute(&self, _shader: GraphicsHandle, _x: u32, _y: u32, _z: u32) {
-    // no-op
-  }
-
-  fn wait_compute_barrier(&self, _barrier: GraphicsBarrier) {
-    // no-op
-  }
-
-  fn create_mesh(&self, _vertices: GraphicsHandle, _indices: GraphicsHandle, _descriptors: &[VertexDescriptor]) -> GraphicsHandle {
+  fn mesh_create(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
     self.next_mesh_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn draw_mesh(&self, _mesh: GraphicsHandle, _topology: PrimitiveTopology, _vertex_count: usize, _index_count: usize) {
+  fn mesh_draw(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     // no-op
   }
 
-  fn delete_mesh(&self, _mesh: GraphicsHandle) {
+  fn mesh_delete(&self, mesh: GraphicsHandle) {
     // no-op
   }
 
-  fn create_render_target(
+  fn target_create(
     &self,
-    _color_attachment: GraphicsHandle,
-    _depth_attachment: Option<GraphicsHandle>,
-    _stencil_attachment: Option<GraphicsHandle>,
+    color_attachment: GraphicsHandle,
+    depth_attachment: Option<GraphicsHandle>,
+    stencil_attachment: Option<GraphicsHandle>,
   ) -> GraphicsHandle {
     self.next_render_target_id.fetch_add(1, Ordering::Relaxed)
   }
 
-  fn set_active_render_target(&self, _render_target: GraphicsHandle) {
+  fn target_activate(&self, render_target: GraphicsHandle) {
     // no-op
   }
 
-  fn set_default_render_target(&self) {
+  fn target_set_default(&self) {
     // no-op
   }
 
-  fn blit_render_target(
-    &self,
-    _from: GraphicsHandle,
-    _to: GraphicsHandle,
-    _source_rect: &Rectangle,
-    _dest_rect: &Rectangle,
-    _filter: TextureFilter,
-  ) {
+  fn target_blit(&self, from: GraphicsHandle, to: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
     // no-op
   }
 
-  fn blit_render_target_to_display(
-    &self,
-    _handle: GraphicsHandle,
-    _source_rect: &Rectangle,
-    _dest_rect: &Rectangle,
-    _filter: TextureFilter,
-  ) {
+  fn target_blit_to_display(&self, handle: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
     // no-op
   }
 
-  fn delete_render_target(&self, _render_target: GraphicsHandle) {
+  fn target_delete(&self, render_target: GraphicsHandle) {
     // no-op
   }
 }

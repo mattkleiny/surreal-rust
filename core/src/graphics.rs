@@ -38,23 +38,26 @@ pub type GraphicsHandle = u32;
 /// A wrapper for the core [`GraphicsBackend`] implementation.
 #[derive(Clone)]
 pub struct GraphicsServer {
-  backend: std::rc::Rc<Box<dyn GraphicsBackend>>,
+  backend: std::sync::Arc<Box<dyn GraphicsBackend>>,
 }
 
 impl GraphicsServer {
   /// Creates a new [`GraphicsServer`] for the given [`GraphicsBackend`].
   pub fn new(backend: impl GraphicsBackend + 'static) -> Self {
     Self {
-      backend: std::rc::Rc::new(Box::new(backend)),
+      backend: std::sync::Arc::new(Box::new(backend)),
     }
   }
 }
 
+unsafe impl Send for GraphicsServer {}
+unsafe impl Sync for GraphicsServer {}
+
 impl std::ops::Deref for GraphicsServer {
-  type Target = dyn GraphicsBackend;
+  type Target = Box<dyn GraphicsBackend>;
 
   fn deref(&self) -> &Self::Target {
-    self.backend.as_ref().as_ref()
+    self.backend.as_ref()
   }
 }
 
@@ -68,47 +71,35 @@ pub trait GraphicsResource {
   fn handle(&self) -> GraphicsHandle;
 }
 
-/// Indicates the kinds of barriers that can be synchronized in the GPU.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum GraphicsBarrier {
-  ImageAccess,
-}
-
-// TODO: replace me with mid-level implementation.
-
-/// Represents a backend implementation for the underlying graphics API.
+/// An abstraction on top of the underlying graphics API.
 ///
-/// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
-/// details. The server is intended to be a low-level implementation abstraction.
-///
-/// Theoretically different backends could be supported; though it's unlikely to be anything other
-/// than OpenGL. We do provide a headless backend to facilitate testing and related, however.
+/// This is a mid-level abstraction that makes use of 'opaque' resource IDs to hide away
+/// implementation details and lifetimes. The backend forms the foundation of higher-level
+/// abstractions that make it simpler to build graphics programs.
 pub trait GraphicsBackend {
   // frame operations
   fn begin_frame(&self);
   fn end_frame(&self);
 
   // intrinsics
-  fn get_viewport_size(&self) -> (usize, usize);
+  fn viewport_size(&self) -> (usize, usize);
   fn set_viewport_size(&self, size: winit::dpi::PhysicalSize<u32>);
   fn set_blend_state(&self, blend_state: BlendState);
   fn set_culling_mode(&self, culling_mode: CullingMode);
   fn set_scissor_mode(&self, scissor_mode: ScissorMode);
-  fn clear_color_buffer(&self, color: Color);
-  fn clear_depth_buffer(&self);
 
   // buffers
-  fn create_buffer(&self) -> GraphicsHandle;
-  fn read_buffer_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8);
-  fn write_buffer_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8);
-  fn delete_buffer(&self, buffer: GraphicsHandle);
+  fn buffer_create(&self) -> GraphicsHandle;
+  fn buffer_read_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8);
+  fn buffer_write_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8);
+  fn buffer_delete(&self, buffer: GraphicsHandle);
 
   // textures
-  fn create_texture(&self, sampler: &TextureSampler) -> GraphicsHandle;
-  fn set_texture_options(&self, texture: GraphicsHandle, sampler: &TextureSampler);
-  fn initialize_texture(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat);
-  fn read_texture_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize);
-  fn write_texture_data(
+  fn texture_create(&self, sampler: &TextureSampler) -> GraphicsHandle;
+  fn texture_set_options(&self, texture: GraphicsHandle, sampler: &TextureSampler);
+  fn texture_initialize(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat);
+  fn texture_read_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize);
+  fn texture_write_data(
     &self,
     texture: GraphicsHandle,
     width: u32,
@@ -118,7 +109,7 @@ pub trait GraphicsBackend {
     pixel_format: TextureFormat,
     mip_level: usize,
   );
-  fn write_texture_sub_data(
+  fn texture_write_sub_data(
     &self,
     texture: GraphicsHandle,
     region: &Rectangle,
@@ -126,42 +117,31 @@ pub trait GraphicsBackend {
     pixel_format: TextureFormat,
     mip_level: usize,
   );
-  fn delete_texture(&self, texture: GraphicsHandle);
+  fn texture_delete(&self, texture: GraphicsHandle);
 
   // shaders
-  fn create_shader(&self) -> GraphicsHandle;
-  fn link_shaders(&self, shader: GraphicsHandle, shaders: &[Shader]) -> crate::Result<()>;
-  fn get_shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize>;
-  fn set_shader_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform);
-  fn set_active_shader(&self, shader: GraphicsHandle);
-  fn delete_shader(&self, shader: GraphicsHandle);
-
-  // compute
-  fn dispatch_compute(&self, shader: GraphicsHandle, x: u32, y: u32, z: u32);
-  fn wait_compute_barrier(&self, barrier: GraphicsBarrier);
+  fn shader_create(&self) -> GraphicsHandle;
+  fn shader_link(&self, shader: GraphicsHandle, kernels: &[ShaderKernel]) -> crate::Result<()>;
+  fn shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize>;
+  fn shader_set_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform);
+  fn shader_activate(&self, shader: GraphicsHandle);
+  fn shader_delete(&self, shader: GraphicsHandle);
 
   // meshes
-  fn create_mesh(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
-  fn draw_mesh(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize);
-  fn delete_mesh(&self, mesh: GraphicsHandle);
+  fn mesh_create(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
+  fn mesh_draw(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize);
+  fn mesh_delete(&self, mesh: GraphicsHandle);
 
   // render targets
-  fn create_render_target(
+  fn target_create(
     &self,
     color_attachment: GraphicsHandle,
     depth_attachment: Option<GraphicsHandle>,
     stencil_attachment: Option<GraphicsHandle>,
   ) -> GraphicsHandle;
-  fn set_active_render_target(&self, render_target: GraphicsHandle);
-  fn set_default_render_target(&self);
-  fn blit_render_target(
-    &self,
-    from: GraphicsHandle,
-    to: GraphicsHandle,
-    source_rect: &Rectangle,
-    dest_rect: &Rectangle,
-    filter: TextureFilter,
-  );
-  fn blit_render_target_to_display(&self, handle: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
-  fn delete_render_target(&self, render_target: GraphicsHandle);
+  fn target_activate(&self, render_target: GraphicsHandle);
+  fn target_set_default(&self);
+  fn target_blit(&self, from: GraphicsHandle, to: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
+  fn target_blit_to_display(&self, handle: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
+  fn target_delete(&self, render_target: GraphicsHandle);
 }

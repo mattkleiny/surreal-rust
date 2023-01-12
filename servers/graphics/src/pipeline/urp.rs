@@ -37,7 +37,17 @@ impl UniversalPipeline {
   }
 }
 
-impl RenderPipeline for UniversalPipeline {}
+impl RenderPipeline for UniversalPipeline {
+  fn begin_camera(&mut self, commands: &mut CommandBuffer, camera: &dyn RenderCamera) {
+    commands.enqueue(Command::SetViewMatrix {
+      view_matrix: camera.view_matrix().to_cols_array(),
+    });
+
+    commands.enqueue(Command::SetProjectionMatrix {
+      projection_matrix: camera.projection_matrix().to_cols_array(),
+    })
+  }
+}
 
 /// Calculates the depth buffer.
 #[derive(Default)]
@@ -58,20 +68,12 @@ impl RenderPass<UniversalPipeline> for DepthPass {
 pub struct OpaquePass {}
 
 impl RenderPass<UniversalPipeline> for OpaquePass {
-  fn begin_camera(&mut self, commands: &mut CommandBuffer, camera: &dyn RenderCamera, pipeline: &mut UniversalPipeline) {
+  fn begin_camera(&mut self, commands: &mut CommandBuffer, _camera: &dyn RenderCamera, pipeline: &mut UniversalPipeline) {
     commands.enqueue(Command::SetRenderTarget {
       render_target_id: Some(pipeline.color_target),
       clear_color: Some(Color::BLACK),
       depth_value: None,
     });
-
-    commands.enqueue(Command::SetViewMatrix {
-      view_matrix: camera.view_matrix().to_cols_array(),
-    });
-
-    commands.enqueue(Command::SetProjectionMatrix {
-      projection_matrix: camera.projection_matrix().to_cols_array(),
-    })
   }
 }
 
@@ -80,20 +82,12 @@ impl RenderPass<UniversalPipeline> for OpaquePass {
 pub struct TransparentPass {}
 
 impl RenderPass<UniversalPipeline> for TransparentPass {
-  fn begin_camera(&mut self, commands: &mut CommandBuffer, camera: &dyn RenderCamera, pipeline: &mut UniversalPipeline) {
+  fn begin_camera(&mut self, commands: &mut CommandBuffer, _camera: &dyn RenderCamera, pipeline: &mut UniversalPipeline) {
     commands.enqueue(Command::SetRenderTarget {
       render_target_id: Some(pipeline.color_target),
       clear_color: Some(Color::BLACK),
       depth_value: None,
     });
-
-    commands.enqueue(Command::SetViewMatrix {
-      view_matrix: camera.view_matrix().to_cols_array(),
-    });
-
-    commands.enqueue(Command::SetProjectionMatrix {
-      projection_matrix: camera.projection_matrix().to_cols_array(),
-    })
   }
 }
 

@@ -173,7 +173,7 @@ impl Material {
 
     self.uniforms.apply_to_shader(&self.shader);
 
-    self.graphics.set_active_shader(self.shader.handle());
+    self.graphics.shader_activate(self.shader.handle());
   }
 
   /// Unbinds this material from the graphics server.

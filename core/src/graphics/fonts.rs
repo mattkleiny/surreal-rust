@@ -15,6 +15,8 @@ use crate::maths::{uvec2, UVec2};
 
 use super::{Color32, GraphicsServer, Texel, TextureAtlasBuilder};
 
+// TODO: support MSDF based fonts instead of rasterizing true type fonts to bitmaps?
+
 /// Represents different kinds of fonts and permits rendering.
 pub trait Font {
   /// Measures the size of the given text in the font.

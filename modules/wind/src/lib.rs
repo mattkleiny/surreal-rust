@@ -76,9 +76,10 @@ impl RenderContext for WindContext {}
 
 #[cfg(test)]
 mod tests {
-  use super::*;
   use surreal::graphics::create_test_graphics;
   use surreal::scene::{SceneEvent, SceneGraph, SceneNodeBuilder};
+
+  use super::*;
 
   #[test]
   fn this_should_work() {

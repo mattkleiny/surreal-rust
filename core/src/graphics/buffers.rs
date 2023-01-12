@@ -47,7 +47,7 @@ impl<T> Buffer<T> {
     Self {
       state: Rc::new(RefCell::new(BufferState {
         graphics: graphics.clone(),
-        handle: graphics.create_buffer(),
+        handle: graphics.buffer_create(),
         kind,
         usage,
         length: 0,
@@ -77,7 +77,7 @@ impl<T> Buffer<T> {
     unsafe {
       buffer.set_len(length);
 
-      state.graphics.read_buffer_data(
+      state.graphics.buffer_read_data(
         state.handle,
         0, // offset
         length * std::mem::size_of::<T>(),
@@ -94,7 +94,7 @@ impl<T> Buffer<T> {
     let mut state = self.state.borrow_mut();
 
     state.length = data.len();
-    state.graphics.write_buffer_data(
+    state.graphics.buffer_write_data(
       state.handle,
       state.usage,
       state.kind,
@@ -112,6 +112,6 @@ impl<T> GraphicsResource for Buffer<T> {
 
 impl Drop for BufferState {
   fn drop(&mut self) {
-    self.graphics.delete_buffer(self.handle)
+    self.graphics.buffer_delete(self.handle)
   }
 }
