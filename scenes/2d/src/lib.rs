@@ -14,7 +14,8 @@ const UNIFORM_PALETTE: UniformKey<&Texture> = UniformKey::new("u_palette");
 /// A uniform that contains the width of the value in [`UNIFORM_PALETTE`].
 const UNIFORM_PALETTE_WIDTH: UniformKey<u32> = UniformKey::new("u_paletteWidth");
 
-/// A uniform that contains the projection-view matrix for perspective adjustment.
+/// A uniform that contains the projection-view matrix for perspective
+/// adjustment.
 const UNIFORM_PROJECTION_VIEW: UniformKey<&Mat4> = UniformKey::new("u_projectionView");
 
 /// Represents one of the built-in shaders.

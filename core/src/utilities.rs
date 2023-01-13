@@ -25,7 +25,8 @@ pub mod bytemuck {
 
 /// Creates an unsafe mutable alias to the given value.
 ///
-/// This breaks many assumptions in the Rust type system, so use with great caution.
+/// This breaks many assumptions in the Rust type system, so use with great
+/// caution.
 #[inline(always)]
 pub(crate) fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
   unsafe {

@@ -119,7 +119,7 @@ pub struct Engine {
 }
 
 impl Engine {
-  /// Creates a new engine, bootstrapping all core systems and opening the main display.
+  /// Creates a new engine, bootstrapping all core systems and display.
   pub fn new(config: EngineConfig) -> Self {
     // prepare the main window and event loop
     let event_loop = EventLoop::new();
@@ -255,8 +255,9 @@ impl Engine {
 
     log::trace!("Entering main event loop");
 
-    // use this hack to unpack the event loop out of 'self' and then remove the 'static
-    // lifetime bound on run_return so that body can access things in self without lifetime woes.
+    // use this hack to unpack the event loop out of 'self' and then remove the
+    // 'static lifetime bound on run_return so that body can access things in
+    // self without lifetime woes.
     let mut event_loop = self
       .event_loop
       .take()
@@ -474,7 +475,8 @@ impl crate::ui::UserInterfaceHost for Engine {
       }
     }
 
-    // prevent flickering near frame boundary when Windows OS tries to control cursor icon for window resizing
+    // prevent flickering near frame boundary when Windows OS tries to control
+    // cursor icon for window resizing
     if self.cursor_icon == cursor_icon {
       return;
     }

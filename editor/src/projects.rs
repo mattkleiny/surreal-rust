@@ -38,7 +38,8 @@ pub struct ProjectDetails {
 }
 
 impl Project {
-  /// Opens a project at the given path, or creates a new one if it doesn't exist.
+  /// Opens a project at the given path, or creates a new one if it doesn't
+  /// exist.
   pub fn open_or_create(name: &str, root_path: &str) -> surreal::Result<Self> {
     let root_path = VirtualPath::from(root_path);
     let asset_path = root_path.join("assets");

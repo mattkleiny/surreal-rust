@@ -48,10 +48,11 @@ pub enum SceneEvent<'a> {
 /// A graph of [`SceneNode`]s that represent a scene in space.
 ///
 /// Graphs are composed of [`SceneNode`]s in a recursive tree structure. Each
-/// node provides transform information to the graph for use in rendering and logic.
+/// node provides transform information to the graph for use in rendering and
+/// logic.
 ///
-/// Notifications are sent down the graph via the [`SceneEvent`] type, which can be
-/// used to inform recursive operations on the graph and it's children.
+/// Notifications are sent down the graph via the [`SceneEvent`] type, which can
+/// be used to inform recursive operations on the graph and it's children.
 pub struct SceneGraph {
   pub root: SceneNode,
   services: ServiceContainer,
@@ -183,7 +184,8 @@ impl Default for Transform {
 }
 
 impl Transform {
-  /// Creates a [`Mat4`] that takes a point in local space and transforms it to global space.
+  /// Creates a [`Mat4`] that takes a point in local space and transforms it to
+  /// global space.
   pub fn world_to_local(&self) -> Affine3A {
     Affine3A::from_scale_rotation_translation(self.global_scale, self.global_rotation, self.global_position)
   }
@@ -296,8 +298,9 @@ impl<'a> IntoIterator for &'a mut SceneComponentSet {
 
 /// A node in a [`SceneGraph`].
 ///
-/// A node is a sub-tree of [`SceneNode`]s that represent a scene in a [`SceneGraph`].
-/// Each node can contain one or more [`SceneComponent`]s to build up logic from pieces.
+/// A node is a sub-tree of [`SceneNode`]s that represent a scene in a
+/// [`SceneGraph`]. Each node can contain one or more [`SceneComponent`]s to
+/// build up logic from pieces.
 ///
 /// A node has a position, orientation, and scale relative to its parent node.
 pub struct SceneNode {
@@ -498,7 +501,8 @@ impl SceneNode {
     self.components.push(component);
   }
 
-  /// Notify this node's [`SceneComponent`] and all of it's child [`SceneNode`]s.
+  /// Notify this node's [`SceneComponent`] and all of it's child
+  /// [`SceneNode`]s.
   fn notify(&mut self, services: &mut ServiceContainer, event: &mut SceneEvent) {
     let node = unsafe_mutable_alias(self);
 
@@ -610,8 +614,9 @@ impl SceneNode {
     find_recursive(self, node_path)
   }
 
-  /// Tries to locate the [`SceneNode`] with the given [`SceneNodeId`] in this hierarchy.
-  /// If the node is found, remove it from it's parent and return it.
+  /// Tries to locate the [`SceneNode`] with the given [`SceneNodeId`] in this
+  /// hierarchy. If the node is found, remove it from it's parent and return
+  /// it.
   fn take_node_by_id(&mut self, node_id: SceneNodeId) -> Option<SceneNode> {
     for i in 0..self.children.len() {
       if self.children[i].id == node_id {
@@ -745,7 +750,8 @@ impl<'a> IntoIterator for &'a mut SceneNode {
 pub struct NodePath<'a>(&'a str);
 
 impl<'a> NodePath<'a> {
-  /// Splits the path into it's first component and the rest of the path as two pieces.
+  /// Splits the path into it's first component and the rest of the path as two
+  /// pieces.
   pub fn split_first(&self) -> Option<(&'a str, &'a str)> {
     let mut split = self.0.splitn(2, '/');
 
@@ -930,9 +936,9 @@ mod tests {
   //     )
   //     .build();
   //
-  //   assert_eq!(node.children[0].transform.global_position, vec3(2.0, 2.0, 4.0));
-  //   assert_eq!(node.children[0].children[0].transform.global_position, vec3(3.0, 2.0, 5.0));
-  // }
+  //   assert_eq!(node.children[0].transform.global_position, vec3(2.0, 2.0,
+  // 4.0));   assert_eq!(node.children[0].children[0].transform.global_position,
+  // vec3(3.0, 2.0, 5.0)); }
 
   #[test]
   fn scene_node_should_manage_tag_lists() {

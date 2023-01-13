@@ -61,7 +61,8 @@ impl MaterialUniformSet {
     self.uniforms.insert(key.into().name.to_string(), value.into());
   }
 
-  /// Sets the given [`UniformKey`] as a uniform with a single texture in the set.
+  /// Sets the given [`UniformKey`] as a uniform with a single texture in the
+  /// set.
   pub fn set_texture(&mut self, key: impl Into<UniformKey<&Texture>>, texture: &Texture, sampler: Option<TextureSampler>) {
     let slot = self.allocate_texture_slot(texture);
     let uniform = ShaderUniform::Texture(texture.clone(), slot, sampler);
@@ -93,7 +94,8 @@ impl MaterialUniformSet {
   }
 }
 
-/// A material describes how to render a mesh and describes the underlying GPU pipeline state needed.
+/// A material describes how to render a mesh and describes the underlying GPU
+/// pipeline state needed.
 #[derive(Clone)]
 pub struct Material {
   graphics: GraphicsServer,

@@ -113,7 +113,8 @@ impl Texture {
     }
   }
 
-  /// Creates a new blank texture on the GPU with the given options and initial size.
+  /// Creates a new blank texture on the GPU with the given options and initial
+  /// size.
   pub fn with_options_and_size(
     graphics: &GraphicsServer,
     options: &TextureOptions,
@@ -149,7 +150,8 @@ impl Texture {
 
   /// Initializes the texture with the given width and height.
   ///
-  /// This is only necessary if the texture requires sizing information prior to access from the GPU.
+  /// This is only necessary if the texture requires sizing information prior to
+  /// access from the GPU.
   pub fn initialize(&self, width: u32, height: u32, format: TextureFormat) {
     let mut state = self.state.borrow_mut();
 
@@ -163,7 +165,8 @@ impl Texture {
 
   /// Resizes the texture in-place.
   ///
-  /// Note that this will discard the contents of the texture and fill it with the default value.
+  /// Note that this will discard the contents of the texture and fill it with
+  /// the default value.
   pub fn resize(&mut self, width: u32, height: u32) {
     let format = self.state.borrow().options.format;
 
@@ -331,7 +334,8 @@ impl<R: AsRef<Texture>> From<&R> for TextureRegion {
   }
 }
 
-/// An atlas of textures, which is a sub-division of a texture into a smaller grid of [`TextureRegion`]s.
+/// An atlas of textures, which is a sub-division of a texture into a smaller
+/// grid of [`TextureRegion`]s.
 #[derive(Clone)]
 pub struct TextureAtlas {
   texture: Texture,

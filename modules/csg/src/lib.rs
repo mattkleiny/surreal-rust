@@ -3,8 +3,8 @@
 //! This module provides the basic operations for constructing and manipulating
 //! 2D and 3D geometry using the Constructive Solid Geometry (CSG) paradigm.
 //!
-//! The core of this module is the [`CsgBrush`] type, which represents a 2D/3D shape
-//! that can be constructed from a set of [`Face`]s.
+//! The core of this module is the [`CsgBrush`] type, which represents a 2D/3D
+//! shape that can be constructed from a set of [`Face`]s.
 //!
 //! [`CsgBrush`]es can be combined with [`CsgOperation`]s to produce new
 //! [`CsgBrush`]es which can be further combined, and so on.
@@ -20,12 +20,12 @@ pub struct Face {
 }
 
 impl Face {
-  /// Creates a [`Face`] from the given vertices, expected in clockwise ordering.
+  /// Creates a [`Face`] from the given vertices in clockwise ordering.
   pub fn from_points_clockwise(_vertices: [Vec3; 3]) -> Self {
     todo!()
   }
 
-  /// Creates a [`Face`] from the given vertices, expected in counter-clockwise ordering.
+  /// Creates a [`Face`] from the given vertices in counter-clockwise ordering.
   pub fn from_points_counter_clockwise(_vertices: [Vec3; 3]) -> Self {
     todo!()
   }
@@ -33,11 +33,12 @@ impl Face {
 
 /// A Constructive Solid Geometry (CSG) brush.
 ///
-/// A brush produces a collection of [`Face`]s. It represents a shape that produces
-/// a collection of polygons that can be used to build a final shape and mesh.
+/// A brush produces a collection of [`Face`]s. It represents a shape that
+/// produces a collection of polygons that can be used to build a final shape
+/// and mesh.
 ///
-/// Brushes can be combined by a [`CsgMerge`] operation to produce another [`CsgBrush`],
-/// allowing the set-theoretic combination of geometry.
+/// Brushes can be combined by a [`CsgMerge`] operation to produce another
+/// [`CsgBrush`], allowing the set-theoretic combination of geometry.
 pub trait CsgBrush {
   /// Returns the [`Face`]s that make up this brush.
   fn faces(&self) -> Vec<Face>;

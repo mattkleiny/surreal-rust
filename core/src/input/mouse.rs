@@ -39,12 +39,14 @@ impl MouseDevice {
     };
   }
 
-  /// Gets the screen position of the mouse, origin (0, 0) in the top-left corner.
+  /// Gets the screen position of the mouse, origin (0, 0) in the top-left
+  /// corner.
   pub fn position(&self) -> Vec2 {
     self.position
   }
 
-  /// Gets the normalised screen position of the mouse, origin (0, 0) in the top-left corner.
+  /// Gets the normalised screen position of the mouse, origin (0, 0) in the
+  /// top-left corner.
   pub fn normalised_position(&self) -> Vec2 {
     self.normalised_position
   }

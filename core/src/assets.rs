@@ -88,8 +88,8 @@ pub struct AssetManager {
 
 /// The internal state for the asset manager.
 ///
-/// We hide some complexities with lifetimes by dynamically borrowing the asset manager
-/// state on a per-request basis.
+/// We hide some complexities with lifetimes by dynamically borrowing the asset
+/// manager state on a per-request basis.
 struct AssetManagerState {
   loaders: FastHashMap<TypeId, Box<dyn Any>>,
   cache: FastHashMap<AssetId, Box<dyn Any>>,
@@ -115,10 +115,12 @@ impl AssetManager {
 
   /// Attempts to load an asset from the given path.
   ///
-  /// * If the asset is not found, or if the loader for the asset type is not registered,
-  /// then an error is returned.
-  /// * If the asset is found, but the loader is not registered, then an error is returned.
-  /// * If the asset is found and the loader is registered, then the asset is loaded and returned.
+  /// * If the asset is not found, or if the loader for the asset type is not
+  ///   registered, then an error is returned.
+  /// * If the asset is found, but the loader is not registered, then an error
+  ///   is returned.
+  /// * If the asset is found and the loader is registered, then the asset is
+  ///   loaded and returned.
   pub fn load_asset<A: Asset>(&self, path: impl Into<VirtualPath>) -> crate::Result<Handle<A>> {
     let state = unsafe { &mut *self.state.get() };
 

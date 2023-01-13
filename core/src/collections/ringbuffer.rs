@@ -1,7 +1,7 @@
 /// A lightweight, fast and append-only ring buffer of elements of type [`T`] .
 ///
-/// It's intended to be used for small windowed set operations, like time sampling or
-/// frequency analysis.
+/// It's intended to be used for small windowed set operations, like time
+/// sampling or frequency analysis.
 #[derive(Debug)]
 pub struct RingBuffer<T> {
   cursor: usize,

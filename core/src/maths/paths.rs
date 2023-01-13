@@ -3,7 +3,8 @@ use std::collections::{HashMap, VecDeque};
 use super::*;
 use crate::collections::PriorityQueue;
 
-/// Arbitrary upper limit on the number of steps to use in the find_path function.
+/// Arbitrary upper limit on the number of steps to use in the find_path
+/// function.
 const MAXIMUM_STEPS: usize = 128;
 
 /// A cost for path searches and relative queries.

@@ -35,19 +35,22 @@ impl SceneComponent for SpriteComponent {
   }
 }
 
-/// A [`RenderContextDescriptor`] for a simple [`SpriteContext`] for use in sprite rendering.
+/// A [`RenderContextDescriptor`] for a simple [`SpriteContext`] for use in
+/// sprite rendering.
 pub struct SpriteContextDescriptor {
   /// A default projection-view matrix to apply.
   pub projection_view: Mat4,
 
-  /// If a palette is specified, a special shader variant will be loaded that uses the palette.
-  /// The palette will be bound to `u_palette` with `u_paletteWidth` texels wide.
+  /// If a palette is specified, a special shader variant will be loaded that
+  /// uses the palette. The palette will be bound to `u_palette` with
+  /// `u_paletteWidth` texels wide.
   pub palette: Option<ColorPalette<Color>>,
 
   /// A custom [`ShaderProgram`] to use for rendering.
   pub shader: Option<ShaderProgram>,
 
-  /// The expected number of sprites to use in the batch; used for pre-sizing the batch vertex buffer.
+  /// The expected number of sprites to use in the batch; used for pre-sizing
+  /// the batch vertex buffer.
   pub sprite_count: usize,
 }
 
@@ -103,7 +106,8 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
   }
 }
 
-/// A simple [`RenderContext`] that allows for sprite rendering using built-in sprite shaders.
+/// A simple [`RenderContext`] that allows for sprite rendering using built-in
+/// sprite shaders.
 #[derive(Object)]
 pub struct SpriteContext {
   /// A [`Material`] configured to render sprites.

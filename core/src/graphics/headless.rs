@@ -5,7 +5,8 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use super::*;
 use crate::maths::Rectangle;
 
-/// Creates a [`GraphicsServer`] from the [`HeadlessGraphicsBackend`] for testing purposes.
+/// Creates a [`GraphicsServer`] from the [`HeadlessGraphicsBackend`] for
+/// testing purposes.
 pub fn create_test_graphics() -> GraphicsServer {
   GraphicsServer::new(HeadlessGraphicsBackend::new())
 }

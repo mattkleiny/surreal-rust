@@ -1,6 +1,7 @@
 use surreal::utilities::{Variant, VariantKind};
 
-/// Allows a type to be reflected over, and provides information about it's properties and methods.
+/// Allows a type to be reflected over, and provides information about it's
+/// properties and methods.
 pub trait Reflect {
   fn properties() -> &'static Vec<PropertyInfo>;
   fn methods() -> &'static Vec<MethodInfo>;

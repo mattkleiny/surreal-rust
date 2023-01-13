@@ -1,7 +1,8 @@
 //! Pixel types and abstractions for color manipulation.
 //!
 //! We support the two most common color types, a 32-bit integral RGBA color,
-//! and a 32-bit floating point per-channel representation for more precise rendering.
+//! and a 32-bit floating point per-channel representation for more precise
+//! rendering.
 
 use std::ops::{Add, Div, Mul, Sub};
 

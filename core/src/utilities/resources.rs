@@ -31,9 +31,11 @@ macro_rules! impl_rid {
   };
 }
 
-/// Thread-safe storage for [`ResourceId`] [`K`] to some internal data structure [`V`].
+/// Thread-safe storage for [`ResourceId`] [`K`] to some internal data structure
+/// [`V`].
 ///
-/// This allows for opaque decoupling of user-facing resource IDs and internal data structures.
+/// This allows for opaque decoupling of user-facing resource IDs and internal
+/// data structures.
 pub struct ResourceStorage<K, V> {
   entries: RwLock<Arena<V>>,
   _key: std::marker::PhantomData<K>,

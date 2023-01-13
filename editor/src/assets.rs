@@ -1,9 +1,9 @@
 //! Asset server, database and build pipelines for use in editor tooling.
 //!
-//! The asset system maintains a flat-file database of all assets in the project,
-//! with support for transient imports via [`AssetImporter`] behaviours. This
-//! allows projects to participate in the asset system by writing data in bespoke
-//! formats and importing them into a central system.
+//! The asset system maintains a flat-file database of all assets in the
+//! project, with support for transient imports via [`AssetImporter`]
+//! behaviours. This allows projects to participate in the asset system by
+//! writing data in bespoke formats and importing them into a central system.
 //!
 //! The output of the asset database is put through a build pipeline to produce
 //! artifacts and [`AssetBundle`]s for consumption by the game at runtime.
@@ -21,8 +21,9 @@ surreal::impl_guid!(AssetId);
 
 /// A database for assets in a project.
 ///
-/// The asset database is responsible for maintaining a flat-file database of all
-/// assets in the project, and for managing the import of assets from the file system.
+/// The asset database is responsible for maintaining a flat-file database of
+/// all assets in the project, and for managing the import of assets from the
+/// file system.
 ///
 /// See [`AssetImporter`] and [`AssetBundle`] for more details.
 pub struct AssetDatabase {
@@ -89,7 +90,8 @@ impl AssetDatabase {
     Ok(asset)
   }
 
-  /// Loads a [`Box`]ed [`Asset`] of the given type from the given [`VirtualPath`].
+  /// Loads a [`Box`]ed [`Asset`] of the given type from the given
+  /// [`VirtualPath`].
   pub fn load_asset_boxed<A: Asset>(&mut self, path: impl Into<VirtualPath>) -> surreal::Result<Box<A>> {
     let path = path.into();
 
@@ -164,15 +166,16 @@ impl<A: Any + Sized> Asset for A {
 
 /// A bundle of assets.
 ///
-/// Bundles are responsible for composing assets into a form that can be consumed
-/// by the game at runtime. Bundles are used by the [`AssetServer`] to pack assets
-/// into central files for distribution.
+/// Bundles are responsible for composing assets into a form that can be
+/// consumed by the game at runtime. Bundles are used by the [`AssetServer`] to
+/// pack assets into central files for distribution.
 pub trait AssetBundle {}
 
 /// A unique hash of an asset.
 ///
-/// This is used to determine whether an asset has been modified since it was last
-/// imported. If the hash of an asset has changed, the asset will be re-imported.
+/// This is used to determine whether an asset has been modified since it was
+/// last imported. If the hash of an asset has changed, the asset will be
+/// re-imported.
 ///
 /// The hash is calculated by hashing the contents of the asset file.
 #[repr(transparent)]
@@ -232,8 +235,8 @@ impl Into<u64> for AssetHash {
 /// Serializable metadata for an asset.
 ///
 /// This is used to store metadata about an asset in the asset database on disk.
-/// This includes the asset's unique identifier, the import options for the asset,
-/// and the hash of the asset.
+/// This includes the asset's unique identifier, the import options for the
+/// asset, and the hash of the asset.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AssetMetadata {
   pub id: AssetId,
@@ -242,7 +245,8 @@ pub struct AssetMetadata {
 }
 
 impl AssetMetadata {
-  /// Creates [`AssetMetadata`] from the given asset path; if the metadata does not exist it will be created anew.
+  /// Creates [`AssetMetadata`] from the given asset path; if the metadata does
+  /// not exist it will be created anew.
   pub fn from_path(path: impl Into<VirtualPath>) -> surreal::Result<Self> {
     let asset_path = path.into();
     let meta_path = asset_path.change_extension("meta");

@@ -4,12 +4,12 @@
 //! data structures, converting voxel representations, chunking and meshing and
 //! palette indexing.
 //!
-//! The core of the module is the [`Voxel`] type, which represents a single voxel
-//! in a larger [`VoxelChunk`]. A voxel indicates the kind of type or material
-//! present at any 3d point in a discretized space.
+//! The core of the module is the [`Voxel`] type, which represents a single
+//! voxel in a larger [`VoxelChunk`]. A voxel indicates the kind of type or
+//! material present at any 3d point in a discretized space.
 //!
-//! [`VoxelChunk`]s can be combined with [`VoxelMerge`] operations, and templated
-//! via [`VoxelBrush`] types.
+//! [`VoxelChunk`]s can be combined with [`VoxelMerge`] operations, and
+//! templated via [`VoxelBrush`] types.
 
 /// A voxel in a chunk.
 pub type Voxel = u8;
@@ -42,7 +42,8 @@ pub trait VoxelBrush {
   }
 }
 
-/// An operation that permits merging [`VoxelBrush`]es to produce new [`VoxelBrush`]es.
+/// An operation that permits merging [`VoxelBrush`]es to produce new
+/// [`VoxelBrush`]es.
 pub trait VoxelMerge {
   /// Merge the given two [`VoxelBrush`]es to produce a new [`VoxelBrush`].
   fn merge(&self, a: &dyn VoxelBrush, b: &dyn VoxelBrush) -> Box<dyn VoxelBrush>;
@@ -79,8 +80,8 @@ impl VoxelMerge for VoxelOperation {
 
 /// Represents a chunk of [`Voxel`]s.
 ///
-/// A chunk is a 3D grid of [`Voxel`]s, which can be used to represent a discrete
-/// volume of space.
+/// A chunk is a 3D grid of [`Voxel`]s, which can be used to represent a
+/// discrete volume of space.
 pub trait VoxelChunk: VoxelBrush {}
 
 /// A default [`VoxelChunk`] implementation backed by a [`Vec`].
@@ -89,8 +90,8 @@ pub trait VoxelChunk: VoxelBrush {}
 /// width, the second being the height, and the third being the depth.
 ///
 /// The origin of the chunk is at the bottom left corner, with the positive X
-/// axis pointing right, the positive Y axis pointing up, and the positive Z axis
-/// pointing out of the screen.
+/// axis pointing right, the positive Y axis pointing up, and the positive Z
+/// axis pointing out of the screen.
 #[derive(Clone)]
 pub struct Chunk {
   size: (u16, u16, u16),

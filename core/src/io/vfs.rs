@@ -234,7 +234,8 @@ pub trait FileSystem {
 
   /// Watches for changes to the given [`VirtualPath`].
   ///
-  /// Not all file systems implement this, and will return an error if they do not.
+  /// Not all file systems implement this, and will return an error if they do
+  /// not.
   fn watch(&self, path: &VirtualPath) -> crate::Result<Box<dyn FileWatcher>>;
 }
 

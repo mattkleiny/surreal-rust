@@ -26,7 +26,8 @@ pub fn derive_vertex(input: TokenStream) -> TokenStream {
   vertex::impl_vertex_trait(input)
 }
 
-/// Builds a tree of `egui` node constructions based on a React-like markup language.
+/// Builds a tree of `egui` node constructions based on a React-like markup
+/// language.
 #[proc_macro]
 pub fn rsx(input: TokenStream) -> TokenStream {
   rsx::impl_rsx_macro(input)

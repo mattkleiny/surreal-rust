@@ -23,8 +23,9 @@ impl<M> Brain<M> {
 
 /// A simple finite state machine [`Automata`].
 ///
-/// The state machine is composed of a stack of [`State`] instances, each of which
-/// can be pushed or popped from the stack. The top state is the current state.
+/// The state machine is composed of a stack of [`State`] instances, each of
+/// which can be pushed or popped from the stack. The top state is the current
+/// state.
 #[derive(Default)]
 pub struct StateMachine<M = ()> {
   states: Vec<Box<dyn State<M>>>,
@@ -33,7 +34,8 @@ pub struct StateMachine<M = ()> {
 
 /// A single state in a [`StateMachine`].
 pub trait State<M> {
-  /// Updates this state, returning a [`StateTransition`] that indicates what should happen next.
+  /// Updates this state, returning a [`StateTransition`] that indicates what
+  /// should happen next.
   fn think(&mut self, memory: &mut M, delta_time: f32) -> StateTransition<M>;
 }
 
@@ -41,7 +43,8 @@ pub trait State<M> {
 pub enum StateTransition<M> {
   /// No transition.
   Continue,
-  /// Removes this [`State`], transitions to the previous [`State`] if it exists.
+  /// Removes this [`State`], transitions to the previous [`State`] if it
+  /// exists.
   Pop,
   /// Moves to the next [`State`], retaining the old one to return to.
   Push(Box<dyn State<M>>),
@@ -50,13 +53,15 @@ pub enum StateTransition<M> {
 }
 
 impl<M> StateMachine<M> {
-  /// Adds a new [`State`] to the state machine, retaining the old one to return to.
+  /// Adds a new [`State`] to the state machine, retaining the old one to return
+  /// to.
   pub fn push(&mut self, state: Box<dyn State<M>>) {
     self.states.push(state);
     self.current_state = Some(self.states.len() - 1);
   }
 
-  /// Removes the current [`State`], transitioning to the previous [`State`] if it exists.
+  /// Removes the current [`State`], transitioning to the previous [`State`] if
+  /// it exists.
   pub fn pop(&mut self) {
     self.states.pop();
     self.current_state = self.states.len().checked_sub(1);
@@ -71,7 +76,8 @@ impl<M> StateMachine<M> {
 }
 
 impl<M> Automata<M> for StateMachine<M> {
-  /// Updates the current [`State`] in the state machine and applies any [`StateTransition`]s.
+  /// Updates the current [`State`] in the state machine and applies any
+  /// [`StateTransition`]s.
   fn think(&mut self, memory: &mut M, delta_time: f32) {
     if let Some(state_index) = self.current_state {
       if let Some(state) = self.states.get_mut(state_index) {

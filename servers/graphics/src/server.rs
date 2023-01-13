@@ -76,7 +76,8 @@ impl<'a> CommandBuffer<'a> {
 pub enum Command<'a> {
   /// Reads the contents of the given [`TextureId`] into a [`Vec`] of [`u8`].
   ReadTexturePixels { texture_id: TextureId, pixels: &'a mut Vec<u8> },
-  /// Writes the given [`Vec`] of [`u8`] pixel data into the given [`TextureId`].
+  /// Writes the given [`Vec`] of [`u8`] pixel data into the given
+  /// [`TextureId`].
   WriteTexturePixels { texture_id: TextureId, pixels: &'a [u8] },
   /// Sets the view matrix on the underlying pipeline.
   SetViewMatrix { view_matrix: [f32; 4 * 4] },
@@ -95,9 +96,11 @@ pub enum Command<'a> {
     clear_color: Option<Color>,
     depth_value: Option<f32>,
   },
-  /// Begins sampling command information in the profiling system with the given name.
+  /// Begins sampling command information in the profiling system with the given
+  /// name.
   BeginSample { sample_name: Cow<'a, str> },
-  /// Stops sampling command information in the profiling system with the given name.
+  /// Stops sampling command information in the profiling system with the given
+  /// name.
   EndSample { sample_name: Cow<'a, str> },
   /// Draws a mesh with the given material and optional material properties.
   DrawMesh {
@@ -106,7 +109,8 @@ pub enum Command<'a> {
     material_props: &'a [UniformValue],
     sub_mesh_index: usize,
   },
-  /// Performs an indirect draw call with the given material and vertex/index counts.
+  /// Performs an indirect draw call with the given material and vertex/index
+  /// counts.
   DrawIndirect {
     material_id: MaterialId,
     vertices: Range<u32>,
@@ -147,16 +151,19 @@ pub struct TextureDescriptor {
 
 /// An abstraction on top of the underlying graphics API.
 ///
-/// This is a mid-level abstraction that makes use of 'opaque' resource IDs to hide away
-/// implementation details and lifetimes. The backend forms the foundation of higher-level
-/// abstractions that make it simpler to build graphics programs.
+/// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
+/// hide away implementation details and lifetimes. The backend forms the
+/// foundation of higher-level abstractions that make it simpler to build
+/// graphics programs.
 pub trait GraphicsBackend {
   /// Executes the given [`CommandBuffer`] against the backend.
   ///
-  /// All commands will be drained from the [`CommandBuffer`] and executed in sequence.
+  /// All commands will be drained from the [`CommandBuffer`] and executed in
+  /// sequence.
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()>;
 
-  /// Notifies the backend that the main viewport has resized to a new physical size.
+  /// Notifies the backend that the main viewport has resized to a new physical
+  /// size.
   fn resize_viewport(&self, new_size: winit::dpi::PhysicalSize<u32>) -> surreal::Result<()>;
 
   // shader operations

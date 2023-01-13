@@ -1,6 +1,7 @@
 //! Sprite management and rendering.
 //!
-//! Sprites are very common in projects, so this is a dedicated batch to support.
+//! Sprites are very common in projects, so this is a dedicated batch to
+//! support.
 
 use super::*;
 use crate as surreal;
@@ -14,12 +15,13 @@ const DEFAULT_SPRITE_COUNT: usize = 1024;
 
 /// A fast and lightweight sprite batch renderer.
 ///
-/// This batch pre-allocates an array of vertices and indices and re-uses them for as many
-/// sprites as possible.
+/// This batch pre-allocates an array of vertices and indices and re-uses them
+/// for as many sprites as possible.
 ///
-/// Batching is possible over 1 material; however up to 32 unique texture sources can be used
-/// for that single batch operation. It's expected that the associated shader program is capable
-/// of supporting multiple textures per operation.
+/// Batching is possible over 1 material; however up to 32 unique texture
+/// sources can be used for that single batch operation. It's expected that the
+/// associated shader program is capable of supporting multiple textures per
+/// operation.
 pub struct SpriteBatch {
   mesh: Mesh<SpriteVertex>,
   material: Option<Material>,
@@ -48,9 +50,10 @@ impl Default for SpriteOptions {
 
 /// A specialized vertex for use in our sprite batch.
 ///
-/// Encodes a unique `texture_id` representing which of the bound texture units is
-/// relevant for this sprite. This is used to avoid unnecessary flushes in the batch
-/// when rendering sprites from multiple texture sources simultaneously.
+/// Encodes a unique `texture_id` representing which of the bound texture units
+/// is relevant for this sprite. This is used to avoid unnecessary flushes in
+/// the batch when rendering sprites from multiple texture sources
+/// simultaneously.
 #[repr(C)]
 #[derive(Clone, Debug)]
 struct SpriteVertex {

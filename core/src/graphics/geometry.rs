@@ -9,7 +9,8 @@ use crate::{
 
 /// A fast and lightweight geometry batch renderer.
 ///
-/// This batch pre-allocates an array of vertices and re-uses it to tessellate shapes and polygons.
+/// This batch pre-allocates an array of vertices and re-uses it to tessellate
+/// shapes and polygons.
 pub struct GeometryBatch {
   mesh: Mesh<GeometryVertex>,
   vertices: Vec<GeometryVertex>,

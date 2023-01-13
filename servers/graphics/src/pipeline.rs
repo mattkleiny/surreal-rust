@@ -38,7 +38,8 @@ pub trait RenderCamera<'a> {
   fn view_matrix(&self) -> &Mat4;
 }
 
-/// A manager for a [`RenderPipeline`]  that is composed of one or more [`RenderPass`]es.
+/// A manager for a [`RenderPipeline`]  that is composed of one or more
+/// [`RenderPass`]es.
 pub struct RenderManager<'a, P: RenderPipeline> {
   graphics: GraphicsServer,
   command_buffer: CommandBuffer<'a>,

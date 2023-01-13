@@ -1,7 +1,7 @@
 //! Shader loading and management.
 //!
-//! Shader programs form the programmable part of the GPU pipeline, outside of state changes,
-//! and are managed through this module.
+//! Shader programs form the programmable part of the GPU pipeline, outside of
+//! state changes, and are managed through this module.
 //!
 //! For higher-level shader control see the material module instead.
 
@@ -92,7 +92,8 @@ impl ShaderLanguage for GLSL {
   /// Allows for the following basic transformations:
   ///
   /// * Multiple shader types per file (separated with #shader_type directives).
-  /// * Shared code amongst each shader definition by placing it prior to the #shader_type directives.
+  /// * Shared code amongst each shader definition by placing it prior to the
+  ///   #shader_type directives.
   /// * Allows #include directives to fetch other files.
   fn parse(source_code: &str) -> crate::Result<Vec<ShaderKernel>> {
     use crate::io::*;
@@ -196,7 +197,8 @@ impl ShaderProgram {
     Self::from_path::<GLSL>(graphics, path)
   }
 
-  /// Retrieves the binding location of the given shader uniform in the underlying program.
+  /// Retrieves the binding location of the given shader uniform in the
+  /// underlying program.
   #[diagnostics::profiling]
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
     let state = self.state.borrow();

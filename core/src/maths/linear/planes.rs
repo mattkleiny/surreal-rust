@@ -7,7 +7,8 @@ pub struct Plane {
   pub distance: f32,
 }
 
-/// Represents a half-space in 3d; usually results from a plane split of the space.
+/// Represents a half-space in 3d; usually results from a plane split of the
+/// space.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum HalfSpace {
   Behind,

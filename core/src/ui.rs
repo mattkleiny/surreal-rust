@@ -129,7 +129,8 @@ impl UserInterface {
     let textures_delta = full_output.textures_delta;
 
     for (id, image_delta) in textures_delta.set {
-      // convert image representations to our color format and collect width and height
+      // convert image representations to our color format and collect width and
+      // height
       let (pixels, [width, height]) = match image_delta.image {
         egui::ImageData::Color(image) => {
           let pixels = image
@@ -200,7 +201,8 @@ impl UserInterface {
 
           // update our single mesh shape and re-render it
           self.mesh.with_buffers(|vertex_buffer, index_buffer| {
-            // our vertices are blit-ably the same as what egui gives us, so just cast the slice.
+            // our vertices are blit-ably the same as what egui gives us, so just cast the
+            // slice.
             let vertices = unsafe { std::slice::from_raw_parts(vertices.as_ptr() as *const Vertex2, vertices.len()) };
 
             vertex_buffer.write_data(vertices);
@@ -263,10 +265,11 @@ impl UserInterface {
     }
   }
 
-  /// Propagates input into the user interface and runs the given body against the UI.
+  /// Propagates input into the user interface and runs the given body against
+  /// the UI.
   ///
-  /// Note: this is a fairly expensive operation and should ideally be done once per frame,
-  ///       with as much UI work as possible within a single call.
+  /// Note: this is a fairly expensive operation and should ideally be done once
+  /// per frame,       with as much UI work as possible within a single call.
   #[diagnostics::profiling]
   pub fn run(&mut self, host: &mut dyn UserInterfaceHost, mut body: impl FnMut(&egui::Context)) {
     self.begin_frame(host);

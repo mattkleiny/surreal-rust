@@ -24,7 +24,8 @@ pub enum PrimitiveTopology {
 
 /// Describes a kind of vertex.
 ///
-/// Vertices provide a set of [`VertexDescriptor`]s which are used for binding vertex data to a mesh.
+/// Vertices provide a set of [`VertexDescriptor`]s which are used for binding
+/// vertex data to a mesh.
 pub trait Vertex: Clone {
   const DESCRIPTORS: &'static [VertexDescriptor];
 }
@@ -134,8 +135,8 @@ impl Vertex for Vertex3 {
 
 /// A mesh of vertices of [`V`] that has been uploaded to the GPU.
 ///
-/// Meshes are stored on the GPU as vertex/index buffers and can be submitted for rendering at any
-/// time, provided a valid [`Material`] is available.
+/// Meshes are stored on the GPU as vertex/index buffers and can be submitted
+/// for rendering at any time, provided a valid [`Material`] is available.
 #[derive(Clone)]
 pub struct Mesh<V> {
   state: Rc<RefCell<MeshState<V>>>,
@@ -349,7 +350,8 @@ impl<V: Vertex> MeshBuilder<V> {
   }
 }
 
-/// Represents a type that can be tessellated into [`V`]ertices via a [`MeshBuilder`].
+/// Represents a type that can be tessellated into [`V`]ertices via a
+/// [`MeshBuilder`].
 pub trait MeshBrush<V> {
   /// Tessellates this object into the given [`MeshBuilder`].
   fn build(&self, builder: &mut MeshBuilder<V>);

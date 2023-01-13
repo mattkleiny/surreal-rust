@@ -1,7 +1,8 @@
 //! Rendering abstractions and pipelines.
 //!
-//! This is a series of components designed to make it simpler to build more complex render
-//! pipelines than using the 'material', 'mesh', 'render targets' etc do alone.
+//! This is a series of components designed to make it simpler to build more
+//! complex render pipelines than using the 'material', 'mesh', 'render targets'
+//! etc do alone.
 
 use std::any::TypeId;
 
@@ -10,9 +11,10 @@ use crate::{collections::FastHashMap, utilities::Object};
 
 /// A context for rendering operations.
 ///
-/// A context contains the state useful for a particular kind of rendering operation, and also
-/// exposes some basic lifecycle methods. It's lazily constructed upon first use and remains
-/// alive until the [`Renderer`] is dropped.
+/// A context contains the state useful for a particular kind of rendering
+/// operation, and also exposes some basic lifecycle methods. It's lazily
+/// constructed upon first use and remains alive until the [`Renderer`] is
+/// dropped.
 pub trait RenderContext: Object {
   fn on_begin_with(&mut self) {}
   fn on_end_with(&mut self) {}
@@ -22,8 +24,8 @@ pub trait RenderContext: Object {
 
 /// Describes how to build a [`RenderContext`] .
 ///
-/// A descriptor is a factory for a render context, and contain configuration and shared data
-/// that is usable in the creation of the context itself.
+/// A descriptor is a factory for a render context, and contain configuration
+/// and shared data that is usable in the creation of the context itself.
 pub trait RenderContextDescriptor {
   /// The type of [`RenderContext`] that will be created by this descriptor.
   type Context: RenderContext;
@@ -42,8 +44,9 @@ pub trait Renderable<C: RenderContext> {
 
 /// A manager for [`RenderContext`]s.
 ///
-/// A [`RenderContext`] encodes all of the required details and lifecycle for textures, materials,
-/// render targets, shaders, necessary in a single invocation of some rendering state.
+/// A [`RenderContext`] encodes all of the required details and lifecycle for
+/// textures, materials, render targets, shaders, necessary in a single
+/// invocation of some rendering state.
 pub struct Renderer {
   graphics: GraphicsServer,
   contexts: FastHashMap<TypeId, Box<dyn RenderContext>>,
@@ -115,7 +118,8 @@ impl Renderer {
     self.contexts.remove(&TypeId::of::<C>());
   }
 
-  /// Clears all [`RenderContext`]s from the manager, resetting it to a clean state.
+  /// Clears all [`RenderContext`]s from the manager, resetting it to a clean
+  /// state.
   pub fn reset(&mut self) {
     self.contexts.clear();
   }

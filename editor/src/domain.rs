@@ -26,8 +26,8 @@ mod ffi {
   extern "C" {
     /// Initializes an [`RuntimeDomain`] in the associated module.
     ///
-    /// When implemented by a client assembly, allows the client to register types for use
-    /// in reflective processes in the editor.
+    /// When implemented by a client assembly, allows the client to register
+    /// types for use in reflective processes in the editor.
     pub fn initialize_domain(domain: *mut c_void);
   }
 }

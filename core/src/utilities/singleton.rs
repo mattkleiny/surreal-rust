@@ -5,7 +5,8 @@ use std::{
 
 use once_cell::sync::Lazy;
 
-/// A singleton that can be referenced and mutated statically in the application.
+/// A singleton that can be referenced and mutated statically in the
+/// application.
 pub trait Singleton: 'static {
   /// Retrieves the static instance of this type.
   fn instance() -> &'static mut Self;
@@ -13,11 +14,13 @@ pub trait Singleton: 'static {
 
 /// An unsafe cell for mutably alias-able [`Lazy`] values.
 ///
-/// This type should be used very sparingly, and only to remove friction from the API.
+/// This type should be used very sparingly, and only to remove friction from
+/// the API.
 pub struct UnsafeLazyCell<T>(Lazy<UnsafeCell<T>>);
 
 impl<T> UnsafeLazyCell<T> {
-  /// Constructs a new [`UnsafeLazyCell`] with a [`Default::default`] constructor.
+  /// Constructs a new [`UnsafeLazyCell`] with a [`Default::default`]
+  /// constructor.
   pub const fn new() -> Self
   where
     T: Default,

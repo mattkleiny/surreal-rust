@@ -1,7 +1,7 @@
 //! Undo/Redo support for the Surreal editor.
 //!
-//! This module provides the [`UndoManager`] type, which is responsible for managing the
-//! undo/redo.
+//! This module provides the [`UndoManager`] type, which is responsible for
+//! managing the undo/redo.
 
 use std::ops::Deref;
 
@@ -9,7 +9,8 @@ use std::ops::Deref;
 #[derive(Default)]
 pub struct UndoManager {}
 
-/// A scope wrapper for a type that can be rolled backwards/forwards with commands.
+/// A scope wrapper for a type that can be rolled backwards/forwards with
+/// commands.
 pub struct UndoScope<T> {
   pub value: T,
 }

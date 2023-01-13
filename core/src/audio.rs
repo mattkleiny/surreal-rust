@@ -32,7 +32,7 @@ impl AudioSampleRate {
     self.bits_per_second() as f32 / 8.0
   }
 
-  /// Calculates the total `Size` required for the given duration at this sample rate.
+  /// Calculates the `Size` required for the given duration at this sample rate.
   pub fn calculate_size(&self, duration: TimeSpan) -> Size {
     Size::from_bytes((duration.total_seconds() * self.bytes_per_second()).ceil() as usize)
   }
@@ -40,8 +40,9 @@ impl AudioSampleRate {
 
 /// Represents a backend implementation for the underlying audio API.
 ///
-/// This is a high-level abstraction that makes use of 'opaque' handles to hide away implementation
-/// details. The server is intended to be a low-level implementation abstraction.
+/// This is a high-level abstraction that makes use of 'opaque' handles to hide
+/// away implementation details. The server is intended to be a low-level
+/// implementation abstraction.
 pub trait AudioBackend {
   // clips
   fn clip_create(&self) -> AudioClipId;

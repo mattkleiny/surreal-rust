@@ -9,16 +9,18 @@
 /// A top-level manager for the streaming system.
 ///
 /// The manager receives a series of [`StreamingRequest`]s from components, such
-/// as the [`StreamingArea`] and [`StreamingVolume`]. These request are high-level
-/// indications of the kinds of manifests we need to load from the asset system.
+/// as the [`StreamingArea`] and [`StreamingVolume`]. These request are
+/// high-level indications of the kinds of manifests we need to load from the
+/// asset system.
 ///
 /// Each [`StreamingRequest`] is then associated with a unique [`StreamingJob`]
-/// and prioritized in the queue. The queue is drained by background workers that
-/// can be reconfigured depending on platform and the number of cores available.
+/// and prioritized in the queue. The queue is drained by background workers
+/// that can be reconfigured depending on platform and the number of cores
+/// available.
 ///
 /// In order to actualize [`StreamingRequest`] changes in the system, we
-/// delegate to a [`StreamingHandler`] who is then responsible for loading assets
-/// and unloading old assets.
+/// delegate to a [`StreamingHandler`] who is then responsible for loading
+/// assets and unloading old assets.
 pub struct StreamingManager {}
 
 /// A handler for [`StreamingRequest`]s.
@@ -41,5 +43,6 @@ pub struct StreamingRequest {}
 /// A 2d area that can indicate to the [`StreamingManager`] to change resources.
 pub trait StreamingArea {}
 
-/// A 3d volume that can indicate to the [`StreamingManager`] to change resources.
+/// A 3d volume that can indicate to the [`StreamingManager`] to change
+/// resources.
 pub trait StreamingVolume {}

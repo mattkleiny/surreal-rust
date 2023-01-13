@@ -110,7 +110,8 @@ impl FrameCounter {
   }
 }
 
-/// A simple time which ticks on a given basis and returns true if an interval has elapsed.
+/// A simple time which ticks on a given basis and returns true if an interval
+/// has elapsed.
 #[derive(Clone, Debug)]
 pub struct IntervalTimer {
   time_elapsed: f32,
@@ -135,7 +136,8 @@ impl IntervalTimer {
   }
 }
 
-/// A simple time which ticks on a given basis and returns true if the given number of frames have elapsed.
+/// A simple time which ticks on a given basis and returns true if the given
+/// number of frames have elapsed.
 #[derive(Clone, Debug)]
 pub struct FrameTimer {
   frames_elapsed: u64,

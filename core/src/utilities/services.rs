@@ -16,7 +16,8 @@ pub trait ServiceProvider {
   /// Returns a mutable reference to the [`Service`] of the given type.
   fn get_service_mut<T: Service>(&mut self) -> Option<&mut T>;
 
-  /// Returns a reference to the [`Service`] of the given type, or creates it anew.
+  /// Returns a reference to the [`Service`] of the given type, or creates it
+  /// anew.
   fn get_service_or_default<T: Service + Default>(&mut self) -> &mut T;
 }
 

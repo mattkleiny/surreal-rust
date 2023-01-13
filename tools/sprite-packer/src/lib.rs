@@ -30,7 +30,8 @@ pub struct SpriteSheet<'a> {
 /// Packs the given sprites as a uniform set of images into a [`SpriteSheet`].
 ///
 /// This method requires that all sprites have the same size and will form a
-/// rectangular grid of the least highest power of 2 necessary to fit all sprites.
+/// rectangular grid of the least highest power of 2 necessary to fit all
+/// sprites.
 pub fn pack_uniform_grid(sprites: &mut [Sprite]) -> anyhow::Result<SpriteSheet> {
   let _width = sprites.iter().map(|sprite| sprite.size.0).max().unwrap();
   let _height = sprites.iter().map(|sprite| sprite.size.1).max().unwrap();
@@ -108,7 +109,8 @@ pub fn pack_sprite_sheet(sprites: &mut [Sprite]) -> anyhow::Result<SpriteSheet> 
     .ok_or(anyhow!("Invalid: No free anchors"))?
     .1;
 
-  // Finally sort the anchors so that they are in the same order as the input sprites
+  // Finally sort the anchors so that they are in the same order as the input
+  // sprites
   anchors.sort_by_key(|s| s.sprite.id);
 
   Ok(SpriteSheet { width, height, anchors })

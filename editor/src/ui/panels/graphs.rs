@@ -1,11 +1,12 @@
 //! Graph editor UI for the Surreal editor.
 //!
-//! This module provides a [`GraphEditor`] widget for the [`egui`] UI framework, as well
-//! as supporting tools for creating, editing, saving and loading graphs.
+//! This module provides a [`GraphEditor`] widget for the [`egui`] UI framework,
+//! as well as supporting tools for creating, editing, saving and loading
+//! graphs.
 //!
-//! The [`GraphEditor`] widget is a first-class citizen in the Surreal editor, and is
-//! used to create and edit graphs for use in procedural generation, visual scripting,
-//! and other tasks.
+//! The [`GraphEditor`] widget is a first-class citizen in the Surreal editor,
+//! and is used to create and edit graphs for use in procedural generation,
+//! visual scripting, and other tasks.
 
 use egui::*;
 use surreal::graphs::*;
@@ -46,7 +47,8 @@ impl<D> EditorPanel for GraphEditor<D> {
         Color32::from_rgb(0x1b, 0x1b, 0x1b)
       };
 
-      // let cursor_pos = ui.ctx().input().pointer.hover_pos().unwrap_or(egui::Pos2::ZERO);
+      // let cursor_pos =
+      // ui.ctx().input().pointer.hover_pos().unwrap_or(egui::Pos2::ZERO);
       // let cursor_in_editor = rect.contains(cursor_pos);
       // let cursor_in_finder = false;
 

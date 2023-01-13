@@ -65,7 +65,8 @@ impl EditorWindow for ProjectWindow {
 
 /// Top-level contextual information for the application editor state.
 ///
-/// The context provides access to central persistence, settings, undo/redo, etc.
+/// The context provides access to central persistence, settings, undo/redo,
+/// etc.
 pub struct EditorContext {
   project: Project,
   _undo_manager: UndoManager,

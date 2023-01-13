@@ -1,6 +1,7 @@
 //! Font loading, management and rendering.
 //!
-//! We currently support bitmap fonts with basic support for vector fonts at a fixed scale.
+//! We currently support bitmap fonts with basic support for vector fonts at a
+//! fixed scale.
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -14,7 +15,8 @@ use crate::{
   maths::{uvec2, UVec2},
 };
 
-// TODO: support MSDF based fonts instead of rasterizing true type fonts to bitmaps?
+// TODO: support MSDF based fonts instead of rasterizing true type fonts to
+// bitmaps?
 
 /// Represents different kinds of fonts and permits rendering.
 pub trait Font {

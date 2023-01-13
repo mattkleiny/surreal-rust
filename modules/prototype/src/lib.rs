@@ -13,7 +13,7 @@ pub const UNIFORM_PALETTE: UniformKey<&Texture> = UniformKey::new("u_palette");
 /// A uniform that contains the width of the value in [`UNIFORM_PALETTE`].
 pub const UNIFORM_PALETTE_WIDTH: UniformKey<u32> = UniformKey::new("u_paletteWidth");
 
-/// A uniform that contains the projection-view matrix for perspective adjustment.
+/// A uniform that contains the projection-view matrix for camera projections.
 pub const UNIFORM_PROJECTION_VIEW: UniformKey<&Mat4> = UniformKey::new("u_projectionView");
 
 /// A uniform that contains the main texture for a shader.
@@ -92,19 +92,22 @@ pub fn load_built_in_palette<P: Pixel>(palette: BuiltInPalette) -> ColorPalette<
   palette.expect("Failed to load built-in palette")
 }
 
-/// A [`RenderContextDescriptor`] for a simple [`SpriteContext`] for use in sprite rendering.
+/// A [`RenderContextDescriptor`] for a simple [`SpriteContext`] for use in
+/// sprite rendering.
 pub struct SpriteContextDescriptor {
   /// A default projection-view matrix to apply.
   pub projection_view: Mat4,
 
-  /// If a palette is specified, a special shader variant will be loaded that uses the palette.
-  /// The palette will be bound to `u_palette` with `u_paletteWidth` texels wide.
+  /// If a palette is specified, a special shader variant will be loaded that
+  /// uses the palette. The palette will be bound to `u_palette` with
+  /// `u_paletteWidth` texels wide.
   pub palette: Option<ColorPalette<Color>>,
 
   /// A custom [`ShaderProgram`] to use for rendering.
   pub shader: Option<ShaderProgram>,
 
-  /// The expected number of sprites to use in the batch; used for pre-sizing the batch vertex buffer.
+  /// The expected number of sprites to use in the batch; used for pre-sizing
+  /// the batch vertex buffer.
   pub sprite_count: usize,
 }
 
@@ -160,7 +163,8 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
   }
 }
 
-/// A simple [`RenderContext`] that allows for sprite rendering using built-in sprite shaders.
+/// A simple [`RenderContext`] that allows for sprite rendering using built-in
+/// sprite shaders.
 #[derive(Object)]
 pub struct SpriteContext {
   /// A [`Material`] configured to render sprites.
@@ -224,7 +228,8 @@ impl RenderContextDescriptor for GeometryContextDescriptor {
   }
 }
 
-/// A simple [`RenderContext`] that allows for geometry rendering using the standard wire shaders.
+/// A simple [`RenderContext`] that allows for geometry rendering using the
+/// standard wire shaders.
 #[derive(Object)]
 pub struct GeometryContext {
   /// A material configured to render geometry.

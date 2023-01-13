@@ -2,7 +2,8 @@ use egui::Ui;
 
 use super::*;
 
-/// An [`EditorPanel`] that renders a read/write view of selected object properties.
+/// An [`EditorPanel`] that renders a read/write view of selected object
+/// properties.
 #[derive(Default)]
 pub struct Inspector {}
 

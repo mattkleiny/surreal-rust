@@ -1,7 +1,8 @@
 //! Render target management and abstractions.
 //!
-//! Render targets allow for off-screen processing and rendering to a texture, and form
-//! the basis of more complex render pipelines (deferred pipelines, post-processing, etc).
+//! Render targets allow for off-screen processing and rendering to a texture,
+//! and form the basis of more complex render pipelines (deferred pipelines,
+//! post-processing, etc).
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -32,7 +33,8 @@ impl RenderTextureDescriptor {
   }
 }
 
-/// A render target is a collection of one or more buffers that can be rendered to.
+/// A render target is a collection of one or more buffers that can be rendered
+/// to.
 #[derive(Clone)]
 pub struct RenderTarget {
   state: Rc<RefCell<RenderTargetState>>,

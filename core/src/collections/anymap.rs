@@ -2,7 +2,8 @@ use std::any::{Any, TypeId};
 
 use crate::collections::FastHashMap;
 
-/// An any-map is a hash map that can contain a single value per unique [`TypeId`].
+/// An any-map is a hash map that can contain a single value per unique
+/// [`TypeId`].
 ///
 /// That is to say, a hash map that associates [`TypeId`] to [`Box<dyn T>>`].
 #[derive(Default)]

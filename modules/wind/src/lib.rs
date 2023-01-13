@@ -28,7 +28,8 @@ impl SceneComponent for WindEmitter {
   }
 }
 
-/// Receives wind from the wind system, allowing objects to be affected due to wind emitters.
+/// Receives wind from the wind system, allowing objects to be affected due to
+/// wind emitters.
 #[derive(Object)]
 pub struct WindReceiver {}
 

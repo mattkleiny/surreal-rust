@@ -25,7 +25,8 @@ pub struct EditorWindowHost {
   windows: FastHashMap<WindowId, WindowState>,
 }
 
-/// Internal state for a [`EditorWindow`] and it's associated `winit` [`Window`].
+/// Internal state for a [`EditorWindow`] and it's associated `winit`
+/// [`Window`].
 struct WindowState {
   winit_window: Window,
   editor_window: Box<dyn EditorWindow>,
@@ -295,7 +296,8 @@ impl surreal::ui::UserInterfaceHost for UserInterfaceState {
       }
     }
 
-    // prevent flickering near frame boundary when Windows OS tries to control cursor icon for window resizing
+    // prevent flickering near frame boundary when Windows OS tries to control
+    // cursor icon for window resizing
     if self.egui_cursor_icon == cursor_icon {
       return;
     }

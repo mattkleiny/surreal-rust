@@ -201,5 +201,6 @@ pub trait Deserializable: for<'de> Deserialize<'de> + Sized {
   }
 }
 
-/// Blanket implementation of [`Deserializable`] for any [`Deserialize`]-able type.
+/// Blanket implementation of [`Deserializable`] for any [`Deserialize`]-able
+/// type.
 impl<T> Deserializable for T where T: for<'de> Deserialize<'de> {}

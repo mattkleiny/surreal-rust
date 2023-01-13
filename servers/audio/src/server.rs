@@ -44,9 +44,10 @@ impl Deref for AudioServer {
 
 /// An abstraction on top of the underlying graphics API.
 ///
-/// This is a mid-level abstraction that makes use of 'opaque' resource IDs to hide away
-/// implementation details and lifetimes. The backend forms the foundation of higher-level
-/// abstractions that make it simpler to build graphics programs.
+/// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
+/// hide away implementation details and lifetimes. The backend forms the
+/// foundation of higher-level abstractions that make it simpler to build
+/// graphics programs.
 pub trait AudioBackend {}
 
 surreal::impl_rid!(AudioClipId);
