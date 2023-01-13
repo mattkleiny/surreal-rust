@@ -5,10 +5,9 @@
 
 use std::{cell::RefCell, rc::Rc};
 
+use super::*;
 use crate as surreal;
 use crate::diagnostics;
-
-use super::*;
 
 /// The different kinds of buffer we support.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

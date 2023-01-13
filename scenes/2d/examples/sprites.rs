@@ -1,7 +1,9 @@
-use surreal::assets::Asset;
-use surreal::graphics::{Texture, TextureRegion};
-use surreal::maths::vec3;
-use surreal::scene::{SceneGraph, SceneNodeBuilder};
+use surreal::{
+  assets::Asset,
+  graphics::{Texture, TextureRegion},
+  maths::vec3,
+  scene::{SceneGraph, SceneNodeBuilder},
+};
 use surreal_scene2d::SpriteComponent;
 
 mod common;

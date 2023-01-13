@@ -1,15 +1,15 @@
 //! Keyboard input management.
 
-use std::collections::HashSet;
-
 pub use winit::event::VirtualKeyCode as Key;
 use winit::event::{ElementState, KeyboardInput};
+
+use crate::collections::FastHashSet;
 
 /// Represents a keyboard device in the system.
 #[derive(Default)]
 pub struct KeyboardDevice {
-  previous_keys: HashSet<Key>,
-  current_keys: HashSet<Key>,
+  previous_keys: FastHashSet<Key>,
+  current_keys: FastHashSet<Key>,
 }
 
 impl KeyboardDevice {

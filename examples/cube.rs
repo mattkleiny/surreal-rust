@@ -1,7 +1,6 @@
 //! A spinning cube, very exciting.
 
-use surreal::prelude::*;
-use surreal::prototype::*;
+use surreal::{prelude::*, prototype::*};
 
 fn main() {
   let configuration = EngineConfig {

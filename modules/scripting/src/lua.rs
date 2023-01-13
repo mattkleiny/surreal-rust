@@ -1,5 +1,4 @@
 use mlua::{Lua, StdLib};
-
 use surreal::macros::Singleton;
 
 use super::*;

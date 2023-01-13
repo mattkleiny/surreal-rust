@@ -1,11 +1,11 @@
 //! Scene graph and scene node management.
 
-use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Formatter};
 
 use anyhow::anyhow;
 
 use crate::{
+  collections::{FastHashMap, FastHashSet},
   graphics::Renderer,
   maths::{Affine3A, Quat, Vec3},
   utilities::{unsafe_mutable_alias, Object, ServiceContainer},
@@ -20,7 +20,7 @@ crate::impl_guid!(SceneNodeId);
 pub type LayerId = u16;
 
 /// A set of one or more [`Tag`]s.
-pub type TagSet = HashSet<Tag>;
+pub type TagSet = FastHashSet<Tag>;
 
 /// A tag that can be applied to a [`SceneNode`].
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -55,13 +55,13 @@ pub enum SceneEvent<'a> {
 pub struct SceneGraph {
   pub root: SceneNode,
   services: ServiceContainer,
-  groups: HashMap<String, SceneGroup>,
+  groups: FastHashMap<String, SceneGroup>,
 }
 
 /// A grouping of nodes in a [`SceneGraph`].
 #[derive(Default)]
 struct SceneGroup {
-  members: HashSet<SceneNodeId>,
+  members: FastHashSet<SceneNodeId>,
 }
 
 impl SceneGraph {
@@ -69,7 +69,7 @@ impl SceneGraph {
   pub fn new(root: impl Into<SceneNode>) -> Self {
     Self {
       root: root.into(),
-      groups: HashMap::new(),
+      groups: FastHashMap::default(),
       services: ServiceContainer::default(),
     }
   }
@@ -322,8 +322,8 @@ impl Default for SceneNode {
       is_enabled: true,
       is_transform_dirty: true,
       layer_id: 0,
-      tags: HashSet::new(),
-      transform: Default::default(),
+      tags: FastHashSet::default(),
+      transform: Transform::default(),
       components: SceneComponentSet::default(),
       children: Vec::with_capacity(0),
     }
@@ -857,9 +857,8 @@ impl Into<SceneNode> for SceneNodeBuilder {
 mod tests {
   use macros::Object;
 
-  use crate as surreal;
-
   use super::*;
+  use crate as surreal;
 
   #[test]
   pub fn scene_node_should_iterate_child_nodes() {

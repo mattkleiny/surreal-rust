@@ -1,8 +1,7 @@
 //! Profiling utilities
 
-pub use puffin::{profile_function, profile_scope};
-
 pub use macros::profile as profiling;
+pub use puffin::{profile_function, profile_scope};
 
 /// Is the profiler enabled?
 #[inline]

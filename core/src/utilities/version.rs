@@ -71,9 +71,8 @@ impl<'de> serde::Deserialize<'de> for Version {
 
 #[cfg(test)]
 mod tests {
-  use crate::io::{Deserializable, Serializable};
-
   use super::*;
+  use crate::io::{Deserializable, Serializable};
 
   #[test]
   fn version_should_serialize_and_deserialize() {

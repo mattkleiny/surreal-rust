@@ -3,9 +3,8 @@
 //! This is a culmination of various other crates to build something simple
 //! but that tests the ergonomics of the engine.
 
-use std::collections::HashMap;
-
 use surreal::{
+  collections::FastHashMap,
   graphics::{RenderContext, Renderer},
   macros::Object,
   maths::Vec3,
@@ -60,7 +59,7 @@ impl SceneComponent for WindReceiver {
 /// A manager for wind operations.
 #[derive(Object, Default)]
 struct WindManager {
-  vorticles: HashMap<SceneNodeId, Vorticle>,
+  vorticles: FastHashMap<SceneNodeId, Vorticle>,
 }
 
 struct Vorticle {
@@ -76,8 +75,10 @@ impl RenderContext for WindContext {}
 
 #[cfg(test)]
 mod tests {
-  use surreal::graphics::create_test_graphics;
-  use surreal::scene::{SceneEvent, SceneGraph, SceneNodeBuilder};
+  use surreal::{
+    graphics::create_test_graphics,
+    scene::{SceneEvent, SceneGraph, SceneNodeBuilder},
+  };
 
   use super::*;
 

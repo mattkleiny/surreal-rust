@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use surreal::utilities::ResourceStorage;
+use surreal::{collections::FastHashMap, utilities::ResourceStorage};
 
 use super::*;
 
@@ -31,7 +30,7 @@ struct WgpuShader {
 
 /// Internal data for a material in the [`WgpuBackend`].
 struct WgpuMaterial {
-  _uniforms: HashMap<String, UniformValue>,
+  _uniforms: FastHashMap<String, UniformValue>,
   _uniform_buffer: wgpu::Buffer,
   _bind_group: wgpu::BindGroup,
 }
@@ -225,7 +224,7 @@ impl GraphicsBackend for WgpuBackend {
     });
 
     Ok(self.material_storage.insert(WgpuMaterial {
-      _uniforms: HashMap::default(),
+      _uniforms: FastHashMap::default(),
       _uniform_buffer: uniform_buffer,
       _bind_group: bind_group,
     }))

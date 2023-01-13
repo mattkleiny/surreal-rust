@@ -1,15 +1,13 @@
 //! An example of the WGPU [`surreal_graphics::GraphicsBackend`].
 
-use surreal::graphics::TextureFormat;
+use surreal::{graphics::TextureFormat, utilities::DeltaClock};
+use surreal_graphics::{urp::*, *};
 use winit::{
   dpi::PhysicalSize,
   event::{Event, WindowEvent},
   event_loop::EventLoop,
   window::WindowBuilder,
 };
-
-use surreal::utilities::DeltaClock;
-use surreal_graphics::{urp::*, *};
 
 fn main() {
   // build window

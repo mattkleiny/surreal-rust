@@ -9,10 +9,11 @@ use std::{marker::PhantomData, ops::Index};
 
 use anyhow::anyhow;
 
-use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::io::VirtualPath;
-
 use super::*;
+use crate::{
+  assets::{Asset, AssetContext, AssetLoader},
+  io::VirtualPath,
+};
 
 /// A palette of colors of type [`P`].
 #[derive(Default, Clone)]

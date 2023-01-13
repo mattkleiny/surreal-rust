@@ -3,13 +3,13 @@
 //! Materials define all data required to perform some rendering step, from
 //! pipeline state changes through to shader programs and uniforms.
 
-use std::collections::HashMap;
-
-use crate as surreal;
-use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::diagnostics;
-
 use super::*;
+use crate as surreal;
+use crate::{
+  assets::{Asset, AssetContext, AssetLoader},
+  collections::FastHashMap,
+  diagnostics,
+};
 
 /// Blending states for materials.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -51,7 +51,7 @@ pub enum ScissorMode {
 /// A set of [`ShaderUniform`]s that can be passed around the application.
 #[derive(Default, Clone)]
 pub struct MaterialUniformSet {
-  uniforms: HashMap<String, ShaderUniform>,
+  uniforms: FastHashMap<String, ShaderUniform>,
   textures: TextureBindingSet,
 }
 

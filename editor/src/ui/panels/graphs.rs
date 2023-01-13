@@ -8,7 +8,6 @@
 //! and other tasks.
 
 use egui::*;
-
 use surreal::graphs::*;
 
 use super::*;

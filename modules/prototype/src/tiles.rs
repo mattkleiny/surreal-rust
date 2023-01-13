@@ -1,9 +1,10 @@
-use std::collections::HashMap;
 use std::hash::Hash;
 
-use surreal::collections::Grid;
-use surreal::graphics::Renderable;
-use surreal::maths::{vec2, Cost, IVec2, NeighbourList, Numeric, PathFindingGrid, VonNeumannNeighbourhood};
+use surreal::{
+  collections::{FastHashMap, Grid},
+  graphics::Renderable,
+  maths::{vec2, Cost, IVec2, NeighbourList, Numeric, PathFindingGrid, VonNeumannNeighbourhood},
+};
 
 use super::*;
 
@@ -13,7 +14,7 @@ use super::*;
 /// API allows for direct access via the `T` abstraction.
 pub struct TileMap<T: Tile> {
   tiles: Grid<T::Id>,
-  sprites: HashMap<T::Id, TextureRegion>,
+  sprites: FastHashMap<T::Id, TextureRegion>,
 }
 
 impl<T: Tile> TileMap<T> {
@@ -21,7 +22,7 @@ impl<T: Tile> TileMap<T> {
   pub fn new(width: usize, height: usize) -> Self {
     Self {
       tiles: Grid::new(width, height),
-      sprites: HashMap::new(),
+      sprites: FastHashMap::default(),
     }
   }
 

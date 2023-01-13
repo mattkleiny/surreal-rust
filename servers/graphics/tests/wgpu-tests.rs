@@ -24,8 +24,7 @@ mod common {
   use super::*;
 
   pub fn bootstrap(body: impl Fn(&GraphicsServer) + 'static) {
-    use winit::platform::run_return::EventLoopExtRunReturn;
-    use winit::platform::windows::EventLoopBuilderExtWindows;
+    use winit::platform::{run_return::EventLoopExtRunReturn, windows::EventLoopBuilderExtWindows};
 
     let mut event_loop = EventLoopBuilder::new().with_any_thread(true).build();
     let window = WindowBuilder::new()

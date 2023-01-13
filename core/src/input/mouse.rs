@@ -1,19 +1,17 @@
 //! Mouse input management.
 
-use std::collections::HashSet;
-
 use winit::event::ElementState;
 pub use winit::event::MouseButton;
 
-use crate::maths::Vec2;
+use crate::{collections::FastHashSet, maths::Vec2};
 
 /// Represents a mouse device on the system.
 #[derive(Default)]
 pub struct MouseDevice {
   position: Vec2,
   normalised_position: Vec2,
-  previous_buttons: HashSet<MouseButton>,
-  current_buttons: HashSet<MouseButton>,
+  previous_buttons: FastHashSet<MouseButton>,
+  current_buttons: FastHashSet<MouseButton>,
 }
 
 impl MouseDevice {

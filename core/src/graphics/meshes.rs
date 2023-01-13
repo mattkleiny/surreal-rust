@@ -3,15 +3,15 @@
 //! Meshes abstract over vertex and index data on the GPU as well, and
 //! provide utilities for constructing data from pieces.
 
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use crate as surreal;
-use crate::diagnostics;
-use crate::maths::{vec2, Vec2, Vec3};
-use crate::utilities::Size;
+use std::{cell::RefCell, rc::Rc};
 
 use super::*;
+use crate as surreal;
+use crate::{
+  diagnostics,
+  maths::{vec2, Vec2, Vec3},
+  utilities::Size,
+};
 
 /// Represents the different topologies supported for a mesh.
 #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]

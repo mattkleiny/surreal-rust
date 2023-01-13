@@ -1,7 +1,9 @@
 //! The local [`FileSystem`] implementation.
 
-use std::fs::OpenOptions;
-use std::path::{Path, PathBuf};
+use std::{
+  fs::OpenOptions,
+  path::{Path, PathBuf},
+};
 
 use super::*;
 

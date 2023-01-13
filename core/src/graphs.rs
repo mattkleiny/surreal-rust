@@ -112,9 +112,8 @@ impl<'a, D> IntoIterator for &'a mut Graph<D> {
 
 #[cfg(test)]
 mod tests {
-  use crate::io::Serializable;
-
   use super::*;
+  use crate::io::Serializable;
 
   #[test]
   fn graph_should_build_simple_connections() {

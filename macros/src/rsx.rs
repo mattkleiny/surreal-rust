@@ -1,8 +1,6 @@
 use proc_macro::TokenStream;
-
 use quote::ToTokens;
-use syn::parse::Parse;
-use syn::parse_macro_input;
+use syn::{parse::Parse, parse_macro_input};
 
 pub fn impl_rsx_macro(input: TokenStream) -> TokenStream {
   let root = parse_macro_input!(input as RsxNode);

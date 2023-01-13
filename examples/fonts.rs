@@ -1,8 +1,8 @@
 //! An example of bitmap fonts in Surreal.
 
 use std::ops::Deref;
-use surreal::prelude::*;
-use surreal::prototype::*;
+
+use surreal::{prelude::*, prototype::*};
 
 fn main() {
   let configuration = EngineConfig {

@@ -2,18 +2,17 @@
 //!
 //! We currently support bitmap fonts with basic support for vector fonts at a fixed scale.
 
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use ab_glyph::{Font as AbFont, FontVec};
 
-use crate::assets::{Asset, AssetContext, AssetLoader, Handle};
-use crate::graphics::{Texture, TextureRegion};
-use crate::io::Deserializable;
-use crate::maths::{uvec2, UVec2};
-
-use super::{Color32, GraphicsServer, Texel, TextureAtlasBuilder};
+use crate::{
+  assets::{Asset, AssetContext, AssetLoader, Handle},
+  collections::FastHashMap,
+  graphics::{Color32, GraphicsServer, Texel, Texture, TextureAtlasBuilder, TextureRegion},
+  io::Deserializable,
+  maths::{uvec2, UVec2},
+};
 
 // TODO: support MSDF based fonts instead of rasterizing true type fonts to bitmaps?
 
@@ -124,7 +123,7 @@ struct VectorFontState {
   font: FontVec,
   font_size: f32,
   atlas: TextureAtlasBuilder<Color32>,
-  glyphs: HashMap<char, GlyphInfo>,
+  glyphs: FastHashMap<char, GlyphInfo>,
 }
 
 /// Represents position information for a single glyph in a texture.
@@ -237,7 +236,7 @@ impl AssetLoader<VectorFont> for VectorFontLoader {
         font: FontVec::try_from_vec(bytes)?,
         font_size: self.font_size,
         atlas: TextureAtlasBuilder::new(self.atlas_stride, self.atlas_cell_size),
-        glyphs: HashMap::new(),
+        glyphs: FastHashMap::default(),
       })),
     };
 

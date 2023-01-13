@@ -151,10 +151,8 @@ impl<T> Grid<T> {
 
 #[cfg(test)]
 mod tests {
-  use crate::graphics::Color32;
-  use crate::maths::FromRandom;
-
   use super::*;
+  use crate::{graphics::Color32, maths::FromRandom};
 
   #[test]
   fn grid_should_read_and_write_elements() {

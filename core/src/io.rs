@@ -1,8 +1,7 @@
 //! Input/output utilities and virtual file system.
 
-use serde::{Deserialize, Serialize};
-
 pub use pak::*;
+use serde::{Deserialize, Serialize};
 pub use vfs::*;
 
 mod pak;

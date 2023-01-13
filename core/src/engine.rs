@@ -14,8 +14,7 @@ use winit::{
 use crate::{
   assets::AssetManager,
   diagnostics::{self, ConsoleLogger, LevelFilter},
-  graphics::HeadlessGraphicsBackend,
-  graphics::{GraphicsServer, Image, ImageFormat, Renderer},
+  graphics::{GraphicsServer, HeadlessGraphicsBackend, Image, ImageFormat, Renderer},
   input::InputServer,
   maths::{uvec2, vec2},
   scene::{SceneEvent, SceneGraph},
@@ -252,8 +251,7 @@ impl Engine {
   ///
   /// This method will block until the game is closed.
   pub fn run(mut self, mut body: impl FnMut(&mut Self, TickEvent)) {
-    use winit::event::*;
-    use winit::platform::run_return::EventLoopExtRunReturn;
+    use winit::{event::*, platform::run_return::EventLoopExtRunReturn};
 
     log::trace!("Entering main event loop");
 

@@ -1,10 +1,11 @@
 //! Geometry batching for common shapes and polygon rendering.
 
-use crate as surreal;
-use crate::diagnostics;
-use crate::maths::{vec2, Rectangle, Vec2};
-
 use super::*;
+use crate as surreal;
+use crate::{
+  diagnostics,
+  maths::{vec2, Rectangle, Vec2},
+};
 
 /// A fast and lightweight geometry batch renderer.
 ///

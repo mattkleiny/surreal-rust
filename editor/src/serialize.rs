@@ -1,13 +1,12 @@
 //! Property and object serialization tools.
 
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
+use surreal::collections::FastHashMap;
 
 /// A dynamic object that can be serialized/deserialized.
 #[derive(Serialize, Deserialize, Default)]
 pub struct SerializedObject {
-  properties: HashMap<String, SerializedValue>,
+  properties: FastHashMap<String, SerializedValue>,
 }
 
 impl SerializedObject {

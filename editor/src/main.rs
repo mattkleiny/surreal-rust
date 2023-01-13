@@ -1,5 +1,4 @@
 use clap::Parser;
-
 use surreal_editor::*;
 
 /// Commands-line arguments for the Surreal editor.

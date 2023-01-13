@@ -1,14 +1,15 @@
 //! A simple asset management system with support for hot file reloading.
 
-use std::any::{Any, TypeId};
-use std::cell::UnsafeCell;
-use std::collections::HashMap;
-use std::ops::Deref;
-use std::rc::Rc;
+use std::{
+  any::{Any, TypeId},
+  cell::UnsafeCell,
+  ops::Deref,
+  rc::Rc,
+};
 
 use anyhow::Ok;
 
-use crate::io::VirtualPath;
+use crate::{collections::FastHashMap, io::VirtualPath};
 
 /// A id for an asset in the asset manager cache.
 #[derive(Clone, Eq, PartialEq, Hash)]
@@ -90,8 +91,8 @@ pub struct AssetManager {
 /// We hide some complexities with lifetimes by dynamically borrowing the asset manager
 /// state on a per-request basis.
 struct AssetManagerState {
-  loaders: HashMap<TypeId, Box<dyn Any>>,
-  cache: HashMap<AssetId, Box<dyn Any>>,
+  loaders: FastHashMap<TypeId, Box<dyn Any>>,
+  cache: FastHashMap<AssetId, Box<dyn Any>>,
 }
 
 impl AssetManager {
@@ -99,8 +100,8 @@ impl AssetManager {
   pub fn new() -> Self {
     Self {
       state: Rc::new(UnsafeCell::new(AssetManagerState {
-        loaders: HashMap::new(),
-        cache: HashMap::new(),
+        loaders: FastHashMap::default(),
+        cache: FastHashMap::default(),
       })),
     }
   }

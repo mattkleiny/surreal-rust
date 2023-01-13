@@ -1,9 +1,10 @@
 //! A virtual file system with paths and common operations.
 
+use std::borrow::Borrow;
+
 pub use local::*;
 use macros::Singleton;
 pub use memory::*;
-use std::borrow::Borrow;
 
 use crate as surreal;
 

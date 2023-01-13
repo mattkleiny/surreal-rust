@@ -1,15 +1,15 @@
 //! Texture management and loading.
 
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use crate as surreal;
-use crate::assets::{Asset, AssetContext, AssetLoader, AssetManager};
-use crate::collections::Grid;
-use crate::diagnostics;
-use crate::maths::{uvec2, Rectangle, UVec2};
+use std::{cell::RefCell, rc::Rc};
 
 use super::*;
+use crate as surreal;
+use crate::{
+  assets::{Asset, AssetContext, AssetLoader, AssetManager},
+  collections::Grid,
+  diagnostics,
+  maths::{uvec2, Rectangle, UVec2},
+};
 
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]

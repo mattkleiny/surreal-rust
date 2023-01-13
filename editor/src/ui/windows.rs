@@ -1,17 +1,20 @@
 //! Window management for the editor.
 
-use std::collections::HashMap;
 use std::time::Duration;
 
 use egui::{CursorIcon, RawInput};
-use winit::event::{Event, ModifiersState, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::{Icon, Window, WindowId};
-
-use surreal::graphics::{GraphicsServer, HeadlessGraphicsBackend, Image, ImageFormat};
-use surreal::input::{InputServer, Key};
-use surreal::maths::vec2;
-use surreal::ui::UserInterface;
+use surreal::{
+  collections::FastHashMap,
+  graphics::{GraphicsServer, HeadlessGraphicsBackend, Image, ImageFormat},
+  input::{InputServer, Key},
+  maths::vec2,
+  ui::UserInterface,
+};
+use winit::{
+  event::{Event, ModifiersState, WindowEvent},
+  event_loop::{ControlFlow, EventLoop},
+  window::{Icon, Window, WindowId},
+};
 
 /// Top-level host for [`EditorWindow`]s in the application.
 ///
@@ -19,7 +22,7 @@ use surreal::ui::UserInterface;
 /// in the application, as well as dispatching events to the appropriate window.
 pub struct EditorWindowHost {
   event_loop: EventLoop<()>,
-  windows: HashMap<WindowId, WindowState>,
+  windows: FastHashMap<WindowId, WindowState>,
 }
 
 /// Internal state for a [`EditorWindow`] and it's associated `winit` [`Window`].
@@ -73,7 +76,7 @@ impl EditorWindowHost {
   pub fn new() -> Self {
     Self {
       event_loop: EventLoop::new(),
-      windows: HashMap::new(),
+      windows: FastHashMap::default(),
     }
   }
 

@@ -1,8 +1,10 @@
 //! Scene nodes for 2d/3d graphics.
 
 pub use sprites::*;
-use surreal::graphics::{GraphicsServer, ShaderProgram, Texture, UniformKey};
-use surreal::maths::Mat4;
+use surreal::{
+  graphics::{GraphicsServer, ShaderProgram, Texture, UniformKey},
+  maths::Mat4,
+};
 
 mod sprites;
 

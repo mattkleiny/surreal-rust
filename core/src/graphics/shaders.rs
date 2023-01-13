@@ -5,17 +5,17 @@
 //!
 //! For higher-level shader control see the material module instead.
 
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::rc::Rc;
-
-use crate as surreal;
-use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::diagnostics;
-use crate::io::VirtualPath;
-use crate::maths::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
+use std::{cell::RefCell, rc::Rc};
 
 use super::*;
+use crate as surreal;
+use crate::{
+  assets::{Asset, AssetContext, AssetLoader},
+  collections::FastHashMap,
+  diagnostics,
+  io::VirtualPath,
+  maths::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4},
+};
 
 /// Different types of shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -154,7 +154,7 @@ pub struct ShaderProgram {
 struct ShaderProgramState {
   graphics: GraphicsServer,
   handle: GraphicsHandle,
-  location_cache: HashMap<String, Option<usize>>,
+  location_cache: FastHashMap<String, Option<usize>>,
 }
 
 impl ShaderProgram {
@@ -164,7 +164,7 @@ impl ShaderProgram {
       state: Rc::new(RefCell::new(ShaderProgramState {
         graphics: graphics.clone(),
         handle: graphics.shader_create(),
-        location_cache: HashMap::new(),
+        location_cache: FastHashMap::default(),
       })),
     }
   }

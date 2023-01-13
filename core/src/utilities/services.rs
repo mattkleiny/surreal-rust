@@ -1,7 +1,6 @@
 use std::any::TypeId;
-use std::collections::HashMap;
 
-use crate::utilities::Object;
+use crate::{collections::FastHashMap, utilities::Object};
 
 /// A service that can be accessed via a [`ServiceProvider`].
 pub trait Service: Object {}
@@ -24,7 +23,7 @@ pub trait ServiceProvider {
 /// Maintains service instances and provides access to them.
 #[derive(Default)]
 pub struct ServiceContainer {
-  services: HashMap<TypeId, Box<dyn Service>>,
+  services: FastHashMap<TypeId, Box<dyn Service>>,
 }
 
 impl ServiceProvider for ServiceContainer {
@@ -56,7 +55,7 @@ impl ServiceProvider for ServiceContainer {
 /// Builder pattern for [`ServiceContainer`]s.
 #[derive(Default)]
 pub struct ServiceContainerBuilder {
-  services: HashMap<TypeId, Box<dyn Service>>,
+  services: FastHashMap<TypeId, Box<dyn Service>>,
 }
 
 impl ServiceContainerBuilder {
@@ -84,9 +83,10 @@ impl ServiceContainerBuilder {
 
 #[cfg(test)]
 mod tests {
+  use macros::Object;
+
   use super::*;
   use crate as surreal;
-  use macros::Object;
 
   #[derive(Object, Default)]
   struct TestService1;

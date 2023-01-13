@@ -1,7 +1,9 @@
-use surreal::graphics::*;
-use surreal::macros::Object;
-use surreal::maths::{EulerRot, Mat4, Vec3Swizzles};
-use surreal::scene::*;
+use surreal::{
+  graphics::*,
+  macros::Object,
+  maths::{EulerRot, Mat4, Vec3Swizzles},
+  scene::*,
+};
 
 use super::*;
 

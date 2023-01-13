@@ -8,10 +8,7 @@
 //! The output of the asset database is put through a build pipeline to produce
 //! artifacts and [`AssetBundle`]s for consumption by the game at runtime.
 
-use std::any::Any;
-use std::collections::BTreeSet;
-use std::fmt::Debug;
-use std::hash::Hasher;
+use std::{any::Any, collections::BTreeSet, fmt::Debug, hash::Hasher};
 
 use serde::{Deserialize, Serialize};
 use surreal::io::{Deserializable, InputStream, Serializable, VirtualPath};

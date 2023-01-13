@@ -2,10 +2,11 @@
 
 pub use image::ImageFormat;
 
-use crate::assets::{Asset, AssetContext, AssetLoader};
-use crate::io::VirtualPath;
-
 use super::*;
+use crate::{
+  assets::{Asset, AssetContext, AssetLoader},
+  io::VirtualPath,
+};
 
 /// An image of RGBA pixels, loadable from a variety of different formats.
 pub struct Image {

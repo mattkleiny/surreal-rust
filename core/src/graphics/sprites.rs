@@ -2,11 +2,12 @@
 //!
 //! Sprites are very common in projects, so this is a dedicated batch to support.
 
-use crate as surreal;
-use crate::diagnostics;
-use crate::maths::{vec2, Mat2, Vec2};
-
 use super::*;
+use crate as surreal;
+use crate::{
+  diagnostics,
+  maths::{vec2, Mat2, Vec2},
+};
 
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;

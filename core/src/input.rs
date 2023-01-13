@@ -1,10 +1,9 @@
 //! A lightweight and cross-platform input server.
 
 use egui::RawInput;
-use winit::event::{ElementState, KeyboardInput, ModifiersState, MouseScrollDelta};
-
 pub use keyboard::*;
 pub use mouse::*;
+use winit::event::{ElementState, KeyboardInput, ModifiersState, MouseScrollDelta};
 
 use crate::maths::{vec2, Vec2};
 

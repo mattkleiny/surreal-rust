@@ -6,9 +6,8 @@
 
 use surreal::graphics::{Color, TextureFormat};
 
-use crate::{Command, CommandBuffer, GraphicsServer, RenderCamera, RenderManager, RenderPipeline, RenderTargetId};
-
 use super::RenderPass;
+use crate::{Command, CommandBuffer, GraphicsServer, RenderCamera, RenderManager, RenderPipeline, RenderTargetId};
 
 /// A [`RenderPipeline`] that targets most platforms in a scalable manner.
 pub struct UniversalPipeline {

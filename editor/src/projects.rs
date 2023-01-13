@@ -1,11 +1,8 @@
 //! Project management for Surreal
 
 use serde::{Deserialize, Serialize};
+use surreal::{diagnostics::info, io::VirtualPath, utilities::Version};
 use thiserror::Error;
-
-use surreal::diagnostics::info;
-use surreal::io::VirtualPath;
-use surreal::utilities::Version;
 
 use super::*;
 

@@ -1,9 +1,11 @@
-use surreal::assets::AssetManager;
-use surreal::engine::{Engine, EngineConfig};
-use surreal::graphics::Renderer;
-use surreal::input::Key;
-use surreal::maths::Mat4;
-use surreal::scene::{SceneEvent, SceneGraph};
+use surreal::{
+  assets::AssetManager,
+  engine::{Engine, EngineConfig},
+  graphics::Renderer,
+  input::Key,
+  maths::Mat4,
+  scene::{SceneEvent, SceneGraph},
+};
 
 const WIDTH: f32 = 1920.;
 const HEIGHT: f32 = 1080.;

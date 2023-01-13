@@ -4,11 +4,9 @@
 //! pipelines than using the 'material', 'mesh', 'render targets' etc do alone.
 
 use std::any::TypeId;
-use std::collections::HashMap;
-
-use crate::utilities::Object;
 
 use super::*;
+use crate::{collections::FastHashMap, utilities::Object};
 
 /// A context for rendering operations.
 ///
@@ -48,7 +46,7 @@ pub trait Renderable<C: RenderContext> {
 /// render targets, shaders, necessary in a single invocation of some rendering state.
 pub struct Renderer {
   graphics: GraphicsServer,
-  contexts: HashMap<TypeId, Box<dyn RenderContext>>,
+  contexts: FastHashMap<TypeId, Box<dyn RenderContext>>,
 }
 
 impl Renderer {
@@ -56,7 +54,7 @@ impl Renderer {
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
       graphics: graphics.clone(),
-      contexts: HashMap::new(),
+      contexts: FastHashMap::default(),
     }
   }
 

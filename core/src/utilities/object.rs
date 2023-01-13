@@ -16,10 +16,10 @@ pub trait Object: Any {
 
 #[cfg(test)]
 mod tests {
-  use crate as surreal;
   use macros::Object;
 
   use super::*;
+  use crate as surreal;
 
   pub trait TestService: Object {}
 

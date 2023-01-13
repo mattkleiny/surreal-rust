@@ -10,7 +10,6 @@
 extern crate serde;
 
 pub use anyhow::{anyhow, bail, Error, Result};
-
 pub use macros;
 
 pub mod assets;

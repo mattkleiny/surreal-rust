@@ -1,8 +1,6 @@
 //! Animation support for Surreal
 
-use surreal::graphics::TextureRegion;
-use surreal::maths::Lerp;
-use surreal::utilities::TimeSpan;
+use surreal::{graphics::TextureRegion, maths::Lerp, utilities::TimeSpan};
 
 /// A function for interpolating values in a [`KeyFrameTrack`].
 pub type Interpolator<T> = fn(&T, &T, f32) -> T;

@@ -1,9 +1,7 @@
 //! A simple set of tools for rapid prototyping of game ideas and etc.
 
 pub use pixels::*;
-use surreal::graphics::*;
-use surreal::macros::Object;
-use surreal::maths::Mat4;
+use surreal::{graphics::*, macros::Object, maths::Mat4};
 pub use tiles::*;
 
 mod pixels;

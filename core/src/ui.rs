@@ -1,12 +1,13 @@
 //! User interface rendering and widgets.
 
-use std::collections::HashMap;
 use std::time::Duration;
 
 pub use egui;
 
 use crate::{
-  self as surreal, diagnostics,
+  self as surreal,
+  collections::FastHashMap,
+  diagnostics,
   graphics::*,
   maths::{vec2, Rectangle},
 };
@@ -57,7 +58,7 @@ pub struct UserInterface {
   context: egui::Context,
   material: Material,
   mesh: Mesh<Vertex2>,
-  textures: HashMap<egui::TextureId, Texture>,
+  textures: FastHashMap<egui::TextureId, Texture>,
   is_profiler_open: bool,
 }
 
@@ -79,7 +80,7 @@ impl UserInterface {
       context: egui::Context::default(),
       material,
       mesh: Mesh::new(graphics, BufferUsage::Dynamic),
-      textures: HashMap::new(),
+      textures: FastHashMap::default(),
       is_profiler_open: false,
     }
   }

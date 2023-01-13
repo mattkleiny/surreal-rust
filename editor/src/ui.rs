@@ -1,8 +1,7 @@
 //! The user interface for the Surreal editor.
 
-use serde::{Deserialize, Serialize};
-
 pub use panels::*;
+use serde::{Deserialize, Serialize};
 pub use undo::*;
 pub use widgets::*;
 pub use windows::*;

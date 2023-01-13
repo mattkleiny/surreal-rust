@@ -1,7 +1,6 @@
 //! A simple tile-map example for Surreal
 
-use surreal::prelude::*;
-use surreal::prototype::*;
+use surreal::{prelude::*, prototype::*};
 
 fn main() {
   let configuration = EngineConfig {

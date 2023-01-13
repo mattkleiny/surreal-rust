@@ -1,9 +1,9 @@
 //! An in-memory [`FileSystem`] implementation.
 
 use std::cell::UnsafeCell;
-use std::collections::HashMap;
 
 use super::*;
+use crate::collections::FastHashMap;
 
 /// A [`FileSystem`] for the in-memory file system.
 pub struct MemoryFileSystem {
@@ -22,7 +22,7 @@ impl MemoryFileSystem {
 /// Internal dynamically-checked storage for the [`MemoryFileSystem`].
 #[derive(Default)]
 struct MemoryStorage {
-  files: HashMap<String, MemoryFile>,
+  files: FastHashMap<String, MemoryFile>,
 }
 
 /// Represent a file in [`MemoryFileSystem`].

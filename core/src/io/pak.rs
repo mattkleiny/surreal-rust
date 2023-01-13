@@ -1,8 +1,6 @@
 //! A binary packed file format for efficient asset streaming
 
-use std::collections::HashMap;
-
-use crate::utilities::Size;
+use crate::{collections::FastHashMap, utilities::Size};
 
 /// Compression formats for packed file entries.
 #[repr(u8)]
@@ -30,15 +28,14 @@ pub struct PakEntry {
   pub name: String,
   pub size: Size,
   pub offset: Size,
-  pub metadata: HashMap<String, String>,
+  pub metadata: FastHashMap<String, String>,
   pub compression: Compression,
 }
 
 #[cfg(test)]
 mod tests {
-  use crate::io::{Deserializable, Serializable};
-
   use super::*;
+  use crate::io::{Deserializable, Serializable};
 
   #[test]
   fn packed_file_should_save_and_load_to_binary() {
