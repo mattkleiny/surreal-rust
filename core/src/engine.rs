@@ -13,7 +13,7 @@ use winit::{
 
 use crate::{
   assets::AssetManager,
-  diagnostics::{self, ConsoleLoggerBuilder, LevelFilter},
+  diagnostics::{self, ConsoleLogger, LevelFilter},
   graphics::HeadlessGraphicsBackend,
   graphics::{GraphicsServer, Image, ImageFormat, Renderer},
   input::InputServer,
@@ -166,7 +166,7 @@ impl Engine {
     use crate::graphics::*;
 
     // set-up diagnostics
-    ConsoleLoggerBuilder::new().with_level(configuration.log_level).install();
+    ConsoleLogger::install(configuration.log_level);
 
     // set-up core engine
     log::trace!("Starting engine");

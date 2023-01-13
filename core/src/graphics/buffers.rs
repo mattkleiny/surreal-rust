@@ -3,7 +3,6 @@
 //! Buffers typically contain vertex or index data used in mesh rendering, however
 //! they can also be used as an in intermediate store for compute shaders.
 
-use std::marker::PhantomData;
 use std::{cell::RefCell, rc::Rc};
 
 use crate as surreal;
@@ -29,7 +28,7 @@ pub enum BufferUsage {
 #[derive(Clone)]
 pub struct Buffer<T> {
   state: Rc<RefCell<BufferState>>,
-  _type: PhantomData<T>,
+  _type: std::marker::PhantomData<T>,
 }
 
 /// The internal state for a buffer.
@@ -52,7 +51,7 @@ impl<T> Buffer<T> {
         usage,
         length: 0,
       })),
-      _type: PhantomData,
+      _type: std::marker::PhantomData,
     }
   }
 

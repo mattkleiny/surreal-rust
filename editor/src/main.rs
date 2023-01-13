@@ -1,4 +1,5 @@
 use clap::Parser;
+
 use surreal_editor::*;
 
 /// Commands-line arguments for the Surreal editor.
@@ -13,9 +14,7 @@ struct Arguments {
 
 /// Entry point for the Surreal editor application.
 fn main() -> surreal::Result<()> {
-  surreal::diagnostics::ConsoleLoggerBuilder::new()
-    .with_level(surreal::diagnostics::LevelFilter::Trace)
-    .install();
+  surreal::diagnostics::ConsoleLogger::install(surreal::diagnostics::LevelFilter::Trace);
 
   let args = Arguments::parse();
 

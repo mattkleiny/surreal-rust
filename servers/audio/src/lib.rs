@@ -1,5 +1,5 @@
 //! A cross-platform audio engine for Surreal.
 
-pub use backend::*;
+pub use server::*;
 
-mod backend;
+mod server;
