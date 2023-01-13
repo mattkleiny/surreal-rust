@@ -7,7 +7,6 @@ use crate::collections::FastHashMap;
 
 /// A [`FileSystem`] for the in-memory file system.
 pub struct MemoryFileSystem {
-  // TODO: Use a safe data structure?
   storage: UnsafeCell<MemoryStorage>,
 }
 
@@ -69,10 +68,6 @@ impl FileSystem for MemoryFileSystem {
     file.data.clear(); // truncate existing file
 
     Ok(Box::new(std::io::Cursor::new(&mut file.data)))
-  }
-
-  fn watch(&self, _path: &VirtualPath) -> crate::Result<Box<dyn FileWatcher>> {
-    todo!()
   }
 }
 

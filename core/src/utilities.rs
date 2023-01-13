@@ -1,7 +1,6 @@
 //! General utilities.
 
 pub use object::*;
-pub use resources::*;
 pub use services::*;
 pub use singleton::*;
 pub use size::*;
@@ -10,7 +9,6 @@ pub use variant::*;
 pub use version::*;
 
 mod object;
-mod resources;
 mod services;
 mod singleton;
 mod size;

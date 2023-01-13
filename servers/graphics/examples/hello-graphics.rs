@@ -14,7 +14,7 @@ fn main() {
   let event_loop = EventLoop::new();
   let window = WindowBuilder::new()
     .with_inner_size(PhysicalSize::new(1920, 1080))
-    .with_title("Hello, WGPU!")
+    .with_title("Hello, Graphics!")
     .build(&event_loop)
     .unwrap();
 

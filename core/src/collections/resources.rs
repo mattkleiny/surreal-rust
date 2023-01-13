@@ -13,7 +13,7 @@ macro_rules! impl_rid {
     #[derive(Copy, Clone, Debug, Eq, PartialEq)]
     pub struct $name($crate::collections::ArenaIndex);
 
-    impl $crate::utilities::ResourceId for $name {}
+    impl $crate::collections::ResourceId for $name {}
 
     impl From<$crate::collections::ArenaIndex> for $name {
       #[inline]

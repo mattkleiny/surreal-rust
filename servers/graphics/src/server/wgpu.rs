@@ -1,4 +1,4 @@
-use surreal::{collections::FastHashMap, utilities::ResourceStorage};
+use surreal::collections::{FastHashMap, ResourceStorage};
 
 use super::*;
 

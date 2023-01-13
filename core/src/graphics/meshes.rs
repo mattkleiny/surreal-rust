@@ -350,8 +350,7 @@ impl<V: Vertex> MeshBuilder<V> {
   }
 }
 
-/// Represents a type that can be tessellated into [`V`]ertices via a
-/// [`MeshBuilder`].
+/// Represents a type that can be tessellated into [`V`]ertices.
 pub trait MeshBrush<V> {
   /// Tessellates this object into the given [`MeshBuilder`].
   fn build(&self, builder: &mut MeshBuilder<V>);
@@ -368,16 +367,6 @@ impl MeshBrush<Vertex2> for crate::maths::Cube {
       Vertex2::new([max.x, max.y], [1.0, 1.0], Color32::WHITE),
       Vertex2::new([min.x, max.y], [0.0, 1.0], Color32::WHITE),
     ]);
-  }
-}
-
-impl MeshBrush<Vertex3> for crate::maths::Cube {
-  fn build(&self, _builder: &mut MeshBuilder<Vertex3>) {
-    let _min = self.min();
-    let _max = self.max();
-
-    // TODO: add our 6 cube faces
-    todo!()
   }
 }
 

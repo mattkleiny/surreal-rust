@@ -80,7 +80,7 @@ impl<U> From<&'static str> for UniformKey<U> {
 /// paradigms in the future.
 pub trait ShaderLanguage {
   /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-  fn parse(source_code: &str) -> crate::Result<Vec<ShaderKernel>>;
+  fn parse_kernels(source_code: &str) -> crate::Result<Vec<ShaderKernel>>;
 }
 
 /// The OpenGL [`ShaderLanguage`] implementation.
@@ -95,7 +95,7 @@ impl ShaderLanguage for GLSL {
   /// * Shared code amongst each shader definition by placing it prior to the
   ///   #shader_type directives.
   /// * Allows #include directives to fetch other files.
-  fn parse(source_code: &str) -> crate::Result<Vec<ShaderKernel>> {
+  fn parse_kernels(source_code: &str) -> crate::Result<Vec<ShaderKernel>> {
     use crate::io::*;
 
     let mut result = Vec::with_capacity(2); // usually 2 shaders per file
@@ -233,7 +233,7 @@ impl ShaderProgram {
   pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> crate::Result<()> {
     let state = self.state.borrow();
     let graphics = &state.graphics;
-    let shaders = S::parse(text)?;
+    let shaders = S::parse_kernels(text)?;
 
     graphics.shader_link(state.handle, &shaders)?;
 
@@ -312,7 +312,7 @@ mod tests {
 
   #[test]
   fn parse_glsl_source_should_build_valid_code() {
-    let result = GLSL::parse(
+    let result = GLSL::parse_kernels(
       r"
       #version 330 core
 
@@ -333,7 +333,7 @@ mod tests {
       void main() {
         v_uv    = a_uv;
         v_color = a_color * u_color;
-
+        
         gl_Position = vec4(a_position, 0.0, 1.0) * u_projectionView;
       }
 
@@ -349,7 +349,7 @@ mod tests {
       }
     ",
     )
-    .expect("Failed to parse simple program");
+    .expect("Failed to parse simple shader kernels");
 
     assert_eq!(result.len(), 2);
 
@@ -359,7 +359,7 @@ mod tests {
 
     assert_eq!(result[1].kind, ShaderKind::Fragment);
     assert!(result[1].code.trim().starts_with("#version 330 core"));
-    assert!(result[1].code.contains("gl_Frag"));
+    assert!(result[1].code.contains("gl_FragColor"));
 
     println!("{:#?}", result);
   }

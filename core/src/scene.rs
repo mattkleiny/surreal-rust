@@ -11,8 +11,6 @@ use crate::{
   utilities::{unsafe_mutable_alias, Object, ServiceContainer},
 };
 
-// TODO: embed hecs and use a mixed model scene graph/ecs?
-
 // A unique identifier for a [`SceneNode`].
 crate::impl_guid!(SceneNodeId);
 
@@ -244,7 +242,7 @@ pub trait SceneComponent: Object {
 /// A set of [`SceneComponent`]s in a [`SceneNode`].
 #[derive(Default)]
 pub struct SceneComponentSet {
-  // TODO: hierarchical bit mask over ComponentKind
+  // TODO: hierarchical bit mask over ComponentKind?
   components: Vec<Box<dyn SceneComponent>>,
 }
 

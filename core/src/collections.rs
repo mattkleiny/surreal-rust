@@ -5,6 +5,7 @@ pub use arena::*;
 pub use grid::*;
 pub use multimap::*;
 pub use priorityqueue::*;
+pub use resources::*;
 pub use ringbuffer::*;
 pub use smallvec::{smallvec, SmallVec};
 
@@ -13,6 +14,7 @@ mod arena;
 mod grid;
 mod multimap;
 mod priorityqueue;
+mod resources;
 mod ringbuffer;
 
 /// A faster hash set that is not resilient to DoS attacks.
