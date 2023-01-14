@@ -3,6 +3,8 @@
 pub use macros::profile as profiling;
 pub use puffin::{profile_function, profile_scope};
 
+// TODO: build a frame profiling panel?
+
 /// Is the profiler enabled?
 #[inline]
 pub fn is_profiling_enabled() -> bool {

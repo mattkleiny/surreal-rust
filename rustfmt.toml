@@ -1,6 +1,7 @@
 edition = "2021"
 tab_spaces = 2
 max_width = 140
+comment_width = 140
+wrap_comments = true
 group_imports = "StdExternalCrate"
 imports_granularity = "Crate"
-wrap_comments = true

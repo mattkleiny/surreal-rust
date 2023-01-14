@@ -1,4 +1,9 @@
-use surreal::collections::{FastHashMap, ResourceStorage};
+use std::borrow::Cow;
+
+use surreal::{
+  collections::{FastHashMap, ResourceStorage},
+  graphics::TextureFormat,
+};
 
 use super::*;
 
@@ -18,7 +23,7 @@ pub struct WgpuBackend {
 /// Top-level lockable state for the [`WgpuBackend`].
 struct WgpuState {
   device: wgpu::Device,
-  _queue: wgpu::Queue,
+  queue: wgpu::Queue,
   surface: wgpu::Surface,
   surface_config: wgpu::SurfaceConfiguration,
 }
@@ -89,7 +94,7 @@ impl WgpuBackend {
     Ok(Self {
       state: std::sync::Mutex::new(WgpuState {
         device,
-        _queue: queue,
+        queue: queue,
         surface,
         surface_config,
       }),
@@ -102,54 +107,49 @@ impl WgpuBackend {
 }
 
 impl GraphicsBackend for WgpuBackend {
-  fn execute_commands(&self, _commands: &mut CommandBuffer) -> surreal::Result<()> {
-    // let state = self.state.lock().unwrap();
-    //
-    // let surface = state.surface.get_current_texture()?;
-    // let descriptor = wgpu::CommandEncoderDescriptor { label: commands.label };
-    //
-    // let mut encoder = state.device.create_command_encoder(&descriptor);
-    //
-    // while let Some(command) = commands.dequeue() {
-    //   match command {
-    //     Command::WriteTexturePixels { .. } => {}
-    //     Command::ReadTexturePixels { .. } => {}
-    //     Command::SetGlobalUniform { .. } => {}
-    //     Command::SetViewMatrix { .. } => {}
-    //     Command::SetProjectionMatrix { .. } => {}
-    //     Command::SetViewport { .. } => {}
-    //     Command::SetRenderTarget { .. } => {}
-    //     Command::BeginSample { .. } => {}
-    //     Command::EndSample { .. } => {}
-    //     Command::DrawMesh { .. } => {}
-    //     Command::DrawIndirect {
-    //       material_id,
-    //       vertices,
-    //       instances,
-    //     } => {
-    //       let view =
-    // surface.texture.create_view(&wgpu::TextureViewDescriptor::default());
-    //
-    //       let mut render_pass =
-    // encoder.begin_render_pass(&wgpu::RenderPassDescriptor {         label:
-    // Some("Draw Indirect"),         color_attachments:
-    // &[Some(wgpu::RenderPassColorAttachment {           view: &view,
-    //           resolve_target: None,
-    //           ops: wgpu::Operations {
-    //             load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
-    //             store: true,
-    //           },
-    //         })],
-    //         depth_stencil_attachment: None,
-    //       });
-    //
-    //       render_pass.draw(vertices.clone(), instances.clone());
-    //     }
-    //   }
-    // }
-    //
-    // state.queue.submit(Some(encoder.finish()));
-    // surface.present();
+  fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
+    let state = self.state.lock().unwrap();
+
+    let surface = state.surface.get_current_texture()?;
+    let descriptor = wgpu::CommandEncoderDescriptor { label: commands.label };
+
+    let mut encoder = state.device.create_command_encoder(&descriptor);
+
+    let view = surface.texture.create_view(&wgpu::TextureViewDescriptor::default());
+
+    {
+      let _render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+        label: Some("Draw Indirect"),
+        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+          view: &view,
+          resolve_target: None,
+          ops: wgpu::Operations {
+            load: wgpu::LoadOp::Clear(wgpu::Color::RED),
+            store: true,
+          },
+        })],
+        depth_stencil_attachment: None,
+      });
+    }
+
+    while let Some(command) = commands.dequeue() {
+      match command {
+        Command::WriteTexturePixels { .. } => {}
+        Command::ReadTexturePixels { .. } => {}
+        Command::SetGlobalUniform { .. } => {}
+        Command::SetViewMatrix { .. } => {}
+        Command::SetProjectionMatrix { .. } => {}
+        Command::SetViewport { .. } => {}
+        Command::SetRenderTarget { .. } => {}
+        Command::BeginSample { .. } => {}
+        Command::EndSample { .. } => {}
+        Command::DrawMesh { .. } => {}
+        Command::DrawIndirect { .. } => {}
+      }
+    }
+
+    state.queue.submit(Some(encoder.finish()));
+    surface.present();
 
     Ok(())
   }

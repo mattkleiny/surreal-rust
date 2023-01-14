@@ -1,5 +1,6 @@
 //! Headless graphics support for the engine.
 
+use surreal::graphics::TextureFormat;
 use winit::dpi::PhysicalSize;
 
 use super::*;

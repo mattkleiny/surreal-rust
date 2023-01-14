@@ -1,8 +1,10 @@
 use std::{borrow::Cow, ops::Range};
 
+pub use primitives::*;
 use surreal::graphics::{Color, TextureFormat};
 
 mod headless;
+mod primitives;
 mod wgpu;
 
 /// The singleton graphics server implementation for the project.
@@ -48,7 +50,7 @@ impl std::ops::Deref for GraphicsServer {
 /// A buffer of [`Command`]s for execution in the [`GraphicsBackend`].
 #[derive(Default)]
 pub struct CommandBuffer<'a> {
-  _label: Option<&'a str>,
+  label: Option<&'a str>,
   commands: Vec<Command<'a>>,
 }
 
@@ -56,7 +58,7 @@ impl<'a> CommandBuffer<'a> {
   /// Creates a new [`CommandBuffer`].
   pub fn new(label: &'a str) -> Self {
     Self {
-      _label: Some(label),
+      label: Some(label),
       commands: Vec::new(),
     }
   }
@@ -118,37 +120,6 @@ pub enum Command<'a> {
   },
 }
 
-/// A possible value for a uniform in a shader program.
-pub enum UniformValue {
-  Float(f32),
-  Vec2([f32; 2]),
-  Vec3([f32; 3]),
-  Vec4([f32; 4]),
-  Mat2([f32; 2 * 2]),
-  Mat3([f32; 3 * 3]),
-  Mat4([f32; 4 * 4]),
-  Texture(TextureId),
-}
-
-/// A descriptor for how to build a shader in the [`GraphicsBackend`].
-pub struct ShaderDescriptor {
-  pub label: Option<&'static str>,
-  pub shader_code: &'static str,
-}
-
-/// A descriptor for how to build a material in the [`GraphicsBackend`].
-pub struct MaterialDescriptor {
-  pub label: Option<&'static str>,
-  pub shader_id: ShaderId,
-}
-
-/// A descriptor for how to build a texture in the [`GraphicsBackend`].
-pub struct TextureDescriptor {
-  pub label: Option<&'static str>,
-  pub size: (u32, u32, u32),
-  pub format: TextureFormat,
-}
-
 /// An abstraction on top of the underlying graphics API.
 ///
 /// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
@@ -190,9 +161,3 @@ pub trait GraphicsBackend {
   // TODO: sdf
   // TODO: skybox
 }
-
-surreal::impl_rid!(ShaderId);
-surreal::impl_rid!(MaterialId);
-surreal::impl_rid!(MeshId);
-surreal::impl_rid!(TextureId);
-surreal::impl_rid!(RenderTargetId);
