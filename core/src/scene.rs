@@ -52,7 +52,7 @@ pub enum SceneEvent<'a> {
 /// Notifications are sent down the graph via the [`SceneEvent`] type, which can
 /// be used to inform recursive operations on the graph and it's children.
 pub struct SceneGraph {
-  pub root: SceneNode,
+  root: SceneNode,
   services: ServiceContainer,
   groups: FastHashMap<String, SceneGroup>,
 }
@@ -73,8 +73,18 @@ impl SceneGraph {
     }
   }
 
+  /// Updates the scene with a single time-step.
+  pub fn update(&mut self, delta_time: f32) {
+    self.notify(SceneEvent::Update(delta_time));
+  }
+
+  /// Renders the scene to the given [`Renderer`].
+  pub fn render(&mut self, renderer: &mut Renderer) {
+    self.notify(SceneEvent::Render(renderer));
+  }
+
   /// Notifies all nodes in the scene graph of a [`SceneEvent`].
-  pub fn notify(&mut self, mut event: SceneEvent) {
+  fn notify(&mut self, mut event: SceneEvent) {
     self.root.notify(&mut self.services, &mut event);
   }
 
@@ -135,12 +145,6 @@ impl SceneGraph {
   }
 }
 
-impl Drop for SceneGraph {
-  fn drop(&mut self) {
-    self.root.notify(&mut self.services, &mut SceneEvent::Destroy);
-  }
-}
-
 impl Debug for SceneGraph {
   fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     for (node, level) in self.root.iter_recursive() {
@@ -154,6 +158,12 @@ impl Debug for SceneGraph {
     }
 
     Ok(())
+  }
+}
+
+impl Drop for SceneGraph {
+  fn drop(&mut self) {
+    self.notify(SceneEvent::Destroy);
   }
 }
 
@@ -499,16 +509,13 @@ impl SceneNode {
     self.components.push(component);
   }
 
-  /// Notify this node's [`SceneComponent`] and all of it's child
-  /// [`SceneNode`]s.
+  /// Notify this node's [`SceneComponent`] and all of it's child [`SceneNode`]s of the given event.
   fn notify(&mut self, services: &mut ServiceContainer, event: &mut SceneEvent) {
     let node = unsafe_mutable_alias(self);
 
     // notify all components
     for component in &mut self.components {
-      let context = SceneContext { node, services };
-
-      component.on_event(context, event);
+      component.on_event(SceneContext { node, services }, event);
     }
 
     // propagate to child nodes
@@ -912,7 +919,7 @@ mod tests {
         .with_component(TestComponent2),
     );
 
-    graph.notify(SceneEvent::Update(0.16));
+    graph.update(0.16);
 
     println!("{:?}", graph);
   }
@@ -988,7 +995,7 @@ mod tests {
         ),
     );
 
-    scene.notify(SceneEvent::Update(0.16));
+    scene.update(0.16);
 
     println!("{:?}", scene);
   }

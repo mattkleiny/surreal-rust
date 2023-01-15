@@ -92,7 +92,8 @@ impl ShaderLanguage for GLSL {
   /// Allows for the following basic transformations:
   ///
   /// * Multiple shader types per file (separated with #shader_type directives).
-  /// * Shared code amongst each shader definition by placing it prior to the #shader_type directives.
+  /// * Shared code amongst each shader definition by placing it prior to the #shader_type
+  ///   directives.
   /// * Allows #include directives to fetch other files.
   fn parse_kernels(source_code: &str) -> crate::Result<Vec<ShaderKernel>> {
     use crate::io::*;

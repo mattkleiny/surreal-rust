@@ -17,7 +17,7 @@ use crate::{
   graphics::{GraphicsServer, HeadlessGraphicsBackend, Image, ImageFormat, Renderer},
   input::InputServer,
   maths::{uvec2, vec2},
-  scene::{SceneEvent, SceneGraph},
+  scene::SceneGraph,
   utilities::{DeltaClock, FrameCounter, IntervalTimer, TimeSpan},
 };
 
@@ -212,14 +212,14 @@ impl Engine {
   /// Builds a [`Engine`] that runs the given [`SceneGraph`].
   pub fn from_scene(configuration: EngineConfig, setup: impl Fn(&Engine, &AssetManager) -> SceneGraph) {
     Engine::start(configuration, |engine, assets| {
-      let mut scene_graph = setup(&engine, &assets);
+      let mut scene = setup(&engine, &assets);
       let mut renderer = Renderer::new(&engine.graphics);
 
       engine.run_variable_step(|_, time| {
         renderer.begin_frame();
 
-        scene_graph.notify(SceneEvent::Update(time.delta_time));
-        scene_graph.notify(SceneEvent::Render(&mut renderer));
+        scene.update(time.delta_time);
+        scene.render(&mut renderer);
 
         renderer.end_frame();
       });

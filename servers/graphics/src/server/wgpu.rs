@@ -11,6 +11,9 @@ mod wgpu {
   pub use wgpu::*;
 }
 
+/// An operation to be enqueued and executed by the graphics backend at a later date.
+type Operation = dyn FnOnce(&mut WgpuState) -> surreal::Result<()>;
+
 /// The [`GraphicsBackend`] for WGPU.
 pub struct WgpuBackend {
   state: std::sync::Mutex<WgpuState>,
@@ -26,6 +29,7 @@ struct WgpuState {
   queue: wgpu::Queue,
   surface: wgpu::Surface,
   surface_config: wgpu::SurfaceConfiguration,
+  pending_operations: Vec<Box<Operation>>,
 }
 
 /// Internal data for a shader in the [`WgpuBackend`].
@@ -43,6 +47,8 @@ struct WgpuMaterial {
 /// Internal data for a texture in the [`WgpuBackend`].
 struct WgpuTexture {
   _texture: wgpu::Texture,
+  _texture_view: wgpu::TextureView,
+  _sampler: wgpu::Sampler,
 }
 
 /// Internal data for a render target in the [`WgpuBackend`].
@@ -94,9 +100,10 @@ impl WgpuBackend {
     Ok(Self {
       state: std::sync::Mutex::new(WgpuState {
         device,
-        queue: queue,
+        queue,
         surface,
         surface_config,
+        pending_operations: Vec::new(),
       }),
       shader_storage: ResourceStorage::default(),
       material_storage: ResourceStorage::default(),
@@ -108,7 +115,7 @@ impl WgpuBackend {
 
 impl GraphicsBackend for WgpuBackend {
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
-    let state = self.state.lock().unwrap();
+    let mut state = self.state.lock().unwrap();
 
     let surface = state.surface.get_current_texture()?;
     let descriptor = wgpu::CommandEncoderDescriptor { label: commands.label };
@@ -132,6 +139,12 @@ impl GraphicsBackend for WgpuBackend {
       });
     }
 
+    // execute internal operations
+    while let Some(operation) = state.pending_operations.pop() {
+      operation(&mut state)?;
+    }
+
+    // execute external commands
     while let Some(command) = commands.dequeue() {
       match command {
         Command::WriteTexturePixels { .. } => {}
@@ -263,7 +276,28 @@ impl GraphicsBackend for WgpuBackend {
       usage: wgpu::TextureUsages::TEXTURE_BINDING,
     });
 
-    Ok(self.texture_storage.insert(WgpuTexture { _texture: texture }))
+    let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
+
+    let sampler = state.device.create_sampler(&wgpu::SamplerDescriptor {
+      label: descriptor.label,
+      address_mode_u: wgpu::AddressMode::ClampToEdge,
+      address_mode_v: wgpu::AddressMode::ClampToEdge,
+      address_mode_w: wgpu::AddressMode::ClampToEdge,
+      mag_filter: wgpu::FilterMode::Linear,
+      min_filter: wgpu::FilterMode::Linear,
+      mipmap_filter: wgpu::FilterMode::Nearest,
+      lod_min_clamp: -100.0,
+      lod_max_clamp: 100.0,
+      compare: Some(wgpu::CompareFunction::LessEqual),
+      anisotropy_clamp: None,
+      border_color: None,
+    });
+
+    Ok(self.texture_storage.insert(WgpuTexture {
+      _texture: texture,
+      _texture_view: texture_view,
+      _sampler: sampler,
+    }))
   }
 
   fn texture_delete(&self, texture_id: TextureId) -> surreal::Result<()> {

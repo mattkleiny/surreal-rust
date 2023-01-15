@@ -12,7 +12,7 @@ use surreal::{
   utilities::ServiceProvider,
 };
 
-/// Allows an object to emit wind into the game world.
+/// Emits wind into the game world, allowing [`WindReceiver`]s to react to forces.
 #[derive(Object)]
 pub struct WindEmitter {}
 
@@ -23,13 +23,12 @@ impl SceneComponent for WindEmitter {
 
   fn on_render(&mut self, _context: SceneContext, renderer: &mut Renderer) {
     renderer.with(|_context: &mut WindContext| {
-      // TODO: render wind
+      // TODO: render wind via the wind context (compute shader)
     });
   }
 }
 
-/// Receives wind from the wind system, allowing objects to be affected due to
-/// wind emitters.
+/// Receives wind from the wind system, allowing objects to be affected by [`WindEmitter`]s.
 #[derive(Object)]
 pub struct WindReceiver {}
 
@@ -39,15 +38,15 @@ impl SceneComponent for WindReceiver {
   }
 
   fn on_disable(&mut self, context: SceneContext) {
-    let wind_manager = context.services.get_service_or_default::<WindManager>();
+    let manager = context.services.get_service_or_default::<WindManager>();
 
-    wind_manager.vorticles.remove(&context.node.id());
+    manager.vorticles.remove(&context.node.id());
   }
 
   fn on_update(&mut self, context: SceneContext, _delta_time: f32) {
-    let wind_manager = context.services.get_service_or_default::<WindManager>();
+    let manager = context.services.get_service_or_default::<WindManager>();
 
-    wind_manager.vorticles.insert(
+    manager.vorticles.insert(
       context.node.id(),
       Vorticle {
         _position: context.node.local_position(),
@@ -78,7 +77,7 @@ impl RenderContext for WindContext {}
 mod tests {
   use surreal::{
     graphics::create_test_graphics,
-    scene::{SceneEvent, SceneGraph, SceneNodeBuilder},
+    scene::{SceneGraph, SceneNodeBuilder},
   };
 
   use super::*;
@@ -94,10 +93,11 @@ mod tests {
 
     let mut renderer = Renderer::new(&create_test_graphics());
 
-    scene.notify(SceneEvent::Update(0.16));
-    scene.notify(SceneEvent::Update(0.16));
-    scene.notify(SceneEvent::Update(0.16));
-    scene.notify(SceneEvent::Update(0.16));
-    scene.notify(SceneEvent::Render(&mut renderer));
+    scene.update(0.16);
+    scene.update(0.16);
+    scene.update(0.16);
+    scene.update(0.16);
+    scene.update(0.16);
+    scene.render(&mut renderer);
   }
 }

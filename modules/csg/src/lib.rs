@@ -47,7 +47,7 @@ pub trait CsgBrush {
 /// Allows merging [`CsgBrush`]es to build new [`CsgBrush`]es.
 pub trait CsgMerge {
   /// Merge the given two [`CsgBrush`]es to produce a new [`CsgBrush`].
-  fn merge(&self, a: &impl CsgBrush, b: &impl CsgBrush) -> Box<dyn CsgBrush>;
+  fn merge(&self, a: &dyn CsgBrush, b: &dyn CsgBrush) -> Box<dyn CsgBrush>;
 }
 
 /// The default [`CsgMerge`] operations.
@@ -59,7 +59,7 @@ pub enum CsgOperation {
 }
 
 impl CsgMerge for CsgOperation {
-  fn merge(&self, a: &impl CsgBrush, b: &impl CsgBrush) -> Box<dyn CsgBrush> {
+  fn merge(&self, a: &dyn CsgBrush, b: &dyn CsgBrush) -> Box<dyn CsgBrush> {
     let _a = a.faces();
     let _b = b.faces();
 

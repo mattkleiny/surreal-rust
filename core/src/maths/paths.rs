@@ -1,7 +1,7 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
 use super::*;
-use crate::collections::PriorityQueue;
+use crate::collections::{FastHashMap, PriorityQueue};
 
 /// Arbitrary upper limit on the number of steps to use in the find_path
 /// function.
@@ -29,8 +29,8 @@ pub trait PathFindingGrid {
   /// Locates a path using A* from from the given start point to the given goal.
   fn find_path(&self, start: IVec2, goal: IVec2, heuristic: Heuristic) -> Option<VecDeque<IVec2>> {
     let mut frontier = PriorityQueue::new();
-    let mut came_from = HashMap::new();
-    let mut cost_so_far = HashMap::new();
+    let mut came_from = FastHashMap::default();
+    let mut cost_so_far = FastHashMap::default();
 
     came_from.insert(start, start);
     cost_so_far.insert(start, 0.);

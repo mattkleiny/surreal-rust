@@ -128,13 +128,9 @@ pub enum Command<'a> {
 /// graphics programs.
 pub trait GraphicsBackend {
   /// Executes the given [`CommandBuffer`] against the backend.
-  ///
-  /// All commands will be drained from the [`CommandBuffer`] and executed in
-  /// sequence.
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()>;
 
-  /// Notifies the backend that the main viewport has resized to a new physical
-  /// size.
+  /// Notifies the backend that the main viewport has resized to a new physical size.
   fn resize_viewport(&self, new_size: winit::dpi::PhysicalSize<u32>) -> surreal::Result<()>;
 
   // shader operations

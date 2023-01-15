@@ -1,4 +1,4 @@
-//! An example of the WGPU [`surreal_graphics::GraphicsBackend`].
+//! An example of the WGPU [`GraphicsBackend`].
 
 use surreal::{graphics::TextureFormat, utilities::DeltaClock};
 use surreal_graphics::{urp::*, *};

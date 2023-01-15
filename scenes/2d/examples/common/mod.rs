@@ -4,7 +4,7 @@ use surreal::{
   graphics::Renderer,
   input::Key,
   maths::Mat4,
-  scene::{SceneEvent, SceneGraph},
+  scene::SceneGraph,
 };
 
 const WIDTH: f32 = 1920.;
@@ -31,8 +31,8 @@ pub fn run_example(name: &'static str, factory: impl Fn(&Engine, &AssetManager) 
     engine.run_variable_step(|engine, time| {
       renderer.begin_frame();
 
-      scene.notify(SceneEvent::Update(time.delta_time));
-      scene.notify(SceneEvent::Render(&mut renderer));
+      scene.update(time.delta_time);
+      scene.render(&mut renderer);
 
       renderer.end_frame();
 
