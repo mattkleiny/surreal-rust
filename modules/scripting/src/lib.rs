@@ -1,5 +1,8 @@
 //! Scripting support for Surreal.
 
+#[cfg(feature = "gdscript")]
+pub mod gdscript;
+#[cfg(feature = "lua")]
 pub mod lua;
 
 // A unique ID for a script in a [`ScriptServer`].
