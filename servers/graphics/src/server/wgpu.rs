@@ -11,9 +11,6 @@ mod wgpu {
   pub use wgpu::*;
 }
 
-/// An operation to be enqueued and executed by the graphics backend at a later date.
-type Operation = dyn FnOnce(&mut WgpuState) -> surreal::Result<()>;
-
 /// The [`GraphicsBackend`] for WGPU.
 pub struct WgpuBackend {
   state: std::sync::Mutex<WgpuState>,
@@ -29,7 +26,6 @@ struct WgpuState {
   queue: wgpu::Queue,
   surface: wgpu::Surface,
   surface_config: wgpu::SurfaceConfiguration,
-  pending_operations: Vec<Box<Operation>>,
 }
 
 /// Internal data for a shader in the [`WgpuBackend`].
@@ -103,7 +99,6 @@ impl WgpuBackend {
         queue,
         surface,
         surface_config,
-        pending_operations: Vec::new(),
       }),
       shader_storage: ResourceStorage::default(),
       material_storage: ResourceStorage::default(),
@@ -115,7 +110,7 @@ impl WgpuBackend {
 
 impl GraphicsBackend for WgpuBackend {
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
-    let mut state = self.state.lock().unwrap();
+    let state = self.state.lock().unwrap();
 
     let surface = state.surface.get_current_texture()?;
     let descriptor = wgpu::CommandEncoderDescriptor { label: commands.label };
@@ -139,12 +134,6 @@ impl GraphicsBackend for WgpuBackend {
       });
     }
 
-    // execute internal operations
-    while let Some(operation) = state.pending_operations.pop() {
-      operation(&mut state)?;
-    }
-
-    // execute external commands
     while let Some(command) = commands.dequeue() {
       match command {
         Command::WriteTexturePixels { .. } => {}

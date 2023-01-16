@@ -53,6 +53,8 @@ impl SceneComponent for WindReceiver {
         _velocity: Vec3::ZERO,
       },
     );
+
+    println!("Vorticle count: {}", manager.vorticles.len());
   }
 }
 

@@ -2260,6 +2260,7 @@ dependencies = [
  "ab_glyph",
  "anyhow",
  "bincode",
+ "bitflags",
  "bytemuck",
  "chrono",
  "egui",

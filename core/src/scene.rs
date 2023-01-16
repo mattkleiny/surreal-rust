@@ -3,6 +3,7 @@
 use std::fmt::{Debug, Formatter};
 
 use anyhow::anyhow;
+use bitflags::bitflags;
 
 use crate::{
   collections::{FastHashMap, FastHashSet},
@@ -219,15 +220,15 @@ pub struct SceneContext<'a> {
 
 /// Represents a component in a scene.
 ///
-/// Components receive callbacks in response to scene lifecycle events, and
-/// can access information from their parent [`SceneNode`]s.
+/// Components are attached to [`SceneNode`]s. They receive callbacks in response to scene lifecycle
+/// events, and can access and mutate data from their parent node.
 #[allow(unused_variables)]
 pub trait SceneComponent: Object {
   /// Returns a friendly name for this component, for debugging/editor/etc.
   fn name(&self) -> &'static str;
 
-  /// Invoked to handle dispatch of [`SceneEvent`]s.
-  fn on_event(&mut self, context: SceneContext, event: &mut SceneEvent) {
+  /// Notifies of an incoming [`SceneEvent`] to the graph or sub-graph.
+  fn notify(&mut self, context: SceneContext, event: &mut SceneEvent) {
     match event {
       SceneEvent::Awake => self.on_awake(context),
       SceneEvent::Start => self.on_start(context),
@@ -304,16 +305,28 @@ impl<'a> IntoIterator for &'a mut SceneComponentSet {
   }
 }
 
+bitflags! {
+  /// Internal flags for a [`SceneNode`], indicating the current state of the node relative to
+  /// internal scene graph lifecycle events.
+  #[derive(Default)]
+  struct NodeFlags: u8 {
+    const NONE = 0b00000000;
+    const AWAKE = 0b00000001;
+    const STARTED = 0b00000010;
+    const ENABLED = 0b00000100;
+  }
+}
+
 /// A node in a [`SceneGraph`].
 ///
-/// A node is a sub-tree of [`SceneNode`]s that represent a scene in a
-/// [`SceneGraph`]. Each node can contain one or more [`SceneComponent`]s to
-/// build up logic from pieces.
+/// A node is a sub-tree of [`SceneNode`]s that represent a scene in a [`SceneGraph`].
+/// Each node can contain one or more [`SceneComponent`]s to build up logic from pieces.
 ///
 /// A node has a position, orientation, and scale relative to its parent node.
 pub struct SceneNode {
   id: SceneNodeId,
   name: Option<String>,
+  flags: NodeFlags,
   is_visible: bool,
   is_enabled: bool,
   is_transform_dirty: bool,
@@ -329,6 +342,7 @@ impl Default for SceneNode {
     Self {
       id: SceneNodeId::random(),
       name: None,
+      flags: NodeFlags::NONE,
       is_visible: true,
       is_enabled: true,
       is_transform_dirty: true,
@@ -511,28 +525,43 @@ impl SceneNode {
 
   /// Notify this node's [`SceneComponent`] and all of it's child [`SceneNode`]s of the given event.
   fn notify(&mut self, services: &mut ServiceContainer, event: &mut SceneEvent) {
-    let node = unsafe_mutable_alias(self);
-
-    // notify all components
-    for component in &mut self.components {
-      component.on_event(SceneContext { node, services }, event);
-    }
-
-    // propagate to child nodes
     match event {
-      SceneEvent::Update(_) => {
+      SceneEvent::Awake if !self.flags.contains(NodeFlags::AWAKE) => {
+        self.notify_children(services, event);
+        self.flags |= NodeFlags::AWAKE;
+      }
+      SceneEvent::Enable if !self.flags.contains(NodeFlags::ENABLED) => {
+        self.notify_children(services, event);
+        self.flags |= NodeFlags::ENABLED;
+      }
+      SceneEvent::Disable if self.flags.contains(NodeFlags::ENABLED) => {
+        self.notify_children(services, event);
+        self.flags &= !NodeFlags::ENABLED;
+      }
+      SceneEvent::Start if !self.flags.contains(NodeFlags::STARTED) => {
+        self.notify_children(services, event);
+        self.flags |= NodeFlags::STARTED;
+      }
+      SceneEvent::Destroy if self.flags.contains(NodeFlags::AWAKE) => {
+        self.notify_children(services, event);
+      }
+      SceneEvent::Update(_) if self.is_enabled => {
         // if our transform is dirty, on the next update we need to notify all children
         if self.is_transform_dirty {
           self.update_child_transforms(services);
         }
-        self.notify_children(event, services);
+
+        self.notify_children(services, event);
+      }
+      SceneEvent::Render(_) if self.is_visible => {
+        self.notify_children(services, event);
       }
       SceneEvent::TransformChanged(parent_transform) => {
         // propagate transform information down the hierarchy
         self.transform.rebuild(&parent_transform);
         self.update_child_transforms(services);
       }
-      _ => self.notify_children(event, services),
+      _ => {} // discard this event
     }
   }
 
@@ -541,11 +570,17 @@ impl SceneNode {
     let node = unsafe_mutable_alias(self);
 
     self.is_transform_dirty = false;
-    node.notify_children(&mut SceneEvent::TransformChanged(&self.transform), services);
+    node.notify_children(services, &mut SceneEvent::TransformChanged(&self.transform));
   }
 
   /// Notifies this node's child [`SceneNode`]s of the given [`SceneEvent`].
-  fn notify_children(&mut self, event: &mut SceneEvent, services: &mut ServiceContainer) {
+  fn notify_children(&mut self, services: &mut ServiceContainer, event: &mut SceneEvent) {
+    let node = unsafe_mutable_alias(self);
+
+    for component in &mut self.components {
+      component.notify(SceneContext { node, services }, event);
+    }
+
     for child in &mut self.children {
       child.notify(services, event);
     }
@@ -846,6 +881,7 @@ impl SceneNodeBuilder {
     SceneNode {
       id: SceneNodeId::random(),
       name: self.name,
+      flags: NodeFlags::default(),
       is_visible: true,
       is_enabled: true,
       is_transform_dirty: false,
@@ -1068,5 +1104,27 @@ mod tests {
     scene.delete_node(scene.root.children[2].id).unwrap();
 
     println!("After delete:\n{:?}", scene);
+  }
+
+  #[test]
+  fn scene_graph_should_notify_sub_nodes_of_lifecycle_events() {
+    let mut scene = SceneGraph::new(
+      SceneNodeBuilder::default()
+        .with_child(SceneNodeBuilder::default())
+        .with_child(SceneNodeBuilder::default())
+        .with_child(
+          SceneNodeBuilder::default()
+            .with_child(SceneNodeBuilder::default())
+            .with_child(SceneNodeBuilder::default())
+            .with_child(
+              SceneNodeBuilder::default()
+                .with_child(SceneNodeBuilder::default())
+                .with_child(SceneNodeBuilder::default())
+                .with_child(SceneNodeBuilder::default()),
+            ),
+        ),
+    );
+
+    scene.update(0.16);
   }
 }
