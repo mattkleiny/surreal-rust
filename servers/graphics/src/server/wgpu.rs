@@ -12,7 +12,7 @@ mod wgpu {
 }
 
 /// The [`GraphicsBackend`] for WGPU.
-pub struct WgpuBackend {
+pub struct WgpuGraphicsBackend {
   state: std::sync::Mutex<WgpuState>,
   shader_storage: ResourceStorage<ShaderId, WgpuShader>,
   material_storage: ResourceStorage<MaterialId, WgpuMaterial>,
@@ -20,7 +20,7 @@ pub struct WgpuBackend {
   render_target_storage: ResourceStorage<RenderTargetId, WgpuRenderTarget>,
 }
 
-/// Top-level lockable state for the [`WgpuBackend`].
+/// Top-level lockable state for the [`WgpuGraphicsBackend`].
 struct WgpuState {
   device: wgpu::Device,
   queue: wgpu::Queue,
@@ -28,30 +28,30 @@ struct WgpuState {
   surface_config: wgpu::SurfaceConfiguration,
 }
 
-/// Internal data for a shader in the [`WgpuBackend`].
+/// Internal data for a shader in the [`WgpuGraphicsBackend`].
 struct WgpuShader {
   _shader_module: wgpu::ShaderModule,
 }
 
-/// Internal data for a material in the [`WgpuBackend`].
+/// Internal data for a material in the [`WgpuGraphicsBackend`].
 struct WgpuMaterial {
   _uniforms: FastHashMap<String, UniformValue>,
   _uniform_buffer: wgpu::Buffer,
   _bind_group: wgpu::BindGroup,
 }
 
-/// Internal data for a texture in the [`WgpuBackend`].
+/// Internal data for a texture in the [`WgpuGraphicsBackend`].
 struct WgpuTexture {
   _texture: wgpu::Texture,
   _texture_view: wgpu::TextureView,
   _sampler: wgpu::Sampler,
 }
 
-/// Internal data for a render target in the [`WgpuBackend`].
+/// Internal data for a render target in the [`WgpuGraphicsBackend`].
 struct WgpuRenderTarget {}
 
-impl WgpuBackend {
-  /// Creates a new [`WgpuBackend`] for the given [`winit::window::Window`].
+impl WgpuGraphicsBackend {
+  /// Creates a new [`WgpuGraphicsBackend`] for the given [`winit::window::Window`].
   pub async fn new(window: &winit::window::Window) -> surreal::Result<Self> {
     // initialize the wgpu backend
     let instance = wgpu::Instance::new(wgpu::Backends::all());
@@ -108,7 +108,7 @@ impl WgpuBackend {
   }
 }
 
-impl GraphicsBackend for WgpuBackend {
+impl GraphicsBackend for WgpuGraphicsBackend {
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
     let state = self.state.lock().unwrap();
 

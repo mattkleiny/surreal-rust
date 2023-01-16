@@ -20,12 +20,12 @@ pub struct GraphicsServer {
 impl GraphicsServer {
   /// Creates a [`GraphicsServer`] for a Headless, no-op backend.
   pub fn from_headless() -> Self {
-    Self::from_backend(headless::HeadlessBackend::default())
+    Self::from_backend(headless::HeadlessGraphicsBackend::default())
   }
 
   /// Creates a [`GraphicsServer`] for WGPU.
   pub async fn from_wgpu(window: &winit::window::Window) -> surreal::Result<Self> {
-    Ok(Self::from_backend(wgpu::WgpuBackend::new(window).await?))
+    Ok(Self::from_backend(wgpu::WgpuGraphicsBackend::new(window).await?))
   }
 
   /// Create a [`GraphicsServer`] from the given [`GraphicsBackend`].

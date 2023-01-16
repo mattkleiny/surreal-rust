@@ -6,6 +6,6 @@ use super::*;
 ///
 /// This backend does nothing (no-ops) and can be used for testing/etc.
 #[derive(Default)]
-pub struct HeadlessBackend;
+pub struct HeadlessAudioBackend;
 
-impl AudioBackend for HeadlessBackend {}
+impl AudioBackend for HeadlessAudioBackend {}

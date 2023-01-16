@@ -17,10 +17,6 @@ use surreal::{
 pub struct WindEmitter {}
 
 impl SceneComponent for WindEmitter {
-  fn name(&self) -> &'static str {
-    "WindEmitter"
-  }
-
   fn on_render(&mut self, _context: SceneContext, renderer: &mut Renderer) {
     renderer.with(|_context: &mut WindContext| {
       // TODO: render wind via the wind context (compute shader)
@@ -33,10 +29,6 @@ impl SceneComponent for WindEmitter {
 pub struct WindReceiver {}
 
 impl SceneComponent for WindReceiver {
-  fn name(&self) -> &'static str {
-    "WindReceiver"
-  }
-
   fn on_disable(&mut self, context: SceneContext) {
     let manager = context.services.get_service_or_default::<WindManager>();
 

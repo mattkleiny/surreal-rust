@@ -2,10 +2,7 @@ use std::any::{Any, TypeId};
 
 use crate::collections::FastHashMap;
 
-/// An any-map is a hash map that can contain a single value per unique
-/// [`TypeId`].
-///
-/// That is to say, a hash map that associates [`TypeId`] to [`Box<dyn T>>`].
+/// An any-map is a hash map that can contain a single value per unique [`TypeId`].
 #[derive(Default)]
 pub struct AnyMap {
   entries: FastHashMap<TypeId, Box<dyn Any>>,
@@ -34,8 +31,8 @@ impl AnyMap {
     self.entries.insert(TypeId::of::<T>(), Box::new(value));
   }
 
-  /// Retrieves an existing item from the map or creates it anew.
-  pub fn get_or_create<T: Any + Default>(&mut self) -> &mut T {
+  /// Retrieves an existing item from the map or creates it anew via [`Default::default`].
+  pub fn get_or_default<T: Any + Default>(&mut self) -> &mut T {
     self
       .entries
       .entry(TypeId::of::<T>())

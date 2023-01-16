@@ -8,23 +8,29 @@
 use surreal::graphics::{Color, TextureFormat};
 
 use super::RenderPass;
-use crate::{Command, CommandBuffer, GraphicsServer, RenderCamera, RenderManager, RenderPipeline, RenderTargetId};
+use crate::{Command, CommandBuffer, CullingResult, GraphicsServer, RenderCamera, RenderManager, RenderPipeline, RenderTargetId};
 
 /// A [`RenderPipeline`] that targets most platforms in a scalable manner.
 pub struct UniversalPipeline {
   color_target: RenderTargetId,
   depth_target: RenderTargetId,
+  visible_objects: Box<[CullingResult]>,
 }
 
 impl UniversalPipeline {
   /// Creates a new managed [`UniversalPipeline`].
   pub fn new<'a>(graphics: &GraphicsServer) -> surreal::Result<RenderManager<'a, UniversalPipeline>> {
+    // create initial render targets
+    let color_target = graphics.render_target_create(Some("Color Target"), (1920, 1080), TextureFormat::RGBA8)?;
+    let depth_target = graphics.render_target_create(Some("Depth Target"), (1920, 1080), TextureFormat::R32)?;
+
     let manager = RenderManager::new(
       "Universal Render Pipeline",
       graphics,
       Self {
-        color_target: graphics.render_target_create(Some("Color Target"), (1920, 1080), TextureFormat::RGBA8)?,
-        depth_target: graphics.render_target_create(Some("Depth Target"), (1920, 1080), TextureFormat::R32)?,
+        color_target,
+        depth_target,
+        visible_objects: Box::new([]),
       },
       vec![
         Box::new(DepthPass::default()),
@@ -47,7 +53,9 @@ impl RenderPipeline for UniversalPipeline {
 
     commands.enqueue(Command::SetProjectionMatrix {
       projection_matrix: camera.projection_matrix().to_cols_array(),
-    })
+    });
+
+    self.visible_objects = camera.cull_visible_objects();
   }
 }
 
@@ -61,7 +69,11 @@ impl RenderPass<UniversalPipeline> for DepthPass {
       render_target_id: Some(pipeline.depth_target),
       clear_color: None,
       depth_value: Some(0.),
-    })
+    });
+
+    for _result in pipeline.visible_objects.iter() {
+      // TODO: render the culled objects?
+    }
   }
 }
 

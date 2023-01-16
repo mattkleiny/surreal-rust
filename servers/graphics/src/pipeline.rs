@@ -31,12 +31,15 @@ pub trait RenderPass<P> {
 
 /// A camera type that can be used in [`RenderManager`]s.
 pub trait RenderCamera<'a> {
-  /// Retrieves the projection matrix for the camera.
   fn projection_matrix(&self) -> &Mat4;
-
-  /// Retrieves the view matrix for the camera.
   fn view_matrix(&self) -> &Mat4;
+
+  /// Retrieves the visible objects for the camera from it's culling algorithm.
+  fn cull_visible_objects(&self) -> Box<[CullingResult]>;
 }
+
+/// A result from a [`RenderCamera::cull_visible_objects`] operation.
+pub struct CullingResult {}
 
 /// A manager for a [`RenderPipeline`]  that is composed of one or more
 /// [`RenderPass`]es.

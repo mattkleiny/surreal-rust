@@ -15,7 +15,7 @@ pub struct AudioServer {
 impl AudioServer {
   /// Creates a [`AudioServer`] for a Headless, no-op backend.
   pub fn from_headless() -> Self {
-    Self::from_backend(headless::HeadlessBackend::default())
+    Self::from_backend(headless::HeadlessAudioBackend::default())
   }
 
   /// Creates an [`AudioServer`] that's backed by Rodio as the audio engine.

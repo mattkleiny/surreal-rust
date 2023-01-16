@@ -7,10 +7,10 @@ use super::*;
 
 /// A headless, no-op [`GraphicsBackend`].
 #[derive(Default)]
-pub struct HeadlessBackend {}
+pub struct HeadlessGraphicsBackend {}
 
 #[allow(unused_variables)]
-impl GraphicsBackend for HeadlessBackend {
+impl GraphicsBackend for HeadlessGraphicsBackend {
   fn execute_commands(&self, commands: &mut CommandBuffer) -> surreal::Result<()> {
     Ok(()) // no-op
   }

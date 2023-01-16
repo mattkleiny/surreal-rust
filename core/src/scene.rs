@@ -225,7 +225,11 @@ pub struct SceneContext<'a> {
 #[allow(unused_variables)]
 pub trait SceneComponent: Object {
   /// Returns a friendly name for this component, for debugging/editor/etc.
-  fn name(&self) -> &'static str;
+  fn name(&self) -> &'static str {
+    let name = std::any::type_name::<Self>();
+
+    name.rsplit_once("::").map(|split| split.1).unwrap_or(name)
+  }
 
   /// Notifies of an incoming [`SceneEvent`] to the graph or sub-graph.
   fn notify(&mut self, context: SceneContext, event: &mut SceneEvent) {
@@ -266,7 +270,7 @@ impl SceneComponentSet {
   }
 
   /// Adds a new [`SceneComponent`] to the set.
-  pub fn push<C: SceneComponent + 'static>(&mut self, component: C) {
+  pub fn push<C: SceneComponent>(&mut self, component: C) {
     self.components.push(Box::new(component));
   }
 
@@ -519,7 +523,7 @@ impl SceneNode {
   }
 
   /// Adds a new [`SceneComponent`] to the node.
-  pub fn add_component<C: SceneComponent + 'static>(&mut self, component: C) {
+  pub fn add_component<C: SceneComponent>(&mut self, component: C) {
     self.components.push(component);
   }
 
@@ -927,10 +931,6 @@ mod tests {
     struct TestComponent1;
 
     impl SceneComponent for TestComponent1 {
-      fn name(&self) -> &'static str {
-        "TestComponent1"
-      }
-
       fn on_update(&mut self, context: SceneContext, delta_time: f32) {
         println!("Update component 1 on node id {} delta_time {}", context.node.id, delta_time);
       }
@@ -940,10 +940,6 @@ mod tests {
     struct TestComponent2;
 
     impl SceneComponent for TestComponent2 {
-      fn name(&self) -> &'static str {
-        "TestComponent2"
-      }
-
       fn on_update(&mut self, context: SceneContext, delta_time: f32) {
         println!("Update component 2 on node id {} delta_time {}", context.node.id, delta_time);
       }
@@ -1006,10 +1002,6 @@ mod tests {
     struct TestComponent;
 
     impl SceneComponent for TestComponent {
-      fn name(&self) -> &'static str {
-        "TestComponent"
-      }
-
       fn on_update(&mut self, context: SceneContext, delta_time: f32) {
         println!("Update node {:?} delta_time {}", context.node, delta_time);
       }

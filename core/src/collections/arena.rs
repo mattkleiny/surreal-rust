@@ -1,5 +1,5 @@
 /// Represents a safe index into an [`Arena`].
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ArenaIndex {
   index: u32,
   generation: u16,
@@ -31,7 +31,8 @@ struct ArenaEntry<T> {
 
 /// A simple generational arena of elements of type [`T`] .
 ///
-/// An arena exposes safe externalized indices in the form of [`ArenaIndex`]es.
+/// An arena exposes safe externalized indices in the form of [`ArenaIndex`]es that can be passed
+/// around the application safely.
 #[derive(Debug)]
 pub struct Arena<T> {
   entries: Vec<Option<ArenaEntry<T>>>,
