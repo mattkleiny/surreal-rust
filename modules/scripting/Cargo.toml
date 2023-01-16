@@ -10,4 +10,4 @@ lua = ["mlua"]
 [dependencies]
 surreal = { package = "surreal-core", path = "../../core" }
 chumsky = { version = "0.8.0", optional = true }
-mlua =  { version = "0.8.6", features = ["vendored", "lua54"], optional = true }
+mlua = { version = "0.8.6", features = ["vendored", "lua54"], optional = true }

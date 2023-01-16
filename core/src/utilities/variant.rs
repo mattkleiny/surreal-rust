@@ -6,6 +6,7 @@ use crate::{
 /// Different kinds of [`Variant`]s that are supported.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum VariantKind {
+  Null,
   Bool,
   U8,
   U16,
@@ -29,6 +30,7 @@ pub enum VariantKind {
 /// A type that can hold varying different values.
 #[derive(Clone, Debug)]
 pub enum Variant {
+  Null,
   Bool(bool),
   U8(u8),
   U16(u16),
@@ -53,6 +55,7 @@ impl Variant {
   /// Determines the [`VariantKind`] of this value.
   pub const fn kind(&self) -> VariantKind {
     match self {
+      Variant::Null => VariantKind::Null,
       Variant::Bool(_) => VariantKind::Bool,
       Variant::U8(_) => VariantKind::U8,
       Variant::U16(_) => VariantKind::U16,

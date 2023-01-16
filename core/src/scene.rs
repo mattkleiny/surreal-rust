@@ -225,7 +225,7 @@ pub struct SceneContext<'a> {
 #[allow(unused_variables)]
 pub trait SceneComponent: Object {
   /// Returns a friendly name for this component, for debugging/editor/etc.
-  fn name(&self) -> &'static str {
+  fn name(&self) -> &str {
     let name = std::any::type_name::<Self>();
 
     name.rsplit_once("::").map(|split| split.1).unwrap_or(name)
