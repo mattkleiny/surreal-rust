@@ -14,7 +14,7 @@ use winit::{
 use crate::{
   assets::AssetManager,
   diagnostics::{self, ConsoleLogger, LevelFilter},
-  graphics::{GraphicsServer, HeadlessGraphicsBackend, Image, ImageFormat, Renderer},
+  graphics::{GraphicsServer, Image, ImageFormat, Renderer},
   input::InputServer,
   maths::{uvec2, vec2},
   scene::SceneGraph,
@@ -29,7 +29,7 @@ pub struct EngineConfig {
   pub title: String,
   pub size: (u32, u32),
   pub vsync_enabled: bool,
-  pub samples: u16,
+  pub samples: u8,
   pub update_continuously: bool,
   pub is_window_visible: bool,
   pub transparent_window: bool,
@@ -44,7 +44,7 @@ impl Default for EngineConfig {
       title: "Surreal".to_string(),
       size: (1280, 720),
       vsync_enabled: true,
-      samples: 0,
+      samples: 1,
       update_continuously: true,
       is_window_visible: true,
       transparent_window: false,
@@ -140,9 +140,11 @@ impl Engine {
       .build(&event_loop)
       .expect("Failed to build main window");
 
+    let graphics = GraphicsServer::opengl(&window, config.vsync_enabled, config.samples).expect("Failed to build graphics");
+
     Self {
       // servers
-      graphics: GraphicsServer::new(HeadlessGraphicsBackend::new()),
+      graphics,
       input: InputServer::new(window.scale_factor() as f32),
 
       // window management

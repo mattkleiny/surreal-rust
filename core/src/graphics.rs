@@ -8,6 +8,7 @@ pub use headless::*;
 pub use images::*;
 pub use materials::*;
 pub use meshes::*;
+pub use opengl::*;
 pub use palettes::*;
 pub use rendering::*;
 pub use shaders::*;
@@ -25,6 +26,7 @@ mod headless;
 mod images;
 mod materials;
 mod meshes;
+mod opengl;
 mod palettes;
 mod rendering;
 mod shaders;
@@ -42,6 +44,16 @@ pub struct GraphicsServer {
 }
 
 impl GraphicsServer {
+  /// Creates a new [`GraphicsServer`] with a [`HeadlessGraphicsBackend`].
+  pub fn headless() -> Self {
+    Self::new(HeadlessGraphicsBackend::new())
+  }
+
+  /// Creates a new [`GraphicsServer`] with an [`OpenGLGraphicsBackend`].
+  pub fn opengl(window: &winit::window::Window, vsync_enabled: bool, samples: u8) -> crate::Result<Self> {
+    unsafe { Ok(Self::new(OpenGLGraphicsBackend::new(window, vsync_enabled, samples)?)) }
+  }
+
   /// Creates a new [`GraphicsServer`] for the given [`GraphicsBackend`].
   pub fn new(backend: impl GraphicsBackend + 'static) -> Self {
     Self {
@@ -81,6 +93,10 @@ pub trait GraphicsBackend {
   // frame operations
   fn begin_frame(&self);
   fn end_frame(&self);
+
+  // clear targets
+  fn clear_color_buffer(&self, color: Color);
+  fn clear_depth_buffer(&self);
 
   // intrinsics
   fn viewport_size(&self) -> (usize, usize);

@@ -33,6 +33,8 @@ fn main() {
     let mut is_rendering = true;
 
     engine.run_variable_step(move |engine, time| {
+      engine.graphics.clear_color_buffer(Color::BLACK);
+
       // update bunnies
       if is_updating {
         for bunny in &mut bunnies {
@@ -86,7 +88,7 @@ fn main() {
         if mouse.is_button_down(MouseButton::Left) {
           let position = mouse.normalised_position();
 
-          for _ in 0..128 {
+          for _ in 0..512 {
             bunnies.push(Bunny {
               position: vec2(position.x * WIDTH - WIDTH / 2., position.y * HEIGHT - HEIGHT / 2.),
               velocity: vec2(random.next::<f32>() * 2. - 1., random.next::<f32>() * 2. - 1.),
@@ -100,7 +102,7 @@ fn main() {
         }
 
         if mouse.is_button_down(MouseButton::Right) {
-          for _ in 0..128 {
+          for _ in 0..512 {
             bunnies.pop();
           }
 

@@ -5,7 +5,7 @@ use std::time::Duration;
 use egui::{CursorIcon, RawInput};
 use surreal::{
   collections::FastHashMap,
-  graphics::{GraphicsServer, HeadlessGraphicsBackend, Image, ImageFormat},
+  graphics::{GraphicsServer, Image, ImageFormat},
   input::{InputServer, Key},
   maths::vec2,
   ui::UserInterface,
@@ -91,7 +91,7 @@ impl EditorWindowHost {
 
     // set-up graphics server and user interface
     let pixels_per_point = window.scale_factor() as f32;
-    let graphics_server = GraphicsServer::new(HeadlessGraphicsBackend::new());
+    let graphics_server = GraphicsServer::opengl(&window, true, 1).expect("Failed to build graphics server");
     let input_server = InputServer::new(pixels_per_point);
     let user_interface = UserInterface::new(&graphics_server);
 

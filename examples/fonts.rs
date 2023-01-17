@@ -27,6 +27,8 @@ fn main() {
     let color2 = Color32::random();
 
     engine.run_variable_step(|engine, time| {
+      engine.graphics.clear_color_buffer(Color::BLACK);
+
       let time_step = (time.total_time.sin() + 1.) / 2.;
 
       renderer.begin_frame();

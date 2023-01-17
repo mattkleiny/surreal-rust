@@ -15,6 +15,8 @@ fn main() {
     let material = load_built_in_material(graphics, BuiltInShader::Wire);
 
     engine.run_variable_step(|engine, _| {
+      engine.graphics.clear_color_buffer(Color::BLACK);
+
       mesh.draw(&material, PrimitiveTopology::Triangles);
 
       if let Some(keyboard) = &engine.input.keyboard {

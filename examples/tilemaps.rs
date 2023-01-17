@@ -10,14 +10,12 @@ fn main() {
   };
 
   Engine::start(configuration, |engine, assets| {
-    let graphics = &engine.graphics;
-
     // set-up assets and rendering
     let sprites1 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/tiles_desert.png").unwrap();
     let sprites2 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-idle.png").unwrap();
     let sprites3 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-walk.png").unwrap();
 
-    let mut renderer = Renderer::new(graphics);
+    let mut renderer = Renderer::new(&engine.graphics);
 
     renderer.add_descriptor(SpriteContextDescriptor {
       projection_view: Mat4::orthographic_rh_gl(-256. / 2., 256. / 2., 144. / 2., -144. / 2., 0., 100.),
@@ -35,6 +33,8 @@ fn main() {
     map.fill(|_, _| u8::random() % 4);
 
     engine.run_variable_step(|engine, _| {
+      engine.graphics.clear_color_buffer(Color::BLACK);
+
       renderer.begin_frame();
       renderer.render(&map);
       renderer.end_frame();

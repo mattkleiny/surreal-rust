@@ -44,6 +44,14 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
+  fn clear_color_buffer(&self, color: Color) {
+    // no-op
+  }
+
+  fn clear_depth_buffer(&self) {
+    // no-op
+  }
+
   fn viewport_size(&self) -> (usize, usize) {
     (1920, 1080)
   }

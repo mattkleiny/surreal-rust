@@ -16,6 +16,8 @@ fn main() {
     let color2 = Color32::random();
 
     engine.run_variable_step(|engine, time| {
+      engine.graphics.clear_color_buffer(Color::BLACK);
+
       let color = Color32::lerp(color1, color2, (time.total_time.sin() + 1.) / 2.);
 
       batch.begin(&material);
