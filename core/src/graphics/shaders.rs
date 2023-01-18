@@ -118,7 +118,7 @@ impl ShaderLanguage for GLSL {
       } else if line.trim().starts_with("#include") {
         if let Some(path) = line.split_whitespace().nth(1) {
           // trim the fat from the include path
-          let path = path.replace('"', "").replace('"', "").replace(';', "");
+          let path = path.replace(['"', '"', ';'], "");
 
           // fetch and splat the dependent shader
           let dependent_file = VirtualPath::parse(&path);
@@ -184,7 +184,7 @@ impl ShaderProgram {
     let path = path.into();
     let code = path.read_all_text()?;
 
-    Ok(Self::from_code::<S>(graphics, &code)?)
+    Self::from_code::<S>(graphics, &code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
@@ -361,6 +361,6 @@ mod tests {
     assert!(result[1].code.trim().starts_with("#version 330 core"));
     assert!(result[1].code.contains("gl_FragColor"));
 
-    println!("{:#?}", result);
+    println!("{result:#?}");
   }
 }

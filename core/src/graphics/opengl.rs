@@ -34,6 +34,10 @@ struct BackendState {
 
 impl OpenGLGraphicsBackend {
   /// Creates a new OpenGL backend.
+  ///
+  /// # Safety
+  /// This method interacts with the OpenGL platform directly via Glutin. It's possible for any
+  /// number of things to go wrong when using the platform APIs.
   pub unsafe fn new(window: &winit::window::Window, vsync_enabled: bool, _samples: u8) -> crate::Result<Self> {
     let display = Display::new(
       window.raw_display_handle(),
@@ -391,6 +395,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     unsafe { gl::CreateProgram() }
   }
 
+  #[allow(clippy::uninit_vec)]
   fn shader_link(&self, shader: GraphicsHandle, shaders: &[ShaderKernel]) -> crate::Result<()> {
     unsafe {
       gl::UseProgram(shader);
@@ -459,7 +464,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
   fn shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
     unsafe {
-      let name = std::ffi::CString::new(name).unwrap();
+      let name = CString::new(name).unwrap();
       let location = gl::GetUniformLocation(shader, name.as_ptr());
 
       match location {

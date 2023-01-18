@@ -95,6 +95,12 @@ struct AssetManagerState {
   cache: FastHashMap<AssetId, Box<dyn Any>>,
 }
 
+impl Default for AssetManager {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl AssetManager {
   /// Creates a new asset manager.
   pub fn new() -> Self {

@@ -22,6 +22,12 @@ pub struct HeadlessGraphicsBackend {
   next_render_target_id: AtomicU32,
 }
 
+impl Default for HeadlessGraphicsBackend {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl HeadlessGraphicsBackend {
   pub fn new() -> Self {
     Self {

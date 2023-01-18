@@ -89,6 +89,7 @@ pub trait GraphicsResource {
 /// hide away implementation details and lifetimes. The backend forms the
 /// foundation of higher-level abstractions that make it simpler to build
 /// graphics programs.
+#[allow(clippy::too_many_arguments)]
 pub trait GraphicsBackend {
   // frame operations
   fn begin_frame(&self);

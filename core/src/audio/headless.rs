@@ -3,13 +3,8 @@ use super::*;
 /// A headless [`AudioBackend`] implementation.
 ///
 /// This backend does nothing (no-ops) and can be used for testing/etc.
+#[derive(Default)]
 pub struct HeadlessAudioBackend {}
-
-impl HeadlessAudioBackend {
-  pub fn new() -> Self {
-    Self {}
-  }
-}
 
 #[allow(unused_variables)]
 impl AudioBackend for HeadlessAudioBackend {

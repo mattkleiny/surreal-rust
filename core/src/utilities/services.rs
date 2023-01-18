@@ -46,7 +46,7 @@ impl ServiceProvider for ServiceContainer {
     self
       .services
       .entry(TypeId::of::<T>())
-      .or_insert_with(|| Box::new(T::default()))
+      .or_insert_with(|| Box::<T>::default())
       .as_any_mut()
       .downcast_mut()
       .unwrap()

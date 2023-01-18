@@ -41,14 +41,18 @@ enum AssetDatabaseChange {
 }
 
 impl AssetDatabase {
-  /// Builds an [`AssetDatabase`] from the given root project path.
-  pub fn new(asset_path: &str, target_path: &str) -> surreal::Result<Self> {
+  /// Opens an [`AssetDatabase`] from the given root project path.
+  ///
+  /// The asset database will be created if it doesn't exist, and pending changes will be created
+  /// for any assets that have not yet been processed. Changes detected during this process need
+  /// to be flushed to disk via the [`AssetDatabase::flush_changes`] method.
+  pub fn open(asset_path: &str, target_path: &str) -> surreal::Result<Self> {
     surreal::diagnostics::trace!("Creating asset database at path {} with target path {}", asset_path, target_path);
 
     let mut database = Self {
       _asset_path: asset_path.to_owned(),
       target_path: target_path.to_owned(),
-      manifest: AssetManifest::from_pattern(&format!("{}/**/*", asset_path)),
+      manifest: AssetManifest::from_pattern(&format!("{asset_path}/**/*")),
       importers: Vec::new(),
       pending_changes: Vec::new(),
     };
@@ -187,7 +191,7 @@ impl AssetHash {
   pub fn from_path(path: impl Into<VirtualPath>) -> surreal::Result<Self> {
     let mut stream = path.into().open_input_stream()?;
 
-    Ok(Self::from_stream(&mut stream)?)
+    Self::from_stream(&mut stream)
   }
 
   /// Creates an [`AssetHash`] from the given raw slice of bytes.
@@ -225,10 +229,9 @@ impl From<u64> for AssetHash {
   }
 }
 
-impl Into<u64> for AssetHash {
-  #[inline(always)]
-  fn into(self) -> u64 {
-    self.0
+impl From<AssetHash> for u64 {
+  fn from(value: AssetHash) -> Self {
+    value.0
   }
 }
 

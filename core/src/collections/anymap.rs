@@ -36,7 +36,7 @@ impl AnyMap {
     self
       .entries
       .entry(TypeId::of::<T>())
-      .or_insert_with(|| Box::new(T::default()))
+      .or_insert_with(|| Box::<T>::default())
       .downcast_mut()
       .unwrap() // not possible (i hope)
   }

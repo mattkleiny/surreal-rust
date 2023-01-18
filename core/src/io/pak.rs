@@ -61,6 +61,6 @@ mod tests {
     let buffer = header.to_binary().unwrap();
     let header = PakHeader::from_binary(&buffer).unwrap();
 
-    println!("{:#?}", header);
+    println!("{header:#?}");
   }
 }

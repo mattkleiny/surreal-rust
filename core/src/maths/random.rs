@@ -28,6 +28,7 @@ impl Random {
   }
 
   /// Generates a new value of the given [`Random`] type, T.
+  #[allow(clippy::should_implement_trait)]
   pub fn next<T: FromRandom>(&mut self) -> T {
     T::from_random(self)
   }

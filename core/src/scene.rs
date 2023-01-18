@@ -12,7 +12,6 @@ use crate::{
   utilities::{unsafe_mutable_alias, Object, ServiceContainer},
 };
 
-// A unique identifier for a [`SceneNode`].
 crate::impl_guid!(SceneNodeId);
 
 /// The ID of the layer that a [`SceneNode`] inhabits.
@@ -155,7 +154,7 @@ impl Debug for SceneGraph {
         " ".repeat(level * 2)
       };
 
-      writeln!(formatter, "{}{:?}", indent, node)?;
+      writeln!(formatter, "{indent}{node:?}")?;
     }
 
     Ok(())
@@ -240,7 +239,7 @@ pub trait SceneComponent: Object {
       SceneEvent::Disable => self.on_disable(context),
       SceneEvent::Destroy => self.on_destroy(context),
       SceneEvent::Update(delta_time) if context.node.is_enabled() => self.on_update(context, *delta_time),
-      SceneEvent::Render(manager) if context.node.is_visible() => self.on_render(context, *manager),
+      SceneEvent::Render(manager) if context.node.is_visible() => self.on_render(context, manager),
       _ => {}
     }
   }
@@ -562,7 +561,7 @@ impl SceneNode {
       }
       SceneEvent::TransformChanged(parent_transform) => {
         // propagate transform information down the hierarchy
-        self.transform.rebuild(&parent_transform);
+        self.transform.rebuild(parent_transform);
         self.update_child_transforms(services);
       }
       _ => {} // discard this event
@@ -622,18 +621,20 @@ impl SceneNode {
 
   /// Tries to locate a node in this hierarchy by it's [`NodePath`].
   pub fn find_by_path(&self, node_path: impl Into<NodePath>) -> Option<&SceneNode> {
-    fn find_recursive<'a>(node: &'a SceneNode, node_path: impl Into<NodePath>) -> Option<&'a SceneNode> {
+    fn find_recursive(node: &SceneNode, node_path: impl Into<NodePath>) -> Option<&SceneNode> {
       if let Some((first, rest)) = node_path.into().split_first() {
         if node.name() == Some(first) {
           for child in &node.children {
-            return find_recursive(child, rest);
+            if let Some(result) = find_recursive(child, rest) {
+              return Some(result);
+            }
           }
         }
 
         return None;
       }
 
-      return Some(node);
+      Some(node)
     }
 
     find_recursive(self, node_path)
@@ -641,18 +642,20 @@ impl SceneNode {
 
   /// Tries to mutably locate a node in this hierarchy by it's [`NodePath`].
   pub fn find_by_path_mut(&mut self, node_path: impl Into<NodePath>) -> Option<&mut SceneNode> {
-    fn find_recursive<'a>(node: &'a mut SceneNode, node_path: impl Into<NodePath>) -> Option<&'a mut SceneNode> {
+    fn find_recursive(node: &mut SceneNode, node_path: impl Into<NodePath>) -> Option<&mut SceneNode> {
       if let Some((first, rest)) = node_path.into().split_first() {
         if node.name() == Some(first) {
           for child in &mut node.children {
-            return find_recursive(child, rest);
+            if let Some(result) = find_recursive(child, rest) {
+              return Some(result);
+            }
           }
         }
 
         return None;
       }
 
-      return Some(node);
+      Some(node)
     }
 
     find_recursive(self, node_path)
@@ -797,12 +800,7 @@ impl<'a> NodePath<'a> {
   /// Splits the path into it's first component and the rest of the path as two
   /// pieces.
   pub fn split_first(&self) -> Option<(&'a str, &'a str)> {
-    let mut split = self.0.splitn(2, '/');
-
-    let first = split.next()?;
-    let rest = split.next()?;
-
-    Some((first, rest))
+    self.0.split_once('/')
   }
 }
 
@@ -898,9 +896,9 @@ impl SceneNodeBuilder {
   }
 }
 
-impl Into<SceneNode> for SceneNodeBuilder {
-  fn into(self) -> SceneNode {
-    self.build()
+impl From<SceneNodeBuilder> for SceneNode {
+  fn from(value: SceneNodeBuilder) -> Self {
+    value.build()
   }
 }
 
@@ -913,7 +911,7 @@ mod tests {
 
   #[test]
   pub fn scene_node_should_iterate_child_nodes() {
-    let graph = SceneGraph::new(
+    let scene = SceneGraph::new(
       SceneNodeBuilder::default()
         .with_child(SceneNode::default())
         .with_child(SceneNode::default())
@@ -922,7 +920,7 @@ mod tests {
         .with_child(SceneNode::default()),
     );
 
-    println!("{:?}", graph);
+    println!("{scene:?}");
   }
 
   #[test]
@@ -945,15 +943,15 @@ mod tests {
       }
     }
 
-    let mut graph = SceneGraph::new(
+    let mut scene = SceneGraph::new(
       SceneNodeBuilder::default()
         .with_component(TestComponent1)
         .with_component(TestComponent2),
     );
 
-    graph.update(0.16);
+    scene.update(0.16);
 
-    println!("{:?}", graph);
+    println!("{scene:?}");
   }
 
   // #[test]
@@ -993,7 +991,7 @@ mod tests {
     assert!(!node.has_tag("foo"));
     assert!(node.has_tag("bar"));
 
-    println!("{:?}", node);
+    println!("{node:?}");
   }
 
   #[test]
@@ -1025,7 +1023,7 @@ mod tests {
 
     scene.update(0.16);
 
-    println!("{:?}", scene);
+    println!("{scene:?}");
   }
 
   #[test]
@@ -1039,11 +1037,11 @@ mod tests {
     let from_id = scene.root.children[0].id;
     let to_id = scene.root.children[1].id;
 
-    println!("Before reparent:\n{:?}", scene);
+    println!("Before reparent:\n{scene:?}");
 
     scene.reparent_node(from_id, to_id).unwrap();
 
-    println!("After reparent:\n{:?}", scene);
+    println!("After reparent:\n{scene:?}");
   }
 
   #[test]
@@ -1065,11 +1063,11 @@ mod tests {
         ),
     );
 
-    println!("{:?}", scene);
+    println!("{scene:?}");
 
     let result = scene.root.find_by_path("Parent/Child1/Child2/Child3").unwrap();
 
-    println!("{:?}", result);
+    println!("{result:?}");
   }
 
   #[test]
@@ -1091,11 +1089,11 @@ mod tests {
         ),
     );
 
-    println!("Before delete:\n{:?}", scene);
+    println!("Before delete:\n{scene:?}");
 
     scene.delete_node(scene.root.children[2].id).unwrap();
 
-    println!("After delete:\n{:?}", scene);
+    println!("After delete:\n{scene:?}");
   }
 
   #[test]

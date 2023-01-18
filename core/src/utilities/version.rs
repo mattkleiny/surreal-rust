@@ -20,7 +20,7 @@ impl Version {
   }
 
   /// Parses a [`Version`] from the given string.
-  pub fn from_str(string: &str) -> crate::Result<Self> {
+  pub fn parse(string: &str) -> crate::Result<Self> {
     let mut parts = string.split('.');
 
     let major = parts.next().ok_or(crate::anyhow!("Missing major component"))?.parse()?;

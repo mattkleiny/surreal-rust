@@ -44,7 +44,7 @@ mod tests {
       ffi::initialize_domain(&domain as *const _ as *mut c_void);
     }
 
-    println!("{:?}", domain);
+    println!("{domain:?}");
   }
 
   /// An example of a component that can be hot-reloaded.

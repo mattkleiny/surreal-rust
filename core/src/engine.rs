@@ -243,9 +243,10 @@ impl Engine {
   ///
   /// This method will block until the game is closed.
   pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, GameTime)) {
-    self.run(move |engine, event| match event {
-      TickEvent::Update(time) => body(engine, time),
-      _ => {} // no-op,
+    self.run(move |engine, event| {
+      if let TickEvent::Update(time) = event {
+        body(engine, time)
+      }
     });
   }
 

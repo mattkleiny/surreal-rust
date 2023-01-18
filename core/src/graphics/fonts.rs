@@ -69,7 +69,7 @@ impl Font for BitmapFont {
     let width = longest_line * (metrics.glyph_width + metrics.glyph_padding);
     let height = line_count * (metrics.glyph_height + metrics.glyph_padding);
 
-    return (width as f32, height as f32);
+    (width as f32, height as f32)
   }
 
   fn get_glyph(&self, character: char) -> Option<TextureRegion> {
@@ -104,10 +104,7 @@ impl AssetLoader<BitmapFont> for BitmapFontLoader {
     let metrics = BitmapFontMetrics::from_json_file(&context.path)?;
     let texture: Handle<Texture> = context.load_asset(&metrics.file_path)?;
 
-    let font = BitmapFont {
-      texture: texture.clone(),
-      metrics,
-    };
+    let font = BitmapFont { texture, metrics };
 
     Ok(font)
   }
@@ -159,7 +156,7 @@ impl Font for VectorFont {
     let width = longest_line as f32 * state.font_size;
     let height = line_count as f32 * state.font_size;
 
-    return (width, height);
+    (width, height)
   }
 
   fn get_glyph(&self, character: char) -> Option<TextureRegion> {

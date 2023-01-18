@@ -28,6 +28,12 @@ impl<T> Grid<T> {
     }
   }
 
+  /// Is the grid empty of items?
+  #[inline]
+  pub fn is_empty(&self) -> bool {
+    self.items.is_empty()
+  }
+
   /// Returns the total length of the grid (width * height).
   #[inline]
   pub fn len(&self) -> usize {
@@ -75,6 +81,10 @@ impl<T> Grid<T> {
   }
 
   /// Accesses an item from the grid without checking bounds.
+  ///
+  /// # Safety
+  /// This method will panic if the given position is out of bounds. It's the responsibility of the
+  /// caller to ensure the position is in-bounds and thus skip the bounds check.
   #[inline]
   pub unsafe fn get_unchecked(&self, x: i32, y: i32) -> &T {
     &self.items[x as usize + y as usize * self.stride]
@@ -89,6 +99,10 @@ impl<T> Grid<T> {
   }
 
   /// Sets an item from the grid without checking bounds.
+  ///
+  /// # Safety
+  /// This method will panic if the given position is out of bounds. It's the responsibility of the
+  /// caller to ensure the position is in-bounds and thus skip the bounds check.
   #[inline]
   pub unsafe fn set_unchecked(&mut self, x: i32, y: i32, value: T) {
     self.items[x as usize + y as usize * self.stride] = value

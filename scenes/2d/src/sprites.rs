@@ -151,7 +151,7 @@ mod tests {
     let graphics = create_test_graphics();
     let texture = Texture::create_colored(&graphics, 1, 1, Color::RED);
 
-    let graph = SceneGraph::new(
+    let scene = SceneGraph::new(
       SceneNodeBuilder::default()
         .with_name("Test")
         .with_local_position(vec3(0., 0., 0.))
@@ -161,6 +161,6 @@ mod tests {
         }),
     );
 
-    println!("{:?}", graph);
+    println!("{scene:?}");
   }
 }

@@ -67,6 +67,7 @@ impl<T> Buffer<T> {
 
   /// Reads all data from the buffer.
   #[diagnostics::profiling]
+  #[allow(clippy::uninit_vec)] // immediately fill the buffer from the gpu
   pub fn read_data(&self) -> Vec<T> {
     let state = self.state.borrow();
     let length = state.length;

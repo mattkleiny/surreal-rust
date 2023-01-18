@@ -6,6 +6,12 @@ pub struct ConsolePanel {
   history: RingBuffer<String>,
 }
 
+impl Default for ConsolePanel {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl ConsolePanel {
   /// Creates a new [`ConsolePanel`].
   pub fn new() -> Self {

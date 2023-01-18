@@ -114,8 +114,8 @@ impl SpriteBatch {
     let mut position = options.position;
 
     // TODO: fix centering when scale is applied
-    position.x -= size.0 as f32 * options.scale.x / 2.;
-    position.y -= size.1 as f32 * options.scale.y / 2.;
+    position.x -= size.0 * options.scale.x / 2.;
+    position.y -= size.1 * options.scale.y / 2.;
 
     for character in text.chars() {
       if let Some(glyph) = font.get_glyph(character) {
@@ -224,12 +224,12 @@ fn build_quad_indices(sprite_count: usize) -> Vec<u32> {
   let mut index = 0;
 
   for _ in 0..sprite_count {
-    indices.push(index + 0);
+    indices.push(index);
     indices.push(index + 1);
     indices.push(index + 2);
     indices.push(index + 2);
     indices.push(index + 3);
-    indices.push(index + 0);
+    indices.push(index);
 
     index += 4;
   }

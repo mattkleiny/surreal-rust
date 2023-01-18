@@ -38,5 +38,5 @@ fn load_built_in_shader(graphics: &GraphicsServer, shader: BuiltInShader) -> Sha
     BuiltInShader::SpritePalette => ShaderProgram::from_glsl(graphics, SHADER_SPRITE_PALETTE),
   };
 
-  program.expect(&format!("Failed to load build-in shader {:?}", shader))
+  program.unwrap_or_else(|_| panic!("Failed to load build-in shader {shader:?}"))
 }

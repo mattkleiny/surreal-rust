@@ -43,7 +43,7 @@ impl<T: Lerp> AnimationTrack for KeyFrameTrack<T> {
     let a = &self.key_frames[0].value;
     let b = &self.key_frames[1].value;
 
-    let result = (self.evaluator)(a, b, duration.total_seconds() as f32);
+    let result = (self.evaluator)(a, b, duration.total_seconds());
 
     self.current_value = result;
   }

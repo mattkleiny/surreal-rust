@@ -42,6 +42,12 @@ pub struct DeltaClock {
   max_delta_time: f32,
 }
 
+impl Default for DeltaClock {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl DeltaClock {
   /// Creates a new clock.
   pub fn new() -> Self {
@@ -367,20 +373,20 @@ mod tests {
   fn interval_timer_should_tick_on_a_fixed_basis() {
     let mut timer = IntervalTimer::new(TimeSpan::from_seconds(1.));
 
-    assert_eq!(false, timer.tick(0.5));
-    assert_eq!(true, timer.tick(0.5));
+    assert!(!timer.tick(0.5));
+    assert!(timer.tick(0.5));
 
     timer.reset();
 
-    assert_eq!(false, timer.tick(0.5));
+    assert!(!timer.tick(0.5));
   }
 
   #[test]
   fn frame_timer_should_tick_correctly() {
     let mut timer = FrameTimer::new(3);
 
-    assert_eq!(false, timer.tick());
-    assert_eq!(false, timer.tick());
-    assert_eq!(true, timer.tick());
+    assert!(!timer.tick());
+    assert!(!timer.tick());
+    assert!(timer.tick());
   }
 }

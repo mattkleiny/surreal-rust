@@ -60,7 +60,7 @@ impl GeometryBatch {
     self.vertices.push(GeometryVertex { position: b, color });
     self.vertices.push(GeometryVertex { position: c, color });
 
-    self.indices.push(base_offset + 0);
+    self.indices.push(base_offset);
     self.indices.push(base_offset + 1);
     self.indices.push(base_offset + 2);
   }
@@ -83,7 +83,7 @@ impl GeometryBatch {
       let offset = self.vertices.len() as Index;
 
       self.vertices.push(GeometryVertex {
-        position: points[i + 0],
+        position: points[i],
         color,
       });
 
@@ -93,7 +93,7 @@ impl GeometryBatch {
       });
 
       self.indices.push(base_offset);
-      self.indices.push(offset + 0);
+      self.indices.push(offset);
       self.indices.push(offset + 1);
     }
   }
@@ -123,11 +123,11 @@ impl GeometryBatch {
       color,
     });
 
-    self.indices.push(base_offset + 0);
+    self.indices.push(base_offset);
     self.indices.push(base_offset + 1);
     self.indices.push(base_offset + 2);
 
-    self.indices.push(base_offset + 0);
+    self.indices.push(base_offset);
     self.indices.push(base_offset + 2);
     self.indices.push(base_offset + 3);
   }
@@ -161,7 +161,7 @@ impl GeometryBatch {
       return;
     };
 
-    if !self.material.is_some() {
+    if self.material.is_none() {
       return;
     }
 

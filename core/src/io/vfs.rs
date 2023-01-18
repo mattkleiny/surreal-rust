@@ -330,8 +330,8 @@ impl<'a> VirtualPath<'a> {
   pub fn join(&self, relative: &str) -> Self {
     let mut path = self.location.to_string();
 
-    if !path.ends_with("/") {
-      path.push_str("/");
+    if !path.ends_with('/') {
+      path.push('/');
     }
 
     path.push_str(relative);
@@ -392,13 +392,13 @@ impl<'a> VirtualPath<'a> {
 
 impl<'a> std::fmt::Debug for VirtualPath<'a> {
   fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    Ok(write!(formatter, "{:}://{:}", self.scheme, self.location.replace("\\", "/"))?)
+    Ok(write!(formatter, "{:}://{:}", self.scheme, self.location.replace('\\', "/"))?)
   }
 }
 
 impl<'a> std::fmt::Display for VirtualPath<'a> {
   fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    Ok(write!(formatter, "{:}://{:}", self.scheme, self.location.replace("\\", "/"))?)
+    Ok(write!(formatter, "{:}://{:}", self.scheme, self.location.replace('\\', "/"))?)
   }
 }
 
@@ -430,7 +430,7 @@ mod tests {
 
     assert_eq!("local", path.scheme);
     assert_eq!("README.md", path.location);
-    assert_eq!("local://README.md", format!("{:?}", path));
+    assert_eq!("local://README.md", format!("{path:?}"));
   }
 
   #[test]

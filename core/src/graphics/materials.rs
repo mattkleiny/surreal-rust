@@ -87,10 +87,9 @@ impl MaterialUniformSet {
   ///
   /// This will also re-organise any old textures back into a linear ordering.
   fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
-    self.textures.allocate(texture).expect(&format!(
-      "Failed to allocate texture slot. There's a limit of {} concurrent textures per material.",
-      MAX_TEXTURE_UNITS
-    ))
+    self.textures.allocate(texture).unwrap_or_else(|| {
+      panic!("Failed to allocate texture slot. There's a limit of {MAX_TEXTURE_UNITS} concurrent textures per material.",)
+    })
   }
 }
 

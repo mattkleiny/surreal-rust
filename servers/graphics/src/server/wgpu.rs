@@ -7,6 +7,7 @@ use surreal::{
 
 use super::*;
 
+#[allow(clippy::module_inception)]
 mod wgpu {
   pub use wgpu::*;
 }

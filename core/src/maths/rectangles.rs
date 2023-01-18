@@ -104,6 +104,7 @@ impl Rectangle {
   }
 
   /// Determines if the rectangle contains the given point.
+  #[allow(clippy::nonminimal_bool)]
   pub fn contains_point(&self, point: Vec2) -> bool {
     point.x >= self.min.x && point.y >= self.min.y && point.y <= self.max.y && point.y <= self.max.y
   }

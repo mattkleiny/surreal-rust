@@ -12,6 +12,12 @@ pub struct LocalFileSystem {
   root: PathBuf,
 }
 
+impl Default for LocalFileSystem {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl LocalFileSystem {
   pub fn new() -> Self {
     Self {
@@ -78,6 +84,6 @@ mod tests {
     let path = VirtualPath::parse("local://../rustfmt.toml");
     let text = path.read_all_text().expect("Failed to read test file");
 
-    assert!(text.len() > 0);
+    assert!(!text.is_empty());
   }
 }

@@ -1,9 +1,5 @@
 use crate::AudioBackend;
 
-mod rodio {
-  pub use rodio::*;
-}
-
 /// A [`AudioBackend`] based on Rodio.
 pub struct RodioBackend {
   _output_stream: rodio::OutputStream,

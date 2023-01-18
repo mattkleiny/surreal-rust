@@ -30,7 +30,7 @@ pub struct ProjectWindow {
 impl EditorWindow for ProjectWindow {
   fn create_window(&self) -> winit::window::WindowBuilder {
     winit::window::WindowBuilder::new()
-      .with_title(&format!(
+      .with_title(format!(
         "Surreal - {} ({})",
         &self.editor_context.project.details.name, &self.editor_context.project.details.path
       ))

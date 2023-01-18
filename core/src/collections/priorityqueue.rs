@@ -12,6 +12,12 @@ pub struct PriorityQueue<T> {
   elements: BinaryHeap<Node<T>>,
 }
 
+impl<T: PartialEq> Default for PriorityQueue<T> {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl<T: PartialEq> PriorityQueue<T> {
   /// Creates a new empty queue.
   pub fn new() -> Self {

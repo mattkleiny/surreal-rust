@@ -325,7 +325,7 @@ mod tests {
 
     assert!(arena.get(index1).is_some());
     assert!(arena.get_mut(index2).is_some());
-    assert!(!arena.get(index3).is_some());
+    assert!(arena.get(index3).is_none());
   }
 
   #[test]
@@ -356,7 +356,7 @@ mod tests {
     arena.remove(index2);
 
     for (index, item) in arena.iter() {
-      println!("{} at {:?}", item, index);
+      println!("{item} at {index:?}");
     }
   }
 
@@ -374,7 +374,7 @@ mod tests {
     for (index, item) in arena.iter_mut() {
       *item = "Test 1";
 
-      println!("{} at {:?}", item, index);
+      println!("{item} at {index:?}");
     }
   }
 

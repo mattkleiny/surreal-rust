@@ -10,6 +10,12 @@ pub struct MemoryFileSystem {
   storage: UnsafeCell<MemoryStorage>,
 }
 
+impl Default for MemoryFileSystem {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl MemoryFileSystem {
   pub fn new() -> Self {
     Self {

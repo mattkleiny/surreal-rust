@@ -175,6 +175,7 @@ impl Texture {
 
   /// Downloads pixel data from the texture.
   #[diagnostics::profiling]
+  #[allow(clippy::uninit_vec)]
   pub fn read_pixels<T: Texel>(&self) -> Vec<T> {
     let state = self.state.borrow();
 
@@ -306,7 +307,7 @@ impl From<Texture> for TextureRegion {
   fn from(texture: Texture) -> Self {
     TextureRegion {
       offset: uvec2(0, 0),
-      size: uvec2(texture.width() as u32, texture.height() as u32),
+      size: uvec2(texture.width(), texture.height()),
       texture,
     }
   }
@@ -317,7 +318,7 @@ impl From<&Texture> for TextureRegion {
     TextureRegion {
       texture: texture.clone(),
       offset: uvec2(0, 0),
-      size: uvec2(texture.width() as u32, texture.height() as u32),
+      size: uvec2(texture.width(), texture.height()),
     }
   }
 }
@@ -329,7 +330,7 @@ impl<R: AsRef<Texture>> From<&R> for TextureRegion {
     TextureRegion {
       texture: texture.clone(),
       offset: uvec2(0, 0),
-      size: uvec2(texture.width() as u32, texture.height() as u32),
+      size: uvec2(texture.width(), texture.height()),
     }
   }
 }
@@ -374,8 +375,8 @@ impl TextureAtlas {
   pub fn get_region(&self, x: u32, y: u32) -> TextureRegion {
     TextureRegion {
       texture: self.texture.clone(),
-      offset: uvec2(x * self.width as u32, y * self.height as u32),
-      size: uvec2(self.width as u32, self.height as u32),
+      offset: uvec2(x * self.width, y * self.height),
+      size: uvec2(self.width, self.height),
     }
   }
 }

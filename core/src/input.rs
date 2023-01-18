@@ -68,8 +68,8 @@ impl InputServer {
   pub fn on_mouse_move(&mut self, position: Vec2, window_size: Vec2) {
     if let Some(mouse) = &mut self.mouse {
       let event = egui::Event::PointerMoved(egui::Pos2 {
-        x: position.x as f32 / self.pixels_per_point,
-        y: position.y as f32 / self.pixels_per_point,
+        x: position.x / self.pixels_per_point,
+        y: position.y / self.pixels_per_point,
       });
 
       self.raw_input.events.push(event);
@@ -115,8 +115,8 @@ impl InputServer {
       let position = self.actual_mouse_pos;
       let event = egui::Event::PointerButton {
         pos: egui::Pos2 {
-          x: position.x as f32 / self.pixels_per_point,
-          y: position.y as f32 / self.pixels_per_point,
+          x: position.x / self.pixels_per_point,
+          y: position.y / self.pixels_per_point,
         },
         button: match button {
           MouseButton::Left => egui::PointerButton::Primary,
@@ -172,7 +172,7 @@ impl InputServer {
 /// Newlines are handled by the `Key::Enter` event.
 fn is_printable_char(chr: char) -> bool {
   let is_in_private_use_area =
-    '\u{e000}' <= chr && chr <= '\u{f8ff}' || '\u{f0000}' <= chr && chr <= '\u{ffffd}' || '\u{100000}' <= chr && chr <= '\u{10fffd}';
+    ('\u{e000}'..='\u{f8ff}').contains(&chr) || ('\u{f0000}'..='\u{ffffd}').contains(&chr) || ('\u{100000}'..='\u{10fffd}').contains(&chr);
 
   !is_in_private_use_area && !chr.is_ascii_control()
 }

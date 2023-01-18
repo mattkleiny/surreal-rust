@@ -53,7 +53,7 @@ impl Project {
         version: DEFAULT_PROJECT_VERSION,
         path: root_path.to_string(),
       },
-      _asset_database: AssetDatabase::new(&asset_path.to_string(), &target_path.to_string())?,
+      _asset_database: AssetDatabase::open(&asset_path.to_string(), &target_path.to_string())?,
     };
 
     // TODO: verify that the project is valid and the version is valid
@@ -76,6 +76,6 @@ impl Project {
     let path = self.root_path().join("/Settings/ProjectVersion.txt");
     let raw = path.read_all_text()?;
 
-    Ok(Version::from_str(&raw)?)
+    Version::parse(&raw)
   }
 }

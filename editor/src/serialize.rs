@@ -54,15 +54,15 @@ pub enum SerializedValue {
 
 macro_rules! impl_serialized_value {
   ($type:ty, $variant:ident, $cast:ty) => {
-    impl Into<SerializedValue> for $type {
-      #[inline(always)]
-      fn into(self) -> SerializedValue {
-        SerializedValue::$variant(self as $cast)
+    impl From<$type> for SerializedValue {
+      #[inline]
+      fn from(value: $type) -> Self {
+        Self::$variant(value as $cast)
       }
     }
 
     impl From<SerializedValue> for $type {
-      #[inline(always)]
+      #[inline]
       fn from(value: SerializedValue) -> Self {
         match value {
           SerializedValue::$variant(value) => value as $type,

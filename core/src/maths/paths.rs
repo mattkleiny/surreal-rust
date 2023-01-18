@@ -68,17 +68,17 @@ pub trait PathFindingGrid {
       for neighbour in &neighbours {
         let new_cost = cost_so_far[&current] + self.get_cost(current, *neighbour);
 
-        if !cost_so_far.contains_key(&neighbour) || new_cost < cost_so_far[&neighbour] {
+        if !cost_so_far.contains_key(neighbour) || new_cost < cost_so_far[neighbour] {
           // back track along neighbours?
-          if cost_so_far.contains_key(&neighbour) {
-            cost_so_far.remove(&neighbour);
-            came_from.remove(&neighbour);
+          if cost_so_far.contains_key(neighbour) {
+            cost_so_far.remove(neighbour);
+            came_from.remove(neighbour);
           }
 
           cost_so_far.insert(*neighbour, new_cost);
           came_from.insert(*neighbour, current);
 
-          let priority = new_cost + heuristic(&neighbour, &goal);
+          let priority = new_cost + heuristic(neighbour, &goal);
 
           frontier.push(*neighbour, priority);
         }

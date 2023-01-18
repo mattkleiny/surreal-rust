@@ -72,6 +72,12 @@ pub trait EditorWindow {
   fn on_event(&mut self, _event: &WindowEvent) {}
 }
 
+impl Default for EditorWindowHost {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl EditorWindowHost {
   /// Creates a new [`EditorWindowHost`].
   pub fn new() -> Self {
@@ -125,7 +131,7 @@ impl EditorWindowHost {
     self.event_loop.run(move |event, _, control_flow| match event {
       Event::MainEventsCleared => {
         for (window_id, state) in &mut self.windows {
-          surreal::diagnostics::profile_scope!("Update window", &format!("{:?}", window_id));
+          surreal::diagnostics::profile_scope!("Update window", &format!("{window_id:?}"));
 
           // TODO: clean this up
           state.user_interface_state.raw_input = state.input_server.raw_input.clone();
@@ -144,7 +150,7 @@ impl EditorWindowHost {
       }
       Event::RedrawRequested(window_id) => {
         if let Some(state) = self.windows.get_mut(&window_id) {
-          surreal::diagnostics::profile_scope!("Redraw window", &format!("{:?}", window_id));
+          surreal::diagnostics::profile_scope!("Redraw window", &format!("{window_id:?}"));
 
           state.graphics_server.begin_frame();
 
@@ -221,7 +227,7 @@ impl EditorWindowHost {
               self.windows.remove(&window_id);
 
               // no more windows left? we're done
-              if self.windows.len() == 0 {
+              if self.windows.is_empty() {
                 *control_flow = ControlFlow::Exit;
               }
             }
@@ -236,7 +242,7 @@ impl EditorWindowHost {
 
 impl surreal::ui::UserInterfaceHost for UserInterfaceState {
   fn pixels_per_point(&self) -> f32 {
-    self.pixels_per_point as f32
+    self.pixels_per_point
   }
 
   fn raw_input(&self) -> &RawInput {

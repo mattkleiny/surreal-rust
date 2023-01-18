@@ -135,7 +135,7 @@ fn _next_highest_power_of_2(n: u32) -> u32 {
   let n = (n - 1) as f32;
   let log = n.log2();
 
-  return 1u32 << (log as u32) + 1;
+  1u32 << ((log as u32) + 1)
 }
 
 impl std::fmt::Debug for Sprite {
