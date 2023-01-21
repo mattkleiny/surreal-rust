@@ -16,17 +16,24 @@ use winit::{
   window::{Icon, Window, WindowId},
 };
 
+use crate::EventBus;
+
 /// Top-level host for [`EditorWindow`]s in the application.
 ///
 /// The window manager is responsible for managing the lifetime of all windows
 /// in the application, as well as dispatching events to the appropriate window.
 pub struct EditorWindowHost {
+  /// The underlying [`EventBus`] for the editor application.
+  ///
+  /// This is used to dispatch events to the various systems in the application.
+  /// You can grab a reference and [`Clone::clone`] it to produce a new handle and
+  /// use it in other window types.
+  pub event_bus: EventBus,
   event_loop: EventLoop<()>,
   windows: FastHashMap<WindowId, WindowState>,
 }
 
-/// Internal state for a [`EditorWindow`] and it's associated `winit`
-/// [`Window`].
+/// Internal state for a [`EditorWindow`] and it's associated `winit` [`Window`].
 struct WindowState {
   winit_window: Window,
   editor_window: Box<dyn EditorWindow>,
@@ -83,21 +90,18 @@ impl EditorWindowHost {
   pub fn new() -> Self {
     Self {
       event_loop: EventLoop::new(),
+      event_bus: EventBus::default(),
       windows: FastHashMap::default(),
     }
   }
 
   /// Adds a new [`EditorWindow`] to the manager.
-  pub fn add_window(&mut self, editor_window: impl EditorWindow + 'static) {
-    // set-up the OpenGL context for the window, too
-    let window = editor_window
-      .create_window()
-      .build(&self.event_loop)
-      .expect("Failed to build window window");
+  pub fn add_window(&mut self, editor_window: impl EditorWindow + 'static) -> surreal::Result<()> {
+    let window = editor_window.create_window().build(&self.event_loop)?;
 
     // set-up graphics server and user interface
     let pixels_per_point = window.scale_factor() as f32;
-    let graphics_server = GraphicsServer::opengl(&window, true, 1).expect("Failed to build graphics server");
+    let graphics_server = GraphicsServer::opengl(&window, true, 1)?;
     let input_server = InputServer::new(pixels_per_point);
     let user_interface = UserInterface::new(&graphics_server);
 
@@ -120,9 +124,11 @@ impl EditorWindowHost {
         },
       },
     );
+
+    Ok(())
   }
 
-  /// Runs the event loop for the manager.
+  /// Runs the event loop for the host.
   ///
   /// This method will block the current thread until the application is closed.
   pub fn run(mut self) {

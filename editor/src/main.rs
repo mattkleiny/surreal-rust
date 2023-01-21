@@ -30,7 +30,7 @@ fn main() -> surreal::Result<()> {
 
   let mut host = EditorWindowHost::new();
 
-  host.add_window(ProjectWindow::new(project));
+  host.add_window(ProjectWindow::new(project))?;
   // host.add_window(ProjectWindow::new(project.clone()));
   // host.add_window(ProjectWindow::new(project.clone()));
   host.run();

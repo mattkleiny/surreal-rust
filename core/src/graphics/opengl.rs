@@ -626,7 +626,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         }
 
         gl::EnableVertexAttribArray(index as u32);
-
         offset += descriptor.size().as_bytes();
       }
 

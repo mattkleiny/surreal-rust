@@ -9,6 +9,7 @@
 
 pub use assets::*;
 pub use domain::*;
+pub use events::*;
 pub use projects::*;
 pub use reflect::*;
 pub use serialize::*;
@@ -16,6 +17,7 @@ pub use ui::*;
 
 mod assets;
 mod domain;
+mod events;
 mod projects;
 mod reflect;
 mod serialize;

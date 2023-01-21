@@ -334,11 +334,11 @@ impl<V: Vertex> MeshBuilder<V> {
     self.add_index(offset + 3);
   }
 
-  /// Uploads the contents of the tessellator to the given [`Mesh`].
+  /// Uploads the contents of the [`MeshBuilder`] to the given [`Mesh`].
   pub fn upload_to(&self, mesh: &mut Mesh<V>) {
     mesh.with_buffers(|vertices, indices| {
-      vertices.write_data(self.vertices.as_slice());
-      indices.write_data(self.indices.as_slice());
+      vertices.write_data(&self.vertices);
+      indices.write_data(&self.indices);
     });
   }
 

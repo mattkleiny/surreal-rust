@@ -30,7 +30,7 @@ pub struct Project {
 }
 
 /// Top-level details for a [`Project`].
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProjectDetails {
   pub name: String,
   pub version: Version,
