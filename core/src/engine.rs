@@ -74,18 +74,19 @@ pub enum TickEvent<'a> {
 }
 
 /// Represents an application that can be used in an [`Engine`].
+#[allow(unused_variables)]
 pub trait Application: Sized {
   /// Builds the [`Application`] instance.
   fn new(engine: &mut Engine, assets: &mut AssetManager) -> crate::Result<Self>;
 
   /// Called when the application is to be updated.
-  fn on_update(&mut self, _engine: &mut Engine, _time: GameTime) {}
+  fn on_update(&mut self, engine: &mut Engine, time: GameTime) {}
 
   /// Called when the application is to be drawn.
-  fn on_draw(&mut self, _engine: &mut Engine, _time: GameTime) {}
+  fn on_draw(&mut self, engine: &mut Engine, time: GameTime) {}
 
   /// Invoked when a [`WindowEvent`] is received.
-  fn on_window_event(&mut self, _engine: &mut Engine, _event: &WindowEvent) {}
+  fn on_window_event(&mut self, engine: &mut Engine, event: &WindowEvent) {}
 
   /// Notifies the application of an [`TickEvent`]. l
   fn notify(&mut self, engine: &mut Engine, event: TickEvent) {
@@ -175,7 +176,7 @@ impl EngineBuilder {
         renderer.begin_frame();
 
         scene.update(time.delta_time);
-        scene.render(&mut renderer);
+        scene.draw(&mut renderer);
 
         renderer.end_frame();
       })

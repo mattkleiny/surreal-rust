@@ -17,7 +17,7 @@ use surreal::{
 pub struct WindEmitter {}
 
 impl SceneComponent for WindEmitter {
-  fn on_render(&mut self, _context: SceneContext, renderer: &mut Renderer) {
+  fn on_draw(&mut self, _context: SceneContext, renderer: &mut Renderer) {
     renderer.with(|_context: &mut WindContext| {
       // TODO: render wind via the wind context (compute shader)
     });
@@ -93,6 +93,6 @@ mod tests {
     scene.update(0.16);
     scene.update(0.16);
     scene.update(0.16);
-    scene.render(&mut renderer);
+    scene.draw(&mut renderer);
   }
 }
