@@ -12,6 +12,7 @@ pub use domain::*;
 pub use events::*;
 pub use projects::*;
 pub use reflect::*;
+#[cfg(target_os = "windows")]
 pub use registry::*;
 pub use serialize::*;
 pub use ui::*;
@@ -21,6 +22,7 @@ mod domain;
 mod events;
 mod projects;
 mod reflect;
+#[cfg(target_os = "windows")]
 mod registry;
 mod serialize;
 mod ui;
