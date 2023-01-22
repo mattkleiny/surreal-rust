@@ -1,18 +1,18 @@
 use crate::ProjectDetails;
 
+/// Central event bus for the editor itself.
+#[derive(Clone)]
+pub struct EventBus {
+  sender: crossbeam_channel::Sender<EditorEvent>,
+  receiver: crossbeam_channel::Receiver<EditorEvent>,
+}
+
 /// Events that occur in the editor.
 #[derive(Debug)]
 pub enum EditorEvent {
   AssetsRefreshed,
   ProjectOpened(ProjectDetails),
   ProjectClosed,
-}
-
-/// Central event bus for the editor.
-#[derive(Clone)]
-pub struct EventBus {
-  sender: crossbeam_channel::Sender<EditorEvent>,
-  receiver: crossbeam_channel::Receiver<EditorEvent>,
 }
 
 impl Default for EventBus {

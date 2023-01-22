@@ -207,21 +207,21 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn buffer_create(&self) -> GraphicsHandle {
+  fn buffer_create(&self) -> BufferId {
     unsafe {
       let mut id: u32 = 0;
       gl::GenBuffers(1, &mut id);
-      id
+      BufferId::from(id)
     }
   }
 
-  fn buffer_read_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8) {
+  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8) {
     unsafe {
-      gl::GetNamedBufferSubData(buffer, offset as isize, length as isize, pointer as *mut c_void);
+      gl::GetNamedBufferSubData(buffer.into(), offset as isize, length as isize, pointer as *mut c_void);
     }
   }
 
-  fn buffer_write_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
+  fn buffer_write_data(&self, buffer: BufferId, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -233,23 +233,25 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         BufferUsage::Dynamic => gl::DYNAMIC_DRAW,
       };
 
-      gl::BindBuffer(kind, buffer);
+      gl::BindBuffer(kind, buffer.into());
       gl::BufferData(kind, length as isize, pointer as *const _, usage);
     }
   }
 
-  fn buffer_delete(&self, buffer: GraphicsHandle) {
+  fn buffer_delete(&self, buffer: BufferId) {
     unsafe {
-      gl::DeleteBuffers(1, &buffer);
+      gl::DeleteBuffers(1, &buffer.into());
     }
   }
 
-  fn texture_create(&self, sampler: &TextureSampler) -> GraphicsHandle {
+  fn texture_create(&self, sampler: &TextureSampler) -> TextureId {
     unsafe {
       let mut id: u32 = 0;
 
       gl::GenTextures(1, &mut id);
       gl::BindTexture(gl::TEXTURE_2D, id);
+
+      let id = TextureId::from(id);
 
       self.texture_set_options(id, sampler);
 
@@ -257,7 +259,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn texture_set_options(&self, texture: GraphicsHandle, sampler: &TextureSampler) {
+  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) {
     unsafe {
       let min_filter = match sampler.minify_filter {
         TextureFilter::Nearest => gl::NEAREST,
@@ -274,7 +276,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         TextureWrap::Mirror => gl::MIRRORED_REPEAT,
       };
 
-      gl::BindTexture(gl::TEXTURE_2D, texture);
+      gl::BindTexture(gl::TEXTURE_2D, texture.into());
 
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, min_filter as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
@@ -283,11 +285,11 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn texture_initialize(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat) {
+  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) {
     unsafe {
       let (components, kind) = convert_texture_format(format);
 
-      gl::BindTexture(gl::TEXTURE_2D, texture);
+      gl::BindTexture(gl::TEXTURE_2D, texture.into());
       gl::TexImage2D(
         gl::TEXTURE_2D,
         0,
@@ -302,11 +304,11 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn texture_read_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
+  fn texture_read_data(&self, texture: TextureId, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
     unsafe {
       let (components, kind) = convert_texture_format(pixel_format);
 
-      gl::BindTexture(gl::TEXTURE_2D, texture);
+      gl::BindTexture(gl::TEXTURE_2D, texture.into());
       gl::GetnTexImage(
         gl::TEXTURE_2D,
         mip_level as i32,
@@ -320,7 +322,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
   fn texture_write_data(
     &self,
-    texture: GraphicsHandle,
+    texture: TextureId,
     width: u32,
     height: u32,
     pixels: *const u8,
@@ -344,7 +346,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       let (components, kind) = convert_texture_format(pixel_format);
 
-      gl::BindTexture(gl::TEXTURE_2D, texture);
+      gl::BindTexture(gl::TEXTURE_2D, texture.into());
       gl::TexImage2D(
         gl::TEXTURE_2D,
         mip_level as i32,
@@ -361,7 +363,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
   fn texture_write_sub_data(
     &self,
-    texture: GraphicsHandle,
+    texture: TextureId,
     region: &Rectangle,
     pixels: *const u8,
     pixel_format: TextureFormat,
@@ -370,7 +372,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     unsafe {
       let (components, kind) = convert_texture_format(pixel_format);
 
-      gl::BindTexture(gl::TEXTURE_2D, texture);
+      gl::BindTexture(gl::TEXTURE_2D, texture.into());
       gl::TexSubImage2D(
         gl::TEXTURE_2D,
         mip_level as i32,
@@ -385,19 +387,21 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn texture_delete(&self, texture: GraphicsHandle) {
+  fn texture_delete(&self, texture: TextureId) {
     unsafe {
-      gl::DeleteTextures(1, &texture);
+      gl::DeleteTextures(1, &texture.into());
     }
   }
 
-  fn shader_create(&self) -> GraphicsHandle {
-    unsafe { gl::CreateProgram() }
+  fn shader_create(&self) -> ShaderId {
+    ShaderId::from(unsafe { gl::CreateProgram() })
   }
 
   #[allow(clippy::uninit_vec)]
-  fn shader_link(&self, shader: GraphicsHandle, shaders: &[ShaderKernel]) -> crate::Result<()> {
+  fn shader_link(&self, shader: ShaderId, shaders: &[ShaderKernel]) -> crate::Result<()> {
     unsafe {
+      let shader = shader.into();
+
       gl::UseProgram(shader);
 
       // compile the shader kernel code
@@ -462,8 +466,9 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     Ok(())
   }
 
-  fn shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
+  fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize> {
     unsafe {
+      let shader = shader.into();
       let name = CString::new(name).unwrap();
       let location = gl::GetUniformLocation(shader, name.as_ptr());
 
@@ -474,8 +479,10 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn shader_set_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform) {
+  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) {
     unsafe {
+      let shader = shader.into();
+
       match value {
         ShaderUniform::Bool(value) => {
           gl::ProgramUniform1i(shader, location as i32, *value as i32);
@@ -522,7 +529,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         }
         ShaderUniform::Texture(texture, slot, sampler) => {
           gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
-          gl::BindTexture(gl::TEXTURE_2D, texture.handle());
+          gl::BindTexture(gl::TEXTURE_2D, texture.id().into());
           gl::ProgramUniform1i(shader, location as i32, *slot as i32);
 
           if let Some(sampler) = sampler {
@@ -567,27 +574,27 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn shader_activate(&self, shader: GraphicsHandle) {
+  fn shader_activate(&self, shader: ShaderId) {
     unsafe {
-      gl::UseProgram(shader);
+      gl::UseProgram(shader.into());
     }
   }
 
-  fn shader_delete(&self, shader: GraphicsHandle) {
+  fn shader_delete(&self, shader: ShaderId) {
     unsafe {
-      gl::DeleteProgram(shader);
+      gl::DeleteProgram(shader.into());
     }
   }
 
-  fn mesh_create(&self, vertex_buffer: GraphicsHandle, index_buffer: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
+  fn mesh_create(&self, vertex_buffer: BufferId, index_buffer: BufferId, descriptors: &[VertexDescriptor]) -> MeshId {
     unsafe {
       let mut id: u32 = 0;
 
       gl::GenVertexArrays(1, &mut id);
       gl::BindVertexArray(id);
 
-      gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
-      gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
+      gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer.into());
+      gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer.into());
 
       let stride: Size = descriptors.iter().map(|desc| desc.size()).sum();
       let mut offset = 0;
@@ -631,13 +638,13 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       gl::BindVertexArray(0);
 
-      id
+      MeshId::from(id)
     }
   }
 
-  fn mesh_draw(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     unsafe {
-      gl::BindVertexArray(mesh);
+      gl::BindVertexArray(mesh.into());
 
       let topology = match topology {
         PrimitiveTopology::Points => gl::POINTS,
@@ -655,31 +662,37 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn mesh_delete(&self, mesh: GraphicsHandle) {
+  fn mesh_delete(&self, mesh: MeshId) {
     unsafe {
-      gl::DeleteVertexArrays(1, &mesh);
+      gl::DeleteVertexArrays(1, &mesh.into());
     }
   }
 
   fn target_create(
     &self,
-    color_attachment: GraphicsHandle,
-    depth_attachment: Option<GraphicsHandle>,
-    stencil_attachment: Option<GraphicsHandle>,
-  ) -> GraphicsHandle {
+    color_attachment: TextureId,
+    depth_attachment: Option<TextureId>,
+    stencil_attachment: Option<TextureId>,
+  ) -> TargetId {
     unsafe {
       let mut framebuffer = 0;
       gl::CreateFramebuffers(1, &mut framebuffer);
 
       gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer);
-      gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, color_attachment, 0);
+      gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, color_attachment.into(), 0);
 
       if let Some(depth_attachment) = depth_attachment {
-        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::DEPTH_ATTACHMENT, gl::TEXTURE_2D, depth_attachment, 0);
+        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::DEPTH_ATTACHMENT, gl::TEXTURE_2D, depth_attachment.into(), 0);
       }
 
       if let Some(stencil_attachment) = stencil_attachment {
-        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::STENCIL_ATTACHMENT, gl::TEXTURE_2D, stencil_attachment, 0);
+        gl::FramebufferTexture2D(
+          gl::FRAMEBUFFER,
+          gl::STENCIL_ATTACHMENT,
+          gl::TEXTURE_2D,
+          stencil_attachment.into(),
+          0,
+        );
       }
 
       if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {
@@ -688,13 +701,13 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
 
-      framebuffer
+      TargetId::from(framebuffer)
     }
   }
 
-  fn target_activate(&self, render_target: GraphicsHandle) {
+  fn target_activate(&self, target: TargetId) {
     unsafe {
-      gl::BindFramebuffer(gl::FRAMEBUFFER, render_target);
+      gl::BindFramebuffer(gl::FRAMEBUFFER, target.into());
     }
   }
 
@@ -704,10 +717,10 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn target_blit(&self, from: GraphicsHandle, to: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
+  fn target_blit(&self, from: TargetId, to: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
     unsafe {
-      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, from);
-      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, to);
+      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, from.into());
+      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, to.into());
 
       gl::BlitFramebuffer(
         source_rect.left() as i32,
@@ -730,13 +743,13 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn target_blit_to_display(&self, handle: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
-    self.target_blit(handle, 0, source_rect, dest_rect, filter);
+  fn target_blit_to_display(&self, handle: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
+    self.target_blit(handle, TargetId::NONE, source_rect, dest_rect, filter);
   }
 
-  fn target_delete(&self, render_target: GraphicsHandle) {
+  fn target_delete(&self, target: TargetId) {
     unsafe {
-      gl::DeleteFramebuffers(1, &render_target);
+      gl::DeleteFramebuffers(1, &target.into());
     }
   }
 }

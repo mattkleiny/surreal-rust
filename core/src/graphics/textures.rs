@@ -77,8 +77,8 @@ pub struct Texture {
 }
 
 struct TextureState {
+  id: TextureId,
   graphics: GraphicsServer,
-  handle: GraphicsHandle,
   options: TextureOptions,
   width: u32,
   height: u32,
@@ -104,8 +104,8 @@ impl Texture {
   pub fn with_options(graphics: &GraphicsServer, options: &TextureOptions) -> Self {
     Self {
       state: Rc::new(RefCell::new(TextureState {
+        id: graphics.texture_create(&options.sampler),
         graphics: graphics.clone(),
-        handle: graphics.texture_create(&options.sampler),
         options: options.clone(),
         width: 0,
         height: 0,
@@ -127,6 +127,11 @@ impl Texture {
     texture
   }
 
+  /// Returns the [`TextureId`] of the underlying texture.
+  pub fn id(&self) -> TextureId {
+    self.state.borrow().id
+  }
+
   /// Returns the width of the texture.
   pub fn width(&self) -> u32 {
     self.state.borrow().width
@@ -145,7 +150,7 @@ impl Texture {
 
     let graphics = &state.graphics;
 
-    graphics.texture_set_options(state.handle, &state.options.sampler);
+    graphics.texture_set_options(state.id, &state.options.sampler);
   }
 
   /// Initializes the texture with the given width and height.
@@ -160,7 +165,7 @@ impl Texture {
 
     let graphics = &state.graphics;
 
-    graphics.texture_initialize(state.handle, width, height, format);
+    graphics.texture_initialize(state.id, width, height, format);
   }
 
   /// Resizes the texture in-place.
@@ -188,7 +193,7 @@ impl Texture {
       buffer.set_len(size);
 
       graphics.texture_read_data(
-        state.handle,
+        state.id,
         size * std::mem::size_of::<T>(),
         T::FORMAT,
         buffer.as_mut_ptr() as *mut u8,
@@ -210,7 +215,7 @@ impl Texture {
     let graphics = &state.graphics;
 
     graphics.texture_write_data(
-      state.handle,
+      state.id,
       width as u32,
       height as u32,
       match pixels.len() {
@@ -230,7 +235,7 @@ impl Texture {
     let graphics = &state.graphics;
 
     graphics.texture_write_sub_data(
-      state.handle,
+      state.id,
       region,
       pixels.as_ptr() as *const u8,
       T::FORMAT,
@@ -250,15 +255,9 @@ impl Texture {
   }
 }
 
-impl GraphicsResource for Texture {
-  fn handle(&self) -> GraphicsHandle {
-    self.state.borrow().handle
-  }
-}
-
 impl Drop for TextureState {
   fn drop(&mut self) {
-    self.graphics.texture_delete(self.handle);
+    self.graphics.texture_delete(self.id);
   }
 }
 

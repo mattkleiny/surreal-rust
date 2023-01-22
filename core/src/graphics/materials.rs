@@ -174,7 +174,7 @@ impl Material {
 
     self.uniforms.apply_to_shader(&self.shader);
 
-    self.graphics.shader_activate(self.shader.handle());
+    self.graphics.shader_activate(self.shader.id());
   }
 
   /// Unbinds this material from the graphics server.
@@ -221,7 +221,7 @@ impl AssetLoader<Material> for MaterialLoader {
 /// texture binding in a material.
 #[derive(Default, Clone)]
 struct TextureBindingSet {
-  slots: [Option<GraphicsHandle>; MAX_TEXTURE_UNITS],
+  slots: [Option<TextureId>; MAX_TEXTURE_UNITS],
 }
 
 impl TextureBindingSet {
@@ -234,11 +234,11 @@ impl TextureBindingSet {
   pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
     for (index, slot) in self.slots.iter_mut().enumerate() {
       match slot {
-        Some(existing) if *existing == texture.handle() => {
+        Some(existing) if *existing == texture.id() => {
           return Some(index as u8);
         }
         None => {
-          *slot = Some(texture.handle());
+          *slot = Some(texture.id());
           return Some(index as u8);
         }
         _ => continue,

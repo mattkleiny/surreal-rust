@@ -33,8 +33,8 @@ pub struct Buffer<T> {
 
 /// The internal state for a buffer.
 struct BufferState {
+  id: BufferId,
   graphics: GraphicsServer,
-  handle: GraphicsHandle,
   kind: BufferKind,
   usage: BufferUsage,
   length: usize,
@@ -45,14 +45,19 @@ impl<T> Buffer<T> {
   pub fn new(graphics: &GraphicsServer, kind: BufferKind, usage: BufferUsage) -> Self {
     Self {
       state: Rc::new(RefCell::new(BufferState {
+        id: graphics.buffer_create(),
         graphics: graphics.clone(),
-        handle: graphics.buffer_create(),
         kind,
         usage,
         length: 0,
       })),
       _type: std::marker::PhantomData,
     }
+  }
+
+  /// Returns the ID of the underlying buffer.
+  pub fn id(&self) -> BufferId {
+    self.state.borrow().id
   }
 
   /// Is the buffer empty?
@@ -78,7 +83,7 @@ impl<T> Buffer<T> {
       buffer.set_len(length);
 
       state.graphics.buffer_read_data(
-        state.handle,
+        state.id,
         0, // offset
         length * std::mem::size_of::<T>(),
         buffer.as_mut_ptr() as *mut u8,
@@ -95,7 +100,7 @@ impl<T> Buffer<T> {
 
     state.length = data.len();
     state.graphics.buffer_write_data(
-      state.handle,
+      state.id,
       state.usage,
       state.kind,
       data.len() * std::mem::size_of::<T>(),
@@ -104,14 +109,8 @@ impl<T> Buffer<T> {
   }
 }
 
-impl<T> GraphicsResource for Buffer<T> {
-  fn handle(&self) -> GraphicsHandle {
-    self.state.borrow().handle
-  }
-}
-
 impl Drop for BufferState {
   fn drop(&mut self) {
-    self.graphics.buffer_delete(self.handle)
+    self.graphics.buffer_delete(self.id)
   }
 }

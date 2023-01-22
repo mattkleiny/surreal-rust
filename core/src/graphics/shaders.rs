@@ -153,8 +153,8 @@ pub struct ShaderProgram {
 
 /// The internal state for a [`ShaderProgram`] .
 struct ShaderProgramState {
+  id: ShaderId,
   graphics: GraphicsServer,
-  handle: GraphicsHandle,
   location_cache: FastHashMap<String, Option<usize>>,
 }
 
@@ -163,8 +163,8 @@ impl ShaderProgram {
   pub fn new(graphics: &GraphicsServer) -> Self {
     Self {
       state: Rc::new(RefCell::new(ShaderProgramState {
+        id: graphics.shader_create(),
         graphics: graphics.clone(),
-        handle: graphics.shader_create(),
         location_cache: FastHashMap::default(),
       })),
     }
@@ -197,6 +197,11 @@ impl ShaderProgram {
     Self::from_path::<GLSL>(graphics, path)
   }
 
+  /// Returns the [`ShaderId`] of the underlying program.
+  pub fn id(&self) -> ShaderId {
+    self.state.borrow().id
+  }
+
   /// Retrieves the binding location of the given shader uniform in the
   /// underlying program.
   #[diagnostics::profiling]
@@ -211,7 +216,7 @@ impl ShaderProgram {
 
     let mut state = self.state.borrow_mut();
     let graphics = &state.graphics;
-    let location = graphics.shader_uniform_location(state.handle, name);
+    let location = graphics.shader_uniform_location(state.id, name);
 
     state.location_cache.insert(name.to_string(), location);
 
@@ -225,7 +230,7 @@ impl ShaderProgram {
       let state = self.state.borrow();
       let graphics = &state.graphics;
 
-      graphics.shader_set_uniform(state.handle, location, value);
+      graphics.shader_set_uniform(state.id, location, value);
     }
   }
 
@@ -235,7 +240,7 @@ impl ShaderProgram {
     let graphics = &state.graphics;
     let shaders = S::parse_kernels(text)?;
 
-    graphics.shader_link(state.handle, &shaders)?;
+    graphics.shader_link(state.id, &shaders)?;
 
     Ok(())
   }
@@ -251,15 +256,9 @@ impl ShaderProgram {
   }
 }
 
-impl GraphicsResource for ShaderProgram {
-  fn handle(&self) -> GraphicsHandle {
-    self.state.borrow().handle
-  }
-}
-
 impl Drop for ShaderProgramState {
   fn drop(&mut self) {
-    self.graphics.shader_delete(self.handle);
+    self.graphics.shader_delete(self.id);
   }
 }
 

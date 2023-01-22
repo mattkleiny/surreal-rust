@@ -1,4 +1,4 @@
-//! A binary packed file format for efficient asset streaming
+//! A packed binary file format for efficient asset streaming
 
 use crate::{collections::FastHashMap, utilities::Size};
 

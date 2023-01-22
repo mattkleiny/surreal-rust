@@ -28,6 +28,20 @@ macro_rules! impl_rid {
         id.0
       }
     }
+
+    impl From<$name> for u64 {
+      #[inline]
+      fn from(id: $name) -> Self {
+        id.0.into()
+      }
+    }
+
+    impl From<u64> for $name {
+      #[inline]
+      fn from(id: u64) -> Self {
+        Self(id.into())
+      }
+    }
   };
 }
 

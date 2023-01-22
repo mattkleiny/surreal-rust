@@ -33,7 +33,7 @@ fn main() {
     let mut is_rendering = true;
 
     engine.run_variable_step(move |engine, time| {
-      engine.graphics.clear_color_buffer(Color::BLACK);
+      engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
 
       // update bunnies
       if is_updating {

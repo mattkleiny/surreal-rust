@@ -16,7 +16,7 @@ use winit::{
   window::{Icon, Window, WindowId},
 };
 
-use crate::EventBus;
+use crate::{EventBus, MainWindow, Project};
 
 /// Top-level host for [`EditorWindow`]s in the application.
 ///
@@ -93,6 +93,13 @@ impl EditorWindowHost {
       event_bus: EventBus::default(),
       windows: FastHashMap::default(),
     }
+  }
+
+  /// Opens a default [`EditorWindowHost`] for the given project.
+  pub fn from_project(project: Project) -> surreal::Result<Self> {
+    let mut host = Self::new();
+    host.add_window(MainWindow::new(project))?;
+    Ok(host)
   }
 
   /// Adds a new [`EditorWindow`] to the manager.

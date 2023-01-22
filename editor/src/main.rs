@@ -16,7 +16,6 @@ fn main() -> surreal::Result<()> {
   surreal::diagnostics::ConsoleLogger::install(surreal::diagnostics::LevelFilter::Trace);
 
   let args = Arguments::parse();
-
   let project = Project::open_or_create(
     &args.project_name.unwrap_or_else(|| "Untitled".to_string()),
     &args.project_path.unwrap_or_else(|| {
@@ -28,12 +27,5 @@ fn main() -> surreal::Result<()> {
     }),
   )?;
 
-  let mut host = EditorWindowHost::new();
-
-  host.add_window(MainWindow::new(project))?;
-  // host.add_window(ProjectWindow::new(project.clone()));
-  // host.add_window(ProjectWindow::new(project.clone()));
-  host.run();
-
-  Ok(())
+  Ok(EditorWindowHost::from_project(project)?.run())
 }

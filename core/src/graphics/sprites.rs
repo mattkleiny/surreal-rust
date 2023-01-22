@@ -143,7 +143,7 @@ impl SpriteBatch {
     }
 
     if let Some(texture) = &self.last_texture {
-      if texture.handle() != region.texture.handle() {
+      if texture.id() != region.texture.id() {
         self.flush();
         self.last_texture = Some(region.texture.clone());
       }

@@ -9,8 +9,7 @@ use std::ops::Deref;
 #[derive(Default)]
 pub struct UndoManager {}
 
-/// A scope wrapper for a type that can be rolled backwards/forwards with
-/// commands.
+/// A scope wrapper for a type that can be rolled backwards/forwards in response to user actions.
 pub struct UndoScope<T> {
   pub value: T,
 }

@@ -13,7 +13,7 @@ pub struct HeadlessGraphicsBackend {
   next_texture_id: AtomicU32,
   next_shader_id: AtomicU32,
   next_mesh_id: AtomicU32,
-  next_render_target_id: AtomicU32,
+  next_target_id: AtomicU32,
 }
 
 impl Default for HeadlessGraphicsBackend {
@@ -23,7 +23,7 @@ impl Default for HeadlessGraphicsBackend {
       next_texture_id: AtomicU32::new(1),
       next_shader_id: AtomicU32::new(1),
       next_mesh_id: AtomicU32::new(1),
-      next_render_target_id: AtomicU32::new(1),
+      next_target_id: AtomicU32::new(1),
     }
   }
 }
@@ -66,41 +66,41 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn buffer_create(&self) -> GraphicsHandle {
-    self.next_buffer_id.fetch_add(1, Ordering::Relaxed)
+  fn buffer_create(&self) -> BufferId {
+    BufferId::from(self.next_buffer_id.fetch_add(1, Ordering::Relaxed))
   }
 
-  fn buffer_read_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8) {
+  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8) {
     // no-op
   }
 
-  fn buffer_write_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
+  fn buffer_write_data(&self, buffer: BufferId, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
     // no-op
   }
 
-  fn buffer_delete(&self, buffer: GraphicsHandle) {
+  fn buffer_delete(&self, buffer: BufferId) {
     // no-op
   }
 
-  fn texture_create(&self, sampler: &TextureSampler) -> GraphicsHandle {
-    self.next_texture_id.fetch_add(1, Ordering::Relaxed)
+  fn texture_create(&self, sampler: &TextureSampler) -> TextureId {
+    TextureId::from(self.next_texture_id.fetch_add(1, Ordering::Relaxed))
   }
 
-  fn texture_set_options(&self, texture: GraphicsHandle, sampler: &TextureSampler) {
+  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) {
     // no-op
   }
 
-  fn texture_initialize(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat) {
+  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) {
     // no-op
   }
 
-  fn texture_read_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
+  fn texture_read_data(&self, texture: TextureId, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
     // no-op
   }
 
   fn texture_write_data(
     &self,
-    texture: GraphicsHandle,
+    texture: TextureId,
     width: u32,
     height: u32,
     pixels: *const u8,
@@ -113,7 +113,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
 
   fn texture_write_sub_data(
     &self,
-    texture: GraphicsHandle,
+    texture: TextureId,
     region: &Rectangle,
     pixels: *const u8,
     pixel_format: TextureFormat,
@@ -122,56 +122,56 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn texture_delete(&self, texture: GraphicsHandle) {
+  fn texture_delete(&self, texture: TextureId) {
     // no-op
   }
 
-  fn shader_create(&self) -> GraphicsHandle {
-    self.next_shader_id.fetch_add(1, Ordering::Relaxed)
+  fn shader_create(&self) -> ShaderId {
+    ShaderId::from(self.next_shader_id.fetch_add(1, Ordering::Relaxed))
   }
 
-  fn shader_link(&self, shader: GraphicsHandle, kernels: &[ShaderKernel]) -> crate::Result<()> {
+  fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> crate::Result<()> {
     Ok(())
   }
 
-  fn shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize> {
+  fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize> {
     None
   }
 
-  fn shader_set_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform) {
+  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) {
     // no-op
   }
 
-  fn shader_activate(&self, shader: GraphicsHandle) {
+  fn shader_activate(&self, shader: ShaderId) {
     // no-op
   }
 
-  fn shader_delete(&self, shader: GraphicsHandle) {
+  fn shader_delete(&self, shader: ShaderId) {
     // no-op
   }
 
-  fn mesh_create(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle {
-    self.next_mesh_id.fetch_add(1, Ordering::Relaxed)
+  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> MeshId {
+    MeshId::from(self.next_mesh_id.fetch_add(1, Ordering::Relaxed))
   }
 
-  fn mesh_draw(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     // no-op
   }
 
-  fn mesh_delete(&self, mesh: GraphicsHandle) {
+  fn mesh_delete(&self, mesh: MeshId) {
     // no-op
   }
 
   fn target_create(
     &self,
-    color_attachment: GraphicsHandle,
-    depth_attachment: Option<GraphicsHandle>,
-    stencil_attachment: Option<GraphicsHandle>,
-  ) -> GraphicsHandle {
-    self.next_render_target_id.fetch_add(1, Ordering::Relaxed)
+    color_attachment: TextureId,
+    depth_attachment: Option<TextureId>,
+    stencil_attachment: Option<TextureId>,
+  ) -> TargetId {
+    TargetId::from(self.next_target_id.fetch_add(1, Ordering::Relaxed))
   }
 
-  fn target_activate(&self, render_target: GraphicsHandle) {
+  fn target_activate(&self, target: TargetId) {
     // no-op
   }
 
@@ -179,15 +179,15 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn target_blit(&self, from: GraphicsHandle, to: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
+  fn target_blit(&self, from: TargetId, to: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
     // no-op
   }
 
-  fn target_blit_to_display(&self, handle: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
+  fn target_blit_to_display(&self, target: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
     // no-op
   }
 
-  fn target_delete(&self, render_target: GraphicsHandle) {
+  fn target_delete(&self, target: TargetId) {
     // no-op
   }
 }

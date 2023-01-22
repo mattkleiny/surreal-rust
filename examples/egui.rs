@@ -18,7 +18,7 @@ fn main() {
     let mut age = 33;
 
     engine.run_variable_step(|engine, _| {
-      engine.graphics.clear_color_buffer(Color::BLACK);
+      engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
 
       interface.run(engine, |egui| {
         egui::Window::new("Surreal ❤ egui").show(egui, |ui| {

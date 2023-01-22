@@ -5,6 +5,9 @@ use crate::utilities::{Size, TimeSpan};
 mod headless;
 mod rodio;
 
+crate::impl_rid!(AudioClipId);
+crate::impl_rid!(AudioSourceId);
+
 /// Describes sampling rates for an audio clip.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct AudioSampleRate {
@@ -86,6 +89,3 @@ pub trait AudioBackend {
   fn source_set_volume(&self, source: AudioSourceId, volume: f32);
   fn source_delete(&self, source: AudioSourceId);
 }
-
-crate::impl_rid!(AudioClipId);
-crate::impl_rid!(AudioSourceId);

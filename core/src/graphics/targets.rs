@@ -42,8 +42,8 @@ pub struct RenderTarget {
 
 /// The inner state of a [`RenderTarget`].
 struct RenderTargetState {
+  id: TargetId,
   graphics: GraphicsServer,
-  handle: GraphicsHandle,
   color_attachment: Texture,
   depth_attachment: Option<Texture>,
   stencil_attachment: Option<Texture>,
@@ -56,21 +56,24 @@ impl RenderTarget {
     let depth_attachment = descriptor.depth_attachment.as_ref().map(|it| it.to_texture(graphics));
     let stencil_attachment = descriptor.stencil_attachment.as_ref().map(|it| it.to_texture(graphics));
 
-    let handle = graphics.target_create(
-      color_attachment.handle(),
-      depth_attachment.as_ref().map(|it| it.handle()),
-      stencil_attachment.as_ref().map(|it| it.handle()),
-    );
-
     Self {
       state: Rc::new(RefCell::new(RenderTargetState {
+        id: graphics.target_create(
+          color_attachment.id(),
+          depth_attachment.as_ref().map(|it| it.id()),
+          stencil_attachment.as_ref().map(|it| it.id()),
+        ),
         graphics: graphics.clone(),
-        handle,
         color_attachment,
         depth_attachment,
         stencil_attachment,
       })),
     }
+  }
+
+  /// Retrieves the [`TargetId`] of the underlying render target.
+  pub fn id(&self) -> TargetId {
+    self.state.borrow().id
   }
 
   /// Retrieves the color attachment for the target.
@@ -99,7 +102,7 @@ impl RenderTarget {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.target_activate(state.handle);
+    graphics.target_activate(state.id);
   }
 
   /// Deactivates the [`RenderTarget`].
@@ -122,7 +125,7 @@ impl RenderTarget {
 
     let graphics = &state.graphics;
 
-    graphics.target_blit(state.handle, other.handle(), &source, &dest, filter);
+    graphics.target_blit(state.id, other.id(), &source, &dest, filter);
   }
 
   /// Blits this render target to the active display.
@@ -137,18 +140,12 @@ impl RenderTarget {
 
     let graphics = &state.graphics;
 
-    graphics.target_blit_to_display(state.handle, &source, &dest, filter);
-  }
-}
-
-impl GraphicsResource for RenderTarget {
-  fn handle(&self) -> GraphicsHandle {
-    self.state.borrow().handle
+    graphics.target_blit_to_display(state.id, &source, &dest, filter);
   }
 }
 
 impl Drop for RenderTargetState {
   fn drop(&mut self) {
-    self.graphics.target_delete(self.handle);
+    self.graphics.target_delete(self.id);
   }
 }

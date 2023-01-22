@@ -15,7 +15,7 @@ fn main() {
     let mut console_panel = ConsolePanel::new();
 
     engine.run_variable_step(|engine, _| {
-      engine.graphics.clear_color_buffer(Color::BLACK);
+      engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
 
       interface.run(engine, |egui| {
         egui::CentralPanel::default().show(egui, |ui| {

@@ -15,7 +15,7 @@ fn main() {
     let material = load_built_in_material(graphics, BuiltInShader::Wire);
 
     engine.run_variable_step(|engine, _| {
-      engine.graphics.clear_color_buffer(Color::BLACK);
+      engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
 
       mesh.draw(&material, PrimitiveTopology::Triangles);
 

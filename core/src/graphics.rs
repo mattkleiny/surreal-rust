@@ -32,8 +32,45 @@ mod sprites;
 mod targets;
 mod textures;
 
-/// An opaque handle to a resource in the graphics subsystem.
-pub type GraphicsHandle = u32;
+macro_rules! impl_graphics_id {
+  ($name:ident) => {
+    /// A unique identifier for a kind of graphics resource.
+    #[repr(transparent)]
+    #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+    pub struct $name(u32);
+
+    impl $name {
+      /// A value that represents the 'NONE' typo of this resource.
+      pub const NONE: Self = Self::new(0);
+
+      /// Creates a new ID with the given value.
+      #[inline(always)]
+      pub const fn new(value: u32) -> Self {
+        Self(value)
+      }
+    }
+
+    impl From<u32> for $name {
+      #[inline(always)]
+      fn from(value: u32) -> Self {
+        Self(value)
+      }
+    }
+
+    impl From<$name> for u32 {
+      #[inline(always)]
+      fn from(id: $name) -> Self {
+        id.0
+      }
+    }
+  };
+}
+
+impl_graphics_id!(BufferId);
+impl_graphics_id!(TextureId);
+impl_graphics_id!(ShaderId);
+impl_graphics_id!(MeshId);
+impl_graphics_id!(TargetId);
 
 /// A wrapper for the core [`GraphicsBackend`] implementation.
 #[derive(Clone)]
@@ -76,11 +113,6 @@ impl std::ops::Deref for GraphicsServer {
 /// This is a hint for sizing arrays and other data structures.
 const MAX_TEXTURE_UNITS: usize = 32;
 
-/// Represents a resource that possesses a `GraphicsHandle`.
-pub trait GraphicsResource {
-  fn handle(&self) -> GraphicsHandle;
-}
-
 /// An abstraction on top of the underlying graphics API.
 ///
 /// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
@@ -105,19 +137,19 @@ pub trait GraphicsBackend {
   fn set_scissor_mode(&self, scissor_mode: ScissorMode);
 
   // buffers
-  fn buffer_create(&self) -> GraphicsHandle;
-  fn buffer_read_data(&self, buffer: GraphicsHandle, offset: usize, length: usize, pointer: *mut u8);
-  fn buffer_write_data(&self, buffer: GraphicsHandle, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8);
-  fn buffer_delete(&self, buffer: GraphicsHandle);
+  fn buffer_create(&self) -> BufferId;
+  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8);
+  fn buffer_write_data(&self, buffer: BufferId, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8);
+  fn buffer_delete(&self, buffer: BufferId);
 
   // textures
-  fn texture_create(&self, sampler: &TextureSampler) -> GraphicsHandle;
-  fn texture_set_options(&self, texture: GraphicsHandle, sampler: &TextureSampler);
-  fn texture_initialize(&self, texture: GraphicsHandle, width: u32, height: u32, format: TextureFormat);
-  fn texture_read_data(&self, texture: GraphicsHandle, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize);
+  fn texture_create(&self, sampler: &TextureSampler) -> TextureId;
+  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler);
+  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat);
+  fn texture_read_data(&self, texture: TextureId, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize);
   fn texture_write_data(
     &self,
-    texture: GraphicsHandle,
+    texture: TextureId,
     width: u32,
     height: u32,
     pixels: *const u8,
@@ -127,37 +159,37 @@ pub trait GraphicsBackend {
   );
   fn texture_write_sub_data(
     &self,
-    texture: GraphicsHandle,
+    texture: TextureId,
     region: &Rectangle,
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,
   );
-  fn texture_delete(&self, texture: GraphicsHandle);
+  fn texture_delete(&self, texture: TextureId);
 
   // shaders
-  fn shader_create(&self) -> GraphicsHandle;
-  fn shader_link(&self, shader: GraphicsHandle, kernels: &[ShaderKernel]) -> crate::Result<()>;
-  fn shader_uniform_location(&self, shader: GraphicsHandle, name: &str) -> Option<usize>;
-  fn shader_set_uniform(&self, shader: GraphicsHandle, location: usize, value: &ShaderUniform);
-  fn shader_activate(&self, shader: GraphicsHandle);
-  fn shader_delete(&self, shader: GraphicsHandle);
+  fn shader_create(&self) -> ShaderId;
+  fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> crate::Result<()>;
+  fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize>;
+  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform);
+  fn shader_activate(&self, shader: ShaderId);
+  fn shader_delete(&self, shader: ShaderId);
 
   // meshes
-  fn mesh_create(&self, vertices: GraphicsHandle, indices: GraphicsHandle, descriptors: &[VertexDescriptor]) -> GraphicsHandle;
-  fn mesh_draw(&self, mesh: GraphicsHandle, topology: PrimitiveTopology, vertex_count: usize, index_count: usize);
-  fn mesh_delete(&self, mesh: GraphicsHandle);
+  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> MeshId;
+  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize);
+  fn mesh_delete(&self, mesh: MeshId);
 
   // render targets
   fn target_create(
     &self,
-    color_attachment: GraphicsHandle,
-    depth_attachment: Option<GraphicsHandle>,
-    stencil_attachment: Option<GraphicsHandle>,
-  ) -> GraphicsHandle;
-  fn target_activate(&self, render_target: GraphicsHandle);
+    color_attachment: TextureId,
+    depth_attachment: Option<TextureId>,
+    stencil_attachment: Option<TextureId>,
+  ) -> TargetId;
+  fn target_activate(&self, target: TargetId);
   fn target_set_default(&self);
-  fn target_blit(&self, from: GraphicsHandle, to: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
-  fn target_blit_to_display(&self, handle: GraphicsHandle, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
-  fn target_delete(&self, render_target: GraphicsHandle);
+  fn target_blit(&self, from: TargetId, to: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
+  fn target_blit_to_display(&self, target: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
+  fn target_delete(&self, target: TargetId);
 }

@@ -2,6 +2,8 @@
 
 use std::ffi::c_void;
 
+// TODO: experiment with this idea some more?
+
 /// The domain for runtime execution of a project.
 ///
 /// Used to provide descriptors to the editor for use in the UI.

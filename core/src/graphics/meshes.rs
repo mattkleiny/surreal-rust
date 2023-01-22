@@ -144,8 +144,8 @@ pub struct Mesh<V> {
 
 /// The internal state for a mesh.
 struct MeshState<V> {
+  id: MeshId,
   graphics: GraphicsServer,
-  handle: GraphicsHandle,
   vertices: Buffer<V>,
   indices: Buffer<Index>,
 }
@@ -165,8 +165,8 @@ impl<V: Vertex> Mesh<V> {
 
     Self {
       state: Rc::new(RefCell::new(MeshState {
+        id: graphics.mesh_create(vertices.id(), indices.id(), V::DESCRIPTORS),
         graphics: graphics.clone(),
-        handle: graphics.mesh_create(vertices.handle(), indices.handle(), V::DESCRIPTORS),
         vertices,
         indices,
       })),
@@ -219,21 +219,15 @@ impl<V: Vertex> Mesh<V> {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.mesh_draw(state.handle, topology, vertex_count, index_count);
+    graphics.mesh_draw(state.id, topology, vertex_count, index_count);
 
     material.unbind();
   }
 }
 
-impl<V> GraphicsResource for Mesh<V> {
-  fn handle(&self) -> GraphicsHandle {
-    self.state.borrow().handle
-  }
-}
-
 impl<V> Drop for MeshState<V> {
   fn drop(&mut self) {
-    self.graphics.mesh_delete(self.handle);
+    self.graphics.mesh_delete(self.id);
   }
 }
 
