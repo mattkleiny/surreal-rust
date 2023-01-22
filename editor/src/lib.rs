@@ -12,6 +12,7 @@ pub use domain::*;
 pub use events::*;
 pub use projects::*;
 pub use reflect::*;
+pub use registry::*;
 pub use serialize::*;
 pub use ui::*;
 
@@ -20,5 +21,6 @@ mod domain;
 mod events;
 mod projects;
 mod reflect;
+mod registry;
 mod serialize;
 mod ui;

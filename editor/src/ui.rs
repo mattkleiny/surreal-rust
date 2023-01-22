@@ -17,7 +17,7 @@ mod windows;
 ///
 /// The editor window contains state for all panels in the editor UI, as well
 /// as metadata about the current project and open scene.
-pub struct ProjectWindow {
+pub struct MainWindow {
   editor_context: EditorContext,
   _editor_layout: EditorWindowLayout,
   inspector: Inspector,
@@ -27,7 +27,7 @@ pub struct ProjectWindow {
   graph_editor: GraphEditor<u32>,
 }
 
-impl EditorWindow for ProjectWindow {
+impl EditorWindow for MainWindow {
   fn create_window(&self) -> winit::window::WindowBuilder {
     winit::window::WindowBuilder::new()
       .with_title(format!(
@@ -72,14 +72,14 @@ pub struct EditorContext {
   _undo_manager: UndoManager,
 }
 
-/// Represents a panel that can be rendered in the [`ProjectWindow`].
+/// Represents a panel that can be rendered in the [`MainWindow`].
 pub trait EditorPanel {
   /// Renders the active panel in-context.
   fn show(&mut self, ui: &mut egui::Ui, context: &mut EditorContext);
 }
 
-impl ProjectWindow {
-  /// Builds a new [`ProjectWindow`].
+impl MainWindow {
+  /// Builds a new [`MainWindow`].
   pub fn new(project: Project) -> Self {
     Self {
       editor_context: EditorContext {
@@ -96,10 +96,9 @@ impl ProjectWindow {
   }
 }
 
-/// The layout for the [`ProjectWindow`] and it's panels.
+/// The layout for the [`MainWindow`] and it's panels.
 ///
 /// Layouts are saved to disk per-project, and loaded when the editor is opened.
-#[derive(Serialize, Deserialize)]
 pub struct EditorWindowLayout {
   pub primary_inspector: PanelLayout,
   pub content_browser: PanelLayout,

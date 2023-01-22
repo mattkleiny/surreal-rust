@@ -12,6 +12,8 @@
 
 #[cfg(feature = "ai")]
 pub extern crate ai;
+#[cfg(feature = "analytics")]
+pub extern crate analytics;
 #[cfg(feature = "animation")]
 pub extern crate animation;
 pub extern crate core;
