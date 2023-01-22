@@ -2,7 +2,7 @@
 
 # Surreal ![Surreal Icon](./surreal.ico)
 
-A capable game engine built with Rust.
+A simple but capable game engine, built with Rust.
 
 This project is in active development.
 

@@ -11,18 +11,11 @@ members = [
     "editor",
     "macros",
     "modules/*",
-    "scenes/*",
-    "servers/*",
     "tools/*"
 ]
 
 [profile.dev.package."*"]
 opt-level = 3
-
-[features]
-default = ["audio", "graphics", "input", "physics"]
-urp = ["graphics/urp"]
-hdrp = ["graphics/hdrp"]
 
 [dependencies]
 # core
@@ -40,16 +33,6 @@ prototype = { package = "surreal-prototype", path = "./modules/prototype", optio
 streaming = { package = "surreal-streaming", path = "./modules/streaming", optional = true }
 voxels = { package = "surreal-voxels", path = "./modules/voxels", optional = true }
 wind = { package = "surreal-wind", path = "./modules/wind", optional = true }
-
-# scenes
-scene2d = { package = "surreal-scene2d", path = "./scenes/2d", optional = true }
-scene3d = { package = "surreal-scene3d", path = "./scenes/3d", optional = true }
-
-# servers
-audio = { package = "surreal-audio", path = "./servers/audio", optional = true }
-graphics = { package = "surreal-graphics", path = "./servers/graphics", optional = true }
-input = { package = "surreal-input", path = "./servers/input", optional = true }
-physics = { package = "surreal-physics", path = "./servers/physics", optional = true }
 
 [[example]]
 name = "bunnymark"

@@ -23,10 +23,6 @@ pub extern crate csg;
 pub extern crate editor;
 #[cfg(feature = "prototype")]
 pub extern crate prototype;
-#[cfg(feature = "scene2d")]
-pub extern crate scene2d;
-#[cfg(feature = "scene3d")]
-pub extern crate scene3d;
 #[cfg(feature = "scripting")]
 pub extern crate scripting;
 #[cfg(feature = "streaming")]
@@ -34,20 +30,20 @@ pub extern crate streaming;
 #[cfg(feature = "voxels")]
 pub extern crate voxels;
 
+#[rustfmt::skip]
 pub mod prelude {
-  pub use core::{
-    assets::*, audio::*, collections::*, diagnostics::*, engine::*, graphics::*, graphs::*, input::*, io::*, macros::*, maths::*, scene::*,
-    ui::*, utilities::*,
-  };
-}
-
-pub mod servers {
-  #[cfg(feature = "audio")]
-  pub use audio;
-  #[cfg(feature = "graphics")]
-  pub use graphics;
-  #[cfg(feature = "input")]
-  pub use input;
-  #[cfg(feature = "physics")]
-  pub use physics;
+  pub use core::assets::*;
+  pub use core::audio::*;
+  pub use core::collections::*;
+  pub use core::diagnostics::*;
+  pub use core::engine::*;
+  pub use core::graphics::*;
+  pub use core::graphs::*;
+  pub use core::input::*;
+  pub use core::io::*;
+  pub use core::macros::*;
+  pub use core::maths::*;
+  pub use core::scene::*;
+  pub use core::ui::*;
+  pub use core::utilities::*;
 }

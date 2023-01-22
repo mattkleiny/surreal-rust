@@ -4,11 +4,9 @@ pub use buffers::*;
 pub use colors::*;
 pub use fonts::*;
 pub use geometry::*;
-pub use headless::*;
 pub use images::*;
 pub use materials::*;
 pub use meshes::*;
-pub use opengl::*;
 pub use palettes::*;
 pub use rendering::*;
 pub use shaders::*;
@@ -46,12 +44,12 @@ pub struct GraphicsServer {
 impl GraphicsServer {
   /// Creates a new [`GraphicsServer`] with a [`HeadlessGraphicsBackend`].
   pub fn headless() -> Self {
-    Self::new(HeadlessGraphicsBackend::new())
+    Self::new(headless::HeadlessGraphicsBackend::default())
   }
 
   /// Creates a new [`GraphicsServer`] with an [`OpenGLGraphicsBackend`].
   pub fn opengl(window: &winit::window::Window, vsync_enabled: bool, samples: u8) -> crate::Result<Self> {
-    unsafe { Ok(Self::new(OpenGLGraphicsBackend::new(window, vsync_enabled, samples)?)) }
+    unsafe { Ok(Self::new(opengl::OpenGLGraphicsBackend::new(window, vsync_enabled, samples)?)) }
   }
 
   /// Creates a new [`GraphicsServer`] for the given [`GraphicsBackend`].

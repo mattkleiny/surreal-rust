@@ -1,1 +1,0 @@
-//! Standard PBR forward rendering shader

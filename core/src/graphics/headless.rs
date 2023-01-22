@@ -5,12 +5,6 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use super::*;
 use crate::maths::Rectangle;
 
-/// Creates a [`GraphicsServer`] from the [`HeadlessGraphicsBackend`] for
-/// testing purposes.
-pub fn create_test_graphics() -> GraphicsServer {
-  GraphicsServer::new(HeadlessGraphicsBackend::new())
-}
-
 /// A headless [`GraphicsBackend`] implementation.
 ///
 /// This backend does nothing (no-ops) and can be used for testing/etc.
@@ -24,12 +18,6 @@ pub struct HeadlessGraphicsBackend {
 
 impl Default for HeadlessGraphicsBackend {
   fn default() -> Self {
-    Self::new()
-  }
-}
-
-impl HeadlessGraphicsBackend {
-  pub fn new() -> Self {
     Self {
       next_buffer_id: AtomicU32::new(1),
       next_texture_id: AtomicU32::new(1),

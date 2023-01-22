@@ -70,7 +70,7 @@ impl RenderContext for WindContext {}
 #[cfg(test)]
 mod tests {
   use surreal::{
-    graphics::create_test_graphics,
+    graphics::GraphicsServer,
     scene::{SceneGraph, SceneNodeBuilder},
   };
 
@@ -85,7 +85,8 @@ mod tests {
         .build(),
     );
 
-    let mut renderer = Renderer::new(&create_test_graphics());
+    let graphics = GraphicsServer::headless();
+    let mut renderer = Renderer::new(&graphics);
 
     scene.update(0.16);
     scene.update(0.16);

@@ -1,10 +1,9 @@
 //! A lightweight cross-platform audio engine.
 
-pub use headless::*;
-
 use crate::utilities::{Size, TimeSpan};
 
 mod headless;
+mod rodio;
 
 /// Describes sampling rates for an audio clip.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -35,6 +34,37 @@ impl AudioSampleRate {
   /// Calculates the `Size` required for the given duration at this sample rate.
   pub fn calculate_size(&self, duration: TimeSpan) -> Size {
     Size::from_bytes((duration.total_seconds() * self.bytes_per_second()).ceil() as usize)
+  }
+}
+
+/// A wrapper for the core [`AudioBackend`] implementation.
+#[derive(Clone)]
+pub struct AudioServer {
+  backend: std::sync::Arc<Box<dyn AudioBackend>>,
+}
+
+impl AudioServer {
+  /// Creates a new [`AudioServer`] with a [`HeadlessAudioBackend`].
+  pub fn headless() -> Self {
+    Self::new(headless::HeadlessAudioBackend::default())
+  }
+
+  /// Creates a new [`AudioServer`] for the given [`AudioBackend`].
+  pub fn new(backend: impl AudioBackend + 'static) -> Self {
+    Self {
+      backend: std::sync::Arc::new(Box::new(backend)),
+    }
+  }
+}
+
+unsafe impl Send for AudioServer {}
+unsafe impl Sync for AudioServer {}
+
+impl std::ops::Deref for AudioServer {
+  type Target = Box<dyn AudioBackend>;
+
+  fn deref(&self) -> &Self::Target {
+    self.backend.as_ref()
   }
 }
 
