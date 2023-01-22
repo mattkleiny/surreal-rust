@@ -97,6 +97,102 @@ pub trait Application: Sized {
   }
 }
 
+/// A builder pattern over the [`Engine`] and [`EngineConfig`].
+#[derive(Default)]
+pub struct EngineBuilder {
+  config: EngineConfig,
+}
+
+impl EngineBuilder {
+  pub fn with_title(mut self, title: &str) -> Self {
+    self.config.title = title.to_string();
+    self
+  }
+
+  pub fn with_size(mut self, size: (u32, u32)) -> Self {
+    self.config.size = size;
+    self
+  }
+
+  pub fn with_vsync(mut self, vsync: bool) -> Self {
+    self.config.vsync_enabled = vsync;
+    self
+  }
+
+  pub fn with_samples(mut self, samples: u8) -> Self {
+    self.config.samples = samples;
+    self
+  }
+
+  pub fn with_update_continuously(mut self, update_continuously: bool) -> Self {
+    self.config.update_continuously = update_continuously;
+    self
+  }
+
+  pub fn with_window_visible(mut self, is_window_visible: bool) -> Self {
+    self.config.is_window_visible = is_window_visible;
+    self
+  }
+
+  pub fn with_transparent_window(mut self, transparent_window: bool) -> Self {
+    self.config.transparent_window = transparent_window;
+    self
+  }
+
+  pub fn with_fps_in_title(mut self, fps_in_title: bool) -> Self {
+    self.config.show_fps_in_title = fps_in_title;
+    self
+  }
+
+  pub fn with_log_level(mut self, log_level: LevelFilter) -> Self {
+    self.config.log_level = log_level;
+    self
+  }
+
+  pub fn with_icon(mut self, icon: &'static [u8]) -> Self {
+    self.config.icon = Some(icon);
+    self
+  }
+
+  /// Starts an [`Application`] on the resultant [`Engine`].
+  pub fn start_application<A: Application>(self) -> crate::Result<()> {
+    self.start(|mut engine, mut assets| {
+      let mut application = A::new(&mut engine, &mut assets).expect("Failed to create application");
+
+      engine.run(|engine, event| {
+        application.notify(engine, event);
+      })
+    })
+  }
+
+  /// Starts a [`SceneGraph`] on the resultant [`Engine`].
+  pub fn start_scene(self, setup: impl Fn(&Engine, &AssetManager) -> crate::Result<SceneGraph>) -> crate::Result<()> {
+    self.start(|engine, assets| {
+      let mut scene = setup(&engine, &assets)?;
+      let mut renderer = Renderer::new(&engine.graphics);
+
+      engine.run_variable_step(|_, time| {
+        renderer.begin_frame();
+
+        scene.update(time.delta_time);
+        scene.render(&mut renderer);
+
+        renderer.end_frame();
+      })
+    })
+  }
+
+  /// Starts the [`Engine`] with the given callback.
+  pub fn start(self, setup: impl FnOnce(Engine, AssetManager) -> crate::Result<()>) -> crate::Result<()> {
+    Engine::start(self.config, setup)
+  }
+
+  /// Builds the resultant [`Engine`].
+  pub fn build(self) -> Engine {
+    Engine::new(self.config)
+  }
+}
+
 /// The core engine for Surreal.
 ///
 /// This struct manages core systems and facilitates the main game loop.
@@ -214,34 +310,6 @@ impl Engine {
     log::trace!("Running engine setup");
 
     setup(engine, assets)
-  }
-
-  /// Builds a [`Engine`] that runs the given [`SceneGraph`].
-  pub fn from_scene(configuration: EngineConfig, setup: impl Fn(&Engine, &AssetManager) -> SceneGraph) -> crate::Result<()> {
-    Engine::start(configuration, |engine, assets| {
-      let mut scene = setup(&engine, &assets);
-      let mut renderer = Renderer::new(&engine.graphics);
-
-      engine.run_variable_step(|_, time| {
-        renderer.begin_frame();
-
-        scene.update(time.delta_time);
-        scene.render(&mut renderer);
-
-        renderer.end_frame();
-      })
-    })
-  }
-
-  /// Builds a [`Engine`] that runs the given [`Application`].  
-  pub fn from_application<A: Application>(configuration: EngineConfig) -> crate::Result<()> {
-    Engine::start(configuration, |mut engine, mut assets| {
-      let mut application = A::new(&mut engine, &mut assets).expect("Failed to create application");
-
-      engine.run(|engine, event| {
-        application.notify(engine, event);
-      })
-    })
   }
 
   /// Runs a variable step game loop against the engine.

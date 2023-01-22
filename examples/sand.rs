@@ -3,70 +3,67 @@
 use surreal::{prelude::*, prototype::*};
 
 fn main() {
-  let configuration = EngineConfig {
-    title: "Falling Sand".to_string(),
-    log_level: LevelFilter::Trace,
-    ..Default::default()
-  };
+  EngineBuilder::default()
+    .with_title("Falling Sand")
+    .with_log_level(LevelFilter::Trace)
+    .start(|engine, _| {
+      let graphics = &engine.graphics;
 
-  Engine::start(configuration, |engine, _| {
-    let graphics = &engine.graphics;
+      // set-up rendering
+      let palette = load_built_in_palette(BuiltInPalette::Hollow4);
+      let mut canvas = PixelCanvas::new(graphics, 256, 144);
+      let mut timer = IntervalTimer::new(TimeSpan::from_millis(10.));
 
-    // set-up rendering
-    let palette = load_built_in_palette(BuiltInPalette::Hollow4);
-    let mut canvas = PixelCanvas::new(graphics, 256, 144);
-    let mut timer = IntervalTimer::new(TimeSpan::from_millis(10.));
+      engine.run_variable_step(|engine, time| {
+        engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
 
-    engine.run_variable_step(|engine, time| {
-      engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
+        if timer.tick(time.delta_time) {
+          simulate_sand(&mut canvas.pixels);
+          timer.reset();
+        }
 
-      if timer.tick(time.delta_time) {
-        simulate_sand(&mut canvas.pixels);
-        timer.reset();
-      }
+        canvas.draw();
 
-      canvas.draw();
+        if let Some(mouse) = &engine.input.mouse {
+          let size = vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
+          let position = mouse.normalised_position() * size;
 
-      if let Some(mouse) = &engine.input.mouse {
-        let size = vec2(canvas.pixels.width() as f32, canvas.pixels.height() as f32);
-        let position = mouse.normalised_position() * size;
+          if mouse.is_button_down(MouseButton::Left) {
+            let colors = &palette.as_slice()[1..4];
+            let color = colors[usize::random() % colors.len()];
 
-        if mouse.is_button_down(MouseButton::Left) {
-          let colors = &palette.as_slice()[1..4];
-          let color = colors[usize::random() % colors.len()];
+            for offset_y in -2..2 {
+              for offset_x in -2..2 {
+                let x = offset_x + position.x as i32;
+                let y = offset_y + position.y as i32;
 
-          for offset_y in -2..2 {
-            for offset_x in -2..2 {
-              let x = offset_x + position.x as i32;
-              let y = offset_y + position.y as i32;
+                canvas.pixels.set(x, y, color);
+              }
+            }
+          } else if mouse.is_button_down(MouseButton::Right) {
+            for offset_y in -2..2 {
+              for offset_x in -2..2 {
+                let x = offset_x + position.x as i32;
+                let y = offset_y + position.y as i32;
 
-              canvas.pixels.set(x, y, color);
+                canvas.pixels.set(x, y, Color32::CLEAR);
+              }
             }
           }
-        } else if mouse.is_button_down(MouseButton::Right) {
-          for offset_y in -2..2 {
-            for offset_x in -2..2 {
-              let x = offset_x + position.x as i32;
-              let y = offset_y + position.y as i32;
+        }
 
-              canvas.pixels.set(x, y, Color32::CLEAR);
-            }
+        if let Some(keyboard) = &engine.input.keyboard {
+          if keyboard.is_key_pressed(Key::Space) {
+            canvas.pixels.fill(Color32::CLEAR);
+          }
+
+          if keyboard.is_key_pressed(Key::Escape) {
+            engine.quit();
           }
         }
-      }
-
-      if let Some(keyboard) = &engine.input.keyboard {
-        if keyboard.is_key_pressed(Key::Space) {
-          canvas.pixels.fill(Color32::CLEAR);
-        }
-
-        if keyboard.is_key_pressed(Key::Escape) {
-          engine.quit();
-        }
-      }
+      })
     })
-  })
-  .expect("An unexpected error occurred");
+    .expect("An unexpected error occurred");
 }
 
 fn simulate_sand(pixels: &mut Grid<Color32>) {
