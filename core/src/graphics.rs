@@ -79,12 +79,12 @@ pub struct GraphicsServer {
 }
 
 impl GraphicsServer {
-  /// Creates a new [`GraphicsServer`] with a [`HeadlessGraphicsBackend`].
+  /// Creates a new [`GraphicsServer`] with a [`headless::HeadlessGraphicsBackend`].
   pub fn headless() -> Self {
     Self::new(headless::HeadlessGraphicsBackend::default())
   }
 
-  /// Creates a new [`GraphicsServer`] with an [`OpenGLGraphicsBackend`].
+  /// Creates a new [`GraphicsServer`] with an [`opengl::OpenGLGraphicsBackend`].
   pub fn opengl(window: &winit::window::Window, vsync_enabled: bool, samples: u8) -> crate::Result<Self> {
     unsafe { Ok(Self::new(opengl::OpenGLGraphicsBackend::new(window, vsync_enabled, samples)?)) }
   }

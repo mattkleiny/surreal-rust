@@ -11,9 +11,9 @@ fn main() {
 
   Engine::start(configuration, |engine, assets| {
     // set-up assets and rendering
-    let sprites1 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/tiles_desert.png").unwrap();
-    let sprites2 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-idle.png").unwrap();
-    let sprites3 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-walk.png").unwrap();
+    let sprites1 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/tiles_desert.png")?;
+    let sprites2 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-idle.png")?;
+    let sprites3 = TextureAtlas::load(&assets, 16, 16, "assets/sprites/spawner-walk.png")?;
 
     let mut renderer = Renderer::new(&engine.graphics);
 
@@ -48,6 +48,7 @@ fn main() {
           engine.quit();
         }
       }
-    });
-  });
+    })
+  })
+  .expect("An unexpected error occurred");
 }

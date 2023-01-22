@@ -64,8 +64,9 @@ fn main() {
           engine.quit();
         }
       }
-    });
-  });
+    })
+  })
+  .expect("An unexpected error occurred");
 }
 
 fn simulate_sand(pixels: &mut Grid<Color32>) {

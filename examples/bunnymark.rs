@@ -17,7 +17,7 @@ fn main() {
     let mut interface = UserInterface::new(graphics);
 
     // set-up assets and rendering
-    let sprite = Texture::load(&assets, "assets/sprites/bunny.png").unwrap();
+    let sprite = Texture::load(&assets, "assets/sprites/bunny.png")?;
     let region = TextureRegion::from(&sprite);
     let mut renderer = Renderer::new(graphics);
 
@@ -109,8 +109,9 @@ fn main() {
           info!("There are {:?} bunnies", bunnies.len());
         }
       }
-    });
-  });
+    })
+  })
+  .expect("An unexpected error occurred");
 }
 
 /// Represents a bunny in the benchmark.

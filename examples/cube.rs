@@ -25,5 +25,6 @@ fn main() {
         }
       }
     })
-  });
+  })
+  .expect("An unexpected error occurred");
 }

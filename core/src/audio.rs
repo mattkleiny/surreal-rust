@@ -47,9 +47,14 @@ pub struct AudioServer {
 }
 
 impl AudioServer {
-  /// Creates a new [`AudioServer`] with a [`HeadlessAudioBackend`].
+  /// Creates a new [`AudioServer`] with a [`headless::HeadlessAudioBackend`].
   pub fn headless() -> Self {
     Self::new(headless::HeadlessAudioBackend::default())
+  }
+
+  /// Creates a new [`AudioServer`] with a [`rodio::RodioAudioBackend`].
+  pub fn rodio() -> Self {
+    Self::new(rodio::RodioAudioBackend::default())
   }
 
   /// Creates a new [`AudioServer`] for the given [`AudioBackend`].

@@ -19,7 +19,7 @@ mod windows;
 /// as metadata about the current project and open scene.
 pub struct MainWindow {
   editor_context: EditorContext,
-  _editor_layout: EditorWindowLayout,
+  _layout: MainWindowLayout,
   inspector: Inspector,
   content_browser: ContentBrowser,
   _scene_view: SceneView,
@@ -86,7 +86,7 @@ impl MainWindow {
         project,
         _undo_manager: UndoManager::default(),
       },
-      _editor_layout: EditorWindowLayout::default(),
+      _layout: MainWindowLayout::default(),
       inspector: Inspector::default(),
       content_browser: ContentBrowser::default(),
       _scene_view: SceneView::default(),
@@ -99,7 +99,7 @@ impl MainWindow {
 /// The layout for the [`MainWindow`] and it's panels.
 ///
 /// Layouts are saved to disk per-project, and loaded when the editor is opened.
-pub struct EditorWindowLayout {
+pub struct MainWindowLayout {
   pub primary_inspector: PanelLayout,
   pub content_browser: PanelLayout,
   pub scene_view: PanelLayout,
@@ -107,7 +107,7 @@ pub struct EditorWindowLayout {
   pub graph_editor: PanelLayout,
 }
 
-/// Where to position a single panel within an [`EditorWindowLayout`].
+/// Where to position a single panel within an [`MainWindowLayout`].
 #[derive(Serialize, Deserialize)]
 pub struct PanelLayout {
   position: PanelPosition,
@@ -129,7 +129,7 @@ pub enum PanelPosition {
   RightBottomOuter,
 }
 
-impl Default for EditorWindowLayout {
+impl Default for MainWindowLayout {
   fn default() -> Self {
     Self {
       primary_inspector: PanelLayout {

@@ -29,6 +29,7 @@ fn main() {
           engine.quit();
         }
       }
-    });
-  });
+    })
+  })
+  .expect("An unexpected error occurred");
 }

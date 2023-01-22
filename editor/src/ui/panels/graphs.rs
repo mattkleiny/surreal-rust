@@ -37,34 +37,32 @@ impl<D> EditorPanel for GraphEditor<D> {
   fn show(&mut self, ui: &mut Ui, _context: &mut EditorContext) {
     surreal::diagnostics::profile_scope!("GraphEditor::show");
 
-    ui.push_id("graph_editor", |ui| {
-      let rect = ui.available_rect_before_wrap();
-      let response = ui.allocate_rect(rect, Sense::click());
+    let rect = ui.available_rect_before_wrap();
+    let response = ui.allocate_rect(rect, Sense::click());
 
-      let background_color = if response.hovered() {
-        Color32::from_rgb(0x1c, 0x1c, 0x1c)
-      } else {
-        Color32::from_rgb(0x1b, 0x1b, 0x1b)
-      };
+    let background_color = if response.hovered() {
+      Color32::from_rgb(0x1c, 0x1c, 0x1c)
+    } else {
+      Color32::from_rgb(0x1b, 0x1b, 0x1b)
+    };
 
-      // let cursor_pos =
-      // ui.ctx().input().pointer.hover_pos().unwrap_or(egui::Pos2::ZERO);
-      // let cursor_in_editor = rect.contains(cursor_pos);
-      // let cursor_in_finder = false;
+    // let cursor_pos =
+    // ui.ctx().input().pointer.hover_pos().unwrap_or(egui::Pos2::ZERO);
+    // let cursor_in_editor = rect.contains(cursor_pos);
+    // let cursor_in_finder = false;
 
-      self.zoom = (self.zoom + ui.ctx().input().zoom_delta() - 1.).clamp(ZOOM_MIN, ZOOM_MAX);
+    self.zoom = (self.zoom + ui.ctx().input().zoom_delta() - 1.).clamp(ZOOM_MIN, ZOOM_MAX);
 
-      let painter = ui.painter();
+    let painter = ui.painter();
 
-      Self::paint_grid(painter, rect, self.zoom, background_color);
+    Self::paint_grid(painter, rect, self.zoom, background_color);
 
-      // TODO: paint nodes
-      // TODO: paint connections
-      // TODO: paint finder (if open)
-      // TODO: paint blackboard (if open)
-      // TODO: paint minimap (if open)
-      // TODO: paint inspector (if open)
-    });
+    // TODO: paint nodes
+    // TODO: paint connections
+    // TODO: paint finder (if open)
+    // TODO: paint blackboard (if open)
+    // TODO: paint minimap (if open)
+    // TODO: paint inspector (if open)
   }
 }
 

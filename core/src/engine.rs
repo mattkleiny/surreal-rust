@@ -13,6 +13,7 @@ use winit::{
 
 use crate::{
   assets::AssetManager,
+  audio::AudioServer,
   diagnostics::{self, ConsoleLogger, LevelFilter},
   graphics::{GraphicsServer, Image, ImageFormat, Renderer},
   input::InputServer,
@@ -101,6 +102,7 @@ pub trait Application: Sized {
 /// This struct manages core systems and facilitates the main game loop.
 pub struct Engine {
   // core systems
+  pub audio: AudioServer,
   pub graphics: GraphicsServer,
   pub input: InputServer,
 
@@ -140,12 +142,15 @@ impl Engine {
       .build(&event_loop)
       .expect("Failed to build main window");
 
+    let audio = AudioServer::rodio();
     let graphics = GraphicsServer::opengl(&window, config.vsync_enabled, config.samples).expect("Failed to build graphics");
+    let input = InputServer::new(window.scale_factor() as f32);
 
     Self {
       // servers
+      audio,
       graphics,
-      input: InputServer::new(window.scale_factor() as f32),
+      input,
 
       // window management
       config,
@@ -163,7 +168,7 @@ impl Engine {
   }
 
   /// Starts the engine with the given configuration.
-  pub fn start(configuration: EngineConfig, setup: impl FnOnce(Engine, AssetManager)) {
+  pub fn start(configuration: EngineConfig, setup: impl FnOnce(Engine, AssetManager) -> crate::Result<()>) -> crate::Result<()> {
     use crate::graphics::*;
 
     // set-up diagnostics
@@ -208,11 +213,11 @@ impl Engine {
 
     log::trace!("Running engine setup");
 
-    setup(engine, assets);
+    setup(engine, assets)
   }
 
   /// Builds a [`Engine`] that runs the given [`SceneGraph`].
-  pub fn from_scene(configuration: EngineConfig, setup: impl Fn(&Engine, &AssetManager) -> SceneGraph) {
+  pub fn from_scene(configuration: EngineConfig, setup: impl Fn(&Engine, &AssetManager) -> SceneGraph) -> crate::Result<()> {
     Engine::start(configuration, |engine, assets| {
       let mut scene = setup(&engine, &assets);
       let mut renderer = Renderer::new(&engine.graphics);
@@ -224,36 +229,36 @@ impl Engine {
         scene.render(&mut renderer);
 
         renderer.end_frame();
-      });
-    });
+      })
+    })
   }
 
   /// Builds a [`Engine`] that runs the given [`Application`].  
-  pub fn from_application<A: Application>(configuration: EngineConfig) {
+  pub fn from_application<A: Application>(configuration: EngineConfig) -> crate::Result<()> {
     Engine::start(configuration, |mut engine, mut assets| {
       let mut application = A::new(&mut engine, &mut assets).expect("Failed to create application");
 
       engine.run(|engine, event| {
         application.notify(engine, event);
-      });
+      })
     })
   }
 
   /// Runs a variable step game loop against the engine.
   ///
   /// This method will block until the game is closed.
-  pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, GameTime)) {
+  pub fn run_variable_step(self, mut body: impl FnMut(&mut Engine, GameTime)) -> crate::Result<()> {
     self.run(move |engine, event| {
       if let TickEvent::Update(time) = event {
         body(engine, time)
       }
-    });
+    })
   }
 
   /// Runs the given delegate as the main loop for the engine.
   ///
   /// This method will block until the game is closed.
-  pub fn run(mut self, mut body: impl FnMut(&mut Self, TickEvent)) {
+  pub fn run(mut self, mut body: impl FnMut(&mut Self, TickEvent)) -> crate::Result<()> {
     use winit::{event::*, platform::run_return::EventLoopExtRunReturn};
 
     log::trace!("Entering main event loop");
@@ -373,7 +378,9 @@ impl Engine {
       }
     });
 
-    log::trace!("Stopping engine")
+    log::trace!("Stopping engine");
+
+    Ok(())
   }
 
   /// Gets the title of the window.

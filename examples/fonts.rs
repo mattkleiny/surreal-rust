@@ -14,8 +14,8 @@ fn main() {
     let graphics = &engine.graphics;
 
     // set-up rendering
-    let bitmap_font = BitmapFont::load(&assets, "assets/fonts/IBM.font").unwrap();
-    let vector_font = VectorFont::load(&assets, "assets/fonts/bitboy8_v1.otf").unwrap();
+    let bitmap_font = BitmapFont::load(&assets, "assets/fonts/IBM.font")?;
+    let vector_font = VectorFont::load(&assets, "assets/fonts/bitboy8_v1.otf")?;
     let mut renderer = Renderer::new(graphics);
 
     renderer.add_descriptor(SpriteContextDescriptor {
@@ -63,6 +63,7 @@ fn main() {
           engine.quit();
         }
       }
-    });
-  });
+    })
+  })
+  .expect("An unexpected error occurred");
 }
