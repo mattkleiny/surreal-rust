@@ -158,6 +158,19 @@ impl<'a, T> IntoIterator for &'a mut RingBuffer<T> {
   }
 }
 
+impl<T: Clone> FromIterator<T> for RingBuffer<T> {
+  fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+    let iter = iter.into_iter();
+    let mut buffer = RingBuffer::new(iter.size_hint().0);
+
+    for item in iter {
+      buffer.push(item);
+    }
+
+    buffer
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -201,5 +214,12 @@ mod tests {
     assert_eq!(*results[1], 3);
     assert_eq!(*results[2], 2);
     assert_eq!(*results[3], 1);
+  }
+
+  #[test]
+  fn ringbuffer_should_build_from_iterator() {
+    let buffer: RingBuffer<u32> = (0..1000).collect();
+
+    assert_eq!(buffer.len(), 1000);
   }
 }

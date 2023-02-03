@@ -13,8 +13,9 @@ pub fn impl_profiling(item: TokenStream) -> TokenStream {
     }
   });
 
-  (quote! {
+  let expanded = quote! {
     #function
-  })
-  .into()
+  };
+
+  expanded.into()
 }

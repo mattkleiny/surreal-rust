@@ -147,10 +147,7 @@ impl Texture {
     let mut state = self.state.borrow_mut();
 
     state.options = options;
-
-    let graphics = &state.graphics;
-
-    graphics.texture_set_options(state.id, &state.options.sampler);
+    state.graphics.texture_set_options(state.id, &state.options.sampler);
   }
 
   /// Initializes the texture with the given width and height.

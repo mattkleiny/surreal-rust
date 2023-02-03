@@ -32,6 +32,7 @@ mod sprites;
 mod targets;
 mod textures;
 
+/// Implements a new opaque identifier for some resource type.
 macro_rules! impl_graphics_id {
   ($name:ident) => {
     /// A unique identifier for a kind of graphics resource.
@@ -40,7 +41,7 @@ macro_rules! impl_graphics_id {
     pub struct $name(u32);
 
     impl $name {
-      /// A value that represents the 'NONE' typo of this resource.
+      /// A value that represents the 'NONE' value of this resource.
       pub const NONE: Self = Self::new(0);
 
       /// Creates a new ID with the given value.

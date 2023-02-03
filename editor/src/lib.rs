@@ -6,6 +6,7 @@
 
 #![feature(anonymous_lifetime_in_impl_trait)]
 #![feature(box_into_inner)]
+#![feature(const_trait_impl)]
 
 pub use assets::*;
 pub use domain::*;

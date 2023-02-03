@@ -21,12 +21,12 @@ pub struct Face {
 
 impl Face {
   /// Creates a [`Face`] from the given vertices in clockwise ordering.
-  pub fn from_points_clockwise(_vertices: [Vec3; 3]) -> Self {
+  pub fn from_points_cw(_vertices: [Vec3; 3]) -> Self {
     todo!()
   }
 
   /// Creates a [`Face`] from the given vertices in counter-clockwise ordering.
-  pub fn from_points_counter_clockwise(_vertices: [Vec3; 3]) -> Self {
+  pub fn from_points_ccw(_vertices: [Vec3; 3]) -> Self {
     todo!()
   }
 }

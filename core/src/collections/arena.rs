@@ -285,6 +285,18 @@ impl<'a, T> IntoIterator for &'a mut Arena<T> {
   }
 }
 
+impl<A> FromIterator<A> for Arena<A> {
+  fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
+    let mut result = Self::default();
+
+    for item in iter {
+      result.insert(item);
+    }
+
+    result
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -385,5 +397,12 @@ mod tests {
     let unpacked = ArenaIndex::from(packed);
 
     assert_eq!(index, unpacked);
+  }
+
+  #[test]
+  fn arena_should_collect_from_iterator() {
+    let items = (0..16).collect::<Arena<_>>();
+
+    assert_eq!(items.len(), 16);
   }
 }

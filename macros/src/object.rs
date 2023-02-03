@@ -6,7 +6,7 @@ pub fn impl_object_trait(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
   let name = &input.ident;
 
-  (quote! {
+  let expanded = quote! {
     impl surreal::utilities::Object for #name {
       #[inline(always)]
       fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
@@ -23,6 +23,7 @@ pub fn impl_object_trait(input: TokenStream) -> TokenStream {
         self
       }
     }
-  })
-  .into()
+  };
+
+  expanded.into()
 }

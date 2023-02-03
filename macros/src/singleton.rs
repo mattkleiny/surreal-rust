@@ -6,7 +6,7 @@ pub fn impl_singleton_trait(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
   let name = &input.ident;
 
-  (quote! {
+  let expanded = quote! {
     use surreal::utilities::{Singleton, UnsafeLazyCell};
 
     impl Singleton for #name {
@@ -16,6 +16,7 @@ pub fn impl_singleton_trait(input: TokenStream) -> TokenStream {
         unsafe { &mut INSTANCE }
       }
     }
-  })
-  .into()
+  };
+
+  expanded.into()
 }

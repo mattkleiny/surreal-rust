@@ -29,14 +29,15 @@ pub fn impl_vertex_trait(input: TokenStream) -> TokenStream {
     _ => panic!("Only structs are supported"),
   };
 
-  (quote! {
+  let expanded = quote! {
     impl Vertex for #name {
       const DESCRIPTORS: &'static [VertexDescriptor] = &[
         #(#descriptors),*
       ];
     }
-  })
-  .into()
+  };
+
+  expanded.into()
 }
 
 fn parse_vertex_attributes(attributes: &Vec<Attribute>) -> (usize, proc_macro2::TokenStream, bool) {
