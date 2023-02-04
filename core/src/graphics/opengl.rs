@@ -262,7 +262,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn texture_create(&self, sampler: &TextureSampler) -> TextureId {
+  fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError> {
     unsafe {
       let mut id: u32 = 0;
 
@@ -271,13 +271,13 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       let id = TextureId::from(id);
 
-      self.texture_set_options(id, sampler);
+      self.texture_set_options(id, sampler)?;
 
-      id
+      Ok(id)
     }
   }
 
-  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) {
+  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError> {
     unsafe {
       let min_filter = match sampler.minify_filter {
         TextureFilter::Nearest => gl::NEAREST,
@@ -300,10 +300,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mag_filter as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrap_mode as i32);
       gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrap_mode as i32);
+
+      Ok(())
     }
   }
 
-  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) {
+  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) -> Result<(), TextureError> {
     unsafe {
       let (components, kind) = convert_texture_format(format);
 
@@ -319,10 +321,19 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         kind,
         std::ptr::null(),
       );
+
+      Ok(())
     }
   }
 
-  fn texture_read_data(&self, texture: TextureId, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
+  fn texture_read_data(
+    &self,
+    texture: TextureId,
+    length: usize,
+    pixel_format: TextureFormat,
+    pixels: *mut u8,
+    mip_level: usize,
+  ) -> Result<(), TextureError> {
     unsafe {
       let (components, kind) = convert_texture_format(pixel_format);
 
@@ -335,6 +346,8 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         length as i32,
         pixels as *mut c_void,
       );
+
+      Ok(())
     }
   }
 
@@ -347,7 +360,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     internal_format: TextureFormat,
     pixel_format: TextureFormat,
     mip_level: usize,
-  ) {
+  ) -> Result<(), TextureError> {
     unsafe {
       let internal_format = match internal_format {
         TextureFormat::R8 => gl::R8,
@@ -376,6 +389,8 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         kind,
         pixels as *const _,
       );
+
+      Ok(())
     }
   }
 
@@ -386,7 +401,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,
-  ) {
+  ) -> Result<(), TextureError> {
     unsafe {
       let (components, kind) = convert_texture_format(pixel_format);
 
@@ -402,12 +417,16 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         kind,
         pixels as *const _,
       );
+
+      Ok(())
     }
   }
 
-  fn texture_delete(&self, texture: TextureId) {
+  fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError> {
     unsafe {
       gl::DeleteTextures(1, &texture.into());
+
+      Ok(())
     }
   }
 

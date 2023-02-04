@@ -28,8 +28,14 @@ pub struct RenderTextureDescriptor {
 
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
-  pub fn to_texture(&self, graphics: &GraphicsServer) -> Texture {
-    Texture::with_options_and_size(graphics, &self.options, self.width, self.height, self.options.format)
+  pub fn to_texture(&self, graphics: &GraphicsServer) -> crate::Result<Texture> {
+    Ok(Texture::with_options_and_size(
+      graphics,
+      &self.options,
+      self.width,
+      self.height,
+      self.options.format,
+    )?)
   }
 }
 
@@ -51,12 +57,12 @@ struct RenderTargetState {
 
 impl RenderTarget {
   /// Creates a new [`RenderTarget`] on the GPU with the given attachments.
-  pub fn new(graphics: &GraphicsServer, descriptor: &RenderTargetDescriptor) -> Self {
-    let color_attachment = descriptor.color_attachment.to_texture(graphics);
-    let depth_attachment = descriptor.depth_attachment.as_ref().map(|it| it.to_texture(graphics));
-    let stencil_attachment = descriptor.stencil_attachment.as_ref().map(|it| it.to_texture(graphics));
+  pub fn new(graphics: &GraphicsServer, descriptor: &RenderTargetDescriptor) -> crate::Result<Self> {
+    let color_attachment = descriptor.color_attachment.to_texture(graphics)?;
+    let depth_attachment = descriptor.depth_attachment.as_ref().and_then(|it| it.to_texture(graphics).ok());
+    let stencil_attachment = descriptor.stencil_attachment.as_ref().and_then(|it| it.to_texture(graphics).ok());
 
-    Self {
+    Ok(Self {
       state: Rc::new(RefCell::new(RenderTargetState {
         id: graphics.target_create(
           color_attachment.id(),
@@ -68,7 +74,7 @@ impl RenderTarget {
         depth_attachment,
         stencil_attachment,
       })),
-    }
+    })
   }
 
   /// Retrieves the [`TargetId`] of the underlying render target.

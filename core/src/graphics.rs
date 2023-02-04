@@ -112,7 +112,7 @@ impl GraphicsServer {
 /// This is a hint for sizing arrays and other data structures.
 const MAX_TEXTURE_UNITS: usize = 32;
 
-/// A possible error when interacting with buffer operations in the [`GraphicsBackend`].
+/// A possible error when interacting with buffers.
 #[derive(thiserror::Error, Debug)]
 pub enum BufferError {
   #[error("The given buffer ID is invalid.")]
@@ -121,6 +121,13 @@ pub enum BufferError {
   BufferTooSmall,
   #[error("The given buffer pointer is null")]
   NullPointer,
+}
+
+/// A possible error when interacting with textures.
+#[derive(thiserror::Error, Debug)]
+pub enum TextureError {
+  #[error("The given texture ID is invalid.")]
+  InvalidId,
 }
 
 /// An abstraction on top of the underlying graphics API.
@@ -160,10 +167,17 @@ pub trait GraphicsBackend {
   fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError>;
 
   // textures
-  fn texture_create(&self, sampler: &TextureSampler) -> TextureId;
-  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler);
-  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat);
-  fn texture_read_data(&self, texture: TextureId, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize);
+  fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError>;
+  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError>;
+  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) -> Result<(), TextureError>;
+  fn texture_read_data(
+    &self,
+    texture: TextureId,
+    length: usize,
+    pixel_format: TextureFormat,
+    pixels: *mut u8,
+    mip_level: usize,
+  ) -> Result<(), TextureError>;
   fn texture_write_data(
     &self,
     texture: TextureId,
@@ -173,7 +187,7 @@ pub trait GraphicsBackend {
     internal_format: TextureFormat,
     pixel_format: TextureFormat,
     mip_level: usize,
-  );
+  ) -> Result<(), TextureError>;
   fn texture_write_sub_data(
     &self,
     texture: TextureId,
@@ -181,8 +195,8 @@ pub trait GraphicsBackend {
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,
-  );
-  fn texture_delete(&self, texture: TextureId);
+  ) -> Result<(), TextureError>;
+  fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError>;
 
   // shaders
   fn shader_create(&self) -> ShaderId;

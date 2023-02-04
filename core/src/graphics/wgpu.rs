@@ -8,7 +8,7 @@ pub struct WgpuGraphicsBackend {
   _buffers: ResourceStorage<BufferId, WgpuBuffer>,
   _meshes: ResourceStorage<MeshId, WgpuMesh>,
   _shaders: ResourceStorage<ShaderId, WgpuShader>,
-  _textures: ResourceStorage<TextureId, WgpuTexture>,
+  textures: ResourceStorage<TextureId, WgpuTexture>,
 }
 
 struct WgpuBuffer {}
@@ -22,7 +22,7 @@ impl WgpuGraphicsBackend {
       _buffers: ResourceStorage::default(),
       _meshes: ResourceStorage::default(),
       _shaders: ResourceStorage::default(),
-      _textures: ResourceStorage::default(),
+      textures: ResourceStorage::default(),
     })
   }
 }
@@ -88,19 +88,26 @@ impl GraphicsBackend for WgpuGraphicsBackend {
     todo!()
   }
 
-  fn texture_create(&self, sampler: &TextureSampler) -> TextureId {
-    self._textures.insert(WgpuTexture {})
+  fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError> {
+    Ok(self.textures.insert(WgpuTexture {}))
   }
 
-  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) {
+  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError> {
     todo!()
   }
 
-  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) {
+  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) -> Result<(), TextureError> {
     todo!()
   }
 
-  fn texture_read_data(&self, texture: TextureId, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
+  fn texture_read_data(
+    &self,
+    texture: TextureId,
+    length: usize,
+    pixel_format: TextureFormat,
+    pixels: *mut u8,
+    mip_level: usize,
+  ) -> Result<(), TextureError> {
     todo!()
   }
 
@@ -113,7 +120,7 @@ impl GraphicsBackend for WgpuGraphicsBackend {
     internal_format: TextureFormat,
     pixel_format: TextureFormat,
     mip_level: usize,
-  ) {
+  ) -> Result<(), TextureError> {
     todo!()
   }
 
@@ -124,12 +131,14 @@ impl GraphicsBackend for WgpuGraphicsBackend {
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,
-  ) {
+  ) -> Result<(), TextureError> {
     todo!()
   }
 
-  fn texture_delete(&self, texture: TextureId) {
-    todo!()
+  fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError> {
+    self.textures.remove(texture);
+
+    Ok(())
   }
 
   fn shader_create(&self) -> ShaderId {

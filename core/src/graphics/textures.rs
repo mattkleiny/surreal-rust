@@ -86,31 +86,31 @@ struct TextureState {
 
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new(graphics: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsServer) -> crate::Result<Self> {
     Self::with_options(graphics, &TextureOptions::default())
   }
 
   /// Builds a new colored texture of the given size.
-  pub fn create_colored<T: Texel + Clone>(graphics: &GraphicsServer, width: usize, height: usize, color: T) -> Self {
-    let texture = Self::new(graphics);
+  pub fn create_colored<T: Texel + Clone>(graphics: &GraphicsServer, width: usize, height: usize, color: T) -> crate::Result<Self> {
+    let texture = Self::new(graphics)?;
     let colors = vec![color; width * height];
 
     texture.write_pixels(width, height, &colors);
 
-    texture
+    Ok(texture)
   }
 
   /// Creates a new blank texture on the GPU with the given options.
-  pub fn with_options(graphics: &GraphicsServer, options: &TextureOptions) -> Self {
-    Self {
+  pub fn with_options(graphics: &GraphicsServer, options: &TextureOptions) -> crate::Result<Self> {
+    Ok(Self {
       state: Rc::new(RefCell::new(TextureState {
-        id: graphics.texture_create(&options.sampler),
+        id: graphics.texture_create(&options.sampler)?,
         graphics: graphics.clone(),
         options: options.clone(),
         width: 0,
         height: 0,
       })),
-    }
+    })
   }
 
   /// Creates a new blank texture on the GPU with the given options and initial
@@ -121,10 +121,10 @@ impl Texture {
     width: u32,
     height: u32,
     format: TextureFormat,
-  ) -> Self {
-    let texture = Self::with_options(graphics, options);
+  ) -> crate::Result<Self> {
+    let texture = Self::with_options(graphics, options)?;
     texture.initialize(width, height, format);
-    texture
+    Ok(texture)
   }
 
   /// Returns the [`TextureId`] of the underlying texture.
@@ -147,7 +147,10 @@ impl Texture {
     let mut state = self.state.borrow_mut();
 
     state.options = options;
-    state.graphics.texture_set_options(state.id, &state.options.sampler);
+    state
+      .graphics
+      .texture_set_options(state.id, &state.options.sampler)
+      .expect("Failed to set texture options");
   }
 
   /// Initializes the texture with the given width and height.
@@ -162,7 +165,9 @@ impl Texture {
 
     let graphics = &state.graphics;
 
-    graphics.texture_initialize(state.id, width, height, format);
+    graphics
+      .texture_initialize(state.id, width, height, format)
+      .expect("Failed to initialize texture");
   }
 
   /// Resizes the texture in-place.
@@ -189,13 +194,15 @@ impl Texture {
     unsafe {
       buffer.set_len(size);
 
-      graphics.texture_read_data(
-        state.id,
-        size * std::mem::size_of::<T>(),
-        T::FORMAT,
-        buffer.as_mut_ptr() as *mut u8,
-        0, // mip level
-      );
+      graphics
+        .texture_read_data(
+          state.id,
+          size * std::mem::size_of::<T>(),
+          T::FORMAT,
+          buffer.as_mut_ptr() as *mut u8,
+          0, // mip level
+        )
+        .expect("Failed to read texture data");
     }
 
     buffer
@@ -211,18 +218,20 @@ impl Texture {
 
     let graphics = &state.graphics;
 
-    graphics.texture_write_data(
-      state.id,
-      width as u32,
-      height as u32,
-      match pixels.len() {
-        0 => std::ptr::null(),
-        _ => pixels.as_ptr() as *const u8,
-      },
-      state.options.format,
-      T::FORMAT,
-      0, // mip level
-    );
+    graphics
+      .texture_write_data(
+        state.id,
+        width as u32,
+        height as u32,
+        match pixels.len() {
+          0 => std::ptr::null(),
+          _ => pixels.as_ptr() as *const u8,
+        },
+        state.options.format,
+        T::FORMAT,
+        0, // mip level
+      )
+      .expect("Failed to write texture data");
   }
 
   /// Uploads a sub-section of pixel data to the texture.
@@ -231,13 +240,15 @@ impl Texture {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.texture_write_sub_data(
-      state.id,
-      region,
-      pixels.as_ptr() as *const u8,
-      T::FORMAT,
-      0, // mip level
-    );
+    graphics
+      .texture_write_sub_data(
+        state.id,
+        region,
+        pixels.as_ptr() as *const u8,
+        T::FORMAT,
+        0, // mip level
+      )
+      .expect("Failed to write texture data");
   }
 
   /// Uploads pixel data to the texture from the given [`Image`].
@@ -254,7 +265,7 @@ impl Texture {
 
 impl Drop for TextureState {
   fn drop(&mut self) {
-    self.graphics.texture_delete(self.id);
+    self.graphics.texture_delete(self.id).expect("Failed to delete texture");
   }
 }
 
@@ -271,7 +282,7 @@ impl Asset for Texture {
 impl AssetLoader<Texture> for TextureLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<Texture> {
     let image = context.load_asset(&context.path)?;
-    let mut texture = Texture::new(&self.graphics);
+    let mut texture = Texture::new(&self.graphics)?;
 
     texture.write_image(&image);
 

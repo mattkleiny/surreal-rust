@@ -89,20 +89,27 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     Ok(())
   }
 
-  fn texture_create(&self, sampler: &TextureSampler) -> TextureId {
-    TextureId::from(self.next_texture_id.fetch_add(1, Ordering::Relaxed))
+  fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError> {
+    Ok(TextureId::from(self.next_texture_id.fetch_add(1, Ordering::Relaxed)))
   }
 
-  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) {
-    // no-op
+  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError> {
+    Ok(())
   }
 
-  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) {
-    // no-op
+  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) -> Result<(), TextureError> {
+    Ok(())
   }
 
-  fn texture_read_data(&self, texture: TextureId, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) {
-    // no-op
+  fn texture_read_data(
+    &self,
+    texture: TextureId,
+    length: usize,
+    pixel_format: TextureFormat,
+    pixels: *mut u8,
+    mip_level: usize,
+  ) -> Result<(), TextureError> {
+    Ok(())
   }
 
   fn texture_write_data(
@@ -114,8 +121,8 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     internal_format: TextureFormat,
     pixel_format: TextureFormat,
     mip_level: usize,
-  ) {
-    // no-op
+  ) -> Result<(), TextureError> {
+    Ok(())
   }
 
   fn texture_write_sub_data(
@@ -125,12 +132,12 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,
-  ) {
-    // no-op
+  ) -> Result<(), TextureError> {
+    Ok(())
   }
 
-  fn texture_delete(&self, texture: TextureId) {
-    // no-op
+  fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError> {
+    Ok(())
   }
 
   fn shader_create(&self) -> ShaderId {

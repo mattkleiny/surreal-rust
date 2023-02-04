@@ -230,7 +230,7 @@ impl AssetLoader<VectorFont> for VectorFontLoader {
     let bytes = context.path.read_all_bytes()?;
 
     let font = VectorFont {
-      texture: Texture::new(&self.graphics),
+      texture: Texture::new(&self.graphics)?,
       state: Rc::new(RefCell::new(VectorFontState {
         font: FontVec::try_from_vec(bytes)?,
         font_size: self.font_size,

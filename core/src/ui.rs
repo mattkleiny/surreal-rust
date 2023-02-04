@@ -162,7 +162,7 @@ impl UserInterface {
       match image_delta.pos {
         None => {
           // create new texture
-          let texture = Texture::new(&self.graphics);
+          let texture = Texture::new(&self.graphics).expect("Failed to allocate texture");
 
           texture.write_pixels(width, height, &pixels);
 
