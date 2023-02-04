@@ -3,11 +3,9 @@
 use std::{cell::RefCell, rc::Rc};
 
 use super::*;
-use crate as surreal;
 use crate::{
   assets::{Asset, AssetContext, AssetLoader, AssetManager},
   collections::Grid,
-  diagnostics,
   maths::{uvec2, Rectangle, UVec2},
 };
 
@@ -181,7 +179,6 @@ impl Texture {
   }
 
   /// Downloads pixel data from the texture.
-  #[diagnostics::profiling]
   #[allow(clippy::uninit_vec)]
   pub fn read_pixels<T: Texel>(&self) -> Vec<T> {
     let state = self.state.borrow();
@@ -209,7 +206,6 @@ impl Texture {
   }
 
   /// Uploads pixel data to the texture.
-  #[diagnostics::profiling]
   pub fn write_pixels<T: Texel>(&self, width: usize, height: usize, pixels: &[T]) {
     let mut state = self.state.borrow_mut();
 
@@ -235,7 +231,6 @@ impl Texture {
   }
 
   /// Uploads a sub-section of pixel data to the texture.
-  #[diagnostics::profiling]
   pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle, pixels: &[T]) {
     let state = self.state.borrow();
     let graphics = &state.graphics;

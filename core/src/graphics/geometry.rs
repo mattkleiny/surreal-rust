@@ -1,11 +1,7 @@
 //! Geometry batching for common shapes and polygon rendering.
 
 use super::*;
-use crate as surreal;
-use crate::{
-  diagnostics,
-  maths::{vec2, Rectangle, Vec2},
-};
+use crate::maths::{vec2, Rectangle, Vec2};
 
 /// A fast and lightweight geometry batch renderer.
 ///
@@ -52,7 +48,6 @@ impl GeometryBatch {
   }
 
   /// Draws a triangle in the batch.
-  #[diagnostics::profiling]
   pub fn draw_triangle(&mut self, a: Vec2, b: Vec2, c: Vec2, color: Color32) {
     let base_offset = self.vertices.len() as Index;
 
@@ -66,7 +61,6 @@ impl GeometryBatch {
   }
 
   /// Draws a strip of triangles in the batch.
-  #[diagnostics::profiling]
   pub fn draw_triangle_strip(&mut self, points: &[Vec2], color: Color32) {
     if points.len() < 3 {
       return;
@@ -99,7 +93,6 @@ impl GeometryBatch {
   }
 
   /// Draws a rectangle in the batch.
-  #[diagnostics::profiling]
   pub fn draw_rectangle(&mut self, rectangle: Rectangle, color: Color32) {
     let base_offset = self.vertices.len() as Index;
 
@@ -133,7 +126,6 @@ impl GeometryBatch {
   }
 
   /// Draws a circle in the batch.
-  #[diagnostics::profiling]
   pub fn draw_circle(&mut self, center: Vec2, radius: f32, segments: u16, color: Color32) {
     let mut points = Vec::with_capacity(segments as usize);
 
@@ -150,7 +142,6 @@ impl GeometryBatch {
   }
 
   /// Flushes the batch content to the GPU.
-  #[diagnostics::profiling]
   pub fn flush(&mut self) {
     // ensure we're in a valid state to render something
     if self.vertices.is_empty() {

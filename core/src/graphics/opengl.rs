@@ -17,8 +17,7 @@ use glutin::{
 use raw_window_handle::{HasRawDisplayHandle, HasRawWindowHandle};
 
 use super::*;
-use crate as surreal;
-use crate::{diagnostics, maths::Rectangle, utilities::Size};
+use crate::{maths::Rectangle, utilities::Size};
 
 /// An OpenGL [`GraphicsBackend`] implementation.
 pub struct OpenGLGraphicsBackend {
@@ -84,12 +83,10 @@ impl OpenGLGraphicsBackend {
 }
 
 impl GraphicsBackend for OpenGLGraphicsBackend {
-  #[diagnostics::profiling]
   fn begin_frame(&self) {
     // no-op
   }
 
-  #[diagnostics::profiling]
   fn end_frame(&self) {
     let state = self.state.borrow();
 
@@ -430,12 +427,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn shader_create(&self) -> ShaderId {
-    ShaderId::from(unsafe { gl::CreateProgram() })
+  fn shader_create(&self) -> Result<ShaderId, ShaderError> {
+    Ok(ShaderId::from(unsafe { gl::CreateProgram() }))
   }
 
   #[allow(clippy::uninit_vec)]
-  fn shader_link(&self, shader: ShaderId, shaders: &[ShaderKernel]) -> crate::Result<()> {
+  fn shader_link(&self, shader: ShaderId, shaders: &[ShaderKernel]) -> Result<(), ShaderError> {
     unsafe {
       let shader = shader.into();
 
@@ -469,7 +466,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
           gl::GetShaderInfoLog(shader_id, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
 
-          return Err(crate::anyhow!(String::from_utf8(info_log).unwrap()));
+          return Err(ShaderError::CompileError(String::from_utf8(info_log).unwrap()));
         }
 
         gl::AttachShader(shader, shader_id);
@@ -491,7 +488,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
         gl::GetProgramInfoLog(shader, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
 
-        return Err(crate::anyhow!(String::from_utf8(info_log).unwrap()));
+        return Err(ShaderError::CompileError(String::from_utf8(info_log).unwrap()));
       }
 
       // delete the kernels now that we've linked
@@ -516,7 +513,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) {
+  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
     unsafe {
       let shader = shader.into();
 
@@ -607,23 +604,29 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             gl::BindSampler(*slot as u32, 0);
           }
         }
-      }
+      };
+
+      Ok(())
     }
   }
 
-  fn shader_activate(&self, shader: ShaderId) {
+  fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError> {
     unsafe {
       gl::UseProgram(shader.into());
+
+      Ok(())
     }
   }
 
-  fn shader_delete(&self, shader: ShaderId) {
+  fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError> {
     unsafe {
       gl::DeleteProgram(shader.into());
+
+      Ok(())
     }
   }
 
-  fn mesh_create(&self, vertex_buffer: BufferId, index_buffer: BufferId, descriptors: &[VertexDescriptor]) -> MeshId {
+  fn mesh_create(&self, vertex_buffer: BufferId, index_buffer: BufferId, descriptors: &[VertexDescriptor]) -> Result<MeshId, MeshError> {
     unsafe {
       let mut id: u32 = 0;
 
@@ -675,11 +678,11 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       gl::BindVertexArray(0);
 
-      MeshId::from(id)
+      Ok(MeshId::from(id))
     }
   }
 
-  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) -> Result<(), MeshError> {
     unsafe {
       gl::BindVertexArray(mesh.into());
 
@@ -696,12 +699,16 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       }
 
       gl::BindVertexArray(0);
+
+      Ok(())
     }
   }
 
-  fn mesh_delete(&self, mesh: MeshId) {
+  fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError> {
     unsafe {
       gl::DeleteVertexArrays(1, &mesh.into());
+
+      Ok(())
     }
   }
 
@@ -710,7 +717,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     color_attachment: TextureId,
     depth_attachment: Option<TextureId>,
     stencil_attachment: Option<TextureId>,
-  ) -> TargetId {
+  ) -> Result<TargetId, TargetError> {
     unsafe {
       let mut framebuffer = 0;
       gl::CreateFramebuffers(1, &mut framebuffer);
@@ -738,23 +745,34 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
 
-      TargetId::from(framebuffer)
+      Ok(TargetId::from(framebuffer))
     }
   }
 
-  fn target_activate(&self, target: TargetId) {
+  fn target_activate(&self, target: TargetId) -> Result<(), TargetError> {
     unsafe {
       gl::BindFramebuffer(gl::FRAMEBUFFER, target.into());
+
+      Ok(())
     }
   }
 
-  fn target_set_default(&self) {
+  fn target_set_default(&self) -> Result<(), TargetError> {
     unsafe {
       gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
+
+      Ok(())
     }
   }
 
-  fn target_blit(&self, from: TargetId, to: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
+  fn target_blit(
+    &self,
+    from: TargetId,
+    to: TargetId,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
+    filter: TextureFilter,
+  ) -> Result<(), TargetError> {
     unsafe {
       gl::BindFramebuffer(gl::READ_FRAMEBUFFER, from.into());
       gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, to.into());
@@ -777,16 +795,28 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       gl::BindFramebuffer(gl::READ_FRAMEBUFFER, 0);
       gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
+
+      Ok(())
     }
   }
 
-  fn target_blit_to_display(&self, handle: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
-    self.target_blit(handle, TargetId::NONE, source_rect, dest_rect, filter);
+  fn target_blit_to_display(
+    &self,
+    handle: TargetId,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
+    filter: TextureFilter,
+  ) -> Result<(), TargetError> {
+    self.target_blit(handle, TargetId::NONE, source_rect, dest_rect, filter)?;
+
+    Ok(())
   }
 
-  fn target_delete(&self, target: TargetId) {
+  fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {
     unsafe {
       gl::DeleteFramebuffers(1, &target.into());
+
+      Ok(())
     }
   }
 }

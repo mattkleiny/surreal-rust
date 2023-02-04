@@ -142,7 +142,7 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
 
     // prepare the palette texture, if enabled, upload it once
     if let Some(palette) = &self.palette {
-      let palette_texture = Texture::new(graphics);
+      let palette_texture = Texture::new(graphics)?;
 
       palette_texture.write_pixels(palette.len(), 1, palette.as_slice());
 

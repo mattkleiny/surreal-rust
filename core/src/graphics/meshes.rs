@@ -6,9 +6,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use super::*;
-use crate as surreal;
 use crate::{
-  diagnostics,
   maths::{vec2, Vec2, Vec3},
   utilities::Size,
 };
@@ -165,7 +163,7 @@ impl<V: Vertex> Mesh<V> {
 
     Ok(Self {
       state: Rc::new(RefCell::new(MeshState {
-        id: graphics.mesh_create(vertices.id(), indices.id(), V::DESCRIPTORS),
+        id: graphics.mesh_create(vertices.id(), indices.id(), V::DESCRIPTORS)?,
         graphics: graphics.clone(),
         vertices,
         indices,
@@ -212,14 +210,15 @@ impl<V: Vertex> Mesh<V> {
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
-  #[diagnostics::profiling]
   pub fn draw_sub(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
     material.bind();
 
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.mesh_draw(state.id, topology, vertex_count, index_count);
+    graphics
+      .mesh_draw(state.id, topology, vertex_count, index_count)
+      .expect("Failed to draw mesh");
 
     material.unbind();
   }
@@ -227,7 +226,7 @@ impl<V: Vertex> Mesh<V> {
 
 impl<V> Drop for MeshState<V> {
   fn drop(&mut self) {
-    self.graphics.mesh_delete(self.id);
+    self.graphics.mesh_delete(self.id).expect("Failed to delete mesh");
   }
 }
 

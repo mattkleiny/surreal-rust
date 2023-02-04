@@ -4,11 +4,9 @@
 //! pipeline state changes through to shader programs and uniforms.
 
 use super::*;
-use crate as surreal;
 use crate::{
   assets::{Asset, AssetContext, AssetLoader},
   collections::FastHashMap,
-  diagnostics,
 };
 
 /// Blending states for materials.
@@ -166,7 +164,6 @@ impl Material {
   }
 
   /// Binds this material to the graphics server.
-  #[diagnostics::profiling]
   pub fn bind(&self) {
     self.graphics.set_blend_state(self.blend_state);
     self.graphics.set_culling_mode(self.culling_mode);
@@ -174,11 +171,10 @@ impl Material {
 
     self.uniforms.apply_to_shader(&self.shader);
 
-    self.graphics.shader_activate(self.shader.id());
+    self.graphics.shader_activate(self.shader.id()).expect("Failed to activate shader");
   }
 
   /// Unbinds this material from the graphics server.
-  #[diagnostics::profiling]
   pub fn unbind(&self) {
     self.graphics.set_blend_state(BlendState::Disabled);
     self.graphics.set_culling_mode(CullingMode::Disabled);
@@ -186,7 +182,6 @@ impl Material {
   }
 
   /// Draws a fullscreen quad with this material.
-  #[diagnostics::profiling]
   pub fn draw_fullscreen_quad(&mut self) {
     match &self.fullscreen_quad {
       Some(mesh) => mesh.draw(self, PrimitiveTopology::Triangles),

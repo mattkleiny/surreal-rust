@@ -7,8 +7,6 @@
 use std::{cell::RefCell, rc::Rc};
 
 use super::*;
-use crate as surreal;
-use crate::diagnostics;
 
 /// The different kinds of buffer we support.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -71,7 +69,6 @@ impl<T> Buffer<T> {
   }
 
   /// Reads all data from the buffer.
-  #[diagnostics::profiling]
   #[allow(clippy::uninit_vec)] // immediately fill the buffer from the gpu
   pub fn read_data(&self) -> Vec<T> {
     let state = self.state.borrow();
@@ -97,7 +94,6 @@ impl<T> Buffer<T> {
   }
 
   /// Uploads the given data to the buffer.
-  #[diagnostics::profiling]
   pub fn write_data(&mut self, data: &[T]) {
     let mut state = self.state.borrow_mut();
 

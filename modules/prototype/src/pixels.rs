@@ -13,7 +13,7 @@ impl<P: Pixel + Texel> PixelCanvas<P> {
   /// Creates a new pixel canvas with the size.
   pub fn new(graphics: &GraphicsServer, width: usize, height: usize) -> Self {
     let pixels = Grid::new(width, height);
-    let texture = Texture::new(graphics);
+    let texture = Texture::new(graphics).expect("Failed to create texture");
 
     let mut material = load_built_in_material(graphics, BuiltInShader::SpriteStandard);
 

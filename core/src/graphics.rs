@@ -130,6 +130,29 @@ pub enum TextureError {
   InvalidId,
 }
 
+/// A possible error when interacting with shaders.
+#[derive(thiserror::Error, Debug)]
+pub enum ShaderError {
+  #[error("The given shader ID is invalid.")]
+  InvalidId,
+  #[error("The shader failed to compile.")]
+  CompileError(String),
+}
+
+/// A possible error when interacting with meshes.
+#[derive(thiserror::Error, Debug)]
+pub enum MeshError {
+  #[error("The given mesh ID is invalid.")]
+  InvalidId,
+}
+
+/// A possible error when interacting with render targets.
+#[derive(thiserror::Error, Debug)]
+pub enum TargetError {
+  #[error("The given target ID is invalid.")]
+  InvalidId,
+}
+
 /// An abstraction on top of the underlying graphics API.
 ///
 /// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
@@ -199,17 +222,17 @@ pub trait GraphicsBackend {
   fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError>;
 
   // shaders
-  fn shader_create(&self) -> ShaderId;
-  fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> crate::Result<()>;
+  fn shader_create(&self) -> Result<ShaderId, ShaderError>;
+  fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> Result<(), ShaderError>;
   fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize>;
-  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform);
-  fn shader_activate(&self, shader: ShaderId);
-  fn shader_delete(&self, shader: ShaderId);
+  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError>;
+  fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError>;
+  fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError>;
 
   // meshes
-  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> MeshId;
-  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize);
-  fn mesh_delete(&self, mesh: MeshId);
+  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> Result<MeshId, MeshError>;
+  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) -> Result<(), MeshError>;
+  fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError>;
 
   // render targets
   fn target_create(
@@ -217,10 +240,23 @@ pub trait GraphicsBackend {
     color_attachment: TextureId,
     depth_attachment: Option<TextureId>,
     stencil_attachment: Option<TextureId>,
-  ) -> TargetId;
-  fn target_activate(&self, target: TargetId);
-  fn target_set_default(&self);
-  fn target_blit(&self, from: TargetId, to: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
-  fn target_blit_to_display(&self, target: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter);
-  fn target_delete(&self, target: TargetId);
+  ) -> Result<TargetId, TargetError>;
+  fn target_activate(&self, target: TargetId) -> Result<(), TargetError>;
+  fn target_set_default(&self) -> Result<(), TargetError>;
+  fn target_blit(
+    &self,
+    from: TargetId,
+    to: TargetId,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
+    filter: TextureFilter,
+  ) -> Result<(), TargetError>;
+  fn target_blit_to_display(
+    &self,
+    target: TargetId,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
+    filter: TextureFilter,
+  ) -> Result<(), TargetError>;
+  fn target_delete(&self, target: TargetId) -> Result<(), TargetError>;
 }

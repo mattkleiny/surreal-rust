@@ -141,11 +141,11 @@ impl GraphicsBackend for WgpuGraphicsBackend {
     Ok(())
   }
 
-  fn shader_create(&self) -> ShaderId {
+  fn shader_create(&self) -> Result<ShaderId, ShaderError> {
     todo!()
   }
 
-  fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> crate::Result<()> {
+  fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> Result<(), ShaderError> {
     todo!()
   }
 
@@ -153,27 +153,27 @@ impl GraphicsBackend for WgpuGraphicsBackend {
     todo!()
   }
 
-  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) {
+  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
     todo!()
   }
 
-  fn shader_activate(&self, shader: ShaderId) {
+  fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError> {
     todo!()
   }
 
-  fn shader_delete(&self, shader: ShaderId) {
+  fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError> {
     todo!()
   }
 
-  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> MeshId {
+  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> Result<MeshId, MeshError> {
     todo!()
   }
 
-  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) -> Result<(), MeshError> {
     todo!()
   }
 
-  fn mesh_delete(&self, mesh: MeshId) {
+  fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError> {
     todo!()
   }
 
@@ -182,27 +182,40 @@ impl GraphicsBackend for WgpuGraphicsBackend {
     color_attachment: TextureId,
     depth_attachment: Option<TextureId>,
     stencil_attachment: Option<TextureId>,
-  ) -> TargetId {
+  ) -> Result<TargetId, TargetError> {
     todo!()
   }
 
-  fn target_activate(&self, target: TargetId) {
+  fn target_activate(&self, target: TargetId) -> Result<(), TargetError> {
     todo!()
   }
 
-  fn target_set_default(&self) {
+  fn target_set_default(&self) -> Result<(), TargetError> {
     todo!()
   }
 
-  fn target_blit(&self, from: TargetId, to: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
+  fn target_blit(
+    &self,
+    from: TargetId,
+    to: TargetId,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
+    filter: TextureFilter,
+  ) -> Result<(), TargetError> {
     todo!()
   }
 
-  fn target_blit_to_display(&self, target: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
+  fn target_blit_to_display(
+    &self,
+    target: TargetId,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
+    filter: TextureFilter,
+  ) -> Result<(), TargetError> {
     todo!()
   }
 
-  fn target_delete(&self, target: TargetId) {
+  fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {
     todo!()
   }
 }

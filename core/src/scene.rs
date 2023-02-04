@@ -110,11 +110,7 @@ impl SceneGraph {
   }
 
   /// Re-parents a [`SceneNode`] to a new parent.
-  pub fn reparent_node(
-    &mut self,
-    node_to_move_id: SceneNodeId,
-    new_parent_id: SceneNodeId,
-  ) -> crate::Result<()> {
+  pub fn reparent_node(&mut self, node_to_move_id: SceneNodeId, new_parent_id: SceneNodeId) -> crate::Result<()> {
     let node_to_move = self
       .root
       .take_node_by_id(node_to_move_id)
@@ -125,11 +121,7 @@ impl SceneGraph {
       .find_by_id_mut(new_parent_id)
       .ok_or(anyhow!("Unable to find target node"))?;
 
-    if node_to_move
-      .children
-      .iter()
-      .any(|node| node.id == new_parent_id)
-    {
+    if node_to_move.children.iter().any(|node| node.id == new_parent_id) {
       return Err(anyhow!("Unable to reparent node to a child of itself"));
     }
 
@@ -203,11 +195,7 @@ impl Transform {
   /// Creates a [`Mat4`] that takes a point in local space and transforms it to
   /// global space.
   pub fn world_to_local(&self) -> Affine3A {
-    Affine3A::from_scale_rotation_translation(
-      self.global_scale,
-      self.global_rotation,
-      self.global_position,
-    )
+    Affine3A::from_scale_rotation_translation(self.global_scale, self.global_rotation, self.global_position)
   }
 
   /// Rebuilds this transform from the given other parent [`Transform`].
@@ -251,9 +239,7 @@ pub trait SceneComponent: Object {
       SceneEvent::Enable => self.on_enable(context),
       SceneEvent::Disable => self.on_disable(context),
       SceneEvent::Destroy => self.on_destroy(context),
-      SceneEvent::Update(delta_time) if context.node.is_enabled() => {
-        self.on_update(context, *delta_time)
-      }
+      SceneEvent::Update(delta_time) if context.node.is_enabled() => self.on_update(context, *delta_time),
       SceneEvent::Draw(renderer) if context.node.is_visible() => self.on_draw(context, renderer),
       _ => {}
     }
@@ -301,9 +287,7 @@ impl SceneComponentSet {
 
 impl Debug for SceneComponentSet {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    f.debug_list()
-      .entries(self.components.iter().map(|c| c.name()))
-      .finish()
+    f.debug_list().entries(self.components.iter().map(|c| c.name())).finish()
   }
 }
 
@@ -661,10 +645,7 @@ impl SceneNode {
 
   /// Tries to mutably locate a node in this hierarchy by it's [`NodePath`].
   pub fn find_by_path_mut(&mut self, node_path: impl Into<NodePath>) -> Option<&mut SceneNode> {
-    fn find_recursive(
-      node: &mut SceneNode,
-      node_path: impl Into<NodePath>,
-    ) -> Option<&mut SceneNode> {
+    fn find_recursive(node: &mut SceneNode, node_path: impl Into<NodePath>) -> Option<&mut SceneNode> {
       if let Some((first, rest)) = node_path.into().split_first() {
         if node.name() == Some(first) {
           for child in &mut node.children {
@@ -725,10 +706,7 @@ impl SceneNode {
       }
     }
 
-    Iter {
-      node: self,
-      index: 0,
-    }
+    Iter { node: self, index: 0 }
   }
 
   /// Mutably iterates all child [`SceneNode`]s of this node.
@@ -758,10 +736,7 @@ impl SceneNode {
       }
     }
 
-    IterMut {
-      node: self,
-      index: 0,
-    }
+    IterMut { node: self, index: 0 }
   }
 
   /// Iterates all child [`SceneNode`]s of this node, recursively.
@@ -786,9 +761,7 @@ impl SceneNode {
       }
     }
 
-    IterRecursive {
-      stack: vec![(self, 0)],
-    }
+    IterRecursive { stack: vec![(self, 0)] }
   }
 }
 
@@ -960,10 +933,7 @@ mod tests {
 
     impl SceneComponent for TestComponent1 {
       fn on_update(&mut self, context: SceneContext, delta_time: f32) {
-        println!(
-          "Update component 1 on node id {} delta_time {}",
-          context.node.id, delta_time
-        );
+        println!("Update component 1 on node id {} delta_time {}", context.node.id, delta_time);
       }
     }
 
@@ -972,10 +942,7 @@ mod tests {
 
     impl SceneComponent for TestComponent2 {
       fn on_update(&mut self, context: SceneContext, delta_time: f32) {
-        println!(
-          "Update component 2 on node id {} delta_time {}",
-          context.node.id, delta_time
-        );
+        println!("Update component 2 on node id {} delta_time {}", context.node.id, delta_time);
       }
     }
 
@@ -1101,10 +1068,7 @@ mod tests {
 
     println!("{scene:?}");
 
-    let result = scene
-      .root
-      .find_by_path("Parent/Child1/Child2/Child3")
-      .unwrap();
+    let result = scene.root.find_by_path("Parent/Child1/Child2/Child3").unwrap();
 
     println!("{result:?}");
   }

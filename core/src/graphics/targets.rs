@@ -68,7 +68,7 @@ impl RenderTarget {
           color_attachment.id(),
           depth_attachment.as_ref().map(|it| it.id()),
           stencil_attachment.as_ref().map(|it| it.id()),
-        ),
+        )?,
         graphics: graphics.clone(),
         color_attachment,
         depth_attachment,
@@ -108,7 +108,7 @@ impl RenderTarget {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.target_activate(state.id);
+    graphics.target_activate(state.id).expect("Failed to activate render target");
   }
 
   /// Deactivates the [`RenderTarget`].
@@ -116,7 +116,7 @@ impl RenderTarget {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.target_set_default();
+    graphics.target_set_default().expect("Failed to deactivate render target");
   }
 
   /// Blits this render target to the given other target.
@@ -131,7 +131,9 @@ impl RenderTarget {
 
     let graphics = &state.graphics;
 
-    graphics.target_blit(state.id, other.id(), &source, &dest, filter);
+    graphics
+      .target_blit(state.id, other.id(), &source, &dest, filter)
+      .expect("Failed to blit render target");
   }
 
   /// Blits this render target to the active display.
@@ -146,12 +148,14 @@ impl RenderTarget {
 
     let graphics = &state.graphics;
 
-    graphics.target_blit_to_display(state.id, &source, &dest, filter);
+    graphics
+      .target_blit_to_display(state.id, &source, &dest, filter)
+      .expect("Failed to blit render target to display");
   }
 }
 
 impl Drop for RenderTargetState {
   fn drop(&mut self) {
-    self.graphics.target_delete(self.id);
+    self.graphics.target_delete(self.id).expect("Failed to delete render target");
   }
 }

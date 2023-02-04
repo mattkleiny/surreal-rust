@@ -8,11 +8,9 @@
 use std::{cell::RefCell, rc::Rc};
 
 use super::*;
-use crate as surreal;
 use crate::{
   assets::{Asset, AssetContext, AssetLoader},
   collections::FastHashMap,
-  diagnostics,
   io::VirtualPath,
   maths::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4},
 };
@@ -160,19 +158,19 @@ struct ShaderProgramState {
 
 impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
-  pub fn new(graphics: &GraphicsServer) -> Self {
-    Self {
+  pub fn new(graphics: &GraphicsServer) -> crate::Result<Self> {
+    Ok(Self {
       state: Rc::new(RefCell::new(ShaderProgramState {
-        id: graphics.shader_create(),
+        id: graphics.shader_create()?,
         graphics: graphics.clone(),
         location_cache: FastHashMap::default(),
       })),
-    }
+    })
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
   pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsServer, code: &str) -> crate::Result<Self> {
-    let program = Self::new(graphics);
+    let program = Self::new(graphics)?;
 
     program.load_code::<S>(code)?;
 
@@ -204,7 +202,6 @@ impl ShaderProgram {
 
   /// Retrieves the binding location of the given shader uniform in the
   /// underlying program.
-  #[diagnostics::profiling]
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
     let state = self.state.borrow();
 
@@ -224,13 +221,14 @@ impl ShaderProgram {
   }
 
   /// Sets the given uniform value in the underlying program.
-  #[diagnostics::profiling]
   pub fn set_uniform(&self, name: &str, value: &ShaderUniform) {
     if let Some(location) = self.get_uniform_location(name) {
       let state = self.state.borrow();
       let graphics = &state.graphics;
 
-      graphics.shader_set_uniform(state.id, location, value);
+      graphics
+        .shader_set_uniform(state.id, location, value)
+        .expect("Failed to set uniform");
     }
   }
 
@@ -258,7 +256,7 @@ impl ShaderProgram {
 
 impl Drop for ShaderProgramState {
   fn drop(&mut self) {
-    self.graphics.shader_delete(self.id);
+    self.graphics.shader_delete(self.id).expect("Failed to delete shader program");
   }
 }
 
@@ -273,7 +271,7 @@ impl Asset for ShaderProgram {
 
 impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
   fn load(&self, context: &AssetContext) -> crate::Result<ShaderProgram> {
-    let program = ShaderProgram::new(&self.graphics);
+    let program = ShaderProgram::new(&self.graphics)?;
     let source_code = context.path.read_all_text()?;
 
     program.load_code::<GLSL>(&source_code)?;
@@ -332,7 +330,7 @@ mod tests {
       void main() {
         v_uv    = a_uv;
         v_color = a_color * u_color;
-        
+
         gl_Position = vec4(a_position, 0.0, 1.0) * u_projectionView;
       }
 

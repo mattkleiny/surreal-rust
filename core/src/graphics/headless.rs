@@ -140,11 +140,11 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     Ok(())
   }
 
-  fn shader_create(&self) -> ShaderId {
-    ShaderId::from(self.next_shader_id.fetch_add(1, Ordering::Relaxed))
+  fn shader_create(&self) -> Result<ShaderId, ShaderError> {
+    Ok(ShaderId::from(self.next_shader_id.fetch_add(1, Ordering::Relaxed)))
   }
 
-  fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> crate::Result<()> {
+  fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> Result<(), ShaderError> {
     Ok(())
   }
 
@@ -152,28 +152,28 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     None
   }
 
-  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) {
-    // no-op
+  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
+    Ok(())
   }
 
-  fn shader_activate(&self, shader: ShaderId) {
-    // no-op
+  fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError> {
+    Ok(())
   }
 
-  fn shader_delete(&self, shader: ShaderId) {
-    // no-op
+  fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError> {
+    Ok(())
   }
 
-  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> MeshId {
-    MeshId::from(self.next_mesh_id.fetch_add(1, Ordering::Relaxed))
+  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> Result<MeshId, MeshError> {
+    Ok(MeshId::from(self.next_mesh_id.fetch_add(1, Ordering::Relaxed)))
   }
 
-  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
-    // no-op
+  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) -> Result<(), MeshError> {
+    Ok(())
   }
 
-  fn mesh_delete(&self, mesh: MeshId) {
-    // no-op
+  fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError> {
+    Ok(())
   }
 
   fn target_create(
@@ -181,27 +181,40 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     color_attachment: TextureId,
     depth_attachment: Option<TextureId>,
     stencil_attachment: Option<TextureId>,
-  ) -> TargetId {
-    TargetId::from(self.next_target_id.fetch_add(1, Ordering::Relaxed))
+  ) -> Result<TargetId, TargetError> {
+    Ok(TargetId::from(self.next_target_id.fetch_add(1, Ordering::Relaxed)))
   }
 
-  fn target_activate(&self, target: TargetId) {
-    // no-op
+  fn target_activate(&self, target: TargetId) -> Result<(), TargetError> {
+    Ok(())
   }
 
-  fn target_set_default(&self) {
-    // no-op
+  fn target_set_default(&self) -> Result<(), TargetError> {
+    Ok(())
   }
 
-  fn target_blit(&self, from: TargetId, to: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
-    // no-op
+  fn target_blit(
+    &self,
+    from: TargetId,
+    to: TargetId,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
+    filter: TextureFilter,
+  ) -> Result<(), TargetError> {
+    Ok(())
   }
 
-  fn target_blit_to_display(&self, target: TargetId, source_rect: &Rectangle, dest_rect: &Rectangle, filter: TextureFilter) {
-    // no-op
+  fn target_blit_to_display(
+    &self,
+    target: TargetId,
+    source_rect: &Rectangle,
+    dest_rect: &Rectangle,
+    filter: TextureFilter,
+  ) -> Result<(), TargetError> {
+    Ok(())
   }
 
-  fn target_delete(&self, target: TargetId) {
-    // no-op
+  fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {
+    Ok(())
   }
 }
