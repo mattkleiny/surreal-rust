@@ -11,7 +11,7 @@ fn main() {
     .with_size((WIDTH as u32, HEIGHT as u32))
     .start(|engine, assets| {
       let graphics = &engine.graphics;
-      let mut interface = UserInterface::new(graphics);
+      let mut interface = UserInterface::new(graphics)?;
 
       // set-up assets and rendering
       let sprite = Texture::load(&assets, "assets/sprites/bunny.png")?;

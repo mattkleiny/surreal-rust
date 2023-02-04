@@ -31,6 +31,7 @@ mod shaders;
 mod sprites;
 mod targets;
 mod textures;
+mod wgpu;
 
 /// Implements a new opaque identifier for some resource type.
 macro_rules! impl_graphics_id {
@@ -38,7 +39,7 @@ macro_rules! impl_graphics_id {
     /// A unique identifier for a kind of graphics resource.
     #[repr(transparent)]
     #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-    pub struct $name(u32);
+    pub struct $name(u64);
 
     impl $name {
       /// A value that represents the 'NONE' value of this resource.
@@ -47,21 +48,35 @@ macro_rules! impl_graphics_id {
       /// Creates a new ID with the given value.
       #[inline(always)]
       pub const fn new(value: u32) -> Self {
-        Self(value)
+        Self(value as u64)
       }
     }
 
     impl From<u32> for $name {
       #[inline(always)]
       fn from(value: u32) -> Self {
-        Self(value)
+        Self(value as u64)
       }
     }
 
     impl From<$name> for u32 {
       #[inline(always)]
       fn from(id: $name) -> Self {
-        id.0
+        id.0 as u32
+      }
+    }
+
+    impl From<crate::collections::ArenaIndex> for $name {
+      #[inline(always)]
+      fn from(index: crate::collections::ArenaIndex) -> Self {
+        Self(index.into())
+      }
+    }
+
+    impl From<$name> for crate::collections::ArenaIndex {
+      #[inline(always)]
+      fn from(id: $name) -> Self {
+        id.0.into()
       }
     }
   };
@@ -90,6 +105,10 @@ impl GraphicsServer {
     unsafe { Ok(Self::new(opengl::OpenGLGraphicsBackend::new(window, vsync_enabled, samples)?)) }
   }
 
+  pub fn wgpu(window: &winit::window::Window, vsync_enabled: bool, samples: u8) -> crate::Result<Self> {
+    unsafe { Ok(Self::new(wgpu::WgpuGraphicsBackend::new(window, vsync_enabled, samples)?)) }
+  }
+
   /// Creates a new [`GraphicsServer`] for the given [`GraphicsBackend`].
   pub fn new(backend: impl GraphicsBackend + 'static) -> Self {
     Self {
@@ -113,6 +132,17 @@ impl std::ops::Deref for GraphicsServer {
 ///
 /// This is a hint for sizing arrays and other data structures.
 const MAX_TEXTURE_UNITS: usize = 32;
+
+/// A possible error when interacting with buffer operations in the [`GraphicsBackend`].
+#[derive(thiserror::Error, Debug)]
+pub enum BufferError {
+  #[error("The given buffer ID is invalid.")]
+  InvalidId,
+  #[error("The buffer is not large enough to hold the requested data.")]
+  BufferTooSmall,
+  #[error("The given buffer pointer is null")]
+  NullPointer,
+}
 
 /// An abstraction on top of the underlying graphics API.
 ///
@@ -138,10 +168,17 @@ pub trait GraphicsBackend {
   fn set_scissor_mode(&self, scissor_mode: ScissorMode);
 
   // buffers
-  fn buffer_create(&self) -> BufferId;
-  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8);
-  fn buffer_write_data(&self, buffer: BufferId, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8);
-  fn buffer_delete(&self, buffer: BufferId);
+  fn buffer_create(&self) -> Result<BufferId, BufferError>;
+  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8) -> Result<(), BufferError>;
+  fn buffer_write_data(
+    &self,
+    buffer: BufferId,
+    usage: BufferUsage,
+    kind: BufferKind,
+    length: usize,
+    pointer: *const u8,
+  ) -> Result<(), BufferError>;
+  fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError>;
 
   // textures
   fn texture_create(&self, sampler: &TextureSampler) -> TextureId;

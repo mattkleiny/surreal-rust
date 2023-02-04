@@ -8,7 +8,7 @@ fn main() {
     .with_size((1920, 1080))
     .with_log_level(LevelFilter::Trace)
     .start(|engine, _| {
-      let mut interface = UserInterface::new(&engine.graphics);
+      let mut interface = UserInterface::new(&engine.graphics)?;
       let mut console_panel = ConsolePanel::new();
 
       engine.run_variable_step(|engine, _| {

@@ -55,7 +55,7 @@ pub struct ResourceStorage<K, V> {
   _key: std::marker::PhantomData<K>,
 }
 
-impl<K: ResourceId, V> Default for ResourceStorage<K, V> {
+impl<K, V> Default for ResourceStorage<K, V> {
   fn default() -> Self {
     Self {
       entries: RwLock::new(Arena::new()),
@@ -64,7 +64,7 @@ impl<K: ResourceId, V> Default for ResourceStorage<K, V> {
   }
 }
 
-impl<K: ResourceId, V> ResourceStorage<K, V> {
+impl<K: Into<ArenaIndex> + From<ArenaIndex>, V> ResourceStorage<K, V> {
   /// Creates a new [`V`] in the storage with the given factory method.
   pub fn create(&self, factory: impl Fn() -> V) -> K {
     self.insert(factory())

@@ -33,11 +33,6 @@ struct BackendState {
 }
 
 impl OpenGLGraphicsBackend {
-  /// Creates a new OpenGL backend.
-  ///
-  /// # Safety
-  /// This method interacts with the OpenGL platform directly via Glutin. It's possible for any
-  /// number of things to go wrong when using the platform APIs.
   pub unsafe fn new(window: &winit::window::Window, vsync_enabled: bool, _samples: u8) -> crate::Result<Self> {
     let display = Display::new(
       window.raw_display_handle(),
@@ -207,21 +202,40 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn buffer_create(&self) -> BufferId {
+  fn buffer_create(&self) -> Result<BufferId, BufferError> {
     unsafe {
       let mut id: u32 = 0;
+
       gl::GenBuffers(1, &mut id);
-      BufferId::from(id)
+
+      Ok(BufferId::from(id))
     }
   }
 
-  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8) {
+  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8) -> Result<(), BufferError> {
     unsafe {
+      if length == 0 {
+        return Ok(());
+      }
+
+      if length > 0 && pointer.is_null() {
+        return Err(BufferError::NullPointer);
+      }
+
       gl::GetNamedBufferSubData(buffer.into(), offset as isize, length as isize, pointer as *mut c_void);
+
+      Ok(())
     }
   }
 
-  fn buffer_write_data(&self, buffer: BufferId, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) {
+  fn buffer_write_data(
+    &self,
+    buffer: BufferId,
+    usage: BufferUsage,
+    kind: BufferKind,
+    length: usize,
+    pointer: *const u8,
+  ) -> Result<(), BufferError> {
     unsafe {
       let kind = match kind {
         BufferKind::Element => gl::ARRAY_BUFFER,
@@ -235,12 +249,16 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       gl::BindBuffer(kind, buffer.into());
       gl::BufferData(kind, length as isize, pointer as *const _, usage);
+
+      Ok(())
     }
   }
 
-  fn buffer_delete(&self, buffer: BufferId) {
+  fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError> {
     unsafe {
       gl::DeleteBuffers(1, &buffer.into());
+
+      Ok(())
     }
   }
 

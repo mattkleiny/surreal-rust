@@ -31,7 +31,7 @@ pub trait RenderContextDescriptor {
   type Context: RenderContext;
 
   /// Creates the associated [`RenderContext`].
-  fn create(&self, graphics: &GraphicsServer) -> Self::Context;
+  fn create(&self, graphics: &GraphicsServer) -> crate::Result<Self::Context>;
 }
 
 /// Allows an object to be rendered via a [`Renderer`].
@@ -72,7 +72,7 @@ impl Renderer {
   /// Configures the manager with the given [`RenderContextDescriptor`].
   pub fn add_descriptor<D: RenderContextDescriptor>(&mut self, descriptor: D) {
     let key = TypeId::of::<D::Context>();
-    let value = Box::new(descriptor.create(&self.graphics));
+    let value = Box::new(descriptor.create(&self.graphics).expect("Failed to build render context"));
 
     self.contexts.insert(key, value);
   }

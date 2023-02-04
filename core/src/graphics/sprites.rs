@@ -73,31 +73,31 @@ impl Vertex for SpriteVertex {
 
 impl SpriteBatch {
   /// Constructs a new [`SpriteBatch`] with a default capacity.
-  pub fn new(graphics: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsServer) -> crate::Result<Self> {
     Self::with_capacity(graphics, DEFAULT_SPRITE_COUNT)
   }
 
   /// Creates a new [`SpriteBatch`] with the given expected sprite capacity.
   ///
   /// This will pre-allocate buffers to minimize reallocation costs.
-  pub fn with_capacity(graphics: &GraphicsServer, sprite_count: usize) -> Self {
+  pub fn with_capacity(graphics: &GraphicsServer, sprite_count: usize) -> crate::Result<Self> {
     // build standard quad indices ahead-of-time
     let vertices = Vec::with_capacity(sprite_count * 4);
     let indices = build_quad_indices(sprite_count);
 
     // create mesh, upload quad indices immediately
-    let mut mesh = Mesh::new(graphics, BufferUsage::Dynamic);
+    let mut mesh = Mesh::new(graphics, BufferUsage::Dynamic)?;
 
     mesh.with_buffers(|_, buffer| {
       buffer.write_data(&indices);
     });
 
-    Self {
+    Ok(Self {
       mesh,
       vertices,
       material: None,
       last_texture: None,
-    }
+    })
   }
 
   /// Starts a new batch run with the given `Material`.

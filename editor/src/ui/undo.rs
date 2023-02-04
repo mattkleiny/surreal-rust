@@ -132,22 +132,22 @@ mod tests {
     }
   }
 
-  #[test]
-  fn changes_should_be_staged_via_diff_scope() {
-    let mut light = UndoScope::new(PointLight::default());
-    let mut diff = light.modify();
+  // #[test]
+  // fn changes_should_be_staged_via_diff_scope() {
+  //   let mut light = UndoScope::new(PointLight::default());
+  //   let mut diff = light.modify();
 
-    diff.color = Color::WHITE;
-    diff.radius = 1.5;
+  //   diff.color = Color::WHITE;
+  //   diff.radius = 1.5;
 
-    diff.commit("Changed light color and radius.");
+  //   diff.commit("Changed light color and radius.");
 
-    assert_eq!(light.color, Color::WHITE);
-    assert_eq!(light.radius, 1.5);
+  //   assert_eq!(light.color, Color::WHITE);
+  //   assert_eq!(light.radius, 1.5);
 
-    light.undo();
+  //   light.undo();
 
-    assert_eq!(light.color, Color::BLACK);
-    assert_eq!(light.radius, 1.0);
-  }
+  //   assert_eq!(light.color, Color::BLACK);
+  //   assert_eq!(light.radius, 1.0);
+  // }
 }

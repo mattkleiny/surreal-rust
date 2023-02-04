@@ -40,10 +40,10 @@ pub struct UserInterfaceContainer {
 
 impl UserInterfaceContainer {
   /// Creates a new [`UserInterfaceContainer`].
-  pub fn new(graphics: &GraphicsServer) -> Self {
-    Self {
-      _user_interface: UserInterface::new(graphics),
-    }
+  pub fn new(graphics: &GraphicsServer) -> crate::Result<Self> {
+    Ok(Self {
+      _user_interface: UserInterface::new(graphics)?,
+    })
   }
 
   /// Receives and processes a [`winit::event::WindowEvent`].
@@ -64,7 +64,7 @@ pub struct UserInterface {
 
 impl UserInterface {
   /// Creates a new user interface.
-  pub fn new(graphics: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsServer) -> crate::Result<Self> {
     // load and configure material
     let shader = ShaderProgram::from_glsl(graphics, SHADER_CANVAS_STANDARD).unwrap();
     let mut material = Material::new(graphics, &shader);
@@ -75,14 +75,14 @@ impl UserInterface {
       destination: BlendFactor::OneMinusSrcAlpha,
     });
 
-    Self {
+    Ok(Self {
       graphics: graphics.clone(),
       context: egui::Context::default(),
       material,
-      mesh: Mesh::new(graphics, BufferUsage::Dynamic),
+      mesh: Mesh::new(graphics, BufferUsage::Dynamic)?,
       textures: FastHashMap::default(),
       is_profiler_open: false,
-    }
+    })
   }
 
   /// Sets the style of the user interface to a light mode.

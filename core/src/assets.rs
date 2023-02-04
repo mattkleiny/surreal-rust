@@ -47,7 +47,7 @@ impl<A> Deref for Handle<A> {
 }
 
 /// Represents an asset that can be loaded from the filesystem.
-pub trait Asset: 'static + Any + Sized {
+pub trait Asset: Any + Sized {
   type Loader: AssetLoader<Self>;
 
   /// Loads this asset from the given path.

@@ -125,7 +125,7 @@ impl Default for SpriteContextDescriptor {
 impl RenderContextDescriptor for SpriteContextDescriptor {
   type Context = SpriteContext;
 
-  fn create(&self, graphics: &GraphicsServer) -> Self::Context {
+  fn create(&self, graphics: &GraphicsServer) -> surreal::Result<Self::Context> {
     // determine which shader we're using, prepare material
     let shader = match &self.shader {
       Some(shader) => shader.clone(),
@@ -138,7 +138,7 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
 
     // prepare the material and sprite batch
     let mut material = Material::new(graphics, &shader);
-    let batch = SpriteBatch::with_capacity(graphics, self.sprite_count);
+    let batch = SpriteBatch::with_capacity(graphics, self.sprite_count)?;
 
     // prepare the palette texture, if enabled, upload it once
     if let Some(palette) = &self.palette {
@@ -159,7 +159,7 @@ impl RenderContextDescriptor for SpriteContextDescriptor {
       destination: BlendFactor::OneMinusSrcAlpha,
     });
 
-    Self::Context { material, batch }
+    Ok(Self::Context { material, batch })
   }
 }
 
@@ -205,7 +205,7 @@ impl Default for GeometryContextDescriptor {
 impl RenderContextDescriptor for GeometryContextDescriptor {
   type Context = GeometryContext;
 
-  fn create(&self, graphics: &GraphicsServer) -> Self::Context {
+  fn create(&self, graphics: &GraphicsServer) -> surreal::Result<Self::Context> {
     // determine which shader we're using, prepare material
     let shader = match &self.shader {
       Some(shader) => shader.clone(),
@@ -213,7 +213,7 @@ impl RenderContextDescriptor for GeometryContextDescriptor {
     };
 
     let mut material = Material::new(graphics, &shader);
-    let batch = GeometryBatch::new(graphics);
+    let batch = GeometryBatch::new(graphics)?;
 
     // apply the default projection-view matrix
     material.set_uniform(UNIFORM_PROJECTION_VIEW, &self.projection_view);
@@ -224,7 +224,7 @@ impl RenderContextDescriptor for GeometryContextDescriptor {
       destination: BlendFactor::OneMinusSrcAlpha,
     });
 
-    Self::Context { material, batch }
+    Ok(Self::Context { material, batch })
   }
 }
 

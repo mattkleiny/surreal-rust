@@ -36,13 +36,13 @@ impl Vertex for GeometryVertex {
 
 impl GeometryBatch {
   /// Creates a new geometry batch.
-  pub fn new(graphics: &GraphicsServer) -> Self {
-    Self {
-      mesh: Mesh::new(graphics, BufferUsage::Dynamic),
+  pub fn new(graphics: &GraphicsServer) -> crate::Result<Self> {
+    Ok(Self {
+      mesh: Mesh::new(graphics, BufferUsage::Dynamic)?,
       vertices: Vec::new(),
       indices: Vec::new(),
       material: None,
-    }
+    })
   }
 
   /// Restarts the batch with the given material.

@@ -159,18 +159,18 @@ impl<V> MeshState<V> {
 
 impl<V: Vertex> Mesh<V> {
   /// Constructs a new blank mesh on the GPU.
-  pub fn new(graphics: &GraphicsServer, usage: BufferUsage) -> Self {
-    let vertices = Buffer::new(graphics, BufferKind::Element, usage);
-    let indices = Buffer::new(graphics, BufferKind::Index, usage);
+  pub fn new(graphics: &GraphicsServer, usage: BufferUsage) -> crate::Result<Self> {
+    let vertices = Buffer::new(graphics, BufferKind::Element, usage)?;
+    let indices = Buffer::new(graphics, BufferKind::Index, usage)?;
 
-    Self {
+    Ok(Self {
       state: Rc::new(RefCell::new(MeshState {
         id: graphics.mesh_create(vertices.id(), indices.id(), V::DESCRIPTORS),
         graphics: graphics.clone(),
         vertices,
         indices,
       })),
-    }
+    })
   }
 
   /// Constructs a mesh with the given [`MeshBuilder`] factory method.
@@ -338,8 +338,10 @@ impl<V: Vertex> MeshBuilder<V> {
 
   /// Builds a new [`Mesh`] and returns it.
   pub fn to_mesh(&self, graphics: &GraphicsServer) -> Mesh<V> {
-    let mut mesh = Mesh::new(graphics, BufferUsage::Static);
+    let mut mesh = Mesh::new(graphics, BufferUsage::Static).expect("Failed to create mesh");
+
     self.upload_to(&mut mesh);
+
     mesh
   }
 }

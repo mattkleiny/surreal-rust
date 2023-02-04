@@ -7,7 +7,7 @@ fn main() {
     .with_title("Hello, World!")
     .start(|engine, _| {
       let material = load_built_in_material(&engine.graphics, BuiltInShader::Wire);
-      let mut batch = GeometryBatch::new(&engine.graphics);
+      let mut batch = GeometryBatch::new(&engine.graphics)?;
 
       let color1 = Color32::random();
       let color2 = Color32::random();
