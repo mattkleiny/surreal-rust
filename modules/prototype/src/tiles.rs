@@ -171,7 +171,7 @@ impl<T: PathableTile> PathFindingGrid for TileMap<T> {
     }
   }
 
-  fn get_neighbours(&self, center: IVec2, neighbours: &mut NeighbourList) {
+  fn get_neighbours(&self, center: IVec2, neighbours: &mut NeighbourList<IVec2>) {
     for neighbour in center.von_neighbours() {
       if let Some(tile) = self.get(neighbour.x, neighbour.y) {
         if tile.is_pathable() {

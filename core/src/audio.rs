@@ -40,11 +40,7 @@ impl AudioSampleRate {
   }
 }
 
-/// A wrapper for the core [`AudioBackend`] implementation.
-#[derive(Clone)]
-pub struct AudioServer {
-  backend: std::sync::Arc<Box<dyn AudioBackend>>,
-}
+crate::impl_server!(AudioServer, AudioBackend);
 
 impl AudioServer {
   /// Creates a new [`AudioServer`] with a [`headless::HeadlessAudioBackend`].
@@ -55,24 +51,6 @@ impl AudioServer {
   /// Creates a new [`AudioServer`] with a [`rodio::RodioAudioBackend`].
   pub fn rodio() -> Self {
     Self::new(rodio::RodioAudioBackend::default())
-  }
-
-  /// Creates a new [`AudioServer`] for the given [`AudioBackend`].
-  pub fn new(backend: impl AudioBackend + 'static) -> Self {
-    Self {
-      backend: std::sync::Arc::new(Box::new(backend)),
-    }
-  }
-}
-
-unsafe impl Send for AudioServer {}
-unsafe impl Sync for AudioServer {}
-
-impl std::ops::Deref for AudioServer {
-  type Target = Box<dyn AudioBackend>;
-
-  fn deref(&self) -> &Self::Target {
-    self.backend.as_ref()
   }
 }
 

@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, hash::Hash};
 
 use super::*;
 use crate::collections::{FastHashMap, PriorityQueue};
@@ -11,23 +11,23 @@ const MAXIMUM_STEPS: usize = 128;
 pub type Cost = f32;
 
 /// A heuristic function for path-finding.
-pub type Heuristic = fn(&IVec2, &IVec2) -> Cost;
+pub type Heuristic<T> = fn(&T, &T) -> Cost;
 
 /// Represents a small stack-allocated set of points used in path-finding steps.
-pub type NeighbourList = smallvec::SmallVec<[IVec2; 9]>;
+pub type NeighbourList<T> = smallvec::SmallVec<[T; 9]>;
 
 /// Permits exploratory path-finding over some connected grid.
-pub trait PathFindingGrid {
+pub trait PathFindingGrid<T: Copy + Hash + Eq = IVec2> {
   /// Gets the pathing cost between the given two points.
-  fn get_cost(&self, _from: IVec2, _to: IVec2) -> Cost {
+  fn get_cost(&self, _from: T, _to: T) -> Cost {
     1. // no cost function by default
   }
 
   /// Gets the potential neighbours around the given point.
-  fn get_neighbours(&self, center: IVec2, results: &mut NeighbourList);
+  fn get_neighbours(&self, center: T, results: &mut NeighbourList<T>);
 
   /// Locates a path using A* from from the given start point to the given goal.
-  fn find_path(&self, start: IVec2, goal: IVec2, heuristic: Heuristic) -> Option<VecDeque<IVec2>> {
+  fn find_path(&self, start: T, goal: T, heuristic: Heuristic<T>) -> Option<VecDeque<T>> {
     let mut frontier = PriorityQueue::new();
     let mut came_from = FastHashMap::default();
     let mut cost_so_far = FastHashMap::default();

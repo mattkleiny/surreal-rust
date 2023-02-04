@@ -88,11 +88,7 @@ impl_graphics_id!(ShaderId);
 impl_graphics_id!(MeshId);
 impl_graphics_id!(TargetId);
 
-/// A wrapper for the core [`GraphicsBackend`] implementation.
-#[derive(Clone)]
-pub struct GraphicsServer {
-  backend: std::sync::Arc<Box<dyn GraphicsBackend>>,
-}
+crate::impl_server!(GraphicsServer, GraphicsBackend);
 
 impl GraphicsServer {
   /// Creates a new [`GraphicsServer`] with a [`headless::HeadlessGraphicsBackend`].
@@ -105,26 +101,9 @@ impl GraphicsServer {
     unsafe { Ok(Self::new(opengl::OpenGLGraphicsBackend::new(window, vsync_enabled, samples)?)) }
   }
 
+  /// Creates a new [`GraphicsServer`] with an [`wgpu::WgpuGraphicsBackend`].
   pub fn wgpu(window: &winit::window::Window, vsync_enabled: bool, samples: u8) -> crate::Result<Self> {
     unsafe { Ok(Self::new(wgpu::WgpuGraphicsBackend::new(window, vsync_enabled, samples)?)) }
-  }
-
-  /// Creates a new [`GraphicsServer`] for the given [`GraphicsBackend`].
-  pub fn new(backend: impl GraphicsBackend + 'static) -> Self {
-    Self {
-      backend: std::sync::Arc::new(Box::new(backend)),
-    }
-  }
-}
-
-unsafe impl Send for GraphicsServer {}
-unsafe impl Sync for GraphicsServer {}
-
-impl std::ops::Deref for GraphicsServer {
-  type Target = Box<dyn GraphicsBackend>;
-
-  fn deref(&self) -> &Self::Target {
-    self.backend.as_ref()
   }
 }
 
