@@ -37,6 +37,7 @@ pub mod prelude {
   pub use core::collections::*;
   pub use core::diagnostics::*;
   pub use core::engine::*;
+  pub use core::fibers::*;
   pub use core::graphics::*;
   pub use core::graphs::*;
   pub use core::input::*;

@@ -5,6 +5,8 @@
 
 #![feature(anonymous_lifetime_in_impl_trait)]
 #![feature(type_alias_impl_trait)]
+#![feature(async_fn_in_trait)]
+#![allow(incomplete_features)]
 
 #[macro_use]
 extern crate serde;
@@ -17,6 +19,7 @@ pub mod audio;
 pub mod collections;
 pub mod diagnostics;
 pub mod engine;
+pub mod fibers;
 pub mod graphics;
 pub mod graphs;
 pub mod input;

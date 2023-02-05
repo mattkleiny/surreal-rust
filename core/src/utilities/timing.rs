@@ -3,7 +3,7 @@
 use std::{
   fmt::{Display, Formatter},
   iter::Sum,
-  ops::{Add, Div, Mul, Sub},
+  ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
   time::{Duration, Instant},
 };
 
@@ -175,6 +175,8 @@ pub struct TimeSpan {
 }
 
 impl TimeSpan {
+  pub const ZERO: Self = Self { seconds: 0. };
+
   #[inline]
   pub fn from_millis(milliseconds: f32) -> TimeSpan {
     Self::from_seconds(milliseconds / 1000.)
@@ -240,12 +242,26 @@ impl Add for TimeSpan {
   }
 }
 
+impl AddAssign for TimeSpan {
+  #[inline]
+  fn add_assign(&mut self, rhs: Self) {
+    *self = *self + rhs;
+  }
+}
+
 impl Sub for TimeSpan {
   type Output = TimeSpan;
 
   #[inline]
   fn sub(self, rhs: Self) -> Self::Output {
     TimeSpan::from_seconds(self.seconds - rhs.seconds)
+  }
+}
+
+impl SubAssign for TimeSpan {
+  #[inline]
+  fn sub_assign(&mut self, rhs: Self) {
+    *self = *self - rhs;
   }
 }
 
