@@ -18,9 +18,6 @@ pub trait Pixel: Copy + Default {
   /// The number of channels in this pixel type.
   const CHANNEL_COUNT: usize;
 
-  /// A representation of an empty color in this pixel type.
-  const EMPTY: Self;
-
   /// Converts this pixel type from a raw slice of 0-255 byte values.
   fn from_bytes(slice: &[u8; 4]) -> Self;
 }
@@ -61,7 +58,6 @@ impl Pixel for Color {
   type Subpixel = f32;
 
   const CHANNEL_COUNT: usize = 4;
-  const EMPTY: Self = Self::CLEAR;
 
   fn from_bytes(slice: &[u8; 4]) -> Self {
     Self {
@@ -214,7 +210,6 @@ impl Pixel for Color32 {
   type Subpixel = u8;
 
   const CHANNEL_COUNT: usize = 4;
-  const EMPTY: Self = Self::CLEAR;
 
   fn from_bytes(slice: &[u8; 4]) -> Self {
     Self {

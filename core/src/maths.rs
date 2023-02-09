@@ -46,20 +46,6 @@ macro_rules! impl_guid {
       }
     }
 
-    impl From<Guid> for $name {
-      #[inline]
-      fn from(value: Guid) -> Self {
-        Self(value)
-      }
-    }
-
-    impl From<$name> for Guid {
-      #[inline]
-      fn from(value: $name) -> Self {
-        value.0
-      }
-    }
-
     impl std::fmt::Display for $name {
       fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)

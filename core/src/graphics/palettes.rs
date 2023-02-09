@@ -59,7 +59,7 @@ impl<P: Pixel> ColorPalette<P> {
 
     // read palette size and start building palette
     let count: usize = lines[2].parse()?;
-    let mut colors = vec![P::EMPTY; count];
+    let mut colors = vec![P::default(); count];
 
     for (index, color) in colors.iter_mut().enumerate() {
       let index = (3 + index) % lines.len();

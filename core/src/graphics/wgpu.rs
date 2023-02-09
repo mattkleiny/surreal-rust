@@ -5,24 +5,36 @@ use crate::collections::ResourceStorage;
 ///
 /// [`wgpu`]: https://crates.io/crates/wgpu
 pub struct WgpuGraphicsBackend {
-  _buffers: ResourceStorage<BufferId, WgpuBuffer>,
-  _meshes: ResourceStorage<MeshId, WgpuMesh>,
-  _shaders: ResourceStorage<ShaderId, WgpuShader>,
+  buffers: ResourceStorage<BufferId, WgpuBuffer>,
+  meshes: ResourceStorage<MeshId, WgpuMesh>,
+  shaders: ResourceStorage<ShaderId, WgpuShader>,
   textures: ResourceStorage<TextureId, WgpuTexture>,
+  targets: ResourceStorage<TargetId, WgpuTarget>,
 }
 
+/// Internal book-keeping for a buffer.
 struct WgpuBuffer {}
+
+/// Internal book-keeping for a mesh.
 struct WgpuMesh {}
+
+/// Internal book-keeping for a shader.
 struct WgpuShader {}
+
+/// Internal book-keeping for a texture.
 struct WgpuTexture {}
+
+/// Internal book-keeping for a render target.
+struct WgpuTarget {}
 
 impl WgpuGraphicsBackend {
   pub unsafe fn new(_window: &winit::window::Window, _vsync_enabled: bool, _samples: u8) -> crate::Result<Self> {
     Ok(Self {
-      _buffers: ResourceStorage::default(),
-      _meshes: ResourceStorage::default(),
-      _shaders: ResourceStorage::default(),
+      buffers: ResourceStorage::default(),
+      meshes: ResourceStorage::default(),
+      shaders: ResourceStorage::default(),
       textures: ResourceStorage::default(),
+      targets: ResourceStorage::default(),
     })
   }
 }
@@ -66,7 +78,7 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   }
 
   fn buffer_create(&self) -> Result<BufferId, BufferError> {
-    todo!()
+    Ok(self.buffers.create(|| WgpuBuffer {}))
   }
 
   fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8) -> Result<(), BufferError> {
@@ -85,7 +97,10 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   }
 
   fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError> {
-    todo!()
+    match self.buffers.remove(buffer) {
+      Some(_) => Ok(()),
+      None => Err(BufferError::InvalidId),
+    }
   }
 
   fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError> {
@@ -136,13 +151,14 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   }
 
   fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError> {
-    self.textures.remove(texture);
-
-    Ok(())
+    match self.textures.remove(texture) {
+      Some(_) => Ok(()),
+      None => Err(TextureError::InvalidId),
+    }
   }
 
   fn shader_create(&self) -> Result<ShaderId, ShaderError> {
-    todo!()
+    Ok(self.shaders.create(|| WgpuShader {}))
   }
 
   fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> Result<(), ShaderError> {
@@ -162,11 +178,14 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   }
 
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError> {
-    todo!()
+    match self.shaders.remove(shader) {
+      Some(_) => Ok(()),
+      None => Err(ShaderError::InvalidId),
+    }
   }
 
   fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> Result<MeshId, MeshError> {
-    todo!()
+    Ok(self.meshes.create(|| WgpuMesh {}))
   }
 
   fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) -> Result<(), MeshError> {
@@ -174,7 +193,10 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   }
 
   fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError> {
-    todo!()
+    match self.meshes.remove(mesh) {
+      Some(_) => Ok(()),
+      None => Err(MeshError::InvalidId),
+    }
   }
 
   fn target_create(
@@ -183,7 +205,7 @@ impl GraphicsBackend for WgpuGraphicsBackend {
     depth_attachment: Option<TextureId>,
     stencil_attachment: Option<TextureId>,
   ) -> Result<TargetId, TargetError> {
-    todo!()
+    Ok(self.targets.create(|| WgpuTarget {}))
   }
 
   fn target_activate(&self, target: TargetId) -> Result<(), TargetError> {
@@ -216,6 +238,9 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   }
 
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {
-    todo!()
+    match self.targets.remove(target) {
+      Some(_) => Ok(()),
+      None => Err(TargetError::InvalidId),
+    }
   }
 }
