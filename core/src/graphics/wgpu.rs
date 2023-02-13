@@ -99,7 +99,7 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError> {
     match self.buffers.remove(buffer) {
       Some(_) => Ok(()),
-      None => Err(BufferError::InvalidId),
+      None => Err(BufferError::InvalidId(buffer)),
     }
   }
 
@@ -153,7 +153,7 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError> {
     match self.textures.remove(texture) {
       Some(_) => Ok(()),
-      None => Err(TextureError::InvalidId),
+      None => Err(TextureError::InvalidId(texture)),
     }
   }
 
@@ -180,7 +180,7 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError> {
     match self.shaders.remove(shader) {
       Some(_) => Ok(()),
-      None => Err(ShaderError::InvalidId),
+      None => Err(ShaderError::InvalidId(shader)),
     }
   }
 
@@ -195,7 +195,7 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError> {
     match self.meshes.remove(mesh) {
       Some(_) => Ok(()),
-      None => Err(MeshError::InvalidId),
+      None => Err(MeshError::InvalidId(mesh)),
     }
   }
 
@@ -240,7 +240,7 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {
     match self.targets.remove(target) {
       Some(_) => Ok(()),
-      None => Err(TargetError::InvalidId),
+      None => Err(TargetError::InvalidId(target)),
     }
   }
 }

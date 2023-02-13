@@ -115,42 +115,42 @@ const MAX_TEXTURE_UNITS: usize = 32;
 /// A possible error when interacting with buffers.
 #[derive(thiserror::Error, Debug)]
 pub enum BufferError {
-  #[error("The given buffer ID is invalid.")]
-  InvalidId,
-  #[error("The buffer is not large enough to hold the requested data.")]
+  #[error("the given buffer ID {0:?} is invalid")]
+  InvalidId(BufferId),
+  #[error("the buffer is not large enough to hold the requested data")]
   BufferTooSmall,
-  #[error("The given buffer pointer is null")]
+  #[error("the given buffer pointer is null")]
   NullPointer,
 }
 
 /// A possible error when interacting with textures.
 #[derive(thiserror::Error, Debug)]
 pub enum TextureError {
-  #[error("The given texture ID is invalid.")]
-  InvalidId,
+  #[error("the given texture ID {0:?} is invalid")]
+  InvalidId(TextureId),
 }
 
 /// A possible error when interacting with shaders.
 #[derive(thiserror::Error, Debug)]
 pub enum ShaderError {
-  #[error("The given shader ID is invalid.")]
-  InvalidId,
-  #[error("The shader failed to compile.")]
+  #[error("the given shader ID {0:?} is invalid")]
+  InvalidId(ShaderId),
+  #[error("the shader failed to compile")]
   CompileError(String),
 }
 
 /// A possible error when interacting with meshes.
 #[derive(thiserror::Error, Debug)]
 pub enum MeshError {
-  #[error("The given mesh ID is invalid.")]
-  InvalidId,
+  #[error("the given mesh ID {0:?} is invalid")]
+  InvalidId(MeshId),
 }
 
 /// A possible error when interacting with render targets.
 #[derive(thiserror::Error, Debug)]
 pub enum TargetError {
-  #[error("The given target ID is invalid.")]
-  InvalidId,
+  #[error("the given target ID {0:?} is invalid")]
+  InvalidId(TargetId),
 }
 
 /// An abstraction on top of the underlying graphics API.

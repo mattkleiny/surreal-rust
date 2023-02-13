@@ -115,8 +115,9 @@ impl AssetManager {
   /// Adds a new [`AssetLoader`] to the manager.
   pub fn add_loader<A: Asset, L: AssetLoader<A>>(&mut self, loader: L) {
     let state = unsafe { &mut *self.state.get() };
+    let type_id = TypeId::of::<A>();
 
-    state.loaders.insert(TypeId::of::<A>(), Box::new(loader));
+    state.loaders.insert(type_id, Box::new(loader));
   }
 
   /// Attempts to load an asset from the given path.
@@ -125,6 +126,7 @@ impl AssetManager {
   ///   error is returned.
   /// * If the asset is found, but the loader is not registered, then an error is returned.
   /// * If the asset is found and the loader is registered, then the asset is loaded and returned.
+  /// * If the asset has already been loaded, then the cached asset is returned.
   pub fn load_asset<A: Asset>(&self, path: impl Into<VirtualPath>) -> crate::Result<Handle<A>> {
     let state = unsafe { &mut *self.state.get() };
 
