@@ -1,90 +1,112 @@
 //! BASIC language support for Surreal
+//!
+//! This module provides support for the BASIC language. It is a simple language
+//! that is easy to learn and use. It is also a good starting point for learning
+//! how to write a compiler and to prove out the scripting infrastructure.
 
-use crate::{Compiler, Lexer, Parser};
+use super::*;
 
-struct BasicLexer<'a> {
-  source: &'a str,
-  position: usize,
+/// The BASIC [`ScriptLanguage`].
+pub struct BASIC {}
+
+impl ScriptLanguage for BASIC {
+  type Expression = parser::Expression;
+
+  fn name() -> &'static str {
+    "BASIC"
+  }
+
+  fn extensions(&self) -> &'static [&'static str] {
+    &["bas"]
+  }
+
+  fn parse(source: &str) -> Result<Self::Expression, ParserError> {
+    parser::parse(source)
+  }
+
+  fn compile(expression: Self::Expression) -> Result<CompiledScript, CompilerError> {
+    compiler::compile(expression)
+  }
 }
 
-impl<'a> Lexer for BasicLexer<'a> {
-  type Token = Token;
+mod parser {
+  use super::*;
 
-  fn tokenize(&mut self) -> Result<Self::Token, crate::ParserError> {
+  pub fn parse(_source: &str) -> Result<Expression, ParserError> {
+    struct Lexer {}
+    struct Parser {}
+
+    todo!()
+  }
+
+  #[derive(Debug, PartialEq, Eq)]
+  enum Token {
+    Literal(String),
+    Variable(String),
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Negate,
+    OpenParen,
+    CloseParen,
+  }
+
+  #[derive(Debug, PartialEq)]
+  pub enum Expression {
+    Literal(Literal),
+    Variable(String),
+    BinaryOperation(BinaryOperation),
+    UnaryOperation(UnaryOperation),
+  }
+
+  #[derive(Debug, PartialEq)]
+  pub enum Literal {
+    Integer(i64),
+    Float(f64),
+    String(String),
+  }
+
+  #[derive(Debug, PartialEq)]
+  pub enum BinaryOperation {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+  }
+
+  #[derive(Debug, PartialEq)]
+  pub enum UnaryOperation {
+    Negate,
+  }
+}
+
+mod compiler {
+  use super::*;
+
+  pub fn compile(_expression: parser::Expression) -> Result<CompiledScript, CompilerError> {
+    struct Compiler {}
+
     todo!()
   }
 }
 
-struct BasicParser<'a> {
-  source: &'a str,
-}
+#[cfg(test)]
+mod tests {
+  use super::*;
 
-impl<'a> Parser for BasicParser<'a> {
-  type Token = Token;
-  type Expression = Expression;
+  #[test]
+  fn basic_parser_should_work() {
+    let program = "1 + 2";
+    let expression = BASIC::parse(program).expect("Failed to parse program");
 
-  fn parse(&mut self, lexer: &mut impl Lexer<Token = Self::Token>) -> Result<Self::Expression, crate::ParserError> {
-    match lexer.tokenize()? {
-      Token::Literal(_) => todo!(),
-      Token::Variable(_) => todo!(),
-      Token::Add => todo!(),
-      Token::Subtract => todo!(),
-      Token::Multiply => todo!(),
-      Token::Divide => todo!(),
-      Token::Negate => todo!(),
-      Token::OpenParen => todo!(),
-      Token::CloseParen => todo!(),
-    }
+    assert_eq!(expression, parser::Expression::BinaryOperation(parser::BinaryOperation::Add));
   }
-}
 
-struct BasicCompiler {}
-
-impl Compiler for BasicCompiler {
-  type Expression = Expression;
-
-  fn compile(&mut self, _expression: Self::Expression) -> Result<crate::Program, crate::ParserError> {
-    todo!()
+  #[test]
+  fn basic_compiler_should_work() {
+    let program = "1 + 2";
+    let expression = BASIC::parse(program).expect("Failed to parse program");
+    let _program = BASIC::compile(expression).expect("Failed to compile program");
   }
-}
-
-#[derive(Debug)]
-enum Token {
-  Literal(String),
-  Variable(String),
-  Add,
-  Subtract,
-  Multiply,
-  Divide,
-  Negate,
-  OpenParen,
-  CloseParen,
-}
-
-#[derive(Debug)]
-enum Expression {
-  Literal(Literal),
-  Variable(String),
-  BinaryOperation(BinaryOperation),
-  UnaryOperation(UnaryOperation),
-}
-
-#[derive(Debug)]
-enum Literal {
-  Integer(i64),
-  Float(f64),
-  String(String),
-}
-
-#[derive(Debug)]
-enum BinaryOperation {
-  Add,
-  Subtract,
-  Multiply,
-  Divide,
-}
-
-#[derive(Debug)]
-enum UnaryOperation {
-  Negate,
 }
