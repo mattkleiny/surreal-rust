@@ -1,6 +1,7 @@
 //! General utilities.
 
 pub use object::*;
+pub use parsing::*;
 pub use services::*;
 pub use singleton::*;
 pub use size::*;
@@ -9,6 +10,7 @@ pub use variant::*;
 pub use version::*;
 
 mod object;
+mod parsing;
 mod services;
 mod singleton;
 mod size;

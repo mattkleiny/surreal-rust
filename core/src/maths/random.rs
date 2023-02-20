@@ -141,7 +141,7 @@ where
   fn from_random(random: &mut Random) -> Self {
     let mut result = [T::default(); L];
 
-    for element in result.iter_mut() {
+    for element in &mut result {
       *element = T::from_random(random);
     }
 

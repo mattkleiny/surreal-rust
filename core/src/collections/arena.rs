@@ -376,7 +376,7 @@ mod tests {
 
     arena.remove(index2);
 
-    for (index, item) in arena.iter() {
+    for (index, item) in &arena {
       println!("{item} at {index:?}");
     }
   }
@@ -392,7 +392,7 @@ mod tests {
 
     arena.remove(index2);
 
-    for (index, item) in arena.iter_mut() {
+    for (index, item) in &mut arena {
       *item = "Test 1";
 
       println!("{item} at {index:?}");

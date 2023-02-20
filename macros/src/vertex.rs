@@ -52,7 +52,7 @@ fn parse_vertex_attributes(attributes: &Vec<Attribute>) -> (usize, proc_macro2::
 
         match meta {
           Meta::List(ref list) => {
-            for nested in list.nested.iter() {
+            for nested in &list.nested {
               match nested {
                 NestedMeta::Meta(ref meta) => match meta {
                   Meta::Path(_) => panic!("It was a path!"),

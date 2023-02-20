@@ -1,10 +1,10 @@
 use crate::maths::Rectangle;
 
-/// A standard quadtree implementation.
+/// A standard Quad Tree implementation.
 ///
-/// A quadtree is a spatial data structure that can be used to efficiently store
-/// and retrieve values in 2-dimensional space, with fast-lookups for values
-/// based on their coordinates.
+/// A Quad Tree is a spatial data structure that can be used to efficiently
+/// store and retrieve values in 2-dimensional space, with fast-lookups for
+/// values based on their coordinates.
 pub struct QuadTree<T> {
   root: Option<QuadTreeNode<T>>,
 }
@@ -16,7 +16,7 @@ enum QuadTreeNode<T> {
 }
 
 impl<T> Default for QuadTree<T> {
-  /// Creates a new empty quadtree.
+  /// Creates a new empty Quad Tree.
   fn default() -> Self {
     Self { root: None }
   }
@@ -24,42 +24,42 @@ impl<T> Default for QuadTree<T> {
 
 #[allow(unused_variables)]
 impl<T> QuadTree<T> {
-  /// Creates a new empty quadtree.
+  /// Creates a new empty Quad Tree.
   pub fn new() -> Self {
     Self::default()
   }
 
-  /// Determines if the quadtree is empty.
+  /// Determines if the Quad Tree is empty.
   pub fn is_empty(&self) -> bool {
     self.root.is_none()
   }
 
-  /// Calculates the total bounds of the quadtree.
+  /// Calculates the total bounds of the Quad Tree.
   pub fn calculate_bounds(&self) -> Rectangle {
     todo!()
   }
 
-  /// Determines if the quadtree contains the given value.
+  /// Determines if the Quad Tree contains the given value.
   pub fn contains(&self, value: T) -> bool {
     todo!()
   }
 
-  /// Inserts a value into the quadtree.
+  /// Inserts a value into the Quad Tree.
   pub fn insert(&mut self, value: T, bounds: Rectangle) {
     todo!()
   }
 
-  /// Removes a value from the quadtree.
+  /// Removes a value from the Quad Tree.
   pub fn remove(&mut self, value: T, bounds: Rectangle) {
     todo!()
   }
 
-  /// Moves a value in the quadtree to a new position.
+  /// Moves a value in the Quad Tree to a new position.
   pub fn move_bounds(&mut self, value: T, old_bounds: Rectangle, new_bounds: Rectangle) {
     todo!()
   }
 
-  /// Finds all values in the quadtree that intersect the given bounds.
+  /// Finds all values in the Quad Tree that intersect the given bounds.
   pub fn find_in_bounds(&self, bounds: Rectangle) -> Vec<&T> {
     fn depth_first_search<T>(node: &QuadTreeNode<T>, bounds: Rectangle, results: &mut Vec<&T>) {
       todo!()
@@ -74,7 +74,7 @@ impl<T> QuadTree<T> {
     results
   }
 
-  /// Finds all values in the quadtree that intersect the given bounds.
+  /// Finds all values in the Quad Tree that intersect the given bounds.
   pub fn find_in_bounds_mut(&mut self, bounds: Rectangle) -> Vec<&mut T> {
     fn depth_first_search<T>(
       node: &mut QuadTreeNode<T>,
@@ -93,12 +93,12 @@ impl<T> QuadTree<T> {
     results
   }
 
-  /// Clears the quadtree of all values.
+  /// Clears the Quad Tree of all values.
   pub fn clear(&mut self) {
     self.root = None;
   }
 
-  /// Iterates over the values in the quadtree.
+  /// Iterates over the values in the Quad Tree.
   pub fn iter(&self) -> impl Iterator<Item = &T> {
     struct Iter<'a, T> {
       quadtree: &'a QuadTree<T>,
@@ -115,7 +115,7 @@ impl<T> QuadTree<T> {
     Iter { quadtree: self }
   }
 
-  /// Iterates over the values in the quadtree mutably.
+  /// Iterates over the values in the Quad Tree mutably.
   pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
     struct IterMut<'a, T> {
       quadtree: &'a mut QuadTree<T>,
@@ -137,7 +137,7 @@ impl<'a, T> IntoIterator for &'a QuadTree<T> {
   type Item = &'a T;
   type IntoIter = impl Iterator<Item = Self::Item>;
 
-  /// Iterates over the values in the quadtree.
+  /// Iterates over the values in the Quad Tree.
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
   }
@@ -147,7 +147,7 @@ impl<'a, T> IntoIterator for &'a mut QuadTree<T> {
   type Item = &'a mut T;
   type IntoIter = impl Iterator<Item = Self::Item>;
 
-  /// Iterates over the values in the quadtree mutably.
+  /// Iterates over the values in the Quad Tree mutably.
   fn into_iter(self) -> Self::IntoIter {
     self.iter_mut()
   }

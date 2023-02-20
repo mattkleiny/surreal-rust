@@ -2,8 +2,8 @@ use crate::collections::RingBuffer;
 
 /// A managed `egui` panel for the in-game console.
 pub struct ConsolePanel {
-  _input_buffer: String,
-  _history: RingBuffer<String>,
+  input_buffer: String,
+  history: RingBuffer<String>,
 }
 
 impl Default for ConsolePanel {
@@ -16,8 +16,8 @@ impl ConsolePanel {
   /// Creates a new [`ConsolePanel`].
   pub fn new() -> Self {
     Self {
-      _input_buffer: "".to_string(),
-      _history: RingBuffer::new(100),
+      input_buffer: "".to_string(),
+      history: RingBuffer::new(100),
     }
   }
 

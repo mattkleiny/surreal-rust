@@ -39,7 +39,10 @@ impl OpenGLGraphicsBackend {
   ) -> crate::Result<Self> {
     let display = Display::new(
       window.raw_display_handle(),
+      #[cfg(target_os = "windows")]
       DisplayApiPreference::Wgl(Some(window.raw_window_handle())),
+      #[cfg(target_os = "linux")]
+      DisplayApiPreference::Egl,
     )?;
 
     let config = display
