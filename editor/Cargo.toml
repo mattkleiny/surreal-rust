@@ -8,11 +8,10 @@ surreal = { package = "surreal-core", path = "../core" }
 base64 = "0.21.0"
 clap = { version = "4.0.32", features = ["derive"] }
 crossbeam-channel = "0.5.6"
-egui = "0.20.1"
+egui = "0.21.0"
 fxhash = "0.2.1"
 glob = "0.3.1"
 notify = "5.0.0"
 serde = { version = "1.0.152", features = ["derive"] }
 thiserror = "1.0.31"
-winit = "0.27.5"
-winreg = "0.10.1"
+winit = "0.28.1"

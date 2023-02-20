@@ -51,8 +51,6 @@ impl<D> EditorPanel for GraphEditor<D> {
     // let cursor_in_editor = rect.contains(cursor_pos);
     // let cursor_in_finder = false;
 
-    self.zoom = (self.zoom + ui.ctx().input().zoom_delta() - 1.).clamp(ZOOM_MIN, ZOOM_MAX);
-
     let painter = ui.painter();
 
     Self::paint_grid(painter, rect, self.zoom, background_color);

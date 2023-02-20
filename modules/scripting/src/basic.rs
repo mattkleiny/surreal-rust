@@ -90,15 +90,6 @@ enum Keyword {
   Not,
 }
 
-impl std::str::FromStr for Keyword {
-  type Err = ParserError;
-
-  /// Parses a keyword from the given string.
-  fn from_str(string: &str) -> Result<Self, Self::Err> {
-    todo!()
-  }
-}
-
 /// An expression in the BASIC language.
 #[derive(Debug, PartialEq)]
 pub enum Expression {

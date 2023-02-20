@@ -146,6 +146,7 @@ impl InputServer {
             key,
             pressed: event.state == ElementState::Pressed,
             modifiers: self.raw_input.modifiers,
+            repeat: false,
           };
 
           self.raw_input.events.push(event)
