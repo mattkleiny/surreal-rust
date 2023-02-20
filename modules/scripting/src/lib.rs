@@ -46,6 +46,8 @@ pub enum ParserError {
   UnexpectedToken(String),
   #[error("unexpected end of input")]
   UnexpectedEndOfInput,
+  #[error("invalid number: {0}")]
+  InvalidNumber(String),
 }
 
 /// Possible error codes from compiling a script.

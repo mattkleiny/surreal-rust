@@ -4,9 +4,7 @@
 //! support.
 
 use super::*;
-use crate::{
-  maths::{vec2, Mat2, Vec2},
-};
+use crate::maths::{vec2, Mat2, Vec2};
 
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
