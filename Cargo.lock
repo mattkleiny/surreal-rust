@@ -2371,6 +2371,7 @@ dependencies = [
  "surreal-ai",
  "surreal-analytics",
  "surreal-animation",
+ "surreal-blueprints",
  "surreal-core",
  "surreal-csg",
  "surreal-editor",
@@ -2398,6 +2399,13 @@ dependencies = [
 
 [[package]]
 name = "surreal-animation"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
+name = "surreal-blueprints"
 version = "0.1.0"
 dependencies = [
  "surreal-core",

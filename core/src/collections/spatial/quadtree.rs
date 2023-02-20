@@ -34,34 +34,59 @@ impl<T> QuadTree<T> {
     self.root.is_none()
   }
 
+  /// Calculates the total bounds of the quadtree.
+  pub fn calculate_bounds(&self) -> Rectangle {
+    todo!()
+  }
+
   /// Determines if the quadtree contains the given value.
   pub fn contains(&self, value: T) -> bool {
     todo!()
   }
 
   /// Inserts a value into the quadtree.
-  pub fn insert(&mut self, value: T) {
+  pub fn insert(&mut self, value: T, bounds: Rectangle) {
     todo!()
   }
 
   /// Removes a value from the quadtree.
-  pub fn remove(&mut self, value: T) {
+  pub fn remove(&mut self, value: T, bounds: Rectangle) {
     todo!()
   }
 
   /// Moves a value in the quadtree to a new position.
-  pub fn move_bounds(&mut self, value: T) {
+  pub fn move_bounds(&mut self, value: T, old_bounds: Rectangle, new_bounds: Rectangle) {
     todo!()
   }
 
   /// Finds all values in the quadtree that intersect the given bounds.
   pub fn find_in_bounds(&self, bounds: Rectangle) -> Vec<&T> {
-    todo!()
+    fn depth_first_search<T>(node: &QuadTreeNode<T>, bounds: Rectangle, results: &mut Vec<&T>) {
+      todo!()
+    }
+
+    let mut results = Vec::new();
+
+    if let Some(root) = &self.root {
+      depth_first_search(root, bounds, &mut results);
+    }
+
+    results
   }
 
   /// Finds all values in the quadtree that intersect the given bounds.
   pub fn find_in_bounds_mut(&mut self, bounds: Rectangle) -> Vec<&mut T> {
-    todo!()
+    fn depth_first_search<T>(node: &mut QuadTreeNode<T>, bounds: Rectangle, results: &mut Vec<&mut T>) {
+      todo!()
+    }
+
+    let mut results = Vec::new();
+
+    if let Some(root) = &mut self.root {
+      depth_first_search(root, bounds, &mut results);
+    }
+
+    results
   }
 
   /// Clears the quadtree of all values.
@@ -121,5 +146,27 @@ impl<'a, T> IntoIterator for &'a mut QuadTree<T> {
   /// Iterates over the values in the quadtree mutably.
   fn into_iter(self) -> Self::IntoIter {
     self.iter_mut()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn quadtree_should_start_empty() {
+    let tree = QuadTree::<()>::default();
+
+    assert!(tree.is_empty());
+  }
+
+  #[test]
+  fn quadtreE_should_insert_and_find_item() {
+    let mut tree = QuadTree::default();
+
+    tree.insert(1);
+    tree.insert(2);
+
+    assert!(!tree.is_empty());
   }
 }

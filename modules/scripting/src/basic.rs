@@ -21,14 +21,12 @@ impl ScriptLanguage for BASIC {
   }
 
   fn parse(source: &str) -> Result<Self::Expression, ParserError> {
-    let tokens = tokenize(source)?;
-
-    println!("{:?}", tokens);
+    let _tokens = tokenize(source)?;
 
     todo!()
   }
 
-  fn compile(expression: Self::Expression) -> Result<CompiledScript, CompilerError> {
+  fn compile(_expression: Self::Expression) -> Result<CompiledScript, CompilerError> {
     todo!()
   }
 }
@@ -59,6 +57,46 @@ enum Token {
   GreaterEqual,
 
   Literal(Literal),
+  Keyword(Keyword),
+}
+
+/// A keyword in the BASIC language.
+#[derive(Debug, PartialEq)]
+enum Keyword {
+  If,
+  Then,
+  Else,
+  End,
+  For,
+  To,
+  Step,
+  Next,
+  While,
+  Repeat,
+  Until,
+  Function,
+  Sub,
+  Return,
+  Exit,
+  Dim,
+  As,
+  Print,
+  Input,
+  Let,
+  True,
+  False,
+  And,
+  Or,
+  Not,
+}
+
+impl std::str::FromStr for Keyword {
+  type Err = ParserError;
+
+  /// Parses a keyword from the given string.
+  fn from_str(string: &str) -> Result<Self, Self::Err> {
+    todo!()
+  }
 }
 
 /// An expression in the BASIC language.
@@ -173,7 +211,11 @@ fn tokenize(source: &str) -> Result<Vec<Token>, ParserError> {
         emit!(Token::Literal(number));
       }
 
-      ' ' | '\t' | '\n' => {} // ignore whitespace
+      // TODO: keywords
+      // TODO: strings
+
+      // ignore whitespace
+      ' ' | '\t' | '\n' => {}
 
       _ => return Err(ParserError::UnexpectedToken(character.to_string())),
     }
