@@ -31,7 +31,6 @@ mod shaders;
 mod sprites;
 mod targets;
 mod textures;
-mod wgpu;
 
 /// Implements a new opaque identifier for some resource type.
 macro_rules! impl_graphics_id {
