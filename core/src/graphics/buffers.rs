@@ -40,7 +40,11 @@ struct BufferState {
 
 impl<T> Buffer<T> {
   /// Constructs a new empty buffer on the GPU.
-  pub fn new(graphics: &GraphicsServer, kind: BufferKind, usage: BufferUsage) -> crate::Result<Self> {
+  pub fn new(
+    graphics: &GraphicsServer,
+    kind: BufferKind,
+    usage: BufferUsage,
+  ) -> crate::Result<Self> {
     Ok(Self {
       state: Rc::new(RefCell::new(BufferState {
         id: graphics.buffer_create()?,
@@ -114,6 +118,9 @@ impl<T> Buffer<T> {
 
 impl Drop for BufferState {
   fn drop(&mut self) {
-    self.graphics.buffer_delete(self.id).expect("Failed to delete buffer")
+    self
+      .graphics
+      .buffer_delete(self.id)
+      .expect("Failed to delete buffer")
   }
 }

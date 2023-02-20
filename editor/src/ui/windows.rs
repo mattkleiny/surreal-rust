@@ -26,14 +26,15 @@ pub struct EditorWindowHost {
   /// The underlying [`EventBus`] for the editor application.
   ///
   /// This is used to dispatch events to the various systems in the application.
-  /// You can grab a reference and [`Clone::clone`] it to produce a new handle and
-  /// use it in other window types.
+  /// You can grab a reference and [`Clone::clone`] it to produce a new handle
+  /// and use it in other window types.
   pub event_bus: EventBus,
   event_loop: EventLoop<()>,
   windows: FastHashMap<WindowId, WindowState>,
 }
 
-/// Internal state for a [`EditorWindow`] and it's associated `winit` [`Window`].
+/// Internal state for a [`EditorWindow`] and it's associated `winit`
+/// [`Window`].
 struct WindowState {
   winit_window: Window,
   editor_window: Box<dyn EditorWindow>,
@@ -141,115 +142,121 @@ impl EditorWindowHost {
   pub fn run(mut self) {
     surreal::diagnostics::trace!("Entering editor window loop");
 
-    self.event_loop.run(move |event, _, control_flow| match event {
-      Event::MainEventsCleared => {
-        for (window_id, state) in &mut self.windows {
-          surreal::diagnostics::profile_scope!("Update window", &format!("{window_id:?}"));
+    self
+      .event_loop
+      .run(move |event, _, control_flow| match event {
+        Event::MainEventsCleared => {
+          for (window_id, state) in &mut self.windows {
+            surreal::diagnostics::profile_scope!("Update window", &format!("{window_id:?}"));
 
-          // TODO: clean this up
-          state.user_interface_state.raw_input = state.input_server.raw_input.clone();
+            // TODO: clean this up
+            state.user_interface_state.raw_input = state.input_server.raw_input.clone();
 
-          state.editor_window.on_update();
-          state.winit_window.request_redraw();
+            state.editor_window.on_update();
+            state.winit_window.request_redraw();
 
-          if state.user_interface_state.is_focused {
-            *control_flow = ControlFlow::Poll;
-          } else {
-            *control_flow = ControlFlow::Wait;
-          }
-        }
-
-        surreal::diagnostics::finish_frame();
-      }
-      Event::RedrawRequested(window_id) => {
-        if let Some(state) = self.windows.get_mut(&window_id) {
-          surreal::diagnostics::profile_scope!("Redraw window", &format!("{window_id:?}"));
-
-          state.graphics_server.begin_frame();
-
-          if let Some(keyboard) = &state.input_server.keyboard {
-            if keyboard.is_key_pressed(Key::F7) {
-              state.user_interface.toggle_profiler();
+            if state.user_interface_state.is_focused {
+              *control_flow = ControlFlow::Poll;
+            } else {
+              *control_flow = ControlFlow::Wait;
             }
           }
 
-          state.editor_window.on_draw(&state.graphics_server);
-          state.user_interface.run(&mut state.user_interface_state, |context| {
-            state.editor_window.on_ui(context);
-          });
-
-          state.input_server.tick();
-
-          state.graphics_server.end_frame();
+          surreal::diagnostics::finish_frame();
         }
-      }
-      Event::WindowEvent { window_id, event } => {
-        if let Some(state) = self.windows.get_mut(&window_id) {
-          // forward down to the window, before handling
-          state.editor_window.on_event(&event);
+        Event::RedrawRequested(window_id) => {
+          if let Some(state) = self.windows.get_mut(&window_id) {
+            surreal::diagnostics::profile_scope!("Redraw window", &format!("{window_id:?}"));
 
-          match event {
-            WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
-              state.input_server.pixels_per_point = scale_factor as f32;
+            state.graphics_server.begin_frame();
 
-              surreal::diagnostics::trace!("Window scale factor changed to {}", scale_factor);
-            }
-            WindowEvent::CursorMoved { position, .. } => {
-              let size = state.winit_window.inner_size();
-
-              state.input_server.on_mouse_move(
-                vec2(position.x as f32, position.y as f32),
-                vec2(size.width as f32, size.height as f32),
-              );
-            }
-            WindowEvent::MouseWheel { delta, .. } => {
-              state.input_server.on_mouse_wheel(&delta);
-            }
-            WindowEvent::MouseInput {
-              button,
-              state: element_state,
-              ..
-            } => {
-              state.input_server.on_mouse_button(button, element_state);
-            }
-            WindowEvent::KeyboardInput { input, .. } => {
-              state.input_server.on_keyboard_event(&input);
-            }
-            WindowEvent::ReceivedCharacter(character) => {
-              state.input_server.on_character_received(character);
-            }
-            WindowEvent::ModifiersChanged(modifiers) => {
-              state.input_server.on_modifiers_changed(modifiers);
-            }
-            WindowEvent::Focused(focused) => {
-              state.user_interface_state.is_focused = focused;
-              state.input_server.on_modifiers_changed(ModifiersState::default());
-
-              if focused {
-                surreal::diagnostics::trace!("Window gained focus");
-              } else {
-                surreal::diagnostics::trace!("Window lost focus");
+            if let Some(keyboard) = &state.input_server.keyboard {
+              if keyboard.is_key_pressed(Key::F7) {
+                state.user_interface.toggle_profiler();
               }
             }
-            WindowEvent::Resized(size) => {
-              state.graphics_server.set_viewport_size(size);
 
-              surreal::diagnostics::trace!("Window resized to {}x{}", size.width, size.height);
-            }
-            WindowEvent::CloseRequested => {
-              self.windows.remove(&window_id);
+            state.editor_window.on_draw(&state.graphics_server);
+            state
+              .user_interface
+              .run(&mut state.user_interface_state, |context| {
+                state.editor_window.on_ui(context);
+              });
 
-              // no more windows left? we're done
-              if self.windows.is_empty() {
-                *control_flow = ControlFlow::Exit;
-              }
-            }
-            _ => {}
+            state.input_server.tick();
+
+            state.graphics_server.end_frame();
           }
         }
-      }
-      _ => {}
-    });
+        Event::WindowEvent { window_id, event } => {
+          if let Some(state) = self.windows.get_mut(&window_id) {
+            // forward down to the window, before handling
+            state.editor_window.on_event(&event);
+
+            match event {
+              WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
+                state.input_server.pixels_per_point = scale_factor as f32;
+
+                surreal::diagnostics::trace!("Window scale factor changed to {}", scale_factor);
+              }
+              WindowEvent::CursorMoved { position, .. } => {
+                let size = state.winit_window.inner_size();
+
+                state.input_server.on_mouse_move(
+                  vec2(position.x as f32, position.y as f32),
+                  vec2(size.width as f32, size.height as f32),
+                );
+              }
+              WindowEvent::MouseWheel { delta, .. } => {
+                state.input_server.on_mouse_wheel(&delta);
+              }
+              WindowEvent::MouseInput {
+                button,
+                state: element_state,
+                ..
+              } => {
+                state.input_server.on_mouse_button(button, element_state);
+              }
+              WindowEvent::KeyboardInput { input, .. } => {
+                state.input_server.on_keyboard_event(&input);
+              }
+              WindowEvent::ReceivedCharacter(character) => {
+                state.input_server.on_character_received(character);
+              }
+              WindowEvent::ModifiersChanged(modifiers) => {
+                state.input_server.on_modifiers_changed(modifiers);
+              }
+              WindowEvent::Focused(focused) => {
+                state.user_interface_state.is_focused = focused;
+                state
+                  .input_server
+                  .on_modifiers_changed(ModifiersState::default());
+
+                if focused {
+                  surreal::diagnostics::trace!("Window gained focus");
+                } else {
+                  surreal::diagnostics::trace!("Window lost focus");
+                }
+              }
+              WindowEvent::Resized(size) => {
+                state.graphics_server.set_viewport_size(size);
+
+                surreal::diagnostics::trace!("Window resized to {}x{}", size.width, size.height);
+              }
+              WindowEvent::CloseRequested => {
+                self.windows.remove(&window_id);
+
+                // no more windows left? we're done
+                if self.windows.is_empty() {
+                  *control_flow = ControlFlow::Exit;
+                }
+              }
+              _ => {}
+            }
+          }
+        }
+        _ => {}
+      });
   }
 }
 

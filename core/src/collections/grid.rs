@@ -83,8 +83,9 @@ impl<T> Grid<T> {
   /// Accesses an item from the grid without checking bounds.
   ///
   /// # Safety
-  /// This method will panic if the given position is out of bounds. It's the responsibility of the
-  /// caller to ensure the position is in-bounds and thus skip the bounds check.
+  /// This method will panic if the given position is out of bounds. It's the
+  /// responsibility of the caller to ensure the position is in-bounds and
+  /// thus skip the bounds check.
   #[inline]
   pub unsafe fn get_unchecked(&self, x: i32, y: i32) -> &T {
     &self.items[x as usize + y as usize * self.stride]
@@ -101,8 +102,9 @@ impl<T> Grid<T> {
   /// Sets an item from the grid without checking bounds.
   ///
   /// # Safety
-  /// This method will panic if the given position is out of bounds. It's the responsibility of the
-  /// caller to ensure the position is in-bounds and thus skip the bounds check.
+  /// This method will panic if the given position is out of bounds. It's the
+  /// responsibility of the caller to ensure the position is in-bounds and
+  /// thus skip the bounds check.
   #[inline]
   pub unsafe fn set_unchecked(&mut self, x: i32, y: i32, value: T) {
     self.items[x as usize + y as usize * self.stride] = value

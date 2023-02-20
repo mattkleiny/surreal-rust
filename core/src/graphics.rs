@@ -90,19 +90,26 @@ impl_graphics_id!(TargetId);
 crate::impl_server!(GraphicsServer, GraphicsBackend);
 
 impl GraphicsServer {
-  /// Creates a new [`GraphicsServer`] with a [`headless::HeadlessGraphicsBackend`].
+  /// Creates a new [`GraphicsServer`] with a
+  /// [`headless::HeadlessGraphicsBackend`].
   pub fn headless() -> Self {
     Self::new(headless::HeadlessGraphicsBackend::default())
   }
 
-  /// Creates a new [`GraphicsServer`] with an [`opengl::OpenGLGraphicsBackend`].
-  pub fn opengl(window: &winit::window::Window, vsync_enabled: bool, samples: u8) -> crate::Result<Self> {
-    unsafe { Ok(Self::new(opengl::OpenGLGraphicsBackend::new(window, vsync_enabled, samples)?)) }
-  }
-
-  /// Creates a new [`GraphicsServer`] with an [`wgpu::WgpuGraphicsBackend`].
-  pub fn wgpu(window: &winit::window::Window, vsync_enabled: bool, samples: u8) -> crate::Result<Self> {
-    unsafe { Ok(Self::new(wgpu::WgpuGraphicsBackend::new(window, vsync_enabled, samples)?)) }
+  /// Creates a new [`GraphicsServer`] with an
+  /// [`opengl::OpenGLGraphicsBackend`].
+  pub fn opengl(
+    window: &winit::window::Window,
+    vsync_enabled: bool,
+    samples: u8,
+  ) -> crate::Result<Self> {
+    unsafe {
+      Ok(Self::new(opengl::OpenGLGraphicsBackend::new(
+        window,
+        vsync_enabled,
+        samples,
+      )?))
+    }
   }
 }
 
@@ -177,7 +184,13 @@ pub trait GraphicsBackend {
 
   // buffers
   fn buffer_create(&self) -> Result<BufferId, BufferError>;
-  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8) -> Result<(), BufferError>;
+  fn buffer_read_data(
+    &self,
+    buffer: BufferId,
+    offset: usize,
+    length: usize,
+    pointer: *mut u8,
+  ) -> Result<(), BufferError>;
   fn buffer_write_data(
     &self,
     buffer: BufferId,
@@ -190,8 +203,18 @@ pub trait GraphicsBackend {
 
   // textures
   fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError>;
-  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError>;
-  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) -> Result<(), TextureError>;
+  fn texture_set_options(
+    &self,
+    texture: TextureId,
+    sampler: &TextureSampler,
+  ) -> Result<(), TextureError>;
+  fn texture_initialize(
+    &self,
+    texture: TextureId,
+    width: u32,
+    height: u32,
+    format: TextureFormat,
+  ) -> Result<(), TextureError>;
   fn texture_read_data(
     &self,
     texture: TextureId,
@@ -224,13 +247,29 @@ pub trait GraphicsBackend {
   fn shader_create(&self) -> Result<ShaderId, ShaderError>;
   fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> Result<(), ShaderError>;
   fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize>;
-  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError>;
+  fn shader_set_uniform(
+    &self,
+    shader: ShaderId,
+    location: usize,
+    value: &ShaderUniform,
+  ) -> Result<(), ShaderError>;
   fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError>;
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError>;
 
   // meshes
-  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> Result<MeshId, MeshError>;
-  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) -> Result<(), MeshError>;
+  fn mesh_create(
+    &self,
+    vertices: BufferId,
+    indices: BufferId,
+    descriptors: &[VertexDescriptor],
+  ) -> Result<MeshId, MeshError>;
+  fn mesh_draw(
+    &self,
+    mesh: MeshId,
+    topology: PrimitiveTopology,
+    vertex_count: usize,
+    index_count: usize,
+  ) -> Result<(), MeshError>;
   fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError>;
 
   // render targets

@@ -122,10 +122,12 @@ impl AssetManager {
 
   /// Attempts to load an asset from the given path.
   ///
-  /// * If the asset is not found, or if the loader for the asset type is not registered, then an
-  ///   error is returned.
-  /// * If the asset is found, but the loader is not registered, then an error is returned.
-  /// * If the asset is found and the loader is registered, then the asset is loaded and returned.
+  /// * If the asset is not found, or if the loader for the asset type is not
+  ///   registered, then an error is returned.
+  /// * If the asset is found, but the loader is not registered, then an error
+  ///   is returned.
+  /// * If the asset is found and the loader is registered, then the asset is
+  ///   loaded and returned.
   /// * If the asset has already been loaded, then the cached asset is returned.
   pub fn load_asset<A: Asset>(&self, path: impl Into<VirtualPath>) -> crate::Result<Handle<A>> {
     let state = unsafe { &mut *self.state.get() };
@@ -135,9 +137,16 @@ impl AssetManager {
 
     match state.cache.get(&id) {
       Some(asset) => {
-        log::trace!("Using cached asset {} from {}", std::any::type_name::<A>(), path);
+        log::trace!(
+          "Using cached asset {} from {}",
+          std::any::type_name::<A>(),
+          path
+        );
 
-        let handle = asset.downcast_ref::<Handle<A>>().expect("Should not be possible").to_owned();
+        let handle = asset
+          .downcast_ref::<Handle<A>>()
+          .expect("Should not be possible")
+          .to_owned();
 
         Ok(handle)
       }
@@ -150,15 +159,28 @@ impl AssetManager {
           .loaders
           .get(&TypeId::of::<A>())
           .and_then(|it| it.downcast_ref::<A::Loader>())
-          .ok_or_else(|| anyhow::anyhow!("Could not result loader for asset {:?}", std::any::type_name::<A>()))?;
+          .ok_or_else(|| {
+            anyhow::anyhow!(
+              "Could not result loader for asset {:?}",
+              std::any::type_name::<A>()
+            )
+          })?;
 
         // persist loaded assets into cache
-        let context = AssetContext { path, manager: self };
+        let context = AssetContext {
+          path,
+          manager: self,
+        };
 
         let asset = loader.load(&context)?;
-        let handle = Handle { id, asset: Rc::new(asset) };
+        let handle = Handle {
+          id,
+          asset: Rc::new(asset),
+        };
 
-        state.cache.insert(handle.id.clone(), Box::new(handle.clone()));
+        state
+          .cache
+          .insert(handle.id.clone(), Box::new(handle.clone()));
 
         Ok(handle)
       }

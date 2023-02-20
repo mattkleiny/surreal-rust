@@ -90,8 +90,8 @@ impl ShaderLanguage for GLSL {
   /// Allows for the following basic transformations:
   ///
   /// * Multiple shader types per file (separated with #shader_type directives).
-  /// * Shared code amongst each shader definition by placing it prior to the #shader_type
-  ///   directives.
+  /// * Shared code amongst each shader definition by placing it prior to the
+  ///   #shader_type directives.
   /// * Allows #include directives to fetch other files.
   fn parse_kernels(source_code: &str) -> crate::Result<Vec<ShaderKernel>> {
     use crate::io::*;
@@ -169,7 +169,10 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsServer, code: &str) -> crate::Result<Self> {
+  pub fn from_code<S: ShaderLanguage>(
+    graphics: &GraphicsServer,
+    code: &str,
+  ) -> crate::Result<Self> {
     let program = Self::new(graphics)?;
 
     program.load_code::<S>(code)?;
@@ -178,7 +181,10 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_path<S: ShaderLanguage>(graphics: &GraphicsServer, path: impl Into<VirtualPath>) -> crate::Result<Self> {
+  pub fn from_path<S: ShaderLanguage>(
+    graphics: &GraphicsServer,
+    path: impl Into<VirtualPath>,
+  ) -> crate::Result<Self> {
     let path = path.into();
     let code = path.read_all_text()?;
 
@@ -191,7 +197,10 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path(graphics: &GraphicsServer, path: impl Into<VirtualPath>) -> crate::Result<Self> {
+  pub fn from_glsl_path(
+    graphics: &GraphicsServer,
+    path: impl Into<VirtualPath>,
+  ) -> crate::Result<Self> {
     Self::from_path::<GLSL>(graphics, path)
   }
 
@@ -244,7 +253,10 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<S: ShaderLanguage>(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
+  pub fn load_from_path<S: ShaderLanguage>(
+    &self,
+    path: impl Into<VirtualPath>,
+  ) -> crate::Result<()> {
     let path = path.into();
     let source_code = path.read_all_text()?;
 
@@ -256,7 +268,10 @@ impl ShaderProgram {
 
 impl Drop for ShaderProgramState {
   fn drop(&mut self) {
-    self.graphics.shader_delete(self.id).expect("Failed to delete shader program");
+    self
+      .graphics
+      .shader_delete(self.id)
+      .expect("Failed to delete shader program");
   }
 }
 

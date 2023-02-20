@@ -46,7 +46,12 @@ impl AABB {
     let min = self.min();
     let max = self.max();
 
-    point.x >= min.x && point.x <= max.x && point.y >= min.y && point.y <= max.y && point.z >= min.z && point.z <= max.z
+    point.x >= min.x
+      && point.x <= max.x
+      && point.y >= min.y
+      && point.y <= max.y
+      && point.z >= min.z
+      && point.z <= max.z
   }
 
   /// Determines if the AABB intersects the given other [`AABB`].

@@ -31,8 +31,8 @@ struct ArenaEntry<T> {
 
 /// A simple generational arena of elements of type [`T`] .
 ///
-/// An arena exposes safe externalized indices in the form of [`ArenaIndex`]es that can be passed
-/// around the application safely.
+/// An arena exposes safe externalized indices in the form of [`ArenaIndex`]es
+/// that can be passed around the application safely.
 #[derive(Debug)]
 pub struct Arena<T> {
   entries: Vec<Option<ArenaEntry<T>>>,
@@ -222,7 +222,10 @@ impl<T> Arena<T> {
       }
     }
 
-    Iter { arena: self, index: 0 }
+    Iter {
+      arena: self,
+      index: 0,
+    }
   }
 
   /// Mutably iterates over the arena.
@@ -263,7 +266,10 @@ impl<T> Arena<T> {
       }
     }
 
-    IterMut { arena: self, index: 0 }
+    IterMut {
+      arena: self,
+      index: 0,
+    }
   }
 }
 
@@ -333,7 +339,10 @@ mod tests {
     let index1 = arena.insert("Item 1");
     let index2 = arena.insert("Item 2");
 
-    let index3 = ArenaIndex { index: 23, generation: 0 };
+    let index3 = ArenaIndex {
+      index: 23,
+      generation: 0,
+    };
 
     assert!(arena.get(index1).is_some());
     assert!(arena.get_mut(index2).is_some());
@@ -392,7 +401,10 @@ mod tests {
 
   #[test]
   fn arena_index_should_pack_and_unpack_from_u64() {
-    let index = ArenaIndex { index: 10, generation: 3 };
+    let index = ArenaIndex {
+      index: 10,
+      generation: 3,
+    };
     let packed: u64 = index.into();
     let unpacked = ArenaIndex::from(packed);
 

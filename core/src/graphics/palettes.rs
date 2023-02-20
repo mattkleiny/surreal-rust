@@ -34,7 +34,9 @@ impl<P: Pixel> ColorPalette<P> {
 
   /// Creates a color palette from the given slice of pixels.
   pub fn from_slice(slice: &[P]) -> Self {
-    Self { colors: slice.to_vec() }
+    Self {
+      colors: slice.to_vec(),
+    }
   }
 
   /// Loads a palette from the given file path.
@@ -69,7 +71,12 @@ impl<P: Pixel> ColorPalette<P> {
         return Err(anyhow!("Expected 3 color components on line {}", index + 1));
       }
 
-      *color = P::from_bytes(&[components[0].parse()?, components[1].parse()?, components[2].parse()?, 255]);
+      *color = P::from_bytes(&[
+        components[0].parse()?,
+        components[1].parse()?,
+        components[2].parse()?,
+        255,
+      ]);
     }
 
     Ok(Self::from_vec(colors))

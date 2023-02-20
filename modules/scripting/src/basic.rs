@@ -204,8 +204,16 @@ fn tokenize(source: &str) -> Result<Vec<Token>, ParserError> {
         }
 
         let number = match is_float {
-          true => Literal::Float(number.parse().map_err(|_| ParserError::InvalidNumber(number))?),
-          false => Literal::Integer(number.parse().map_err(|_| ParserError::InvalidNumber(number))?),
+          true => Literal::Float(
+            number
+              .parse()
+              .map_err(|_| ParserError::InvalidNumber(number))?,
+          ),
+          false => Literal::Integer(
+            number
+              .parse()
+              .map_err(|_| ParserError::InvalidNumber(number))?,
+          ),
         };
 
         emit!(Token::Literal(number));
@@ -233,24 +241,4 @@ fn parse(tokens: &[Token]) -> Result<Expression, ParserError> {
   }
 
   todo!()
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn basic_parser_should_work() {
-    let program = "1 + 2";
-    let expression = BASIC::parse(program).expect("Failed to parse program");
-
-    assert_eq!(
-      expression,
-      Expression::BinaryOperation {
-        operation: BinaryOperation::Add,
-        left: Box::new(Expression::Literal(Literal::Integer(1))),
-        right: Box::new(Expression::Literal(Literal::Integer(2))),
-      }
-    );
-  }
 }

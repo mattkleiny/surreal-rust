@@ -24,7 +24,8 @@ impl TweenAnimation {
   /// Evaluates this animation by invoking the given function with a normalised
   /// value between 0 and 1 over the duration of the animation.
   ///
-  /// The function will be invoked once per frame, and will yield after each update.
+  /// The function will be invoked once per frame, and will yield after each
+  /// update, allowing it to execute over time.
   pub async fn evaluate(&self, mut body: impl FnMut(f32)) {
     let mut time = TimeSpan::ZERO;
 
@@ -41,12 +42,14 @@ impl TweenAnimation {
   }
 }
 
-/// A type that can be animated over time and can establish dependencies with other signals.
+/// A type that can be animated over time.
 pub trait Animatable: Lerp + Copy {
-  /// Tweens the value of this object to the given value over the given duration.
+  /// Tweens the value with the given [`TweenAnimation`].
   async fn tween_to(&mut self, value: Self, tween: TweenAnimation) {
     let start = *self; // make a copy of the starting value
-    tween.evaluate(move |normal| *self = Self::lerp(start, value, normal)).await
+    tween
+      .evaluate(move |normal| *self = Self::lerp(start, value, normal))
+      .await
   }
 }
 

@@ -15,7 +15,9 @@ fn main() {
       let mut timer = IntervalTimer::new(TimeSpan::from_millis(10.));
 
       engine.run_variable_step(|engine, time| {
-        engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
+        engine
+          .graphics
+          .clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
 
         if timer.tick(time.delta_time) {
           simulate_sand(&mut canvas.pixels);

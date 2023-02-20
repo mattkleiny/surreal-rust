@@ -25,14 +25,20 @@ impl<P: Pixel + Texel> PixelCanvas<P> {
       destination: BlendFactor::OneMinusSrcAlpha,
     });
 
-    Self { pixels, texture, material }
+    Self {
+      pixels,
+      texture,
+      material,
+    }
   }
 
   /// Draws the canvas to the screen.
   pub fn draw(&mut self) {
     let (width, height) = (self.pixels.width(), self.pixels.height());
 
-    self.texture.write_pixels(width, height, self.pixels.as_slice());
+    self
+      .texture
+      .write_pixels(width, height, self.pixels.as_slice());
     self.material.draw_fullscreen_quad();
   }
 }

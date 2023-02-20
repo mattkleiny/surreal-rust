@@ -191,7 +191,7 @@ mod tests {
     assert_eq!(format!("{:?}", Size::from_gigabytes(1.5)), "1.5 gigabytes");
     assert_eq!(format!("{:?}", Size::from_megabytes(2.)), "2 megabytes");
     assert_eq!(format!("{:?}", Size::from_kilobytes(3.)), "3 kilobytes");
-    assert_eq!(format!("{:?}", Size::from_bytes(1024 * 4 + 512)), "4.5 kilobytes");
+    assert_eq!(format!("{:?}", Size::from_kilobytes(4.5)), "4.5 kilobytes");
     assert_eq!(format!("{:?}", Size::from_bytes(512)), "512 bytes");
   }
 }

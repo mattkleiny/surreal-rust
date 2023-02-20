@@ -20,7 +20,9 @@ impl TimeStamp {
   /// Creates a new timestamp from the current time.
   #[inline]
   pub fn now() -> Self {
-    TimeStamp { instant: Instant::now() }
+    TimeStamp {
+      instant: Instant::now(),
+    }
   }
 }
 

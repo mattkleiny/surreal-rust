@@ -13,7 +13,10 @@ use crate::{
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum BlendState {
   Disabled,
-  Enabled { source: BlendFactor, destination: BlendFactor },
+  Enabled {
+    source: BlendFactor,
+    destination: BlendFactor,
+  },
 }
 
 /// Blending factors for materials.
@@ -43,7 +46,12 @@ pub enum CullingMode {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ScissorMode {
   Disabled,
-  Enabled { left: i32, bottom: i32, width: i32, height: i32 },
+  Enabled {
+    left: i32,
+    bottom: i32,
+    width: i32,
+    height: i32,
+  },
 }
 
 /// A set of [`ShaderUniform`]s that can be passed around the application.
@@ -56,12 +64,19 @@ pub struct MaterialUniformSet {
 impl MaterialUniformSet {
   /// Sets the given [`UniformKey`] as a uniform in the set.
   pub fn set_uniform<U: Into<ShaderUniform>>(&mut self, key: impl Into<UniformKey<U>>, value: U) {
-    self.uniforms.insert(key.into().name.to_string(), value.into());
+    self
+      .uniforms
+      .insert(key.into().name.to_string(), value.into());
   }
 
   /// Sets the given [`UniformKey`] as a uniform with a single texture in the
   /// set.
-  pub fn set_texture(&mut self, key: impl Into<UniformKey<&Texture>>, texture: &Texture, sampler: Option<TextureSampler>) {
+  pub fn set_texture(
+    &mut self,
+    key: impl Into<UniformKey<&Texture>>,
+    texture: &Texture,
+    sampler: Option<TextureSampler>,
+  ) {
     let slot = self.allocate_texture_slot(texture);
     let uniform = ShaderUniform::Texture(texture.clone(), slot, sampler);
 
@@ -154,7 +169,12 @@ impl Material {
   }
 
   /// Sets the given [`UniformKey`] with a single texture.
-  pub fn set_texture(&mut self, key: impl Into<UniformKey<&Texture>>, texture: &Texture, sampler: Option<TextureSampler>) {
+  pub fn set_texture(
+    &mut self,
+    key: impl Into<UniformKey<&Texture>>,
+    texture: &Texture,
+    sampler: Option<TextureSampler>,
+  ) {
     self.uniforms.set_texture(key, texture, sampler);
   }
 
@@ -171,7 +191,10 @@ impl Material {
 
     self.uniforms.apply_to_shader(&self.shader);
 
-    self.graphics.shader_activate(self.shader.id()).expect("Failed to activate shader");
+    self
+      .graphics
+      .shader_activate(self.shader.id())
+      .expect("Failed to activate shader");
   }
 
   /// Unbinds this material from the graphics server.

@@ -57,10 +57,21 @@ struct RenderTargetState {
 
 impl RenderTarget {
   /// Creates a new [`RenderTarget`] on the GPU with the given attachments.
-  pub fn new(graphics: &GraphicsServer, descriptor: &RenderTargetDescriptor) -> crate::Result<Self> {
+  pub fn new(
+    graphics: &GraphicsServer,
+    descriptor: &RenderTargetDescriptor,
+  ) -> crate::Result<Self> {
     let color_attachment = descriptor.color_attachment.to_texture(graphics)?;
-    let depth_attachment = descriptor.depth_attachment.as_ref().and_then(|it| it.to_texture(graphics).ok());
-    let stencil_attachment = descriptor.stencil_attachment.as_ref().and_then(|it| it.to_texture(graphics).ok());
+
+    let depth_attachment = descriptor
+      .depth_attachment
+      .as_ref()
+      .and_then(|it| it.to_texture(graphics).ok());
+
+    let stencil_attachment = descriptor
+      .stencil_attachment
+      .as_ref()
+      .and_then(|it| it.to_texture(graphics).ok());
 
     Ok(Self {
       state: Rc::new(RefCell::new(RenderTargetState {
@@ -108,7 +119,9 @@ impl RenderTarget {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.target_activate(state.id).expect("Failed to activate render target");
+    graphics
+      .target_activate(state.id)
+      .expect("Failed to activate render target");
   }
 
   /// Deactivates the [`RenderTarget`].
@@ -116,7 +129,9 @@ impl RenderTarget {
     let state = self.state.borrow();
     let graphics = &state.graphics;
 
-    graphics.target_set_default().expect("Failed to deactivate render target");
+    graphics
+      .target_set_default()
+      .expect("Failed to deactivate render target");
   }
 
   /// Blits this render target to the given other target.
@@ -126,8 +141,19 @@ impl RenderTarget {
     let source_color = &state.color_attachment;
     let dest_color = other.color_attachment();
 
-    let source = Rectangle::from_corner_points(0., 0., source_color.width() as f32, source_color.height() as f32);
-    let dest = Rectangle::from_corner_points(0., 0., dest_color.width() as f32, dest_color.height() as f32);
+    let source = Rectangle::from_corner_points(
+      0.,
+      0.,
+      source_color.width() as f32,
+      source_color.height() as f32,
+    );
+
+    let dest = Rectangle::from_corner_points(
+      0.,
+      0.,
+      dest_color.width() as f32,
+      dest_color.height() as f32,
+    );
 
     let graphics = &state.graphics;
 
@@ -156,6 +182,9 @@ impl RenderTarget {
 
 impl Drop for RenderTargetState {
   fn drop(&mut self) {
-    self.graphics.target_delete(self.id).expect("Failed to delete render target");
+    self
+      .graphics
+      .target_delete(self.id)
+      .expect("Failed to delete render target");
   }
 }

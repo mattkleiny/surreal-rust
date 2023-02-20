@@ -144,7 +144,11 @@ impl SpriteBatch {
       self.last_texture = Some(region.texture.clone());
     }
 
-    let scale = vec2(region.size.x as f32 * options.scale.x, region.size.y as f32 * options.scale.y);
+    let scale = vec2(
+      region.size.x as f32 * options.scale.x,
+      region.size.y as f32 * options.scale.y,
+    );
+
     let angle = options.rotation;
     let translation = options.position;
 
@@ -204,7 +208,12 @@ impl SpriteBatch {
       vertices.write_data(&self.vertices);
     });
 
-    mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
+    mesh.draw_sub(
+      material,
+      PrimitiveTopology::Triangles,
+      vertex_count,
+      index_count,
+    );
 
     self.vertices.clear();
   }

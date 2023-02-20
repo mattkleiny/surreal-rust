@@ -19,7 +19,14 @@ fn main() {
       let mut renderer = Renderer::new(graphics);
 
       renderer.add_descriptor(SpriteContextDescriptor {
-        projection_view: Mat4::orthographic_rh_gl(-WIDTH / 2., WIDTH / 2., HEIGHT / 2., -HEIGHT / 2., 0., 100.),
+        projection_view: Mat4::orthographic_rh_gl(
+          -WIDTH / 2.,
+          WIDTH / 2.,
+          HEIGHT / 2.,
+          -HEIGHT / 2.,
+          0.,
+          100.,
+        ),
         ..Default::default()
       });
 
@@ -30,7 +37,9 @@ fn main() {
       let mut is_rendering = true;
 
       engine.run_variable_step(move |engine, time| {
-        engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
+        engine
+          .graphics
+          .clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
 
         // update bunnies
         if is_updating {
@@ -63,7 +72,10 @@ fn main() {
             ui.heading("Statistics");
 
             ui.label(format!("There are {} bunnies on screen", bunnies.len()));
-            ui.label(format!("Running at {:.2} frames per second", 1.0 / time.delta_time));
+            ui.label(format!(
+              "Running at {:.2} frames per second",
+              1.0 / time.delta_time
+            ));
 
             ui.checkbox(&mut is_updating, "Update bunnies");
             ui.checkbox(&mut is_rendering, "Render bunnies");
@@ -87,8 +99,14 @@ fn main() {
 
             for _ in 0..512 {
               bunnies.push(Bunny {
-                position: vec2(position.x * WIDTH - WIDTH / 2., position.y * HEIGHT - HEIGHT / 2.),
-                velocity: vec2(random.next::<f32>() * 2. - 1., random.next::<f32>() * 2. - 1.),
+                position: vec2(
+                  position.x * WIDTH - WIDTH / 2.,
+                  position.y * HEIGHT - HEIGHT / 2.,
+                ),
+                velocity: vec2(
+                  random.next::<f32>() * 2. - 1.,
+                  random.next::<f32>() * 2. - 1.,
+                ),
                 color: Color32::random(),
                 rotation: 0.0,
                 rotation_speed: f32::random() * 10. - 5.,

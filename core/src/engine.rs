@@ -167,7 +167,10 @@ impl EngineBuilder {
   }
 
   /// Starts a [`SceneGraph`] on the resultant [`Engine`].
-  pub fn start_scene(self, setup: impl Fn(&Engine, &AssetManager) -> crate::Result<SceneGraph>) -> crate::Result<()> {
+  pub fn start_scene(
+    self,
+    setup: impl Fn(&Engine, &AssetManager) -> crate::Result<SceneGraph>,
+  ) -> crate::Result<()> {
     self.start(|engine, assets| {
       let mut scene = setup(&engine, &assets)?;
       let mut renderer = Renderer::new(&engine.graphics);
@@ -184,7 +187,10 @@ impl EngineBuilder {
   }
 
   /// Starts the [`Engine`] with the given callback.
-  pub fn start(self, setup: impl FnOnce(Engine, AssetManager) -> crate::Result<()>) -> crate::Result<()> {
+  pub fn start(
+    self,
+    setup: impl FnOnce(Engine, AssetManager) -> crate::Result<()>,
+  ) -> crate::Result<()> {
     Engine::start(self.config, setup)
   }
 
@@ -240,7 +246,8 @@ impl Engine {
       .expect("Failed to build main window");
 
     let audio = AudioServer::rodio();
-    let graphics = GraphicsServer::opengl(&window, config.vsync_enabled, config.samples).expect("Failed to build graphics");
+    let graphics = GraphicsServer::opengl(&window, config.vsync_enabled, config.samples)
+      .expect("Failed to build graphics");
     let input = InputServer::new(window.scale_factor() as f32);
 
     Self {
@@ -265,7 +272,10 @@ impl Engine {
   }
 
   /// Starts the engine with the given configuration.
-  pub fn start(configuration: EngineConfig, setup: impl FnOnce(Engine, AssetManager) -> crate::Result<()>) -> crate::Result<()> {
+  pub fn start(
+    configuration: EngineConfig,
+    setup: impl FnOnce(Engine, AssetManager) -> crate::Result<()>,
+  ) -> crate::Result<()> {
     use crate::graphics::*;
 
     // set-up diagnostics
@@ -481,7 +491,11 @@ impl Engine {
       self.frame_counter.tick(delta_time);
 
       if self.frame_timer.tick(delta_time) {
-        let new_title = format!("{} - FPS: {:.2}", self.config.title, self.frame_counter.fps());
+        let new_title = format!(
+          "{} - FPS: {:.2}",
+          self.config.title,
+          self.frame_counter.fps()
+        );
 
         self.window.set_title(&new_title);
         self.frame_timer.reset();

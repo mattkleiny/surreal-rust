@@ -81,8 +81,11 @@ impl Font for BitmapFont {
     let metrics = &self.metrics;
     let character = character as u8;
 
-    let x = (character as u16 % metrics.columns) as u32 * (metrics.glyph_width + metrics.glyph_padding);
-    let y = (character as u16 / metrics.columns) as u32 * (metrics.glyph_height + metrics.glyph_padding);
+    let width = (character as u16 % metrics.columns) as u32;
+    let height = (character as u16 / metrics.columns) as u32;
+
+    let x = width * (metrics.glyph_width + metrics.glyph_padding);
+    let y = height * (metrics.glyph_height + metrics.glyph_padding);
 
     Some(TextureRegion {
       texture: self.texture.as_ref().clone(),

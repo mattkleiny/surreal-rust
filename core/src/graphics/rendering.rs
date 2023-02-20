@@ -72,7 +72,11 @@ impl Renderer {
   /// Configures the manager with the given [`RenderContextDescriptor`].
   pub fn add_descriptor<D: RenderContextDescriptor>(&mut self, descriptor: D) {
     let key = TypeId::of::<D::Context>();
-    let value = Box::new(descriptor.create(&self.graphics).expect("Failed to build render context"));
+    let value = Box::new(
+      descriptor
+        .create(&self.graphics)
+        .expect("Failed to build render context"),
+    );
 
     self.contexts.insert(key, value);
   }

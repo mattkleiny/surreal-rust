@@ -11,7 +11,10 @@ pub struct SerializedObject {
 
 impl SerializedObject {
   /// Reads a [`SerializedProperty`] from the object.
-  pub fn read_property<T: From<SerializedValue>>(&self, property: &SerializedProperty<T>) -> surreal::Result<T> {
+  pub fn read_property<T: From<SerializedValue>>(
+    &self,
+    property: &SerializedProperty<T>,
+  ) -> surreal::Result<T> {
     self
       .properties
       .get(property.path)
@@ -20,8 +23,14 @@ impl SerializedObject {
   }
 
   /// Writes a [`SerializedProperty`] to the object.
-  pub fn write_property<T: Into<SerializedValue>>(&mut self, property: &SerializedProperty<T>, value: T) {
-    self.properties.insert(property.path.to_string(), value.into());
+  pub fn write_property<T: Into<SerializedValue>>(
+    &mut self,
+    property: &SerializedProperty<T>,
+    value: T,
+  ) {
+    self
+      .properties
+      .insert(property.path.to_string(), value.into());
   }
 }
 

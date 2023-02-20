@@ -15,7 +15,14 @@ fn main() {
       let mut renderer = Renderer::new(&engine.graphics);
 
       renderer.add_descriptor(SpriteContextDescriptor {
-        projection_view: Mat4::orthographic_rh_gl(-256. / 2., 256. / 2., 144. / 2., -144. / 2., 0., 100.),
+        projection_view: Mat4::orthographic_rh_gl(
+          -256. / 2.,
+          256. / 2.,
+          144. / 2.,
+          -144. / 2.,
+          0.,
+          100.,
+        ),
         palette: Some(load_built_in_palette(BuiltInPalette::Hollow4)),
         ..Default::default()
       });
@@ -30,7 +37,9 @@ fn main() {
       map.fill(|_, _| u8::random() % 4);
 
       engine.run_variable_step(|engine, _| {
-        engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
+        engine
+          .graphics
+          .clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
 
         renderer.begin_frame();
         renderer.render(&map);

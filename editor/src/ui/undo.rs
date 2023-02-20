@@ -9,7 +9,8 @@ use std::ops::{Deref, DerefMut};
 #[derive(Default)]
 pub struct UndoManager {}
 
-/// A scope wrapper for a type that can be rolled backwards/forwards in response to user actions.
+/// A scope wrapper for a type that can be rolled backwards/forwards in response
+/// to user actions.
 pub struct UndoScope<T> {
   pub value: T,
 }
@@ -42,7 +43,8 @@ impl<T> Deref for UndoScope<T> {
   }
 }
 
-/// A utility for working with [`DiffSnapshot`]s and committing them to an undo/redo stack.
+/// A utility for working with [`DiffSnapshot`]s and committing them to an
+/// undo/redo stack.
 pub struct DiffScope<'a, T> {
   _snapshot: DiffSnapshot,
   value: &'a mut T,
@@ -93,7 +95,8 @@ impl DiffSnapshot {
     self
   }
 
-  /// Compares this [`DiffSnapshot`] to another [`DiffSnapshot`], yielding all differences.
+  /// Compares this [`DiffSnapshot`] to another [`DiffSnapshot`], yielding all
+  /// differences.
   pub fn compare_to(&self, _other: &Self) -> Vec<DiffDelta> {
     Vec::with_capacity(0)
   }

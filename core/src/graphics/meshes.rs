@@ -206,11 +206,22 @@ impl<V: Vertex> Mesh<V> {
   pub fn draw(&self, material: &Material, topology: PrimitiveTopology) {
     let state = self.state.borrow();
 
-    self.draw_sub(material, topology, state.vertices.len(), state.indices.len());
+    self.draw_sub(
+      material,
+      topology,
+      state.vertices.len(),
+      state.indices.len(),
+    );
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
-  pub fn draw_sub(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  pub fn draw_sub(
+    &self,
+    material: &Material,
+    topology: PrimitiveTopology,
+    vertex_count: usize,
+    index_count: usize,
+  ) {
     material.bind();
 
     let state = self.state.borrow();
@@ -226,7 +237,10 @@ impl<V: Vertex> Mesh<V> {
 
 impl<V> Drop for MeshState<V> {
   fn drop(&mut self) {
-    self.graphics.mesh_delete(self.id).expect("Failed to delete mesh");
+    self
+      .graphics
+      .mesh_delete(self.id)
+      .expect("Failed to delete mesh");
   }
 }
 

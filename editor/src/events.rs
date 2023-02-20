@@ -36,7 +36,8 @@ impl EventBus {
     Ok(self.receiver.recv()?)
   }
 
-  /// Tries to receive a [`EditorEvent`] on the bus; returns if no message is waiting.
+  /// Tries to receive a [`EditorEvent`] on the bus; returns if no message is
+  /// waiting.
   pub fn try_receive(&self) -> Option<EditorEvent> {
     match self.receiver.try_recv() {
       Ok(value) => Some(value),

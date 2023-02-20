@@ -12,7 +12,8 @@ use surreal::{
   utilities::ServiceProvider,
 };
 
-/// Emits wind into the game world, allowing [`WindReceiver`]s to react to forces.
+/// Emits wind into the game world, allowing [`WindReceiver`]s to react to
+/// forces.
 #[derive(Object)]
 pub struct WindEmitter {}
 
@@ -24,7 +25,8 @@ impl SceneComponent for WindEmitter {
   }
 }
 
-/// Receives wind from the wind system, allowing objects to be affected by [`WindEmitter`]s.
+/// Receives wind from the wind system, allowing objects to be affected by
+/// [`WindEmitter`]s.
 #[derive(Object)]
 pub struct WindReceiver {}
 

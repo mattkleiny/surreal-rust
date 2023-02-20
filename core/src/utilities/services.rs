@@ -78,7 +78,9 @@ impl ServiceContainerBuilder {
 
   /// Builds the resultant [`ServiceContainer`].
   pub fn build(self) -> ServiceContainer {
-    ServiceContainer { services: self.services }
+    ServiceContainer {
+      services: self.services,
+    }
   }
 }
 

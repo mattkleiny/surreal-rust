@@ -16,7 +16,14 @@ fn main() {
       let mut renderer = Renderer::new(graphics);
 
       renderer.add_descriptor(SpriteContextDescriptor {
-        projection_view: Mat4::orthographic_rh_gl(-256. / 2., 256. / 2., 144. / 2., -144. / 2., 0., 100.),
+        projection_view: Mat4::orthographic_rh_gl(
+          -256. / 2.,
+          256. / 2.,
+          144. / 2.,
+          -144. / 2.,
+          0.,
+          100.,
+        ),
         ..Default::default()
       });
 
@@ -24,7 +31,9 @@ fn main() {
       let color2 = Color32::random();
 
       engine.run_variable_step(|engine, time| {
-        engine.graphics.clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
+        engine
+          .graphics
+          .clear_color_buffer(Color::rgb(0.1, 0.1, 0.1));
 
         let time_step = (time.total_time.sin() + 1.) / 2.;
 

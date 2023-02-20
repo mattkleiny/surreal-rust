@@ -22,7 +22,10 @@ impl Image {
   }
 
   /// Attempts to load an image from the given path.
-  pub fn from_path(path: impl Into<VirtualPath>, format: Option<ImageFormat>) -> crate::Result<Self> {
+  pub fn from_path(
+    path: impl Into<VirtualPath>,
+    format: Option<ImageFormat>,
+  ) -> crate::Result<Self> {
     let stream = path.into().open_input_stream()?;
     let image = Self::from_bytes(stream, format)?;
 
@@ -30,7 +33,10 @@ impl Image {
   }
 
   /// Attempts to load an image from the given reader.
-  pub fn from_bytes(reader: impl std::io::BufRead + std::io::Seek, format: Option<ImageFormat>) -> crate::Result<Self> {
+  pub fn from_bytes(
+    reader: impl std::io::BufRead + std::io::Seek,
+    format: Option<ImageFormat>,
+  ) -> crate::Result<Self> {
     let mut reader = image::io::Reader::new(reader);
 
     if let Some(format) = format {
@@ -41,14 +47,19 @@ impl Image {
 
     let image = reader.decode()?;
 
-    Ok(Self { image: image.into_rgba8() })
+    Ok(Self {
+      image: image.into_rgba8(),
+    })
   }
 
   /// Attempts to load an image from the given reader.
   pub fn from_buffer(buffer: &[u8], format: ImageFormat) -> crate::Result<Self> {
-    let image = image::load_from_memory_with_format(buffer, format).expect("Failed to decode icon data");
+    let image =
+      image::load_from_memory_with_format(buffer, format).expect("Failed to decode icon data");
 
-    Ok(Self { image: image.into_rgba8() })
+    Ok(Self {
+      image: image.into_rgba8(),
+    })
   }
 
   /// Returns the width of the image.
@@ -117,7 +128,8 @@ mod tests {
 
   #[test]
   fn image_should_load_from_path() {
-    let image = Image::from_path("local://../surreal.ico", Some(ImageFormat::Ico)).expect("Failed to load image");
+    let image = Image::from_path("local://../surreal.ico", Some(ImageFormat::Ico))
+      .expect("Failed to load image");
 
     assert_eq!(image.width(), 32);
     assert_eq!(image.height(), 32);

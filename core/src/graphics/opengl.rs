@@ -32,7 +32,11 @@ struct BackendState {
 }
 
 impl OpenGLGraphicsBackend {
-  pub unsafe fn new(window: &winit::window::Window, vsync_enabled: bool, _samples: u8) -> crate::Result<Self> {
+  pub unsafe fn new(
+    window: &winit::window::Window,
+    vsync_enabled: bool,
+    _samples: u8,
+  ) -> crate::Result<Self> {
     let display = Display::new(
       window.raw_display_handle(),
       DisplayApiPreference::Wgl(Some(window.raw_window_handle())),
@@ -41,7 +45,9 @@ impl OpenGLGraphicsBackend {
     let config = display
       .find_configs(ConfigTemplate::default())?
       .next()
-      .ok_or(crate::anyhow!("Unable to find appropriate config for display"))?;
+      .ok_or(crate::anyhow!(
+        "Unable to find appropriate config for display"
+      ))?;
 
     let context_attributes = ContextAttributesBuilder::new()
       .with_debug(true)
@@ -149,7 +155,10 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     unsafe {
       match blend_state {
         BlendState::Disabled => gl::Disable(gl::BLEND),
-        BlendState::Enabled { source, destination: dest } => {
+        BlendState::Enabled {
+          source,
+          destination: dest,
+        } => {
           let source = convert_blend_factor(source);
           let dest = convert_blend_factor(dest);
 
@@ -209,7 +218,13 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8) -> Result<(), BufferError> {
+  fn buffer_read_data(
+    &self,
+    buffer: BufferId,
+    offset: usize,
+    length: usize,
+    pointer: *mut u8,
+  ) -> Result<(), BufferError> {
     unsafe {
       if length == 0 {
         return Ok(());
@@ -219,7 +234,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         return Err(BufferError::NullPointer);
       }
 
-      gl::GetNamedBufferSubData(buffer.into(), offset as isize, length as isize, pointer as *mut c_void);
+      gl::GetNamedBufferSubData(
+        buffer.into(),
+        offset as isize,
+        length as isize,
+        pointer as *mut c_void,
+      );
 
       Ok(())
     }
@@ -274,7 +294,11 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError> {
+  fn texture_set_options(
+    &self,
+    texture: TextureId,
+    sampler: &TextureSampler,
+  ) -> Result<(), TextureError> {
     unsafe {
       let min_filter = match sampler.minify_filter {
         TextureFilter::Nearest => gl::NEAREST,
@@ -302,7 +326,13 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) -> Result<(), TextureError> {
+  fn texture_initialize(
+    &self,
+    texture: TextureId,
+    width: u32,
+    height: u32,
+    format: TextureFormat,
+  ) -> Result<(), TextureError> {
     unsafe {
       let (components, kind) = convert_texture_format(format);
 
@@ -464,9 +494,16 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           let mut info_log = Vec::with_capacity(info_log_length as usize);
           info_log.set_len(info_log_length as usize);
 
-          gl::GetShaderInfoLog(shader_id, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
+          gl::GetShaderInfoLog(
+            shader_id,
+            info_log_length,
+            std::ptr::null_mut(),
+            info_log.as_mut_ptr() as *mut _,
+          );
 
-          return Err(ShaderError::CompileError(String::from_utf8(info_log).unwrap()));
+          return Err(ShaderError::CompileError(
+            String::from_utf8(info_log).unwrap(),
+          ));
         }
 
         gl::AttachShader(shader, shader_id);
@@ -486,9 +523,16 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         let mut info_log = Vec::with_capacity(info_log_length as usize);
         info_log.set_len(info_log_length as usize);
 
-        gl::GetProgramInfoLog(shader, info_log_length, std::ptr::null_mut(), info_log.as_mut_ptr() as *mut _);
+        gl::GetProgramInfoLog(
+          shader,
+          info_log_length,
+          std::ptr::null_mut(),
+          info_log.as_mut_ptr() as *mut _,
+        );
 
-        return Err(ShaderError::CompileError(String::from_utf8(info_log).unwrap()));
+        return Err(ShaderError::CompileError(
+          String::from_utf8(info_log).unwrap(),
+        ));
       }
 
       // delete the kernels now that we've linked
@@ -513,7 +557,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
+  fn shader_set_uniform(
+    &self,
+    shader: ShaderId,
+    location: usize,
+    value: &ShaderUniform,
+  ) -> Result<(), ShaderError> {
     unsafe {
       let shader = shader.into();
 
@@ -540,13 +589,31 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           gl::ProgramUniform4f(shader, location as i32, value.x, value.y, value.z, value.w);
         }
         ShaderUniform::Mat2(value) => {
-          gl::ProgramUniformMatrix2fv(shader, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
+          gl::ProgramUniformMatrix2fv(
+            shader,
+            location as i32,
+            1,
+            gl::FALSE,
+            &value.to_cols_array()[0],
+          );
         }
         ShaderUniform::Mat3(value) => {
-          gl::ProgramUniformMatrix3fv(shader, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
+          gl::ProgramUniformMatrix3fv(
+            shader,
+            location as i32,
+            1,
+            gl::FALSE,
+            &value.to_cols_array()[0],
+          );
         }
         ShaderUniform::Mat4(value) => {
-          gl::ProgramUniformMatrix4fv(shader, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
+          gl::ProgramUniformMatrix4fv(
+            shader,
+            location as i32,
+            1,
+            gl::FALSE,
+            &value.to_cols_array()[0],
+          );
         }
         ShaderUniform::Color(color) => {
           gl::ProgramUniform4f(shader, location as i32, color.r, color.g, color.b, color.a);
@@ -626,7 +693,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn mesh_create(&self, vertex_buffer: BufferId, index_buffer: BufferId, descriptors: &[VertexDescriptor]) -> Result<MeshId, MeshError> {
+  fn mesh_create(
+    &self,
+    vertex_buffer: BufferId,
+    index_buffer: BufferId,
+    descriptors: &[VertexDescriptor],
+  ) -> Result<MeshId, MeshError> {
     unsafe {
       let mut id: u32 = 0;
 
@@ -682,7 +754,13 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) -> Result<(), MeshError> {
+  fn mesh_draw(
+    &self,
+    mesh: MeshId,
+    topology: PrimitiveTopology,
+    vertex_count: usize,
+    index_count: usize,
+  ) -> Result<(), MeshError> {
     unsafe {
       gl::BindVertexArray(mesh.into());
 
@@ -693,7 +771,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       };
 
       if index_count > 0 {
-        gl::DrawElements(topology, index_count as i32, gl::UNSIGNED_INT, std::ptr::null());
+        gl::DrawElements(
+          topology,
+          index_count as i32,
+          gl::UNSIGNED_INT,
+          std::ptr::null(),
+        );
       } else {
         gl::DrawArrays(topology, 0, vertex_count as i32);
       }
@@ -723,10 +806,22 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       gl::CreateFramebuffers(1, &mut framebuffer);
 
       gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer);
-      gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, color_attachment.into(), 0);
+      gl::FramebufferTexture2D(
+        gl::FRAMEBUFFER,
+        gl::COLOR_ATTACHMENT0,
+        gl::TEXTURE_2D,
+        color_attachment.into(),
+        0,
+      );
 
       if let Some(depth_attachment) = depth_attachment {
-        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::DEPTH_ATTACHMENT, gl::TEXTURE_2D, depth_attachment.into(), 0);
+        gl::FramebufferTexture2D(
+          gl::FRAMEBUFFER,
+          gl::DEPTH_ATTACHMENT,
+          gl::TEXTURE_2D,
+          depth_attachment.into(),
+          0,
+        );
       }
 
       if let Some(stencil_attachment) = stencil_attachment {

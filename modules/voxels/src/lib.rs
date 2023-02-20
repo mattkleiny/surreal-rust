@@ -104,13 +104,21 @@ impl Chunk {
   pub const DEFAULT_DEPTH: usize = 16;
 
   /// The default size of a chunk, in (width, height, depth) units.
-  pub const DEFAULT_SIZE: (usize, usize, usize) = (Self::DEFAULT_WIDTH, Self::DEFAULT_HEIGHT, Self::DEFAULT_DEPTH);
+  pub const DEFAULT_SIZE: (usize, usize, usize) = (
+    Self::DEFAULT_WIDTH,
+    Self::DEFAULT_HEIGHT,
+    Self::DEFAULT_DEPTH,
+  );
 }
 
 impl Default for Chunk {
   fn default() -> Self {
     Self {
-      size: (Self::DEFAULT_WIDTH as u16, Self::DEFAULT_HEIGHT as u16, Self::DEFAULT_DEPTH as u16),
+      size: (
+        Self::DEFAULT_WIDTH as u16,
+        Self::DEFAULT_HEIGHT as u16,
+        Self::DEFAULT_DEPTH as u16,
+      ),
       _voxels: Vec::new(),
     }
   }

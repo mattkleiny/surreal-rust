@@ -43,11 +43,16 @@ enum AssetDatabaseChange {
 impl AssetDatabase {
   /// Opens an [`AssetDatabase`] from the given root project path.
   ///
-  /// The asset database will be created if it doesn't exist, and pending changes will be created
-  /// for any assets that have not yet been processed. Changes detected during this process need
-  /// to be flushed to disk via the [`AssetDatabase::flush_changes`] method.
+  /// The asset database will be created if it doesn't exist, and pending
+  /// changes will be created for any assets that have not yet been processed.
+  /// Changes detected during this process need to be flushed to disk via the
+  /// [`AssetDatabase::flush_changes`] method.
   pub fn open(asset_path: &str, target_path: &str) -> surreal::Result<Self> {
-    surreal::diagnostics::trace!("Creating asset database at path {} with target path {}", asset_path, target_path);
+    surreal::diagnostics::trace!(
+      "Creating asset database at path {} with target path {}",
+      asset_path,
+      target_path
+    );
 
     let mut database = Self {
       _asset_path: asset_path.to_owned(),
@@ -66,11 +71,16 @@ impl AssetDatabase {
 
       database
         .pending_changes
-        .push(AssetDatabaseChange::WriteMetadata(path.to_string(), metadata));
+        .push(AssetDatabaseChange::WriteMetadata(
+          path.to_string(),
+          metadata,
+        ));
     }
 
     // save pending manifest changes
-    database.pending_changes.push(AssetDatabaseChange::SaveManifest);
+    database
+      .pending_changes
+      .push(AssetDatabaseChange::SaveManifest);
 
     Ok(database)
   }
@@ -96,19 +106,28 @@ impl AssetDatabase {
 
   /// Loads a [`Box`]ed [`Asset`] of the given type from the given
   /// [`VirtualPath`].
-  pub fn load_asset_boxed<A: Asset>(&mut self, path: impl Into<VirtualPath>) -> surreal::Result<Box<A>> {
+  pub fn load_asset_boxed<A: Asset>(
+    &mut self,
+    path: impl Into<VirtualPath>,
+  ) -> surreal::Result<Box<A>> {
     let path = path.into();
 
     for importer in &self.importers {
       if importer.can_handle(&path) {
         let asset = importer.import(&path)?;
-        let asset = asset.into_any().downcast().expect("Failed to downcast asset to expected type");
+        let asset = asset
+          .into_any()
+          .downcast()
+          .expect("Failed to downcast asset to expected type");
 
         return Ok(asset);
       }
     }
 
-    Err(surreal::anyhow!("Asset cannot be imported at path '{}'", path))
+    Err(surreal::anyhow!(
+      "Asset cannot be imported at path '{}'",
+      path
+    ))
   }
 
   /// Saves any pending changes out to disk.

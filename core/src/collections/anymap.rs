@@ -2,7 +2,8 @@ use std::any::{Any, TypeId};
 
 use crate::collections::FastHashMap;
 
-/// An any-map is a hash map that can contain a single value per unique [`TypeId`].
+/// An any-map is a hash map that can contain a single value per unique
+/// [`TypeId`].
 #[derive(Default)]
 pub struct AnyMap {
   entries: FastHashMap<TypeId, Box<dyn Any>>,
@@ -31,7 +32,8 @@ impl AnyMap {
     self.entries.insert(TypeId::of::<T>(), Box::new(value));
   }
 
-  /// Retrieves an existing item from the map or creates it anew via [`Default::default`].
+  /// Retrieves an existing item from the map or creates it anew via
+  /// [`Default::default`].
   pub fn get_or_default<T: Any + Default>(&mut self) -> &mut T {
     self
       .entries
@@ -43,12 +45,18 @@ impl AnyMap {
 
   /// Mutably accesses a value from the map.
   pub fn get<T: Any>(&self) -> Option<&T> {
-    self.entries.get(&TypeId::of::<T>()).and_then(|any| any.downcast_ref())
+    self
+      .entries
+      .get(&TypeId::of::<T>())
+      .and_then(|any| any.downcast_ref())
   }
 
   /// Mutably accesses a given value from the map.
   pub fn get_mut<T: Any>(&mut self) -> Option<&mut T> {
-    self.entries.get_mut(&TypeId::of::<T>()).and_then(|any| any.downcast_mut())
+    self
+      .entries
+      .get_mut(&TypeId::of::<T>())
+      .and_then(|any| any.downcast_mut())
   }
 
   /// Removes a value from the map.

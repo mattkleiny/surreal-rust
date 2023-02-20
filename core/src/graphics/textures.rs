@@ -89,7 +89,12 @@ impl Texture {
   }
 
   /// Builds a new colored texture of the given size.
-  pub fn create_colored<T: Texel + Clone>(graphics: &GraphicsServer, width: usize, height: usize, color: T) -> crate::Result<Self> {
+  pub fn create_colored<T: Texel + Clone>(
+    graphics: &GraphicsServer,
+    width: usize,
+    height: usize,
+    color: T,
+  ) -> crate::Result<Self> {
     let texture = Self::new(graphics)?;
     let colors = vec![color; width * height];
 
@@ -260,7 +265,10 @@ impl Texture {
 
 impl Drop for TextureState {
   fn drop(&mut self) {
-    self.graphics.texture_delete(self.id).expect("Failed to delete texture");
+    self
+      .graphics
+      .texture_delete(self.id)
+      .expect("Failed to delete texture");
   }
 }
 
@@ -357,7 +365,12 @@ impl TextureAtlas {
   }
 
   /// Loads a texture atlas from the given file.
-  pub fn load(assets: &AssetManager, width: u32, height: u32, path: &str) -> crate::Result<TextureAtlas> {
+  pub fn load(
+    assets: &AssetManager,
+    width: u32,
+    height: u32,
+    path: &str,
+  ) -> crate::Result<TextureAtlas> {
     let texture = Texture::load(assets, path)?;
 
     Ok(TextureAtlas::new(width, height, texture.as_ref()))
@@ -456,7 +469,10 @@ impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
           let index = advance_x + advance_y * pixels_x;
 
           unsafe {
-            texels[index] = cell.pixels.get_unchecked(pixel_x as i32, pixel_y as i32).clone();
+            texels[index] = cell
+              .pixels
+              .get_unchecked(pixel_x as i32, pixel_y as i32)
+              .clone();
           }
         }
       }

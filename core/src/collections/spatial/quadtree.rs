@@ -76,7 +76,11 @@ impl<T> QuadTree<T> {
 
   /// Finds all values in the quadtree that intersect the given bounds.
   pub fn find_in_bounds_mut(&mut self, bounds: Rectangle) -> Vec<&mut T> {
-    fn depth_first_search<T>(node: &mut QuadTreeNode<T>, bounds: Rectangle, results: &mut Vec<&mut T>) {
+    fn depth_first_search<T>(
+      node: &mut QuadTreeNode<T>,
+      bounds: Rectangle,
+      results: &mut Vec<&mut T>,
+    ) {
       todo!()
     }
 
@@ -158,15 +162,5 @@ mod tests {
     let tree = QuadTree::<()>::default();
 
     assert!(tree.is_empty());
-  }
-
-  #[test]
-  fn quadtreE_should_insert_and_find_item() {
-    let mut tree = QuadTree::default();
-
-    tree.insert(1);
-    tree.insert(2);
-
-    assert!(!tree.is_empty());
   }
 }

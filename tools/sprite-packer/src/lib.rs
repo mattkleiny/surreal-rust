@@ -51,7 +51,9 @@ pub fn pack_sprite_sheet(sprites: &mut [Sprite]) -> anyhow::Result<SpriteSheet> 
 
   for sprite in sprites {
     // add sprite to this free position
-    let next_pos = *positions.first().ok_or(anyhow!("No free anchor positions!"))?;
+    let next_pos = *positions
+      .first()
+      .ok_or(anyhow!("No free anchor positions!"))?;
 
     anchors.push(SpriteAnchor {
       position: next_pos,
@@ -113,7 +115,11 @@ pub fn pack_sprite_sheet(sprites: &mut [Sprite]) -> anyhow::Result<SpriteSheet> 
   // sprites
   anchors.sort_by_key(|s| s.sprite.id);
 
-  Ok(SpriteSheet { width, height, anchors })
+  Ok(SpriteSheet {
+    width,
+    height,
+    anchors,
+  })
 }
 
 /// Compares the position of two sprites.
@@ -140,7 +146,10 @@ fn _next_highest_power_of_2(n: u32) -> u32 {
 
 impl std::fmt::Debug for Sprite {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    f.debug_struct("Sprite").field("id", &self.id).field("size", &self.size).finish()
+    f.debug_struct("Sprite")
+      .field("id", &self.id)
+      .field("size", &self.size)
+      .finish()
   }
 }
 
@@ -182,9 +191,11 @@ mod tests {
         // pack 32 bit pixel values from raw image data
         for pixel_y in 0..16 {
           for pixel_x in 0..16 {
-            let Rgba([r, g, b, a]) = image.get_pixel(sprite_x * 16 + pixel_x, sprite_y * 16 + pixel_y);
+            let Rgba([r, g, b, a]) =
+              image.get_pixel(sprite_x * 16 + pixel_x, sprite_y * 16 + pixel_y);
 
-            sprite_pixels.push((*r as u32) << 24 | (*g as u32) << 16 | (*b as u32) << 8 | (*a as u32));
+            sprite_pixels
+              .push((*r as u32) << 24 | (*g as u32) << 16 | (*b as u32) << 8 | (*a as u32));
           }
         }
 

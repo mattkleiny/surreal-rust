@@ -171,7 +171,12 @@ impl UserInterface {
         Some([x, y]) => {
           // update existing texture
           let texture = self.textures.get_mut(&id).expect("Texture not found");
-          let region = Rectangle::from_corner_points(x as f32, y as f32, x as f32 + width as f32, y as f32 + height as f32);
+          let region = Rectangle::from_corner_points(
+            x as f32,
+            y as f32,
+            x as f32 + width as f32,
+            y as f32 + height as f32,
+          );
 
           texture.write_sub_pixels(&region, &pixels);
         }
@@ -201,9 +206,10 @@ impl UserInterface {
 
           // update our single mesh shape and re-render it
           self.mesh.with_buffers(|vertex_buffer, index_buffer| {
-            // our vertices are blit-ably the same as what egui gives us, so just cast the
-            // slice.
-            let vertices = unsafe { std::slice::from_raw_parts(vertices.as_ptr() as *const Vertex2, vertices.len()) };
+            // our vertices are blit-ably the same as what egui gives us
+            let vertices = unsafe {
+              std::slice::from_raw_parts(vertices.as_ptr() as *const Vertex2, vertices.len())
+            };
 
             vertex_buffer.write_data(vertices);
             index_buffer.write_data(&indices);

@@ -33,20 +33,25 @@ impl<T: RegistryValue> RegistryKey<T> {
 
   /// Creates a new [`RegistryKey`] from the given raw values.
   pub const fn new(hkey: HKEY, path: &'static str, default_value: T) -> Self {
-    Self { hkey, path, default_value }
+    Self {
+      hkey,
+      path,
+      default_value,
+    }
   }
 
-  /// Reads a [`RegistryValue`] for the key, or returns the default value if it doesn't exist
+  /// Reads a [`RegistryValue`] for the key, or returns the default value if it
+  /// doesn't exist
   pub fn read_or_default(&self) -> T {
     self.read().unwrap_or(self.default_value.clone())
   }
 
   /// Reads a [`RegistryValue`] for this key.
   pub fn read(&self) -> surreal::Result<T> {
-    let (key, value) = self
-      .path
-      .rsplit_once('\\')
-      .ok_or(surreal::anyhow!("An invalid registry path was specified: {}", self.path))?;
+    let (key, value) = self.path.rsplit_once('\\').ok_or(surreal::anyhow!(
+      "An invalid registry path was specified: {}",
+      self.path
+    ))?;
 
     let key = winreg::RegKey::predef(self.hkey).open_subkey(key)?;
     let value = key.get_raw_value(value)?;
@@ -56,15 +61,17 @@ impl<T: RegistryValue> RegistryKey<T> {
 
   /// Writes the [`RegistryValue`] for this key, or panics.
   pub fn write_or_fail(&self, value: T) {
-    self.write(value).expect(&format!("Failed to write value for {}", self.path));
+    self
+      .write(value)
+      .expect(&format!("Failed to write value for {}", self.path));
   }
 
   /// Writes the [`RegistryValue`] for this key.
   pub fn write(&self, value: T) -> surreal::Result<()> {
-    let (key, value_name) = self
-      .path
-      .rsplit_once('\\')
-      .ok_or(surreal::anyhow!("An invalid registry path was specified: {}", self.path))?;
+    let (key, value_name) = self.path.rsplit_once('\\').ok_or(surreal::anyhow!(
+      "An invalid registry path was specified: {}",
+      self.path
+    ))?;
 
     let (key, _) = winreg::RegKey::predef(self.hkey).create_subkey(key)?;
 
@@ -120,7 +127,10 @@ impl RegistryValue for String {
 impl RegistryValue for Vec<u8> {
   fn from_registry(key: &RegValue) -> surreal::Result<Self> {
     if key.vtype != winreg::enums::RegType::REG_BINARY {
-      return Err(surreal::anyhow!("Invalid registry value type: {:?}", key.vtype));
+      return Err(surreal::anyhow!(
+        "Invalid registry value type: {:?}",
+        key.vtype
+      ));
     }
 
     Ok(key.bytes.clone())
