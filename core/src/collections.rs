@@ -7,6 +7,7 @@ pub use multimap::*;
 pub use priorityqueue::*;
 pub use resources::*;
 pub use ringbuffer::*;
+pub use skiplist::*;
 pub use smallvec::{smallvec, SmallVec};
 pub use spatial::*;
 
@@ -17,6 +18,7 @@ mod multimap;
 mod priorityqueue;
 mod resources;
 mod ringbuffer;
+mod skiplist;
 mod spatial;
 
 /// A faster hash set that is not resilient to DoS attacks.

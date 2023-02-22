@@ -9,7 +9,7 @@ use std::{
 
 /// Yields the current thread back to the async scheduler.
 #[inline]
-pub async fn yield_fiber() {
+pub fn yield_fiber() -> impl Future<Output = ()> {
   /// A [`Future`] that yields the current thread.
   struct Yield(bool);
 
@@ -30,7 +30,7 @@ pub async fn yield_fiber() {
     }
   }
 
-  Yield(false).await
+  Yield(false)
 }
 
 /// Blocks the current thread until the given future is resolved.
