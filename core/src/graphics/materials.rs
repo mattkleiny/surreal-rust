@@ -63,7 +63,11 @@ pub struct MaterialUniformSet {
 
 impl MaterialUniformSet {
   /// Sets the given [`UniformKey`] as a uniform in the set.
-  pub fn set_uniform<U: Into<ShaderUniform>>(&mut self, key: impl Into<UniformKey<U>>, value: U) {
+  pub fn set_uniform<K, U>(&mut self, key: K, value: U)
+  where
+    K: Into<UniformKey<U>>,
+    U: Into<ShaderUniform>,
+  {
     self
       .uniforms
       .insert(key.into().name.to_string(), value.into());
@@ -71,12 +75,14 @@ impl MaterialUniformSet {
 
   /// Sets the given [`UniformKey`] as a uniform with a single texture in the
   /// set.
-  pub fn set_texture(
-    &mut self,
-    key: impl Into<UniformKey<&Texture>>,
+  pub fn set_texture<'a, K>(
+    &'a mut self,
+    key: K,
     texture: &Texture,
     sampler: Option<TextureSampler>,
-  ) {
+  ) where
+    K: Into<UniformKey<&'a Texture>>,
+  {
     let slot = self.allocate_texture_slot(texture);
     let uniform = ShaderUniform::Texture(texture.clone(), slot, sampler);
 
@@ -164,17 +170,23 @@ impl Material {
   }
 
   /// Sets the given [`UniformKey`] with the given value.
-  pub fn set_uniform<U: Into<ShaderUniform>>(&mut self, key: impl Into<UniformKey<U>>, value: U) {
+  pub fn set_uniform<K, U>(&mut self, key: K, value: U)
+  where
+    K: Into<UniformKey<U>>,
+    U: Into<ShaderUniform>,
+  {
     self.uniforms.set_uniform(key, value);
   }
 
   /// Sets the given [`UniformKey`] with a single texture.
-  pub fn set_texture(
-    &mut self,
-    key: impl Into<UniformKey<&Texture>>,
+  pub fn set_texture<'a, K>(
+    &'a mut self,
+    key: K,
     texture: &Texture,
     sampler: Option<TextureSampler>,
-  ) {
+  ) where
+    K: Into<UniformKey<&'a Texture>>,
+  {
     self.uniforms.set_texture(key, texture, sampler);
   }
 
