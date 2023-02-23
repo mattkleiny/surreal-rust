@@ -111,7 +111,7 @@ impl Display for Degrees {
   }
 }
 
-macro_rules! impl_operations {
+macro_rules! impl_std_ops {
   ($type:ty) => {
     impl From<f64> for $type {
       #[inline(always)]
@@ -312,8 +312,8 @@ macro_rules! impl_operations {
   };
 }
 
-impl_operations!(Degrees);
-impl_operations!(Radians);
+impl_std_ops!(Degrees);
+impl_std_ops!(Radians);
 
 #[cfg(test)]
 mod tests {

@@ -8,12 +8,12 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use bytemuck::{Pod, Zeroable};
 
-use crate::maths::{ApproxEq, FromRandom, Lerp, Numeric, Random};
+use crate::maths::{ApproxEq, FromRandom, Lerp, Random};
 
 /// Represents a type of pixel.
 pub trait Pixel: Copy + Default {
   /// The scalar type that is used to store each channel in this pixel.
-  type Subpixel: Numeric;
+  type Subpixel;
 
   /// The number of channels in this pixel type.
   const CHANNEL_COUNT: usize;
@@ -86,84 +86,6 @@ impl PartialEq for Color {
       && self.g.approx_eq(other.g)
       && self.b.approx_eq(other.b)
       && self.a.approx_eq(other.a)
-  }
-}
-
-impl Add for Color {
-  type Output = Color;
-
-  fn add(self, rhs: Self) -> Self::Output {
-    Color::rgba(
-      self.r + rhs.r,
-      self.g + rhs.g,
-      self.b + rhs.b,
-      self.a + rhs.a,
-    )
-  }
-}
-
-impl Sub for Color {
-  type Output = Color;
-
-  fn sub(self, rhs: Self) -> Self::Output {
-    Color::rgba(
-      self.r - rhs.r,
-      self.g - rhs.g,
-      self.b - rhs.b,
-      self.a - rhs.a,
-    )
-  }
-}
-
-impl Mul for Color {
-  type Output = Self;
-
-  fn mul(self, rhs: Self) -> Self::Output {
-    Self {
-      r: self.r * rhs.r,
-      g: self.g * rhs.g,
-      b: self.b * rhs.b,
-      a: self.a * rhs.a,
-    }
-  }
-}
-
-impl Mul<f32> for Color {
-  type Output = Self;
-
-  fn mul(self, rhs: f32) -> Self::Output {
-    Self {
-      r: self.r * rhs,
-      g: self.g * rhs,
-      b: self.b * rhs,
-      a: self.a * rhs,
-    }
-  }
-}
-
-impl Div for Color {
-  type Output = Self;
-
-  fn div(self, rhs: Self) -> Self::Output {
-    Self {
-      r: self.r / rhs.r,
-      g: self.g / rhs.g,
-      b: self.b / rhs.b,
-      a: self.a / rhs.a,
-    }
-  }
-}
-
-impl Div<f32> for Color {
-  type Output = Self;
-
-  fn div(self, rhs: f32) -> Self::Output {
-    Self {
-      r: self.r / rhs,
-      g: self.g / rhs,
-      b: self.b / rhs,
-      a: self.a / rhs,
-    }
   }
 }
 
@@ -251,84 +173,6 @@ impl PartialEq for Color32 {
   }
 }
 
-impl Add for Color32 {
-  type Output = Color32;
-
-  fn add(self, rhs: Self) -> Self::Output {
-    Color32::rgba(
-      self.r + rhs.r,
-      self.g + rhs.g,
-      self.b + rhs.b,
-      self.a + rhs.a,
-    )
-  }
-}
-
-impl Sub for Color32 {
-  type Output = Color32;
-
-  fn sub(self, rhs: Self) -> Self::Output {
-    Color32::rgba(
-      self.r - rhs.r,
-      self.g - rhs.g,
-      self.b - rhs.b,
-      self.a - rhs.a,
-    )
-  }
-}
-
-impl Mul for Color32 {
-  type Output = Self;
-
-  fn mul(self, rhs: Self) -> Self::Output {
-    Self {
-      r: self.r * rhs.r,
-      g: self.g * rhs.g,
-      b: self.b * rhs.b,
-      a: self.a * rhs.a,
-    }
-  }
-}
-
-impl Mul<u8> for Color32 {
-  type Output = Self;
-
-  fn mul(self, rhs: u8) -> Self::Output {
-    Self {
-      r: self.r * rhs,
-      g: self.g * rhs,
-      b: self.b * rhs,
-      a: self.a * rhs,
-    }
-  }
-}
-
-impl Div for Color32 {
-  type Output = Self;
-
-  fn div(self, rhs: Self) -> Self::Output {
-    Self {
-      r: self.r / rhs.r,
-      g: self.g / rhs.g,
-      b: self.b / rhs.b,
-      a: self.a / rhs.a,
-    }
-  }
-}
-
-impl Div<u8> for Color32 {
-  type Output = Self;
-
-  fn div(self, rhs: u8) -> Self::Output {
-    Self {
-      r: self.r / rhs,
-      g: self.g / rhs,
-      b: self.b / rhs,
-      a: self.a / rhs,
-    }
-  }
-}
-
 impl Lerp for Color32 {
   fn lerp(a: Color32, b: Color32, t: f32) -> Self {
     Color32::rgba(
@@ -345,6 +189,136 @@ impl FromRandom for Color32 {
     Color32::rgb(random.next(), random.next(), random.next())
   }
 }
+
+/// Implements standard operations for a color type.
+macro_rules! impl_std_ops {
+  ($type:ty, $scalar:ty) => {
+    impl std::ops::Add for $type {
+      type Output = Self;
+
+      #[inline]
+      fn add(self, rhs: Self) -> Self::Output {
+        Self {
+          r: self.r + rhs.r,
+          g: self.g + rhs.g,
+          b: self.b + rhs.b,
+          a: self.a + rhs.a,
+        }
+      }
+    }
+
+    impl std::ops::AddAssign for $type {
+      #[inline]
+      fn add_assign(&mut self, rhs: Self) {
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
+        self.a += rhs.a;
+      }
+    }
+
+    impl std::ops::Sub for $type {
+      type Output = Self;
+
+      #[inline]
+      fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+          r: self.r - rhs.r,
+          g: self.g - rhs.g,
+          b: self.b - rhs.b,
+          a: self.a - rhs.a,
+        }
+      }
+    }
+
+    impl std::ops::SubAssign for $type {
+      #[inline]
+      fn sub_assign(&mut self, rhs: Self) {
+        self.r -= rhs.r;
+        self.g -= rhs.g;
+        self.b -= rhs.b;
+        self.a -= rhs.a;
+      }
+    }
+
+    impl std::ops::Mul for $type {
+      type Output = Self;
+
+      #[inline]
+      fn mul(self, rhs: Self) -> Self::Output {
+        Self {
+          r: self.r * rhs.r,
+          g: self.g * rhs.g,
+          b: self.b * rhs.b,
+          a: self.a * rhs.a,
+        }
+      }
+    }
+
+    impl std::ops::MulAssign for $type {
+      #[inline]
+      fn mul_assign(&mut self, rhs: Self) {
+        self.r *= rhs.r;
+        self.g *= rhs.g;
+        self.b *= rhs.b;
+        self.a *= rhs.a;
+      }
+    }
+
+    impl std::ops::Div for $type {
+      type Output = Self;
+
+      #[inline]
+      fn div(self, rhs: Self) -> Self::Output {
+        Self {
+          r: self.r / rhs.r,
+          g: self.g / rhs.g,
+          b: self.b / rhs.b,
+          a: self.a / rhs.a,
+        }
+      }
+    }
+
+    impl std::ops::DivAssign for $type {
+      #[inline]
+      fn div_assign(&mut self, rhs: Self) {
+        self.r /= rhs.r;
+        self.g /= rhs.g;
+        self.b /= rhs.b;
+        self.a /= rhs.a;
+      }
+    }
+
+    impl Mul<$scalar> for $type {
+      type Output = Self;
+
+      fn mul(self, rhs: $scalar) -> Self::Output {
+        Self {
+          r: self.r * rhs,
+          g: self.g * rhs,
+          b: self.b * rhs,
+          a: self.a * rhs,
+        }
+      }
+    }
+
+    impl Div<$scalar> for $type {
+      type Output = Self;
+
+      fn div(self, rhs: $scalar) -> Self::Output {
+        Self {
+          r: self.r / rhs,
+          g: self.g / rhs,
+          b: self.b / rhs,
+          a: self.a / rhs,
+        }
+      }
+    }
+  };
+}
+
+impl_std_ops!(Color, f32);
+impl_std_ops!(Color32, u8);
 
 #[cfg(test)]
 mod tests {
