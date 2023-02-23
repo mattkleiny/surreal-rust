@@ -1,5 +1,6 @@
 //! Mathematical utilities.
 
+pub use angles::*;
 pub use curves::*;
 pub use interpolation::*;
 pub use linear::*;
@@ -12,6 +13,7 @@ pub use rectangles::*;
 pub use shapes::*;
 pub use tweens::*;
 
+mod angles;
 mod curves;
 mod interpolation;
 mod linear;

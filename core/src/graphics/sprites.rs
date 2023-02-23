@@ -4,7 +4,7 @@
 //! support.
 
 use super::*;
-use crate::maths::{vec2, Mat2, Vec2};
+use crate::maths::{vec2, Mat2, Radians, Vec2};
 
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
@@ -28,7 +28,7 @@ pub struct SpriteBatch {
 /// Options for drawing a sprite.
 pub struct SpriteOptions {
   pub position: Vec2,
-  pub rotation: f32,
+  pub rotation: Radians,
   pub scale: Vec2,
   pub color: Color32,
 }
@@ -37,7 +37,7 @@ impl Default for SpriteOptions {
   fn default() -> Self {
     Self {
       position: Vec2::ZERO,
-      rotation: 0.,
+      rotation: Radians::ZERO,
       scale: Vec2::ONE,
       color: Color32::WHITE,
     }
@@ -117,7 +117,7 @@ impl SpriteBatch {
           &glyph,
           &SpriteOptions {
             position,
-            rotation: 0.,
+            rotation: Radians::ZERO,
             scale: options.scale,
             color: options.color,
           },
@@ -153,7 +153,7 @@ impl SpriteBatch {
     let translation = options.position;
 
     // prepare vertex transform
-    let transform = Mat2::from_scale_angle(scale, angle);
+    let transform = Mat2::from_scale_angle(scale, angle.into());
 
     let uv = region.calculate_uv();
 
