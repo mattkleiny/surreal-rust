@@ -1,43 +1,51 @@
 use std::fmt::Display;
 
-use super::{to_degrees, to_radians};
+use bytemuck::{Pod, Zeroable};
+
+use super::{FromRandom, Random};
 
 /// A trait for converting between [`Degrees`] and [`Radians`].
 pub trait Angle {
   /// Converts the angle to [`Degrees`].
-  fn to_degrees(self) -> Degrees;
+  fn into_degrees(self) -> Degrees;
 
   /// Converts the angle to [`Radians`].
-  fn to_radians(self) -> Radians;
+  fn into_radians(self) -> Radians;
 }
 
 impl Angle for f32 {
   #[inline]
-  fn to_degrees(self) -> Degrees {
+  fn into_degrees(self) -> Degrees {
     Degrees(self as f64)
   }
 
   #[inline]
-  fn to_radians(self) -> Radians {
+  fn into_radians(self) -> Radians {
     Radians(self as f64)
   }
 }
 
 impl Angle for f64 {
   #[inline]
-  fn to_degrees(self) -> Degrees {
+  fn into_degrees(self) -> Degrees {
     Degrees(self)
   }
 
   #[inline]
-  fn to_radians(self) -> Radians {
+  fn into_radians(self) -> Radians {
     Radians(self)
+  }
+}
+
+impl FromRandom for Radians {
+  fn from_random(random: &mut Random) -> Self {
+    Self(random.next_f64() * std::f64::consts::PI * 2.0)
   }
 }
 
 /// A representation of an angle in radians.
 #[repr(transparent)]
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Pod, Zeroable, Serialize, Deserialize, Copy, Clone, Debug, PartialEq)]
 pub struct Radians(f64);
 
 impl Radians {
@@ -50,12 +58,12 @@ impl Radians {
 
 impl Angle for Radians {
   #[inline]
-  fn to_degrees(self) -> Degrees {
-    Degrees(to_degrees(self.0))
+  fn into_degrees(self) -> Degrees {
+    Degrees(self.0.to_degrees())
   }
 
   #[inline]
-  fn to_radians(self) -> Radians {
+  fn into_radians(self) -> Radians {
     self
   }
 }
@@ -63,7 +71,7 @@ impl Angle for Radians {
 impl From<Degrees> for Radians {
   #[inline(always)]
   fn from(value: Degrees) -> Self {
-    Self(to_radians(value.0))
+    Self(value.0.to_radians())
   }
 }
 
@@ -75,7 +83,7 @@ impl Display for Radians {
 
 /// A representation of an angle in degrees.
 #[repr(transparent)]
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Pod, Zeroable, Serialize, Deserialize, Copy, Clone, Debug, PartialEq)]
 pub struct Degrees(f64);
 
 impl Degrees {
@@ -88,20 +96,26 @@ impl Degrees {
 
 impl Angle for Degrees {
   #[inline]
-  fn to_degrees(self) -> Degrees {
+  fn into_degrees(self) -> Degrees {
     self
   }
 
   #[inline]
-  fn to_radians(self) -> Radians {
-    Radians(to_radians(self.0))
+  fn into_radians(self) -> Radians {
+    Radians(self.0.to_radians())
   }
 }
 
 impl From<Radians> for Degrees {
   #[inline(always)]
   fn from(value: Radians) -> Self {
-    Self(to_degrees(value.0))
+    Self(value.0.to_degrees())
+  }
+}
+
+impl FromRandom for Degrees {
+  fn from_random(random: &mut Random) -> Self {
+    Self(random.next_f64() * 360.0)
   }
 }
 
@@ -321,8 +335,8 @@ mod tests {
 
   #[test]
   fn angles_are_converted_to_degrees_from_radians() {
-    let angle = 360.0.to_degrees();
-    let radians = angle.to_radians();
+    let angle = 360.0.into_degrees();
+    let radians = angle.into_radians();
 
     assert_eq!(radians, Radians::_2_PI);
   }
@@ -330,15 +344,15 @@ mod tests {
   #[test]
   fn angles_are_converted_to_radians_from_degrees() {
     let angle = Radians::_2_PI;
-    let degrees = angle.to_degrees();
+    let degrees = angle.into_degrees();
 
     assert_eq!(degrees, Degrees(360.0));
   }
 
   #[test]
   fn degrees_should_support_basic_arithmetic() {
-    let angle1 = 90.0.to_degrees();
-    let angle2 = 180.0.to_degrees();
+    let angle1 = 90.0.into_degrees();
+    let angle2 = 180.0.into_degrees();
 
     assert_eq!(angle1 + angle2, Degrees(270.0));
     assert_eq!(angle1 - angle2, Degrees(-90.0));
@@ -349,8 +363,8 @@ mod tests {
 
   #[test]
   fn radians_should_support_basic_arithmetic() {
-    let angle1 = 0.5.to_radians();
-    let angle2 = 2.0.to_radians();
+    let angle1 = 0.5.into_radians();
+    let angle2 = 2.0.into_radians();
 
     assert_eq!(angle1 + angle2, Radians(2.5));
     assert_eq!(angle1 - angle2, Radians(-1.5));

@@ -4,7 +4,7 @@
 //! and a 32-bit floating point per-channel representation for more precise
 //! rendering.
 
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Div, Mul};
 
 use bytemuck::{Pod, Zeroable};
 

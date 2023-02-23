@@ -58,7 +58,7 @@ fn main() {
                 &SpriteOptions {
                   position: bunny.position,
                   color: bunny.color,
-                  rotation: bunny.rotation,
+                  rotation: bunny.rotation.into_radians(),
                   ..Default::default()
                 },
               );
