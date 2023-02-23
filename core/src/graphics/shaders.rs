@@ -12,7 +12,7 @@ use crate::{
   assets::{Asset, AssetContext, AssetLoader},
   collections::FastHashMap,
   io::VirtualPath,
-  maths::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4},
+  maths::{Degrees, Mat2, Mat3, Mat4, Radians, Vec2, Vec3, Vec4},
 };
 
 /// Different types of shaders supported by the engine.
@@ -300,7 +300,7 @@ macro_rules! impl_uniform {
   ($type:ty, $value:ident) => {
     impl From<$type> for ShaderUniform {
       fn from(value: $type) -> Self {
-        ShaderUniform::$value(value.clone())
+        ShaderUniform::$value(value.clone().into())
       }
     }
   };
@@ -309,6 +309,8 @@ macro_rules! impl_uniform {
 impl_uniform!(bool, Bool);
 impl_uniform!(u32, U32);
 impl_uniform!(f32, F32);
+impl_uniform!(Degrees, F32);
+impl_uniform!(Radians, F32);
 impl_uniform!(Vec2, Vec2);
 impl_uniform!(Vec3, Vec3);
 impl_uniform!(Vec4, Vec4);

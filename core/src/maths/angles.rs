@@ -14,6 +14,18 @@ pub trait Angle {
 impl Angle for f32 {
   #[inline]
   fn to_degrees(self) -> Degrees {
+    Degrees(self as f64)
+  }
+
+  #[inline]
+  fn to_radians(self) -> Radians {
+    Radians(self as f64)
+  }
+}
+
+impl Angle for f64 {
+  #[inline]
+  fn to_degrees(self) -> Degrees {
     Degrees(self)
   }
 
@@ -26,14 +38,14 @@ impl Angle for f32 {
 /// A representation of an angle in radians.
 #[repr(transparent)]
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Radians(f32);
+pub struct Radians(f64);
 
 impl Radians {
   pub const ZERO: Radians = Radians(0.0);
-  pub const _2_PI: Radians = Radians(std::f32::consts::PI * 2.0);
-  pub const _PI: Radians = Radians(std::f32::consts::PI);
-  pub const _PI_2: Radians = Radians(std::f32::consts::PI / 2.0);
-  pub const _PI_4: Radians = Radians(std::f32::consts::PI / 4.0);
+  pub const _2_PI: Radians = Radians(std::f64::consts::PI * 2.0);
+  pub const _PI: Radians = Radians(std::f64::consts::PI);
+  pub const _PI_2: Radians = Radians(std::f64::consts::PI / 2.0);
+  pub const _PI_4: Radians = Radians(std::f64::consts::PI / 4.0);
 }
 
 impl Angle for Radians {
@@ -48,26 +60,6 @@ impl Angle for Radians {
   }
 }
 
-impl Display for Radians {
-  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(formatter, "{}rad", self.0)
-  }
-}
-
-impl From<f32> for Radians {
-  #[inline(always)]
-  fn from(value: f32) -> Self {
-    Self(value)
-  }
-}
-
-impl From<Radians> for f32 {
-  #[inline(always)]
-  fn from(value: Radians) -> Self {
-    value.0
-  }
-}
-
 impl From<Degrees> for Radians {
   #[inline(always)]
   fn from(value: Degrees) -> Self {
@@ -75,10 +67,16 @@ impl From<Degrees> for Radians {
   }
 }
 
+impl Display for Radians {
+  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(formatter, "{}rad", self.0)
+  }
+}
+
 /// A representation of an angle in degrees.
 #[repr(transparent)]
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Degrees(f32);
+pub struct Degrees(f64);
 
 impl Degrees {
   pub const ZERO: Degrees = Degrees(0.0);
@@ -100,26 +98,6 @@ impl Angle for Degrees {
   }
 }
 
-impl Display for Degrees {
-  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(formatter, "{}°", self.0)
-  }
-}
-
-impl From<f32> for Degrees {
-  #[inline(always)]
-  fn from(value: f32) -> Self {
-    Self(value)
-  }
-}
-
-impl From<Degrees> for f32 {
-  #[inline(always)]
-  fn from(value: Degrees) -> Self {
-    value.0
-  }
-}
-
 impl From<Radians> for Degrees {
   #[inline(always)]
   fn from(value: Radians) -> Self {
@@ -127,8 +105,42 @@ impl From<Radians> for Degrees {
   }
 }
 
-macro_rules! impl_arithmetic {
+impl Display for Degrees {
+  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(formatter, "{}°", self.0)
+  }
+}
+
+macro_rules! impl_operations {
   ($type:ty) => {
+    impl From<f64> for $type {
+      #[inline(always)]
+      fn from(value: f64) -> Self {
+        Self(value)
+      }
+    }
+
+    impl From<f32> for $type {
+      #[inline(always)]
+      fn from(value: f32) -> Self {
+        Self(value as f64)
+      }
+    }
+
+    impl From<$type> for f64 {
+      #[inline(always)]
+      fn from(value: $type) -> Self {
+        value.0
+      }
+    }
+
+    impl From<$type> for f32 {
+      #[inline(always)]
+      fn from(value: $type) -> Self {
+        value.0 as f32
+      }
+    }
+
     impl std::ops::Add<$type> for $type {
       type Output = $type;
 
@@ -218,90 +230,90 @@ macro_rules! impl_arithmetic {
       }
     }
 
-    impl std::ops::Add<f32> for $type {
+    impl std::ops::Add<f64> for $type {
       type Output = $type;
 
       #[inline]
-      fn add(self, rhs: f32) -> Self::Output {
+      fn add(self, rhs: f64) -> Self::Output {
         Self(self.0 + rhs)
       }
     }
 
-    impl std::ops::AddAssign<f32> for $type {
+    impl std::ops::AddAssign<f64> for $type {
       #[inline]
-      fn add_assign(&mut self, rhs: f32) {
+      fn add_assign(&mut self, rhs: f64) {
         self.0 += rhs;
       }
     }
 
-    impl std::ops::Sub<f32> for $type {
+    impl std::ops::Sub<f64> for $type {
       type Output = $type;
 
       #[inline]
-      fn sub(self, rhs: f32) -> Self::Output {
+      fn sub(self, rhs: f64) -> Self::Output {
         Self(self.0 - rhs)
       }
     }
 
-    impl std::ops::SubAssign<f32> for $type {
+    impl std::ops::SubAssign<f64> for $type {
       #[inline]
-      fn sub_assign(&mut self, rhs: f32) {
+      fn sub_assign(&mut self, rhs: f64) {
         self.0 -= rhs;
       }
     }
 
-    impl std::ops::Mul<f32> for $type {
+    impl std::ops::Mul<f64> for $type {
       type Output = $type;
 
       #[inline]
-      fn mul(self, rhs: f32) -> Self::Output {
+      fn mul(self, rhs: f64) -> Self::Output {
         Self(self.0 * rhs)
       }
     }
 
-    impl std::ops::MulAssign<f32> for $type {
+    impl std::ops::MulAssign<f64> for $type {
       #[inline]
-      fn mul_assign(&mut self, rhs: f32) {
+      fn mul_assign(&mut self, rhs: f64) {
         self.0 *= rhs;
       }
     }
 
-    impl std::ops::Div<f32> for $type {
+    impl std::ops::Div<f64> for $type {
       type Output = $type;
 
       #[inline]
-      fn div(self, rhs: f32) -> Self::Output {
+      fn div(self, rhs: f64) -> Self::Output {
         Self(self.0 / rhs)
       }
     }
 
-    impl std::ops::DivAssign<f32> for $type {
+    impl std::ops::DivAssign<f64> for $type {
       #[inline]
-      fn div_assign(&mut self, rhs: f32) {
+      fn div_assign(&mut self, rhs: f64) {
         self.0 /= rhs;
       }
     }
 
-    impl std::ops::Rem<f32> for $type {
+    impl std::ops::Rem<f64> for $type {
       type Output = $type;
 
       #[inline]
-      fn rem(self, rhs: f32) -> Self::Output {
+      fn rem(self, rhs: f64) -> Self::Output {
         Self(self.0 % rhs)
       }
     }
 
-    impl std::ops::RemAssign<f32> for $type {
+    impl std::ops::RemAssign<f64> for $type {
       #[inline]
-      fn rem_assign(&mut self, rhs: f32) {
+      fn rem_assign(&mut self, rhs: f64) {
         self.0 %= rhs;
       }
     }
   };
 }
 
-impl_arithmetic!(Degrees);
-impl_arithmetic!(Radians);
+impl_operations!(Degrees);
+impl_operations!(Radians);
 
 #[cfg(test)]
 mod tests {
