@@ -359,26 +359,6 @@ impl<V: Vertex> MeshBuilder<V> {
   }
 }
 
-/// Represents a type that can be tessellated into [`V`]ertices.
-pub trait MeshBrush<V> {
-  /// Tessellates this object into the given [`MeshBuilder`].
-  fn build(&self, builder: &mut MeshBuilder<V>);
-}
-
-impl MeshBrush<Vertex2> for crate::maths::Cube {
-  fn build(&self, builder: &mut MeshBuilder<Vertex2>) {
-    let min = self.min();
-    let max = self.max();
-
-    builder.add_quad(&[
-      Vertex2::new([min.x, min.y], [0.0, 0.0], Color32::WHITE),
-      Vertex2::new([max.x, min.y], [1.0, 0.0], Color32::WHITE),
-      Vertex2::new([max.x, max.y], [1.0, 1.0], Color32::WHITE),
-      Vertex2::new([min.x, max.y], [0.0, 1.0], Color32::WHITE),
-    ]);
-  }
-}
-
 /// Specialization for standard 2d meshes.
 impl Mesh<Vertex2> {
   /// Constructs a simple triangle mesh of the given size.
@@ -461,6 +441,75 @@ impl Mesh<Vertex2> {
 
       builder.add_triangle_fan(&vertices);
     })
+  }
+}
+
+/// Represents a type that can be tessellated into [`V`]ertices.
+pub trait MeshBrush<V> {
+  /// Tessellates this object into the given [`MeshBuilder`].
+  fn build(&self, builder: &mut MeshBuilder<V>);
+}
+
+impl MeshBrush<Vertex2> for crate::maths::Cube {
+  fn build(&self, builder: &mut MeshBuilder<Vertex2>) {
+    let min = self.min();
+    let max = self.max();
+
+    builder.add_quad(&[
+      Vertex2::new([min.x, min.y], [0.0, 0.0], Color32::WHITE),
+      Vertex2::new([max.x, min.y], [1.0, 0.0], Color32::WHITE),
+      Vertex2::new([max.x, max.y], [1.0, 1.0], Color32::WHITE),
+      Vertex2::new([min.x, max.y], [0.0, 1.0], Color32::WHITE),
+    ]);
+  }
+}
+
+impl MeshBrush<Vertex3> for crate::maths::Cube {
+  fn build(&self, builder: &mut MeshBuilder<Vertex3>) {
+    let min = self.min();
+    let max = self.max();
+
+    builder.add_quad(&[
+      Vertex3::new([min.x, min.y, min.z], [0.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, min.y, min.z], [1.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, max.y, min.z], [1.0, 1.0], Color32::WHITE),
+      Vertex3::new([min.x, max.y, min.z], [0.0, 1.0], Color32::WHITE),
+    ]);
+
+    builder.add_quad(&[
+      Vertex3::new([min.x, min.y, max.z], [0.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, min.y, max.z], [1.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, max.y, max.z], [1.0, 1.0], Color32::WHITE),
+      Vertex3::new([min.x, max.y, max.z], [0.0, 1.0], Color32::WHITE),
+    ]);
+
+    builder.add_quad(&[
+      Vertex3::new([min.x, min.y, min.z], [0.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, min.y, min.z], [1.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, min.y, max.z], [1.0, 1.0], Color32::WHITE),
+      Vertex3::new([min.x, min.y, max.z], [0.0, 1.0], Color32::WHITE),
+    ]);
+
+    builder.add_quad(&[
+      Vertex3::new([min.x, max.y, min.z], [0.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, max.y, min.z], [1.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, max.y, max.z], [1.0, 1.0], Color32::WHITE),
+      Vertex3::new([min.x, max.y, max.z], [0.0, 1.0], Color32::WHITE),
+    ]);
+
+    builder.add_quad(&[
+      Vertex3::new([min.x, min.y, min.z], [0.0, 0.0], Color32::WHITE),
+      Vertex3::new([min.x, max.y, min.z], [1.0, 0.0], Color32::WHITE),
+      Vertex3::new([min.x, max.y, max.z], [1.0, 1.0], Color32::WHITE),
+      Vertex3::new([min.x, min.y, max.z], [0.0, 1.0], Color32::WHITE),
+    ]);
+
+    builder.add_quad(&[
+      Vertex3::new([max.x, min.y, min.z], [0.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, max.y, min.z], [1.0, 0.0], Color32::WHITE),
+      Vertex3::new([max.x, max.y, max.z], [1.0, 1.0], Color32::WHITE),
+      Vertex3::new([max.x, min.y, max.z], [0.0, 1.0], Color32::WHITE),
+    ]);
   }
 }
 

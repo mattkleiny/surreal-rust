@@ -32,13 +32,13 @@ pub struct WindReceiver {}
 
 impl SceneComponent for WindReceiver {
   fn on_disable(&mut self, context: SceneContext) {
-    let manager = context.services.get_service_or_default::<WindManager>();
+    let manager = context.services.resolve_or_default::<WindManager>();
 
     manager.vorticles.remove(&context.node.id());
   }
 
   fn on_update(&mut self, context: SceneContext, _delta_time: f32) {
-    let manager = context.services.get_service_or_default::<WindManager>();
+    let manager = context.services.resolve_or_default::<WindManager>();
 
     manager.vorticles.insert(
       context.node.id(),

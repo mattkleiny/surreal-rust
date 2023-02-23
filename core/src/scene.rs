@@ -326,8 +326,8 @@ impl<'a> IntoIterator for &'a mut SceneComponentSet {
 }
 
 bitflags! {
-  /// Internal flags for a [`SceneNode`], indicating the current state of the node relative to
-  /// internal scene graph lifecycle events.
+  /// Internal flags for a [`SceneNode`], indicating the current state of the
+  /// node relative to internal scene graph lifecycle events.
   #[derive(Default)]
   struct NodeFlags: u8 {
     const NONE = 0b00000000;
