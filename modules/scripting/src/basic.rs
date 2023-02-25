@@ -227,7 +227,7 @@ fn tokenize(source: &str) -> Result<Vec<Token>, ParserError> {
 fn parse(tokens: &[Token]) -> Result<Expression, ParserError> {
   let mut tokens = tokens.iter().peekable();
 
-  while let Some(token) = tokens.next() {
+  while let Some(_token) = tokens.next() {
     todo!()
   }
 

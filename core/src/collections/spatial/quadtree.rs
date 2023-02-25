@@ -49,7 +49,7 @@ trait QuadTreeVisitor<T> {
 }
 
 impl<T> QuadTreeNode<T> {
-  fn accept(&self, visitor: &mut impl QuadTreeVisitor<T>) {
+  fn _accept(&self, visitor: &mut impl QuadTreeVisitor<T>) {
     visitor.visit_node(self);
   }
 }
@@ -86,25 +86,25 @@ impl<T> QuadTree<T> {
 
   /// Calculates the total bounds of the [`QuadTree`] by visiting all it's nodes
   pub fn calculate_bounds(&self) -> Rectangle {
-    struct BoundsVisitor {
-      total_bounds: Rectangle,
-    }
-
-    impl<T> QuadTreeVisitor<T> for BoundsVisitor {
-      fn visit_leaf(&mut self, _leaf: &T, bounds: &Rectangle) {
-        self.total_bounds.extend(bounds);
+    fn calculate_recursive<T>(node: &QuadTreeNode<T>, rect: &mut Rectangle, depth: usize) {
+      match node {
+        QuadTreeNode::Leaf(Some(cell)) => rect.extend(&cell.bounds),
+        QuadTreeNode::Leaf(None) => {} // no-op; empty leaf
+        QuadTreeNode::Branch(branch) => {
+          for child in branch.iter() {
+            calculate_recursive(child, rect, depth + 1);
+          }
+        }
       }
     }
 
-    let mut visitor = BoundsVisitor {
-      total_bounds: Rectangle::default(),
-    };
+    let mut bounds = Rectangle::default();
 
     if let Some(root) = &self.root {
-      root.accept(&mut visitor);
+      calculate_recursive(root, &mut bounds, 0);
     }
 
-    visitor.total_bounds
+    bounds
   }
 
   /// Determines if the [`QuadTree`] is empty.
@@ -113,6 +113,9 @@ impl<T> QuadTree<T> {
   }
 
   /// Determines if the [`QuadTree`] contains the given value.
+  ///
+  /// This involves iterating over all the nodes in the [`QuadTree`], so it is
+  /// not recommended for use in performance-critical code.
   pub fn contains(&self, value: T) -> bool
   where
     T: PartialEq,
@@ -121,34 +124,25 @@ impl<T> QuadTree<T> {
   }
 
   /// Inserts a value into the [`QuadTree`].
+  ///
+  /// If the [`QuadTree`] is empty, the value will be inserted into the root
+  /// node. Otherwise, the value will be inserted into the appropriate quadrant
+  /// of the [`QuadTree`].
+  ///
+  /// If the value already exists in the [`QuadTree`], it will be replaced.
+  /// This is determined by comparing the value's bounds to the bounds of
+  /// existing values in the [`QuadTree`].
   pub fn insert(&mut self, value: T, bounds: Rectangle)
   where
     T: Clone,
   {
-    // determines which sub-quadrant the given bounds are in
-    fn get_quadrant(bounds: Rectangle) -> usize {
-      let half_width = bounds.width() / 2.0;
-      let half_height = bounds.height() / 2.0;
-
-      let x = bounds.x();
-      let y = bounds.y();
-
-      let x_mid = x + half_width;
-      let y_mid = y + half_height;
-
-      let x_quadrant = if x_mid < bounds.x() { 0 } else { 1 };
-      let y_quadrant = if y_mid < bounds.y() { 0 } else { 2 };
-
-      x_quadrant | y_quadrant
-    }
-
     // insert a new value into the quadtree, recursively splitting any existing
     // branches into quadrants if necessary
     fn insert_recursive<T: Clone>(
       node: &mut QuadTreeNode<T>,
       value: T,
       bounds: Rectangle,
-      level: usize,
+      depth: usize,
     ) -> bool {
       match node {
         QuadTreeNode::Leaf(Some(cell)) => {
@@ -167,13 +161,13 @@ impl<T> QuadTree<T> {
           let existing_quadrant = get_quadrant(existing_bounds);
           let existing_node = &mut branch[existing_quadrant];
           let new_value = cell.value.clone();
-          inserted |= insert_recursive(existing_node, new_value, existing_bounds, level + 1);
+          inserted |= insert_recursive(existing_node, new_value, existing_bounds, depth + 1);
 
           // insert the new value into the appropriate quadrant
           let new_quadrant = get_quadrant(bounds);
           let new_node = &mut branch[new_quadrant];
           let new_value = cell.value.clone();
-          inserted |= insert_recursive(new_node, new_value, bounds, level + 1);
+          inserted |= insert_recursive(new_node, new_value, bounds, depth + 1);
 
           *node = QuadTreeNode::Branch(branch);
 
@@ -191,7 +185,7 @@ impl<T> QuadTree<T> {
           let quadrant = get_quadrant(bounds);
           let node = &mut branch[quadrant];
 
-          insert_recursive(node, value, bounds, level + 1)
+          insert_recursive(node, value, bounds, depth + 1)
         }
       }
     }
@@ -204,7 +198,7 @@ impl<T> QuadTree<T> {
   }
 
   /// Removes a value from the [`QuadTree`].
-  pub fn remove(&mut self, _value: T, _bounds: Rectangle) {
+  pub fn remove(&mut self, _value: T) {
     todo!()
   }
 
@@ -213,21 +207,69 @@ impl<T> QuadTree<T> {
     self.root = None;
   }
 
-  /// Moves a value in the [`QuadTree`] to a new position.
-  pub fn update_bounds(&mut self, _value: T, _old_bounds: Rectangle, _new_bounds: Rectangle) {
-    todo!()
-  }
-
-  /// Finds all values in the [`QuadTree`] that intersect the given bounds.
+  /// Finds all values in the [`QuadTree`] that intersect the bounds.
   pub fn find_in_bounds(&self, bounds: Rectangle) -> Vec<&T> {
-    fn depth_first_search<T>(_node: &QuadTreeNode<T>, _bounds: Rectangle, _results: &mut Vec<&T>) {
-      todo!()
+    fn find_recursive<'a, T>(
+      node: &'a QuadTreeNode<T>,
+      bounds: Rectangle,
+      results: &mut Vec<&'a T>,
+      depth: usize,
+    ) {
+      // TODO: optimize this by only recursing into quadrants that intersect the
+      // bounds
+      match node {
+        QuadTreeNode::Leaf(Some(cell)) => {
+          if bounds.intersects(&cell.bounds) {
+            results.push(&cell.value);
+          }
+        }
+        QuadTreeNode::Leaf(None) => {} // no-op
+        QuadTreeNode::Branch(branch) => {
+          for node in branch.iter() {
+            find_recursive(node, bounds, results, depth + 1);
+          }
+        }
+      }
     }
 
     let mut results = Vec::new();
 
     if let Some(root) = &self.root {
-      depth_first_search(root, bounds, &mut results);
+      find_recursive(root, bounds, &mut results, 0);
+    }
+
+    results
+  }
+
+  /// Finds all mutable values in the [`QuadTree`] that intersect the bounds.
+  pub fn find_in_bounds_mut(&mut self, bounds: Rectangle) -> Vec<&mut T> {
+    fn find_recursive<'a, T>(
+      node: &'a mut QuadTreeNode<T>,
+      bounds: Rectangle,
+      results: &mut Vec<&'a mut T>,
+      depth: usize,
+    ) {
+      // TODO: optimize this by only recursing into quadrants that intersect the
+      // bounds
+      match node {
+        QuadTreeNode::Leaf(Some(cell)) => {
+          if bounds.intersects(&cell.bounds) {
+            results.push(&mut cell.value);
+          }
+        }
+        QuadTreeNode::Leaf(None) => {} // no-op
+        QuadTreeNode::Branch(branch) => {
+          for node in branch.iter_mut() {
+            find_recursive(node, bounds, results, depth + 1);
+          }
+        }
+      }
+    }
+
+    let mut results = Vec::new();
+
+    if let Some(root) = &mut self.root {
+      find_recursive(root, bounds, &mut results, 0);
     }
 
     results
@@ -283,6 +325,23 @@ impl<'a, T> IntoIterator for &'a QuadTree<T> {
   }
 }
 
+/// Determines which sub-quadrant the given bounds are in
+fn get_quadrant(bounds: Rectangle) -> usize {
+  let half_width = bounds.width() / 2.0;
+  let half_height = bounds.height() / 2.0;
+
+  let x = bounds.x();
+  let y = bounds.y();
+
+  let x_mid = x + half_width;
+  let y_mid = y + half_height;
+
+  let x_quadrant = if x_mid < bounds.x() { 0 } else { 1 };
+  let y_quadrant = if y_mid < bounds.y() { 0 } else { 2 };
+
+  x_quadrant | y_quadrant
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -292,5 +351,29 @@ mod tests {
     let tree = QuadTree::<()>::default();
 
     assert!(tree.is_empty());
+  }
+
+  #[test]
+  fn quadtree_find_in_bounds() {
+    let mut tree = QuadTree::default();
+    let bounds = Rectangle::from_corner_points(0., 0., 1., 1.);
+
+    tree.insert(1, bounds);
+
+    let results = tree.find_in_bounds(bounds);
+
+    assert_eq!(results.len(), 1);
+  }
+
+  #[test]
+  fn quadtree_find_in_bounds_mut() {
+    let mut tree = QuadTree::default();
+    let bounds = Rectangle::from_corner_points(0., 0., 1., 1.);
+
+    tree.insert(1, bounds);
+
+    let results = tree.find_in_bounds_mut(bounds);
+
+    assert_eq!(results.len(), 1);
   }
 }
