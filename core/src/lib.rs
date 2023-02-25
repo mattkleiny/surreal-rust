@@ -25,6 +25,7 @@ pub mod graphs;
 pub mod input;
 pub mod io;
 pub mod maths;
+pub mod physics;
 pub mod scene;
 pub mod ui;
 pub mod utilities;

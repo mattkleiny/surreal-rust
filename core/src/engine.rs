@@ -18,6 +18,7 @@ use crate::{
   graphics::{GraphicsServer, Image, ImageFormat, Renderer},
   input::InputServer,
   maths::{uvec2, vec2},
+  physics::PhysicsServer,
   scene::SceneGraph,
   utilities::{DeltaClock, FrameCounter, IntervalTimer, TimeSpan},
 };
@@ -195,7 +196,7 @@ impl EngineBuilder {
   }
 
   /// Builds the resultant [`Engine`].
-  pub fn build(self) -> Engine {
+  pub fn build(self) -> crate::Result<Engine> {
     Engine::new(self.config)
   }
 }
@@ -207,6 +208,7 @@ pub struct Engine {
   // core systems
   pub audio: AudioServer,
   pub graphics: GraphicsServer,
+  pub physics: PhysicsServer,
   pub input: InputServer,
 
   // window management
@@ -225,7 +227,7 @@ pub struct Engine {
 
 impl Engine {
   /// Creates a new engine, bootstrapping all core systems and display.
-  pub fn new(config: EngineConfig) -> Self {
+  pub fn new(config: EngineConfig) -> crate::Result<Self> {
     // prepare the main window and event loop
     let event_loop = EventLoop::new();
 
@@ -242,18 +244,18 @@ impl Engine {
           .and_then(|image| image.to_icon())
           .expect("Failed to convert icon from raw image")
       }))
-      .build(&event_loop)
-      .expect("Failed to build main window");
+      .build(&event_loop)?;
 
     let audio = AudioServer::rodio();
-    let graphics = GraphicsServer::opengl(&window, config.vsync_enabled, config.samples)
-      .expect("Failed to build graphics");
+    let graphics = GraphicsServer::opengl(&window, config.vsync_enabled, config.samples)?;
+    let physics = PhysicsServer::default();
     let input = InputServer::new(window.scale_factor() as f32);
 
-    Self {
+    Ok(Self {
       // servers
       audio,
       graphics,
+      physics,
       input,
 
       // window management
@@ -268,7 +270,7 @@ impl Engine {
       frame_timer: IntervalTimer::new(TimeSpan::from_seconds(1.)),
       frame_counter: FrameCounter::new(32),
       is_quitting: false,
-    }
+    })
   }
 
   /// Starts the engine with the given configuration.
@@ -284,7 +286,7 @@ impl Engine {
     // set-up core engine
     log::trace!("Starting engine");
 
-    let engine = Engine::new(configuration);
+    let engine = Engine::new(configuration)?;
     let graphics = &engine.graphics;
 
     // set-up asset manager
