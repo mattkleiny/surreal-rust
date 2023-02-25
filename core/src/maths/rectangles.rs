@@ -23,6 +23,16 @@ impl Rectangle {
     Self::new(vec2(left, top), vec2(right, bottom))
   }
 
+  /// The X position of the rectangle's lower-left corner.
+  pub fn x(&self) -> f32 {
+    self.min.x
+  }
+
+  /// The Y position of the rectangle's lower-left corner.
+  pub fn y(&self) -> f32 {
+    self.min.y
+  }
+
   /// The minimum corner of the rectangle.
   pub fn min(&self) -> Vec2 {
     self.min
@@ -107,5 +117,50 @@ impl Rectangle {
   #[allow(clippy::nonminimal_bool)]
   pub fn contains_point(&self, point: Vec2) -> bool {
     point.x >= self.min.x && point.y >= self.min.y && point.y <= self.max.y && point.y <= self.max.y
+  }
+
+  /// Extends this rectangle to include the given other rectangle.
+  pub fn extend(&mut self, other: &Self) {
+    self.min.x = self.min.x.min(other.min.x);
+    self.min.y = self.min.y.min(other.min.y);
+    self.max.x = self.max.x.max(other.max.x);
+    self.max.y = self.max.y.max(other.max.y);
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn rectangle_should_test_for_points() {
+    let rect = Rectangle::from_corner_points(0., 0., 1., 1.);
+
+    assert!(rect.contains_point(vec2(0.5, 0.5)));
+    assert!(rect.contains_point(vec2(0., 0.)));
+    assert!(rect.contains_point(vec2(1., 1.)));
+    assert!(!rect.contains_point(vec2(1.1, 1.1)));
+    assert!(!rect.contains_point(vec2(-0.1, -0.1)));
+  }
+
+  #[test]
+  fn rectangle_should_clamp_to_given_bounds() {
+    let rect = Rectangle::from_corner_points(-1., -1., 1., 1.).clamp(0., 0., 1., 1.);
+
+    assert_eq!(rect, Rectangle::from_corner_points(0., 0., 1., 1.));
+  }
+
+  #[test]
+  fn rectangle_should_extend_to_encapsulate_other_rectangle() {
+    let mut rect = Rectangle::default();
+
+    rect.extend(&Rectangle::from_corner_points(0., 0., 1., 1.));
+    assert_eq!(rect, Rectangle::from_corner_points(0., 0., 1., 1.));
+
+    rect.extend(&Rectangle::from_corner_points(2., 2., 3., 3.));
+    assert_eq!(rect, Rectangle::from_corner_points(0., 0., 3., 3.));
+
+    rect.extend(&Rectangle::from_corner_points(-1., -1., 0., 0.));
+    assert_eq!(rect, Rectangle::from_corner_points(-1., -1., 3., 3.));
   }
 }
