@@ -1,6 +1,6 @@
 //! A physics engine for Surreal.
 
-use crate::collections::ResourceStorage;
+use crate::{collections::ResourceStorage, maths::DVec2};
 
 crate::impl_server!(PhysicsServer, PhysicsBackend);
 
@@ -23,7 +23,11 @@ impl PhysicsServer {
 /// world. It is responsible for updating the position and orientation of
 /// physical objects, and for detecting collisions between objects.
 pub trait PhysicsBackend {
-  fn step(&mut self, delta_time: f32);
+  /// Advances the physics simulation by the given amount of time.
+  fn step(&self, delta_time: f32);
+
+  /// Resets the entire physics simulation.
+  fn clear(&self);
 }
 
 /// The default, home-baked [`PhysicsBackend`].
@@ -32,16 +36,36 @@ pub trait PhysicsBackend {
 /// algorithm to simulate the physics of the game world.
 #[derive(Default)]
 struct DefaultPhysicsBackend {
-  _colliders: ResourceStorage<ColliderId, Collider>,
-  _bodies: ResourceStorage<BodyId, Body>,
+  colliders: ResourceStorage<ColliderId, Collider>,
+  rigidbodies: ResourceStorage<BodyId, RigidBody>,
 }
 
-struct Collider {}
+/// A collider in the physics simulation.
+enum Collider {
+  Circle { radius: f64 },
+  Rectangle { half_extents: DVec2 },
+}
 
-struct Body {}
+/// A rigid body in the physics simulation.
+enum RigidBody {
+  Static,
+  Kinematic {
+    velocity: DVec2,
+    angular_velocity: f64,
+  },
+  Dynamic {
+    velocity: DVec2,
+    angular_velocity: f64,
+  },
+}
 
 impl PhysicsBackend for DefaultPhysicsBackend {
-  fn step(&mut self, delta_time: f32) {
+  fn step(&self, delta_time: f32) {
     println!("Physics step: {}", delta_time);
+  }
+
+  fn clear(&self) {
+    self.colliders.clear();
+    self.rigidbodies.clear();
   }
 }
