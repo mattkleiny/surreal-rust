@@ -306,11 +306,17 @@ impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
   }
 }
 
-/// Implements uniform value transformation for common shader uniforms.
+/// Implements uniform value transformation for common types.
 macro_rules! impl_uniform {
   ($type:ty as $value:ident) => {
     impl From<$type> for ShaderUniform {
       fn from(value: $type) -> Self {
+        ShaderUniform::$value(value.into())
+      }
+    }
+
+    impl From<&$type> for ShaderUniform {
+      fn from(value: &$type) -> Self {
         ShaderUniform::$value(value.clone().into())
       }
     }
@@ -328,12 +334,12 @@ impl_uniform!(Vec4 as Vec4);
 impl_uniform!(DVec2 as DVec2);
 impl_uniform!(DVec3 as DVec3);
 impl_uniform!(DVec4 as DVec4);
-impl_uniform!(&Mat2 as Mat2);
-impl_uniform!(&Mat3 as Mat3);
-impl_uniform!(&Mat4 as Mat4);
-impl_uniform!(&DMat2 as DMat2);
-impl_uniform!(&DMat3 as DMat3);
-impl_uniform!(&DMat4 as DMat4);
+impl_uniform!(Mat2 as Mat2);
+impl_uniform!(Mat3 as Mat3);
+impl_uniform!(Mat4 as Mat4);
+impl_uniform!(DMat2 as DMat2);
+impl_uniform!(DMat3 as DMat3);
+impl_uniform!(DMat4 as DMat4);
 impl_uniform!(Quat as Quat);
 impl_uniform!(DQuat as DQuat);
 impl_uniform!(Color as Color);
