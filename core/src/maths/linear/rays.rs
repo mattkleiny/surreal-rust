@@ -67,9 +67,9 @@ macro_rules! impl_ray {
   };
 }
 
-impl_ray(Ray2, Vec2, f32, ray2);
-impl_ray(DRay2, DVec2, f64, dray2);
-impl_ray(Ray3, Vec3, f32, ray3);
-impl_ray(DRay3, DVec3, f64, dray3);
+impl_ray!(Ray2, Vec2, f32, ray2);
+impl_ray!(DRay2, DVec2, f64, dray2);
+impl_ray!(Ray3, Vec3, f32, ray3);
+impl_ray!(DRay3, DVec3, f64, dray3);
 
 // TODO: implement tests for these guys

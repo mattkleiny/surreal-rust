@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 /// A trait that represents a parser capable of parsing a string into an expression.
 pub trait Parser {
   type Error;
