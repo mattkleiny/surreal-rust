@@ -1,41 +1,75 @@
 use super::*;
 
-/// Shorthand to construct a [`Ray2`]
-#[inline(always)]
-pub const fn ray2(origin: Vec2, direction: Vec2) -> Ray2 {
-  Ray2::new(origin, direction)
+macro_rules! impl_ray {
+  ($type:ty, $vec:ty, $scalar:ty, $helper:ident) => {
+    /// Shorthand to construct a [`$type`]
+    #[inline(always)]
+    pub const fn helper(origin: $vec, direction: $vec) -> $type {
+      $type::new(origin, direction)
+    }
+
+    /// Represents a ray.
+    #[derive(Copy, Clone, Debug, PartialEq)]
+    pub struct $type {
+      pub origin: $vec,
+      pub direction: $vec,
+    }
+
+    impl $type {
+      /// Creates a new ray with the given origin and direction
+      #[inline(always)]
+      pub const fn new(origin: $vec, direction: $vec) -> Self {
+        Self { origin, direction }
+      }
+
+      /// Calculates the reflection of the ray
+      #[inline(always)]
+      pub fn reflect(&self, normal: $vec) -> Self {
+        Self::new(self.origin, self.direction.reflect(normal))
+      }
+
+      /// Calculates the refraction of the ray
+      #[inline(always)]
+      pub fn refract(&self, normal: $vec, eta: $scalar) -> Self {
+        Self::new(self.origin, self.direction.refract(normal, eta))
+      }
+
+      /// Calculate the point on the ray at a given distance
+      #[inline(always)]
+      pub fn point_at(&self, distance: $vec) -> $vec {
+        self.origin + self.direction * distance
+      }
+
+      /// Calculate the distance from the ray origin to the point on the ray at a given distance
+      #[inline(always)]
+      pub fn distance_at(&self, distance: $vec) -> $scalar {
+        self.direction.magnitude() * distance
+      }
+
+      /// Calculate the distance from the ray origin to the given point
+      #[inline(always)]
+      pub fn distance_to(&self, point: $vec) -> $scalar {
+        (point - self.origin).magnitude()
+      }
+
+      /// Calculate the distance from the ray origin to the given point along the ray
+      #[inline(always)]
+      pub fn distance_along(&self, point: $vec) -> $scalar {
+        (point - self.origin).dot(self.direction) / self.direction.magnitude()
+      }
+
+      /// Calculate the point on the ray at the given distance along the ray
+      #[inline(always)]
+      pub fn point_along(&self, distance: $vec) -> $vec {
+        self.origin + self.direction * (distance / self.direction.magnitude())
+      }
+    }
+  };
 }
 
-/// Shorthand to construct a [`Ray3`]
-#[inline(always)]
-pub const fn ray3(origin: Vec3, direction: Vec3) -> Ray3 {
-  Ray3::new(origin, direction)
-}
+impl_ray(Ray2, Vec2, f32, ray2);
+impl_ray(DRay2, DVec2, f64, dray2);
+impl_ray(Ray3, Vec3, f32, ray3);
+impl_ray(DRay3, DVec3, f64, dray3);
 
-/// Represents a ray into 2-space.
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Ray2 {
-  pub origin: Vec2,
-  pub direction: Vec2,
-}
-
-impl Ray2 {
-  #[inline(always)]
-  pub const fn new(origin: Vec2, direction: Vec2) -> Self {
-    Self { origin, direction }
-  }
-}
-
-/// Represents a ray into 3-space.
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Ray3 {
-  pub origin: Vec3,
-  pub direction: Vec3,
-}
-
-impl Ray3 {
-  #[inline(always)]
-  pub const fn new(origin: Vec3, direction: Vec3) -> Self {
-    Self { origin, direction }
-  }
-}
+// TODO: implement tests for these guys

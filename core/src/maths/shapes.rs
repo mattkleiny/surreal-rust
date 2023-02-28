@@ -6,14 +6,14 @@ use super::{vec3, Vec3};
 #[derive(Clone, Debug)]
 pub struct Sphere {
   pub radius: f32,
-  pub offset: Vec3,
+  pub center: Vec3,
 }
 
 impl Default for Sphere {
   fn default() -> Self {
     Self {
       radius: 1.0,
-      offset: Vec3::ZERO,
+      center: Vec3::ZERO,
     }
   }
 }
@@ -22,14 +22,14 @@ impl Default for Sphere {
 #[derive(Clone, Debug)]
 pub struct Cube {
   pub size: Vec3,
-  pub offset: Vec3,
+  pub center: Vec3,
 }
 
 impl Default for Cube {
   fn default() -> Self {
     Self {
       size: vec3(1.0, 1.0, 1.0),
-      offset: Vec3::ZERO,
+      center: Vec3::ZERO,
     }
   }
 }
@@ -38,13 +38,13 @@ impl Cube {
   /// The minimum point of the cube.
   #[inline]
   pub fn min(&self) -> Vec3 {
-    self.offset - self.size / 2.0
+    self.center - self.size / 2.0
   }
 
   /// The maximum point of the cube.
   #[inline]
   pub fn max(&self) -> Vec3 {
-    self.offset + self.size / 2.0
+    self.center + self.size / 2.0
   }
 }
 
@@ -53,7 +53,7 @@ impl Cube {
 pub struct Cylinder {
   pub radius: f32,
   pub height: f32,
-  pub offset: Vec3,
+  pub center: Vec3,
 }
 
 impl Default for Cylinder {
@@ -61,7 +61,7 @@ impl Default for Cylinder {
     Self {
       radius: 1.0,
       height: 1.0,
-      offset: Vec3::ZERO,
+      center: Vec3::ZERO,
     }
   }
 }
@@ -70,7 +70,7 @@ impl Default for Cylinder {
 #[derive(Clone, Debug)]
 pub struct Trapezoid {
   pub size: Vec3,
-  pub offset: Vec3,
+  pub center: Vec3,
 }
 
 impl Default for Trapezoid {
