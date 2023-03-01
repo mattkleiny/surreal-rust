@@ -17,7 +17,7 @@ pub trait Parseable {
   fn parse(source: &str) -> Result<Self, Self::Error>;
 }
 
-/// Blaknet implementation for any type that implements the [`Parseable`] trait.
+/// Blanket implementation for any type that implements the [`Parseable`] trait.
 impl<P: Parseable> FromStr for P {
   type Err = P::Error;
 

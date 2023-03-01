@@ -10,14 +10,13 @@ impl<A: Object> Service for A {}
 
 /// Allows accessing services by type.
 pub trait ServiceProvider {
-  /// Returns a reference to the [`Service`] of the given type.
+  /// Returns a reference to the given [`Service`].
   fn resolve<T: Service>(&self) -> Option<&T>;
 
-  /// Returns a mutable reference to the [`Service`] of the given type.
+  /// Returns a mutable reference to the given [`Service`].
   fn resolve_mut<T: Service>(&mut self) -> Option<&mut T>;
 
-  /// Returns a reference to the [`Service`] of the given type, or creates it
-  /// anew.
+  /// Returns a reference to the given [`Service`], or creates it anew.
   fn resolve_or_default<T: Service + Default>(&mut self) -> &mut T;
 }
 

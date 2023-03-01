@@ -119,8 +119,8 @@ impl AABB {
     let mut new_min = Vec3::splat(f32::MAX);
     let mut new_max = Vec3::splat(f32::MIN);
 
-    for corner in &corners {
-      let transformed = transform.transform_point3(*corner);
+    for corner in corners {
+      let transformed = transform.transform_point3(corner);
 
       new_min = new_min.min(transformed);
       new_max = new_max.max(transformed);
