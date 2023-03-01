@@ -4,8 +4,9 @@
 //! general purpose code for use in other systems.
 
 #![feature(anonymous_lifetime_in_impl_trait)]
-#![feature(type_alias_impl_trait)]
 #![feature(async_fn_in_trait)]
+#![feature(trivial_bounds)]
+#![feature(type_alias_impl_trait)]
 #![allow(incomplete_features)]
 
 #[macro_use]

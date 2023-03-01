@@ -45,7 +45,7 @@ impl AABB {
   ///
   /// This method will panic if the index is out of bounds.
   pub fn corner(&self, index: usize) -> Vec3 {
-    debug_assert!(index < 8)
+    debug_assert!(index < 8);
 
     let min = self.min();
     let max = self.max();

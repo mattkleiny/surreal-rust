@@ -77,7 +77,7 @@ impl Default for Trapezoid {
   fn default() -> Self {
     Self {
       size: vec3(1.0, 1.0, 1.0),
-      offset: Vec3::ZERO,
+      center: Vec3::ZERO,
     }
   }
 }

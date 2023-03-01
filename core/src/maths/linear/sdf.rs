@@ -23,25 +23,17 @@ impl SDF for Sphere {
 impl SDF for Cube {
   fn distance_to(&self, point: Vec3) -> f32 {
     let half_size = self.size / 2.0;
-    let d = (point - self.center).abs() - half_size;
+    let delta = (point - self.center).abs() - half_size;
 
-    d.max(Vec3::ZERO).length() + d.min(Vec3::ZERO).max_component()
+    delta.max(Vec3::ZERO).length() + delta.min(Vec3::ZERO).max_element()
   }
 }
 
 impl SDF for Cylinder {
   fn distance_to(&self, point: Vec3) -> f32 {
-    let d = (point - self.center).abs() - Vec3::new(self.radius, self.height / 2.0, self.radius);
+    let delta = (point - self.center).abs() - Vec3::new(self.radius, self.height / 2.0, self.radius);
 
-    d.max(Vec3::ZERO).length() + d.min(Vec3::ZERO).max_component()
-  }
-}
-
-impl SDF for Cone {
-  fn distance_to(&self, point: Vec3) -> f32 {
-    let d = (point - self.center).abs() - Vec3::new(self.radius, self.height / 2.0, self.radius);
-
-    d.max(Vec3::ZERO).length() + d.min(Vec3::ZERO).max_component()
+    delta.max(Vec3::ZERO).length() + delta.min(Vec3::ZERO).max_element()
   }
 }
 

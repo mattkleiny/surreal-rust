@@ -88,8 +88,8 @@ impl<T> QuadTree<T> {
   pub fn calculate_bounds(&self) -> Rectangle {
     fn calculate_recursive<T>(node: &QuadTreeNode<T>, rect: &mut Rectangle, depth: usize) {
       match node {
-        QuadTreeNode::Leaf(Some(cell)) => rect.extend(&cell.bounds),
         QuadTreeNode::Leaf(None) => {} // no-op; empty leaf
+        QuadTreeNode::Leaf(Some(cell)) => rect.extend(&cell.bounds),
         QuadTreeNode::Branch(branch) => {
           for child in branch.iter() {
             calculate_recursive(child, rect, depth + 1);
@@ -127,17 +127,19 @@ impl<T> QuadTree<T> {
   ///
   /// If the [`QuadTree`] is empty, the value will be inserted into the root
   /// node. Otherwise, the value will be inserted into the appropriate quadrant
-  /// of the [`QuadTree`].
+  /// of the [`QuadTree`], sub-dividing the tree if necessary into smaller
+  /// quadrants.
   ///
   /// If the value already exists in the [`QuadTree`], it will be replaced.
   /// This is determined by comparing the value's bounds to the bounds of
   /// existing values in the [`QuadTree`].
+  ///
+  /// If you instead wish to move an item within the tree, use the [`update`]
+  /// method instead.
   pub fn insert(&mut self, value: T, bounds: Rectangle)
   where
     T: Clone,
   {
-    // insert a new value into the quadtree, recursively splitting any existing
-    // branches into quadrants if necessary
     fn insert_recursive<T: Clone>(
       node: &mut QuadTreeNode<T>,
       value: T,
@@ -154,12 +156,13 @@ impl<T> QuadTree<T> {
             QuadTreeNode::Leaf(None),
             QuadTreeNode::Leaf(None),
           ]);
-          let mut inserted = false;
 
           let quadrant = get_quadrant(&bounds);
           let sub_branch = &mut branches[quadrant];
 
-          *sub_branch = QuadTreeNode::Leaf(Some(value));
+          insert_recursive(sub_branch, cell.value.clone(), cell.bounds, depth + 1);
+          insert_recursive(sub_branch, value, bounds, depth + 1);
+
           *node = QuadTreeNode::Branch(branches);
 
           true
@@ -350,10 +353,11 @@ mod tests {
     let bounds = Rectangle::from_corner_points(0., 0., 1., 1.);
 
     tree.insert(1, bounds);
+    tree.insert(2, bounds);
 
     let results = tree.find_in_bounds(bounds);
 
-    assert_eq!(results.len(), 1);
+    assert_eq!(results.len(), 2);
   }
 
   #[test]
