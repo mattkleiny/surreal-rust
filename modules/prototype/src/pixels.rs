@@ -32,6 +32,21 @@ impl<P: Pixel + Texel> PixelCanvas<P> {
     }
   }
 
+  #[inline]
+  pub fn width(&self) -> usize {
+    self.pixels.width()
+  }
+
+  #[inline]
+  pub fn height(&self) -> usize {
+    self.pixels.height()
+  }
+
+  #[inline]
+  pub fn set_pixel(&mut self, x: i32, y: i32, pixel: P) {
+    self.pixels.set(x, y, pixel);
+  }
+
   /// Draws the canvas to the screen.
   pub fn draw(&mut self) {
     let (width, height) = (self.pixels.width(), self.pixels.height());
@@ -39,6 +54,7 @@ impl<P: Pixel + Texel> PixelCanvas<P> {
     self
       .texture
       .write_pixels(width, height, self.pixels.as_slice());
+
     self.material.draw_fullscreen_quad();
   }
 }

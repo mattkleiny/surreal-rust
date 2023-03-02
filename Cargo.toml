@@ -52,6 +52,10 @@ name = "fonts"
 required-features = ["prototype"]
 
 [[example]]
+name = "fractals"
+required-features = ["prototype"]
+
+[[example]]
 name = "hello-world"
 required-features = ["prototype"]
 
