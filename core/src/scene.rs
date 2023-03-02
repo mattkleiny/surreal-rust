@@ -14,22 +14,6 @@ use crate::{
 
 crate::impl_guid!(SceneNodeId);
 
-/// The ID of the layer that a [`SceneNode`] inhabits.
-pub type LayerId = u16;
-
-/// A set of one or more [`Tag`]s.
-pub type TagSet = FastHashSet<Tag>;
-
-/// A tag that can be applied to a [`SceneNode`].
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Tag(String);
-
-impl<'a> From<&'a str> for Tag {
-  fn from(value: &'a str) -> Self {
-    Self(value.to_string())
-  }
-}
-
 /// A notification for some event that occurred in the scene.
 #[non_exhaustive]
 pub enum SceneEvent<'a> {
@@ -326,8 +310,8 @@ impl<'a> IntoIterator for &'a mut SceneComponentSet {
 }
 
 bitflags! {
-  /// Internal flags for a [`SceneNode`], indicating the current state of the node relative to
-  /// internal scene graph lifecycle events.
+  /// Internal flags for a [`SceneNode`], indicating the current state of the
+  /// node relative to internal scene graph lifecycle events.
   #[derive(Default)]
   struct NodeFlags: u8 {
     const NONE = 0b00000000;
@@ -929,6 +913,22 @@ impl SceneNodeBuilder {
 impl From<SceneNodeBuilder> for SceneNode {
   fn from(value: SceneNodeBuilder) -> Self {
     value.build()
+  }
+}
+
+/// The ID of the layer that a [`SceneNode`] inhabits.
+pub type LayerId = u16;
+
+/// A set of one or more [`Tag`]s.
+pub type TagSet = FastHashSet<Tag>;
+
+/// A tag that can be applied to a [`SceneNode`].
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Tag(String);
+
+impl<'a> From<&'a str> for Tag {
+  fn from(value: &'a str) -> Self {
+    Self(value.to_string())
   }
 }
 

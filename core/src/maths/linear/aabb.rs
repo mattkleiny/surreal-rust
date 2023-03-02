@@ -41,6 +41,28 @@ impl AABB {
     self.position + Vec3::splat(self.size)
   }
 
+  /// Retrieves the nth corner of the AABB.
+  ///
+  /// This method will panic if the index is out of bounds.
+  pub fn corner(&self, index: usize) -> Vec3 {
+    debug_assert!(index < 8);
+
+    let min = self.min();
+    let max = self.max();
+
+    match index {
+      0 => Vec3::new(min.x, min.y, min.z),
+      1 => Vec3::new(min.x, min.y, max.z),
+      2 => Vec3::new(min.x, max.y, min.z),
+      3 => Vec3::new(min.x, max.y, max.z),
+      4 => Vec3::new(max.x, min.y, min.z),
+      5 => Vec3::new(max.x, min.y, max.z),
+      6 => Vec3::new(max.x, max.y, min.z),
+      7 => Vec3::new(max.x, max.y, max.z),
+      _ => panic!("Invalid corner index"),
+    }
+  }
+
   /// Determines if the AABB contains the given point.
   pub fn contains(&self, point: Vec3) -> bool {
     let min = self.min();
@@ -97,8 +119,8 @@ impl AABB {
     let mut new_min = Vec3::splat(f32::MAX);
     let mut new_max = Vec3::splat(f32::MIN);
 
-    for corner in &corners {
-      let transformed = transform.transform_point3(*corner);
+    for corner in corners {
+      let transformed = transform.transform_point3(corner);
 
       new_min = new_min.min(transformed);
       new_max = new_max.max(transformed);

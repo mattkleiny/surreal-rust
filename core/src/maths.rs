@@ -1,5 +1,6 @@
 //! Mathematical utilities.
 
+pub use angles::*;
 pub use curves::*;
 pub use interpolation::*;
 pub use linear::*;
@@ -12,6 +13,7 @@ pub use rectangles::*;
 pub use shapes::*;
 pub use tweens::*;
 
+mod angles;
 mod curves;
 mod interpolation;
 mod linear;
@@ -52,18 +54,6 @@ macro_rules! impl_guid {
       }
     }
   };
-}
-
-/// Converts the given value to radians from degrees.
-#[inline]
-pub fn to_radians(degrees: f32) -> f32 {
-  degrees * (std::f32::consts::PI / 180.0)
-}
-
-/// Converts the given value to degrees to radians.
-#[inline]
-pub fn to_degrees(radians: f32) -> f32 {
-  (radians * 180.0) / std::f32::consts::PI
 }
 
 /// Allows approximate equality checks between values.

@@ -11,6 +11,7 @@ pub struct AnyMap {
 
 impl AnyMap {
   /// Creates a new any-map.
+  #[inline]
   pub fn new() -> Self {
     Self {
       entries: FastHashMap::default(),
@@ -18,16 +19,19 @@ impl AnyMap {
   }
 
   /// Is the map empty?
+  #[inline]
   pub fn is_empty(&self) -> bool {
     self.entries.is_empty()
   }
 
   /// The number of entries in the map.
+  #[inline]
   pub fn len(&self) -> usize {
     self.entries.len()
   }
 
   /// Inserts a value into the map.
+  #[inline]
   pub fn insert<T: Any>(&mut self, value: T) {
     self.entries.insert(TypeId::of::<T>(), Box::new(value));
   }
@@ -60,11 +64,13 @@ impl AnyMap {
   }
 
   /// Removes a value from the map.
+  #[inline]
   pub fn remove<T: Any>(&mut self) {
     self.entries.remove(&TypeId::of::<T>());
   }
 
   /// Clears the map.
+  #[inline]
   pub fn clear(&mut self) {
     self.entries.clear();
   }

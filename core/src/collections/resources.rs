@@ -77,11 +77,25 @@ impl<K: Into<ArenaIndex> + From<ArenaIndex>, V> ResourceStorage<K, V> {
     entries.get(key.into()).map(body)
   }
 
+  /// Reads all entries in the storage.
+  pub fn read_all(&self, body: impl FnMut(&V)) {
+    let entries = self.entries.read().unwrap();
+
+    entries.iter().map(|(_, v)| v).for_each(body);
+  }
+
   /// Writes the [`V`] associated with the given key.
   pub fn write<R>(&self, key: K, body: impl FnMut(&mut V) -> R) -> Option<R> {
     let mut entries = self.entries.write().unwrap();
 
     entries.get_mut(key.into()).map(body)
+  }
+
+  /// Writes all entries in the storage.
+  pub fn write_all(&self, body: impl FnMut(&mut V)) {
+    let mut entries = self.entries.write().unwrap();
+
+    entries.iter_mut().map(|(_, v)| v).for_each(body);
   }
 
   /// Inserts a [`V`] into storage and returns it's [`K`].
@@ -96,6 +110,13 @@ impl<K: Into<ArenaIndex> + From<ArenaIndex>, V> ResourceStorage<K, V> {
     let mut entries = self.entries.write().unwrap();
 
     entries.remove(key.into())
+  }
+
+  /// Clears all entries from storage.
+  pub fn clear(&self) {
+    let mut entries = self.entries.write().unwrap();
+
+    entries.clear();
   }
 }
 

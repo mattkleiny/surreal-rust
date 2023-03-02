@@ -15,21 +15,25 @@ impl<K: Eq + Hash, V> MultiMap<K, V> {
   }
 
   /// Determines if the map is empty.
+  #[inline]
   pub fn is_empty(&self) -> bool {
     self.entries.is_empty()
   }
 
   /// Returns the length of the map, in keys.
+  #[inline]
   pub fn len(&self) -> usize {
     self.entries.keys().len()
   }
 
   /// Returns the total length of the map, in values.
+  #[inline]
   pub fn total_len(&self) -> usize {
     self.entries.values().map(|v| v.len()).sum()
   }
 
   /// Determines if the given key is contained in the map.
+  #[inline]
   pub fn contains_key(&self, key: &K) -> bool {
     self.entries.contains_key(key)
   }
@@ -47,16 +51,19 @@ impl<K: Eq + Hash, V> MultiMap<K, V> {
   }
 
   /// Gets all values for the given key.
+  #[inline]
   pub fn get(&self, key: &K) -> Option<&[V]> {
     self.entries.get(key).map(|vec| vec.as_slice())
   }
 
   /// Mutably gets all values for the given key.
+  #[inline]
   pub fn get_mut(&mut self, key: &K) -> Option<&mut [V]> {
     self.entries.get_mut(key).map(|vec| vec.as_mut_slice())
   }
 
   /// Inserts the given key-value pair into the map.
+  #[inline]
   pub fn insert(&mut self, key: K, value: V) {
     self.entries.entry(key).or_insert_with(Vec::new).push(value);
   }
@@ -76,11 +83,13 @@ impl<K: Eq + Hash, V> MultiMap<K, V> {
   }
 
   /// Removes all values for the given key from the map.
+  #[inline]
   pub fn remove_all(&mut self, key: &K) {
     self.entries.remove(key);
   }
 
   /// Clears the map.
+  #[inline]
   pub fn clear(&mut self) {
     self.entries.clear();
   }

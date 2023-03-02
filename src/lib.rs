@@ -44,6 +44,7 @@ pub mod prelude {
   pub use core::io::*;
   pub use core::macros::*;
   pub use core::maths::*;
+  pub use core::physics::*;
   pub use core::scene::*;
   pub use core::ui::*;
   pub use core::utilities::*;

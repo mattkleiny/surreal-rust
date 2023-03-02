@@ -13,8 +13,8 @@ use surreal::graphs::*;
 
 use super::*;
 
-const ZOOM_MIN: f32 = 0.5;
-const ZOOM_MAX: f32 = 5.0;
+const _ZOOM_MIN: f32 = 0.5;
+const _ZOOM_MAX: f32 = 5.0;
 
 /// An [`EditorPanel`] that renders an editor for a [`Graph`].
 pub struct GraphEditor<D> {

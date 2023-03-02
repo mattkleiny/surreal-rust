@@ -1,7 +1,7 @@
-use super::{Curve, Lerp};
 use crate::{
   fibers::yield_fiber,
   graphics::{Color, Color32},
+  maths::{Curve, Lerp},
   utilities::TimeSpan,
 };
 
@@ -47,9 +47,9 @@ pub trait Animatable: Lerp + Copy {
   /// Tweens the value with the given [`TweenAnimation`].
   async fn tween_to(&mut self, value: Self, tween: TweenAnimation) {
     let start = *self; // make a copy of the starting value
-    tween
-      .evaluate(move |normal| *self = Self::lerp(start, value, normal))
-      .await
+    let evaluate = tween.evaluate(move |normal| *self = Self::lerp(start, value, normal));
+
+    evaluate.await
   }
 }
 

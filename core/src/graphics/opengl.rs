@@ -591,6 +591,15 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         ShaderUniform::Vec4(value) => {
           gl::ProgramUniform4f(shader, location as i32, value.x, value.y, value.z, value.w);
         }
+        ShaderUniform::DVec2(value) => {
+          gl::ProgramUniform2d(shader, location as i32, value.x, value.y)
+        }
+        ShaderUniform::DVec3(value) => {
+          gl::ProgramUniform3d(shader, location as i32, value.x, value.y, value.z)
+        }
+        ShaderUniform::DVec4(value) => {
+          gl::ProgramUniform4d(shader, location as i32, value.x, value.y, value.z, value.w)
+        }
         ShaderUniform::Mat2(value) => {
           gl::ProgramUniformMatrix2fv(
             shader,
@@ -617,6 +626,39 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             gl::FALSE,
             &value.to_cols_array()[0],
           );
+        }
+        ShaderUniform::DMat2(value) => {
+          gl::ProgramUniformMatrix2dv(
+            shader,
+            location as i32,
+            1,
+            gl::FALSE,
+            &value.to_cols_array()[0],
+          );
+        }
+        ShaderUniform::DMat3(value) => {
+          gl::ProgramUniformMatrix3dv(
+            shader,
+            location as i32,
+            1,
+            gl::FALSE,
+            &value.to_cols_array()[0],
+          );
+        }
+        ShaderUniform::DMat4(value) => {
+          gl::ProgramUniformMatrix4dv(
+            shader,
+            location as i32,
+            1,
+            gl::FALSE,
+            &value.to_cols_array()[0],
+          );
+        }
+        ShaderUniform::Quat(value) => {
+          gl::ProgramUniform4f(shader, location as i32, value.x, value.y, value.z, value.w);
+        }
+        ShaderUniform::DQuat(value) => {
+          gl::ProgramUniform4d(shader, location as i32, value.x, value.y, value.z, value.w);
         }
         ShaderUniform::Color(color) => {
           gl::ProgramUniform4f(shader, location as i32, color.r, color.g, color.b, color.a);

@@ -10,15 +10,14 @@ impl<A: Object> Service for A {}
 
 /// Allows accessing services by type.
 pub trait ServiceProvider {
-  /// Returns a reference to the [`Service`] of the given type.
-  fn get_service<T: Service>(&self) -> Option<&T>;
+  /// Returns a reference to the given [`Service`].
+  fn resolve<T: Service>(&self) -> Option<&T>;
 
-  /// Returns a mutable reference to the [`Service`] of the given type.
-  fn get_service_mut<T: Service>(&mut self) -> Option<&mut T>;
+  /// Returns a mutable reference to the given [`Service`].
+  fn resolve_mut<T: Service>(&mut self) -> Option<&mut T>;
 
-  /// Returns a reference to the [`Service`] of the given type, or creates it
-  /// anew.
-  fn get_service_or_default<T: Service + Default>(&mut self) -> &mut T;
+  /// Returns a reference to the given [`Service`], or creates it anew.
+  fn resolve_or_default<T: Service + Default>(&mut self) -> &mut T;
 }
 
 /// Maintains service instances and provides access to them.
@@ -28,21 +27,21 @@ pub struct ServiceContainer {
 }
 
 impl ServiceProvider for ServiceContainer {
-  fn get_service<T: Service>(&self) -> Option<&T> {
+  fn resolve<T: Service>(&self) -> Option<&T> {
     self
       .services
       .get(&TypeId::of::<T>())
       .and_then(|service| service.as_any().downcast_ref())
   }
 
-  fn get_service_mut<T: Service>(&mut self) -> Option<&mut T> {
+  fn resolve_mut<T: Service>(&mut self) -> Option<&mut T> {
     self
       .services
       .get_mut(&TypeId::of::<T>())
       .and_then(|service| service.as_any_mut().downcast_mut())
   }
 
-  fn get_service_or_default<T: Service + Default>(&mut self) -> &mut T {
+  fn resolve_or_default<T: Service + Default>(&mut self) -> &mut T {
     self
       .services
       .entry(TypeId::of::<T>())
@@ -107,8 +106,8 @@ mod tests {
       .add_service_default::<TestService2>()
       .build();
 
-    assert!(container.get_service::<TestService1>().is_some());
-    assert!(container.get_service::<TestService2>().is_some());
-    assert!(container.get_service::<TestService3>().is_none());
+    assert!(container.resolve::<TestService1>().is_some());
+    assert!(container.resolve::<TestService2>().is_some());
+    assert!(container.resolve::<TestService3>().is_none());
   }
 }

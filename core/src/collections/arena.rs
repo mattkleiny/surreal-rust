@@ -1,4 +1,11 @@
 /// Represents a safe index into an [`Arena`].
+///
+/// This is a 64-bit integer that is split into two parts:
+/// - The lower 32 bits are the index into the arena's internal storage.
+/// - The upper 16 bits are the generation of the entry at that index.
+///
+/// The generation is incremented every time an entry is removed from the arena.
+/// This allows us to detect when an index is no longer valid.
 #[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ArenaIndex {
   index: u32,
@@ -33,6 +40,12 @@ struct ArenaEntry<T> {
 ///
 /// An arena exposes safe externalized indices in the form of [`ArenaIndex`]es
 /// that can be passed around the application safely.
+///
+/// An arena is a contiguous block of memory that is used to store a collection
+/// of elements. When an element is removed from the arena, the slot that it
+/// occupied remains empty until the next insert.. This means that the order of
+/// elements in the arena is not guaranteed to be the same as the order in which
+/// they were inserted.
 #[derive(Debug)]
 pub struct Arena<T> {
   entries: Vec<Option<ArenaEntry<T>>>,

@@ -12,7 +12,10 @@ use crate::{
   assets::{Asset, AssetContext, AssetLoader},
   collections::FastHashMap,
   io::VirtualPath,
-  maths::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4},
+  maths::{
+    DMat2, DMat3, DMat4, DQuat, DVec2, DVec3, DVec4, Degrees, Mat2, Mat3, Mat4, Quat, Radians,
+    Vec2, Vec3, Vec4,
+  },
 };
 
 /// Different types of shaders supported by the engine.
@@ -40,9 +43,17 @@ pub enum ShaderUniform {
   Vec2(Vec2),
   Vec3(Vec3),
   Vec4(Vec4),
+  DVec2(DVec2),
+  DVec3(DVec3),
+  DVec4(DVec4),
   Mat2(Mat2),
   Mat3(Mat3),
   Mat4(Mat4),
+  DMat2(DMat2),
+  DMat3(DMat3),
+  DMat4(DMat4),
+  Quat(Quat),
+  DQuat(DQuat),
   Color(Color),
   Color32(Color32),
   Texture(Texture, u8, Option<TextureSampler>),
@@ -295,28 +306,44 @@ impl AssetLoader<ShaderProgram> for ShaderProgramLoader {
   }
 }
 
-/// Implements uniform value transformation for common shader uniforms.
+/// Implements uniform value transformation for common types.
 macro_rules! impl_uniform {
-  ($type:ty, $value:ident) => {
+  ($type:ty as $value:ident) => {
     impl From<$type> for ShaderUniform {
       fn from(value: $type) -> Self {
-        ShaderUniform::$value(value.clone())
+        ShaderUniform::$value(value.into())
+      }
+    }
+
+    impl From<&$type> for ShaderUniform {
+      fn from(value: &$type) -> Self {
+        ShaderUniform::$value(value.clone().into())
       }
     }
   };
 }
 
-impl_uniform!(bool, Bool);
-impl_uniform!(u32, U32);
-impl_uniform!(f32, F32);
-impl_uniform!(Vec2, Vec2);
-impl_uniform!(Vec3, Vec3);
-impl_uniform!(Vec4, Vec4);
-impl_uniform!(&Mat2, Mat2);
-impl_uniform!(&Mat3, Mat3);
-impl_uniform!(&Mat4, Mat4);
-impl_uniform!(Color, Color);
-impl_uniform!(Color32, Color32);
+impl_uniform!(bool as Bool);
+impl_uniform!(u32 as U32);
+impl_uniform!(f32 as F32);
+impl_uniform!(Degrees as F32);
+impl_uniform!(Radians as F32);
+impl_uniform!(Vec2 as Vec2);
+impl_uniform!(Vec3 as Vec3);
+impl_uniform!(Vec4 as Vec4);
+impl_uniform!(DVec2 as DVec2);
+impl_uniform!(DVec3 as DVec3);
+impl_uniform!(DVec4 as DVec4);
+impl_uniform!(Mat2 as Mat2);
+impl_uniform!(Mat3 as Mat3);
+impl_uniform!(Mat4 as Mat4);
+impl_uniform!(DMat2 as DMat2);
+impl_uniform!(DMat3 as DMat3);
+impl_uniform!(DMat4 as DMat4);
+impl_uniform!(Quat as Quat);
+impl_uniform!(DQuat as DQuat);
+impl_uniform!(Color as Color);
+impl_uniform!(Color32 as Color32);
 
 #[cfg(test)]
 mod tests {
