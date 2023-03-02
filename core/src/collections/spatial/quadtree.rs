@@ -88,8 +88,8 @@ impl<T> QuadTree<T> {
   pub fn calculate_bounds(&self) -> Rectangle {
     fn calculate_recursive<T>(node: &QuadTreeNode<T>, rect: &mut Rectangle, depth: usize) {
       match node {
-        QuadTreeNode::Leaf(Some(cell)) => rect.extend(&cell.bounds),
         QuadTreeNode::Leaf(None) => {} // no-op; empty leaf
+        QuadTreeNode::Leaf(Some(cell)) => rect.extend(&cell.bounds),
         QuadTreeNode::Branch(branch) => {
           for child in branch.iter() {
             calculate_recursive(child, rect, depth + 1);
@@ -127,17 +127,19 @@ impl<T> QuadTree<T> {
   ///
   /// If the [`QuadTree`] is empty, the value will be inserted into the root
   /// node. Otherwise, the value will be inserted into the appropriate quadrant
-  /// of the [`QuadTree`].
+  /// of the [`QuadTree`], sub-dividing the tree if necessary into smaller
+  /// quadrants.
   ///
   /// If the value already exists in the [`QuadTree`], it will be replaced.
   /// This is determined by comparing the value's bounds to the bounds of
   /// existing values in the [`QuadTree`].
+  ///
+  /// If you instead wish to move an item within the tree, use the [`update`]
+  /// method instead.
   pub fn insert(&mut self, value: T, bounds: Rectangle)
   where
     T: Clone,
   {
-    // insert a new value into the quadtree, recursively splitting any existing
-    // branches into quadrants if necessary
     fn insert_recursive<T: Clone>(
       node: &mut QuadTreeNode<T>,
       value: T,
@@ -147,31 +149,23 @@ impl<T> QuadTree<T> {
       match node {
         QuadTreeNode::Leaf(Some(cell)) => {
           // if the leaf is already occupied, split the leaf into a branch
-          // and insert the new value into the appropriate quadrant
-          let mut branch = Box::new([
+          // and insert the new value into the appropriate sub-quadrant
+          let mut branches = Box::new([
             QuadTreeNode::Leaf(None),
             QuadTreeNode::Leaf(None),
             QuadTreeNode::Leaf(None),
             QuadTreeNode::Leaf(None),
           ]);
-          let mut inserted = false;
 
-          // insert the existing value into the appropriate quadrant
-          let existing_bounds = cell.bounds;
-          let existing_quadrant = get_quadrant(existing_bounds);
-          let existing_node = &mut branch[existing_quadrant];
-          let new_value = cell.value.clone();
-          inserted |= insert_recursive(existing_node, new_value, existing_bounds, depth + 1);
+          let quadrant = get_quadrant(&bounds);
+          let sub_branch = &mut branches[quadrant];
 
-          // insert the new value into the appropriate quadrant
-          let new_quadrant = get_quadrant(bounds);
-          let new_node = &mut branch[new_quadrant];
-          let new_value = cell.value.clone();
-          inserted |= insert_recursive(new_node, new_value, bounds, depth + 1);
+          insert_recursive(sub_branch, cell.value.clone(), cell.bounds, depth + 1);
+          insert_recursive(sub_branch, value, bounds, depth + 1);
 
-          *node = QuadTreeNode::Branch(branch);
+          *node = QuadTreeNode::Branch(branches);
 
-          inserted
+          true
         }
         QuadTreeNode::Leaf(None) => {
           // if the leaf is empty, insert the new value into the leaf
@@ -180,9 +174,9 @@ impl<T> QuadTree<T> {
           true
         }
         QuadTreeNode::Branch(branch) => {
-          // if the node is already  branch, insert the new value into the appropriate
-          // quadrant
-          let quadrant = get_quadrant(bounds);
+          // if the node is already a branch, insert the new value into the
+          // appropriate sub-quadrant
+          let quadrant = get_quadrant(&bounds);
           let node = &mut branch[quadrant];
 
           insert_recursive(node, value, bounds, depth + 1)
@@ -326,7 +320,7 @@ impl<'a, T> IntoIterator for &'a QuadTree<T> {
 }
 
 /// Determines which sub-quadrant the given bounds are in
-fn get_quadrant(bounds: Rectangle) -> usize {
+fn get_quadrant(bounds: &Rectangle) -> usize {
   let half_width = bounds.width() / 2.0;
   let half_height = bounds.height() / 2.0;
 
@@ -359,10 +353,11 @@ mod tests {
     let bounds = Rectangle::from_corner_points(0., 0., 1., 1.);
 
     tree.insert(1, bounds);
+    tree.insert(2, bounds);
 
     let results = tree.find_in_bounds(bounds);
 
-    assert_eq!(results.len(), 1);
+    assert_eq!(results.len(), 2);
   }
 
   #[test]
