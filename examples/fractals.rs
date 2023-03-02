@@ -2,6 +2,9 @@
 
 use surreal::{prelude::*, prototype::*};
 
+const MAX_ITERATIONS: u32 = 25;
+const CONSTANT_STEP: f32 = 0.003;
+
 fn main() {
   EngineBuilder::default()
     .with_title("Fractals")
@@ -26,19 +29,19 @@ fn main() {
 
         if let Some(keyboard) = &engine.input.keyboard {
           if keyboard.is_key_pressed(Key::Up) {
-            constant.y += 0.01;
+            constant.y += CONSTANT_STEP;
           }
 
           if keyboard.is_key_pressed(Key::Down) {
-            constant.y -= 0.01;
+            constant.y -= CONSTANT_STEP;
           }
 
           if keyboard.is_key_pressed(Key::Left) {
-            constant.x -= 0.01;
+            constant.x -= CONSTANT_STEP;
           }
 
           if keyboard.is_key_pressed(Key::Right) {
-            constant.x += 0.01;
+            constant.x += CONSTANT_STEP;
           }
 
           if keyboard.is_key_pressed(Key::Escape) {
@@ -83,7 +86,7 @@ fn compute_iterations(initial: Vec2, constant: Vec2) -> u32 {
   let mut current = initial;
   let mut iterations = 0;
 
-  while mod2(current) < 4. && iterations < 100 {
+  while mod2(current) < 4. && iterations < MAX_ITERATIONS {
     current = compute_next(current, constant);
     iterations += 1;
   }
