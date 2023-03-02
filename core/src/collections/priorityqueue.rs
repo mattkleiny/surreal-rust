@@ -22,6 +22,7 @@ impl<T: PartialEq> Default for PriorityQueue<T> {
 
 impl<T: PartialEq> PriorityQueue<T> {
   /// Creates a new empty queue.
+  #[inline]
   pub fn new() -> Self {
     Self {
       elements: BinaryHeap::new(),
@@ -29,6 +30,7 @@ impl<T: PartialEq> PriorityQueue<T> {
   }
 
   /// Creates a new empty queue with the given pre-sized backing capacity.
+  #[inline]
   pub fn with_capacity(capacity: usize) -> Self {
     Self {
       elements: BinaryHeap::with_capacity(capacity),
@@ -36,21 +38,25 @@ impl<T: PartialEq> PriorityQueue<T> {
   }
 
   /// Is the queue empty?
+  #[inline]
   pub fn is_empty(&self) -> bool {
     self.elements.is_empty()
   }
 
   /// Returns the number of elements in the queue.
+  #[inline]
   pub fn len(&self) -> usize {
     self.elements.len()
   }
 
   /// Pushes a new element onto the queue with a custom order.
+  #[inline]
   pub fn push(&mut self, value: T, order: f32) {
     self.elements.push(Node { value, order });
   }
 
   /// Pops an element from the top of the queue.
+  #[inline]
   pub fn pop(&mut self) -> Option<T> {
     self.elements.pop().map(|node| node.value)
   }

@@ -1,4 +1,4 @@
-//! A physics engine for Surreal.
+//! A lightweight physics engine for Surreal.
 
 use crate::{collections::ResourceStorage, maths::DVec2};
 

@@ -21,16 +21,19 @@ impl<T> RingBuffer<T> {
   }
 
   /// Is the buffer empty?
+  #[inline]
   pub fn is_empty(&self) -> bool {
     self.elements.is_empty()
   }
 
   /// The number of elements in the buffer.
+  #[inline]
   pub fn len(&self) -> usize {
     self.elements.len()
   }
 
   /// Returns the maximum number of elements in the buffer.
+  #[inline]
   pub fn capacity(&self) -> usize {
     self.elements.capacity()
   }

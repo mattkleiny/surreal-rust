@@ -20,6 +20,7 @@ pub struct QuadTree<T> {
 ///
 /// * A leaf contains a single value and the bounds of that value.
 /// * A branch contains four child nodes.
+#[derive(Debug)]
 enum QuadTreeNode<T> {
   Leaf(Option<QuadTreeCell<T>>),
   Branch(Box<[QuadTreeNode<T>; 4]>),
@@ -28,6 +29,7 @@ enum QuadTreeNode<T> {
 /// A single cell in a [`QuadTree`].
 ///
 /// A cell contains a value and the bounds of that value in 2-space.
+#[derive(Debug)]
 struct QuadTreeCell<T> {
   value: T,
   bounds: Rectangle,
@@ -48,9 +50,16 @@ trait QuadTreeVisitor<T> {
   fn visit_branch(&mut self, branch: &[QuadTreeNode<T>; 4]) {}
 }
 
-impl<T> QuadTreeNode<T> {
-  fn _accept(&self, visitor: &mut impl QuadTreeVisitor<T>) {
-    visitor.visit_node(self);
+/// Allows any function to act as a visitor against nodes in the tree.
+impl<T, F: FnMut(&QuadTreeNode<T>)> QuadTreeVisitor<T> for F {
+  fn visit_node(&mut self, node: &QuadTreeNode<T>) {
+    self(node);
+
+    match node {
+      QuadTreeNode::Leaf(None) => {} // no-op; empty leaf
+      QuadTreeNode::Leaf(Some(cell)) => self.visit_leaf(&cell.value, &cell.bounds),
+      QuadTreeNode::Branch(branch) => self.visit_branch(branch),
+    }
   }
 }
 
@@ -209,8 +218,6 @@ impl<T> QuadTree<T> {
       results: &mut Vec<&'a T>,
       depth: usize,
     ) {
-      // TODO: optimize this by only recursing into quadrants that intersect the
-      // bounds
       match node {
         QuadTreeNode::Leaf(Some(cell)) => {
           if bounds.intersects(&cell.bounds) {
@@ -267,6 +274,13 @@ impl<T> QuadTree<T> {
     }
 
     results
+  }
+
+  /// Accepts a visitor to visit all values in the [`QuadTree`].
+  fn accept(&self, visitor: &mut impl QuadTreeVisitor<T>) {
+    if let Some(root) = &self.root {
+      visitor.visit_node(root);
+    }
   }
 
   /// Iterates over the values in the [`QuadTree`].
@@ -348,7 +362,19 @@ mod tests {
   }
 
   #[test]
-  fn quadtree_find_in_bounds() {
+  fn quadtree_find_in_bounds_should_find_item() {
+    let mut tree = QuadTree::default();
+    let bounds = Rectangle::from_corner_points(0., 0., 1., 1.);
+
+    tree.insert(1, bounds);
+
+    let results = tree.find_in_bounds(bounds);
+
+    assert_eq!(results.len(), 1);
+  }
+
+  #[test]
+  fn quadtree_find_in_bounds_should_find_all_items_in_same_space() {
     let mut tree = QuadTree::default();
     let bounds = Rectangle::from_corner_points(0., 0., 1., 1.);
 
@@ -370,5 +396,16 @@ mod tests {
     let results = tree.find_in_bounds_mut(bounds);
 
     assert_eq!(results.len(), 1);
+  }
+
+  #[test]
+  fn quadtree_should_accept_visitors() {
+    let mut tree = QuadTree::default();
+
+    tree.insert(1, Rectangle::from_corner_points(0., 0., 1., 1.));
+
+    tree.accept(&mut |node: &QuadTreeNode<i32>| {
+      println!("value: {node:?}");
+    });
   }
 }

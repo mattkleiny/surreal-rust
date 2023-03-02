@@ -74,6 +74,12 @@ impl Rectangle {
     self.max.y
   }
 
+  /// The center of the rectangle.
+  #[inline]
+  pub fn center(&self) -> Vec2 {
+    (self.min + self.max) / 2.
+  }
+
   /// The top left corner of the rectangle.
   #[inline]
   pub fn top_left(&self) -> Vec2 {
@@ -154,6 +160,23 @@ impl Rectangle {
       && self.min.y <= other.max.y
       && self.max.y >= other.min.y
   }
+
+  /// Splits the rectangle into four quadrants.
+  ///
+  /// The quadrants are returned in the following order:
+  /// * Top left
+  /// * Top right
+  /// * Bottom left
+  /// * Bottom right
+  pub fn into_quadrants(&self) -> [Self; 4] {
+    let center = self.center();
+    [
+      Self::from_corner_points(self.left(), self.top(), center.x, center.y),
+      Self::from_corner_points(center.x, self.top(), self.right(), center.y),
+      Self::from_corner_points(self.left(), center.y, center.x, self.bottom()),
+      Self::from_corner_points(center.x, center.y, self.right(), self.bottom()),
+    ]
+  }
 }
 
 #[cfg(test)]
@@ -203,5 +226,24 @@ mod tests {
 
     assert!(!rect.intersects(&Rectangle::from_corner_points(-1., -1., -0.1, -0.1)));
     assert!(!rect.intersects(&Rectangle::from_corner_points(1.1, 1.1, 2., 2.)));
+  }
+
+  #[test]
+  fn rectangle_should_compute_center() {
+    let rect = Rectangle::from_corner_points(0., 0., 1., 1.);
+
+    assert_eq!(rect.center(), vec2(0.5, 0.5));
+  }
+
+  #[test]
+  fn rectangle_should_compute_quadrants() {
+    let rect = Rectangle::from_corner_points(0., 0., 2., 2.);
+
+    let quadrants = rect.into_quadrants();
+
+    assert_eq!(quadrants[0], Rectangle::from_corner_points(0., 0., 1., 1.));
+    assert_eq!(quadrants[1], Rectangle::from_corner_points(1., 0., 2., 1.));
+    assert_eq!(quadrants[2], Rectangle::from_corner_points(0., 1., 1., 2.));
+    assert_eq!(quadrants[3], Rectangle::from_corner_points(1., 1., 2., 2.));
   }
 }
