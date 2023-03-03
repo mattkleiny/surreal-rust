@@ -35,7 +35,7 @@ pub trait TypeBindings<T> {
     &mut self,
     name: &str,
     getter: impl Fn(&T) -> Result<P, ReflectError>,
-    setter: impl Fn(&mut T, value: P) -> Result<(), ReflectError>
+    setter: impl Fn(&mut T, P) -> Result<(), ReflectError>
   );
 }
 
