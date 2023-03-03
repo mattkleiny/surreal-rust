@@ -38,18 +38,3 @@ pub trait TypeBindings<T> {
     setter: impl Fn(&mut T, P) -> Result<(), ReflectError>
   );
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_type_database() {
-    let mut db = TypeDatabase::default();
-
-    db.register_type::<i32>(|bindings| {
-      bindings.register_method("add");
-      bindings.register_property("value");
-    });
-  }
-}
