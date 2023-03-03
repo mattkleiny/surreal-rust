@@ -16,6 +16,7 @@ pub use anyhow::{anyhow, bail, Error, Result};
 pub use macros;
 
 pub mod assets;
+pub mod binding;
 pub mod audio;
 pub mod collections;
 pub mod diagnostics;
