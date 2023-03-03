@@ -11,6 +11,7 @@ pub struct Random {
 }
 
 impl Default for Random {
+  #[inline]
   fn default() -> Self {
     Self::with_thread_local_seed()
   }
@@ -18,13 +19,15 @@ impl Default for Random {
 
 impl Random {
   /// Constructs a random generator with the given seed.
+  #[inline]
   pub fn with_seed(seed: u64) -> Self {
     Random { state: seed }
   }
 
   /// Constructs a random generator with a random seed.
+  #[inline]
   pub fn with_thread_local_seed() -> Self {
-    Self::with_seed(generate_thread_local())
+    Self::with_seed(u64::random())
   }
 
   /// Generates a new value of the given [`Random`] type, T.
@@ -66,20 +69,15 @@ thread_local! {
   }));
 }
 
-/// Generates a new f64 using the thread-local generator.
-fn generate_thread_local<T: FromRandom>() -> T {
-  THREAD_LOCAL_RANDOM.with(|random| {
-    let mut random = random.borrow_mut();
-
-    T::from_random(&mut random)
-  })
-}
-
 /// A type that can be randomly generated.
 pub trait FromRandom: Sized {
-  /// Generates a new value of this type with a global random seed.
+  /// Generates a new value of this type with a global random number generator.
   fn random() -> Self {
-    generate_thread_local()
+    THREAD_LOCAL_RANDOM.with(|random| {
+      let mut random = random.borrow_mut();
+
+      Self::from_random(&mut random)
+    })
   }
 
   /// Generates a new random value of this type using the given generator.
@@ -87,9 +85,10 @@ pub trait FromRandom: Sized {
 }
 
 // Implements random conversion for common integer types
-macro_rules! impl_random {
+macro_rules! impl_random_number {
   ($type:ty) => {
     impl FromRandom for $type {
+      #[inline]
       fn from_random(random: &mut Random) -> Self {
         random.next_u64() as $type
       }
@@ -97,47 +96,48 @@ macro_rules! impl_random {
   };
 }
 
-impl_random!(u8);
-impl_random!(u16);
-impl_random!(u32);
-impl_random!(u64);
-impl_random!(usize);
+impl_random_number!(u8);
+impl_random_number!(u16);
+impl_random_number!(u32);
+impl_random_number!(u64);
+impl_random_number!(usize);
 
-impl_random!(i8);
-impl_random!(i16);
-impl_random!(i32);
-impl_random!(i64);
-impl_random!(isize);
+impl_random_number!(i8);
+impl_random_number!(i16);
+impl_random_number!(i32);
+impl_random_number!(i64);
+impl_random_number!(isize);
 
 impl FromRandom for bool {
+  #[inline]
   fn from_random(random: &mut Random) -> Self {
     random.next_f64() < 0.5
   }
 }
 
 impl FromRandom for f32 {
+  #[inline]
   fn from_random(random: &mut Random) -> Self {
     random.next_f64() as f32
   }
 }
 
 impl FromRandom for f64 {
+  #[inline]
   fn from_random(random: &mut Random) -> Self {
     random.next_f64()
   }
 }
 
 impl FromRandom for Uuid {
+  #[inline]
   fn from_random(random: &mut Random) -> Self {
     Uuid::from_bytes(random.next())
   }
 }
 
 /// Generates fixed-length arrays of `T` where `T` itself is [`FromRandom`]
-impl<T, const L: usize> FromRandom for [T; L]
-where
-  T: FromRandom + Sized + Default + Copy,
-{
+impl<T: FromRandom + Sized + Default + Copy, const L: usize> FromRandom for [T; L] {
   fn from_random(random: &mut Random) -> Self {
     let mut result = [T::default(); L];
 
@@ -170,6 +170,7 @@ pub struct RandomVariable<T> {
 }
 
 impl<T: Numeric> Default for RandomVariable<T> {
+  #[inline]
   fn default() -> Self {
     Self {
       low: T::ZERO,
@@ -204,15 +205,66 @@ mod tests {
   use super::*;
 
   #[test]
-  fn random_variable_should_sample_uniformly() {
-    let variable = RandomVariable {
-      low: 0.,
-      high: 1.,
-      distribution: Distribution::Uniform,
-    };
+  fn random_should_generate_different_values() {
+    let mut random = Random::with_seed(0);
 
-    assert_eq!(0., variable.sample(0.));
-    assert_eq!(0.5, variable.sample(0.5));
-    assert_eq!(1., variable.sample(1.));
+    let a = random.next_u64();
+    let b = random.next_u64();
+
+    assert_ne!(a, b);
   }
+
+  #[test]
+  fn random_should_generate_different_values_with_different_seeds() {
+    let mut random_a = Random::with_seed(0);
+    let mut random_b = Random::with_seed(1);
+
+    let a = random_a.next_u64();
+    let b = random_b.next_u64();
+
+    assert_ne!(a, b);
+  }
+
+  #[test]
+  fn random_should_generate_same_values_with_same_seeds() {
+    let mut random_a = Random::with_seed(0);
+    let mut random_b = Random::with_seed(0);
+
+    let a = random_a.next_u64();
+    let b = random_b.next_u64();
+
+    assert_eq!(a, b);
+  }
+
+  #[test]
+  fn random_should_generate_value_based_on_global_random() {
+    let a = u64::random();
+    let b = u64::random();
+
+    assert_ne!(a, b);
+  }
+
+  macro_rules! impl_variable_test {
+    ($name:expr ($distribution:ident = $value:literal)) => {
+      #[test]
+      fn $name() {
+        let variable = RandomVariable {
+          distribution: Distribution::$distribution,
+          ..Default::default()
+        };
+
+        assert_eq!(0., variable.sample(0.));
+        assert_eq!($value, variable.sample(0.5));
+        assert_eq!(1., variable.sample(1.));
+      }
+    };
+  }
+
+  impl_variable_test!(random_variable_should_sample_uniformly (Uniform = 0.5)
+  impl_variable_test!(random_variable_should_sample_square (Square = 0.25))
+  impl_variable_test!(random_variable_should_sample_cube (Cube = 0.125))
+  impl_variable_test!(random_variable_should_sample_fourth (Fourth = 0.0625))
+  impl_variable_test!(random_variable_should_sample_one_minus_square (OneMinusSquare = 0.75))
+  impl_variable_test!(random_variable_should_sample_one_minus_cube (OneMinusCube = 0.875))
+  impl_variable_test!(random_variable_should_sample_one_minus_fourth (OneMinusFourth = 0.9375))
 }
