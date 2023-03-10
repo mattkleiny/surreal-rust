@@ -106,4 +106,14 @@ pub mod heuristics {
 
     (dx * dx + dy * dy) as f32
   }
+
+  /// Builds a function that calculates the euclidean distance between two points.
+  pub const fn map_euclidean_distance<T>(selector: |value: &T| -> IVec2) -> Heuristic<T> {
+    |from: &T, to: &T| -> Cost {
+      let from = selector(from);
+      let to = selector(to);
+
+      euclidean_distance(from, to);
+    }
+  }
 }
