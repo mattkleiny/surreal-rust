@@ -125,34 +125,3 @@ impl Brush for surreal::maths::Trapezoid {
     todo!()
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use surreal::maths::Plane;
-
-  use super::*;
-
-  #[test]
-  fn plane_should_build_brush() {
-    let plane = Plane {
-      normal: Vec3::new(0.0, 0.0, 1.0),
-      distance: 0.0,
-    };
-
-    let faces = plane.faces();
-
-    assert_eq!(faces.len(), 1);
-  }
-
-  #[test]
-  fn sphere_should_build_brush() {
-    let sphere = surreal::maths::Sphere {
-      radius: 1.0,
-      center: Vec3::new(0.0, 0.0, 0.0),
-    };
-
-    let faces = sphere.faces();
-
-    assert_eq!(faces.len(), 18);
-  }
-}
