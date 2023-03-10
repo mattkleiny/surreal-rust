@@ -64,5 +64,9 @@ name = "sand"
 required-features = ["prototype"]
 
 [[example]]
+name = "scenes"
+required-features = ["prototype"]
+
+[[example]]
 name = "tilemaps"
 required-features = ["prototype"]

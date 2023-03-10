@@ -1,7 +1,5 @@
 //! A lightweight physics engine for Surreal.
 
-use crate::{collections::ResourceStorage, maths::DVec2};
-
 crate::impl_server!(PhysicsServer, PhysicsBackend);
 
 crate::impl_rid!(ColliderId);
@@ -35,29 +33,7 @@ pub trait PhysicsBackend {
 /// This is a simple physics backend that uses a simple Euler integration
 /// algorithm to simulate the physics of the game world.
 #[derive(Default)]
-struct DefaultPhysicsBackend {
-  colliders: ResourceStorage<ColliderId, Collider>,
-  rigidbodies: ResourceStorage<BodyId, RigidBody>,
-}
-
-/// A collider in the physics simulation.
-enum Collider {
-  Circle { radius: f64 },
-  Rectangle { half_extents: DVec2 },
-}
-
-/// A rigid body in the physics simulation.
-enum RigidBody {
-  Static,
-  Kinematic {
-    velocity: DVec2,
-    angular_velocity: f64,
-  },
-  Dynamic {
-    velocity: DVec2,
-    angular_velocity: f64,
-  },
-}
+struct DefaultPhysicsBackend {}
 
 impl PhysicsBackend for DefaultPhysicsBackend {
   fn step(&self, delta_time: f32) {
@@ -65,7 +41,6 @@ impl PhysicsBackend for DefaultPhysicsBackend {
   }
 
   fn clear(&self) {
-    self.colliders.clear();
-    self.rigidbodies.clear();
+    // no-op
   }
 }

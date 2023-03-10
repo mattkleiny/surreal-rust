@@ -170,11 +170,11 @@ impl EngineBuilder {
   /// Starts a [`SceneGraph`] on the resultant [`Engine`].
   pub fn start_scene(
     self,
-    setup: impl Fn(&Engine, &AssetManager) -> crate::Result<SceneGraph>,
+    setup: impl Fn(&Engine, &AssetManager, &mut Renderer) -> crate::Result<SceneGraph>,
   ) -> crate::Result<()> {
     self.start(|engine, assets| {
-      let mut scene = setup(&engine, &assets)?;
       let mut renderer = Renderer::new(&engine.graphics);
+      let mut scene = setup(&engine, &assets, &mut renderer)?;
 
       engine.run_variable_step(|_, time| {
         renderer.begin_frame();
