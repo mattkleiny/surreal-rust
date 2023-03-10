@@ -21,12 +21,12 @@ pub struct Face {
 
 impl Face {
   /// Creates a [`Face`] from the given vertices in clockwise ordering.
-  pub fn from_points_cw(_vertices: [Vec3; 3]) -> Self {
+  pub fn from_points_cw(_vertices: &[Vec3]) -> Self {
     todo!()
   }
 
   /// Creates a [`Face`] from the given vertices in counter-clockwise ordering.
-  pub fn from_points_ccw(_vertices: [Vec3; 3]) -> Self {
+  pub fn from_points_ccw(_vertices: &[Vec3]) -> Self {
     todo!()
   }
 }
@@ -37,66 +37,122 @@ impl Face {
 /// produces a collection of polygons that can be used to build a final shape
 /// and mesh.
 ///
-/// Brushes can be combined by a [`CsgMerge`] operation to produce another
-/// [`CsgBrush`], allowing the set-theoretic combination of geometry.
-pub trait CsgBrush {
+/// Brushes can be combined by a [`Mergable`] operation to produce another
+/// [`Brush`], allowing the set-theoretic combination of geometry.
+pub trait Brush {
   /// Returns the [`Face`]s that make up this brush.
   fn faces(&self) -> Vec<Face>;
+
+  /// Merges this brush with another using the given operation.
+  fn merge_with(&self, _other: &dyn Brush, _operation: MergeOperation) -> Box<dyn Brush> {
+    todo!()
+  }
 }
 
-/// Allows merging [`CsgBrush`]es to build new [`CsgBrush`]es.
-pub trait CsgMerge {
-  /// Merge the given two [`CsgBrush`]es to produce a new [`CsgBrush`].
-  fn merge(&self, a: &dyn CsgBrush, b: &dyn CsgBrush) -> Box<dyn CsgBrush>;
-}
-
-/// The default [`CsgMerge`] operations.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum CsgOperation {
+/// Possible merge operations for [`Brush`]es.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum MergeOperation {
   Union,
   Intersection,
-  Subtraction,
+  Difference,
 }
 
-impl CsgMerge for CsgOperation {
-  fn merge(&self, a: &dyn CsgBrush, b: &dyn CsgBrush) -> Box<dyn CsgBrush> {
-    let _a = a.faces();
-    let _b = b.faces();
+impl Brush for surreal::maths::Plane {
+  fn faces(&self) -> Vec<Face> {
+    vec![Face::from_points_cw(&[
+      Vec3::new(-1.0, -1.0, 0.0),
+      Vec3::new(1.0, -1.0, 0.0),
+      Vec3::new(1.0, 1.0, 0.0),
+      Vec3::new(-1.0, 1.0, 0.0),
+    ])]
+  }
+}
 
-    match self {
-      CsgOperation::Union => todo!(),
-      CsgOperation::Intersection => todo!(),
-      CsgOperation::Subtraction => todo!(),
+impl Brush for surreal::maths::Sphere {
+  fn faces(&self) -> Vec<Face> {
+    // build up vertical slices of the sphere
+    let mut faces = Vec::new();
+
+    // top and bottom caps
+    faces.push(Face::from_points_cw(&[
+      Vec3::new(0.0, 0.0, 1.0),
+      Vec3::new(0.0, 1.0, 0.0),
+      Vec3::new(1.0, 0.0, 0.0),
+    ]));
+
+    faces.push(Face::from_points_cw(&[
+      Vec3::new(0.0, 0.0, -1.0),
+      Vec3::new(1.0, 0.0, 0.0),
+      Vec3::new(0.0, 1.0, 0.0),
+    ]));
+
+    // vertical slices
+    for i in 0..16 {
+      let angle = i as f32 * std::f32::consts::PI / 8.0;
+      let next_angle = (i + 1) as f32 * std::f32::consts::PI / 8.0;
+
+      let x = angle.cos();
+      let y = angle.sin();
+      let next_x = next_angle.cos();
+      let next_y = next_angle.sin();
+
+      faces.push(Face::from_points_cw(&[
+        Vec3::new(x, y, 0.0),
+        Vec3::new(next_x, next_y, 0.0),
+        Vec3::new(next_x, next_y, 1.0),
+        Vec3::new(x, y, 1.0),
+      ]));
     }
+
+    faces
   }
 }
 
-impl CsgBrush for surreal::maths::Plane {
+impl Brush for surreal::maths::Cylinder {
   fn faces(&self) -> Vec<Face> {
     todo!()
   }
 }
 
-impl CsgBrush for surreal::maths::Sphere {
+impl Brush for surreal::maths::Cube {
   fn faces(&self) -> Vec<Face> {
     todo!()
   }
 }
 
-impl CsgBrush for surreal::maths::Cylinder {
+impl Brush for surreal::maths::Trapezoid {
   fn faces(&self) -> Vec<Face> {
     todo!()
   }
 }
 
-impl CsgBrush for surreal::maths::Cube {
-  fn faces(&self) -> Vec<Face> {
-    todo!()
-  }
-}
+#[cfg(test)]
+mod tests {
+  use surreal::maths::Plane;
 
-impl CsgBrush for surreal::maths::Trapezoid {
-  fn faces(&self) -> Vec<Face> {
-    todo!()
+  use super::*;
+
+  #[test]
+  fn plane_should_build_brush() {
+    let plane = Plane {
+      normal: Vec3::new(0.0, 0.0, 1.0),
+      distance: 0.0,
+    };
+
+    let faces = plane.faces();
+
+    assert_eq!(faces.len(), 1);
+  }
+
+  #[test]
+  fn sphere_should_build_brush() {
+    let sphere = surreal::maths::Sphere {
+      radius: 1.0,
+      center: Vec3::new(0.0, 0.0, 0.0),
+    };
+
+    let faces = sphere.faces();
+
+    assert_eq!(faces.len(), 18);
   }
 }

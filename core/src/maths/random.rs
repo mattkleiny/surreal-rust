@@ -245,10 +245,10 @@ mod tests {
   }
 
   macro_rules! impl_variable_test {
-    ($name:expr ($distribution:ident = $value:literal)) => {
+    ($name:ident; $distribution:ident => $value:literal) => {
       #[test]
       fn $name() {
-        let variable = RandomVariable {
+        let variable: RandomVariable<f32> = RandomVariable {
           distribution: Distribution::$distribution,
           ..Default::default()
         };
@@ -260,11 +260,11 @@ mod tests {
     };
   }
 
-  impl_variable_test!(random_variable_should_sample_uniformly (Uniform = 0.5)
-  impl_variable_test!(random_variable_should_sample_square (Square = 0.25))
-  impl_variable_test!(random_variable_should_sample_cube (Cube = 0.125))
-  impl_variable_test!(random_variable_should_sample_fourth (Fourth = 0.0625))
-  impl_variable_test!(random_variable_should_sample_one_minus_square (OneMinusSquare = 0.75))
-  impl_variable_test!(random_variable_should_sample_one_minus_cube (OneMinusCube = 0.875))
-  impl_variable_test!(random_variable_should_sample_one_minus_fourth (OneMinusFourth = 0.9375))
+  impl_variable_test!(random_variable_should_sample_uniformly; Uniform => 0.5);
+  impl_variable_test!(random_variable_should_sample_square; Square => 0.25);
+  impl_variable_test!(random_variable_should_sample_cube; Cube => 0.125);
+  impl_variable_test!(random_variable_should_sample_fourth; Fourth => 0.0625);
+  impl_variable_test!(random_variable_should_sample_one_minus_square; OneMinusSquare => 0.75);
+  impl_variable_test!(random_variable_should_sample_one_minus_cube; OneMinusCube => 0.875);
+  impl_variable_test!(random_variable_should_sample_one_minus_fourth; OneMinusFourth => 0.9375);
 }

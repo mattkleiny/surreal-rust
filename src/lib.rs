@@ -34,7 +34,6 @@ pub extern crate voxels;
 pub mod prelude {
   pub use core::assets::*;
   pub use core::audio::*;
-  pub use core::binding::*;
   pub use core::collections::*;
   pub use core::diagnostics::*;
   pub use core::engine::*;
