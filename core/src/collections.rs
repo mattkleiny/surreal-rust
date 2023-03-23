@@ -5,6 +5,7 @@ pub use arena::*;
 pub use grid::*;
 pub use multimap::*;
 pub use priorityqueue::*;
+pub use quadtree::*;
 pub use resources::*;
 pub use ringbuffer::*;
 pub use smallvec::{smallvec, SmallVec};
@@ -14,6 +15,7 @@ mod arena;
 mod grid;
 mod multimap;
 mod priorityqueue;
+mod quadtree;
 mod resources;
 mod ringbuffer;
 

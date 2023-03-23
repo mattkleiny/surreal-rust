@@ -21,7 +21,7 @@ pub struct QuadTree<T> {
 /// * A leaf contains a single value and the bounds of that value.
 /// * A branch contains four child nodes.
 #[derive(Debug)]
-enum QuadTreeNode<T> {
+pub enum QuadTreeNode<T> {
   Leaf(Option<QuadTreeCell<T>>),
   Branch(Box<[QuadTreeNode<T>; 4]>),
 }
@@ -30,14 +30,14 @@ enum QuadTreeNode<T> {
 ///
 /// A cell contains a value and the bounds of that value in 2-space.
 #[derive(Debug)]
-struct QuadTreeCell<T> {
+pub struct QuadTreeCell<T> {
   value: T,
   bounds: Rectangle,
 }
 
 /// Allows visiting the nodes of a [`QuadTree`] recursively.
 #[allow(unused_variables)]
-trait QuadTreeVisitor<T> {
+pub trait QuadTreeVisitor<T> {
   fn visit_node(&mut self, node: &QuadTreeNode<T>) {
     match node {
       QuadTreeNode::Leaf(None) => {} // no-op; empty leaf
@@ -277,7 +277,7 @@ impl<T> QuadTree<T> {
   }
 
   /// Accepts a visitor to visit all values in the [`QuadTree`].
-  fn accept(&self, visitor: &mut impl QuadTreeVisitor<T>) {
+  pub fn accept(&self, visitor: &mut impl QuadTreeVisitor<T>) {
     if let Some(root) = &self.root {
       visitor.visit_node(root);
     }
