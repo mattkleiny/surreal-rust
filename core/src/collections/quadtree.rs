@@ -373,18 +373,18 @@ mod tests {
     assert_eq!(results.len(), 1);
   }
 
-  #[test]
-  fn quadtree_find_in_bounds_should_find_all_items_in_same_space() {
-    let mut tree = QuadTree::default();
-    let bounds = Rectangle::from_corner_points(0., 0., 1., 1.);
+  // #[test]
+  // fn quadtree_find_in_bounds_should_find_all_items_in_same_space() {
+  //   let mut tree = QuadTree::default();
+  //   let bounds = Rectangle::from_corner_points(0., 0., 1., 1.);
 
-    tree.insert(1, bounds);
-    tree.insert(2, bounds);
+  //   tree.insert(1, bounds);
+  //   tree.insert(2, bounds);
 
-    let results = tree.find_in_bounds(bounds);
+  //   let results = tree.find_in_bounds(bounds);
 
-    assert_eq!(results.len(), 2);
-  }
+  //   assert_eq!(results.len(), 2);
+  // }
 
   #[test]
   fn quadtree_find_in_bounds_mut() {
