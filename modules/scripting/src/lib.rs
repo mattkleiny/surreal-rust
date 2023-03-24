@@ -25,7 +25,7 @@ pub trait ScriptLanguage {
   fn parse(source: &str) -> Result<Self::Expression, ParserError>;
 
   /// Compiles the given abstract syntax tree into a byte code representation.
-  fn compile(expression: Self::Expression) -> Result<CompiledScript, CompilerError>;
+  fn compile(expression: Self::Expression) -> Result<ScriptProgram, CompilerError>;
 }
 
 /// Possible error codes for script operations.
@@ -80,14 +80,14 @@ pub enum OpCode {
   Return,
 }
 
-/// A byte code representation of a compiled script.
+/// A byte code representation of a compiled script program.
 ///
 /// This is the final representation of a script, and is used to execute the
 /// script in the virtual machine.
 #[derive(Debug, Clone)]
-pub struct CompiledScript(Box<[OpCode]>);
+pub struct ScriptProgram(Box<[OpCode]>);
 
-impl CompiledScript {
+impl ScriptProgram {
   /// The magic number used to identify the start of a program.
   const MAGIC_NUMBER: [u8; 4] = [0x53, 0x75, 0x72, 0x65];
 
@@ -102,7 +102,7 @@ impl CompiledScript {
   }
 }
 
-impl TryFrom<&[u8]> for CompiledScript {
+impl TryFrom<&[u8]> for ScriptProgram {
   type Error = OpCodeError;
 
   /// Attempts to convert a vector of bytes into a byte code representation.

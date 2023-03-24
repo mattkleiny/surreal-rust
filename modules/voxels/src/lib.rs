@@ -68,7 +68,7 @@ pub trait VoxelBrush {
 /// Options for painting a [`VoxelChunk`] with a [`VoxelBrush`].
 #[derive(Default, Clone, Debug)]
 pub struct BrushOptions {
-  /// The voxel type to fill the brush with.
+  /// The voxel to fill the brush with.
   pub fill_voxel: Voxel,
 }
 

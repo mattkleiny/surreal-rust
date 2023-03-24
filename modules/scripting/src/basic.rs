@@ -26,7 +26,7 @@ impl ScriptLanguage for BASIC {
     todo!()
   }
 
-  fn compile(_expression: Self::Expression) -> Result<CompiledScript, CompilerError> {
+  fn compile(_expression: Self::Expression) -> Result<ScriptProgram, CompilerError> {
     todo!()
   }
 }
