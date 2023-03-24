@@ -9,6 +9,7 @@
 
 use surreal::maths::{vec3, Plane, Vec3};
 
+/// Represents a vertex in a polygon.
 #[derive(Default, Clone, Debug)]
 pub struct Vertex {
   position: Vec3,
@@ -23,7 +24,7 @@ impl Vertex {
   }
 }
 
-/// A polygon representation for use in [`CsgBrush`] construction.
+/// A polygon representation for use in [`Brush`] construction.
 #[derive(Default, Clone, Debug)]
 pub struct Polygon {
   vertices: Vec<Vertex>,
@@ -31,8 +32,13 @@ pub struct Polygon {
 }
 
 impl Polygon {
-  /// Creates a new polygon from the given vertices.
+  /// Creates a new polygon from the given [`Vertex`]s.
   pub fn new(vertices: &[Vertex]) -> Self {
+    // infer the plane from the first 3 vertices
+    if (vertices.len() as u32) < 3 {
+      panic!("Not enough vertices to construct a polygon!");
+    }
+
     let plane = Plane::from_points(
       vertices[0].position,
       vertices[1].position,
@@ -46,10 +52,9 @@ impl Polygon {
   }
 }
 
-/// A Constructive Solid Geometry (CSG) brush.
+/// A brush produces a collection of [`Polygon`]s.
 ///
-/// A brush produces a collection of [`Polygon`]s. It can be used to construct
-/// a [`Mesh`] and start the CSG pipeline.
+/// It can be used to construct a [`Mesh`] and start the CSG pipeline.
 pub trait Brush {
   /// Returns the [`Polygon`]s that make up this brush.
   fn polygons(&self, options: &BrushOptions) -> Vec<Polygon>;
@@ -182,10 +187,10 @@ impl Mesh {
   }
 }
 
-impl From<Vec<Polygon>> for Mesh {
+impl From<&[Polygon]> for Mesh {
   /// Allows a vector of polygons to be converted into a mesh.
-  fn from(polygons: Vec<Polygon>) -> Self {
-    Self::from_polygons(&polygons)
+  fn from(polygons: &[Polygon]) -> Self {
+    Self::from_polygons(polygons)
   }
 }
 
@@ -257,8 +262,7 @@ mod tests {
 
   #[test]
   fn plane_should_convert_to_mesh() {
-    let plane = Plane::default();
-    let mesh = Mesh::from(&plane);
+    let mesh = Mesh::from(&Plane::default());
 
     assert_eq!(mesh.polygons().len(), 1);
   }
