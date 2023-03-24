@@ -4,6 +4,10 @@
     {
       "type": "cargo",
       "command": "build",
+      "args": [
+        "--all",
+        "--all-features"
+      ],
       "problemMatcher": [
         "$rustc"
       ],

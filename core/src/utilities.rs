@@ -1,5 +1,6 @@
 //! General utilities.
 
+pub use bytemuck;
 pub use object::*;
 pub use parsing::*;
 pub use services::*;
@@ -17,11 +18,6 @@ mod size;
 mod timing;
 mod variant;
 mod version;
-
-/// Re-export `bytemuck` for consumers of Surreal.
-pub mod bytemuck {
-  pub use bytemuck::*;
-}
 
 /// Creates an unsafe mutable alias to the given value.
 ///
