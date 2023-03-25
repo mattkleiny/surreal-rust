@@ -1,5 +1,7 @@
 //! The user interface for the Surreal editor.
 
+use std::ops::{Deref, DerefMut};
+
 pub use panels::*;
 use serde::{Deserialize, Serialize};
 pub use undo::*;
@@ -20,11 +22,11 @@ mod windows;
 pub struct MainWindow {
   editor_context: EditorContext,
   _layout: MainWindowLayout,
-  inspector: Inspector,
-  content_browser: ContentBrowser,
-  _scene_view: SceneView,
-  _game_view: GameView,
-  graph_editor: GraphEditor<u32>,
+  inspector: EditorPanel<Inspector>,
+  content_browser: EditorPanel<ContentBrowser>,
+  _scene_view: EditorPanel<SceneView>,
+  _game_view: EditorPanel<GameView>,
+  graph_editor: EditorPanel<GraphEditor<u32>>,
 }
 
 impl EditorWindow for MainWindow {
@@ -75,7 +77,37 @@ pub struct EditorContext {
 }
 
 /// Represents a panel that can be rendered in the [`MainWindow`].
-pub trait EditorPanel {
+pub struct EditorPanel<C> {
+  contents: C,
+  _layout: PanelLayout,
+}
+
+impl<C> EditorPanel<C> {
+  /// Creates a new [`EditorPanel`] with the given contents.
+  pub fn new(contents: C) -> Self {
+    Self {
+      contents,
+      _layout: PanelLayout::default(),
+    }
+  }
+}
+
+impl<C> Deref for EditorPanel<C> {
+  type Target = C;
+
+  fn deref(&self) -> &Self::Target {
+    &self.contents
+  }
+}
+
+impl<C> DerefMut for EditorPanel<C> {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.contents
+  }
+}
+
+/// The main draw callback for the contents of an Editor Panel.
+pub trait EditorPanelContents {
   /// Renders the active panel in-context.
   fn show(&mut self, ui: &mut egui::Ui, context: &mut EditorContext);
 }
@@ -89,11 +121,11 @@ impl MainWindow {
         _undo_manager: UndoManager::default(),
       },
       _layout: MainWindowLayout::default(),
-      inspector: Inspector::default(),
-      content_browser: ContentBrowser::default(),
-      _scene_view: SceneView::default(),
-      _game_view: GameView::default(),
-      graph_editor: GraphEditor::from_graph(surreal::graphs::Graph::default()),
+      inspector: EditorPanel::new(Inspector::default()),
+      content_browser: EditorPanel::new(ContentBrowser::default()),
+      _scene_view: EditorPanel::new(SceneView::default()),
+      _game_view: EditorPanel::new(GameView::default()),
+      graph_editor: EditorPanel::new(GraphEditor::from_graph(surreal::graphs::Graph::default())),
     }
   }
 }
@@ -110,15 +142,16 @@ pub struct MainWindowLayout {
 }
 
 /// Where to position a single panel within an [`MainWindowLayout`].
-#[derive(Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct PanelLayout {
   position: PanelPosition,
   size: Option<surreal::maths::Vec2>,
 }
 
 /// Where to position a panel within an [`ProjectWindow`].
-#[derive(Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize)]
 pub enum PanelPosition {
+  #[default]
   Floating,
   Center,
   LeftTopInner,

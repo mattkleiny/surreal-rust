@@ -7,7 +7,7 @@ use super::*;
 #[derive(Default)]
 pub struct Inspector {}
 
-impl EditorPanel for Inspector {
+impl EditorPanelContents for Inspector {
   fn show(&mut self, ui: &mut Ui, _context: &mut EditorContext) {
     surreal::diagnostics::profile_scope!("Inspector::show");
 

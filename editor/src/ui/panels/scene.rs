@@ -4,8 +4,8 @@ use super::*;
 #[derive(Default)]
 pub struct SceneView {}
 
-impl SceneView {
-  pub fn show(&mut self, _ui: &mut egui::Ui, _context: &mut EditorContext) {
+impl EditorPanelContents for SceneView {
+  fn show(&mut self, _ui: &mut egui::Ui, _context: &mut EditorContext) {
     surreal::diagnostics::profile_scope!("SceneView::show");
     // no-op
   }

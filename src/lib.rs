@@ -10,12 +10,6 @@
 //! dependency, and features enabled/disabled to toggle the set of requirements
 //! needed for any particular project.
 
-#[cfg(feature = "ai")]
-pub extern crate ai;
-#[cfg(feature = "analytics")]
-pub extern crate analytics;
-#[cfg(feature = "animation")]
-pub extern crate animation;
 pub extern crate core;
 #[cfg(feature = "csg")]
 pub extern crate csg;
@@ -25,8 +19,6 @@ pub extern crate editor;
 pub extern crate prototype;
 #[cfg(feature = "scripting")]
 pub extern crate scripting;
-#[cfg(feature = "streaming")]
-pub extern crate streaming;
 #[cfg(feature = "voxels")]
 pub extern crate voxels;
 

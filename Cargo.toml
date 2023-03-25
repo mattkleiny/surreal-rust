@@ -24,16 +24,10 @@ editor = { package = "surreal-editor", path = "./editor", optional = true }
 macros = { package = "surreal-macros", path = "./macros", optional = true }
 
 # modules
-ai = { package = "surreal-ai", path = "./modules/ai", optional = true }
-analytics = { package = "surreal-analytics", path = "./modules/analytics", optional = true }
-animation = { package = "surreal-animation", path = "./modules/animation", optional = true }
-blueprints = { package = "surreal-blueprints", path = "./modules/blueprints", optional = true }
 csg = { package = "surreal-csg", path = "./modules/csg", optional = true }
-scripting = { package = "surreal-scripting", path = "modules/scripting", optional = true }
 prototype = { package = "surreal-prototype", path = "./modules/prototype", optional = true }
-streaming = { package = "surreal-streaming", path = "./modules/streaming", optional = true }
+scripting = { package = "surreal-scripting", path = "modules/scripting", optional = true }
 voxels = { package = "surreal-voxels", path = "./modules/voxels", optional = true }
-wind = { package = "surreal-wind", path = "./modules/wind", optional = true }
 
 [[example]]
 name = "bunnymark"

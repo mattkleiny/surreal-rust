@@ -1,6 +1,6 @@
 use super::*;
 
-/// An [`EditorPanel`] that renders a view of the actively running scene.
+/// An [`EditorPanel`] that renders a view of the actively running game.
 #[derive(Default)]
 pub struct GameView {}
 

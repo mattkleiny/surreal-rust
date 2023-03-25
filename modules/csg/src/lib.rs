@@ -13,14 +13,17 @@ use surreal::maths::{vec3, Plane, Vec3};
 #[derive(Default, Clone, Debug)]
 pub struct Vertex {
   position: Vec3,
-  normal: Vec3,
+  _normal: Vec3,
 }
 
 impl Vertex {
   /// Constructs a new vertex from the given position and normal.
   #[inline]
   pub const fn new(position: Vec3, normal: Vec3) -> Self {
-    Self { position, normal }
+    Self {
+      position,
+      _normal: normal,
+    }
   }
 }
 

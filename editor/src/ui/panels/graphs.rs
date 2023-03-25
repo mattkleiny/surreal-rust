@@ -33,7 +33,7 @@ pub struct GraphEditor<D> {
 //   ConnectPortEnded { input: PortId, output: PortId },
 // }
 
-impl<D> EditorPanel for GraphEditor<D> {
+impl<D> EditorPanelContents for GraphEditor<D> {
   fn show(&mut self, ui: &mut Ui, _context: &mut EditorContext) {
     surreal::diagnostics::profile_scope!("GraphEditor::show");
 

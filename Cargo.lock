@@ -1492,47 +1492,13 @@ checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 name = "surreal"
 version = "0.1.0"
 dependencies = [
- "surreal-ai",
- "surreal-analytics",
- "surreal-animation",
- "surreal-blueprints",
  "surreal-core",
  "surreal-csg",
  "surreal-editor",
  "surreal-macros",
  "surreal-prototype",
  "surreal-scripting",
- "surreal-streaming",
  "surreal-voxels",
- "surreal-wind",
-]
-
-[[package]]
-name = "surreal-ai"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-analytics"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-animation"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-blueprints"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
 ]
 
 [[package]]
@@ -1621,21 +1587,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "surreal-streaming"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
 name = "surreal-voxels"
-version = "0.1.0"
-dependencies = [
- "surreal-core",
-]
-
-[[package]]
-name = "surreal-wind"
 version = "0.1.0"
 dependencies = [
  "surreal-core",

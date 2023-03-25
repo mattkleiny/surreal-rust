@@ -1,7 +1,0 @@
-[package]
-name = "surreal-streaming"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-surreal = { package = "surreal-core", path = "../../core" }
