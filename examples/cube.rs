@@ -13,7 +13,7 @@ fn main() {
 
       let projection_view = Mat4::perspective_rh_gl(1.0, 1.0, 0.1, 100.0);
 
-      material.set_uniform("u_projectionView", &projection_view);
+      material.set_uniform("u_projectionView", projection_view);
 
       engine.run_variable_step(|engine, _| {
         engine

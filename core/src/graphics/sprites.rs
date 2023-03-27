@@ -129,7 +129,7 @@ impl SpriteBatch {
   }
 
   /// Draws a single sprite texture to the batch with the given options.
-  pub fn draw_sprite<'a>(&mut self, region: &'a TextureRegion, options: &SpriteOptions) {
+  pub fn draw_sprite(&mut self, region: &TextureRegion, options: &SpriteOptions) {
     // flush if we've reached capacity
     if self.vertices.len() + 4 >= self.vertices.capacity() {
       self.flush();

@@ -27,5 +27,7 @@ fn main() -> surreal::Result<()> {
     }),
   )?;
 
-  Ok(EditorWindowHost::from_project(project)?.run())
+  EditorWindowHost::from_project(project)?.run();
+
+  Ok(())
 }

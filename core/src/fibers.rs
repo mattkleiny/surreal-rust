@@ -63,7 +63,6 @@ pub fn block_on<F: Future>(mut future: F) -> F::Output {
           // Notify() was called before we got here, consume it here without waiting and
           // return immediately.
           *state = SignalState::Empty;
-          return;
         }
         // This should not be possible because our signal is created within a function and never
         // handed out to any other threads. If this is the case, we have a serious problem

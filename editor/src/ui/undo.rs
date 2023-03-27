@@ -69,13 +69,13 @@ impl<'a, T> Deref for DiffScope<'a, T> {
   type Target = T;
 
   fn deref(&self) -> &Self::Target {
-    &self.value
+    self.value
   }
 }
 
 impl<'a, T> DerefMut for DiffScope<'a, T> {
   fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.value
+    self.value
   }
 }
 

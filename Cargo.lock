@@ -1281,6 +1281,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rogue"
+version = "0.1.0"
+dependencies = [
+ "surreal-core",
+]
+
+[[package]]
 name = "ron"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -5,9 +5,8 @@ crate::impl_server!(PhysicsServer, PhysicsBackend);
 crate::impl_rid!(ColliderId);
 crate::impl_rid!(BodyId);
 
-impl PhysicsServer {
-  /// Creates a new physics server with the default physics backend.
-  pub fn default() -> Self {
+impl Default for PhysicsServer {
+  fn default() -> Self {
     Self::new(DefaultPhysicsBackend::default())
   }
 }

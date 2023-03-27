@@ -83,6 +83,6 @@ mod tests {
 
     block_on(test.tween_to(1.0, TweenAnimation::default()));
 
-    assert!(test - 1.0 < f32::EPSILON);
+    assert!((test - 1.0).abs() < f32::EPSILON);
   }
 }

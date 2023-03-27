@@ -91,6 +91,11 @@ impl ScriptProgram {
   /// The magic number used to identify the start of a program.
   const MAGIC_NUMBER: [u8; 4] = [0x53, 0x75, 0x72, 0x65];
 
+  /// Is the program empty?
+  pub fn is_empty(&self) -> bool {
+    self.0.is_empty()
+  }
+
   /// Returns the number of opcodes in the program.
   pub fn len(&self) -> usize {
     self.0.len()

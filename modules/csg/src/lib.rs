@@ -157,7 +157,7 @@ impl Mesh {
     for polygon in &mut self.polygons {
       // transform the polygon vertices
       for vertex in &mut polygon.vertices {
-        *vertex = transformation(&vertex);
+        *vertex = transformation(vertex);
       }
 
       // recompute the polygon plane

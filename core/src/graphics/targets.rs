@@ -29,13 +29,13 @@ pub struct RenderTextureDescriptor {
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
   pub fn to_texture(&self, graphics: &GraphicsServer) -> crate::Result<Texture> {
-    Ok(Texture::with_options_and_size(
+    Texture::with_options_and_size(
       graphics,
       &self.options,
       self.width,
       self.height,
       self.options.format,
-    )?)
+    )
   }
 }
 

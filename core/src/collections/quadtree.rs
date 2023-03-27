@@ -96,6 +96,10 @@ impl<T> QuadTree<T> {
   /// Calculates the total bounds of the [`QuadTree`] by visiting all it's nodes
   pub fn calculate_bounds(&self) -> Rectangle {
     fn calculate_recursive<T>(node: &QuadTreeNode<T>, rect: &mut Rectangle, depth: usize) {
+      if depth > 100 {
+        panic!("exceeded maximum recursion depth");
+      }
+
       match node {
         QuadTreeNode::Leaf(None) => {} // no-op; empty leaf
         QuadTreeNode::Leaf(Some(cell)) => rect.extend(&cell.bounds),
@@ -155,6 +159,10 @@ impl<T> QuadTree<T> {
       bounds: Rectangle,
       depth: usize,
     ) -> bool {
+      if depth > 100 {
+        panic!("exceeded maximum recursion depth");
+      }
+
       match node {
         QuadTreeNode::Leaf(Some(cell)) => {
           // if the leaf is already occupied, split the leaf into a branch
@@ -218,6 +226,10 @@ impl<T> QuadTree<T> {
       results: &mut Vec<&'a T>,
       depth: usize,
     ) {
+      if depth > 100 {
+        panic!("exceeded maximum recursion depth");
+      }
+
       match node {
         QuadTreeNode::Leaf(Some(cell)) => {
           if bounds.intersects(&cell.bounds) {
@@ -250,6 +262,10 @@ impl<T> QuadTree<T> {
       results: &mut Vec<&'a mut T>,
       depth: usize,
     ) {
+      if depth > 100 {
+        panic!("exceeded maximum recursion depth");
+      }
+
       // TODO: optimize this by only recursing into quadrants that intersect the
       // bounds
       match node {

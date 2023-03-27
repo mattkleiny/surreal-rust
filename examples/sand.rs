@@ -73,7 +73,7 @@ fn simulate_sand(pixels: &mut Grid<Color32>) {
     for x in 0..pixels.width() {
       let pixel = unsafe { pixels.get_unchecked(x as i32, y as i32) };
 
-      if pixel.a <= 0 {
+      if pixel.a == 0 {
         continue;
       }
 
@@ -98,9 +98,6 @@ fn simulate_particle(pixels: &mut Grid<Color32>, from_pos: (i32, i32), to_pos: (
   if to_y < 0 || to_y > (pixels.height() - 1) as i32 {
     return false;
   }
-
-  let to_x = to_x as i32;
-  let to_y = to_y as i32;
 
   unsafe {
     let target = pixels.get_unchecked(to_x, to_y);
