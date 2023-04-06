@@ -464,6 +464,32 @@ impl MeshBrush<Vertex2> for crate::maths::Cube {
   }
 }
 
+impl MeshBrush<Vertex2> for crate::maths::Circle {
+  fn build(&self, builder: &mut MeshBuilder<Vertex2>) {
+    use std::f32::consts::PI;
+
+    let mut vertices = Vec::with_capacity(16);
+    let mut theta = 0.;
+
+    for _ in 0..16 {
+      theta += 2. * PI / 16.;
+
+      let cos = theta.cos();
+      let sin = theta.sin();
+
+      let x = self.radius * cos;
+      let y = self.radius * sin;
+
+      let u = (cos + 1.) / 2.;
+      let v = (sin + 1.) / 2.;
+
+      vertices.push(Vertex2::new([x, y], [u, v], Color32::WHITE))
+    }
+
+    builder.add_triangle_fan(&vertices);
+  }
+}
+
 impl MeshBrush<Vertex3> for crate::maths::Cube {
   fn build(&self, builder: &mut MeshBuilder<Vertex3>) {
     let min = self.min();

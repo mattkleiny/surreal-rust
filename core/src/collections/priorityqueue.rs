@@ -14,6 +14,12 @@ pub struct PriorityQueue<T> {
   elements: BinaryHeap<Node<T>>,
 }
 
+/// A node in a priority queue with a custom ordering field on the element.
+struct Node<T> {
+  pub value: T,
+  pub order: f32,
+}
+
 impl<T: PartialEq> Default for PriorityQueue<T> {
   fn default() -> Self {
     Self::new()
@@ -60,12 +66,6 @@ impl<T: PartialEq> PriorityQueue<T> {
   pub fn pop(&mut self) -> Option<T> {
     self.elements.pop().map(|node| node.value)
   }
-}
-
-/// A node in a priority queue with a custom ordering field on the element.
-struct Node<T> {
-  pub value: T,
-  pub order: f32,
 }
 
 impl<T: PartialEq> PartialEq for Node<T> {
