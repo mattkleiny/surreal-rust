@@ -293,7 +293,7 @@ impl Debug for SceneComponentSet {
 
 impl<'a> IntoIterator for &'a SceneComponentSet {
   type Item = &'a Box<dyn SceneComponent>;
-  type IntoIter = impl Iterator<Item = &'a Box<dyn SceneComponent>>;
+  type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
@@ -302,7 +302,7 @@ impl<'a> IntoIterator for &'a SceneComponentSet {
 
 impl<'a> IntoIterator for &'a mut SceneComponentSet {
   type Item = &'a mut Box<dyn SceneComponent>;
-  type IntoIter = impl Iterator<Item = &'a mut Box<dyn SceneComponent>>;
+  type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter_mut()
@@ -790,7 +790,7 @@ impl Debug for SceneNode {
 
 impl<'a> IntoIterator for &'a SceneNode {
   type Item = &'a SceneNode;
-  type IntoIter = impl Iterator<Item = &'a SceneNode>;
+  type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
@@ -799,7 +799,7 @@ impl<'a> IntoIterator for &'a SceneNode {
 
 impl<'a> IntoIterator for &'a mut SceneNode {
   type Item = &'a mut SceneNode;
-  type IntoIter = impl Iterator<Item = &'a mut SceneNode>;
+  type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter_mut()

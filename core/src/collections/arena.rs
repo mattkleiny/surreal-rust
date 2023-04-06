@@ -288,7 +288,7 @@ impl<T> Arena<T> {
 
 impl<'a, T> IntoIterator for &'a Arena<T> {
   type Item = (ArenaIndex, &'a T);
-  type IntoIter = impl Iterator<Item = (ArenaIndex, &'a T)>;
+  type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
@@ -297,7 +297,7 @@ impl<'a, T> IntoIterator for &'a Arena<T> {
 
 impl<'a, T> IntoIterator for &'a mut Arena<T> {
   type Item = (ArenaIndex, &'a mut T);
-  type IntoIter = impl Iterator<Item = (ArenaIndex, &'a mut T)>;
+  type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter_mut()

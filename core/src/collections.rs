@@ -9,6 +9,7 @@ pub use quadtree::*;
 pub use resources::*;
 pub use ringbuffer::*;
 pub use smallvec::{smallvec, SmallVec};
+pub use spatialhash::*;
 
 mod anymap;
 mod arena;
@@ -18,6 +19,7 @@ mod priorityqueue;
 mod quadtree;
 mod resources;
 mod ringbuffer;
+mod spatialhash;
 
 /// A faster hash set that is not resilient to DoS attacks.
 pub type FastHashSet<K> = rustc_hash::FxHashSet<K>;

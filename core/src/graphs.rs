@@ -102,7 +102,7 @@ impl<D> Graph<D> {
 
 impl<'a, D> IntoIterator for &'a Graph<D> {
   type Item = &'a GraphNode<D>;
-  type IntoIter = impl Iterator<Item = &'a GraphNode<D>>;
+  type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.nodes()
@@ -111,7 +111,7 @@ impl<'a, D> IntoIterator for &'a Graph<D> {
 
 impl<'a, D> IntoIterator for &'a mut Graph<D> {
   type Item = &'a mut GraphNode<D>;
-  type IntoIter = impl Iterator<Item = &'a mut GraphNode<D>>;
+  type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.nodes_mut()
