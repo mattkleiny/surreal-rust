@@ -16,7 +16,7 @@ use winit::{
   window::{Icon, Window, WindowId},
 };
 
-use crate::{EventBus, MainWindow, Project};
+use crate::{MainWindow, Project};
 
 /// Top-level host for [`EditorWindow`]s in the application.
 ///
@@ -28,7 +28,6 @@ pub struct EditorWindowHost {
   /// This is used to dispatch events to the various systems in the application.
   /// You can grab a reference and [`Clone::clone`] it to produce a new handle
   /// and use it in other window types.
-  pub event_bus: EventBus,
   event_loop: EventLoop<()>,
   windows: FastHashMap<WindowId, WindowState>,
 }
@@ -91,7 +90,6 @@ impl EditorWindowHost {
   pub fn new() -> Self {
     Self {
       event_loop: EventLoop::new(),
-      event_bus: EventBus::default(),
       windows: FastHashMap::default(),
     }
   }

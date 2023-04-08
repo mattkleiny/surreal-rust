@@ -11,7 +11,6 @@ pub use random::*;
 pub use ranges::*;
 pub use rectangles::*;
 pub use shapes::*;
-pub use tweens::*;
 
 mod angles;
 mod curves;
@@ -24,7 +23,6 @@ mod random;
 mod ranges;
 mod rectangles;
 mod shapes;
-mod tweens;
 
 const EPSILON: f32 = 0.00001;
 

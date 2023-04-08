@@ -13,7 +13,7 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
   object::impl_object_trait(input)
 }
 
-/// Builds an [`Singleton`] trait implementation for the associated struct.
+/// Builds a [`Singleton`] trait implementation for the associated struct.
 #[proc_macro_derive(Singleton)]
 pub fn derive_singleton(input: TokenStream) -> TokenStream {
   singleton::impl_singleton_trait(input)

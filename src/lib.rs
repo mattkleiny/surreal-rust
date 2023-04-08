@@ -11,16 +11,10 @@
 //! needed for any particular project.
 
 pub extern crate core;
-#[cfg(feature = "csg")]
-pub extern crate csg;
 #[cfg(feature = "editor")]
 pub extern crate editor;
 #[cfg(feature = "prototype")]
 pub extern crate prototype;
-#[cfg(feature = "scripting")]
-pub extern crate scripting;
-#[cfg(feature = "voxels")]
-pub extern crate voxels;
 
 #[rustfmt::skip]
 pub mod prelude {

@@ -11,6 +11,8 @@ use anyhow::Ok;
 
 use crate::{collections::FastHashMap, io::VirtualPath};
 
+// TODO: implement hot file reloading and other mechanics
+
 /// A id for an asset in the asset manager cache.
 #[derive(Clone, Eq, PartialEq, Hash)]
 struct AssetId(TypeId, String);

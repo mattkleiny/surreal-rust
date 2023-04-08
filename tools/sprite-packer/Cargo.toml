@@ -1,9 +1,0 @@
-[package]
-name = "sprite-packer"
-description = "Tools for packing sprite sheets"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-anyhow = "1.0.66"
-image = { version = "0.24", default-features = false, features = ["png"] }

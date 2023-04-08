@@ -1,4 +1,10 @@
 //! A simple set of tools for rapid prototyping of game ideas and etc.
+//!
+//! A few components are exposed:
+//! * Basic sprite rendering with built-in shaders.
+//! * Color palette shifting support for sprites and effects.
+//! * A tile management system for simple tile maps.
+//! * A pixel canvas system for per-pixel rendering.
 
 pub use pixels::*;
 use surreal::{graphics::*, macros::Object, maths::Mat4};
