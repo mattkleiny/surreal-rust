@@ -10,6 +10,8 @@
 //! dependency, and features enabled/disabled to toggle the set of requirements
 //! needed for any particular project.
 
+// TODO: remove this relabelling once the engine is more mature
+
 pub extern crate core;
 #[cfg(feature = "editor")]
 pub extern crate editor;

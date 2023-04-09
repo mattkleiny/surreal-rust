@@ -12,6 +12,8 @@ use anyhow::Ok;
 use crate::{collections::FastHashMap, io::VirtualPath};
 
 // TODO: implement hot file reloading and other mechanics
+// TODO: clean this entire thing
+// TODO: add a resource idea with inter-resource linkages and lookups
 
 /// A id for an asset in the asset manager cache.
 #[derive(Clone, Eq, PartialEq, Hash)]
