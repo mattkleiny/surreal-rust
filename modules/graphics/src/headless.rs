@@ -2,7 +2,7 @@
 
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use surreal::maths::Rectangle;
+use surreal::maths::{Rectangle, UVec2};
 
 use super::*;
 
@@ -51,7 +51,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     (1920, 1080)
   }
 
-  fn set_viewport_size(&self, size: winit::dpi::PhysicalSize<u32>) {
+  fn set_viewport_size(&self, size: UVec2) {
     // no-op
   }
 

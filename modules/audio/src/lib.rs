@@ -54,6 +54,9 @@ impl AudioSampleRate {
   }
 }
 
+/// An abstraction over the host capable of running audio.
+pub trait AudioHost {}
+
 /// Represents a backend implementation for the underlying audio API.
 ///
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide

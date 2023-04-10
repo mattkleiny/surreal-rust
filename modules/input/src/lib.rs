@@ -47,6 +47,12 @@ impl InputEngine {
   }
 }
 
+/// An abstraction over a host capable of running input.
+pub trait InputHost {
+  /// Returns a list of all input devices that are available on the system.
+  fn enumerate_devices(&self) -> Vec<InputDeviceInfo>;
+}
+
 /// A trait for input devices.
 ///
 /// This trait is implemented by all input devices, such as keyboards, mice,
@@ -64,15 +70,6 @@ pub trait InputDevice {
 /// press. It is provided by the underlying platform and is passed to the input
 /// engine for processing.
 pub enum InputEvent {}
-
-/// A trait for input hosts.
-///
-/// This trait is implemented by all input hosts, such as the game window and
-/// testing harness, and provides a source of input event information out of the
-/// application.
-pub trait InputHost {
-  fn enumerate_devices(&self) -> Vec<InputDeviceInfo>;
-}
 
 /// Information about an input device.
 pub struct InputDeviceInfo {

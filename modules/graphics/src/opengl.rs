@@ -8,14 +8,13 @@ use std::{
 };
 
 use glutin::{
-  config::ConfigTemplate,
-  context::{ContextApi, ContextAttributesBuilder, Version},
-  display::{Display, DisplayApiPreference},
   prelude::*,
-  surface::{Surface, SurfaceAttributesBuilder, SwapInterval, WindowSurface},
+  surface::{Surface, WindowSurface},
 };
-use raw_window_handle::{HasRawDisplayHandle, HasRawWindowHandle};
-use surreal::{maths::Rectangle, utilities::Size};
+use surreal::{
+  maths::{Rectangle, UVec2},
+  utilities::Size,
+};
 
 use super::*;
 
@@ -29,66 +28,6 @@ struct BackendState {
   context: glutin::context::PossiblyCurrentContext,
   surface: Surface<WindowSurface>,
   sampler_cache: HashMap<TextureSampler, u32>,
-}
-
-impl OpenGLGraphicsBackend {
-  pub unsafe fn new(
-    window: &winit::window::Window,
-    vsync_enabled: bool,
-    _samples: u8,
-  ) -> surreal::Result<Self> {
-    let display = Display::new(
-      window.raw_display_handle(),
-      #[cfg(target_os = "windows")]
-      DisplayApiPreference::Wgl(Some(window.raw_window_handle())),
-      #[cfg(target_os = "linux")]
-      DisplayApiPreference::Egl,
-    )?;
-
-    let config = display
-      .find_configs(ConfigTemplate::default())?
-      .next()
-      .ok_or(surreal::anyhow!(
-        "Unable to find appropriate config for display"
-      ))?;
-
-    let context_attributes = ContextAttributesBuilder::new()
-      .with_debug(true)
-      .with_context_api(ContextApi::OpenGl(Some(Version::new(3, 3))))
-      .build(Some(window.raw_window_handle()));
-
-    let surface_attributes = SurfaceAttributesBuilder::<WindowSurface>::new()
-      .with_srgb(None)
-      .with_single_buffer(false)
-      .build(
-        window.raw_window_handle(),
-        NonZeroU32::new(1920).unwrap(),
-        NonZeroU32::new(1080).unwrap(),
-      );
-
-    let context = display.create_context(&config, &context_attributes)?;
-    let surface = display.create_window_surface(&config, &surface_attributes)?;
-    let context = context.make_current(&surface)?;
-
-    surface.set_swap_interval(
-      &context,
-      if vsync_enabled {
-        SwapInterval::Wait(NonZeroU32::new(1).unwrap())
-      } else {
-        SwapInterval::DontWait
-      },
-    )?;
-
-    gl::load_with(|symbol| display.get_proc_address(&CString::new(symbol).unwrap()) as *const _);
-
-    Ok(Self {
-      state: RefCell::new(BackendState {
-        context,
-        surface,
-        sampler_cache: HashMap::new(),
-      }),
-    })
-  }
 }
 
 impl GraphicsBackend for OpenGLGraphicsBackend {
@@ -124,18 +63,18 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn set_viewport_size(&self, size: winit::dpi::PhysicalSize<u32>) {
-    if size.width > 0 && size.height > 0 {
+  fn set_viewport_size(&self, size: UVec2) {
+    if size.x > 0 && size.y > 0 {
       let state = self.state.borrow();
 
       state.surface.resize(
         &state.context,
-        NonZeroU32::new(size.width).unwrap(),
-        NonZeroU32::new(size.height).unwrap(),
+        NonZeroU32::new(size.x).unwrap(),
+        NonZeroU32::new(size.y).unwrap(),
       );
 
       unsafe {
-        gl::Viewport(0, 0, size.width as i32, size.height as i32);
+        gl::Viewport(0, 0, size.x as i32, size.y as i32);
       }
     }
   }

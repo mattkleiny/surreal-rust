@@ -32,6 +32,8 @@ mod sprites;
 mod targets;
 mod textures;
 
+surreal::impl_server!(GraphicsServer, GraphicsBackend);
+
 /// Implements a new opaque identifier for some resource type.
 macro_rules! impl_graphics_id {
   ($name:ident) => {
@@ -80,14 +82,11 @@ macro_rules! impl_graphics_id {
     }
   };
 }
-
 impl_graphics_id!(BufferId);
 impl_graphics_id!(TextureId);
 impl_graphics_id!(ShaderId);
 impl_graphics_id!(MeshId);
 impl_graphics_id!(TargetId);
-
-surreal::impl_server!(GraphicsServer, GraphicsBackend);
 
 impl GraphicsServer {
   /// Creates a new [`GraphicsServer`] with a no-op, headless backend.
@@ -96,18 +95,8 @@ impl GraphicsServer {
   }
 
   /// Creates a new [`GraphicsServer`] with an OpenGL backend.
-  pub fn create_opengl(
-    window: &winit::window::Window,
-    vsync_enabled: bool,
-    samples: u8,
-  ) -> surreal::Result<Self> {
-    unsafe {
-      Ok(Self::new(opengl::OpenGLGraphicsBackend::new(
-        window,
-        vsync_enabled,
-        samples,
-      )?))
-    }
+  pub fn create_opengl(_host: &dyn GraphicsHost) -> surreal::Result<Self> {
+    todo!()
   }
 }
 
@@ -157,6 +146,13 @@ pub enum TargetError {
   InvalidId(TargetId),
 }
 
+/// An abstraction over the host capable of running graphics.
+///
+/// This type implemented by the host application and is used to provide the
+/// graphics backend with access to the host's windowing system and other
+/// infrastructure.
+pub trait GraphicsHost {}
+
 /// An abstraction on top of the underlying graphics API.
 ///
 /// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
@@ -175,7 +171,7 @@ pub trait GraphicsBackend {
 
   // intrinsics
   fn viewport_size(&self) -> (usize, usize);
-  fn set_viewport_size(&self, size: winit::dpi::PhysicalSize<u32>);
+  fn set_viewport_size(&self, size: surreal::maths::UVec2);
   fn set_blend_state(&self, blend_state: BlendState);
   fn set_culling_mode(&self, culling_mode: CullingMode);
   fn set_scissor_mode(&self, scissor_mode: ScissorMode);

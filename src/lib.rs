@@ -10,13 +10,26 @@
 //! dependency, and features enabled/disabled to toggle the set of requirements
 //! needed for any particular project.
 
+#[cfg(feature = "assets")]
+pub extern crate assets;
+#[cfg(feature = "audio")]
+pub extern crate audio;
 // TODO: remove this relabelling once the engine is more mature
-
 pub extern crate core;
 #[cfg(feature = "editor")]
 pub extern crate editor;
+#[cfg(feature = "graphics")]
+pub extern crate graphics;
+#[cfg(feature = "input")]
+pub extern crate input;
+#[cfg(feature = "physics")]
+pub extern crate physics;
 #[cfg(feature = "prototype")]
 pub extern crate prototype;
+#[cfg(feature = "scene")]
+pub extern crate scene;
+#[cfg(feature = "ui")]
+pub extern crate ui;
 
 #[rustfmt::skip]
 pub mod prelude {
@@ -26,6 +39,7 @@ pub mod prelude {
   pub use core::engine::*;
   pub use core::graphics::*;
   pub use core::graphs::*;
+  pub use core::il8n::*;
   pub use core::input::*;
   pub use core::io::*;
   pub use core::macros::*;

@@ -1880,13 +1880,9 @@ version = "0.1.0"
 dependencies = [
  "gl",
  "glutin",
- "glutin-winit",
- "raw-window-handle",
- "rodio",
  "serde",
  "surreal-core",
  "thiserror",
- "winit",
 ]
 
 [[package]]

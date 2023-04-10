@@ -34,7 +34,7 @@ macro_rules! impl_ray {
         (point - self.origin).length()
       }
 
-      /// Calculate the distance from the ray origin to the given point along the ray
+      /// Calculate the distance from the origin to the given point along the ray
       #[inline(always)]
       pub fn distance_along(&self, point: $vec) -> $scalar {
         (point - self.origin).dot(self.direction) / self.direction.length()

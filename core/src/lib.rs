@@ -23,6 +23,7 @@ pub mod diagnostics;
 pub mod engine;
 pub mod graphics;
 pub mod graphs;
+pub mod il8n;
 pub mod input;
 pub mod io;
 pub mod maths;
