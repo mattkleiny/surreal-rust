@@ -13,12 +13,10 @@ use winit::{
 
 use crate::{
   assets::AssetManager,
-  audio::AudioServer,
   diagnostics::{self, ConsoleLogger, LevelFilter},
   graphics::{GraphicsServer, Image, ImageFormat, Renderer},
   input::InputServer,
   maths::{uvec2, vec2},
-  physics::PhysicsServer,
   scene::SceneGraph,
   utilities::{DeltaClock, FrameCounter, IntervalTimer, TimeSpan},
 };
@@ -213,9 +211,7 @@ impl EngineBuilder {
 /// This struct manages core systems and facilitates the main game loop.
 pub struct Engine {
   // core systems
-  pub audio: AudioServer,
   pub graphics: GraphicsServer,
-  pub physics: PhysicsServer,
   pub input: InputServer,
 
   // window management
@@ -253,16 +249,12 @@ impl Engine {
       }))
       .build(&event_loop)?;
 
-    let audio = AudioServer::rodio();
     let graphics = GraphicsServer::create_opengl(&window, config.vsync_enabled, config.samples)?;
-    let physics = PhysicsServer::default();
     let input = InputServer::new(window.scale_factor() as f32);
 
     Ok(Self {
       // servers
-      audio,
       graphics,
-      physics,
       input,
 
       // window management

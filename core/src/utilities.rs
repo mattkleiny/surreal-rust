@@ -2,7 +2,6 @@
 
 pub use bytemuck;
 pub use object::*;
-pub use parsing::*;
 pub use services::*;
 pub use singleton::*;
 pub use size::*;
@@ -11,7 +10,6 @@ pub use variant::*;
 pub use version::*;
 
 mod object;
-mod parsing;
 mod services;
 mod singleton;
 mod size;
@@ -25,6 +23,7 @@ mod version;
 /// caution and only to facilitate a cleaner API.
 #[inline(always)]
 pub(crate) fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
+  // TODO: find a way to remove this completely
   unsafe {
     let pointer = value as *const T;
     let pointer = pointer as *mut T;

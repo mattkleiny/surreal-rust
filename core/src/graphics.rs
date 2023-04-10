@@ -90,14 +90,12 @@ impl_graphics_id!(TargetId);
 crate::impl_server!(GraphicsServer, GraphicsBackend);
 
 impl GraphicsServer {
-  /// Creates a new [`GraphicsServer`] with a
-  /// [`headless::HeadlessGraphicsBackend`].
+  /// Creates a new [`GraphicsServer`] with a no-op, headless backend.
   pub fn create_headless() -> Self {
     Self::new(headless::HeadlessGraphicsBackend::default())
   }
 
-  /// Creates a new [`GraphicsServer`] with an
-  /// [`opengl::OpenGLGraphicsBackend`].
+  /// Creates a new [`GraphicsServer`] with an OpenGL backend.
   pub fn create_opengl(
     window: &winit::window::Window,
     vsync_enabled: bool,

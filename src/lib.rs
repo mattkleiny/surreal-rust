@@ -21,18 +21,15 @@ pub extern crate prototype;
 #[rustfmt::skip]
 pub mod prelude {
   pub use core::assets::*;
-  pub use core::audio::*;
   pub use core::collections::*;
   pub use core::diagnostics::*;
   pub use core::engine::*;
-  pub use core::fibers::*;
   pub use core::graphics::*;
   pub use core::graphs::*;
   pub use core::input::*;
   pub use core::io::*;
   pub use core::macros::*;
   pub use core::maths::*;
-  pub use core::physics::*;
   pub use core::scene::*;
   pub use core::ui::*;
   pub use core::utilities::*;

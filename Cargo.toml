@@ -26,10 +26,11 @@ macros = { package = "surreal-macros", path = "./macros", optional = true }
 assets = { package = "surreal-assets", path = "./modules/assets", optional = true }
 audio = { package = "surreal-audio", path = "./modules/audio", optional = true }
 graphics = { package = "surreal-graphics", path = "./modules/graphics", optional = true }
-scene = { package = "surreal-scene", path = "./modules/scene", optional = true }
 input = { package = "surreal-input", path = "./modules/input", optional = true }
 physics = { package = "surreal-physics", path = "./modules/physics", optional = true }
 prototype = { package = "surreal-prototype", path = "./modules/prototype", optional = true }
+scene = { package = "surreal-scene", path = "./modules/scene", optional = true }
+ui = { package = "surreal-ui", path = "./modules/ui", optional = true }
 
 [[example]]
 name = "bunnymark"

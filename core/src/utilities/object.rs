@@ -1,5 +1,7 @@
 use std::any::Any;
 
+// TODO: find a way to remove this completely
+
 /// Represents an 'Object'.
 ///
 /// Objects are poly-morphically cast-able at runtime and carry

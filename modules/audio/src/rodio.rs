@@ -37,4 +37,16 @@ impl AudioBackend for RodioAudioBackend {
   fn source_delete(&self, source: AudioSourceId) {
     todo!()
   }
+
+  fn source_get_clip(&self, source: AudioSourceId) -> Option<AudioClipId> {
+    todo!()
+  }
+
+  fn source_set_clip(&self, source: AudioSourceId, clip: AudioClipId) {
+    todo!()
+  }
+
+  fn source_play(&self, source: AudioSourceId) {
+    todo!()
+  }
 }

@@ -18,17 +18,14 @@ pub use anyhow::{anyhow, bail, Error, Result};
 pub use macros;
 
 pub mod assets;
-pub mod audio;
 pub mod collections;
 pub mod diagnostics;
 pub mod engine;
-pub mod fibers;
 pub mod graphics;
 pub mod graphs;
 pub mod input;
 pub mod io;
 pub mod maths;
-pub mod physics;
 pub mod scene;
 pub mod ui;
 pub mod utilities;

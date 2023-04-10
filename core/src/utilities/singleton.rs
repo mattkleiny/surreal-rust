@@ -5,6 +5,8 @@ use std::{
 
 use once_cell::sync::Lazy;
 
+// TODO: find a way to remove this completely
+
 /// A singleton that can be referenced and mutated statically in the
 /// application.
 pub trait Singleton: 'static {

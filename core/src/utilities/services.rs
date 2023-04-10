@@ -2,6 +2,8 @@ use std::any::TypeId;
 
 use crate::{collections::FastHashMap, utilities::Object};
 
+// TODO: find a way to remove this completely
+
 /// A service that can be accessed via a [`ServiceProvider`].
 pub trait Service: Object {}
 
