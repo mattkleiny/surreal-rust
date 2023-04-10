@@ -23,6 +23,12 @@ editor = { package = "surreal-editor", path = "./editor", optional = true }
 macros = { package = "surreal-macros", path = "./macros", optional = true }
 
 # modules
+assets = { package = "surreal-assets", path = "./modules/assets", optional = true }
+audio = { package = "surreal-audio", path = "./modules/audio", optional = true }
+graphics = { package = "surreal-graphics", path = "./modules/graphics", optional = true }
+scene = { package = "surreal-scene", path = "./modules/scene", optional = true }
+input = { package = "surreal-input", path = "./modules/input", optional = true }
+physics = { package = "surreal-physics", path = "./modules/physics", optional = true }
 prototype = { package = "surreal-prototype", path = "./modules/prototype", optional = true }
 
 [[example]]

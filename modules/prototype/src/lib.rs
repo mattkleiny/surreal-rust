@@ -1,3 +1,5 @@
+//! Prototyping module for Surreal.
+//!
 //! A simple set of tools for rapid prototyping of game ideas and etc.
 //!
 //! A few components are exposed:

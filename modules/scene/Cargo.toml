@@ -1,0 +1,9 @@
+[package]
+name = "surreal-scene"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+surreal = { package = "surreal-core", path = "../../core" }
+serde = { version = "1.0.159", features = ["derive"] }
+bitflags = "2.1.0"

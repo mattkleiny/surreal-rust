@@ -33,6 +33,7 @@ pub struct EngineConfig {
   pub vsync_enabled: bool,
   pub samples: u8,
   pub update_continuously: bool,
+  pub update_in_background: bool,
   pub is_window_visible: bool,
   pub transparent_window: bool,
   pub show_fps_in_title: bool,
@@ -48,6 +49,7 @@ impl Default for EngineConfig {
       vsync_enabled: true,
       samples: 1,
       update_continuously: true,
+      update_in_background: false,
       is_window_visible: true,
       transparent_window: false,
       show_fps_in_title: true,
@@ -128,6 +130,11 @@ impl EngineBuilder {
 
   pub fn with_update_continuously(mut self, update_continuously: bool) -> Self {
     self.config.update_continuously = update_continuously;
+    self
+  }
+
+  pub fn with_update_in_background(mut self, update_in_background: bool) -> Self {
+    self.config.update_in_background = update_in_background;
     self
   }
 
@@ -366,7 +373,9 @@ impl Engine {
           body(&mut self, TickEvent::Update(time));
 
           // main control flow
-          if self.config.update_continuously && self.is_focused {
+          if self.config.update_continuously
+            && (self.is_focused || self.config.update_in_background)
+          {
             self.update_frame_counter();
             *control_flow = ControlFlow::Poll;
           } else {

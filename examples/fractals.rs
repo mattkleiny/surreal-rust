@@ -9,6 +9,7 @@ fn main() {
   EngineBuilder::default()
     .with_title("Fractals")
     .with_log_level(LevelFilter::Trace)
+    .with_update_in_background(true)
     .start(|engine, _| {
       let graphics = &engine.graphics;
 
