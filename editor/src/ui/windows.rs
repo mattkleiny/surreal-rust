@@ -107,7 +107,7 @@ impl EditorWindowHost {
 
     // set-up graphics server and user interface
     let pixels_per_point = window.scale_factor() as f32;
-    let graphics_server = GraphicsServer::opengl(&window, true, 1)?;
+    let graphics_server = GraphicsServer::create_opengl(&window, true, 1)?;
     let input_server = InputServer::new(pixels_per_point);
     let user_interface = UserInterface::new(&graphics_server)?;
 

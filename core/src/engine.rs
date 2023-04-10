@@ -247,7 +247,7 @@ impl Engine {
       .build(&event_loop)?;
 
     let audio = AudioServer::rodio();
-    let graphics = GraphicsServer::opengl(&window, config.vsync_enabled, config.samples)?;
+    let graphics = GraphicsServer::create_opengl(&window, config.vsync_enabled, config.samples)?;
     let physics = PhysicsServer::default();
     let input = InputServer::new(window.scale_factor() as f32);
 

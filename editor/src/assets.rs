@@ -163,6 +163,12 @@ impl AssetDatabase {
 /// The output of the importer is cached in the asset database, and is used to
 /// determine whether an asset needs to be re-imported.
 pub trait AssetImporter {
+  /// Returns the priority of the importer.
+  /// Importers with a higher priority will be invoked first.
+  fn priority(&self) -> u32 {
+    0 // no priority by default
+  }
+
   /// Determines if the importer can import the given asset.
   fn can_handle(&self, path: &VirtualPath) -> bool;
 

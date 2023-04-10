@@ -89,7 +89,7 @@ impl Texture {
   }
 
   /// Builds a new colored texture of the given size.
-  pub fn create_colored<T: Texel + Clone>(
+  pub fn from_color<T: Texel + Clone>(
     graphics: &GraphicsServer,
     width: usize,
     height: usize,
