@@ -1,7 +1,8 @@
 [package]
 name = "surreal-prototype"
-version = "0.1.0"
-edition = "2021"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
 
 [dependencies]
 surreal = { package = "surreal-core", path = "../../core" }
