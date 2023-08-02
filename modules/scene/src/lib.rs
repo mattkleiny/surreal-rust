@@ -8,8 +8,9 @@
 //! They are attached to nodes and can be queried by the renderer to determine
 //! what to render.
 
-#![feature(type_alias_impl_trait)]
 #![allow(dead_code)]
+#![feature(impl_trait_in_assoc_type)]
+#![feature(type_alias_impl_trait)]
 
 pub use components::*;
 pub use graph::*;
