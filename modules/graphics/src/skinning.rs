@@ -61,14 +61,14 @@ impl Skeleton {
     index
   }
 
-  /// Tries to find a bone with the given name.
-  ///
-  /// N.B: The name must be unique, and the search is case-insensitive.
-  pub fn find_bone(&self, name: &str) -> Option<usize> {
-    self
-      .bones
-      .iter()
-      .position(|bone| bone.name.eq_ignore_ascii_case(name))
+  /// True if this skeleton has no bones.
+  pub fn is_empty(&self) -> bool {
+    self.bones.is_empty()
+  }
+
+  /// The number of bones in this skeleton.
+  pub fn len(&self) -> usize {
+    self.bones.len()
   }
 
   /// Borrows a bone from this skeleton.
@@ -79,6 +79,37 @@ impl Skeleton {
   /// Mutably borrows a bone from this skeleton.
   pub fn bone_mut(&mut self, index: usize) -> Option<&mut Bone> {
     self.bones.get_mut(index)
+  }
+
+  /// Tries to find a bone with the given name.
+  pub fn find_bone(&self, name: &str) -> Option<&Bone> {
+    self
+      .bones_by_name
+      .get(name)
+      .and_then(|index| self.bones.get(*index))
+  }
+
+  /// Tries to find a bone with the given name.
+  pub fn find_bone_mut(&mut self, name: &str) -> Option<&mut Bone> {
+    self
+      .bones_by_name
+      .get(name)
+      .and_then(|index| self.bones.get_mut(*index))
+  }
+
+  /// Tries to find a bone with the given name, and returns its index.
+  pub fn find_bone_index(&self, name: &str) -> Option<usize> {
+    self.bones_by_name.get(name).copied()
+  }
+
+  /// Borrows all of the bones in this skeleton.
+  pub fn bones(&self) -> &[Bone] {
+    &self.bones
+  }
+
+  /// Mutably borrows all of the bones in this skeleton.
+  pub fn bones_mut(&mut self) -> &mut [Bone] {
+    &mut self.bones
   }
 
   /// Updates all of the inverse bind matrices for this skeleton.
@@ -142,12 +173,23 @@ impl Animation {
     animation
   }
 
+  /// True if this animation has no keyframes.
+  pub fn is_empty(&self) -> bool {
+    self.keyframes.is_empty()
+  }
+
+  /// The number of keyframes in this animation.
+  pub fn len(&self) -> usize {
+    self.keyframes.len()
+  }
+
   /// Adds a new keyframe to this animation.
   ///
   /// N.B: The keyframe will be inserted into the animation in the correct
   /// order, so we'll need to sort the keyframes after adding a new one.
   pub fn add_keyframe(&mut self, keyframe: Keyframe) {
     self.keyframes.push(keyframe);
+
     self.sort_keyframes()
   }
 
@@ -208,4 +250,96 @@ impl Vertex for SkinVertex {
     VertexDescriptor { count: 4, kind: VertexKind::U32, should_normalize: false },
     VertexDescriptor { count: 4, kind: VertexKind::F32, should_normalize: false },
   ];
+}
+
+#[cfg(test)]
+mod tests {
+  use surreal::{maths::vec3, ui::egui::Key};
+
+  use super::*;
+
+  #[test]
+  fn skeleton_should_transfer_bone_transforms_on_update() {
+    let mut skeleton = Skeleton::from_bones(vec![
+      Bone {
+        name: "root".to_string(),
+        parent: None,
+        transform: Mat4::IDENTITY,
+        inverse_bind: Mat4::IDENTITY,
+      },
+      Bone {
+        name: "hip".to_string(),
+        parent: Some(0),
+        transform: Mat4::from_translation(vec3(0.0, 0.0, 1.0)),
+        inverse_bind: Mat4::IDENTITY,
+      },
+      Bone {
+        name: "knee".to_string(),
+        parent: Some(1),
+        transform: Mat4::from_translation(vec3(0.0, 0.0, 1.0)),
+        inverse_bind: Mat4::IDENTITY,
+      },
+    ]);
+
+    skeleton.update_bind_matrices();
+  }
+
+  #[test]
+  fn skeleton_should_find_bone_by_name() {
+    let skeleton = Skeleton::from_bones(vec![
+      Bone {
+        name: "root".to_string(),
+        parent: None,
+        transform: Mat4::IDENTITY,
+        inverse_bind: Mat4::IDENTITY,
+      },
+      Bone {
+        name: "hip".to_string(),
+        parent: Some(0),
+        transform: Mat4::from_translation(vec3(0.0, 0.0, 1.0)),
+        inverse_bind: Mat4::IDENTITY,
+      },
+      Bone {
+        name: "knee".to_string(),
+        parent: Some(1),
+        transform: Mat4::from_translation(vec3(0.0, 0.0, 1.0)),
+        inverse_bind: Mat4::IDENTITY,
+      },
+    ]);
+
+    assert!(skeleton.find_bone("root").is_some());
+    assert!(skeleton.find_bone("hip").is_some());
+    assert!(skeleton.find_bone("knee").is_some());
+    assert!(skeleton.find_bone("foot").is_none());
+  }
+
+  #[test]
+  fn animation_should_insert_keyframes_in_chronological_order() {
+    let animation = Animation::from_keyframes(
+      3.,
+      vec![
+        Keyframe {
+          normalised_time: 1.,
+          transform: Mat4::IDENTITY,
+        },
+        Keyframe {
+          normalised_time: 0.7,
+          transform: Mat4::IDENTITY,
+        },
+        Keyframe {
+          normalised_time: 0.6,
+          transform: Mat4::IDENTITY,
+        },
+        Keyframe {
+          normalised_time: 0.,
+          transform: Mat4::IDENTITY,
+        },
+      ],
+    );
+
+    assert_eq!(animation.keyframes[0].normalised_time, 0.);
+    assert_eq!(animation.keyframes[1].normalised_time, 0.6);
+    assert_eq!(animation.keyframes[2].normalised_time, 0.7);
+    assert_eq!(animation.keyframes[3].normalised_time, 1.);
+  }
 }
