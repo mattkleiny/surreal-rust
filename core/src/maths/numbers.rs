@@ -17,6 +17,8 @@ pub trait Numeric:
 {
   const ZERO: Self;
   const ONE: Self;
+  const MIN: Self;
+  const MAX: Self;
 
   /// Converts a value from a 32-bit floating point number.
   fn from_f32(value: f32) -> Self;
@@ -34,6 +36,8 @@ macro_rules! impl_numeric {
     impl Numeric for $type {
       const ZERO: Self = 0 as Self;
       const ONE: Self = 1 as Self;
+      const MIN: Self = <$type>::MIN;
+      const MAX: Self = <$type>::MAX;
 
       #[inline(always)]
       fn from_f32(value: f32) -> Self {
