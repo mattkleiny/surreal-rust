@@ -2,7 +2,13 @@
 
 use surreal::{collections::FastHashMap, maths::Mat4};
 
-use crate::{BufferUsage, GraphicsServer, Mesh, Vertex, VertexDescriptor, VertexKind};
+use crate::{
+  BufferUsage, GraphicsServer, Material, Mesh, PrimitiveTopology, UniformKey, Vertex,
+  VertexDescriptor, VertexKind,
+};
+
+/// The name of the uniform containing the bones of the skeleton.
+pub const UNIFORM_BONES: UniformKey<&[Mat4]> = UniformKey::new("u_bones");
 
 /// A single bone in a skeleton.
 #[derive(Debug, Clone)]
@@ -50,17 +56,6 @@ impl Skeleton {
     skeleton
   }
 
-  /// Adds a bone to this skeleton, and returns its index.
-  pub fn add_bone(&mut self, bone: Bone) -> usize {
-    let index = self.bones.len();
-    let name = bone.name.clone();
-
-    self.bones.push(bone);
-    self.bones_by_name.insert(name, index);
-
-    index
-  }
-
   /// True if this skeleton has no bones.
   pub fn is_empty(&self) -> bool {
     self.bones.is_empty()
@@ -71,14 +66,15 @@ impl Skeleton {
     self.bones.len()
   }
 
-  /// Borrows a bone from this skeleton.
-  pub fn bone(&self, index: usize) -> Option<&Bone> {
-    self.bones.get(index)
-  }
+  /// Adds a bone to this skeleton, and returns its index.
+  pub fn add_bone(&mut self, bone: Bone) -> usize {
+    let index = self.bones.len();
+    let name = bone.name.clone();
 
-  /// Mutably borrows a bone from this skeleton.
-  pub fn bone_mut(&mut self, index: usize) -> Option<&mut Bone> {
-    self.bones.get_mut(index)
+    self.bones.push(bone);
+    self.bones_by_name.insert(name, index);
+
+    index
   }
 
   /// Tries to find a bone with the given name.
@@ -100,6 +96,16 @@ impl Skeleton {
   /// Tries to find a bone with the given name, and returns its index.
   pub fn find_bone_index(&self, name: &str) -> Option<usize> {
     self.bones_by_name.get(name).copied()
+  }
+
+  /// Borrows a bone from this skeleton.
+  pub fn bone(&self, index: usize) -> Option<&Bone> {
+    self.bones.get(index)
+  }
+
+  /// Mutably borrows a bone from this skeleton.
+  pub fn bone_mut(&mut self, index: usize) -> Option<&mut Bone> {
+    self.bones.get_mut(index)
   }
 
   /// Borrows all of the bones in this skeleton.
@@ -228,6 +234,22 @@ impl SkinnedMesh {
       skin: Skin::default(),
     })
   }
+
+  /// Draws the mesh with the given material.
+  pub fn draw(&self, material: &mut Material) {
+    material.set_uniform(
+      UNIFORM_BONES,
+      &self
+        .skin
+        .skeleton
+        .bones()
+        .iter()
+        .map(|it| it.transform)
+        .collect::<Vec<_>>(),
+    );
+
+    self.mesh.draw(material, PrimitiveTopology::Triangles);
+  }
 }
 
 /// A single vertex in a [`SkinnedMesh`].
@@ -254,7 +276,7 @@ impl Vertex for SkinVertex {
 
 #[cfg(test)]
 mod tests {
-  use surreal::{maths::vec3, ui::egui::Key};
+  use surreal::maths::vec3;
 
   use super::*;
 

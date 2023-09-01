@@ -506,42 +506,54 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     value: &ShaderUniform,
   ) -> Result<(), ShaderError> {
     unsafe {
-      let shader = shader.into();
+      let shader_id = shader.into();
 
       match value {
         ShaderUniform::Bool(value) => {
-          gl::ProgramUniform1i(shader, location as i32, *value as i32);
+          gl::ProgramUniform1i(shader_id, location as i32, *value as i32);
         }
         ShaderUniform::I32(value) => {
-          gl::ProgramUniform1i(shader, location as i32, *value);
+          gl::ProgramUniform1i(shader_id, location as i32, *value);
         }
         ShaderUniform::U32(value) => {
-          gl::ProgramUniform1i(shader, location as i32, *value as i32);
+          gl::ProgramUniform1i(shader_id, location as i32, *value as i32);
         }
         ShaderUniform::F32(value) => {
-          gl::ProgramUniform1f(shader, location as i32, *value);
+          gl::ProgramUniform1f(shader_id, location as i32, *value);
         }
         ShaderUniform::Vec2(value) => {
-          gl::ProgramUniform2f(shader, location as i32, value.x, value.y);
+          gl::ProgramUniform2f(shader_id, location as i32, value.x, value.y);
         }
         ShaderUniform::Vec3(value) => {
-          gl::ProgramUniform3f(shader, location as i32, value.x, value.y, value.z);
+          gl::ProgramUniform3f(shader_id, location as i32, value.x, value.y, value.z);
         }
         ShaderUniform::Vec4(value) => {
-          gl::ProgramUniform4f(shader, location as i32, value.x, value.y, value.z, value.w);
+          gl::ProgramUniform4f(
+            shader_id,
+            location as i32,
+            value.x,
+            value.y,
+            value.z,
+            value.w,
+          );
         }
         ShaderUniform::DVec2(value) => {
-          gl::ProgramUniform2d(shader, location as i32, value.x, value.y)
+          gl::ProgramUniform2d(shader_id, location as i32, value.x, value.y)
         }
         ShaderUniform::DVec3(value) => {
-          gl::ProgramUniform3d(shader, location as i32, value.x, value.y, value.z)
+          gl::ProgramUniform3d(shader_id, location as i32, value.x, value.y, value.z)
         }
-        ShaderUniform::DVec4(value) => {
-          gl::ProgramUniform4d(shader, location as i32, value.x, value.y, value.z, value.w)
-        }
+        ShaderUniform::DVec4(value) => gl::ProgramUniform4d(
+          shader_id,
+          location as i32,
+          value.x,
+          value.y,
+          value.z,
+          value.w,
+        ),
         ShaderUniform::Mat2(value) => {
           gl::ProgramUniformMatrix2fv(
-            shader,
+            shader_id,
             location as i32,
             1,
             gl::FALSE,
@@ -550,7 +562,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         }
         ShaderUniform::Mat3(value) => {
           gl::ProgramUniformMatrix3fv(
-            shader,
+            shader_id,
             location as i32,
             1,
             gl::FALSE,
@@ -559,7 +571,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         }
         ShaderUniform::Mat4(value) => {
           gl::ProgramUniformMatrix4fv(
-            shader,
+            shader_id,
             location as i32,
             1,
             gl::FALSE,
@@ -568,7 +580,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         }
         ShaderUniform::DMat2(value) => {
           gl::ProgramUniformMatrix2dv(
-            shader,
+            shader_id,
             location as i32,
             1,
             gl::FALSE,
@@ -577,7 +589,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         }
         ShaderUniform::DMat3(value) => {
           gl::ProgramUniformMatrix3dv(
-            shader,
+            shader_id,
             location as i32,
             1,
             gl::FALSE,
@@ -586,7 +598,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         }
         ShaderUniform::DMat4(value) => {
           gl::ProgramUniformMatrix4dv(
-            shader,
+            shader_id,
             location as i32,
             1,
             gl::FALSE,
@@ -594,17 +606,38 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           );
         }
         ShaderUniform::Quat(value) => {
-          gl::ProgramUniform4f(shader, location as i32, value.x, value.y, value.z, value.w);
+          gl::ProgramUniform4f(
+            shader_id,
+            location as i32,
+            value.x,
+            value.y,
+            value.z,
+            value.w,
+          );
         }
         ShaderUniform::DQuat(value) => {
-          gl::ProgramUniform4d(shader, location as i32, value.x, value.y, value.z, value.w);
+          gl::ProgramUniform4d(
+            shader_id,
+            location as i32,
+            value.x,
+            value.y,
+            value.z,
+            value.w,
+          );
         }
         ShaderUniform::Color(color) => {
-          gl::ProgramUniform4f(shader, location as i32, color.r, color.g, color.b, color.a);
+          gl::ProgramUniform4f(
+            shader_id,
+            location as i32,
+            color.r,
+            color.g,
+            color.b,
+            color.a,
+          );
         }
         ShaderUniform::Color32(color) => {
           gl::ProgramUniform4ui(
-            shader,
+            shader_id,
             location as i32,
             color.r as u32,
             color.g as u32,
@@ -615,7 +648,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         ShaderUniform::Texture(texture, slot, sampler) => {
           gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
           gl::BindTexture(gl::TEXTURE_2D, texture.id().into());
-          gl::ProgramUniform1i(shader, location as i32, *slot as i32);
+          gl::ProgramUniform1i(shader_id, location as i32, *slot as i32);
 
           if let Some(sampler) = sampler {
             // build and cache sampler settings based on hash of options
@@ -653,6 +686,11 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             gl::BindSampler(*slot as u32, *sampler_id);
           } else {
             gl::BindSampler(*slot as u32, 0);
+          }
+        }
+        ShaderUniform::Array(uniforms) => {
+          for (index, uniform) in uniforms.iter().enumerate() {
+            self.shader_set_uniform(shader, location + index, uniform)?;
           }
         }
       };
