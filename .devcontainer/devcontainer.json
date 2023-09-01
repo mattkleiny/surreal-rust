@@ -1,5 +1,6 @@
 {
   "name": "Rust",
-  "image": "mcr.microsoft.com/devcontainers/rust:latest",
-  "postCreateCommand": "bash ./.devcontainer/setup.sh"
+  "build": {
+    "dockerfile": "Dockerfile"
+  }
 }
