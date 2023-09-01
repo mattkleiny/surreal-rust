@@ -57,6 +57,23 @@ pub enum ShaderUniform {
   Color(Color),
   Color32(Color32),
   Texture(Texture, u8, Option<TextureSampler>),
+  Array(Vec<ShaderUniform>),
+}
+
+/// Allow for the conversion of a slice of values into a shader uniform array,
+/// provided all of the values can be individually converted into a uniform.
+impl<U> From<&[U]> for ShaderUniform
+where
+  for<'a> &'a U: Into<ShaderUniform>,
+{
+  fn from(value: &[U]) -> Self {
+    Self::Array(
+      value
+        .iter()
+        .map(|v| v.into())
+        .collect::<Vec<ShaderUniform>>(),
+    )
+  }
 }
 
 /// Identifies a kind of [`ShaderUniform`] for strongly-typed assignment.

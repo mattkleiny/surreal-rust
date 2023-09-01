@@ -1,4 +1,4 @@
-//! A fun little fractal generawtor using Surreal.
+//! A fun little fractal generator using Surreal.
 
 use surreal::{prelude::*, prototype::*};
 
