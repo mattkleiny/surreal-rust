@@ -5,7 +5,6 @@ use std::time::Duration;
 pub use egui;
 
 use crate::{
-  self as surreal,
   collections::FastHashMap,
   diagnostics,
   graphics::*,

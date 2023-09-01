@@ -9,7 +9,10 @@
 //! visual scripting, and other tasks.
 
 use egui::*;
-use surreal::graphs::*;
+use surreal::{
+  graphs::*,
+  maths::{vec2, Vec2},
+};
 
 use super::*;
 
@@ -19,6 +22,8 @@ const _ZOOM_MAX: f32 = 5.0;
 /// An [`EditorPanel`] that renders an editor for a [`Graph`].
 pub struct GraphEditor<D> {
   _graph: UndoScope<Graph<D>>,
+
+  translation: Vec2,
   zoom: f32,
 }
 
@@ -53,7 +58,7 @@ impl<D> EditorPanelContents for GraphEditor<D> {
 
     let painter = ui.painter();
 
-    Self::paint_grid(painter, rect, self.zoom, background_color);
+    Self::paint_grid(painter, rect, self.translation, self.zoom, background_color);
 
     // TODO: paint nodes
     // TODO: paint connections
@@ -70,10 +75,17 @@ impl<D> GraphEditor<D> {
     Self {
       _graph: UndoScope::new(graph),
       zoom: 1.0,
+      translation: vec2(0., 0.),
     }
   }
 
-  fn paint_grid(painter: &Painter, rect: Rect, zoom: f32, background_color: Color32) {
+  fn paint_grid(
+    painter: &Painter,
+    rect: Rect,
+    _translation: Vec2,
+    zoom: f32,
+    background_color: Color32,
+  ) {
     let spacing = zoom * 10.0;
     let thick_spacing = spacing * 10.0;
 

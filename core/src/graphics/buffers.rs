@@ -124,3 +124,17 @@ impl Drop for BufferState {
       .expect("Failed to delete buffer")
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn buffer_should_read_and_write_data_to_server() {
+    let graphics = GraphicsServer::create_headless();
+    let mut buffer = Buffer::new(&graphics, BufferKind::Element, BufferUsage::Static)
+      .expect("Failed to create buffer");
+
+    buffer.write_data(&[1, 2, 3, 4, 5]);
+  }
+}

@@ -14,7 +14,6 @@
 pub extern crate assets;
 #[cfg(feature = "audio")]
 pub extern crate audio;
-// TODO: remove this relabelling once the engine is more mature
 pub extern crate core;
 #[cfg(feature = "editor")]
 pub extern crate editor;

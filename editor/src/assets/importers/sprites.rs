@@ -4,9 +4,10 @@ use surreal::{
   graphics::{
     Color32, Material, RenderContext, Renderer, SpriteBatch, SpriteOptions, Texture, TextureRegion,
   },
+  impl_guid,
   io::VirtualPath,
   macros::Object,
-  maths::{vec2, Guid, Rectangle, Vec2},
+  maths::{vec2, Rectangle, Vec2},
   scene::{SceneComponent, SceneContext},
 };
 
@@ -51,49 +52,51 @@ impl AssetImporter for AsepriteImporter {
 
 // TODO: implement resource database?
 
-pub struct Ref<R> {
-  _resource_id: Guid,
+impl_guid!(AssetId);
+
+pub struct AssetRef<R> {
+  _asset_id: AssetId,
   _instance: Option<Arc<R>>,
 }
 
-impl<R> Ref<R> {
-  pub fn from_id(resource_id: Guid) -> Self {
+impl<R> AssetRef<R> {
+  pub fn from_id(resource_id: AssetId) -> Self {
     Self {
-      _resource_id: resource_id,
+      _asset_id: resource_id,
       _instance: None,
     }
   }
 
   pub fn from_instance(instance: Arc<R>) -> Self {
     Self {
-      _resource_id: Guid::default(),
+      _asset_id: AssetId::default(),
       _instance: Some(instance),
     }
   }
 }
 
-impl<R> From<R> for Ref<R> {
+impl<R> From<R> for AssetRef<R> {
   fn from(instance: R) -> Self {
     Self::from_instance(Arc::new(instance))
   }
 }
 
-impl<R> From<Arc<R>> for Ref<R> {
+impl<R> From<Arc<R>> for AssetRef<R> {
   fn from(instance: Arc<R>) -> Self {
     Self::from_instance(instance)
   }
 }
 
-impl<R> Default for Ref<R> {
+impl<R> Default for AssetRef<R> {
   fn default() -> Self {
     Self {
-      _resource_id: Guid::default(),
+      _asset_id: AssetId::default(),
       _instance: None,
     }
   }
 }
 
-impl<R> Deref for Ref<R> {
+impl<R> Deref for AssetRef<R> {
   type Target = R;
 
   fn deref(&self) -> &Self::Target {
@@ -107,18 +110,18 @@ pub struct Sprite {
   pub offset: Vec2,
   pub pivot: Vec2,
   pub bounds: Rectangle,
-  pub texture: Ref<Texture>,
+  pub texture: AssetRef<Texture>,
 }
 
 #[derive(Default)]
 pub struct SpriteSheet {
-  pub texture: Ref<Texture>,
-  pub sprites: Vec<Ref<Sprite>>,
+  pub texture: AssetRef<Texture>,
+  pub sprites: Vec<AssetRef<Sprite>>,
 }
 
 #[derive(Default)]
 pub struct SpriteFrame {
-  pub sprite: Ref<Sprite>,
+  pub sprite: AssetRef<Sprite>,
   pub duration: f32,
 }
 
@@ -147,7 +150,7 @@ impl RenderContext for SpriteRenderContext {
 
 #[derive(Default, Object)]
 pub struct SpriteAnimator {
-  pub animation: Ref<SpriteAnimation>,
+  pub animation: AssetRef<SpriteAnimation>,
   pub current_frame: usize,
   pub tint: Color32,
   pub frame_time: f32,

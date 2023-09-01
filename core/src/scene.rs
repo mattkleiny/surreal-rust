@@ -8,7 +8,7 @@ use bitflags::bitflags;
 use crate::{
   collections::{FastHashMap, FastHashSet},
   graphics::Renderer,
-  maths::{Affine3A, Quat, Vec3},
+  maths::{Affine3A, FromRandom, Quat, Vec3},
   utilities::{unsafe_mutable_alias, Object, ServiceContainer},
 };
 

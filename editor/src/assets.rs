@@ -11,7 +11,10 @@
 use std::{any::Any, collections::BTreeSet, fmt::Debug, hash::Hasher};
 
 use serde::{Deserialize, Serialize};
-use surreal::io::{Deserializable, InputStream, Serializable, VirtualPath};
+use surreal::{
+  io::{Deserializable, InputStream, Serializable, VirtualPath},
+  maths::FromRandom,
+};
 
 pub mod importers;
 

@@ -4,7 +4,10 @@
 //! support.
 
 use super::*;
-use crate::maths::{vec2, Mat2, Radians, Vec2};
+use crate::{
+  diagnostics,
+  maths::{vec2, Mat2, Radians, Vec2},
+};
 
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
@@ -103,6 +106,7 @@ impl SpriteBatch {
   }
 
   /// Draws a line of text to the batch with the given options
+  #[diagnostics::profiling]
   pub fn draw_text(&mut self, font: &dyn Font, text: &str, options: &SpriteOptions) {
     let size = font.measure_size(text);
     let mut position = options.position;
@@ -129,6 +133,7 @@ impl SpriteBatch {
   }
 
   /// Draws a single sprite texture to the batch with the given options.
+  #[diagnostics::profiling]
   pub fn draw_sprite(&mut self, region: &TextureRegion, options: &SpriteOptions) {
     // flush if we've reached capacity
     if self.vertices.len() + 4 >= self.vertices.capacity() {
@@ -183,6 +188,7 @@ impl SpriteBatch {
   }
 
   /// Flushes the batch to the GPU.
+  #[diagnostics::profiling]
   pub fn flush(&mut self) {
     if self.vertices.is_empty() {
       return; // no vertices? no problem

@@ -8,7 +8,7 @@ pub fn impl_profiling(item: TokenStream) -> TokenStream {
 
   function.block = Box::<syn::Block>::new(parse_quote! {
     {
-      surreal::diagnostics::profile_function!();
+      diagnostics::profile_function!();
       #block
     }
   });

@@ -33,15 +33,15 @@ pub type Guid = uuid::Uuid;
 #[macro_export]
 macro_rules! impl_guid {
   ($name:ident) => {
-    use $crate::maths::{FromRandom, Guid, Random};
-
     #[repr(transparent)]
-    #[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq, Hash)]
-    pub struct $name(Guid);
+    #[derive(
+      serde::Serialize, serde::Deserialize, Default, Copy, Clone, Debug, Eq, PartialEq, Hash,
+    )]
+    pub struct $name($crate::maths::Guid);
 
-    impl FromRandom for $name {
+    impl $crate::maths::FromRandom for $name {
       #[inline]
-      fn from_random(random: &mut Random) -> Self {
+      fn from_random(random: &mut $crate::maths::Random) -> Self {
         Self(random.next())
       }
     }

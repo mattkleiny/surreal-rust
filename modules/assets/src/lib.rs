@@ -4,13 +4,10 @@
 
 pub use exporters::*;
 pub use importers::*;
-use serde::{Deserialize, Serialize};
-use surreal::io::VirtualPath;
+use surreal::{io::VirtualPath, macros::Singleton};
 
 mod exporters;
 mod importers;
-
-surreal::impl_guid!(AssetId);
 
 // TODO: export over asset read/write semantics
 
@@ -32,7 +29,7 @@ surreal::impl_guid!(AssetId);
 /// - A 'path', which is the full path of the asset in the virtual file system.
 /// - A 'key', which is the name of the asset within the asset bundle.
 /// - A 'guid', which is a globally unique identifier for the asset.
-#[derive(Default)]
+#[derive(Default, Singleton)]
 pub struct AssetDatabase {}
 
 impl AssetDatabase {
@@ -42,10 +39,17 @@ impl AssetDatabase {
   }
 }
 
+surreal::impl_guid!(AssetId);
+
 /// A reference to an asset in the database.
 ///
 /// This struct is a reference to an asset in the database. It is used to
 /// reference an asset, and to query the state of the asset.
+///
+/// Note that a reference to an asset does not guarantee that the asset is
+/// loaded. If the asset is not loaded, then the reference will be invalid.
+///
+/// This struct is a 'thin' wrapper around the asset, and is cheap to copy.
 pub struct Asset<A> {
   _id: AssetId,
   _database: *mut AssetDatabase,

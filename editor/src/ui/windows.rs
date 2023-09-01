@@ -175,6 +175,7 @@ impl EditorWindowHost {
             }
 
             state.editor_window.on_draw(&state.graphics_server);
+
             state
               .user_interface
               .run(&mut state.user_interface_state, |context| {

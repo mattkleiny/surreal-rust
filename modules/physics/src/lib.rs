@@ -61,7 +61,7 @@ pub trait PhysicsBackend {
   /// Resets the entire physics simulation.
   fn reset(&self);
 
-  // rigidbodies
+  // rigid-bodies
   fn rigidbody_create(&self, kind: RigidbodyKind) -> RigidbodyId;
   fn rigidbody_add_collider(&self, body: RigidbodyId, collider: ColliderId);
   fn rigidbody_remove_collider(&self, body: RigidbodyId, collider: ColliderId);
