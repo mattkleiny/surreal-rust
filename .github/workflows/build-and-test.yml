@@ -22,17 +22,13 @@ jobs:
       HEADLESS_ENVIRONMENT: true
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Install build dependencies
-        run: sudo apt-get update && sudo apt-get install libgl1-mesa-dev libasound2-dev
+      - uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
+        with:
+          packages: libgl1-mesa-dev libasound2-dev
+          version: 1.0
 
       - uses: Swatinem/rust-cache@v1
-
-      - name: Run tests
-        run: cargo test --all --all-features
-
-      - name: Run benchmarks
-        run: cargo bench --all --all-features
+      - run: cargo test --all --all-features
