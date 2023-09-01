@@ -1,5 +1,5 @@
 {
   "name": "Rust",
-  "image": "mcr.microsoft.com/devcontainers/rust:0-1-bullseye",
-  "customizations": {}
+  "image": "mcr.microsoft.com/devcontainers/rust:latest",
+  "postCreateCommand": "apt update && apt install -y libgl1-mesa-dev libasound2-dev"
 }

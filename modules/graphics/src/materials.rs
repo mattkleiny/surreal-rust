@@ -66,9 +66,10 @@ impl MaterialUniformSet {
     K: Into<UniformKey<U>>,
     U: Into<ShaderUniform>,
   {
-    self
-      .uniforms
-      .insert(key.into().name.to_string(), value.into());
+    let key = key.into().name.to_string();
+    let value = value.into();
+
+    self.uniforms.insert(key, value);
   }
 
   /// Sets the given [`UniformKey`] as a uniform with a single texture in the
