@@ -292,8 +292,8 @@ pub struct VirtualPath<'a> {
 
 impl<'a> VirtualPath<'a> {
   /// Parses the given string-like object into a path with scheme and location.
-  pub fn parse(raw: &'a str) -> Self {
-    let (scheme, location) = raw.split_once("://").unwrap_or(("local", raw));
+  pub fn parse(raw: impl AsRef<str>) -> Self {
+    let (scheme, location) = raw.as_ref().split_once("://").unwrap_or(("local", raw));
 
     Self {
       scheme,
@@ -317,6 +317,17 @@ impl<'a> VirtualPath<'a> {
       extension
     } else {
       ""
+    }
+  }
+
+  /// Returns a new path with a different file extension appended.
+  pub fn append_extension(&'a self, new_extension: &'a str) -> Self {
+    let location = self.location.to_owned();
+    let location = format!("{:}.{:}", location, new_extension);
+
+    Self {
+      scheme: self.scheme,
+      location: std::borrow::Cow::Owned(location),
     }
   }
 

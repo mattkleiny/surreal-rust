@@ -15,7 +15,10 @@ struct Arguments {
 fn main() -> surreal::Result<()> {
   surreal::diagnostics::ConsoleLogger::install(surreal::diagnostics::LevelFilter::Trace);
 
+  // parse the command-line arguments
   let args = Arguments::parse();
+
+  // open the project
   let project = Project::open_or_create(
     &args.project_name.unwrap_or_else(|| "Untitled".to_string()),
     &args.project_path.unwrap_or_else(|| {
@@ -27,7 +30,8 @@ fn main() -> surreal::Result<()> {
     }),
   )?;
 
-  EditorWindowHost::from_project(project)?.run();
+  // start the host
+  let host = EditorWindowHost::from_project(project)?;
 
-  Ok(())
+  Ok(host.run())
 }

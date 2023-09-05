@@ -70,7 +70,7 @@ impl AssetDatabase {
       let metadata = AssetMetadata::from_path(path)?;
 
       let path = VirtualPath::from(path);
-      let path = path.change_extension("meta");
+      let path = path.append_extension("meta");
 
       database
         .pending_changes
@@ -91,6 +91,11 @@ impl AssetDatabase {
   /// Returns the [`AssetManifest`] for the entire database.
   pub fn manifest(&self) -> &AssetManifest {
     &self.manifest
+  }
+
+  /// Returns the path to the manifest file.
+  pub fn manifest_path(&self) -> VirtualPath {
+    VirtualPath::parse(format!("{}/manifest.yml", self.target_path))
   }
 
   /// Adds an [`AssetImporter`] with the database.
@@ -144,7 +149,7 @@ impl AssetDatabase {
         }
         AssetDatabaseChange::SaveManifest => {
           let manifest = &self.manifest;
-          let manifest_path = format!("{}/manifest.yaml", self.target_path);
+          let manifest_path = format!("{}/manifest.yml", self.target_path);
 
           surreal::diagnostics::trace!("Saving asset manifest to path {}", manifest_path);
 
@@ -280,7 +285,7 @@ impl AssetMetadata {
   /// not exist it will be created anew.
   pub fn from_path(path: impl Into<VirtualPath>) -> surreal::Result<Self> {
     let asset_path = path.into();
-    let meta_path = asset_path.change_extension("meta");
+    let meta_path = asset_path.append_extension("meta");
 
     let metadata = if meta_path.exists()? {
       Self::from_yaml_file(&meta_path)?
