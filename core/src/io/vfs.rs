@@ -1,6 +1,6 @@
 //! A virtual file system with paths and common operations.
 
-use std::borrow::Borrow;
+use std::borrow::{Borrow, Cow};
 
 pub use local::*;
 use macros::Singleton;
@@ -286,24 +286,14 @@ impl FileSystemManager {
 /// packed storage scheme `packed://Assets.pak/Textures/Texture01.png`.
 #[derive(Clone)]
 pub struct VirtualPath<'a> {
-  scheme: &'a str,
-  location: std::borrow::Cow<'a, str>,
+  scheme: Cow<'a, str>,
+  location: Cow<'a, str>,
 }
 
 impl<'a> VirtualPath<'a> {
-  /// Parses the given string-like object into a path with scheme and location.
-  pub fn parse(raw: impl AsRef<str>) -> Self {
-    let (scheme, location) = raw.as_ref().split_once("://").unwrap_or(("local", raw));
-
-    Self {
-      scheme,
-      location: std::borrow::Cow::Borrowed(location),
-    }
-  }
-
   /// The scheme of the path.
   pub fn scheme(&'a self) -> &'a str {
-    self.scheme
+    self.scheme.borrow()
   }
 
   /// The location of the path.
@@ -326,8 +316,8 @@ impl<'a> VirtualPath<'a> {
     let location = format!("{:}.{:}", location, new_extension);
 
     Self {
-      scheme: self.scheme,
-      location: std::borrow::Cow::Owned(location),
+      scheme: self.scheme.clone(),
+      location: Cow::Owned(location),
     }
   }
 
@@ -336,8 +326,8 @@ impl<'a> VirtualPath<'a> {
     let location = self.location.replace(self.extension(), new_extension);
 
     Self {
-      scheme: self.scheme,
-      location: std::borrow::Cow::Owned(location),
+      scheme: self.scheme.clone(),
+      location: Cow::Owned(location),
     }
   }
 
@@ -352,8 +342,8 @@ impl<'a> VirtualPath<'a> {
     path.push_str(relative);
 
     Self {
-      scheme: self.scheme,
-      location: std::borrow::Cow::Owned(path),
+      scheme: self.scheme.clone(),
+      location: Cow::Owned(path),
     }
   }
 
@@ -446,13 +436,35 @@ impl<'a> From<&VirtualPath<'a>> for VirtualPath<'a> {
 
 impl<'a> From<&'a str> for VirtualPath<'a> {
   fn from(value: &'a str) -> Self {
-    VirtualPath::parse(value)
+    let (scheme, location) = value.split_once("://").unwrap_or(("local", value));
+
+    Self {
+      scheme: Cow::Borrowed(scheme),
+      location: Cow::Borrowed(location),
+    }
   }
 }
 
 impl<'a> From<&'a String> for VirtualPath<'a> {
   fn from(value: &'a String) -> Self {
-    VirtualPath::parse(value.as_str())
+    let (scheme, location) = value.split_once("://").unwrap_or(("local", value));
+
+    Self {
+      scheme: Cow::Borrowed(scheme),
+      location: Cow::Borrowed(location),
+    }
+  }
+}
+
+impl<'a> From<String> for VirtualPath<'a> {
+  /// Parses the given string and takes ownership of it's contents.
+  fn from(value: String) -> Self {
+    let (scheme, location) = value.split_once("://").unwrap_or(("local", &value));
+
+    Self {
+      scheme: Cow::Owned(scheme.to_string()),
+      location: Cow::Owned(location.to_string()),
+    }
   }
 }
 
@@ -462,7 +474,7 @@ mod tests {
 
   #[test]
   fn virtual_path_should_parse_simple_schemes() {
-    let path = VirtualPath::parse("local://README.md");
+    let path = VirtualPath::from("local://README.md");
 
     assert_eq!("local", path.scheme);
     assert_eq!("README.md", path.location);
@@ -471,7 +483,7 @@ mod tests {
 
   #[test]
   fn virtual_path_should_change_extension() {
-    let old_path = VirtualPath::parse("local://README.md");
+    let old_path = VirtualPath::from("local://README.md");
     let new_path = old_path.change_extension("txt");
 
     assert_eq!("local", new_path.scheme);

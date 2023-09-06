@@ -85,7 +85,7 @@ mod tests {
   fn memory_file_system_should_read_and_write_basic_data() {
     let file_system = MemoryFileSystem::new();
 
-    let path = VirtualPath::parse("memory://test.txt");
+    let path = VirtualPath::from("memory://test.txt");
     let mut stream = file_system.open_write(&path).unwrap();
     stream.write_string("Hello, world!").unwrap();
 

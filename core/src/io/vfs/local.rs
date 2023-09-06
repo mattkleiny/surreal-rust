@@ -81,7 +81,7 @@ mod tests {
 
   #[test]
   fn read_from_local_file_system() {
-    let path = VirtualPath::parse("local://../rustfmt.toml");
+    let path = VirtualPath::from("local://../rustfmt.toml");
     let text = path.read_all_text().expect("Failed to read test file");
 
     assert!(!text.is_empty());

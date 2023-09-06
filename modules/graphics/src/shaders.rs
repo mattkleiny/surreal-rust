@@ -147,7 +147,7 @@ impl ShaderLanguage for GLSL {
           let path = path.replace(['"', '"', ';'], "");
 
           // fetch and splat the dependent shader
-          let dependent_file = VirtualPath::parse(&path);
+          let dependent_file = VirtualPath::from(&path);
           let dependent_code = dependent_file.read_all_text()?;
 
           if let Some(shader) = result.last_mut() {

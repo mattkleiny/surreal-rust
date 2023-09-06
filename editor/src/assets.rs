@@ -95,7 +95,7 @@ impl AssetDatabase {
 
   /// Returns the path to the manifest file.
   pub fn manifest_path(&self) -> VirtualPath {
-    VirtualPath::parse(format!("{}/manifest.yml", self.target_path))
+    VirtualPath::from(format!("{}/manifest.yml", self.target_path))
   }
 
   /// Adds an [`AssetImporter`] with the database.
