@@ -1,6 +1,6 @@
 //! Basic bone-mesh skinning support for Surreal
 
-use surreal::{collections::FastHashMap, maths::Mat4};
+use surreal::{collections::FastHashMap, maths::Mat4, utilities::TimeSpan};
 
 use crate::{
   BufferUsage, GraphicsServer, Material, Mesh, PrimitiveTopology, UniformKey, Vertex,
@@ -156,8 +156,10 @@ impl Default for Keyframe {
 /// A single animation for a [`SkinnedMesh`].
 #[derive(Default, Debug, Clone)]
 pub struct Animation {
-  /// The total duration of this animation, in seconds.
-  pub duration: f32,
+  /// The name of the animationn.
+  pub name: String,
+  /// The total duration of this animation.
+  pub duration: TimeSpan,
   /// The individual keyframes of this animation, in chronological order.
   pub keyframes: Vec<Keyframe>,
 }
@@ -169,8 +171,9 @@ impl Animation {
   }
 
   /// Creates a new animation from a list of keyframes.
-  pub fn from_keyframes(duration: f32, keyframes: Vec<Keyframe>) -> Self {
+  pub fn from_keyframes(name: String, duration: TimeSpan, keyframes: Vec<Keyframe>) -> Self {
     let mut animation = Self {
+      name,
       duration,
       keyframes,
     };
@@ -212,8 +215,28 @@ impl Animation {
 /// It can be used to animate a [`SkinnedMesh`].
 #[derive(Default, Debug, Clone)]
 pub struct Skin {
-  skeleton: Skeleton,
-  animations: Vec<Animation>,
+  /// The skeleton of this skin.
+  pub skeleton: Skeleton,
+  /// All of the animations for this skin.
+  pub animations: Vec<Animation>,
+}
+
+impl Skin {
+  /// Borrows an animation by name.
+  pub fn find_animation(&self, name: &str) -> Option<&Animation> {
+    self
+      .animations
+      .iter()
+      .find(|animation| animation.name == name)
+  }
+
+  /// Mutably borrows an animation by name.
+  pub fn find_animation_mut(&mut self, name: &str) -> Option<&mut Animation> {
+    self
+      .animations
+      .iter_mut()
+      .find(|animation| animation.name == name)
+  }
 }
 
 /// A skinned mesh is a custom type of mesh with a [`Skin`].
@@ -338,7 +361,8 @@ mod tests {
   #[test]
   fn animation_should_insert_keyframes_in_chronological_order() {
     let animation = Animation::from_keyframes(
-      3.,
+      "Idle".to_string(),
+      TimeSpan::from_seconds(3.),
       vec![
         Keyframe {
           normalised_time: 1.,
