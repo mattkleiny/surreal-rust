@@ -9,5 +9,5 @@ fn database_should_build_manifest_from_assets() {
   database.flush_changes().unwrap();
 
   // check that the manifest was written to disk
-  assert!(database.manifest_path().exists());
+  assert!(database.manifest_path().exists().unwrap());
 }
