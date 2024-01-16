@@ -1,30 +1,21 @@
 //! Profiling utilities
 
 pub use macros::profile as profiling;
-pub use puffin::{profile_function, profile_scope};
-
-// TODO: build a frame profiling panel?
 
 /// Is the profiler enabled?
 #[inline]
 pub fn is_profiling_enabled() -> bool {
-  puffin::are_scopes_on()
+  false
 }
 
 /// Enables the profiler.
 #[inline]
-pub fn enable_profiling() {
-  puffin::set_scopes_on(true);
-}
+pub fn enable_profiling() {}
 
 /// Disables the profiler.
 #[inline]
-pub fn disable_profiling() {
-  puffin::set_scopes_on(false);
-}
+pub fn disable_profiling() {}
 
 /// Notifies the profiler that a frame has completed.
 #[inline]
-pub fn finish_frame() {
-  puffin::GlobalProfiler::lock().new_frame();
-}
+pub fn finish_frame() {}

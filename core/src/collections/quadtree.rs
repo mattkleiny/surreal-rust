@@ -266,8 +266,7 @@ impl<T> QuadTree<T> {
         panic!("exceeded maximum recursion depth");
       }
 
-      // TODO: optimize this by only recursing into quadrants that intersect the
-      // bounds
+      // TODO: optimize this by only recursing into quadrants that intersect
       match node {
         QuadTreeNode::Leaf(Some(cell)) => {
           if bounds.intersects(&cell.bounds) {

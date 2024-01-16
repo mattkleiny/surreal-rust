@@ -9,18 +9,18 @@ use super::*;
 /// the point is outside the shape, and zero if the point is on the shape.
 ///
 /// The distance is measured in the same units as the shape's dimensions.
-pub trait SignedDistanceField {
+pub trait SDF {
   /// Computes the distance to the shape at the given point.
   fn distance_to(&self, point: Vec3) -> f32;
 }
 
-impl SignedDistanceField for Sphere {
+impl SDF for Sphere {
   fn distance_to(&self, point: Vec3) -> f32 {
     (point - self.center).length() - self.radius
   }
 }
 
-impl SignedDistanceField for Cube {
+impl SDF for Cube {
   fn distance_to(&self, point: Vec3) -> f32 {
     let half_size = self.size / 2.0;
     let delta = (point - self.center).abs() - half_size;
@@ -29,7 +29,7 @@ impl SignedDistanceField for Cube {
   }
 }
 
-impl SignedDistanceField for Cylinder {
+impl SDF for Cylinder {
   fn distance_to(&self, point: Vec3) -> f32 {
     let delta =
       (point - self.center).abs() - Vec3::new(self.radius, self.height / 2.0, self.radius);
