@@ -9,6 +9,7 @@
 pub use buffers::*;
 pub use colors::*;
 pub use geometry::*;
+pub use images::*;
 pub use materials::*;
 pub use meshes::*;
 pub use opengl::*;
@@ -25,6 +26,7 @@ mod buffers;
 mod colors;
 mod geometry;
 mod headless;
+mod images;
 mod materials;
 mod meshes;
 mod opengl;

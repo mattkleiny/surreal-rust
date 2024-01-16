@@ -2,10 +2,7 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use surreal::{
-  collections::Grid,
-  maths::{uvec2, Rectangle, UVec2},
-};
+use surreal::maths::{uvec2, Rectangle, UVec2};
 
 use super::*;
 
@@ -88,15 +85,28 @@ impl Texture {
     Self::with_options(graphics, &TextureOptions::default())
   }
 
+  /// Loads a texture from the given image.
+  pub fn from_image<T: Texel + Clone>(
+    graphics: &GraphicsEngine,
+    image: &dyn Image<T>,
+  ) -> surreal::Result<Self> {
+    let texture = Self::new(graphics)?;
+
+    texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
+    texture.write_pixels(image.width(), image.height(), &image.pixels());
+
+    Ok(texture)
+  }
+
   /// Builds a new colored texture of the given size.
   pub fn from_color<T: Texel + Clone>(
     graphics: &GraphicsEngine,
-    width: usize,
-    height: usize,
+    width: u32,
+    height: u32,
     color: T,
   ) -> surreal::Result<Self> {
     let texture = Self::new(graphics)?;
-    let colors = vec![color; width * height];
+    let colors = vec![color; width as usize * height as usize];
 
     texture.write_pixels(width, height, &colors);
 
@@ -214,19 +224,19 @@ impl Texture {
   }
 
   /// Uploads pixel data to the texture.
-  pub fn write_pixels<T: Texel>(&self, width: usize, height: usize, pixels: &[T]) {
+  pub fn write_pixels<T: Texel>(&self, width: u32, height: u32, pixels: &[T]) {
     let mut state = self.state.borrow_mut();
 
-    state.width = width as u32;
-    state.height = height as u32;
+    state.width = width;
+    state.height = height;
 
     let graphics = &state.graphics;
 
     graphics
       .texture_write_data(
         state.id,
-        width as u32,
-        height as u32,
+        width,
+        height,
         match pixels.len() {
           0 => std::ptr::null(),
           _ => pixels.as_ptr() as *const u8,
@@ -358,98 +368,6 @@ impl TextureAtlas {
       offset: uvec2(x * self.width, y * self.height),
       size: uvec2(self.width, self.height),
     }
-  }
-}
-
-/// A utility for building texture atlases procedurally.
-#[derive(Default)]
-pub struct TextureAtlasBuilder<T> {
-  cells: Vec<TextureAtlasCell<T>>,
-  cell_size: UVec2,
-  next_offset: UVec2,
-  stride: usize,
-}
-
-/// Represents a discrete cell in a [`TextureAtlasBuilder`].
-pub struct TextureAtlasCell<T> {
-  pub pixels: Grid<T>,
-  pub offset: UVec2,
-  pub size: UVec2,
-}
-
-impl<P: Texel + Clone + Default> TextureAtlasBuilder<P> {
-  /// Creates a new texture atlas builder.
-  pub fn new(stride: usize, cell_size: UVec2) -> Self {
-    Self {
-      cells: Vec::new(),
-      cell_size,
-      next_offset: uvec2(0, 0),
-      stride,
-    }
-  }
-
-  /// Allocates a new cell in the texture atlas.
-  pub fn allocate(&mut self) -> &mut TextureAtlasCell<P> {
-    // allocate the cell
-    self.cells.push(TextureAtlasCell {
-      pixels: Grid::new(self.cell_size.x as usize, self.cell_size.y as usize),
-      offset: self.next_offset,
-      size: self.cell_size,
-    });
-
-    // advance the offset
-    self.next_offset.x += self.cell_size.x;
-
-    let max_width = self.cell_size.x as usize;
-
-    if self.next_offset.x as usize > self.stride * max_width {
-      self.next_offset.x = 0;
-      self.next_offset.y += self.cell_size.y;
-    }
-
-    self.cells.last_mut().unwrap()
-  }
-
-  /// Writes this builder's contents to the given texture.
-  pub fn write_to(&self, texture: &Texture) {
-    let cells_x = self.cells.len() % self.stride;
-    let cells_y = (self.cells.len() / self.stride).max(1);
-
-    let cell_size_x = self.cell_size.x as usize;
-    let cell_size_y = self.cell_size.y as usize;
-
-    let pixels_x = cells_x * self.cell_size.x as usize;
-    let pixels_y = cells_y * self.cell_size.y as usize;
-
-    let mut cell_x = 0;
-    let mut cell_y = 0;
-
-    let mut texels = vec![P::default(); pixels_x * pixels_y];
-
-    for cell in &self.cells {
-      for pixel_y in 0..cell.size.y as usize {
-        for pixel_x in 0..cell.size.x as usize {
-          let advance_x = cell_x * cell_size_x + pixel_x;
-          let advance_y = cell_y * cell_size_y + pixel_y;
-          let index = advance_x + advance_y * pixels_x;
-
-          unsafe {
-            texels[index] = cell
-              .pixels
-              .get_unchecked(pixel_x as i32, pixel_y as i32)
-              .clone();
-          }
-        }
-      }
-
-      cell_x += 1;
-      if cell_x > cells_x {
-        cell_x = 0;
-        cell_y += 1;
-      }
-    }
-
-    texture.write_pixels(pixels_x, pixels_y, &texels);
   }
 }
 
