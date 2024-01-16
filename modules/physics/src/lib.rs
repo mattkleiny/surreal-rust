@@ -49,6 +49,16 @@ impl PhysicsEngine {
   pub fn create_internal() -> Self {
     Self::new(internal::InternalPhysicsBackend::default())
   }
+
+  /// Creates a new [`PhysicsEngine`] with the Bullet backend.
+  pub fn create_bullet() -> Self {
+    todo!()
+  }
+
+  /// Creates a new [`PhysicsEngine`] with the PhysX backend.
+  pub fn create_physx() -> Self {
+    todo!()
+  }
 }
 
 /// A trait for physics backends.
@@ -67,9 +77,19 @@ pub trait PhysicsBackend {
   fn reset(&self);
 
   // rigid-bodies
-  fn rigidbody_create(&self, kind: RigidbodyKind) -> RigidbodyId;
+  fn rigidbody_create(&self, kind: RigidbodyKind, initial_position: Vec3) -> RigidbodyId;
   fn rigidbody_add_collider(&self, body: RigidbodyId, collider: ColliderId);
   fn rigidbody_remove_collider(&self, body: RigidbodyId, collider: ColliderId);
+  fn rigidbody_set_position(&self, body: RigidbodyId, position: Vec3);
+  fn rigidbody_get_position(&self, body: RigidbodyId) -> Vec3;
+  fn rigidbody_set_rotation(&self, body: RigidbodyId, rotation: Quat);
+  fn rigidbody_get_rotation(&self, body: RigidbodyId) -> Quat;
+  fn rigidbody_set_scale(&self, body: RigidbodyId, scale: Vec3);
+  fn rigidbody_get_scale(&self, body: RigidbodyId) -> Vec3;
+  fn rigidbody_set_velocity(&self, body: RigidbodyId, velocity: Vec3);
+  fn rigidbody_get_velocity(&self, body: RigidbodyId) -> Vec3;
+  fn rigidbody_set_angular_velocity(&self, body: RigidbodyId, velocity: Vec3);
+  fn rigidbody_get_angular_velocity(&self, body: RigidbodyId) -> Vec3;
   fn rigidbody_delete(&self, body: RigidbodyId);
 
   // colliders
@@ -83,11 +103,24 @@ pub trait PhysicsBackend {
   fn collider_create_height_field(&self, initial_position: Vec3, size: Vec3, heights: &[f32]) -> ColliderId;
   fn collider_get_kind(&self, collider: ColliderId) -> ColliderKind;
   fn collider_set_position(&self, collider: ColliderId, position: Vec3);
+  fn collider_get_position(&self, collider: ColliderId) -> Vec3;
   fn collider_set_rotation(&self, collider: ColliderId, rotation: Quat);
+  fn collider_get_rotation(&self, collider: ColliderId) -> Quat;
   fn collider_set_scale(&self, collider: ColliderId, scale: Vec3);
+  fn collider_get_scale(&self, collider: ColliderId) -> Vec3;
   fn collider_delete(&self, collider: ColliderId);
 
   // effectors
-  fn effector_create(&self, kind: EffectorKind) -> EffectorId;
+  fn effector_create_wind(&self, initial_position: Vec3) -> EffectorId;
+  fn effector_create_gravity(&self, initial_position: Vec3) -> EffectorId;
+  fn effector_get_kind(&self, effector: EffectorId) -> EffectorKind;
+  fn effector_set_position(&self, effector: EffectorId, position: Vec3);
+  fn effector_get_position(&self, effector: EffectorId) -> Vec3;
+  fn effector_set_rotation(&self, effector: EffectorId, rotation: Quat);
+  fn effector_get_rotation(&self, effector: EffectorId) -> Quat;
+  fn effector_set_scale(&self, effector: EffectorId, scale: Vec3);
+  fn effector_get_scale(&self, effector: EffectorId) -> Vec3;
+  fn effector_set_strength(&self, effector: EffectorId, strength: f32);
+  fn effector_get_strength(&self, effector: EffectorId) -> f32;
   fn effector_delete(&self, effector: EffectorId);
 }

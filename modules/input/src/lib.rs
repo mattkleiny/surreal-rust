@@ -24,7 +24,7 @@ impl InputEngine {
   /// This method creates a new input engine from the given host. The host
   /// provides information about the input devices that are available on the
   /// system.
-  pub fn from_host(_host: &impl InputHost) -> Self {
+  pub fn from_host(_host: &dyn InputHost) -> Self {
     todo!()
   }
 
@@ -33,15 +33,46 @@ impl InputEngine {
   /// This method is called by the host to provide the input engine with a list
   /// of input events. The input engine then processes the events and updates
   /// the state of all input devices.
-  pub fn process(&mut self, _delta_time: f32, _events: &[InputEvent]) {
+  pub fn process(&mut self, _delta_time: f32, events: &[InputEvent]) {
+    let mut events = Vec::from(events);
+
+    while let Some(_event) = events.pop() {
+      // TODO: process the event
+    }
+
     todo!()
   }
 }
+
+/// Possible kinds of input devices.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum InputDeviceKind {
+  Keyboard,
+  Mouse,
+}
+
+/// Information about an input device.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InputDeviceInfo {
+  pub name: String,
+  pub kind: InputDeviceKind,
+}
+
+/// An input event.
+///
+/// This enum represents an input event, such as a key press or a mouse button
+/// press. It is provided by the underlying platform and is passed to the input
+/// engine for processing.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum InputEvent {}
 
 /// An abstraction over a host capable of running input.
 pub trait InputHost {
   /// Returns a list of all input devices that are available on the system.
   fn enumerate_devices(&self) -> Vec<InputDeviceInfo>;
+
+  /// Returns the input device with the given name.
+  fn get_device(&self, name: &str) -> Option<Box<dyn InputDevice>>;
 }
 
 /// A trait for input devices.
@@ -53,23 +84,4 @@ pub trait InputHost {
 pub trait InputDevice {
   /// Updates the state of the input device in response to some input event.
   fn on_event(&mut self, event: &InputEvent);
-}
-
-/// An input event.
-///
-/// This enum represents an input event, such as a key press or a mouse button
-/// press. It is provided by the underlying platform and is passed to the input
-/// engine for processing.
-pub enum InputEvent {}
-
-/// Information about an input device.
-pub struct InputDeviceInfo {
-  pub name: String,
-  pub kind: InputDeviceKind,
-}
-
-/// Possible kinds of input devices.
-pub enum InputDeviceKind {
-  Keyboard,
-  Mouse,
 }
