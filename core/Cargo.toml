@@ -12,7 +12,6 @@ macros = { package = "surreal-macros", path = "../macros" }
 
 # core dependencies
 anyhow = "1.0.66"
-bitflags = "2.1.0"
 bytemuck = { version = "1.12.3", features = ["derive"] }
 chrono = "0.4"
 glam = { version = "0.25.0", features = ["serde"] }
