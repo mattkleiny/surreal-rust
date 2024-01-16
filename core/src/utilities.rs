@@ -1,13 +1,11 @@
 //! General utilities.
 
 pub use bytemuck;
-pub use singleton::*;
 pub use size::*;
 pub use timing::*;
 pub use variant::*;
 pub use version::*;
 
-mod singleton;
 mod size;
 mod timing;
 mod variant;

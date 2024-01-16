@@ -4,7 +4,7 @@
 
 pub use exporters::*;
 pub use importers::*;
-use surreal::{io::VirtualPath, macros::Singleton};
+use surreal::io::VirtualPath;
 
 mod exporters;
 mod importers;
@@ -31,7 +31,7 @@ surreal::impl_rid!(AssetId);
 /// - A 'path', which is the full path of the asset in the virtual file system.
 /// - A 'key', which is the name of the asset within the asset bundle.
 /// - A 'guid', which is a globally unique identifier for the asset.
-#[derive(Default, Singleton)]
+#[derive(Default)]
 pub struct AssetDatabase {}
 
 impl AssetDatabase {
