@@ -26,51 +26,45 @@ mod ranges;
 mod rectangles;
 mod shapes;
 
-const EPSILON: f32 = 0.00001;
-
 /// A globally unique identifier.
 pub type Guid = uuid::Uuid;
-
-/// Creates a new opaque [`Guid`] type for unique object representation.
-#[macro_export]
-macro_rules! impl_guid {
-  ($name:ident) => {
-    #[repr(transparent)]
-    #[derive(
-      serde::Serialize, serde::Deserialize, Default, Copy, Clone, Debug, Eq, PartialEq, Hash,
-    )]
-    pub struct $name($crate::maths::Guid);
-
-    impl $crate::maths::FromRandom for $name {
-      #[inline]
-      fn from_random(random: &mut $crate::maths::Random) -> Self {
-        Self(random.next())
-      }
-    }
-
-    impl std::fmt::Display for $name {
-      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-      }
-    }
-  };
-}
 
 /// Allows approximate equality checks between values.
 pub trait ApproxEq<T = Self> {
   fn approx_eq(&self, other: T) -> bool;
 }
 
-impl ApproxEq for f32 {
-  #[inline]
-  fn approx_eq(&self, other: Self) -> bool {
-    (other - self).abs() < EPSILON
-  }
+macro_rules! impl_approx_eq {
+  ($type:ty) => {
+    impl ApproxEq for $type {
+      #[inline]
+      fn approx_eq(&self, other: Self) -> bool {
+        const EPSILON: $type = 0.00001;
+
+        (other - self).abs() < EPSILON
+      }
+    }
+  };
 }
 
-impl ApproxEq for f64 {
-  #[inline]
-  fn approx_eq(&self, other: Self) -> bool {
-    (other - self).abs() < EPSILON as f64
-  }
+impl_approx_eq!(f32);
+impl_approx_eq!(f64);
+
+/// Allows computing a ping pong value.
+pub trait PingPong {
+  fn ping_pong(&self) -> Self;
 }
+
+macro_rules! impl_ping_pong {
+  ($type:ty) => {
+    impl PingPong for $type {
+      #[inline]
+      fn ping_pong(&self) -> Self {
+        self.sin() * 2.0 - 1.0
+      }
+    }
+  };
+}
+
+impl_ping_pong!(f32);
+impl_ping_pong!(f64);

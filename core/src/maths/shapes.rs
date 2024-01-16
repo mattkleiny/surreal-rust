@@ -1,7 +1,116 @@
 //! Commonly used shape definitions in 2 and 3 space.
 
-pub use dim2::*;
-pub use dim3::*;
+use crate::maths::{vec3, Vec2, Vec3};
 
-mod dim2;
-mod dim3;
+/// A sphere in 2-space.
+#[derive(Clone, Debug)]
+pub struct Circle {
+  pub radius: f32,
+  pub center: Vec2,
+}
+
+impl Default for Circle {
+  fn default() -> Self {
+    Self {
+      radius: 1.0,
+      center: Vec2::ZERO,
+    }
+  }
+}
+
+impl Circle {
+  /// Creates a new circle.
+  pub const fn new(radius: f32, center: Vec2) -> Self {
+    Self { radius, center }
+  }
+
+  /// Creates a new circle with the given radius.
+  pub fn with_radius(self, radius: f32) -> Self {
+    Self { radius, ..self }
+  }
+
+  /// Creates a new circle with the given center.
+  pub fn with_center(self, center: Vec2) -> Self {
+    Self { center, ..self }
+  }
+}
+
+/// A sphere in 3-space.
+#[derive(Clone, Debug)]
+pub struct Sphere {
+  pub radius: f32,
+  pub center: Vec3,
+}
+
+impl Default for Sphere {
+  fn default() -> Self {
+    Self {
+      radius: 1.0,
+      center: Vec3::ZERO,
+    }
+  }
+}
+
+/// A cube in 3-space.
+#[derive(Clone, Debug)]
+pub struct Cube {
+  pub size: Vec3,
+  pub center: Vec3,
+}
+
+impl Default for Cube {
+  fn default() -> Self {
+    Self {
+      size: vec3(1.0, 1.0, 1.0),
+      center: Vec3::ZERO,
+    }
+  }
+}
+
+impl Cube {
+  /// The minimum point of the cube.
+  #[inline]
+  pub fn min(&self) -> Vec3 {
+    self.center - self.size / 2.0
+  }
+
+  /// The maximum point of the cube.
+  #[inline]
+  pub fn max(&self) -> Vec3 {
+    self.center + self.size / 2.0
+  }
+}
+
+/// A cylinder in 3-space.
+#[derive(Clone, Debug)]
+pub struct Cylinder {
+  pub radius: f32,
+  pub height: f32,
+  pub center: Vec3,
+}
+
+impl Default for Cylinder {
+  fn default() -> Self {
+    Self {
+      radius: 1.0,
+      height: 1.0,
+      center: Vec3::ZERO,
+    }
+  }
+}
+
+/// A trapezoidal prism in 3-space.
+#[derive(Clone, Debug)]
+pub struct Trapezoid {
+  pub size: Vec3,
+  pub center: Vec3,
+}
+
+impl Default for Trapezoid {
+  fn default() -> Self {
+    Self {
+      size: vec3(1.0, 1.0, 1.0),
+      center: Vec3::ZERO,
+    }
+  }
+}

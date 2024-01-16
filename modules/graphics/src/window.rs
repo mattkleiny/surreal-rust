@@ -1,3 +1,5 @@
+use std::ffi::CString;
+
 use sdl2_sys::*;
 
 use crate::GraphicsHost;
@@ -5,7 +7,6 @@ use crate::GraphicsHost;
 /// Represents a window.
 pub struct Window {
   window: *mut SDL_Window,
-  renderer: *mut SDL_Renderer,
   gl_context: SDL_GLContext,
 }
 
@@ -14,8 +15,6 @@ pub struct WindowSettings {
   pub title: &'static str,
   pub width: u32,
   pub height: u32,
-  pub resizable: bool,
-  pub gpu_enabled: bool,
   pub vsync_enabled: bool,
 }
 
@@ -25,8 +24,6 @@ impl Default for WindowSettings {
       title: "Surreal",
       width: 1024,
       height: 768,
-      resizable: true,
-      gpu_enabled: true,
       vsync_enabled: true,
     }
   }
@@ -54,15 +51,13 @@ impl Window {
 
       // build the window
       let mut window_flags = SDL_WindowFlags::SDL_WINDOW_SHOWN as u32;
-      if settings.resizable {
-        window_flags |= SDL_WindowFlags::SDL_WINDOW_RESIZABLE as u32;
-      }
-      if settings.gpu_enabled {
-        window_flags |= SDL_WindowFlags::SDL_WINDOW_OPENGL as u32;
-      }
 
+      window_flags |= SDL_WindowFlags::SDL_WINDOW_OPENGL as u32;
+      window_flags |= SDL_WindowFlags::SDL_WINDOW_RESIZABLE as u32;
+
+      let title = CString::new(settings.title).unwrap();
       let window = SDL_CreateWindow(
-        settings.title.as_ptr() as *const i8,
+        title.as_ptr() as *const _,
         SDL_WINDOWPOS_CENTERED_MASK as i32,
         SDL_WINDOWPOS_CENTERED_MASK as i32,
         settings.width as i32,
@@ -73,38 +68,16 @@ impl Window {
         return Err(WindowError::FailedToCreateWindow);
       }
 
-      // build the renderer
-      let mut renderer_flags = 0u32;
-      if settings.gpu_enabled {
-        renderer_flags |= SDL_RendererFlags::SDL_RENDERER_ACCELERATED as u32;
-      }
-      if settings.vsync_enabled {
-        renderer_flags |= SDL_RendererFlags::SDL_RENDERER_PRESENTVSYNC as u32;
-      }
-
-      let renderer = SDL_CreateRenderer(window, -1, renderer_flags);
-      if renderer.is_null() {
+      // create the OpenGL context
+      let gl_context = SDL_GL_CreateContext(window);
+      if gl_context.is_null() {
         return Err(WindowError::FailedToCreateRenderer);
       }
 
-      // create the OpenGL context
-      let mut gl_context = std::ptr::null_mut();
+      SDL_GL_MakeCurrent(window, gl_context);
+      SDL_GL_LoadLibrary(std::ptr::null());
 
-      if settings.gpu_enabled {
-        gl_context = SDL_GL_CreateContext(window);
-
-        if gl_context.is_null() {
-          return Err(WindowError::FailedToCreateRenderer);
-        }
-
-        SDL_GL_LoadLibrary(std::ptr::null());
-      }
-
-      Ok(Self {
-        window,
-        renderer,
-        gl_context,
-      })
+      Ok(Self { window, gl_context })
     }
   }
 
@@ -129,14 +102,15 @@ impl Window {
   /// Presents the window to the display.
   pub fn present(&self) {
     unsafe {
-      SDL_RenderPresent(self.renderer);
+      SDL_GL_SwapWindow(self.window);
     }
   }
 }
 
 impl GraphicsHost for Window {
   fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void {
-    unsafe { SDL_GL_GetProcAddress(name.as_ptr() as *const i8) as *const std::ffi::c_void }
+    let name = CString::new(name).unwrap();
+    unsafe { SDL_GL_GetProcAddress(name.as_ptr() as *const _) as *const _ }
   }
 }
 
@@ -144,11 +118,7 @@ impl Drop for Window {
   /// Destroys the window.
   fn drop(&mut self) {
     unsafe {
-      if !self.gl_context.is_null() {
-        SDL_GL_DeleteContext(self.gl_context);
-      }
-
-      SDL_DestroyRenderer(self.renderer);
+      SDL_GL_DeleteContext(self.gl_context);
       SDL_DestroyWindow(self.window);
 
       SDL_Quit();

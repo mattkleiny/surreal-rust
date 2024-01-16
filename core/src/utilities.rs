@@ -37,7 +37,7 @@ macro_rules! impl_server {
     }
 
     impl $type {
-      /// Creates a new [`$type ] for the given [`$backend`].
+      /// Creates a new [`$type`] for the given [`$backend`].
       pub fn new(backend: impl $backend + 'static) -> Self {
         Self {
           backend: std::sync::Arc::new(Box::new(backend)),

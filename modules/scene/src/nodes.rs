@@ -1,9 +1,9 @@
 use bitflags::bitflags;
-use surreal::{collections::FastHashSet, maths::FromRandom};
+use surreal::collections::FastHashSet;
 
 use crate::{LayerId, SceneComponentSet, TagSet};
 
-surreal::impl_guid!(SceneNodeId);
+surreal::impl_rid!(SceneNodeId);
 
 /// A node in a [`SceneGraph`].
 ///
@@ -38,7 +38,7 @@ bitflags! {
 impl<'a> Default for SceneNode<'a> {
   fn default() -> Self {
     Self {
-      id: SceneNodeId::random(),
+      id: SceneNodeId::NONE,
       name: None,
       flags: NodeFlags::NONE,
       is_visible: true,
