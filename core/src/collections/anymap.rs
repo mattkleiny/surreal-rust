@@ -49,10 +49,7 @@ impl AnyMap {
 
   /// Mutably accesses a value from the map.
   pub fn get<T: Any>(&self) -> Option<&T> {
-    self
-      .entries
-      .get(&TypeId::of::<T>())
-      .and_then(|any| any.downcast_ref())
+    self.entries.get(&TypeId::of::<T>()).and_then(|any| any.downcast_ref())
   }
 
   /// Mutably accesses a given value from the map.

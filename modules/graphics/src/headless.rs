@@ -68,9 +68,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   }
 
   fn buffer_create(&self) -> Result<BufferId, BufferError> {
-    Ok(BufferId::from(
-      self.next_buffer_id.fetch_add(1, Ordering::Relaxed),
-    ))
+    Ok(BufferId::from(self.next_buffer_id.fetch_add(1, Ordering::Relaxed)))
   }
 
   fn buffer_read_data(
@@ -99,16 +97,10 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   }
 
   fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError> {
-    Ok(TextureId::from(
-      self.next_texture_id.fetch_add(1, Ordering::Relaxed),
-    ))
+    Ok(TextureId::from(self.next_texture_id.fetch_add(1, Ordering::Relaxed)))
   }
 
-  fn texture_set_options(
-    &self,
-    texture: TextureId,
-    sampler: &TextureSampler,
-  ) -> Result<(), TextureError> {
+  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError> {
     Ok(())
   }
 
@@ -162,9 +154,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   }
 
   fn shader_create(&self) -> Result<ShaderId, ShaderError> {
-    Ok(ShaderId::from(
-      self.next_shader_id.fetch_add(1, Ordering::Relaxed),
-    ))
+    Ok(ShaderId::from(self.next_shader_id.fetch_add(1, Ordering::Relaxed)))
   }
 
   fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> Result<(), ShaderError> {
@@ -175,12 +165,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     None
   }
 
-  fn shader_set_uniform(
-    &self,
-    shader: ShaderId,
-    location: usize,
-    value: &ShaderUniform,
-  ) -> Result<(), ShaderError> {
+  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
     Ok(())
   }
 
@@ -198,9 +183,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     indices: BufferId,
     descriptors: &[VertexDescriptor],
   ) -> Result<MeshId, MeshError> {
-    Ok(MeshId::from(
-      self.next_mesh_id.fetch_add(1, Ordering::Relaxed),
-    ))
+    Ok(MeshId::from(self.next_mesh_id.fetch_add(1, Ordering::Relaxed)))
   }
 
   fn mesh_draw(
@@ -223,9 +206,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     depth_attachment: Option<TextureId>,
     stencil_attachment: Option<TextureId>,
   ) -> Result<TargetId, TargetError> {
-    Ok(TargetId::from(
-      self.next_target_id.fetch_add(1, Ordering::Relaxed),
-    ))
+    Ok(TargetId::from(self.next_target_id.fetch_add(1, Ordering::Relaxed)))
   }
 
   fn target_activate(&self, target: TargetId) -> Result<(), TargetError> {

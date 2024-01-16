@@ -338,16 +338,16 @@ impl<'a> VirtualPath<'a> {
 
   /// Determines if the path exists.
   pub fn exists(&self) -> crate::Result<bool> {
-    let file_system = FileSystemManager::find(self)
-      .ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
+    let file_system =
+      FileSystemManager::find(self).ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
 
     Ok(file_system.exists(self))
   }
 
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
-    let file_system = FileSystemManager::find(self)
-      .ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
+    let file_system =
+      FileSystemManager::find(self).ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
 
     let stream = file_system
       .open_read(self)
@@ -358,8 +358,8 @@ impl<'a> VirtualPath<'a> {
 
   /// Opens a writer for the given path.
   pub fn open_output_stream(&self) -> crate::Result<Box<dyn OutputStream>> {
-    let file_system = FileSystemManager::find(self)
-      .ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
+    let file_system =
+      FileSystemManager::find(self).ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
 
     let stream = file_system
       .open_write(self)

@@ -16,37 +16,20 @@ impl Version {
   /// Creates a new [`Version`].
   #[inline(always)]
   pub const fn new(major: u16, minor: u16, patch: u16) -> Self {
-    Self {
-      major,
-      minor,
-      patch,
-    }
+    Self { major, minor, patch }
   }
 
   /// Parses a [`Version`] from the given string.
   pub fn parse(string: &str) -> crate::Result<Self> {
     let mut parts = string.split('.');
 
-    let major = parts
-      .next()
-      .ok_or(crate::anyhow!("Missing major component"))?
-      .parse()?;
+    let major = parts.next().ok_or(crate::anyhow!("Missing major component"))?.parse()?;
 
-    let minor = parts
-      .next()
-      .ok_or(crate::anyhow!("Missing minor component"))?
-      .parse()?;
+    let minor = parts.next().ok_or(crate::anyhow!("Missing minor component"))?.parse()?;
 
-    let patch = parts
-      .next()
-      .ok_or(crate::anyhow!("Missing patch component"))?
-      .parse()?;
+    let patch = parts.next().ok_or(crate::anyhow!("Missing patch component"))?.parse()?;
 
-    Ok(Self {
-      major,
-      minor,
-      patch,
-    })
+    Ok(Self { major, minor, patch })
   }
 }
 
@@ -80,11 +63,7 @@ impl<'de> serde::Deserialize<'de> for Version {
         let minor = parts.next().unwrap().parse::<u16>().unwrap();
         let patch = parts.next().unwrap().parse::<u16>().unwrap();
 
-        Ok(Self::Value {
-          major,
-          minor,
-          patch,
-        })
+        Ok(Self::Value { major, minor, patch })
       }
     }
 

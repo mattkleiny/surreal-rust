@@ -86,10 +86,7 @@ impl Texture {
   }
 
   /// Loads a texture from the given image.
-  pub fn from_image<T: Texel + Clone>(
-    graphics: &GraphicsEngine,
-    image: &dyn Image<T>,
-  ) -> surreal::Result<Self> {
+  pub fn from_image<T: Texel + Clone>(graphics: &GraphicsEngine, image: &dyn Image<T>) -> surreal::Result<Self> {
     let texture = Self::new(graphics)?;
 
     texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
@@ -114,10 +111,7 @@ impl Texture {
   }
 
   /// Creates a new blank texture on the GPU with the given options.
-  pub fn with_options(
-    graphics: &GraphicsEngine,
-    options: &TextureOptions,
-  ) -> surreal::Result<Self> {
+  pub fn with_options(graphics: &GraphicsEngine, options: &TextureOptions) -> surreal::Result<Self> {
     Ok(Self {
       state: Rc::new(RefCell::new(TextureState {
         id: graphics.texture_create(&options.sampler)?,
@@ -273,10 +267,7 @@ impl Texture {
 
 impl Drop for TextureState {
   fn drop(&mut self) {
-    self
-      .graphics
-      .texture_delete(self.id)
-      .expect("Failed to delete texture");
+    self.graphics.texture_delete(self.id).expect("Failed to delete texture");
   }
 }
 

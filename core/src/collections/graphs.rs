@@ -75,11 +75,7 @@ impl<D> Graph<D> {
   pub fn add_node(&mut self, label: impl Into<Cow<'static, str>>, user_data: D) {
     let label = label.into();
 
-    self.nodes.insert_with_key(|id| GraphNode {
-      id,
-      label,
-      user_data,
-    });
+    self.nodes.insert_with_key(|id| GraphNode { id, label, user_data });
   }
 
   /// Removes an existing [`GraphNode`] from the graph.

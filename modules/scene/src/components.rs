@@ -256,9 +256,6 @@ mod tests {
     set.push(TestComponent1 {});
     set.push(TestComponent2 {});
 
-    assert_eq!(
-      format!("{:?}", set),
-      "[\"TestComponent1\", \"TestComponent2\"]"
-    );
+    assert_eq!(format!("{:?}", set), "[\"TestComponent1\", \"TestComponent2\"]");
   }
 }

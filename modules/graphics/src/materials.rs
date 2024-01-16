@@ -74,12 +74,8 @@ impl MaterialUniformSet {
 
   /// Sets the given [`UniformKey`] as a uniform with a single texture in the
   /// set.
-  pub fn set_texture<'a, K>(
-    &'a mut self,
-    key: K,
-    texture: &Texture,
-    sampler: Option<TextureSampler>,
-  ) where
+  pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
+  where
     K: Into<UniformKey<&'a Texture>>,
   {
     let slot = self.allocate_texture_slot(texture);
@@ -106,7 +102,9 @@ impl MaterialUniformSet {
   /// This will also re-organise any old textures back into a linear ordering.
   fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
     self.textures.allocate(texture).unwrap_or_else(|| {
-      panic!("Failed to allocate texture slot. There's a limit of {MAX_TEXTURE_UNITS} concurrent textures per material.",)
+      panic!(
+        "Failed to allocate texture slot. There's a limit of {MAX_TEXTURE_UNITS} concurrent textures per material.",
+      )
     })
   }
 }
@@ -178,12 +176,8 @@ impl Material {
   }
 
   /// Sets the given [`UniformKey`] with a single texture.
-  pub fn set_texture<'a, K>(
-    &'a mut self,
-    key: K,
-    texture: &Texture,
-    sampler: Option<TextureSampler>,
-  ) where
+  pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
+  where
     K: Into<UniformKey<&'a Texture>>,
   {
     self.uniforms.set_texture(key, texture, sampler);

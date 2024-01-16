@@ -1,8 +1,6 @@
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
-use syn::{
-  parse_macro_input, spanned::Spanned, Attribute, Data, DeriveInput, Fields, Lit, Meta, NestedMeta,
-};
+use syn::{parse_macro_input, spanned::Spanned, Attribute, Data, DeriveInput, Fields, Lit, Meta, NestedMeta};
 
 pub fn impl_vertex_trait(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);

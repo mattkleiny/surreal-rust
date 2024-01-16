@@ -243,10 +243,7 @@ impl<T> Arena<T> {
       }
     }
 
-    Iter {
-      arena: self,
-      index: 0,
-    }
+    Iter { arena: self, index: 0 }
   }
 
   /// Mutably iterates over the arena.
@@ -287,10 +284,7 @@ impl<T> Arena<T> {
       }
     }
 
-    IterMut {
-      arena: self,
-      index: 0,
-    }
+    IterMut { arena: self, index: 0 }
   }
 }
 

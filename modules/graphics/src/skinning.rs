@@ -3,8 +3,7 @@
 use surreal::{collections::FastHashMap, maths::Mat4, utilities::TimeSpan};
 
 use crate::{
-  BufferUsage, GraphicsEngine, Material, Mesh, PrimitiveTopology, UniformKey, Vertex,
-  VertexDescriptor, VertexKind,
+  BufferUsage, GraphicsEngine, Material, Mesh, PrimitiveTopology, UniformKey, Vertex, VertexDescriptor, VertexKind,
 };
 
 /// The name of the uniform containing the bones of the skeleton.
@@ -79,10 +78,7 @@ impl Skeleton {
 
   /// Tries to find a bone with the given name.
   pub fn find_bone(&self, name: &str) -> Option<&Bone> {
-    self
-      .bones_by_name
-      .get(name)
-      .and_then(|index| self.bones.get(*index))
+    self.bones_by_name.get(name).and_then(|index| self.bones.get(*index))
   }
 
   /// Tries to find a bone with the given name.
@@ -224,18 +220,12 @@ pub struct Skin {
 impl Skin {
   /// Borrows an animation by name.
   pub fn find_animation(&self, name: &str) -> Option<&Animation> {
-    self
-      .animations
-      .iter()
-      .find(|animation| animation.name == name)
+    self.animations.iter().find(|animation| animation.name == name)
   }
 
   /// Mutably borrows an animation by name.
   pub fn find_animation_mut(&mut self, name: &str) -> Option<&mut Animation> {
-    self
-      .animations
-      .iter_mut()
-      .find(|animation| animation.name == name)
+    self.animations.iter_mut().find(|animation| animation.name == name)
   }
 }
 

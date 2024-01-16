@@ -11,8 +11,7 @@ use surreal::{
   collections::FastHashMap,
   io::VirtualPath,
   maths::{
-    DMat2, DMat3, DMat4, DQuat, DVec2, DVec3, DVec4, Degrees, Mat2, Mat3, Mat4, Quat, Radians,
-    Vec2, Vec3, Vec4,
+    DMat2, DMat3, DMat4, DQuat, DVec2, DVec3, DVec4, Degrees, Mat2, Mat3, Mat4, Quat, Radians, Vec2, Vec3, Vec4,
   },
 };
 
@@ -67,12 +66,7 @@ where
   for<'a> &'a U: Into<ShaderUniform>,
 {
   fn from(value: &[U]) -> Self {
-    Self::Array(
-      value
-        .iter()
-        .map(|v| v.into())
-        .collect::<Vec<ShaderUniform>>(),
-    )
+    Self::Array(value.iter().map(|v| v.into()).collect::<Vec<ShaderUniform>>())
   }
 }
 
@@ -197,10 +191,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code<S: ShaderLanguage>(
-    graphics: &GraphicsEngine,
-    code: &str,
-  ) -> surreal::Result<Self> {
+  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> surreal::Result<Self> {
     let program = Self::new(graphics)?;
 
     program.load_code::<S>(code)?;
@@ -225,10 +216,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path(
-    graphics: &GraphicsEngine,
-    path: impl Into<VirtualPath>,
-  ) -> surreal::Result<Self> {
+  pub fn from_glsl_path(graphics: &GraphicsEngine, path: impl Into<VirtualPath>) -> surreal::Result<Self> {
     Self::from_path::<GLSL>(graphics, path)
   }
 
@@ -281,10 +269,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<S: ShaderLanguage>(
-    &self,
-    path: impl Into<VirtualPath>,
-  ) -> surreal::Result<()> {
+  pub fn load_from_path<S: ShaderLanguage>(&self, path: impl Into<VirtualPath>) -> surreal::Result<()> {
     let path = path.into();
     let source_code = path.read_all_text()?;
 

@@ -60,19 +60,63 @@ impl PhysicsBackend for InternalPhysicsBackend {
     self.rigidbodies.remove(body);
   }
 
-  fn collider_create(&self, kind: ColliderKind) -> ColliderId {
-    self.colliders.insert(Collider { _kind: kind })
-  }
-
-  fn collider_delete(&self, collider: ColliderId) {
-    self.colliders.remove(collider);
-  }
-
   fn effector_create(&self, kind: EffectorKind) -> EffectorId {
     self.effectors.insert(Effector { _kind: kind })
   }
 
   fn effector_delete(&self, effector: EffectorId) {
     self.effectors.remove(effector);
+  }
+
+  fn collider_create_sphere(&self, initial_position: Vec3, radius: f32) -> ColliderId {
+    todo!()
+  }
+
+  fn collider_create_box(&self, initial_position: Vec3, size: Vec3) -> ColliderId {
+    todo!()
+  }
+
+  fn collider_create_capsule(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId {
+    todo!()
+  }
+
+  fn collider_create_cylinder(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId {
+    todo!()
+  }
+
+  fn collider_create_cone(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId {
+    todo!()
+  }
+
+  fn collider_create_convex_hull(&self, initial_position: Vec3, vertices: &[Vec3]) -> ColliderId {
+    todo!()
+  }
+
+  fn collider_create_triangle_mesh(&self, initial_position: Vec3, vertices: &[Vec3], indices: &[u32]) -> ColliderId {
+    todo!()
+  }
+
+  fn collider_create_height_field(&self, initial_position: Vec3, size: Vec3, heights: &[f32]) -> ColliderId {
+    todo!()
+  }
+
+  fn collider_get_kind(&self, collider: ColliderId) -> ColliderKind {
+    todo!()
+  }
+
+  fn collider_set_position(&self, collider: ColliderId, position: Vec3) {
+    todo!()
+  }
+
+  fn collider_set_rotation(&self, collider: ColliderId, rotation: Quat) {
+    todo!()
+  }
+
+  fn collider_set_scale(&self, collider: ColliderId, scale: Vec3) {
+    todo!()
+  }
+
+  fn collider_delete(&self, collider: ColliderId) {
+    self.colliders.remove(collider);
   }
 }
