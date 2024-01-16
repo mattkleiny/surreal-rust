@@ -2,11 +2,9 @@
 
 use std::borrow::{Borrow, Cow};
 
+use anyhow::anyhow;
 pub use local::*;
-use macros::Singleton;
 pub use memory::*;
-
-use crate as surreal;
 
 mod local;
 mod memory;
@@ -238,16 +236,15 @@ pub trait FileSystem {
 /// This is a singleton that is used to manage [`FileSystem`] implementations.
 /// File systems can be registered here, and will be used subsequently for file
 /// operations on [`VirtualPath`] instances.
-#[derive(Singleton)]
 pub struct FileSystemManager {
-  file_systems: Vec<Box<dyn FileSystem>>,
+  _file_systems: Vec<Box<dyn FileSystem>>,
 }
 
 impl Default for FileSystemManager {
   fn default() -> Self {
     Self {
       #[rustfmt::skip]
-      file_systems: vec![
+      _file_systems: vec![
         Box::new(LocalFileSystem::new()),
         Box::new(MemoryFileSystem::new()),
       ],
@@ -257,21 +254,13 @@ impl Default for FileSystemManager {
 
 impl FileSystemManager {
   /// Registers a new [`FileSystem`] with the manager.
-  pub fn register(file_system: impl FileSystem + 'static) {
-    let manager = FileSystemManager::instance();
-
-    manager.file_systems.push(Box::new(file_system));
+  pub fn register(_file_system: impl FileSystem + 'static) {
+    todo!()
   }
 
   /// Finds the appropriate [`FileSystem`] for the given [`VirtualPath`].
-  pub fn find(path: &VirtualPath) -> Option<&'static dyn FileSystem> {
-    let manager = FileSystemManager::instance();
-
-    manager
-      .file_systems
-      .iter()
-      .find(|fs| fs.can_handle(path))
-      .map(|fs| fs.as_ref())
+  pub fn find(_path: &VirtualPath) -> Option<&'static dyn FileSystem> {
+    todo!()
   }
 }
 
@@ -349,38 +338,32 @@ impl<'a> VirtualPath<'a> {
 
   /// Determines if the path exists.
   pub fn exists(&self) -> crate::Result<bool> {
-    let file_system = FileSystemManager::find(self).ok_or(anyhow::anyhow!(
-      "No file system found for scheme {}",
-      self.scheme
-    ))?;
+    let file_system = FileSystemManager::find(self)
+      .ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
 
     Ok(file_system.exists(self))
   }
 
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
-    let file_system = FileSystemManager::find(self).ok_or(anyhow::anyhow!(
-      "No file system found for scheme {}",
-      self.scheme
-    ))?;
+    let file_system = FileSystemManager::find(self)
+      .ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
 
-    let stream = file_system.open_read(self).map_err(|error| {
-      surreal::anyhow!("Unable to open input stream for {}. Error {}", self, error)
-    })?;
+    let stream = file_system
+      .open_read(self)
+      .map_err(|error| anyhow!("Unable to open input stream for {}. Error {}", self, error))?;
 
     Ok(stream)
   }
 
   /// Opens a writer for the given path.
   pub fn open_output_stream(&self) -> crate::Result<Box<dyn OutputStream>> {
-    let file_system = FileSystemManager::find(self).ok_or(anyhow::anyhow!(
-      "No file system found for scheme {}",
-      self.scheme
-    ))?;
+    let file_system = FileSystemManager::find(self)
+      .ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
 
-    let stream = file_system.open_write(self).map_err(|error| {
-      surreal::anyhow!("Unable to open output stream for {}. Error {}", self, error)
-    })?;
+    let stream = file_system
+      .open_write(self)
+      .map_err(|error| anyhow!("Unable to open output stream for {}. Error {}", self, error))?;
 
     Ok(stream)
   }

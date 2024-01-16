@@ -1,7 +1,4 @@
-use crate::{
-  graphics::{Color, Color32},
-  maths::{Quat, Vec2, Vec3, Vec4},
-};
+use crate::maths::{Quat, Vec2, Vec3, Vec4};
 
 /// Different kinds of [`Variant`]s that are supported.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -47,8 +44,6 @@ pub enum Variant {
   Vec3(Vec3),
   Vec4(Vec4),
   Quat(Quat),
-  Color(Color),
-  Color32(Color32),
 }
 
 impl Variant {
@@ -72,8 +67,6 @@ impl Variant {
       Variant::Vec3(_) => VariantKind::Vec3,
       Variant::Vec4(_) => VariantKind::Vec4,
       Variant::Quat(_) => VariantKind::Quat,
-      Variant::Color(_) => VariantKind::Color,
-      Variant::Color32(_) => VariantKind::Color32,
     }
   }
 }
@@ -116,19 +109,3 @@ impl_variant!(Vec2, Vec2);
 impl_variant!(Vec3, Vec3);
 impl_variant!(Vec4, Vec4);
 impl_variant!(Quat, Quat);
-impl_variant!(Color, Color);
-impl_variant!(Color32, Color32);
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn variant_should_convert_from_values() {
-    let value = Variant::from(Color32::WHITE);
-    assert_eq!(value.kind(), VariantKind::Color32);
-
-    let color: Color32 = value.try_into().expect("Failed to convert");
-    assert_eq!(color, Color32::WHITE);
-  }
-}

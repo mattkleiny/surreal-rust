@@ -1,8 +1,0 @@
-[package]
-name = "surreal-prototype"
-authors.workspace = true
-edition.workspace = true
-version.workspace = true
-
-[dependencies]
-surreal = { package = "surreal-core", path = "../../core" }

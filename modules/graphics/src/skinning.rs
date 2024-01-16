@@ -3,7 +3,7 @@
 use surreal::{collections::FastHashMap, maths::Mat4, utilities::TimeSpan};
 
 use crate::{
-  BufferUsage, GraphicsServer, Material, Mesh, PrimitiveTopology, UniformKey, Vertex,
+  BufferUsage, GraphicsEngine, Material, Mesh, PrimitiveTopology, UniformKey, Vertex,
   VertexDescriptor, VertexKind,
 };
 
@@ -251,7 +251,7 @@ pub struct SkinnedMesh {
 
 impl SkinnedMesh {
   /// Creates a new skinned mesh.
-  pub fn new(server: &GraphicsServer) -> surreal::Result<Self> {
+  pub fn new(server: &GraphicsEngine) -> surreal::Result<Self> {
     Ok(Self {
       mesh: Mesh::new(server, BufferUsage::Dynamic)?,
       skin: Skin::default(),

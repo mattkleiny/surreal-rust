@@ -32,7 +32,7 @@ pub struct Buffer<T> {
 /// The internal state for a buffer.
 struct BufferState {
   id: BufferId,
-  graphics: GraphicsServer,
+  graphics: GraphicsEngine,
   kind: BufferKind,
   usage: BufferUsage,
   length: usize,
@@ -41,7 +41,7 @@ struct BufferState {
 impl<T> Buffer<T> {
   /// Constructs a new empty buffer on the GPU.
   pub fn new(
-    graphics: &GraphicsServer,
+    graphics: &GraphicsEngine,
     kind: BufferKind,
     usage: BufferUsage,
   ) -> surreal::Result<Self> {

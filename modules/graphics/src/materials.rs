@@ -115,7 +115,7 @@ impl MaterialUniformSet {
 /// pipeline state needed.
 #[derive(Clone)]
 pub struct Material {
-  graphics: GraphicsServer,
+  graphics: GraphicsEngine,
   shader: ShaderProgram,
   uniforms: MaterialUniformSet,
   blend_state: BlendState,
@@ -126,7 +126,7 @@ pub struct Material {
 
 impl Material {
   /// Constructs a new material for the given [`ShaderProgram`].
-  pub fn new(graphics: &GraphicsServer, shader: &ShaderProgram) -> Self {
+  pub fn new(graphics: &GraphicsEngine, shader: &ShaderProgram) -> Self {
     Self {
       graphics: graphics.clone(),
       shader: shader.clone(),

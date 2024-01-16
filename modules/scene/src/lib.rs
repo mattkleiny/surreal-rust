@@ -1,4 +1,4 @@
-//! Scene Graph support for Surreal
+//! Scene Graph framework for Surreal
 //!
 //! This module provides a scene graph for Surreal. The scene graph is a
 //! hierarchical structure of nodes, each of which can have a transform and

@@ -2,16 +2,9 @@
 
 use proc_macro::TokenStream;
 
-mod object;
 mod profiling;
 mod singleton;
 mod vertex;
-
-/// Builds an [`Object`] trait implementation for the associated struct.
-#[proc_macro_derive(Object)]
-pub fn derive_object(input: TokenStream) -> TokenStream {
-  object::impl_object_trait(input)
-}
 
 /// Builds a [`Singleton`] trait implementation for the associated struct.
 #[proc_macro_derive(Singleton)]

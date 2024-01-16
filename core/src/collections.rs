@@ -2,6 +2,7 @@
 
 pub use anymap::*;
 pub use arena::*;
+pub use graphs::*;
 pub use grid::*;
 pub use multimap::*;
 pub use priorityqueue::*;
@@ -13,6 +14,7 @@ pub use spatialhash::*;
 
 mod anymap;
 mod arena;
+mod graphs;
 mod grid;
 mod multimap;
 mod priorityqueue;

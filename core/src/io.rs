@@ -1,7 +1,6 @@
 //! Input/output utilities and virtual file system.
 
 pub use pak::*;
-use serde::{Deserialize, Serialize};
 pub use vfs::*;
 
 mod pak;
@@ -11,7 +10,7 @@ mod vfs;
 ///
 /// Implementors of this trait will gain access to basic
 /// serialization formats for free via convenience methods.
-pub trait Serializable: Serialize + Sized {
+pub trait Serializable: serde::Serialize + Sized {
   /// Serializes the object to a byte array.
   #[cfg(feature = "binary")]
   fn to_binary(&self) -> crate::Result<Vec<u8>> {
@@ -102,14 +101,14 @@ pub trait Serializable: Serialize + Sized {
   }
 }
 
-/// Blanket implementation of [`Serializable`] for any [`Serialize`]-able type.
-impl<T> Serializable for T where T: Serialize {}
+/// Blanket implementation of all [`Serializable`] types.
+impl<T> Serializable for T where T: serde::Serialize {}
 
 /// Allows deserialization from different types implicitly.
 ///
 /// Implementors of this trait will gain access to basic
 /// deserialization formats for free via convenience methods.
-pub trait Deserializable: for<'de> Deserialize<'de> + Sized {
+pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
   /// Deserializes the object from a byte array.
   #[cfg(feature = "binary")]
   fn from_binary(data: &[u8]) -> crate::Result<Self> {
@@ -201,6 +200,5 @@ pub trait Deserializable: for<'de> Deserialize<'de> + Sized {
   }
 }
 
-/// Blanket implementation of [`Deserializable`] for any [`Deserialize`]-able
-/// type.
-impl<T> Deserializable for T where T: for<'de> Deserialize<'de> {}
+/// Blanket implementation of all [`Deserializable`] types.
+impl<T> Deserializable for T where T: for<'de> serde::Deserialize<'de> {}

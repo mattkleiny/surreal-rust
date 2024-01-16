@@ -33,7 +33,7 @@ impl Vertex for GeometryVertex {
 
 impl GeometryBatch {
   /// Creates a new geometry batch.
-  pub fn new(graphics: &GraphicsServer) -> surreal::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine) -> surreal::Result<Self> {
     Ok(Self {
       mesh: Mesh::new(graphics, BufferUsage::Dynamic)?,
       vertices: Vec::new(),

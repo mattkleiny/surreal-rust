@@ -9,6 +9,8 @@ use surreal::{io::VirtualPath, macros::Singleton};
 mod exporters;
 mod importers;
 
+surreal::impl_rid!(AssetId);
+
 // TODO: export over asset read/write semantics
 
 /// A database for managing assets.
@@ -38,8 +40,6 @@ impl AssetDatabase {
     todo!()
   }
 }
-
-surreal::impl_guid!(AssetId);
 
 /// A reference to an asset in the database.
 ///

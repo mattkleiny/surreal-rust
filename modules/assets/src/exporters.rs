@@ -2,7 +2,7 @@
 ///
 /// This trait is implemented by asset exporters, which are used to export
 /// assets to a specific format. This is used to convert assets from one format
-/// to another, or to export assets to a format which can be used by the game.
+/// to another, or to export assets to a format which can be used by tools.
 pub trait AssetExporter {
   type Asset;
 

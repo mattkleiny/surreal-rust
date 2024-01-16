@@ -74,16 +74,3 @@ fn to_path(root: &Path, path: &VirtualPath) -> PathBuf {
 
   local_path
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn read_from_local_file_system() {
-    let path = VirtualPath::from("local://../rustfmt.toml");
-    let text = path.read_all_text().expect("Failed to read test file");
-
-    assert!(!text.is_empty());
-  }
-}

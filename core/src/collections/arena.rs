@@ -12,6 +12,14 @@ pub struct ArenaIndex {
   generation: u16,
 }
 
+impl ArenaIndex {
+  /// A sentinel value representing an empty index.
+  pub const NONE: Self = Self {
+    index: 0,
+    generation: 0,
+  };
+}
+
 impl From<u64> for ArenaIndex {
   #[inline]
   fn from(packed: u64) -> Self {

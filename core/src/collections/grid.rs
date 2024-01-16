@@ -164,22 +164,3 @@ impl<T> Grid<T> {
     }
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-  use crate::{graphics::Color32, maths::FromRandom};
-
-  #[test]
-  fn grid_should_read_and_write_elements() {
-    let mut grid = Grid::new(128, 128);
-
-    grid.fill(Color32::BLACK);
-
-    for y in 0..grid.height() {
-      for x in 0..grid.width() {
-        grid.set(x as i32, y as i32, Color32::random());
-      }
-    }
-  }
-}

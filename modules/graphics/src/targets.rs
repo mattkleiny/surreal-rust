@@ -30,7 +30,7 @@ pub struct RenderTextureDescriptor {
 
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
-  pub fn to_texture(&self, graphics: &GraphicsServer) -> surreal::Result<Texture> {
+  pub fn to_texture(&self, graphics: &GraphicsEngine) -> surreal::Result<Texture> {
     Texture::with_options_and_size(
       graphics,
       &self.options,
@@ -51,7 +51,7 @@ pub struct RenderTarget {
 /// The inner state of a [`RenderTarget`].
 struct RenderTargetState {
   id: TargetId,
-  graphics: GraphicsServer,
+  graphics: GraphicsEngine,
   color_attachment: Texture,
   depth_attachment: Option<Texture>,
   stencil_attachment: Option<Texture>,
@@ -60,7 +60,7 @@ struct RenderTargetState {
 impl RenderTarget {
   /// Creates a new [`RenderTarget`] on the GPU with the given attachments.
   pub fn new(
-    graphics: &GraphicsServer,
+    graphics: &GraphicsEngine,
     descriptor: &RenderTargetDescriptor,
   ) -> surreal::Result<Self> {
     let color_attachment = descriptor.color_attachment.to_texture(graphics)?;

@@ -144,7 +144,7 @@ pub struct Mesh<V> {
 /// The internal state for a mesh.
 struct MeshState<V> {
   id: MeshId,
-  graphics: GraphicsServer,
+  graphics: GraphicsEngine,
   vertices: Buffer<V>,
   indices: Buffer<Index>,
 }
@@ -158,7 +158,7 @@ impl<V> MeshState<V> {
 
 impl<V: Vertex> Mesh<V> {
   /// Constructs a new blank mesh on the GPU.
-  pub fn new(graphics: &GraphicsServer, usage: BufferUsage) -> surreal::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine, usage: BufferUsage) -> surreal::Result<Self> {
     let vertices = Buffer::new(graphics, BufferKind::Element, usage)?;
     let indices = Buffer::new(graphics, BufferKind::Index, usage)?;
 
@@ -173,7 +173,7 @@ impl<V: Vertex> Mesh<V> {
   }
 
   /// Constructs a mesh with the given [`MeshBuilder`] factory method.
-  pub fn from_factory(graphics: &GraphicsServer, factory: impl Fn(&mut MeshBuilder<V>)) -> Self {
+  pub fn from_factory(graphics: &GraphicsEngine, factory: impl Fn(&mut MeshBuilder<V>)) -> Self {
     let mut builder = MeshBuilder::new();
 
     factory(&mut builder);
@@ -182,7 +182,7 @@ impl<V: Vertex> Mesh<V> {
   }
 
   /// Constructs a new mesh from the [`MeshBrush`].
-  pub fn from_brush(graphics: &GraphicsServer, brush: &impl MeshBrush<V>) -> Self {
+  pub fn from_brush(graphics: &GraphicsEngine, brush: &impl MeshBrush<V>) -> Self {
     let mut builder = MeshBuilder::new();
 
     brush.build(&mut builder);
@@ -191,7 +191,7 @@ impl<V: Vertex> Mesh<V> {
   }
 
   /// Constructs a mesh with the given [`MeshBuilder`] factory method.
-  pub fn from_builder(graphics: &GraphicsServer, builder: &MeshBuilder<V>) -> Self {
+  pub fn from_builder(graphics: &GraphicsEngine, builder: &MeshBuilder<V>) -> Self {
     builder.to_mesh(graphics)
   }
 
@@ -351,7 +351,7 @@ impl<V: Vertex> MeshBuilder<V> {
   }
 
   /// Builds a new [`Mesh`] and returns it.
-  pub fn to_mesh(&self, graphics: &GraphicsServer) -> Mesh<V> {
+  pub fn to_mesh(&self, graphics: &GraphicsEngine) -> Mesh<V> {
     let mut mesh = Mesh::new(graphics, BufferUsage::Static).expect("Failed to create mesh");
 
     self.upload_to(&mut mesh);
@@ -363,7 +363,7 @@ impl<V: Vertex> MeshBuilder<V> {
 /// Specialization for standard 2d meshes.
 impl Mesh<Vertex2> {
   /// Constructs a simple triangle mesh of the given size.
-  pub fn create_triangle(graphics: &GraphicsServer, size: f32) -> Self {
+  pub fn create_triangle(graphics: &GraphicsEngine, size: f32) -> Self {
     Self::from_factory(graphics, |builder| {
       builder.add_triangle(&[
         Vertex2 {
@@ -386,7 +386,7 @@ impl Mesh<Vertex2> {
   }
 
   /// Constructs a simple quad mesh of the given size.
-  pub fn create_quad(graphics: &GraphicsServer, size: f32) -> Self {
+  pub fn create_quad(graphics: &GraphicsEngine, size: f32) -> Self {
     Self::from_factory(graphics, |builder| {
       builder.add_quad(&[
         Vertex2 {
@@ -414,7 +414,7 @@ impl Mesh<Vertex2> {
   }
 
   /// Constructs a simple circle mesh of the given size.
-  pub fn create_circle(graphics: &GraphicsServer, radius: f32, segments: usize) -> Self {
+  pub fn create_circle(graphics: &GraphicsEngine, radius: f32, segments: usize) -> Self {
     Self::from_factory(graphics, |builder| {
       use std::f32::consts::PI;
 

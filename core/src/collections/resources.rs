@@ -2,10 +2,10 @@ use std::sync::RwLock;
 
 use crate::collections::{Arena, ArenaIndex};
 
-/// Abstracts over resource IDs.
-pub trait ResourceId: Copy + Eq + From<ArenaIndex> + Into<ArenaIndex> {}
-
-/// Creates a new, opaque [`ResourceId`] type.
+/// Creates a new, opaque resource id type.
+///
+/// The type is implicitly convertible to and from [`u64`], [`u32`], and
+/// [`ArenaIndex`], and can be used as a key in [`ResourceStorage`].
 #[macro_export]
 macro_rules! impl_rid {
   ($name:ident) => {
@@ -13,7 +13,39 @@ macro_rules! impl_rid {
     #[derive(Copy, Clone, Debug, Eq, PartialEq)]
     pub struct $name($crate::collections::ArenaIndex);
 
-    impl $crate::collections::ResourceId for $name {}
+    impl $name {
+      pub const NONE: Self = Self($crate::collections::ArenaIndex::NONE);
+    }
+
+    impl From<$name> for u64 {
+      #[inline]
+      fn from(id: $name) -> Self {
+        id.0.into()
+      }
+    }
+
+    impl From<$name> for u32 {
+      #[inline]
+      fn from(id: $name) -> Self {
+        let id: u64 = id.into();
+        id as u32
+      }
+    }
+
+    impl From<u64> for $name {
+      #[inline]
+      fn from(id: u64) -> Self {
+        Self(id.into())
+      }
+    }
+
+    impl From<u32> for $name {
+      #[inline]
+      fn from(id: u32) -> Self {
+        let id: u64 = id.into();
+        Self((id.into()))
+      }
+    }
 
     impl From<$crate::collections::ArenaIndex> for $name {
       #[inline]
@@ -26,20 +58,6 @@ macro_rules! impl_rid {
       #[inline]
       fn from(id: $name) -> Self {
         id.0
-      }
-    }
-
-    impl From<$name> for u64 {
-      #[inline]
-      fn from(id: $name) -> Self {
-        id.0.into()
-      }
-    }
-
-    impl From<u64> for $name {
-      #[inline]
-      fn from(id: u64) -> Self {
-        Self(id.into())
       }
     }
   };

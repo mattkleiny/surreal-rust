@@ -180,13 +180,13 @@ pub struct ShaderProgram {
 /// The internal state for a [`ShaderProgram`] .
 struct ShaderProgramState {
   id: ShaderId,
-  graphics: GraphicsServer,
+  graphics: GraphicsEngine,
   location_cache: FastHashMap<String, Option<usize>>,
 }
 
 impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
-  pub fn new(graphics: &GraphicsServer) -> surreal::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine) -> surreal::Result<Self> {
     Ok(Self {
       state: Rc::new(RefCell::new(ShaderProgramState {
         id: graphics.shader_create()?,
@@ -198,7 +198,7 @@ impl ShaderProgram {
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
   pub fn from_code<S: ShaderLanguage>(
-    graphics: &GraphicsServer,
+    graphics: &GraphicsEngine,
     code: &str,
   ) -> surreal::Result<Self> {
     let program = Self::new(graphics)?;
@@ -210,7 +210,7 @@ impl ShaderProgram {
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
   pub fn from_path<S: ShaderLanguage>(
-    graphics: &GraphicsServer,
+    graphics: &GraphicsEngine,
     path: impl Into<VirtualPath>,
   ) -> surreal::Result<Self> {
     let path = path.into();
@@ -220,13 +220,13 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
-  pub fn from_glsl(graphics: &GraphicsServer, code: &str) -> surreal::Result<Self> {
+  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> surreal::Result<Self> {
     Self::from_code::<GLSL>(graphics, code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
   pub fn from_glsl_path(
-    graphics: &GraphicsServer,
+    graphics: &GraphicsEngine,
     path: impl Into<VirtualPath>,
   ) -> surreal::Result<Self> {
     Self::from_path::<GLSL>(graphics, path)
@@ -305,7 +305,7 @@ impl Drop for ShaderProgramState {
 
 /// An [`AssetLoader`] for shader programs
 pub struct ShaderProgramLoader {
-  pub graphics: GraphicsServer,
+  pub graphics: GraphicsEngine,
 }
 
 /// Implements uniform value transformation for common types.

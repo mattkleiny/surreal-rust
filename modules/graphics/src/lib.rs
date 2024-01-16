@@ -34,73 +34,11 @@ mod sprites;
 mod targets;
 mod textures;
 
-surreal::impl_server!(GraphicsServer, GraphicsBackend);
-
-/// Implements a new opaque identifier for some resource type.
-macro_rules! impl_graphics_id {
-  ($name:ident) => {
-    /// A unique identifier for a kind of graphics resource.
-    #[repr(transparent)]
-    #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-    pub struct $name(u64);
-
-    impl $name {
-      /// A value that represents the 'NONE' value of this resource.
-      pub const NONE: Self = Self::new(0);
-
-      /// Creates a new ID with the given value.
-      #[inline(always)]
-      pub const fn new(value: u32) -> Self {
-        Self(value as u64)
-      }
-    }
-
-    impl From<u32> for $name {
-      #[inline(always)]
-      fn from(value: u32) -> Self {
-        Self(value as u64)
-      }
-    }
-
-    impl From<$name> for u32 {
-      #[inline(always)]
-      fn from(id: $name) -> Self {
-        id.0 as u32
-      }
-    }
-
-    impl From<surreal::collections::ArenaIndex> for $name {
-      #[inline(always)]
-      fn from(index: surreal::collections::ArenaIndex) -> Self {
-        Self(index.into())
-      }
-    }
-
-    impl From<$name> for surreal::collections::ArenaIndex {
-      #[inline(always)]
-      fn from(id: $name) -> Self {
-        id.0.into()
-      }
-    }
-  };
-}
-impl_graphics_id!(BufferId);
-impl_graphics_id!(TextureId);
-impl_graphics_id!(ShaderId);
-impl_graphics_id!(MeshId);
-impl_graphics_id!(TargetId);
-
-impl GraphicsServer {
-  /// Creates a new [`GraphicsServer`] with a no-op, headless backend.
-  pub fn create_headless() -> Self {
-    Self::new(headless::HeadlessGraphicsBackend::default())
-  }
-
-  /// Creates a new [`GraphicsServer`] with an OpenGL backend.
-  pub fn create_opengl(_host: &dyn GraphicsHost) -> surreal::Result<Self> {
-    todo!()
-  }
-}
+surreal::impl_rid!(BufferId);
+surreal::impl_rid!(TextureId);
+surreal::impl_rid!(ShaderId);
+surreal::impl_rid!(MeshId);
+surreal::impl_rid!(TargetId);
 
 /// The nominal max number of texture units that might be be bound in the GPU.
 ///
@@ -146,6 +84,20 @@ pub enum MeshError {
 pub enum TargetError {
   #[error("the given target ID {0:?} is invalid")]
   InvalidId(TargetId),
+}
+
+surreal::impl_server!(GraphicsEngine, GraphicsBackend);
+
+impl GraphicsEngine {
+  /// Creates a new [`GraphicsEngine`] with a no-op, headless backend.
+  pub fn create_headless() -> Self {
+    Self::new(headless::HeadlessGraphicsBackend::default())
+  }
+
+  /// Creates a new [`GraphicsEngine`] with an OpenGL backend.
+  pub fn create_opengl(_host: &dyn GraphicsHost) -> surreal::Result<Self> {
+    todo!()
+  }
 }
 
 /// An abstraction over the host capable of running graphics.

@@ -1,6 +1,6 @@
 use surreal::{collections::FastHashSet, maths::Vec2};
 
-use crate::InputDevice;
+use crate::{InputDevice, InputEvent};
 
 /// A mouse input device.
 pub struct Mouse {
@@ -10,7 +10,7 @@ pub struct Mouse {
 }
 
 impl InputDevice for Mouse {
-  fn on_event(&mut self, _event: &crate::InputEvent) {
+  fn on_event(&mut self, _event: &InputEvent) {
     todo!()
   }
 }

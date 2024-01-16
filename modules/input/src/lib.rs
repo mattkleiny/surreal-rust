@@ -1,16 +1,10 @@
 //! Input engine for Surreal.
 
-pub use gamepads::*;
-pub use joysticks::*;
 pub use keyboards::*;
 pub use mouse::*;
-pub use touch::*;
 
-mod gamepads;
-mod joysticks;
 mod keyboards;
 mod mouse;
-mod touch;
 
 /// The input engine.
 ///
@@ -20,11 +14,8 @@ mod touch;
 #[allow(dead_code)]
 #[derive(Default)]
 pub struct InputEngine {
-  gamepads: Vec<Gamepad>,
   keyboards: Vec<Keyboard>,
   mice: Vec<Mouse>,
-  joysticks: Vec<Joystick>,
-  touch_screens: Vec<TouchScreen>,
 }
 
 impl InputEngine {
@@ -81,7 +72,4 @@ pub struct InputDeviceInfo {
 pub enum InputDeviceKind {
   Keyboard,
   Mouse,
-  Joystick,
-  Gamepad,
-  TouchScreen,
 }

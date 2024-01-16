@@ -11,12 +11,7 @@ edition = "2021"
 version = "0.1.0"
 
 [workspace]
-members = [
-    "core",
-    "editor",
-    "macros",
-    "modules/*",
-]
+members = ["core", "macros", "modules/*"]
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -24,7 +19,6 @@ opt-level = 3
 [dependencies]
 # core
 core = { package = "surreal-core", path = "./core" }
-editor = { package = "surreal-editor", path = "./editor", optional = true }
 macros = { package = "surreal-macros", path = "./macros", optional = true }
 
 # modules
@@ -33,42 +27,5 @@ audio = { package = "surreal-audio", path = "./modules/audio", optional = true }
 graphics = { package = "surreal-graphics", path = "./modules/graphics", optional = true }
 input = { package = "surreal-input", path = "./modules/input", optional = true }
 physics = { package = "surreal-physics", path = "./modules/physics", optional = true }
-prototype = { package = "surreal-prototype", path = "./modules/prototype", optional = true }
 scene = { package = "surreal-scene", path = "./modules/scene", optional = true }
 ui = { package = "surreal-ui", path = "./modules/ui", optional = true }
-
-[[example]]
-name = "bunnymark"
-required-features = ["prototype"]
-
-[[example]]
-name = "cube"
-required-features = ["prototype"]
-
-[[example]]
-name = "egui"
-required-features = ["prototype"]
-
-[[example]]
-name = "fonts"
-required-features = ["prototype"]
-
-[[example]]
-name = "fractals"
-required-features = ["prototype"]
-
-[[example]]
-name = "hello-world"
-required-features = ["prototype"]
-
-[[example]]
-name = "sand"
-required-features = ["prototype"]
-
-[[example]]
-name = "scenes"
-required-features = ["prototype"]
-
-[[example]]
-name = "tilemaps"
-required-features = ["prototype"]

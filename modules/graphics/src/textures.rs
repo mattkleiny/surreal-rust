@@ -76,7 +76,7 @@ pub struct Texture {
 
 struct TextureState {
   id: TextureId,
-  graphics: GraphicsServer,
+  graphics: GraphicsEngine,
   options: TextureOptions,
   width: u32,
   height: u32,
@@ -84,13 +84,13 @@ struct TextureState {
 
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new(graphics: &GraphicsServer) -> surreal::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine) -> surreal::Result<Self> {
     Self::with_options(graphics, &TextureOptions::default())
   }
 
   /// Builds a new colored texture of the given size.
   pub fn from_color<T: Texel + Clone>(
-    graphics: &GraphicsServer,
+    graphics: &GraphicsEngine,
     width: usize,
     height: usize,
     color: T,
@@ -105,7 +105,7 @@ impl Texture {
 
   /// Creates a new blank texture on the GPU with the given options.
   pub fn with_options(
-    graphics: &GraphicsServer,
+    graphics: &GraphicsEngine,
     options: &TextureOptions,
   ) -> surreal::Result<Self> {
     Ok(Self {
@@ -122,7 +122,7 @@ impl Texture {
   /// Creates a new blank texture on the GPU with the given options and initial
   /// size.
   pub fn with_options_and_size(
-    graphics: &GraphicsServer,
+    graphics: &GraphicsEngine,
     options: &TextureOptions,
     width: u32,
     height: u32,

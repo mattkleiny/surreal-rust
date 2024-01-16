@@ -4,9 +4,9 @@
 //! complex render pipelines than using the 'material', 'mesh', 'render targets'
 //! etc do alone.
 
-use std::any::TypeId;
+use std::any::{Any, TypeId};
 
-use surreal::{collections::FastHashMap, utilities::Object};
+use surreal::collections::FastHashMap;
 
 use super::*;
 
@@ -16,7 +16,7 @@ use super::*;
 /// operation, and also exposes some basic lifecycle methods. It's lazily
 /// constructed upon first use and remains alive until the [`Renderer`] is
 /// dropped.
-pub trait RenderContext: Object {
+pub trait RenderContext: Any + Send + Sync + 'static {
   fn on_begin_with(&mut self) {}
   fn on_end_with(&mut self) {}
   fn on_begin_frame(&mut self) {}
@@ -32,7 +32,7 @@ pub trait RenderContextDescriptor {
   type Context: RenderContext;
 
   /// Creates the associated [`RenderContext`].
-  fn create(&self, graphics: &GraphicsServer) -> surreal::Result<Self::Context>;
+  fn create(&self, graphics: &GraphicsEngine) -> surreal::Result<Self::Context>;
 }
 
 /// Allows an object to be rendered via a [`Renderer`].
@@ -49,13 +49,13 @@ pub trait Renderable<C: RenderContext> {
 /// textures, materials, render targets, shaders, necessary in a single
 /// invocation of some rendering state.
 pub struct Renderer {
-  graphics: GraphicsServer,
+  graphics: GraphicsEngine,
   contexts: FastHashMap<TypeId, Box<dyn RenderContext>>,
 }
 
 impl Renderer {
   /// Creates a new render manager.
-  pub fn new(graphics: &GraphicsServer) -> Self {
+  pub fn new(graphics: &GraphicsEngine) -> Self {
     Self {
       graphics: graphics.clone(),
       contexts: FastHashMap::default(),
@@ -99,14 +99,8 @@ impl Renderer {
   /// Acquires a [`RenderContext`] and executes the body against it.
   ///
   /// If the context cannot be acquired, the body will not be run.
-  pub fn with<C: RenderContext>(&mut self, body: impl FnOnce(&mut C)) {
-    if let Some(context) = self.contexts.get_mut(&TypeId::of::<C>()) {
-      let context = context.as_any_mut().downcast_mut::<C>().unwrap();
-
-      context.on_begin_with();
-      body(context);
-      context.on_end_with();
-    }
+  pub fn with<C: RenderContext>(&mut self, _body: impl FnOnce(&mut C)) {
+    todo!()
   }
 
   /// Renders the given [`Renderable`] via the associated context.

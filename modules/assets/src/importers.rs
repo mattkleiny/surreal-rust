@@ -1,4 +1,4 @@
-/// Trait for importing assets from a specific format.
+/// Imports assets from a specific format.
 ///
 /// This trait is implemented by asset importers, which are used to import
 /// assets from a specific format. This is used to convert assets from one

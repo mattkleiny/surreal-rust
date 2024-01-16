@@ -5,22 +5,8 @@ use surreal::utilities::{Size, TimeSpan};
 mod headless;
 mod rodio;
 
-surreal::impl_server!(AudioEngine, AudioBackend);
-
 surreal::impl_rid!(AudioClipId);
 surreal::impl_rid!(AudioSourceId);
-
-impl AudioEngine {
-  /// Creates a new [`AudioServer`] with a no-op, headless backend.
-  pub fn create_headless() -> Self {
-    Self::new(headless::HeadlessAudioBackend::default())
-  }
-
-  /// Creates a new [`AudioServer`] with a Rodio backend.
-  pub fn create_rodio() -> Self {
-    Self::new(rodio::RodioAudioBackend::default())
-  }
-}
 
 /// Describes sampling rates for an audio clip.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -51,6 +37,20 @@ impl AudioSampleRate {
   /// Calculates the `Size` required for the given duration at this sample rate.
   pub fn calculate_size(&self, duration: TimeSpan) -> Size {
     Size::from_bytes((duration.total_seconds() * self.bytes_per_second()).ceil() as usize)
+  }
+}
+
+surreal::impl_server!(AudioEngine, AudioBackend);
+
+impl AudioEngine {
+  /// Creates a new [`AudioEngine`] with a no-op, headless backend.
+  pub fn create_headless() -> Self {
+    Self::new(headless::HeadlessAudioBackend::default())
+  }
+
+  /// Creates a new [`AudioEngine`] with a Rodio backend.
+  pub fn create_rodio() -> Self {
+    Self::new(rodio::RodioAudioBackend::default())
   }
 }
 
