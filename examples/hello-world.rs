@@ -1,4 +1,4 @@
-use surreal::graphics::{Window, WindowSettings};
+use surreal::graphics::{Color, GraphicsEngine, Window, WindowSettings};
 
 fn main() -> surreal::core::Result<()> {
   let window = Window::new(&WindowSettings {
@@ -6,7 +6,10 @@ fn main() -> surreal::core::Result<()> {
     ..Default::default()
   })?;
 
+  let graphics = GraphicsEngine::create_opengl(&window);
+
   while window.update() {
+    graphics.clear_color_buffer(Color::BLACK);
     window.present();
   }
 

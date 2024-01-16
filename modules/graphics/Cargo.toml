@@ -11,3 +11,4 @@ thiserror = "1.0.26"
 
 # platform dependencies
 sdl2-sys = { version = "0.36.0", features = ["bundled"] }
+gl = "0.14.0"

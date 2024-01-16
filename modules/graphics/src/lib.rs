@@ -11,6 +11,7 @@ pub use colors::*;
 pub use geometry::*;
 pub use materials::*;
 pub use meshes::*;
+pub use opengl::*;
 pub use palettes::*;
 pub use rendering::*;
 pub use shaders::*;
@@ -26,6 +27,7 @@ mod geometry;
 mod headless;
 mod materials;
 mod meshes;
+mod opengl;
 mod palettes;
 mod rendering;
 mod shaders;
@@ -96,8 +98,8 @@ impl GraphicsEngine {
   }
 
   /// Creates a new [`GraphicsEngine`] with an OpenGL backend.
-  pub fn create_opengl(_host: &dyn GraphicsHost) -> surreal::Result<Self> {
-    todo!()
+  pub fn create_opengl(host: &dyn GraphicsHost) -> Self {
+    Self::new(opengl::OpenGLGraphicsBackend::new(host))
   }
 }
 
@@ -106,7 +108,10 @@ impl GraphicsEngine {
 /// This type implemented by the host application and is used to provide the
 /// graphics backend with access to the host's windowing system and other
 /// infrastructure.
-pub trait GraphicsHost {}
+pub trait GraphicsHost {
+  /// Gets the address of an OpenGL function.
+  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void;
+}
 
 /// An abstraction on top of the underlying graphics API.
 ///

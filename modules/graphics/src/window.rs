@@ -6,6 +6,7 @@ use crate::GraphicsHost;
 pub struct Window {
   window: *mut SDL_Window,
   renderer: *mut SDL_Renderer,
+  gl_context: SDL_GLContext,
 }
 
 /// Settings for a window.
@@ -56,6 +57,9 @@ impl Window {
       if settings.resizable {
         window_flags |= SDL_WindowFlags::SDL_WINDOW_RESIZABLE as u32;
       }
+      if settings.gpu_enabled {
+        window_flags |= SDL_WindowFlags::SDL_WINDOW_OPENGL as u32;
+      }
 
       let window = SDL_CreateWindow(
         settings.title.as_ptr() as *const i8,
@@ -83,7 +87,24 @@ impl Window {
         return Err(WindowError::FailedToCreateRenderer);
       }
 
-      Ok(Self { window, renderer })
+      // create the OpenGL context
+      let mut gl_context = std::ptr::null_mut();
+
+      if settings.gpu_enabled {
+        gl_context = SDL_GL_CreateContext(window);
+
+        if gl_context.is_null() {
+          return Err(WindowError::FailedToCreateRenderer);
+        }
+
+        SDL_GL_LoadLibrary(std::ptr::null());
+      }
+
+      Ok(Self {
+        window,
+        renderer,
+        gl_context,
+      })
     }
   }
 
@@ -113,10 +134,20 @@ impl Window {
   }
 }
 
+impl GraphicsHost for Window {
+  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void {
+    unsafe { SDL_GL_GetProcAddress(name.as_ptr() as *const i8) as *const std::ffi::c_void }
+  }
+}
+
 impl Drop for Window {
   /// Destroys the window.
   fn drop(&mut self) {
     unsafe {
+      if !self.gl_context.is_null() {
+        SDL_GL_DeleteContext(self.gl_context);
+      }
+
       SDL_DestroyRenderer(self.renderer);
       SDL_DestroyWindow(self.window);
 
@@ -124,5 +155,3 @@ impl Drop for Window {
     }
   }
 }
-
-impl GraphicsHost for Window {}

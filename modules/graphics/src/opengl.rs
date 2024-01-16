@@ -4,13 +4,8 @@ use std::{
   cell::RefCell,
   collections::HashMap,
   ffi::{c_void, CString},
-  num::NonZeroU32,
 };
 
-use glutin::{
-  prelude::*,
-  surface::{Surface, WindowSurface},
-};
 use surreal::{
   maths::{Rectangle, UVec2},
   utilities::Size,
@@ -24,10 +19,20 @@ pub struct OpenGLGraphicsBackend {
 }
 
 /// Interior mutable state for the backend.
+#[derive(Default)]
 struct BackendState {
-  context: glutin::context::PossiblyCurrentContext,
-  surface: Surface<WindowSurface>,
   sampler_cache: HashMap<TextureSampler, u32>,
+}
+
+impl OpenGLGraphicsBackend {
+  /// Creates a new OpenGL graphics backend.
+  pub fn new(host: &dyn GraphicsHost) -> Self {
+    gl::load_with(|symbol| host.get_proc_address(symbol));
+
+    Self {
+      state: RefCell::new(BackendState::default()),
+    }
+  }
 }
 
 impl GraphicsBackend for OpenGLGraphicsBackend {
@@ -36,9 +41,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
   }
 
   fn end_frame(&self) {
-    let state = self.state.borrow();
-
-    state.surface.swap_buffers(&state.context).unwrap();
+    // no-op
   }
 
   fn clear_color_buffer(&self, color: Color) {
@@ -65,14 +68,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
   fn set_viewport_size(&self, size: UVec2) {
     if size.x > 0 && size.y > 0 {
-      let state = self.state.borrow();
-
-      state.surface.resize(
-        &state.context,
-        NonZeroU32::new(size.x).unwrap(),
-        NonZeroU32::new(size.y).unwrap(),
-      );
-
       unsafe {
         gl::Viewport(0, 0, size.x as i32, size.y as i32);
       }
