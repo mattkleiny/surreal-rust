@@ -11,11 +11,10 @@ mod mouse;
 /// This struct is the main interface for the input engine. It provides
 /// functionality for adding and removing input devices, and for querying the
 /// state of input devices.
-#[allow(dead_code)]
 #[derive(Default)]
 pub struct InputEngine {
-  keyboards: Vec<Keyboard>,
-  mice: Vec<Mouse>,
+  _keyboards: Vec<KeyboardDevice>,
+  _mice: Vec<MouseDevice>,
 }
 
 impl InputEngine {
@@ -27,21 +26,6 @@ impl InputEngine {
   pub fn new(_host: &dyn InputHost) -> Self {
     todo!()
   }
-
-  /// Receives a list of input events from the host.
-  ///
-  /// This method is called by the host to provide the input engine with a list
-  /// of input events. The input engine then processes the events and updates
-  /// the state of all input devices.
-  pub fn process(&mut self, _delta_time: f32, events: &[InputEvent]) {
-    let mut events = Vec::from(events);
-
-    while let Some(_event) = events.pop() {
-      // TODO: process the event
-    }
-
-    todo!()
-  }
 }
 
 /// An input event.
@@ -49,8 +33,11 @@ impl InputEngine {
 /// This enum represents an input event, such as a key press or a mouse button
 /// press. It is provided by the underlying platform and is passed to the input
 /// engine for processing.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum InputEvent {}
+#[derive(Debug, Clone)]
+pub enum InputEvent {
+  KeyboardEvent(KeyboardEvent),
+  MouseEvent(MouseEvent),
+}
 
 /// Possible kinds of input devices.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -82,8 +69,11 @@ pub trait InputHost {
 /// input sources and to allow for input devices to be added and removed at
 /// runtime.
 pub trait InputDevice {
-  /// Updates the state of the input device in response to some input event.
-  fn on_event(&mut self, event: &InputEvent);
+  /// Updates the state of the device.
+  fn update(&mut self, delta_time: f32);
+
+  /// Drains all pending input events from the device.
+  fn drain_events(&mut self) -> Vec<InputEvent>;
 }
 
 /// A listener for input events.
