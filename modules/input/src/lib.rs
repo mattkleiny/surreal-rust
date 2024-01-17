@@ -24,7 +24,7 @@ impl InputEngine {
   /// This method creates a new input engine from the given host. The host
   /// provides information about the input devices that are available on the
   /// system.
-  pub fn from_host(_host: &dyn InputHost) -> Self {
+  pub fn new(_host: &dyn InputHost) -> Self {
     todo!()
   }
 
@@ -44,6 +44,14 @@ impl InputEngine {
   }
 }
 
+/// An input event.
+///
+/// This enum represents an input event, such as a key press or a mouse button
+/// press. It is provided by the underlying platform and is passed to the input
+/// engine for processing.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum InputEvent {}
+
 /// Possible kinds of input devices.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum InputDeviceKind {
@@ -58,18 +66,10 @@ pub struct InputDeviceInfo {
   pub kind: InputDeviceKind,
 }
 
-/// An input event.
-///
-/// This enum represents an input event, such as a key press or a mouse button
-/// press. It is provided by the underlying platform and is passed to the input
-/// engine for processing.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum InputEvent {}
-
 /// An abstraction over a host capable of running input.
 pub trait InputHost {
   /// Returns a list of all input devices that are available on the system.
-  fn enumerate_devices(&self) -> Vec<InputDeviceInfo>;
+  fn enumerate_devices(&self) -> &[InputDeviceInfo];
 
   /// Returns the input device with the given name.
   fn get_device(&self, name: &str) -> Option<Box<dyn InputDevice>>;
@@ -84,4 +84,23 @@ pub trait InputHost {
 pub trait InputDevice {
   /// Updates the state of the input device in response to some input event.
   fn on_event(&mut self, event: &InputEvent);
+}
+
+/// A listener for input events.
+pub trait InputListener {
+  /// Receives an input event.
+  fn on_event(&mut self, event: &InputEvent);
+}
+
+/// Multiplexes events to multiple listeners.
+pub struct InputMultiplexer {
+  listeners: Vec<Box<dyn InputListener>>,
+}
+
+impl InputListener for InputMultiplexer {
+  fn on_event(&mut self, event: &InputEvent) {
+    for listener in &mut self.listeners {
+      listener.on_event(event);
+    }
+  }
 }
