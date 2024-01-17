@@ -1,9 +1,0 @@
-[package]
-name = "surreal-tilemaps"
-authors.workspace = true
-edition.workspace = true
-version.workspace = true
-
-[dependencies]
-surreal = { package = "surreal-core", path = "../../core" }
-serde = { version = "1.0.159", features = ["derive"] }

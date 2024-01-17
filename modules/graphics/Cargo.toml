@@ -1,5 +1,6 @@
 [package]
 name = "surreal-graphics"
+description = "Surreal graphics engine"
 authors.workspace = true
 edition.workspace = true
 version.workspace = true

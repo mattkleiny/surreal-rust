@@ -16,6 +16,9 @@ members = ["backends/*", "core", "macros", "modules/*"]
 [profile.dev.package."*"]
 opt-level = 3
 
+[features]
+default = ["macros", "audio", "graphics", "input", "physics"]
+
 [dependencies]
 # core
 core = { package = "surreal-core", path = "./core" }
@@ -25,13 +28,10 @@ macros = { package = "surreal-macros", path = "./macros", optional = true }
 sdl2 = { package = "surreal-sdl2", path = "./backends/sdl2", optional = true }
 
 # modules
-animations = { package = "surreal-animations", path = "./modules/animations", optional = true }
 assets = { package = "surreal-assets", path = "./modules/assets", optional = true }
 audio = { package = "surreal-audio", path = "./modules/audio", optional = true }
-blueprints = { package = "surreal-blueprints", path = "./modules/blueprints", optional = true }
 graphics = { package = "surreal-graphics", path = "./modules/graphics", optional = true }
 input = { package = "surreal-input", path = "./modules/input", optional = true }
 physics = { package = "surreal-physics", path = "./modules/physics", optional = true }
 scene = { package = "surreal-scene", path = "./modules/scene", optional = true }
-tilemaps = { package = "surreal-tilemaps", path = "./modules/tilemaps", optional = true }
 ui = { package = "surreal-ui", path = "./modules/ui", optional = true }

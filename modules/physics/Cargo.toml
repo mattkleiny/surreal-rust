@@ -1,5 +1,6 @@
 [package]
 name = "surreal-physics"
+description = "Physics engine for Surreal"
 authors.workspace = true
 edition.workspace = true
 version.workspace = true

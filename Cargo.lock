@@ -462,10 +462,8 @@ checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
 name = "surreal"
 version = "0.1.0"
 dependencies = [
- "surreal-animations",
  "surreal-assets",
  "surreal-audio",
- "surreal-blueprints",
  "surreal-core",
  "surreal-graphics",
  "surreal-input",
@@ -473,16 +471,7 @@ dependencies = [
  "surreal-physics",
  "surreal-scene",
  "surreal-sdl2",
- "surreal-tilemaps",
  "surreal-ui",
-]
-
-[[package]]
-name = "surreal-animations"
-version = "0.1.0"
-dependencies = [
- "serde",
- "surreal-core",
 ]
 
 [[package]]
@@ -500,14 +489,6 @@ version = "0.1.0"
 dependencies = [
  "surreal-core",
  "thiserror",
-]
-
-[[package]]
-name = "surreal-blueprints"
-version = "0.1.0"
-dependencies = [
- "serde",
- "surreal-core",
 ]
 
 [[package]]
@@ -591,14 +572,6 @@ dependencies = [
  "surreal-graphics",
  "surreal-input",
  "thiserror",
-]
-
-[[package]]
-name = "surreal-tilemaps"
-version = "0.1.0"
-dependencies = [
- "serde",
- "surreal-core",
 ]
 
 [[package]]

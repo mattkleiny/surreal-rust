@@ -10,14 +10,10 @@
 //! dependency, and features enabled/disabled to toggle the set of requirements
 //! needed for any particular project.
 
-#[cfg(feature = "animations")]
-pub extern crate animations;
 #[cfg(feature = "assets")]
 pub extern crate assets;
 #[cfg(feature = "audio")]
 pub extern crate audio;
-#[cfg(feature = "blueprints")]
-pub extern crate blueprints;
 pub extern crate core;
 #[cfg(feature = "graphics")]
 pub extern crate graphics;
@@ -29,7 +25,5 @@ pub extern crate physics;
 pub extern crate scene;
 #[cfg(feature = "sdl2")]
 pub extern crate sdl2;
-#[cfg(feature = "tilemaps")]
-pub extern crate tilemaps;
 #[cfg(feature = "ui")]
 pub extern crate ui;
