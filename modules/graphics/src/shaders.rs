@@ -200,9 +200,9 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_path<S: ShaderLanguage>(
+  pub fn from_path<'a, S: ShaderLanguage>(
     graphics: &GraphicsEngine,
-    path: impl Into<VirtualPath>,
+    path: impl Into<VirtualPath<'a>>,
   ) -> surreal::Result<Self> {
     let path = path.into();
     let code = path.read_all_text()?;
@@ -216,7 +216,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path(graphics: &GraphicsEngine, path: impl Into<VirtualPath>) -> surreal::Result<Self> {
+  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> surreal::Result<Self> {
     Self::from_path::<GLSL>(graphics, path)
   }
 
@@ -269,7 +269,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<S: ShaderLanguage>(&self, path: impl Into<VirtualPath>) -> surreal::Result<()> {
+  pub fn load_from_path<'a, S: ShaderLanguage>(&self, path: impl Into<VirtualPath<'a>>) -> surreal::Result<()> {
     let path = path.into();
     let source_code = path.read_all_text()?;
 

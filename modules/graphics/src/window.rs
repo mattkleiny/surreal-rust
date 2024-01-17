@@ -2,8 +2,6 @@ use std::ffi::CString;
 
 use sdl2_sys::*;
 
-use crate::GraphicsHost;
-
 /// Represents a window.
 pub struct Window {
   window: *mut SDL_Window,
@@ -107,7 +105,7 @@ impl Window {
   }
 }
 
-impl GraphicsHost for Window {
+impl super::opengl::OpenGLHost for Window {
   fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void {
     let name = CString::new(name).unwrap();
     unsafe { SDL_GL_GetProcAddress(name.as_ptr() as *const _) as *const _ }

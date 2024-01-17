@@ -11,7 +11,7 @@ fn main() -> surreal::core::Result<()> {
     ..Default::default()
   })?;
 
-  let graphics = GraphicsEngine::create_opengl(&window);
+  let graphics = GraphicsEngine::opengl(&window);
 
   let mut clock = DeltaClock::default();
   let mut total_time = 0.0;

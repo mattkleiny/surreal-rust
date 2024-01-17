@@ -21,8 +21,6 @@ pub extern crate graphics;
 pub extern crate input;
 #[cfg(feature = "physics")]
 pub extern crate physics;
-#[cfg(feature = "prototype")]
-pub extern crate prototype;
 #[cfg(feature = "scene")]
 pub extern crate scene;
 #[cfg(feature = "ui")]

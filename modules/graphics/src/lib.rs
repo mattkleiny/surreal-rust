@@ -1,10 +1,4 @@
 //! Graphics engine for Surreal.
-//!
-//! The graphics engine is lightweight and cross-platform and mirrors and
-//! provides capabilities for simple 2D and 3D graphics. It is a bespoke
-//! renderer built entirely in Rust.
-
-#![feature(anonymous_lifetime_in_impl_trait)]
 
 pub use buffers::*;
 pub use colors::*;
@@ -45,10 +39,24 @@ surreal::impl_rid!(ShaderId);
 surreal::impl_rid!(MeshId);
 surreal::impl_rid!(TargetId);
 
+surreal::impl_server!(GraphicsEngine, GraphicsBackend);
+
 /// The nominal max number of texture units that might be be bound in the GPU.
 ///
 /// This is a hint for sizing arrays and other data structures.
 const MAX_TEXTURE_UNITS: usize = 32;
+
+impl GraphicsEngine {
+  /// Creates a new [`GraphicsEngine`] with a no-op, headless backend.
+  pub fn headless() -> Self {
+    Self::new(headless::HeadlessGraphicsBackend::default())
+  }
+
+  /// Creates a new [`GraphicsEngine`] with an OpenGL backend.
+  pub fn opengl(host: &dyn opengl::OpenGLHost) -> Self {
+    Self::new(opengl::OpenGLGraphicsBackend::new(host))
+  }
+}
 
 /// A possible error when interacting with buffers.
 #[derive(thiserror::Error, Debug)]
@@ -89,30 +97,6 @@ pub enum MeshError {
 pub enum TargetError {
   #[error("the given target ID {0:?} is invalid")]
   InvalidId(TargetId),
-}
-
-surreal::impl_server!(GraphicsEngine, GraphicsBackend);
-
-impl GraphicsEngine {
-  /// Creates a new [`GraphicsEngine`] with a no-op, headless backend.
-  pub fn create_headless() -> Self {
-    Self::new(headless::HeadlessGraphicsBackend::default())
-  }
-
-  /// Creates a new [`GraphicsEngine`] with an OpenGL backend.
-  pub fn create_opengl(host: &dyn GraphicsHost) -> Self {
-    Self::new(opengl::OpenGLGraphicsBackend::new(host))
-  }
-}
-
-/// An abstraction over the host capable of running graphics.
-///
-/// This type implemented by the host application and is used to provide the
-/// graphics backend with access to the host's windowing system and other
-/// infrastructure.
-pub trait GraphicsHost {
-  /// Gets the address of an OpenGL function.
-  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void;
 }
 
 /// An abstraction on top of the underlying graphics API.

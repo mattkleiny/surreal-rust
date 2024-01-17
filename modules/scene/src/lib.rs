@@ -10,7 +10,6 @@
 
 #![allow(dead_code)]
 #![feature(impl_trait_in_assoc_type)]
-#![feature(type_alias_impl_trait)]
 
 pub use components::*;
 pub use graph::*;

@@ -27,6 +27,7 @@ struct Effector {
   _kind: EffectorKind,
 }
 
+#[allow(unused_variables)]
 impl PhysicsBackend for InternalPhysicsBackend {
   fn step(&self, delta_time: f32) {
     todo!()

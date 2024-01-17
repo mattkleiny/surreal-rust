@@ -1,7 +1,5 @@
 //! Asset management for Surreal.
 
-#![feature(anonymous_lifetime_in_impl_trait)]
-
 pub use exporters::*;
 pub use importers::*;
 use surreal::io::VirtualPath;
@@ -36,7 +34,7 @@ pub struct AssetDatabase {}
 
 impl AssetDatabase {
   /// Gets an asset from the database, or loads it from the file system.
-  pub fn get_or_load<A>(&self, _path: impl Into<VirtualPath>) -> Asset<A> {
+  pub fn get_or_load<'a, A>(&self, _path: impl Into<VirtualPath<'a>>) -> Asset<A> {
     todo!()
   }
 }

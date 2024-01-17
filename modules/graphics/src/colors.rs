@@ -9,8 +9,6 @@ use std::ops::{Div, Mul};
 use serde::{Deserialize, Serialize};
 use surreal::maths::{ApproxEq, FromRandom, Lerp, Random};
 
-// TODO: move this to maths and make it generic across color systems.
-
 /// Represents a type of pixel.
 pub trait Pixel: Copy + Default {
   /// The scalar type that is used to store each channel in this pixel.

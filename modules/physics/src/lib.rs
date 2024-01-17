@@ -1,7 +1,6 @@
 //! Physics engine for Surreal.
-//!
-//! This module provides a physics engine for Surreal. The physics engine is
-//! lightweight and is written entirely in Rust.
+
+#![allow(dead_code)]
 
 use surreal::{
   collections::ResourceStorage,
@@ -46,17 +45,12 @@ surreal::impl_server!(PhysicsEngine, PhysicsBackend);
 
 impl PhysicsEngine {
   /// Creates a new [`PhysicsEngine`] with the internal backend.
-  pub fn create_internal() -> Self {
+  pub fn internal() -> Self {
     Self::new(internal::InternalPhysicsBackend::default())
   }
 
   /// Creates a new [`PhysicsEngine`] with the Bullet backend.
-  pub fn create_bullet() -> Self {
-    todo!()
-  }
-
-  /// Creates a new [`PhysicsEngine`] with the PhysX backend.
-  pub fn create_physx() -> Self {
+  pub fn bullet() -> Self {
     todo!()
   }
 }

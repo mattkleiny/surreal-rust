@@ -13,6 +13,15 @@ use surreal::{
 
 use super::*;
 
+/// An abstraction over the host capable of running OpenGL.
+///
+/// This type implemented by the host application and is used to provide the
+/// graphics backend with access to the host's OpenGL functions.
+pub trait OpenGLHost {
+  /// Gets the address of an OpenGL function.
+  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void;
+}
+
 /// An OpenGL [`GraphicsBackend`] implementation.
 pub struct OpenGLGraphicsBackend {
   state: RefCell<BackendState>,
@@ -26,7 +35,7 @@ struct BackendState {
 
 impl OpenGLGraphicsBackend {
   /// Creates a new OpenGL graphics backend.
-  pub fn new(host: &dyn GraphicsHost) -> Self {
+  pub fn new(host: &dyn OpenGLHost) -> Self {
     gl::load_with(|symbol| host.get_proc_address(symbol));
 
     Self {

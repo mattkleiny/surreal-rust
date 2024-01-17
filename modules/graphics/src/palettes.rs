@@ -34,7 +34,7 @@ impl<P: Pixel> ColorPalette<P> {
   }
 
   /// Loads a palette from the given file path.
-  pub fn from_file(path: impl Into<VirtualPath>) -> surreal::Result<Self> {
+  pub fn from_file<'a>(path: impl Into<VirtualPath<'a>>) -> surreal::Result<Self> {
     let path = path.into();
     let stream = path.open_input_stream()?;
 
