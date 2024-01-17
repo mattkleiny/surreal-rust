@@ -3,7 +3,8 @@ use surreal::{
     maths::{FromRandom, Lerp, PingPong},
     utilities::DeltaClock,
   },
-  graphics::{Color, GraphicsEngine, Window, WindowSettings},
+  graphics::{Color, GraphicsEngine},
+  sdl2::{Window, WindowSettings},
 };
 
 fn main() -> surreal::core::Result<()> {

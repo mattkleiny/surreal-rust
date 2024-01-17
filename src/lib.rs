@@ -27,6 +27,8 @@ pub extern crate input;
 pub extern crate physics;
 #[cfg(feature = "scene")]
 pub extern crate scene;
+#[cfg(feature = "sdl2")]
+pub extern crate sdl2;
 #[cfg(feature = "tilemaps")]
 pub extern crate tilemaps;
 #[cfg(feature = "ui")]

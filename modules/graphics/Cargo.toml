@@ -7,9 +7,5 @@ version.workspace = true
 [dependencies]
 surreal = { package = "surreal-core", path = "../../core" }
 serde = { version = "1.0.159", features = ["derive"] }
-thiserror = "1.0.26"
-image = { version = "0.24.8", default-features = false }
-
-# platform dependencies
 gl = "0.14.0"
-sdl2-sys = { version = "0.36.0", features = ["bundled"] }
+thiserror = "1.0.26"

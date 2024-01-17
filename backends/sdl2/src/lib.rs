@@ -1,3 +1,5 @@
+//! SDL2 backend for Surreal.
+
 use std::ffi::CString;
 
 use sdl2_sys::*;
@@ -105,7 +107,7 @@ impl Window {
   }
 }
 
-impl super::opengl::OpenGLHost for Window {
+impl graphics::OpenGLHost for Window {
   fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void {
     let name = CString::new(name).unwrap();
     unsafe { SDL_GL_GetProcAddress(name.as_ptr() as *const _) as *const _ }

@@ -14,7 +14,6 @@ pub use skinning::*;
 pub use sprites::*;
 pub use targets::*;
 pub use textures::*;
-pub use window::*;
 
 mod buffers;
 mod colors;
@@ -31,7 +30,6 @@ mod skinning;
 mod sprites;
 mod targets;
 mod textures;
-mod window;
 
 surreal::impl_rid!(BufferId);
 surreal::impl_rid!(TextureId);

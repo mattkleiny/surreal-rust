@@ -472,6 +472,7 @@ dependencies = [
  "surreal-macros",
  "surreal-physics",
  "surreal-scene",
+ "surreal-sdl2",
  "surreal-tilemaps",
  "surreal-ui",
 ]
@@ -541,8 +542,6 @@ name = "surreal-graphics"
 version = "0.1.0"
 dependencies = [
  "gl",
- "image",
- "sdl2-sys",
  "serde",
  "surreal-core",
  "thiserror",
@@ -580,6 +579,18 @@ dependencies = [
  "bitflags 2.4.1",
  "serde",
  "surreal-core",
+]
+
+[[package]]
+name = "surreal-sdl2"
+version = "0.1.0"
+dependencies = [
+ "sdl2-sys",
+ "surreal-audio",
+ "surreal-core",
+ "surreal-graphics",
+ "surreal-input",
+ "thiserror",
 ]
 
 [[package]]

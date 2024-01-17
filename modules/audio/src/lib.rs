@@ -3,7 +3,7 @@
 pub use sampling::*;
 
 mod headless;
-mod rodio;
+mod openal;
 mod sampling;
 
 surreal::impl_rid!(ClipId);
@@ -17,9 +17,9 @@ impl AudioEngine {
     Self::new(headless::HeadlessAudioBackend::default())
   }
 
-  /// Creates a new [`AudioEngine`] with a Rodio backend.
-  pub fn rodio() -> Self {
-    Self::new(rodio::RodioAudioBackend::default())
+  /// Creates a new [`AudioEngine`] with a OpenAL backend.
+  pub fn openal() -> Self {
+    Self::new(openal::OpenALAudioBackend::default())
   }
 }
 

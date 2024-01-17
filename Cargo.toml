@@ -11,7 +11,7 @@ edition = "2021"
 version = "0.1.0"
 
 [workspace]
-members = ["core", "macros", "modules/*"]
+members = ["backends/*", "core", "macros", "modules/*"]
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -20,6 +20,9 @@ opt-level = 3
 # core
 core = { package = "surreal-core", path = "./core" }
 macros = { package = "surreal-macros", path = "./macros", optional = true }
+
+# backends
+sdl2 = { package = "surreal-sdl2", path = "./backends/sdl2", optional = true }
 
 # modules
 animations = { package = "surreal-animations", path = "./modules/animations", optional = true }

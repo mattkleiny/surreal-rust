@@ -1,11 +1,11 @@
 use super::*;
 
-/// A Rodio-based [`AudioBackend`] implementation.
+/// A OpenAL-based [`AudioBackend`] implementation.
 #[derive(Default)]
-pub struct RodioAudioBackend {}
+pub struct OpenALAudioBackend {}
 
 #[allow(unused_variables)]
-impl AudioBackend for RodioAudioBackend {
+impl AudioBackend for OpenALAudioBackend {
   fn new_audio_device(&self) -> Box<dyn AudioDevice> {
     todo!()
   }

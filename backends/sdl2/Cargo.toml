@@ -1,0 +1,13 @@
+[package]
+name = "surreal-sdl2"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+surreal = { package = "surreal-core", path = "../../core" }
+audio = { package = "surreal-audio", path = "../../modules/audio" }
+graphics = { package = "surreal-graphics", path = "../../modules/graphics" }
+input = { package = "surreal-input", path = "../../modules/input" }
+sdl2-sys = { version = "0.36.0", features = ["bundled"] }
+thiserror = "1.0.26"
