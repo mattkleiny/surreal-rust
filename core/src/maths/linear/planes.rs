@@ -17,8 +17,10 @@ pub enum HalfSpace {
 }
 
 impl Plane {
+  pub const ZERO: Self = Self::new(Vec3::ZERO, 0.0);
+
   /// Creates a new plane from a normal and a distance.
-  pub fn new(normal: Vec3, distance: f32) -> Self {
+  pub const fn new(normal: Vec3, distance: f32) -> Self {
     Self { normal, distance }
   }
 
@@ -35,6 +37,14 @@ impl Plane {
     let normal = (b - a).cross(c - a).normalize();
 
     Self::from_point(normal, a)
+  }
+
+  /// Creates a new plane from a vector4.
+  pub fn from_vector4(vector: Vec4) -> Self {
+    Self {
+      normal: Vec3::new(vector.x, vector.y, vector.z),
+      distance: vector.w,
+    }
   }
 
   /// Returns the distance from the plane to a point.
