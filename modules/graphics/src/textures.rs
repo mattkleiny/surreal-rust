@@ -1,8 +1,7 @@
 //! Texture management and loading.
 
+use core::maths::{uvec2, Rectangle, UVec2};
 use std::{cell::RefCell, rc::Rc};
-
-use surreal::maths::{uvec2, Rectangle, UVec2};
 
 use super::*;
 
@@ -81,12 +80,12 @@ struct TextureState {
 
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new(graphics: &GraphicsEngine) -> surreal::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine) -> core::Result<Self> {
     Self::with_options(graphics, &TextureOptions::default())
   }
 
   /// Loads a texture from the given image.
-  pub fn from_image<T: Texel + Clone>(graphics: &GraphicsEngine, image: &dyn Image<T>) -> surreal::Result<Self> {
+  pub fn from_image<T: Texel + Clone>(graphics: &GraphicsEngine, image: &dyn Image<T>) -> core::Result<Self> {
     let texture = Self::new(graphics)?;
 
     texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
@@ -101,7 +100,7 @@ impl Texture {
     width: u32,
     height: u32,
     color: T,
-  ) -> surreal::Result<Self> {
+  ) -> core::Result<Self> {
     let texture = Self::new(graphics)?;
     let colors = vec![color; width as usize * height as usize];
 
@@ -111,7 +110,7 @@ impl Texture {
   }
 
   /// Creates a new blank texture on the GPU with the given options.
-  pub fn with_options(graphics: &GraphicsEngine, options: &TextureOptions) -> surreal::Result<Self> {
+  pub fn with_options(graphics: &GraphicsEngine, options: &TextureOptions) -> core::Result<Self> {
     Ok(Self {
       state: Rc::new(RefCell::new(TextureState {
         id: graphics.texture_create(&options.sampler)?,
@@ -131,7 +130,7 @@ impl Texture {
     width: u32,
     height: u32,
     format: TextureFormat,
-  ) -> surreal::Result<Self> {
+  ) -> core::Result<Self> {
     let texture = Self::with_options(graphics, options)?;
     texture.initialize(width, height, format);
     Ok(texture)

@@ -107,13 +107,6 @@ impl Window {
   }
 }
 
-impl graphics::OpenGLHost for Window {
-  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void {
-    let name = CString::new(name).unwrap();
-    unsafe { SDL_GL_GetProcAddress(name.as_ptr() as *const _) as *const _ }
-  }
-}
-
 impl Drop for Window {
   /// Destroys the window.
   fn drop(&mut self) {
@@ -123,5 +116,18 @@ impl Drop for Window {
 
       SDL_Quit();
     }
+  }
+}
+
+impl graphics::OpenGLHost for Window {
+  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void {
+    let name = CString::new(name).unwrap();
+    unsafe { SDL_GL_GetProcAddress(name.as_ptr() as *const _) as *const _ }
+  }
+}
+
+impl audio::OpenALHost for Window {
+  fn get_proc_address(&self, _name: &str) -> *const std::ffi::c_void {
+    todo!()
   }
 }

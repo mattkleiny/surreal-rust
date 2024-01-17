@@ -1,14 +1,13 @@
 //! The OpenGL backend implementation for the graphics subsystem.
 
+use core::{
+  maths::{Rectangle, UVec2},
+  utilities::Size,
+};
 use std::{
   cell::RefCell,
   collections::HashMap,
   ffi::{c_void, CString},
-};
-
-use surreal::{
-  maths::{Rectangle, UVec2},
-  utilities::Size,
 };
 
 use super::*;

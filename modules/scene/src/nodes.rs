@@ -1,9 +1,10 @@
+use core::collections::FastHashSet;
+
 use bitflags::bitflags;
-use surreal::collections::FastHashSet;
 
 use crate::{LayerId, SceneComponentSet, TagSet};
 
-surreal::impl_rid!(SceneNodeId);
+core::impl_rid!(SceneNodeId);
 
 /// A node in a [`SceneGraph`].
 ///

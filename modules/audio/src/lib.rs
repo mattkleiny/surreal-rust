@@ -8,10 +8,10 @@ mod sampling;
 
 pub use openal::OpenALHost;
 
-surreal::impl_rid!(ClipId);
-surreal::impl_rid!(SourceId);
+core::impl_rid!(ClipId);
+core::impl_rid!(SourceId);
 
-surreal::impl_server!(AudioEngine, AudioBackend);
+core::impl_server!(AudioEngine, AudioBackend);
 
 impl AudioEngine {
   /// Creates a new [`AudioEngine`] with a no-op, headless backend.

@@ -2,12 +2,13 @@
 
 pub use exporters::*;
 pub use importers::*;
-use surreal::io::VirtualPath;
 
 mod exporters;
 mod importers;
 
-surreal::impl_rid!(AssetId);
+use core::io::VirtualPath;
+
+core::impl_rid!(AssetId);
 
 // TODO: export over asset read/write semantics
 

@@ -6,6 +6,6 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-surreal = { package = "surreal-core", path = "../../core" }
+core = { package = "surreal-core", path = "../../core" }
 thiserror = "1.0.26"
 gl = "0.14.0"

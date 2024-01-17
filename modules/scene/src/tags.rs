@@ -1,6 +1,5 @@
+use core::collections::FastHashSet;
 use std::borrow::Cow;
-
-use surreal::collections::FastHashSet;
 
 /// The ID of the layer that a [`SceneNode`] inhabits.
 pub type LayerId = u16;

@@ -5,15 +5,14 @@
 //!
 //! For higher-level shader control see the material module instead.
 
-use std::{cell::RefCell, rc::Rc};
-
-use surreal::{
+use core::{
   collections::FastHashMap,
   io::VirtualPath,
   maths::{
     DMat2, DMat3, DMat4, DQuat, DVec2, DVec3, DVec4, Degrees, Mat2, Mat3, Mat4, Quat, Radians, Vec2, Vec3, Vec4,
   },
 };
+use std::{cell::RefCell, rc::Rc};
 
 use super::*;
 
@@ -41,7 +40,7 @@ pub struct ShaderKernel {
 /// paradigms in the future.
 pub trait ShaderLanguage {
   /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-  fn parse_kernels(source_code: &str) -> surreal::Result<Vec<ShaderKernel>>;
+  fn parse_kernels(source_code: &str) -> core::Result<Vec<ShaderKernel>>;
 }
 
 /// Represents a single compiled shader program.
@@ -59,7 +58,7 @@ struct ShaderProgramState {
 
 impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
-  pub fn new(graphics: &GraphicsEngine) -> surreal::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine) -> core::Result<Self> {
     Ok(Self {
       state: Rc::new(RefCell::new(ShaderProgramState {
         id: graphics.shader_create()?,
@@ -70,27 +69,27 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
-  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> surreal::Result<Self> {
+  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> core::Result<Self> {
     Self::from_code::<glsl::GlslShaderLanguage>(graphics, code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> surreal::Result<Self> {
+  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> core::Result<Self> {
     Self::from_path::<glsl::GlslShaderLanguage>(graphics, path)
   }
 
   /// Loads a [`ShaderProgram`] from the given Shady shader code.
-  pub fn from_shady(graphics: &GraphicsEngine, code: &str) -> surreal::Result<Self> {
+  pub fn from_shady(graphics: &GraphicsEngine, code: &str) -> core::Result<Self> {
     Self::from_code::<shady::ShadyShaderLanguage>(graphics, code)
   }
 
   /// Loads a [`ShaderProgram`] from the given Shady shader code file.
-  pub fn from_shady_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> surreal::Result<Self> {
+  pub fn from_shady_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> core::Result<Self> {
     Self::from_path::<shady::ShadyShaderLanguage>(graphics, path)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> surreal::Result<Self> {
+  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> core::Result<Self> {
     let program = Self::new(graphics)?;
 
     program.load_code::<S>(code)?;
@@ -102,7 +101,7 @@ impl ShaderProgram {
   pub fn from_path<'a, S: ShaderLanguage>(
     graphics: &GraphicsEngine,
     path: impl Into<VirtualPath<'a>>,
-  ) -> surreal::Result<Self> {
+  ) -> core::Result<Self> {
     let path = path.into();
     let code = path.read_all_text()?;
 
@@ -147,7 +146,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from the given shader code.
-  pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> surreal::Result<()> {
+  pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> core::Result<()> {
     let state = self.state.borrow();
     let graphics = &state.graphics;
     let shaders = S::parse_kernels(text)?;
@@ -158,7 +157,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<'a, S: ShaderLanguage>(&self, path: impl Into<VirtualPath<'a>>) -> surreal::Result<()> {
+  pub fn load_from_path<'a, S: ShaderLanguage>(&self, path: impl Into<VirtualPath<'a>>) -> core::Result<()> {
     let path = path.into();
     let source_code = path.read_all_text()?;
 

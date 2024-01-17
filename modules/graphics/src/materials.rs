@@ -3,7 +3,7 @@
 //! Materials define all data required to perform some rendering step, from
 //! pipeline state changes through to shader programs and uniforms.
 
-use surreal::collections::FastHashMap;
+use core::collections::FastHashMap;
 
 use super::*;
 

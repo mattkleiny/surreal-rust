@@ -2,16 +2,30 @@
 
 #![allow(dead_code)]
 
-use surreal::{
+use core::{
   collections::ResourceStorage,
   maths::{Quat, Vec3},
 };
 
 mod internal;
 
-surreal::impl_rid!(ColliderId);
-surreal::impl_rid!(RigidbodyId);
-surreal::impl_rid!(EffectorId);
+core::impl_rid!(ColliderId);
+core::impl_rid!(RigidbodyId);
+core::impl_rid!(EffectorId);
+
+core::impl_server!(PhysicsEngine, PhysicsBackend);
+
+impl PhysicsEngine {
+  /// Creates a new [`PhysicsEngine`] with the internal backend.
+  pub fn internal() -> Self {
+    Self::new(internal::InternalPhysicsBackend::default())
+  }
+
+  /// Creates a new [`PhysicsEngine`] with the Bullet backend.
+  pub fn bullet() -> Self {
+    todo!()
+  }
+}
 
 /// Possible kinds of rigidbodies.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -39,20 +53,6 @@ pub enum ColliderKind {
 pub enum EffectorKind {
   Gravity,
   Wind,
-}
-
-surreal::impl_server!(PhysicsEngine, PhysicsBackend);
-
-impl PhysicsEngine {
-  /// Creates a new [`PhysicsEngine`] with the internal backend.
-  pub fn internal() -> Self {
-    Self::new(internal::InternalPhysicsBackend::default())
-  }
-
-  /// Creates a new [`PhysicsEngine`] with the Bullet backend.
-  pub fn bullet() -> Self {
-    todo!()
-  }
 }
 
 /// A trait for physics backends.

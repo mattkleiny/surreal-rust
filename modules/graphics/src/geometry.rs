@@ -1,6 +1,6 @@
 //! Geometry batching for common shapes and polygon rendering.
 
-use surreal::maths::{vec2, Rectangle, Vec2};
+use core::maths::{vec2, Rectangle, Vec2};
 
 use super::*;
 
@@ -33,7 +33,7 @@ impl Vertex for GeometryVertex {
 
 impl GeometryBatch {
   /// Creates a new geometry batch.
-  pub fn new(graphics: &GraphicsEngine) -> surreal::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine) -> core::Result<Self> {
     Ok(Self {
       mesh: Mesh::new(graphics, BufferUsage::Dynamic)?,
       vertices: Vec::new(),

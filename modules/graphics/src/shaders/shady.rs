@@ -6,7 +6,7 @@ use super::*;
 pub struct ShadyShaderLanguage;
 
 impl ShaderLanguage for ShadyShaderLanguage {
-  fn parse_kernels(_source_code: &str) -> surreal::Result<Vec<ShaderKernel>> {
+  fn parse_kernels(_source_code: &str) -> core::Result<Vec<ShaderKernel>> {
     todo!()
   }
 }

@@ -1,6 +1,6 @@
-use surreal::{collections::FastHashSet, maths::Vec2};
+use core::{collections::FastHashSet, maths::Vec2};
 
-use crate::{InputDevice, InputEvent};
+use super::*;
 
 /// A mouse event.
 #[derive(Debug, Clone)]

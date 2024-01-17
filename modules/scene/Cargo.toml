@@ -6,5 +6,5 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-surreal = { package = "surreal-core", path = "../../core" }
+core = { package = "surreal-core", path = "../../core" }
 bitflags = "2.1.0"

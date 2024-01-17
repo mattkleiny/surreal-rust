@@ -1,4 +1,4 @@
-use surreal::utilities::{Size, TimeSpan};
+use core::utilities::{Size, TimeSpan};
 
 /// Describes sampling rates for an audio clip.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

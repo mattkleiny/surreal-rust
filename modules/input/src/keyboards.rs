@@ -1,4 +1,4 @@
-use crate::{InputDevice, InputEvent};
+use super::*;
 
 /// Possible key codes on a keyboard.
 #[derive(Debug, Clone)]
