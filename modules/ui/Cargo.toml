@@ -6,4 +6,4 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-core = { package = "surreal-core", path = "../../core" }
+common = { package = "surreal-common", path = "../../common" }

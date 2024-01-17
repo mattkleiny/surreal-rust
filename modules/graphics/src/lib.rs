@@ -34,13 +34,13 @@ mod textures;
 
 pub use opengl::OpenGLHost;
 
-core::impl_rid!(BufferId);
-core::impl_rid!(TextureId);
-core::impl_rid!(ShaderId);
-core::impl_rid!(MeshId);
-core::impl_rid!(TargetId);
+common::impl_rid!(BufferId);
+common::impl_rid!(TextureId);
+common::impl_rid!(ShaderId);
+common::impl_rid!(MeshId);
+common::impl_rid!(TargetId);
 
-core::impl_server!(GraphicsEngine, GraphicsBackend);
+common::impl_server!(GraphicsEngine, GraphicsBackend);
 
 /// The nominal max number of texture units that might be be bound in the GPU.
 ///
@@ -118,7 +118,7 @@ pub trait GraphicsBackend {
 
   // intrinsics
   fn viewport_size(&self) -> (usize, usize);
-  fn set_viewport_size(&self, size: core::maths::UVec2);
+  fn set_viewport_size(&self, size: common::maths::UVec2);
   fn set_blend_state(&self, blend_state: BlendState);
   fn set_culling_mode(&self, culling_mode: CullingMode);
   fn set_scissor_mode(&self, scissor_mode: ScissorMode);
@@ -173,7 +173,7 @@ pub trait GraphicsBackend {
   fn texture_write_sub_data(
     &self,
     texture: TextureId,
-    region: &core::maths::Rectangle,
+    region: &common::maths::Rectangle,
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,
@@ -217,15 +217,15 @@ pub trait GraphicsBackend {
     &self,
     from: TargetId,
     to: TargetId,
-    source_rect: &core::maths::Rectangle,
-    dest_rect: &core::maths::Rectangle,
+    source_rect: &common::maths::Rectangle,
+    dest_rect: &common::maths::Rectangle,
     filter: TextureFilter,
   ) -> Result<(), TargetError>;
   fn target_blit_to_display(
     &self,
     target: TargetId,
-    source_rect: &core::maths::Rectangle,
-    dest_rect: &core::maths::Rectangle,
+    source_rect: &common::maths::Rectangle,
+    dest_rect: &common::maths::Rectangle,
     filter: TextureFilter,
   ) -> Result<(), TargetError>;
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError>;

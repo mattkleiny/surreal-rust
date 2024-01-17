@@ -1,6 +1,6 @@
 //! Basic bone-mesh skinning support for Surreal
 
-use core::{collections::FastHashMap, maths::Mat4, utilities::TimeSpan};
+use common::{collections::FastHashMap, maths::Mat4, utilities::TimeSpan};
 
 use crate::{
   BufferUsage, GraphicsEngine, Material, Mesh, PrimitiveTopology, UniformKey, Vertex, VertexDescriptor, VertexKind,
@@ -241,7 +241,7 @@ pub struct SkinnedMesh {
 
 impl SkinnedMesh {
   /// Creates a new skinned mesh.
-  pub fn new(server: &GraphicsEngine) -> core::Result<Self> {
+  pub fn new(server: &GraphicsEngine) -> common::Result<Self> {
     Ok(Self {
       mesh: Mesh::new(server, BufferUsage::Dynamic)?,
       skin: Skin::default(),
@@ -289,7 +289,7 @@ impl Vertex for SkinVertex {
 
 #[cfg(test)]
 mod tests {
-  use core::maths::vec3;
+  use common::maths::vec3;
 
   use super::*;
 

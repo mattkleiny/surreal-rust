@@ -1,7 +1,8 @@
 //! A headless graphics backend for testing and etc.
 
-use core::maths::{Rectangle, UVec2};
 use std::sync::atomic::{AtomicU32, Ordering};
+
+use common::maths::{Rectangle, UVec2};
 
 use super::*;
 

@@ -1,10 +1,9 @@
-use core::collections::FastHashSet;
-
 use bitflags::bitflags;
+use common::collections::FastHashSet;
 
 use crate::{LayerId, SceneComponentSet, TagSet};
 
-core::impl_rid!(SceneNodeId);
+common::impl_rid!(SceneNodeId);
 
 /// A node in a [`SceneGraph`].
 ///

@@ -42,7 +42,7 @@ pub enum WindowError {
 
 impl Window {
   /// Creates a new window.
-  pub fn new(settings: &WindowSettings) -> surreal::Result<Self, WindowError> {
+  pub fn new(settings: &WindowSettings) -> common::Result<Self, WindowError> {
     unsafe {
       // initialize SDL2
       if SDL_Init(SDL_INIT_VIDEO) < 0 {

@@ -1,6 +1,6 @@
 //! Camera types and utilities.
 
-use core::maths::{Mat4, Plane, Vec3};
+use common::maths::{Mat4, Plane, Vec3};
 
 use super::*;
 
@@ -58,6 +58,19 @@ pub struct OrthographicCamera {
   pub near_plane: f32,
   pub far_plane: f32,
   pub ortho_size: f32,
+}
+
+impl Default for OrthographicCamera {
+  fn default() -> Self {
+    Self {
+      position: Vec3::ZERO,
+      look_at: Vec3::NEG_Z,
+      up: Vec3::Y,
+      near_plane: 0.1,
+      far_plane: 100.0,
+      ortho_size: 1.0,
+    }
+  }
 }
 
 impl Camera for OrthographicCamera {

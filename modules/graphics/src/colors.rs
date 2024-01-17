@@ -4,8 +4,9 @@
 //! and a 32-bit floating point per-channel representation for more precise
 //! rendering.
 
-use core::maths::{ApproxEq, FromRandom, Lerp, Random};
 use std::ops::{Div, Mul};
+
+use common::maths::{ApproxEq, FromRandom, Lerp, Random};
 
 /// Represents a type of pixel.
 pub trait Pixel: Copy + Default {

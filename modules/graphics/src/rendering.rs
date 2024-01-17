@@ -4,8 +4,9 @@
 //! complex render pipelines than using the 'material', 'mesh', 'render targets'
 //! etc do alone.
 
-use core::collections::FastHashMap;
 use std::any::{Any, TypeId};
+
+use common::collections::FastHashMap;
 
 use super::*;
 
@@ -31,7 +32,7 @@ pub trait RenderContextDescriptor {
   type Context: RenderContext;
 
   /// Creates the associated [`RenderContext`].
-  fn create(&self, graphics: &GraphicsEngine) -> core::Result<Self::Context>;
+  fn create(&self, graphics: &GraphicsEngine) -> common::Result<Self::Context>;
 }
 
 /// Allows an object to be rendered via a [`Renderer`].

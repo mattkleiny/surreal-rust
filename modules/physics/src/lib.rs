@@ -2,18 +2,18 @@
 
 #![allow(dead_code)]
 
-use core::{
+use common::{
   collections::ResourceStorage,
   maths::{Quat, Vec3},
 };
 
 mod internal;
 
-core::impl_rid!(ColliderId);
-core::impl_rid!(RigidbodyId);
-core::impl_rid!(EffectorId);
+common::impl_rid!(ColliderId);
+common::impl_rid!(RigidbodyId);
+common::impl_rid!(EffectorId);
 
-core::impl_server!(PhysicsEngine, PhysicsBackend);
+common::impl_server!(PhysicsEngine, PhysicsBackend);
 
 impl PhysicsEngine {
   /// Creates a new [`PhysicsEngine`] with the internal backend.

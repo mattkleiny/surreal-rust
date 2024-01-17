@@ -1,19 +1,20 @@
 use surreal::{
-  core::{
+  common::{
     maths::{FromRandom, Lerp, PingPong},
     utilities::DeltaClock,
   },
-  graphics::{Color, GraphicsEngine},
+  graphics::{Color, GraphicsEngine, OrthographicCamera},
   sdl2::{Window, WindowSettings},
 };
 
-fn main() -> surreal::core::Result<()> {
+fn main() -> surreal::common::Result<()> {
   let window = Window::new(&WindowSettings {
     title: "Hello World!",
     ..Default::default()
   })?;
 
   let graphics = GraphicsEngine::opengl(&window);
+  let _camera = OrthographicCamera::default();
 
   let mut clock = DeltaClock::default();
   let mut total_time = 0.0;

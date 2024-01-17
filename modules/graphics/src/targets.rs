@@ -4,8 +4,9 @@
 //! and form the basis of more complex render pipelines (deferred pipelines,
 //! post-processing, etc).
 
-use core::maths::Rectangle;
 use std::{cell::RefCell, rc::Rc};
+
+use common::maths::Rectangle;
 
 use super::*;
 
@@ -29,7 +30,7 @@ pub struct RenderTextureDescriptor {
 
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
-  pub fn to_texture(&self, graphics: &GraphicsEngine) -> core::Result<Texture> {
+  pub fn to_texture(&self, graphics: &GraphicsEngine) -> common::Result<Texture> {
     Texture::with_options_and_size(graphics, &self.options, self.width, self.height, self.options.format)
   }
 }
@@ -52,7 +53,7 @@ struct RenderTargetState {
 
 impl RenderTarget {
   /// Creates a new [`RenderTarget`] on the GPU with the given attachments.
-  pub fn new(graphics: &GraphicsEngine, descriptor: &RenderTargetDescriptor) -> core::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine, descriptor: &RenderTargetDescriptor) -> common::Result<Self> {
     let color_attachment = descriptor.color_attachment.to_texture(graphics)?;
 
     let depth_attachment = descriptor

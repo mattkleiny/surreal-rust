@@ -3,11 +3,12 @@
 //! Meshes abstract over vertex and index data on the GPU as well, and
 //! provide utilities for constructing data from pieces.
 
-use core::{
+use std::{cell::RefCell, rc::Rc};
+
+use common::{
   maths::{vec2, Vec2, Vec3},
   utilities::Size,
 };
-use std::{cell::RefCell, rc::Rc};
 
 use super::*;
 
@@ -157,7 +158,7 @@ impl<V> MeshState<V> {
 
 impl<V: Vertex> Mesh<V> {
   /// Constructs a new blank mesh on the GPU.
-  pub fn new(graphics: &GraphicsEngine, usage: BufferUsage) -> core::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine, usage: BufferUsage) -> common::Result<Self> {
     let vertices = Buffer::new(graphics, BufferKind::Element, usage)?;
     let indices = Buffer::new(graphics, BufferKind::Index, usage)?;
 
@@ -436,7 +437,7 @@ pub trait MeshBrush<V> {
   fn build(&self, builder: &mut MeshBuilder<V>);
 }
 
-impl MeshBrush<Vertex2> for core::maths::Cube {
+impl MeshBrush<Vertex2> for common::maths::Cube {
   fn build(&self, builder: &mut MeshBuilder<Vertex2>) {
     let min = self.min();
     let max = self.max();
@@ -450,7 +451,7 @@ impl MeshBrush<Vertex2> for core::maths::Cube {
   }
 }
 
-impl MeshBrush<Vertex2> for core::maths::Circle {
+impl MeshBrush<Vertex2> for common::maths::Circle {
   fn build(&self, builder: &mut MeshBuilder<Vertex2>) {
     use std::f32::consts::PI;
 
@@ -476,7 +477,7 @@ impl MeshBrush<Vertex2> for core::maths::Circle {
   }
 }
 
-impl MeshBrush<Vertex3> for core::maths::Cube {
+impl MeshBrush<Vertex3> for common::maths::Cube {
   fn build(&self, builder: &mut MeshBuilder<Vertex3>) {
     let min = self.min();
     let max = self.max();

@@ -6,7 +6,7 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-surreal = { package = "surreal-core", path = "../../core" }
+common = { package = "surreal-common", path = "../../common" }
 audio = { package = "surreal-audio", path = "../../modules/audio" }
 graphics = { package = "surreal-graphics", path = "../../modules/graphics" }
 input = { package = "surreal-input", path = "../../modules/input" }

@@ -14,8 +14,8 @@ impl ShaderLanguage for GlslShaderLanguage {
   /// * Shared code amongst each shader definition by placing it prior to the
   ///   #shader_type directives.
   /// * Allows #include directives to fetch other files.
-  fn parse_kernels(source_code: &str) -> core::Result<Vec<ShaderKernel>> {
-    use core::io::*;
+  fn parse_kernels(source_code: &str) -> common::Result<Vec<ShaderKernel>> {
+    use common::io::*;
 
     let mut result = Vec::with_capacity(2); // usually 2 shaders per file
     let mut shared_code = String::new();

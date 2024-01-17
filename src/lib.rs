@@ -14,7 +14,7 @@
 pub extern crate assets;
 #[cfg(feature = "audio")]
 pub extern crate audio;
-pub extern crate core;
+pub extern crate common;
 #[cfg(feature = "graphics")]
 pub extern crate graphics;
 #[cfg(feature = "input")]

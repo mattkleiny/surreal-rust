@@ -5,8 +5,9 @@
 //!
 //! JASC-PAL files can be loaded from disc, as well.
 
-use core::io::VirtualPath;
 use std::ops::Index;
+
+use common::io::VirtualPath;
 
 use super::*;
 
@@ -33,7 +34,7 @@ impl<P: Pixel> ColorPalette<P> {
   }
 
   /// Loads a palette from the given file path.
-  pub fn from_file<'a>(path: impl Into<VirtualPath<'a>>) -> core::Result<Self> {
+  pub fn from_file<'a>(path: impl Into<VirtualPath<'a>>) -> common::Result<Self> {
     let path = path.into();
     let stream = path.open_input_stream()?;
 
@@ -41,15 +42,15 @@ impl<P: Pixel> ColorPalette<P> {
   }
 
   /// Loads a palette from the given reader.
-  pub fn from_bytes(reader: impl std::io::BufRead) -> core::Result<Self> {
+  pub fn from_bytes(reader: impl std::io::BufRead) -> common::Result<Self> {
     let lines: Vec<_> = reader.lines().collect::<Result<_, _>>()?;
 
     if lines[0] != "JASC-PAL" {
-      return Err(core::anyhow!("Expected A JASC-PAL file format"));
+      return Err(common::anyhow!("Expected A JASC-PAL file format"));
     }
 
     if lines[1] != "0100" {
-      return Err(core::anyhow!("Expected a 0100 magic header"));
+      return Err(common::anyhow!("Expected a 0100 magic header"));
     }
 
     // read palette size and start building palette
@@ -61,7 +62,7 @@ impl<P: Pixel> ColorPalette<P> {
       let components = lines[index].split(' ').collect::<Vec<_>>();
 
       if components.len() != 3 {
-        return Err(core::anyhow!("Expected 3 color components on line {}", index + 1));
+        return Err(common::anyhow!("Expected 3 color components on line {}", index + 1));
       }
 
       *color = P::from_bytes(&[

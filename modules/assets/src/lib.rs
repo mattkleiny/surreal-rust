@@ -6,9 +6,9 @@ pub use importers::*;
 mod exporters;
 mod importers;
 
-use core::io::VirtualPath;
+use common::io::VirtualPath;
 
-core::impl_rid!(AssetId);
+common::impl_rid!(AssetId);
 
 // TODO: export over asset read/write semantics
 
