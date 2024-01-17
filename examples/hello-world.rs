@@ -1,9 +1,10 @@
-use core::{
-  maths::{FromRandom, Lerp, PingPong},
-  utilities::DeltaClock,
+use surreal::{
+  core::{
+    maths::{FromRandom, Lerp, PingPong},
+    utilities::DeltaClock,
+  },
+  graphics::{Color, GraphicsEngine, Window, WindowSettings},
 };
-
-use surreal::graphics::{Color, GraphicsEngine, Window, WindowSettings};
 
 fn main() -> surreal::core::Result<()> {
   let window = Window::new(&WindowSettings {
