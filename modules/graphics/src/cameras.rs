@@ -2,6 +2,11 @@
 
 use core::maths::{Mat4, Plane, Vec3};
 
+use super::*;
+
+/// The name of the uniform containing the projection-view matrix of the camera.
+pub const UNIFORM_PROJECTION_VIEW: UniformKey<Mat4> = UniformKey::new("u_projectionView");
+
 /// Represents a camera.
 pub trait Camera {
   /// Computes the projection matrix for this camera.
