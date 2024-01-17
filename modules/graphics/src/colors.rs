@@ -6,7 +6,6 @@
 
 use std::ops::{Div, Mul};
 
-use serde::{Deserialize, Serialize};
 use surreal::maths::{ApproxEq, FromRandom, Lerp, Random};
 
 /// Represents a type of pixel.
@@ -23,7 +22,7 @@ pub trait Pixel: Copy + Default {
 
 /// A simple floating point color value with 4 channels (RGBA).
 #[repr(C)]
-#[derive(Serialize, Deserialize, Copy, Clone, Default, Debug)]
+#[derive(Copy, Clone, Default, Debug)]
 pub struct Color {
   pub r: f32,
   pub g: f32,
@@ -105,7 +104,7 @@ impl FromRandom for Color {
 
 /// A simple 32-bit color value with 4 channels (RGBA).
 #[repr(C)]
-#[derive(Serialize, Deserialize, Copy, Clone, Default, Debug, Eq)]
+#[derive(Copy, Clone, Default, Debug, Eq)]
 pub struct Color32 {
   pub r: u8,
   pub g: u8,

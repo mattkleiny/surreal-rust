@@ -6,6 +6,8 @@ mod headless;
 mod openal;
 mod sampling;
 
+pub use openal::OpenALHost;
+
 surreal::impl_rid!(ClipId);
 surreal::impl_rid!(SourceId);
 
@@ -18,8 +20,8 @@ impl AudioEngine {
   }
 
   /// Creates a new [`AudioEngine`] with a OpenAL backend.
-  pub fn openal() -> Self {
-    Self::new(openal::OpenALAudioBackend::default())
+  pub fn openal(host: &dyn openal::OpenALHost) -> Self {
+    Self::new(openal::OpenALAudioBackend::new(host))
   }
 }
 

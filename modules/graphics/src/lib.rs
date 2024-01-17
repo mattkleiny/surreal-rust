@@ -6,7 +6,6 @@ pub use geometry::*;
 pub use images::*;
 pub use materials::*;
 pub use meshes::*;
-pub use opengl::*;
 pub use palettes::*;
 pub use rendering::*;
 pub use shaders::*;
@@ -30,6 +29,8 @@ mod skinning;
 mod sprites;
 mod targets;
 mod textures;
+
+pub use opengl::OpenGLHost;
 
 surreal::impl_rid!(BufferId);
 surreal::impl_rid!(TextureId);

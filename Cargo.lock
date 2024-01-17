@@ -523,7 +523,6 @@ name = "surreal-graphics"
 version = "0.1.0"
 dependencies = [
  "gl",
- "serde",
  "surreal-core",
  "thiserror",
 ]
@@ -558,7 +557,6 @@ name = "surreal-scene"
 version = "0.1.0"
 dependencies = [
  "bitflags 2.4.1",
- "serde",
  "surreal-core",
 ]
 
