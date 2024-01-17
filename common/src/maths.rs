@@ -2,6 +2,7 @@
 
 pub use angles::*;
 pub use curves::*;
+pub use geometry::*;
 pub use hex::*;
 pub use interpolation::*;
 pub use linear::*;
@@ -15,6 +16,7 @@ pub use shapes::*;
 
 mod angles;
 mod curves;
+mod geometry;
 mod hex;
 mod interpolation;
 mod linear;
