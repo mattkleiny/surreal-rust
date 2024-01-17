@@ -257,12 +257,6 @@ impl Texture {
       )
       .expect("Failed to write texture data");
   }
-
-  /// Blits this texture to the active display via the given material.
-  pub fn blit_to_display(&self, material: &mut Material) {
-    material.set_texture("u_texture", self, None);
-    material.draw_fullscreen_quad();
-  }
 }
 
 impl Drop for TextureState {

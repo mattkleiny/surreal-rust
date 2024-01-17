@@ -35,68 +35,6 @@ pub struct ShaderKernel {
   pub code: String,
 }
 
-/// Representation of a single value that can be used in a shader.
-#[derive(Clone)]
-pub enum ShaderUniform {
-  Bool(bool),
-  I32(i32),
-  U32(u32),
-  F32(f32),
-  Vec2(Vec2),
-  Vec3(Vec3),
-  Vec4(Vec4),
-  DVec2(DVec2),
-  DVec3(DVec3),
-  DVec4(DVec4),
-  Mat2(Mat2),
-  Mat3(Mat3),
-  Mat4(Mat4),
-  DMat2(DMat2),
-  DMat3(DMat3),
-  DMat4(DMat4),
-  Quat(Quat),
-  DQuat(DQuat),
-  Color(Color),
-  Color32(Color32),
-  Texture(Texture, u8, Option<TextureSampler>),
-  Array(Vec<ShaderUniform>),
-}
-
-/// Allow for the conversion of a slice of values into a shader uniform array,
-/// provided all of the values can be individually converted into a uniform.
-impl<U> From<&[U]> for ShaderUniform
-where
-  for<'a> &'a U: Into<ShaderUniform>,
-{
-  fn from(value: &[U]) -> Self {
-    Self::Array(value.iter().map(|v| v.into()).collect::<Vec<ShaderUniform>>())
-  }
-}
-
-/// Identifies a kind of [`ShaderUniform`] for strongly-typed assignment.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct UniformKey<U> {
-  pub name: &'static str,
-  _phantom: std::marker::PhantomData<U>,
-}
-
-impl<U> UniformKey<U> {
-  /// Creates a new uniform key with the given name.
-  #[inline(always)]
-  pub const fn new(name: &'static str) -> Self {
-    Self {
-      name,
-      _phantom: std::marker::PhantomData,
-    }
-  }
-}
-
-impl<U> From<&'static str> for UniformKey<U> {
-  fn from(name: &'static str) -> Self {
-    UniformKey::new(name)
-  }
-}
-
 /// Represents a language for [`ShaderKernel`] compilation.
 ///
 /// Abstracting over shader languages allows us to build out new language
@@ -259,6 +197,68 @@ macro_rules! impl_uniform {
       }
     }
   };
+}
+
+/// Representation of a single value that can be used in a shader.
+#[derive(Clone)]
+pub enum ShaderUniform {
+  Bool(bool),
+  I32(i32),
+  U32(u32),
+  F32(f32),
+  Vec2(Vec2),
+  Vec3(Vec3),
+  Vec4(Vec4),
+  DVec2(DVec2),
+  DVec3(DVec3),
+  DVec4(DVec4),
+  Mat2(Mat2),
+  Mat3(Mat3),
+  Mat4(Mat4),
+  DMat2(DMat2),
+  DMat3(DMat3),
+  DMat4(DMat4),
+  Quat(Quat),
+  DQuat(DQuat),
+  Color(Color),
+  Color32(Color32),
+  Texture(Texture, u8, Option<TextureSampler>),
+  Array(Vec<ShaderUniform>),
+}
+
+/// Allow for the conversion of a slice of values into a shader uniform array,
+/// provided all of the values can be individually converted into a uniform.
+impl<U> From<&[U]> for ShaderUniform
+where
+  for<'a> &'a U: Into<ShaderUniform>,
+{
+  fn from(value: &[U]) -> Self {
+    Self::Array(value.iter().map(|v| v.into()).collect::<Vec<ShaderUniform>>())
+  }
+}
+
+/// Identifies a kind of [`ShaderUniform`] for strongly-typed assignment.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub struct UniformKey<U> {
+  pub name: &'static str,
+  _phantom: std::marker::PhantomData<U>,
+}
+
+impl<U> UniformKey<U> {
+  /// Creates a new uniform key with the given name.
+  #[inline(always)]
+  pub const fn new(name: &'static str) -> Self {
+    Self {
+      name,
+      _phantom: std::marker::PhantomData,
+    }
+  }
+}
+
+impl<U> From<&'static str> for UniformKey<U> {
+  fn from(name: &'static str) -> Self {
+    UniformKey::new(name)
+  }
 }
 
 impl_uniform!(bool as Bool);
