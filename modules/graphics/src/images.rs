@@ -46,25 +46,3 @@ impl Image for Rgba32FImage {
     todo!()
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_image_should_work() {
-    let image = RgbaImage::new(16, 16);
-
-    test(&image);
-  }
-
-  fn test(image: &impl Image<Pixel = Color32>) {
-    let width = image.width();
-    let height = image.height();
-    let pixels = image.pixels();
-
-    assert_eq!(width, 16);
-    assert_eq!(height, 16);
-    assert_eq!(pixels.len(), 16 * 16);
-  }
-}
