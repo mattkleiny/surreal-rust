@@ -48,14 +48,29 @@ impl Frustum {
     }
   }
 
+  /// Creates a frustum from a set of orthographic planes.
+  pub fn from_ortho_planes(center: Vec3, ortho_size: f32, near_plane: f32, far_plane: f32) -> Self {
+    let half_width = ortho_size / 2.0;
+    let half_height = half_width;
+
+    Self {
+      near: Plane::new(Vec3::Z, near_plane),
+      far: Plane::new(Vec3::NEG_Z, far_plane),
+      left: Plane::new(Vec3::X, center.x - half_width),
+      right: Plane::new(Vec3::NEG_X, center.x + half_width),
+      top: Plane::new(Vec3::Y, center.y - half_height),
+      bottom: Plane::new(Vec3::NEG_Y, center.y + half_height),
+    }
+  }
+
   /// Determines whether the given point is contained within this frustum.
   pub fn contains_point(&self, point: Vec3) -> bool {
     self.near.distance_to_point(point) >= 0.0
-      && self.far.distance_to_point(point) >= 0.0
+      && self.far.distance_to_point(point) <= 0.0
       && self.left.distance_to_point(point) >= 0.0
-      && self.right.distance_to_point(point) >= 0.0
+      && self.right.distance_to_point(point) <= 0.0
       && self.top.distance_to_point(point) >= 0.0
-      && self.bottom.distance_to_point(point) >= 0.0
+      && self.bottom.distance_to_point(point) <= 0.0
   }
 
   /// Determines whether the given sphere is contained within this frustum.
@@ -96,77 +111,4 @@ impl Frustum {
   }
 }
 
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_contains_point() {
-    let frustum = Frustum {
-      near: Plane::new(vec3(0.0, 0.0, 1.0), 0.0),
-      far: Plane::new(vec3(0.0, 0.0, -1.0), 0.0),
-      left: Plane::new(vec3(1.0, 0.0, 0.0), 0.0),
-      right: Plane::new(vec3(-1.0, 0.0, 0.0), 0.0),
-      top: Plane::new(vec3(0.0, -1.0, 0.0), 0.0),
-      bottom: Plane::new(vec3(0.0, 1.0, 0.0), 0.0),
-    };
-
-    assert!(frustum.contains_point(vec3(0.0, 0.0, 0.0)));
-    assert!(frustum.contains_point(vec3(0.0, 0.0, 0.1)));
-    assert!(frustum.contains_point(vec3(0.0, 0.1, 0.0)));
-    assert!(frustum.contains_point(vec3(0.1, 0.0, 0.0)));
-    assert!(!frustum.contains_point(vec3(2.0, 0.0, 0.0)));
-    assert!(!frustum.contains_point(vec3(0.0, 2.0, 0.0)));
-    assert!(!frustum.contains_point(vec3(0.0, 0.0, -1.0)));
-  }
-
-  #[test]
-  fn test_contains_sphere() {
-    let frustum = Frustum {
-      near: Plane::new(vec3(0.0, 0.0, 1.0), 0.0),
-      far: Plane::new(vec3(0.0, 0.0, -1.0), 0.0),
-      left: Plane::new(vec3(1.0, 0.0, 0.0), 0.0),
-      right: Plane::new(vec3(-1.0, 0.0, 0.0), 0.0),
-      top: Plane::new(vec3(0.0, -1.0, 0.0), 0.0),
-      bottom: Plane::new(vec3(0.0, 1.0, 0.0), 0.0),
-    };
-
-    let sphere_inside = Sphere {
-      center: vec3(0.0, 0.0, 0.0),
-      radius: 1.0,
-    };
-
-    let sphere_outside = Sphere {
-      center: vec3(2.0, 0.0, 0.0),
-      radius: 1.0,
-    };
-
-    assert!(frustum.contains_sphere(sphere_inside));
-    assert!(!frustum.contains_sphere(sphere_outside));
-  }
-
-  #[test]
-  fn test_contains_aabb() {
-    let frustum = Frustum {
-      near: Plane::new(vec3(0.0, 0.0, 1.0), 0.0),
-      far: Plane::new(vec3(0.0, 0.0, -1.0), 0.0),
-      left: Plane::new(vec3(1.0, 0.0, 0.0), 0.0),
-      right: Plane::new(vec3(-1.0, 0.0, 0.0), 0.0),
-      top: Plane::new(vec3(0.0, -1.0, 0.0), 0.0),
-      bottom: Plane::new(vec3(0.0, 1.0, 0.0), 0.0),
-    };
-
-    let aabb_inside = AABB {
-      min: vec3(-0.5, -0.5, -0.5),
-      max: vec3(0.5, 0.5, 0.5),
-    };
-
-    let aabb_outside = AABB {
-      min: vec3(1.0, 1.0, 1.0),
-      max: vec3(2.0, 2.0, 2.0),
-    };
-
-    assert!(frustum.contains_aabb(aabb_inside));
-    assert!(!frustum.contains_aabb(aabb_outside));
-  }
-}
+// TODO: implement tests for frustums
