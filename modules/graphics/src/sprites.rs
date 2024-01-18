@@ -15,15 +15,69 @@ const DEFAULT_SPRITE_COUNT: usize = 1024;
 /// This batch pre-allocates an array of vertices and indices and re-uses them
 /// for as many sprites as possible.
 ///
-/// Batching is possible over 1 material; however up to 32 unique texture
-/// sources can be used for that single batch operation. It's expected that the
-/// associated shader program is capable of supporting multiple textures per
-/// operation.
+/// Batching is possible over 1 material and for sprites of the same texture.
+/// If you need to render sprites from multiple textures, you should use a
+/// [`MultiSpriteBatch`] instead, otherwise the batch will flush prior to
+/// rendering the sprites from the new texture.
 pub struct SpriteBatch {
   mesh: Mesh<SpriteVertex>,
   material: Option<Material>,
   vertices: Vec<SpriteVertex>,
   last_texture: Option<Texture>,
+}
+
+/// A specialized vertex for use in our sprite batch.
+#[repr(C)]
+#[derive(Clone, Debug)]
+struct SpriteVertex {
+  pub position: Vec2,
+  pub uv: Vec2,
+  pub color: Color32,
+}
+
+impl Vertex for SpriteVertex {
+  #[rustfmt::skip]
+  const DESCRIPTORS: &'static [VertexDescriptor] = &[
+    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
+    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
+    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
+  ];
+}
+
+/// Similar to [`SpriteBatch`], but allows for multiple textures per batch.
+///
+/// This is useful for rendering sprites from multiple texture sources in a
+/// single draw call, however it requires the underlying shader program to
+/// support multiple textures.
+pub struct MultiSpriteBatch {
+  mesh: Mesh<MultiSpriteVertex>,
+  material: Option<Material>,
+  vertices: Vec<MultiSpriteVertex>,
+  last_texture: Option<Texture>,
+  textures: TextureBindingSet,
+}
+
+/// A specialized vertex for use in our sprite batch.
+///
+/// Encodes the texture index in the vertex, for use in the shader.
+/// This allows us to use a single vertex buffer for multiple textures.
+#[repr(C)]
+#[derive(Clone, Debug)]
+struct MultiSpriteVertex {
+  pub position: Vec2,
+  pub uv: Vec2,
+  pub color: Color32,
+  pub texture_id: u8,
+}
+
+impl Vertex for MultiSpriteVertex {
+  #[rustfmt::skip]
+  const DESCRIPTORS: &'static [VertexDescriptor] = &[
+    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
+    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
+    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
+    VertexDescriptor { count: 1, kind: VertexKind::U8, should_normalize: false },
+  ];
 }
 
 /// Options for drawing a sprite.
@@ -45,36 +99,13 @@ impl Default for SpriteOptions {
   }
 }
 
-/// A specialized vertex for use in our sprite batch.
-///
-/// Encodes a unique `texture_id` representing which of the bound texture units
-/// is relevant for this sprite. This is used to avoid unnecessary flushes in
-/// the batch when rendering sprites from multiple texture sources
-/// simultaneously.
-#[repr(C)]
-#[derive(Clone, Debug)]
-struct SpriteVertex {
-  pub position: Vec2,
-  pub uv: Vec2,
-  pub color: Color32,
-}
-
-impl Vertex for SpriteVertex {
-  #[rustfmt::skip]
-  const DESCRIPTORS: &'static [VertexDescriptor] = &[
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-  ];
-}
-
 impl SpriteBatch {
   /// Constructs a new [`SpriteBatch`] with a default capacity.
   pub fn new(graphics: &GraphicsEngine) -> common::Result<Self> {
     Self::with_capacity(graphics, DEFAULT_SPRITE_COUNT)
   }
 
-  /// Creates a new [`SpriteBatch`] with the given expected sprite capacity.
+  /// Creates a new [`SpriteBatch`] with the given expected capacity.
   ///
   /// This will pre-allocate buffers to minimize reallocation costs.
   pub fn with_capacity(graphics: &GraphicsEngine, sprite_count: usize) -> common::Result<Self> {
@@ -110,6 +141,7 @@ impl SpriteBatch {
       self.flush();
     }
 
+    // flush if the texture has changed
     if let Some(texture) = &self.last_texture {
       if texture.id() != region.texture.id() {
         self.flush();
@@ -126,12 +158,10 @@ impl SpriteBatch {
 
     let angle = options.rotation;
     let translation = options.position;
-
-    // prepare vertex transform
     let transform = Mat2::from_scale_angle(scale, angle.into());
-
     let uv = region.calculate_uv();
 
+    // add vertices
     self.vertices.push(SpriteVertex {
       position: translation + transform * vec2(-0.5, -0.5),
       color: options.color,
@@ -170,6 +200,7 @@ impl SpriteBatch {
     }
     let material = material.as_mut().unwrap();
 
+    // prepare to draw
     let vertex_count = self.vertices.len();
     let sprite_count = vertex_count / 4;
     let index_count = sprite_count * 6;
@@ -179,6 +210,7 @@ impl SpriteBatch {
       material.set_texture("u_texture", texture, None);
     }
 
+    // write vertices to mesh
     mesh.with_buffers(|vertices, _| {
       vertices.write_data(&self.vertices);
     });
@@ -186,6 +218,134 @@ impl SpriteBatch {
     mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
 
     self.vertices.clear();
+  }
+}
+
+impl MultiSpriteBatch {
+  /// Constructs a new [`MultiSpriteBatch`] with a default capacity.
+  pub fn new(graphics: &GraphicsEngine) -> common::Result<Self> {
+    Self::with_capacity(graphics, DEFAULT_SPRITE_COUNT)
+  }
+
+  /// Creates a new [`MultiSpriteBatch`] with the given expected capacity.
+  ///
+  /// This will pre-allocate buffers to minimize reallocation costs.
+  pub fn with_capacity(graphics: &GraphicsEngine, sprite_count: usize) -> common::Result<Self> {
+    // build standard quad indices ahead-of-time
+    let vertices = Vec::with_capacity(sprite_count * 4);
+    let indices = build_quad_indices(sprite_count);
+
+    // create mesh, upload quad indices immediately
+    let mut mesh = Mesh::new(graphics, BufferUsage::Dynamic)?;
+
+    mesh.with_buffers(|_, buffer| {
+      buffer.write_data(&indices);
+    });
+
+    Ok(Self {
+      mesh,
+      vertices,
+      material: None,
+      last_texture: None,
+      textures: TextureBindingSet::default(),
+    })
+  }
+
+  /// Starts a new batch run with the given `Material`.
+  pub fn begin(&mut self, material: &Material) {
+    self.material = Some(material.clone());
+    self.vertices.clear();
+  }
+
+  /// Draws a single sprite texture to the batch with the given options.
+  pub fn draw_sprite(&mut self, region: &TextureRegion, options: &SpriteOptions) {
+    // flush if we've reached capacity
+    if self.vertices.len() + 4 >= self.vertices.capacity() {
+      self.flush();
+    }
+
+    let mut texture_id = self.textures.allocate(&region.texture);
+    if texture_id.is_none() {
+      // we've run out of texture slots, flush and try again
+      self.flush();
+      texture_id = self.textures.allocate(&region.texture);
+    }
+
+    let texture_id = texture_id.expect("Failed to allocate texture slot");
+
+    let scale = vec2(
+      region.size.x as f32 * options.scale.x,
+      region.size.y as f32 * options.scale.y,
+    );
+
+    let angle = options.rotation;
+    let translation = options.position;
+    let transform = Mat2::from_scale_angle(scale, angle.into());
+    let uv = region.calculate_uv();
+
+    // add vertices
+    self.vertices.push(MultiSpriteVertex {
+      position: translation + transform * vec2(-0.5, -0.5),
+      color: options.color,
+      uv: uv.top_left(),
+      texture_id,
+    });
+
+    self.vertices.push(MultiSpriteVertex {
+      position: translation + transform * vec2(-0.5, 0.5),
+      color: options.color,
+      uv: uv.bottom_left(),
+      texture_id,
+    });
+
+    self.vertices.push(MultiSpriteVertex {
+      position: translation + transform * vec2(0.5, 0.5),
+      color: options.color,
+      uv: uv.bottom_right(),
+      texture_id,
+    });
+
+    self.vertices.push(MultiSpriteVertex {
+      position: translation + transform * vec2(0.5, -0.5),
+      color: options.color,
+      uv: uv.top_right(),
+      texture_id,
+    });
+  }
+
+  /// Flushes the batch to the GPU.
+  pub fn flush(&mut self) {
+    if self.vertices.is_empty() {
+      return; // no vertices? no problem
+    }
+
+    // fetch the material out
+    let material = &mut self.material;
+    if material.is_none() {
+      return;
+    }
+    let material = material.as_mut().unwrap();
+
+    // prepare to draw
+    let vertex_count = self.vertices.len();
+    let sprite_count = vertex_count / 4;
+    let index_count = sprite_count * 6;
+    let mesh = &mut self.mesh;
+
+    if let Some(texture) = &self.last_texture {
+      // TODO: set all of the textures into an array?
+      material.set_texture("u_texture", texture, None);
+    }
+
+    // write vertices to mesh
+    mesh.with_buffers(|vertices, _| {
+      vertices.write_data(&self.vertices);
+    });
+
+    mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
+
+    self.vertices.clear();
+    self.textures.clear();
   }
 }
 

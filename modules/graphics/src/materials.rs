@@ -208,10 +208,12 @@ impl Material {
   }
 }
 
-/// Keeps texture assignments uniquely associated with slot indices for use in
-/// texture binding in a material.
+/// Keeps texture assignments uniquely associated with slot indices.
+///
+/// This is useful for tracking unique texture assignments across multiple
+/// materials, invocations, vertices, etc.
 #[derive(Default, Clone)]
-struct TextureBindingSet {
+pub struct TextureBindingSet {
   slots: [Option<TextureId>; MAX_TEXTURE_UNITS],
 }
 

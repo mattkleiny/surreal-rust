@@ -133,7 +133,9 @@ impl Texture {
     format: TextureFormat,
   ) -> common::Result<Self> {
     let texture = Self::with_options(graphics, options)?;
+
     texture.initialize(width, height, format);
+
     Ok(texture)
   }
 
@@ -157,6 +159,7 @@ impl Texture {
     let mut state = self.state.borrow_mut();
 
     state.options = options;
+
     state
       .graphics
       .texture_set_options(state.id, &state.options.sampler)
@@ -173,9 +176,8 @@ impl Texture {
     state.width = width;
     state.height = height;
 
-    let graphics = &state.graphics;
-
-    graphics
+    state
+      .graphics
       .texture_initialize(state.id, width, height, format)
       .expect("Failed to initialize texture");
   }
@@ -191,19 +193,17 @@ impl Texture {
   }
 
   /// Downloads pixel data from the texture.
-  #[allow(clippy::uninit_vec)]
   pub fn read_pixels<T: Texel>(&self) -> Vec<T> {
     let state = self.state.borrow();
 
-    let graphics = &state.graphics;
     let size = state.width as usize * state.height as usize;
-
     let mut buffer = Vec::<T>::with_capacity(size);
 
     unsafe {
       buffer.set_len(size);
 
-      graphics
+      state
+        .graphics
         .texture_read_data(
           state.id,
           size * std::mem::size_of::<T>(),
@@ -224,9 +224,8 @@ impl Texture {
     state.width = width;
     state.height = height;
 
-    let graphics = &state.graphics;
-
-    graphics
+    state
+      .graphics
       .texture_write_data(
         state.id,
         width,
@@ -245,9 +244,9 @@ impl Texture {
   /// Uploads a sub-section of pixel data to the texture.
   pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle, pixels: &[T]) {
     let state = self.state.borrow();
-    let graphics = &state.graphics;
 
-    graphics
+    state
+      .graphics
       .texture_write_sub_data(
         state.id,
         region,
@@ -285,38 +284,6 @@ impl TextureRegion {
   }
 }
 
-impl From<Texture> for TextureRegion {
-  fn from(texture: Texture) -> Self {
-    TextureRegion {
-      offset: uvec2(0, 0),
-      size: uvec2(texture.width(), texture.height()),
-      texture,
-    }
-  }
-}
-
-impl From<&Texture> for TextureRegion {
-  fn from(texture: &Texture) -> Self {
-    TextureRegion {
-      texture: texture.clone(),
-      offset: uvec2(0, 0),
-      size: uvec2(texture.width(), texture.height()),
-    }
-  }
-}
-
-impl<R: AsRef<Texture>> From<&R> for TextureRegion {
-  fn from(texture: &R) -> Self {
-    let texture = texture.as_ref();
-
-    TextureRegion {
-      texture: texture.clone(),
-      offset: uvec2(0, 0),
-      size: uvec2(texture.width(), texture.height()),
-    }
-  }
-}
-
 /// An atlas of textures, which is a sub-division of a texture into a smaller
 /// grid of [`TextureRegion`]s.
 #[derive(Clone)]
@@ -347,7 +314,7 @@ impl TextureAtlas {
   }
 
   /// Gets a sub-region of the texture atlas at the given position.
-  pub fn get_region(&self, x: u32, y: u32) -> TextureRegion {
+  pub fn slice(&self, x: u32, y: u32) -> TextureRegion {
     TextureRegion {
       texture: self.texture.clone(),
       offset: uvec2(x * self.width, y * self.height),
