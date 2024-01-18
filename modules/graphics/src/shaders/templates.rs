@@ -1,5 +1,11 @@
 use super::*;
 
+// Internal shader code.
+pub const SHADER_CANVAS_STANDARD: ShaderTemplate = include_shader!("../../shaders/canvas-standard.glsl");
+pub const SHADER_MESH_SKINNED: ShaderTemplate = include_shader!("../../shaders/mesh-skinned.glsl");
+pub const SHADER_SPRITE_STANDARD: ShaderTemplate = include_shader!("../../shaders/sprite-standard.glsl");
+pub const SHADER_SPRITE_MULTITEX: ShaderTemplate = include_shader!("../../shaders/sprite-multitex.glsl");
+
 /// A templated shader program that can be used to generate new shader programs.
 pub struct ShaderTemplate {
   pub name: &'static str,
@@ -28,9 +34,3 @@ macro_rules! include_shader {
     ShaderTemplate::load($path, include_str!($path))
   };
 }
-
-// Internal shader code.
-pub const SHADER_CANVAS_STANDARD: ShaderTemplate = include_shader!("../../shaders/canvas-standard.glsl");
-pub const SHADER_MESH_SKINNED: ShaderTemplate = include_shader!("../../shaders/mesh-skinned.glsl");
-pub const SHADER_SPRITE_STANDARD: ShaderTemplate = include_shader!("../../shaders/sprite-standard.glsl");
-pub const SHADER_SPRITE_MULTITEX: ShaderTemplate = include_shader!("../../shaders/sprite-multitex.glsl");

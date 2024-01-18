@@ -1,3 +1,4 @@
+use graphics::{Material, SHADER_SPRITE_MULTITEX};
 use surreal::{
   common::{
     maths::{FromRandom, Lerp, PingPong},
@@ -20,6 +21,9 @@ fn main() -> surreal::common::Result<()> {
 
   let color1 = Color::random();
   let color2 = Color::random();
+
+  let shader = SHADER_SPRITE_MULTITEX.to_program(&graphics)?;
+  let _material = Material::new(&graphics, &shader);
 
   while window.update() {
     let delta_time = clock.tick();

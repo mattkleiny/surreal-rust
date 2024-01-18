@@ -170,8 +170,6 @@ impl ShaderProgram {
 
   /// Reloads the [`ShaderProgram`] from the given shader code.
   pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> common::Result<()> {
-    let state = self.state.borrow();
-    let graphics = &state.graphics;
     let shaders = S::parse_kernels(text)?;
 
     self.load_kernels(&shaders)?;
