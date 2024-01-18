@@ -1,11 +1,11 @@
-use super::numbers::Numeric;
+use super::Scalar;
 
 /// Allows linear interpolation of arbitrary values.
 pub trait Lerp {
   fn lerp(a: Self, b: Self, t: f32) -> Self;
 }
 
-impl<T: Numeric> Lerp for T {
+impl<T: Scalar> Lerp for T {
   #[inline(always)]
   fn lerp(a: Self, b: Self, t: f32) -> T {
     let a = a.to_f32();

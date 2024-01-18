@@ -1,7 +1,7 @@
 use super::*;
 
 /// Builds a range between the given values.
-pub const fn range<T: Numeric>(min: T, max: T) -> Range<T> {
+pub const fn range<T: Scalar>(min: T, max: T) -> Range<T> {
   Range::new(min, max)
 }
 
@@ -12,7 +12,7 @@ pub struct Range<T> {
   pub max: T,
 }
 
-impl<T: Numeric> Range<T> {
+impl<T: Scalar> Range<T> {
   pub const fn new(min: T, max: T) -> Self {
     Self { min, max }
   }

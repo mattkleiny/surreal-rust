@@ -1,8 +1,8 @@
-use crate::maths::{DVec2, DVec3, Polygon, Vec2, Vec3};
+use crate::maths::{DVec2, DVec3, Polygon, Vec2, Vec3, Vector};
 
 /// Computes the convex hull of a set of points using the Graham scan algorithm.
 pub trait ConvexHull {
-  type Vector;
+  type Vector: Vector;
 
   /// Computes the convex hull of the given set of points.
   fn convex_hull(&self) -> Vec<Polygon<Self::Vector>>;

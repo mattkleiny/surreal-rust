@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use uuid::Uuid;
 
-use super::{Lerp, Numeric};
+use super::{Lerp, Scalar};
 
 /// A pseudo-random number generator.
 #[derive(Clone, Debug)]
@@ -169,7 +169,7 @@ pub struct RandomVariable<T> {
   pub distribution: Distribution,
 }
 
-impl<T: Numeric> Default for RandomVariable<T> {
+impl<T: Scalar> Default for RandomVariable<T> {
   #[inline]
   fn default() -> Self {
     Self {
@@ -180,7 +180,7 @@ impl<T: Numeric> Default for RandomVariable<T> {
   }
 }
 
-impl<T: Numeric + Lerp> RandomVariable<T> {
+impl<T: Scalar + Lerp> RandomVariable<T> {
   /// Samples the random variable at the given `t`.
   #[inline]
   pub fn sample(&self, t: f32) -> T {

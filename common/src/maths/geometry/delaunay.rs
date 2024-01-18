@@ -1,8 +1,8 @@
-use crate::maths::{DVec2, DVec3, Triangle, Vec2, Vec3};
+use crate::maths::{DVec2, DVec3, Triangle, Vec2, Vec3, Vector};
 
 /// Delaunay triangulation algorithm.
 pub trait DelaunayTriangulation {
-  type Vector;
+  type Vector: Vector;
 
   /// Triangulates the given set of points.
   fn triangulate(&self) -> Vec<Triangle<Self::Vector>>;
