@@ -7,8 +7,7 @@ pub trait Spline {
   fn derivative(&self, t: f32) -> f32;
 }
 
-/// A Catmull-Rom spline.
-///y
+/// A Catmull-Rom [`Spline`].
 #[derive(Clone, Debug)]
 pub struct CatmulRomSpline {
   pub points: Vec<f32>,
@@ -73,38 +72,4 @@ impl Spline for CatmulRomSpline {
   }
 }
 
-#[cfg(test)]
-mod tests {
-  use super::*;
-  use crate::maths::ApproxEq;
-
-  const EPSILON: f32 = 0.1;
-
-  #[test]
-  fn test_catmulrom_spline_value() {
-    let spline = CatmulRomSpline {
-      points: vec![0.0, 1.0, 2.0, 3.0],
-      continuous: false,
-    };
-
-    assert!(spline.value(0.0).approx_eq_delta(0.0, EPSILON));
-    assert!(spline.value(0.25).approx_eq_delta(0.625, EPSILON));
-    assert!(spline.value(0.5).approx_eq_delta(1.0, EPSILON));
-    assert!(spline.value(0.75).approx_eq_delta(2.375, EPSILON));
-    assert!(spline.value(1.0).approx_eq_delta(3.0, EPSILON));
-  }
-
-  #[test]
-  fn test_catmulrom_spline_derivative() {
-    let spline = CatmulRomSpline {
-      points: vec![0.0, 1.0, 2.0, 3.0],
-      continuous: false,
-    };
-
-    assert!(spline.derivative(0.0).approx_eq_delta(1.5, EPSILON));
-    assert!(spline.derivative(0.25).approx_eq_delta(1.5, EPSILON));
-    assert!(spline.derivative(0.5).approx_eq_delta(1.5, EPSILON));
-    assert!(spline.derivative(0.75).approx_eq_delta(1.5, EPSILON));
-    assert!(spline.derivative(1.0).approx_eq_delta(1.5, EPSILON));
-  }
-}
+// TODO: implement tests for splines

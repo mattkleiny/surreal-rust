@@ -6,12 +6,12 @@
 
 use std::ops::{Div, Mul};
 
-use common::maths::{ApproxEq, FromRandom, Lerp, Random};
+use common::maths::{ApproxEq, FromRandom, Lerp, Random, Scalar};
 
 /// Represents a type of pixel.
 pub trait Pixel: Copy + Default {
   /// The scalar type that is used to store each channel in this pixel.
-  type Subpixel;
+  type Subpixel: Scalar;
 
   /// The number of channels in this pixel type.
   const CHANNEL_COUNT: usize;

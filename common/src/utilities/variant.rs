@@ -20,8 +20,6 @@ pub enum VariantKind {
   Vec3,
   Vec4,
   Quat,
-  Color,
-  Color32,
 }
 
 /// A type that can hold varying different values.
@@ -80,13 +78,12 @@ macro_rules! impl_variant {
       }
     }
 
-    impl TryFrom<Variant> for $type {
-      type Error = anyhow::Error;
-
-      fn try_from(value: Variant) -> Result<Self, Self::Error> {
+    impl From<Variant> for $type {
+      #[inline]
+      fn from(value: Variant) -> Self {
         match value {
-          Variant::$kind(value) => Ok(value),
-          _ => Err(anyhow::anyhow!("Variant is not a string")),
+          Variant::$kind(value) => value,
+          _ => panic!("Variant is not convertible"),
         }
       }
     }
@@ -134,7 +131,7 @@ mod tests {
     assert_eq!(variant, Variant::Bool(true));
 
     let variant: Variant = Variant::U8(10);
-    let value: u8 = variant.try_into().unwrap();
+    let value: u8 = variant.into();
 
     assert_eq!(value, 10);
   }

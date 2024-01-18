@@ -37,14 +37,14 @@ pub type Guid = uuid::Uuid;
 pub trait ApproxEq<T = Self> {
   const EPSILON: T;
 
+  /// Determines whether two values are equal within a given delta.
+  fn approx_eq_delta(&self, other: T, delta: T) -> bool;
+
   /// Determines whether two values are approximately equal.
   #[inline]
   fn approx_eq(&self, other: T) -> bool {
     self.approx_eq_delta(other, Self::EPSILON)
   }
-
-  /// Determines whether two values are equal within a given delta.
-  fn approx_eq_delta(&self, other: T, delta: T) -> bool;
 }
 
 macro_rules! impl_approx_eq {
