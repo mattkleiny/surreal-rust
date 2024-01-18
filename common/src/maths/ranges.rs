@@ -38,21 +38,21 @@ mod tests {
   use super::*;
 
   #[test]
-  fn range_should_produce_a_valid_f64_delta() {
+  fn test_produce_a_valid_f64_delta() {
     let range = range(-2., 2.);
 
     assert_eq!(4., range.delta());
   }
 
   #[test]
-  fn range_should_produce_a_valid_i32_delta() {
+  fn test_produce_a_valid_i32_delta() {
     let range = range(-2, 2);
 
     assert_eq!(4, range.delta());
   }
 
   #[test]
-  fn range_should_produce_a_valid_f64_range() {
+  fn test_produce_a_valid_f64_range() {
     let range = range(0., 2.);
 
     assert!(range.contains(1.));
@@ -60,7 +60,7 @@ mod tests {
   }
 
   #[test]
-  fn range_should_produce_a_valid_i32_range() {
+  fn test_produce_a_valid_i32_range() {
     let range = range(-2, 5);
 
     assert!(range.contains(-1));
@@ -68,7 +68,7 @@ mod tests {
   }
 
   #[test]
-  fn range_should_clamp_a_valid_range() {
+  fn test_clamp_a_valid_range() {
     let range = range(-2, 5);
 
     assert_eq!(-2, range.clamp(-100));

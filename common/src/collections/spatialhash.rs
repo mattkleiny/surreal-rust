@@ -131,4 +131,85 @@ mod tests {
 
     assert_eq!(grid.len(), 2); // 2 items in the grid
   }
+
+  #[test]
+  fn test_is_empty() {
+    let mut grid = SpatialHashGrid::default();
+    assert!(grid.is_empty());
+
+    grid.add(0, 0, 1);
+    assert!(!grid.is_empty());
+
+    grid.remove_all(0, 0);
+    assert!(grid.is_empty());
+  }
+
+  #[test]
+  fn test_cells() {
+    let mut grid = SpatialHashGrid::default();
+    assert_eq!(grid.cells(), 0);
+
+    grid.add(0, 0, 1);
+    assert_eq!(grid.cells(), 1);
+
+    grid.add(1, 0, 2);
+    assert_eq!(grid.cells(), 2);
+
+    grid.remove_all(0, 0);
+    assert_eq!(grid.cells(), 1);
+  }
+
+  #[test]
+  fn test_clear() {
+    let mut grid = SpatialHashGrid::default();
+    grid.add(0, 0, 1);
+    grid.add(0, 1, 2);
+
+    assert_eq!(grid.len(), 2);
+    assert_eq!(grid.cells(), 2);
+
+    grid.clear();
+
+    assert_eq!(grid.len(), 0);
+    assert_eq!(grid.cells(), 0);
+  }
+
+  #[test]
+  fn test_iter() {
+    let mut grid = SpatialHashGrid::default();
+    grid.add(0, 0, 1);
+    grid.add(0, 1, 2);
+
+    let mut iter = grid.iter();
+
+    assert_eq!(iter.next(), Some(&1));
+    assert_eq!(iter.next(), Some(&2));
+    assert_eq!(iter.next(), None);
+  }
+
+  #[test]
+  fn test_iter_mut() {
+    let mut grid = SpatialHashGrid::default();
+    grid.add(0, 0, 1);
+    grid.add(0, 1, 2);
+
+    let mut iter = grid.iter_mut();
+
+    assert_eq!(iter.next(), Some(&mut 1));
+    assert_eq!(iter.next(), Some(&mut 2));
+    assert_eq!(iter.next(), None);
+  }
+
+  #[test]
+  fn test_into_iter() {
+    let mut grid = SpatialHashGrid::default();
+    grid.add(0, 0, 1);
+    grid.add(0, 1, 2);
+
+    let mut iter = grid.into_iter();
+
+    assert_eq!(iter.next(), Some(&1));
+    assert_eq!(iter.next(), Some(&2));
+    assert_eq!(iter.next(), None);
+  }
 }

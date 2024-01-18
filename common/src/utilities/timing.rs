@@ -377,7 +377,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn fps_counter_should_accumulate_over_time() {
+  fn test_fps_counter_should_accumulate_over_time() {
     let mut counter = FrameCounter::new(100);
 
     counter.tick(0.016);
@@ -388,7 +388,7 @@ mod tests {
   }
 
   #[test]
-  fn interval_timer_should_tick_on_a_fixed_basis() {
+  fn test_interval_timer_should_tick_on_a_fixed_basis() {
     let mut timer = IntervalTimer::new(TimeSpan::from_seconds(1.));
 
     assert!(!timer.tick(0.5));
@@ -400,11 +400,47 @@ mod tests {
   }
 
   #[test]
-  fn frame_timer_should_tick_correctly() {
+  fn test_frame_timer_should_tick_correctly() {
     let mut timer = FrameTimer::new(3);
 
     assert!(!timer.tick());
     assert!(!timer.tick());
     assert!(timer.tick());
+  }
+
+  #[test]
+  fn test_time_span_from_millis() {
+    let time_span = TimeSpan::from_millis(100.0);
+
+    assert_eq!(time_span.total_millis(), 100.0);
+  }
+
+  #[test]
+  fn test_time_span_from_seconds() {
+    let time_span = TimeSpan::from_seconds(2.5);
+
+    assert_eq!(time_span.total_millis(), 2500.0);
+  }
+
+  #[test]
+  fn test_time_span_from_minutes() {
+    let time_span = TimeSpan::from_minutes(1.5);
+
+    assert_eq!(time_span.total_millis(), 90000.0);
+  }
+
+  #[test]
+  fn test_time_span_from_hours() {
+    let time_span = TimeSpan::from_hours(0.5);
+
+    assert_eq!(time_span.total_millis(), 1800000.0);
+  }
+
+  #[test]
+  fn test_u8_into_time_span() {
+    let value: u8 = 10;
+    let time_span = value.milliseconds();
+
+    assert_eq!(time_span.total_millis(), 10.0);
   }
 }

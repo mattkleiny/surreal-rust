@@ -1,7 +1,5 @@
 use super::*;
 
-// TODO: add some tests for this guy
-
 /// An axially-aligned bounding box.
 #[derive(Clone, Default, Debug)]
 pub struct AABB {
@@ -51,14 +49,14 @@ impl AABB {
     let max = self.max();
 
     match index {
-      0 => Vec3::new(min.x, min.y, min.z),
-      1 => Vec3::new(min.x, min.y, max.z),
-      2 => Vec3::new(min.x, max.y, min.z),
-      3 => Vec3::new(min.x, max.y, max.z),
-      4 => Vec3::new(max.x, min.y, min.z),
-      5 => Vec3::new(max.x, min.y, max.z),
-      6 => Vec3::new(max.x, max.y, min.z),
-      7 => Vec3::new(max.x, max.y, max.z),
+      0 => vec3(min.x, min.y, min.z),
+      1 => vec3(min.x, min.y, max.z),
+      2 => vec3(min.x, max.y, min.z),
+      3 => vec3(min.x, max.y, max.z),
+      4 => vec3(max.x, min.y, min.z),
+      5 => vec3(max.x, min.y, max.z),
+      6 => vec3(max.x, max.y, min.z),
+      7 => vec3(max.x, max.y, max.z),
       _ => panic!("Invalid corner index"),
     }
   }
@@ -101,14 +99,14 @@ impl AABB {
     let max = self.max();
 
     let corners = [
-      Vec3::new(min.x, min.y, min.z),
-      Vec3::new(min.x, min.y, max.z),
-      Vec3::new(min.x, max.y, min.z),
-      Vec3::new(min.x, max.y, max.z),
-      Vec3::new(max.x, min.y, min.z),
-      Vec3::new(max.x, min.y, max.z),
-      Vec3::new(max.x, max.y, min.z),
-      Vec3::new(max.x, max.y, max.z),
+      vec3(min.x, min.y, min.z),
+      vec3(min.x, min.y, max.z),
+      vec3(min.x, max.y, min.z),
+      vec3(min.x, max.y, max.z),
+      vec3(max.x, min.y, min.z),
+      vec3(max.x, min.y, max.z),
+      vec3(max.x, max.y, min.z),
+      vec3(max.x, max.y, max.z),
     ];
 
     let mut new_min = Vec3::splat(f32::MAX);
@@ -122,5 +120,84 @@ impl AABB {
     }
 
     Self::from_min_max(new_min, new_max)
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_create_from_min_max_points() {
+    let aabb = AABB::from_min_max(vec3(-1.0, -1.0, -1.0), vec3(1.0, 1.0, 1.0));
+
+    assert_eq!(aabb.min(), vec3(-1.0, -1.0, -1.0));
+    assert_eq!(aabb.max(), vec3(1.0, 1.0, 1.0));
+  }
+
+  #[test]
+  fn test_return_correct_corner_points() {
+    let aabb = AABB::from_min_max(vec3(-1.0, -1.0, -1.0), vec3(1.0, 1.0, 1.0));
+
+    assert_eq!(aabb.corner(0), vec3(-1.0, -1.0, -1.0));
+    assert_eq!(aabb.corner(1), vec3(-1.0, -1.0, 1.0));
+    assert_eq!(aabb.corner(2), vec3(-1.0, 1.0, -1.0));
+    assert_eq!(aabb.corner(3), vec3(-1.0, 1.0, 1.0));
+    assert_eq!(aabb.corner(4), vec3(1.0, -1.0, -1.0));
+    assert_eq!(aabb.corner(5), vec3(1.0, -1.0, 1.0));
+    assert_eq!(aabb.corner(6), vec3(1.0, 1.0, -1.0));
+    assert_eq!(aabb.corner(7), vec3(1.0, 1.0, 1.0));
+  }
+
+  #[test]
+  fn test_contain_point_inside() {
+    let aabb = AABB::from_min_max(vec3(-1.0, -1.0, -1.0), vec3(1.0, 1.0, 1.0));
+
+    assert!(aabb.contains(vec3(0.0, 0.0, 0.0)));
+    assert!(aabb.contains(vec3(-0.5, -0.5, -0.5)));
+    assert!(aabb.contains(vec3(0.5, 0.5, 0.5)));
+  }
+
+  #[test]
+  fn test_not_contain_point_outside() {
+    let aabb = AABB::from_min_max(vec3(-1.0, -1.0, -1.0), vec3(1.0, 1.0, 1.0));
+
+    assert!(!aabb.contains(vec3(2.0, 2.0, 2.0)));
+    assert!(!aabb.contains(vec3(-2.0, -2.0, -2.0)));
+    assert!(!aabb.contains(vec3(0.0, 0.0, 2.0)));
+  }
+
+  #[test]
+  fn test_intersect_with_other_aabb() {
+    let aabb1 = AABB::from_min_max(vec3(-1.0, -1.0, -1.0), vec3(1.0, 1.0, 1.0));
+    let aabb2 = AABB::from_min_max(vec3(0.0, 0.0, 0.0), vec3(2.0, 2.0, 2.0));
+    let aabb3 = AABB::from_min_max(vec3(2.0, 2.0, 2.0), vec3(3.0, 3.0, 3.0));
+
+    assert!(aabb1.intersects(&aabb2));
+    assert!(aabb2.intersects(&aabb1));
+    assert!(!aabb1.intersects(&aabb3));
+    assert!(!aabb3.intersects(&aabb1));
+  }
+
+  #[test]
+  fn test_union_with_other_aabb() {
+    let aabb1 = AABB::from_min_max(vec3(-1.0, -1.0, -1.0), vec3(1.0, 1.0, 1.0));
+    let aabb2 = AABB::from_min_max(vec3(0.0, 0.0, 0.0), vec3(2.0, 2.0, 2.0));
+
+    let union_aabb = aabb1.union(&aabb2);
+
+    assert_eq!(union_aabb.min(), vec3(-1.0, -1.0, -1.0));
+    assert_eq!(union_aabb.max(), vec3(2.0, 2.0, 2.0));
+  }
+
+  #[test]
+  fn test_transform_by_matrix() {
+    let aabb = AABB::from_min_max(vec3(-1.0, -1.0, -1.0), vec3(1.0, 1.0, 1.0));
+    let transform = Mat4::from_translation(vec3(1.0, 1.0, 1.0));
+
+    let transformed_aabb = aabb.transform(&transform);
+
+    assert_eq!(transformed_aabb.min(), vec3(0.0, 0.0, 0.0));
+    assert_eq!(transformed_aabb.max(), vec3(2.0, 2.0, 2.0));
   }
 }

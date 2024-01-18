@@ -100,4 +100,70 @@ impl Plane {
   }
 }
 
-// TODO: implement tests for this guy
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_create_from_point() {
+    let normal = Vec3::new(0.0, 1.0, 0.0);
+    let point = Vec3::new(0.0, 2.0, 0.0);
+    let plane = Plane::from_point(normal, point);
+
+    assert_eq!(plane.normal, normal);
+    assert_eq!(plane.distance, -normal.dot(point));
+  }
+
+  #[test]
+  fn test_create_from_points() {
+    let a = Vec3::new(0.0, 0.0, 0.0);
+    let b = Vec3::new(1.0, 0.0, 0.0);
+    let c = Vec3::new(0.0, 1.0, 0.0);
+    let plane = Plane::from_points(a, b, c);
+
+    let expected_normal = Vec3::new(0.0, 0.0, 1.0);
+    let expected_distance = -expected_normal.dot(a);
+
+    assert_eq!(plane.normal, expected_normal);
+    assert_eq!(plane.distance, expected_distance);
+  }
+
+  #[test]
+  fn test_create_from_vector4() {
+    let vector = Vec4::new(1.0, 2.0, 3.0, 4.0);
+    let plane = Plane::from_vector4(vector);
+
+    let expected_normal = Vec3::new(vector.x, vector.y, vector.z);
+    let expected_distance = vector.w;
+
+    assert_eq!(plane.normal, expected_normal);
+    assert_eq!(plane.distance, expected_distance);
+  }
+
+  #[test]
+  fn test_calculate_distance_to_point() {
+    let normal = Vec3::new(0.0, 1.0, 0.0);
+    let distance = 2.0;
+    let plane = Plane::new(normal, distance);
+
+    let point = Vec3::new(0.0, 3.0, 0.0);
+    let expected_distance = normal.dot(point) + distance;
+
+    assert_eq!(plane.distance_to_point(point), expected_distance);
+  }
+
+  #[test]
+  fn test_half_space_should_be_correct() {
+    let normal = Vec3::new(0.0, 1.0, 0.0);
+    let distance = 2.0;
+    let plane = Plane::new(normal, distance);
+
+    let point_behind = Vec3::new(0.0, 1.0, 0.0);
+    let point_inline = Vec3::new(0.0, 2.0, 0.0);
+    let point_front = Vec3::new(0.0, 3.0, 0.0);
+
+    assert_eq!(plane.half_space(point_behind), HalfSpace::Behind);
+    assert_eq!(plane.half_space(point_inline), HalfSpace::Inline);
+    assert_eq!(plane.half_space(point_front), HalfSpace::Front);
+  }
+}

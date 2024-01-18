@@ -77,7 +77,25 @@ mod tests {
   use crate::io::{Deserializable, Serializable};
 
   #[test]
-  fn version_should_serialize_and_deserialize() {
+  fn test_new() {
+    let version = Version::new(1, 2, 3);
+
+    assert_eq!(version.major, 1);
+    assert_eq!(version.minor, 2);
+    assert_eq!(version.patch, 3);
+  }
+
+  #[test]
+  fn test_parse_valid() {
+    let version = Version::parse("1.2.3").unwrap();
+
+    assert_eq!(version.major, 1);
+    assert_eq!(version.minor, 2);
+    assert_eq!(version.patch, 3);
+  }
+
+  #[test]
+  fn test_should_serialize_and_deserialize() {
     let version1 = Version::new(1, 2, 3);
     let version2 = Version::from_json(&version1.to_json().unwrap()).unwrap();
 

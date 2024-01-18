@@ -1,4 +1,4 @@
-use super::*;
+use super::numbers::Numeric;
 
 /// Allows linear interpolation of arbitrary values.
 pub trait Lerp {
@@ -12,5 +12,32 @@ impl<T: Numeric> Lerp for T {
     let b = b.to_f32();
 
     T::from_f32(a + t * (b - a))
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_lerp_f32() {
+    let a = 0.0;
+    let b = 1.0;
+    let t = 0.5;
+
+    let result = f32::lerp(a, b, t);
+
+    assert_eq!(result, 0.5);
+  }
+
+  #[test]
+  fn test_lerp_u32() {
+    let a = 0;
+    let b = 10;
+    let t = 0.3;
+
+    let result = u32::lerp(a, b, t);
+
+    assert_eq!(result, 3);
   }
 }

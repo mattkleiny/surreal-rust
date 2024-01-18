@@ -78,7 +78,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn anymap_should_support_basic_read_and_write() {
+  fn test_should_support_basic_read_and_write() {
     let mut map = AnyMap::new();
 
     map.insert(42usize);
@@ -87,5 +87,57 @@ mod tests {
     assert_eq!(map.get::<usize>(), Some(&42));
     assert_eq!(map.get::<&'static str>(), Some(&"Hello, World"));
     assert!(map.get::<bool>().is_none());
+  }
+
+  #[test]
+  fn test_should_return_none_for_nonexistent_value() {
+    let mut map = AnyMap::new();
+
+    map.insert(42usize);
+
+    assert!(map.get::<&'static str>().is_none());
+    assert!(map.get::<bool>().is_none());
+  }
+
+  #[test]
+  fn test_should_return_mutable_reference() {
+    let mut map = AnyMap::new();
+
+    map.insert(42usize);
+
+    if let Some(value) = map.get_mut::<usize>() {
+      *value = 100;
+    }
+
+    assert_eq!(map.get::<usize>(), Some(&100));
+  }
+
+  #[test]
+  fn test_should_remove_value() {
+    let mut map = AnyMap::new();
+
+    map.insert(42usize);
+
+    assert_eq!(map.get::<usize>(), Some(&42));
+
+    map.remove::<usize>();
+
+    assert!(map.get::<usize>().is_none());
+  }
+
+  #[test]
+  fn test_should_clear_map() {
+    let mut map = AnyMap::new();
+
+    map.insert(42usize);
+    map.insert("Hello, World");
+
+    assert_eq!(map.len(), 2);
+
+    map.clear();
+
+    assert_eq!(map.len(), 0);
+    assert!(map.get::<usize>().is_none());
+    assert!(map.get::<&'static str>().is_none());
   }
 }

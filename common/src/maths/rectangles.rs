@@ -181,7 +181,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn rectangle_should_test_for_points() {
+  fn test_test_for_points() {
     let rect = Rectangle::from_corner_points(0., 0., 1., 1.);
 
     assert!(rect.contains_point(vec2(0.5, 0.5)));
@@ -192,14 +192,14 @@ mod tests {
   }
 
   #[test]
-  fn rectangle_should_clamp_to_given_bounds() {
+  fn test_clamp_to_given_bounds() {
     let rect = Rectangle::from_corner_points(-1., -1., 1., 1.).clamp(0., 0., 1., 1.);
 
     assert_eq!(rect, Rectangle::from_corner_points(0., 0., 1., 1.));
   }
 
   #[test]
-  fn rectangle_should_extend_to_encapsulate_other_rectangle() {
+  fn test_extend_to_encapsulate_other_rectangle() {
     let mut rect = Rectangle::default();
 
     rect.extend(&Rectangle::from_corner_points(0., 0., 1., 1.));
@@ -213,7 +213,7 @@ mod tests {
   }
 
   #[test]
-  fn rectangle_should_detect_intersection() {
+  fn test_detect_intersection() {
     let rect = Rectangle::from_corner_points(0., 0., 1., 1.);
 
     assert!(rect.intersects(&Rectangle::from_corner_points(0., 0., 1., 1.)));
@@ -226,14 +226,14 @@ mod tests {
   }
 
   #[test]
-  fn rectangle_should_compute_center() {
+  fn test_compute_center() {
     let rect = Rectangle::from_corner_points(0., 0., 1., 1.);
 
     assert_eq!(rect.center(), vec2(0.5, 0.5));
   }
 
   #[test]
-  fn rectangle_should_compute_quadrants() {
+  fn test_compute_quadrants() {
     let rect = Rectangle::from_corner_points(0., 0., 2., 2.);
 
     let quadrants = rect.into_quadrants();

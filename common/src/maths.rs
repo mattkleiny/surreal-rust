@@ -70,3 +70,42 @@ macro_rules! impl_ping_pong {
 
 impl_ping_pong!(f32);
 impl_ping_pong!(f64);
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_approx_eq_f32() {
+    let value1 = 0.5f32;
+    let value2 = 0.500001f32;
+
+    assert!(value1.approx_eq(value2));
+  }
+
+  #[test]
+  fn test_approx_eq_f64() {
+    let value1 = 0.5f64;
+    let value2 = 0.5000000001f64;
+
+    assert!(value1.approx_eq(value2));
+  }
+
+  #[test]
+  fn test_ping_pong_f32() {
+    let value = 0.5f32;
+
+    let expected_result = value.sin() * 2.0 - 1.0;
+
+    assert_eq!(value.ping_pong(), expected_result);
+  }
+
+  #[test]
+  fn test_ping_pong_f64() {
+    let value = 0.5f64;
+
+    let expected_result = value.sin() * 2.0 - 1.0;
+
+    assert_eq!(value.ping_pong(), expected_result);
+  }
+}

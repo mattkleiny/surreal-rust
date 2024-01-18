@@ -107,3 +107,46 @@ pub mod heuristics {
     (dx * dx + dy * dy) as f32
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::collections::Grid;
+
+  impl PathFindingGrid for Grid<bool> {
+    fn get_neighbours(&self, center: IVec2, results: &mut NeighbourList<IVec2>) {
+      for x in -1..=1 {
+        for y in -1..=1 {
+          if x == 0 && y == 0 {
+            continue;
+          }
+
+          let point = center + ivec2(x, y);
+
+          if self.is_valid(point.x, point.y) {
+            unsafe {
+              if *self.get_unchecked(point.x, point.y) {
+                results.push(point);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  #[test]
+  fn test_find_path() {
+    let grid = Grid::new(4, 4);
+
+    let start = ivec2(0, 0);
+    let goal = ivec2(3, 3);
+
+    let path = grid.find_path(start, goal, heuristics::euclidean_distance);
+
+    assert_eq!(
+      path,
+      Some(vec![ivec2(0, 0), ivec2(1, 1), ivec2(2, 2), ivec2(3, 3),].into())
+    );
+  }
+}

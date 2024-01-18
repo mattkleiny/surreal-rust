@@ -205,7 +205,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn random_should_generate_different_values() {
+  fn test_generate_different_values() {
     let mut random = Random::with_seed(0);
 
     let a = random.next_u64();
@@ -215,7 +215,7 @@ mod tests {
   }
 
   #[test]
-  fn random_should_generate_different_values_with_different_seeds() {
+  fn test_generate_different_values_with_different_seeds() {
     let mut random_a = Random::with_seed(0);
     let mut random_b = Random::with_seed(1);
 
@@ -226,7 +226,7 @@ mod tests {
   }
 
   #[test]
-  fn random_should_generate_same_values_with_same_seeds() {
+  fn test_generate_same_values_with_same_seeds() {
     let mut random_a = Random::with_seed(0);
     let mut random_b = Random::with_seed(0);
 
@@ -237,7 +237,7 @@ mod tests {
   }
 
   #[test]
-  fn random_should_generate_value_based_on_global_random() {
+  fn test_generate_value_based_on_global_random() {
     let a = u64::random();
     let b = u64::random();
 

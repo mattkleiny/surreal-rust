@@ -97,50 +97,6 @@ impl<T> RingBuffer<T> {
       touched: 0,
     }
   }
-
-  /// Mutably iterates over the ring buffer.
-  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-    pub struct IterMut<'a, T> {
-      buffer: &'a mut RingBuffer<T>,
-      index: usize,
-      touched: usize,
-    }
-
-    impl<'a, T> Iterator for IterMut<'a, T> {
-      type Item = &'a mut T;
-
-      fn next(&mut self) -> Option<Self::Item> {
-        // wrap around walking backwards
-        if self.index == 0 {
-          self.index = self.buffer.len() - 1;
-        } else {
-          self.index -= 1;
-        }
-
-        if self.touched < self.buffer.len() {
-          self.touched += 1;
-
-          match &mut self.buffer.elements[self.index] {
-            Some(item) => Some(crate::utilities::unsafe_mutable_alias(item)),
-            None => None,
-          }
-        } else {
-          None
-        }
-      }
-
-      fn size_hint(&self) -> (usize, Option<usize>) {
-        let remaining = self.buffer.len() - self.touched;
-        (remaining, Some(remaining))
-      }
-    }
-
-    IterMut {
-      index: self.cursor,
-      buffer: self,
-      touched: 0,
-    }
-  }
 }
 
 impl<'a, T> IntoIterator for &'a RingBuffer<T> {
@@ -149,15 +105,6 @@ impl<'a, T> IntoIterator for &'a RingBuffer<T> {
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
-  }
-}
-
-impl<'a, T> IntoIterator for &'a mut RingBuffer<T> {
-  type Item = &'a mut T;
-  type IntoIter = impl Iterator<Item = &'a mut T>;
-
-  fn into_iter(self) -> Self::IntoIter {
-    self.iter_mut()
   }
 }
 

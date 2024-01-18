@@ -253,6 +253,22 @@ impl<T> Arena<T> {
       index: usize,
     }
 
+    /// Creates an unsafe mutable alias to the given value.
+    ///
+    /// This breaks many assumptions in the Rust type system, so use with great
+    /// caution and only to facilitate a cleaner API.
+    #[inline(always)]
+    #[allow(invalid_reference_casting)]
+    pub(crate) fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
+      // TODO: find a way to remove this completely
+      unsafe {
+        let pointer = value as *const T;
+        let pointer = pointer as *mut T;
+
+        &mut *pointer
+      }
+    }
+
     impl<'a, T> Iterator for IterMut<'a, T> {
       type Item = (ArenaIndex, &'a mut T);
 
@@ -266,8 +282,7 @@ impl<T> Arena<T> {
 
             self.index += 1;
 
-            // elide the lifetime; rust has trouble with the borrow checker
-            let value = crate::utilities::unsafe_mutable_alias(value);
+            let value = unsafe_mutable_alias(value); // elide the lifetime
 
             return Some((arena_index, &mut value.value));
           }
@@ -323,7 +338,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn arena_should_add_item() {
+  fn test_add_item() {
     let mut arena = Arena::new();
 
     let index1 = arena.insert("Item 1");
@@ -335,7 +350,7 @@ mod tests {
   }
 
   #[test]
-  fn arena_should_remove_item() {
+  fn test_remove_item() {
     let mut arena = Arena::new();
 
     let index1 = arena.insert("Item 1");
@@ -348,7 +363,7 @@ mod tests {
   }
 
   #[test]
-  fn arena_should_access_item() {
+  fn test_access_item() {
     let mut arena = Arena::new();
 
     let index1 = arena.insert("Item 1");
@@ -365,7 +380,7 @@ mod tests {
   }
 
   #[test]
-  fn arena_should_reuse_old_spaces() {
+  fn test_reuse_old_spaces() {
     let mut arena = Arena::new();
 
     let _index1 = arena.insert("Item 1");
@@ -381,7 +396,7 @@ mod tests {
   }
 
   #[test]
-  fn arena_should_iterate() {
+  fn test_iterate() {
     let mut arena = Arena::new();
 
     arena.insert("Item 1");
@@ -397,7 +412,7 @@ mod tests {
   }
 
   #[test]
-  fn arena_should_iterate_mutably() {
+  fn test_iterate_mutably() {
     let mut arena = Arena::new();
 
     arena.insert("Item 1");
@@ -415,7 +430,14 @@ mod tests {
   }
 
   #[test]
-  fn arena_index_should_pack_and_unpack_from_u64() {
+  fn test_collect_from_iterator() {
+    let items = (0..16).collect::<Arena<_>>();
+
+    assert_eq!(items.len(), 16);
+  }
+
+  #[test]
+  fn test_should_pack_and_unpack_from_u64() {
     let index = ArenaIndex {
       index: 10,
       generation: 3,
@@ -424,12 +446,5 @@ mod tests {
     let unpacked = ArenaIndex::from(packed);
 
     assert_eq!(index, unpacked);
-  }
-
-  #[test]
-  fn arena_should_collect_from_iterator() {
-    let items = (0..16).collect::<Arena<_>>();
-
-    assert_eq!(items.len(), 16);
   }
 }

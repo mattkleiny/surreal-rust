@@ -10,7 +10,7 @@ use common::io::VirtualPath;
 
 common::impl_rid!(AssetId);
 
-// TODO: export over asset read/write semantics
+// TODO: abstract over asset read/write semantics
 
 /// A database for managing assets.
 ///
@@ -35,7 +35,7 @@ pub struct AssetDatabase {}
 
 impl AssetDatabase {
   /// Gets an asset from the database, or loads it from the file system.
-  pub fn get_or_load<'a, A>(&self, _path: impl Into<VirtualPath<'a>>) -> Asset<A> {
+  pub fn load<'a, A>(&self, _path: impl Into<VirtualPath<'a>>) -> Asset<A> {
     todo!()
   }
 }

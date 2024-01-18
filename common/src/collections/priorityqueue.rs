@@ -93,7 +93,53 @@ mod tests {
   use super::*;
 
   #[test]
-  fn priority_queue_should_order_based_on_explicit_order() {
+  fn test_should_be_empty_when_created_with_new() {
+    let queue: PriorityQueue<i32> = PriorityQueue::new();
+
+    assert!(queue.is_empty());
+    assert_eq!(queue.len(), 0);
+  }
+
+  #[test]
+  fn test_should_be_empty_when_created_with_with_capacity() {
+    let queue: PriorityQueue<i32> = PriorityQueue::with_capacity(10);
+
+    assert!(queue.is_empty());
+    assert_eq!(queue.len(), 0);
+  }
+
+  #[test]
+  fn test_should_not_be_empty_after_push() {
+    let mut queue = PriorityQueue::new();
+
+    queue.push("a", 1.0);
+
+    assert!(!queue.is_empty());
+    assert_eq!(queue.len(), 1);
+  }
+
+  #[test]
+  fn test_should_return_elements_in_order() {
+    let mut queue = PriorityQueue::new();
+
+    queue.push("a", 3.0);
+    queue.push("b", 1.0);
+    queue.push("c", 2.0);
+
+    assert_eq!(queue.pop().unwrap(), "b");
+    assert_eq!(queue.pop().unwrap(), "c");
+    assert_eq!(queue.pop().unwrap(), "a");
+  }
+
+  #[test]
+  fn test_should_return_none_when_popped_from_empty_queue() {
+    let mut queue: PriorityQueue<i32> = PriorityQueue::new();
+
+    assert_eq!(queue.pop(), None);
+  }
+
+  #[test]
+  fn test_should_order_based_on_explicit_order() {
     let mut queue = PriorityQueue::new();
 
     queue.push("a", 1.0);

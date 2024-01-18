@@ -15,15 +15,8 @@
 
 use std::borrow::Cow;
 
-use slotmap::{SecondaryMap, SlotMap};
-
-slotmap::new_key_type! {
-  /// A [`slotmap::Key`] for [`GraphNode`]s.
-  pub struct NodeId;
-
-  /// A [`slotmap::Key`] for [`GraphPort`]s.
-  pub struct PortId;
-}
+crate::impl_rid!(NodeId);
+crate::impl_rid!(PortId);
 
 /// A managed graph of [`GraphNode`]s.
 ///
@@ -31,101 +24,35 @@ slotmap::new_key_type! {
 /// Each node is capable of persisting arbitrary data of type `D`.
 ///
 /// Graphs are serializable for persistence.
-#[derive(Serialize, Deserialize, Default)]
-pub struct Graph<D = ()> {
-  nodes: SlotMap<NodeId, GraphNode<D>>,
-  ports: SlotMap<PortId, GraphPort<D>>,
-  inputs: SlotMap<PortId, GraphInput<D>>,
-  outputs: SlotMap<PortId, GraphOutput<D>>,
-  connections: SecondaryMap<PortId, PortId>,
+#[derive(Default)]
+pub struct Graph<D> {
+  _phantom: std::marker::PhantomData<D>,
 }
 
 /// A single node in a [`Graph`].
-#[derive(Serialize, Deserialize)]
-pub struct GraphNode<D = ()> {
-  id: NodeId,
-  label: Cow<'static, str>,
-  user_data: D,
+pub struct GraphNode<D> {
+  _phantom: std::marker::PhantomData<D>,
 }
 
-/// A single port in a [`Graph`].
-#[derive(Serialize, Deserialize)]
-pub struct GraphPort<D> {
-  id: PortId,
-  label: Cow<'static, str>,
-  value: D,
-}
-
-/// An input to a [`Graph`].
-#[derive(Serialize, Deserialize, Default)]
-pub struct GraphInput<D> {
-  port: PortId,
-  data: D,
-}
-
-/// An output from a [`Graph`].
-#[derive(Serialize, Deserialize, Default)]
-pub struct GraphOutput<D> {
-  port: PortId,
-  data: D,
-}
-
+#[allow(unused_variables)]
 impl<D> Graph<D> {
   /// Adds a new [`GraphNode`] to the graph.
   pub fn add_node(&mut self, label: impl Into<Cow<'static, str>>, user_data: D) {
-    let label = label.into();
-
-    self.nodes.insert_with_key(|id| GraphNode { id, label, user_data });
+    todo!()
   }
 
   /// Removes an existing [`GraphNode`] from the graph.
   pub fn remove_node(&mut self, node_id: NodeId) {
-    if let Some(_node) = self.nodes.remove(node_id) {
-      // TODO: remove any connections, too
-    }
+    todo!()
   }
 
-  /// Iterates the [`GraphNode`]s of this graph.
-  pub fn nodes(&self) -> impl Iterator<Item = &GraphNode<D>> {
-    self.nodes.iter().map(|(_, node)| node)
+  /// Adds a new connection to the graph.
+  pub fn add_connection(&mut self, from: PortId, to: PortId) {
+    todo!()
   }
 
-  /// Mutably iterates the [`GraphNode`]s of this graph.
-  pub fn nodes_mut(&mut self) -> impl Iterator<Item = &mut GraphNode<D>> {
-    self.nodes.iter_mut().map(|(_, node)| node)
-  }
-}
-
-impl<'a, D> IntoIterator for &'a Graph<D> {
-  type Item = &'a GraphNode<D>;
-  type IntoIter = impl Iterator<Item = Self::Item>;
-
-  fn into_iter(self) -> Self::IntoIter {
-    self.nodes()
-  }
-}
-
-impl<'a, D> IntoIterator for &'a mut Graph<D> {
-  type Item = &'a mut GraphNode<D>;
-  type IntoIter = impl Iterator<Item = Self::Item>;
-
-  fn into_iter(self) -> Self::IntoIter {
-    self.nodes_mut()
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-  use crate::io::Serializable;
-
-  #[test]
-  fn graph_should_build_simple_connections() {
-    let mut graph = Graph::<u32>::default();
-
-    graph.add_node("Node 1", 1);
-    graph.add_node("Node 2", 2);
-
-    println!("{}", graph.to_json().unwrap());
+  /// Removes an existing connection from the graph.
+  pub fn remove_connection(&mut self, from: PortId, to: PortId) {
+    todo!()
   }
 }

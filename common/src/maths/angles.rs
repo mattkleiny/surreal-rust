@@ -334,7 +334,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn angles_are_converted_to_degrees_from_radians() {
+  fn test_converted_to_degrees_from_radians() {
     let angle = 360.0.into_degrees();
     let radians = angle.into_radians();
 
@@ -342,7 +342,7 @@ mod tests {
   }
 
   #[test]
-  fn angles_are_converted_to_radians_from_degrees() {
+  fn test_converted_to_radians_from_degrees() {
     let angle = Radians::_2_PI;
     let degrees = angle.into_degrees();
 
@@ -350,7 +350,7 @@ mod tests {
   }
 
   #[test]
-  fn degrees_should_support_basic_arithmetic() {
+  fn test_degrees_should_support_basic_arithmetic() {
     let angle1 = 90.0.into_degrees();
     let angle2 = 180.0.into_degrees();
 
@@ -362,7 +362,7 @@ mod tests {
   }
 
   #[test]
-  fn radians_should_support_basic_arithmetic() {
+  fn test_radians_should_support_basic_arithmetic() {
     let angle1 = 0.5.into_radians();
     let angle2 = 2.0.into_radians();
 

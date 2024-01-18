@@ -79,12 +79,58 @@ mod tests {
   use super::*;
 
   #[test]
-  fn von_neighbours_should_produce_valid_adjacent_points() {
-    assert_eq!(vec2(0., 0.).von_neighbours().len(), 4);
+  fn test_von_neumann_neighbours_for_vec2() {
+    let point = vec2(0.0, 0.0);
+
+    let neighbours = point.von_neighbours();
+
+    assert_eq!(neighbours[0], vec2(-1.0, 0.0)); // left
+    assert_eq!(neighbours[1], vec2(0.0, 1.0)); // top
+    assert_eq!(neighbours[2], vec2(1.0, 0.0)); // right
+    assert_eq!(neighbours[3], vec2(0.0, -1.0)); // bottom
   }
 
   #[test]
-  fn moore_neighbours_should_produce_valid_adjacent_points() {
-    assert_eq!(vec2(0., 0.).moore_neighbours().len(), 8);
+  fn test_von_neumann_neighbours_for_ivec2() {
+    let point = ivec2(0, 0);
+
+    let neighbours = point.von_neighbours();
+
+    assert_eq!(neighbours[0], ivec2(-1, 0)); // left
+    assert_eq!(neighbours[1], ivec2(0, 1)); // top
+    assert_eq!(neighbours[2], ivec2(1, 0)); // right
+    assert_eq!(neighbours[3], ivec2(0, -1)); // bottom
+  }
+
+  #[test]
+  fn test_moore_neighbours_for_vec2() {
+    let point = vec2(0.0, 0.0);
+
+    let neighbours = point.moore_neighbours();
+
+    assert_eq!(neighbours[0], vec2(-1.0, -1.0)); // bottom left
+    assert_eq!(neighbours[1], vec2(-1.0, 0.0)); // left
+    assert_eq!(neighbours[2], vec2(-1.0, 1.0)); // top left
+    assert_eq!(neighbours[3], vec2(0.0, 1.0)); // top
+    assert_eq!(neighbours[4], vec2(1.0, 1.0)); // top right
+    assert_eq!(neighbours[5], vec2(1.0, 0.0)); // right
+    assert_eq!(neighbours[6], vec2(1.0, -1.0)); // bottom right
+    assert_eq!(neighbours[7], vec2(0.0, -1.0)); // bottom
+  }
+
+  #[test]
+  fn test_moore_neighbours_for_ivec2() {
+    let point = ivec2(0, 0);
+
+    let neighbours = point.moore_neighbours();
+
+    assert_eq!(neighbours[0], ivec2(-1, -1)); // bottom left
+    assert_eq!(neighbours[1], ivec2(-1, 0)); // left
+    assert_eq!(neighbours[2], ivec2(-1, 1)); // top left
+    assert_eq!(neighbours[3], ivec2(0, 1)); // top
+    assert_eq!(neighbours[4], ivec2(1, 1)); // top right
+    assert_eq!(neighbours[5], ivec2(1, 0)); // right
+    assert_eq!(neighbours[6], ivec2(1, -1)); // bottom right
+    assert_eq!(neighbours[7], ivec2(0, -1)); // bottom
   }
 }

@@ -25,7 +25,7 @@ pub enum VariantKind {
 }
 
 /// A type that can hold varying different values.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Variant {
   Null,
   Bool(bool),
@@ -109,3 +109,33 @@ impl_variant!(Vec2, Vec2);
 impl_variant!(Vec3, Vec3);
 impl_variant!(Vec4, Vec4);
 impl_variant!(Quat, Quat);
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_variant_kind() {
+    let variant = Variant::Null;
+    assert_eq!(variant.kind(), VariantKind::Null);
+
+    let variant = Variant::Bool(true);
+    assert_eq!(variant.kind(), VariantKind::Bool);
+
+    let variant = Variant::U8(10);
+    assert_eq!(variant.kind(), VariantKind::U8);
+  }
+
+  #[test]
+  fn test_variant_conversion() {
+    let value: bool = true;
+    let variant: Variant = value.into();
+
+    assert_eq!(variant, Variant::Bool(true));
+
+    let variant: Variant = Variant::U8(10);
+    let value: u8 = variant.try_into().unwrap();
+
+    assert_eq!(value, 10);
+  }
+}

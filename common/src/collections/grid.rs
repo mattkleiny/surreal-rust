@@ -164,3 +164,80 @@ impl<T> Grid<T> {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_get_valid_position() {
+    let mut grid = Grid::new(3, 3);
+    grid.set(1, 1, 42);
+
+    assert_eq!(grid.get(1, 1), Some(&42));
+  }
+
+  #[test]
+  fn test_get_invalid_position() {
+    let grid = Grid::<usize>::new(3, 3);
+
+    assert_eq!(grid.get(4, 4), None);
+  }
+
+  #[test]
+  fn test_get_unchecked() {
+    let mut grid = Grid::new(3, 3);
+    grid.set(1, 1, 42);
+
+    unsafe {
+      assert_eq!(grid.get_unchecked(1, 1), &42);
+    }
+  }
+
+  #[test]
+  #[should_panic]
+  fn test_get_unchecked_out_of_bounds() {
+    let grid = Grid::<usize>::new(3, 3);
+
+    unsafe {
+      grid.get_unchecked(4, 4);
+    }
+  }
+
+  #[test]
+  fn test_set_valid_position() {
+    let mut grid = Grid::new(3, 3);
+    grid.set(1, 1, 42);
+
+    assert_eq!(grid.get(1, 1), Some(&42));
+  }
+
+  #[test]
+  fn test_set_invalid_position() {
+    let mut grid = Grid::new(3, 3);
+    grid.set(4, 4, 42);
+
+    assert_eq!(grid.get(4, 4), None);
+  }
+
+  #[test]
+  fn test_set_unchecked() {
+    let mut grid = Grid::new(3, 3);
+
+    unsafe {
+      grid.set_unchecked(1, 1, 42);
+    }
+
+    assert_eq!(grid.get(1, 1), Some(&42));
+  }
+
+  #[test]
+  #[should_panic]
+  fn test_set_unchecked_out_of_bounds() {
+    let mut grid = Grid::new(3, 3);
+
+    unsafe {
+      grid.set_unchecked(4, 4, 42);
+    }
+  }
+}

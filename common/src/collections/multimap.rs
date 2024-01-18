@@ -96,7 +96,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn it_should_insert_multiple_values_per_key() {
+  fn test_insert_multiple_values_per_key() {
     let mut map = MultiMap::new();
 
     map.insert(1, "Value 1");
@@ -111,7 +111,7 @@ mod tests {
   }
 
   #[test]
-  fn it_should_remove_key_value_pair() {
+  fn test_remove_key_value_pair() {
     let mut map = MultiMap::new();
 
     map.insert(1, "Value 1");
@@ -128,7 +128,7 @@ mod tests {
   }
 
   #[test]
-  fn it_should_remove_all_values_for_single_key() {
+  fn test_remove_all_values_for_single_key() {
     let mut map = MultiMap::new();
 
     map.insert(1, "Value 1");

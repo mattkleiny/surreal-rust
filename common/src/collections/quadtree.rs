@@ -2,6 +2,9 @@ use std::fmt::Debug;
 
 use crate::maths::Rectangle;
 
+// TODO: finish implementing me
+// TODO: also implement an octree
+
 /// A standard Quad Tree implementation.
 ///
 /// A Quad Tree is a spatial data structure that can be used to efficiently

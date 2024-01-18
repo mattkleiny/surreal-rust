@@ -131,14 +131,102 @@ mod tests {
   use super::*;
 
   #[test]
-  fn hex_should_interpolate_between_two_values() {
-    let a = hex(0, 0);
-    let b = hex(10, 10);
+  fn test_hex_coordinates() {
+    let hex = Hex::new(3, 4);
 
+    assert_eq!(hex.x(), 3);
+    assert_eq!(hex.y(), 4);
+    assert_eq!(hex.z(), -7);
+  }
+
+  #[test]
+  fn test_hex_from_array() {
+    let array = [2, 5];
+
+    let hex = Hex::from_array(array);
+
+    assert_eq!(hex.x(), 2);
+    assert_eq!(hex.y(), 5);
+    assert_eq!(hex.z(), -7);
+  }
+
+  #[test]
+  fn test_hex_to_array() {
+    let hex = Hex::new(3, 4);
+
+    let array = hex.to_array();
+
+    assert_eq!(array, [3, 4]);
+  }
+
+  #[test]
+  fn test_hex_as_vec2() {
+    let hex = Hex::new(3, 4);
+
+    let vec2 = hex.as_vec2();
+
+    assert_eq!(vec2.x, 3.0);
+    assert_eq!(vec2.y, 4.0);
+  }
+
+  #[test]
+  fn test_hex_min() {
+    let hex1 = Hex::new(3, 4);
+    let hex2 = Hex::new(2, 5);
+
+    let min_hex = hex1.min(hex2);
+
+    assert_eq!(min_hex.x(), 2);
+    assert_eq!(min_hex.y(), 4);
+    assert_eq!(min_hex.z(), -6);
+  }
+
+  #[test]
+  fn test_hex_max() {
+    let hex1 = Hex::new(3, 4);
+    let hex2 = Hex::new(2, 5);
+
+    let max_hex = hex1.max(hex2);
+
+    assert_eq!(max_hex.x(), 3);
+    assert_eq!(max_hex.y(), 5);
+    assert_eq!(max_hex.z(), -6);
+  }
+
+  #[test]
+  fn test_hex_clamp() {
+    let hex = Hex::new(3, 4);
+    let min_hex = Hex::new(2, 3);
+    let max_hex = Hex::new(4, 5);
+
+    let clamped_hex = hex.clamp(min_hex, max_hex);
+
+    assert_eq!(clamped_hex.x(), 3);
+    assert_eq!(clamped_hex.y(), 4);
+    assert_eq!(clamped_hex.z(), -7);
+  }
+
+  #[test]
+  fn test_hex_lerp() {
+    let hex1 = Hex::new(0, 0);
+    let hex2 = Hex::new(10, 10);
     let t = 0.5;
 
-    let result = Hex::lerp(a, b, t);
+    let result = Hex::lerp(hex1, hex2, t);
 
-    assert_eq!(result, hex(5, 5));
+    assert_eq!(result.x(), 5);
+    assert_eq!(result.y(), 5);
+    assert_eq!(result.z(), -10);
+  }
+
+  #[test]
+  fn test_hex_from_random() {
+    let mut random = Random::with_thread_local_seed();
+
+    let hex = Hex::from_random(&mut random);
+
+    assert!(hex.x() >= 0 && hex.x() <= 1);
+    assert!(hex.y() >= 0 && hex.y() <= 1);
+    assert_eq!(hex.z(), -hex.x() - hex.y());
   }
 }
