@@ -11,18 +11,9 @@ pub trait Camera {
   fn view(&self) -> Mat4;
 
   /// Computes the frustum for this camera.
+  #[inline]
   fn frustum(&self) -> Frustum {
-    // compute the frustum planes from the view-projection matrix
-    let vp = self.projection() * self.view();
-
-    Frustum {
-      near: Plane::from_vector4(vp.row(2) + vp.row(3)),
-      far: Plane::from_vector4(vp.row(3) - vp.row(2)),
-      left: Plane::from_vector4(vp.row(3) + vp.row(0)),
-      right: Plane::from_vector4(vp.row(3) - vp.row(0)),
-      top: Plane::from_vector4(vp.row(3) - vp.row(1)),
-      bottom: Plane::from_vector4(vp.row(3) + vp.row(1)),
-    }
+    Frustum::from_projection_view(self.projection() * self.view())
   }
 }
 

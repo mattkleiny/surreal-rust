@@ -7,17 +7,13 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Surreal Editor",
+      "name": "Example: hello-world",
       "cargo": {
         "args": [
-          "build",
-          "--bin=surreal-editor",
-          "--package=surreal-editor"
-        ],
-        "filter": {
-          "name": "surreal-editor",
-          "kind": "bin"
-        }
+          "run",
+          "--example=hello-world",
+          "--all-features"
+        ]
       },
       "args": [],
       "cwd": "${workspaceFolder}"

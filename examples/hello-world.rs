@@ -3,7 +3,7 @@ use surreal::{
     maths::{FromRandom, Lerp, PingPong},
     utilities::DeltaClock,
   },
-  graphics::{Color, GraphicsEngine, OrthographicCamera},
+  graphics::{Color, GraphicsEngine},
   sdl2::{Window, WindowSettings},
 };
 
@@ -14,7 +14,6 @@ fn main() -> surreal::common::Result<()> {
   })?;
 
   let graphics = GraphicsEngine::opengl(&window);
-  let _camera = OrthographicCamera::default();
 
   let mut clock = DeltaClock::default();
   let mut total_time = 0.0;
