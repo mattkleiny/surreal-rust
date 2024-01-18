@@ -6,6 +6,10 @@
 
 use std::any::{Any, TypeId};
 
+pub use pipelines::*;
+
+mod pipelines;
+
 use common::collections::FastHashMap;
 
 use super::*;
