@@ -109,6 +109,11 @@ impl AABB {
 
     Self::from_min_max(new_min, new_max)
   }
+
+  /// Converts the AABB into a slice of floats.
+  pub fn as_slice(&self) -> &[f32; 6] {
+    unsafe { std::mem::transmute(self) }
+  }
 }
 
 #[cfg(test)]

@@ -73,8 +73,6 @@ impl SDF for Trapezoid {
   }
 }
 
-// TODO: implement more types of shpaes
-
 #[cfg(test)]
 mod tests {
   use super::*;
