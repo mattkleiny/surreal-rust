@@ -1,6 +1,7 @@
 //! Mathematical utilities.
 
 pub use angles::*;
+pub use cameras::*;
 pub use curves::*;
 pub use geometry::*;
 pub use hex::*;
@@ -15,6 +16,7 @@ pub use rectangles::*;
 pub use shapes::*;
 
 mod angles;
+mod cameras;
 mod curves;
 mod geometry;
 mod hex;

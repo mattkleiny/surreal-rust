@@ -1,11 +1,6 @@
 //! Camera types and utilities.
 
-use common::maths::{Mat4, Plane, Vec3};
-
 use super::*;
-
-/// The name of the uniform containing the projection-view matrix of the camera.
-pub const UNIFORM_PROJECTION_VIEW: UniformKey<Mat4> = UniformKey::new("u_projectionView");
 
 /// Represents a camera.
 pub trait Camera {
@@ -16,41 +11,23 @@ pub trait Camera {
   fn view(&self) -> Mat4;
 
   /// Computes the frustum for this camera.
-  fn frustum(&self) -> CameraFrustum {
+  fn frustum(&self) -> Frustum {
     // compute the frustum planes from the view-projection matrix
     let vp = self.projection() * self.view();
 
-    let mut planes = CameraFrustum {
-      near: Plane::ZERO,
-      far: Plane::ZERO,
-      left: Plane::ZERO,
-      right: Plane::ZERO,
-      top: Plane::ZERO,
-      bottom: Plane::ZERO,
-    };
-
-    planes.near = Plane::from_vector4(vp.row(2) + vp.row(3));
-    planes.far = Plane::from_vector4(vp.row(3) - vp.row(2));
-    planes.left = Plane::from_vector4(vp.row(3) + vp.row(0));
-    planes.right = Plane::from_vector4(vp.row(3) - vp.row(0));
-    planes.top = Plane::from_vector4(vp.row(3) - vp.row(1));
-    planes.bottom = Plane::from_vector4(vp.row(3) + vp.row(1));
-
-    planes
+    Frustum {
+      near: Plane::from_vector4(vp.row(2) + vp.row(3)),
+      far: Plane::from_vector4(vp.row(3) - vp.row(2)),
+      left: Plane::from_vector4(vp.row(3) + vp.row(0)),
+      right: Plane::from_vector4(vp.row(3) - vp.row(0)),
+      top: Plane::from_vector4(vp.row(3) - vp.row(1)),
+      bottom: Plane::from_vector4(vp.row(3) + vp.row(1)),
+    }
   }
 }
 
-/// A frustum for a camera.
-pub struct CameraFrustum {
-  pub near: Plane,
-  pub far: Plane,
-  pub left: Plane,
-  pub right: Plane,
-  pub top: Plane,
-  pub bottom: Plane,
-}
-
 /// An orthographic camera.
+#[derive(Clone, Debug)]
 pub struct OrthographicCamera {
   pub position: Vec3,
   pub look_at: Vec3,
@@ -75,7 +52,14 @@ impl Default for OrthographicCamera {
 
 impl Camera for OrthographicCamera {
   fn projection(&self) -> Mat4 {
-    todo!()
+    Mat4::orthographic_lh(
+      self.ortho_size / 2.,
+      self.ortho_size / 2.,
+      self.ortho_size / 2.,
+      self.ortho_size / 2.,
+      self.near_plane,
+      self.far_plane,
+    )
   }
 
   fn view(&self) -> Mat4 {
@@ -84,6 +68,7 @@ impl Camera for OrthographicCamera {
 }
 
 /// A perspective camera.
+#[derive(Clone, Debug)]
 pub struct PerspectiveCamera {
   pub position: Vec3,
   pub look_at: Vec3,

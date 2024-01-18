@@ -1,6 +1,6 @@
 //! Commonly used shape definitions in 2 and 3 space.
 
-use crate::maths::{vec3, DVec2, DVec3, Vec2, Vec3};
+use crate::maths::{vec3, Vec2, Vec3};
 
 /// A sphere in 2-space.
 #[derive(Clone, Debug)]
