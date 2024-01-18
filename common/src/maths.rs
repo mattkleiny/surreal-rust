@@ -13,6 +13,7 @@ pub use random::*;
 pub use ranges::*;
 pub use rectangles::*;
 pub use shapes::*;
+pub use splines::*;
 
 mod angles;
 mod cameras;
@@ -27,23 +28,33 @@ mod random;
 mod ranges;
 mod rectangles;
 mod shapes;
+mod splines;
 
 /// A globally unique identifier.
 pub type Guid = uuid::Uuid;
 
 /// Allows approximate equality checks between values.
 pub trait ApproxEq<T = Self> {
-  fn approx_eq(&self, other: T) -> bool;
+  const EPSILON: T;
+
+  /// Determines whether two values are approximately equal.
+  #[inline]
+  fn approx_eq(&self, other: T) -> bool {
+    self.approx_eq_delta(other, Self::EPSILON)
+  }
+
+  /// Determines whether two values are equal within a given delta.
+  fn approx_eq_delta(&self, other: T, delta: T) -> bool;
 }
 
 macro_rules! impl_approx_eq {
   ($type:ty) => {
     impl ApproxEq for $type {
-      #[inline]
-      fn approx_eq(&self, other: Self) -> bool {
-        const EPSILON: $type = 0.00001;
+      const EPSILON: $type = 0.00001;
 
-        (other - self).abs() < EPSILON
+      #[inline]
+      fn approx_eq_delta(&self, other: Self, delta: $type) -> bool {
+        (other - self).abs() < delta
       }
     }
   };
