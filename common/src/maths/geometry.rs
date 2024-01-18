@@ -11,6 +11,7 @@ mod earcut;
 use super::{DVec2, DVec3, Vec2, Vec3, Vector};
 
 /// A triangle in a vector space V.
+#[repr(C)]
 #[derive(Clone, Debug)]
 pub struct Triangle<V: Vector> {
   pub a: V,
@@ -24,6 +25,7 @@ pub type Triangle3 = Triangle<Vec3>;
 pub type DTriangle3 = Triangle<DVec3>;
 
 /// A polygon in a vector space V.
+#[repr(C)]
 #[derive(Clone, Debug)]
 pub struct Polygon<V: Vector> {
   pub vertices: Vec<V>,

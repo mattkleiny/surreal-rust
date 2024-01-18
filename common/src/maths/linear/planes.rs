@@ -1,6 +1,7 @@
 use super::*;
 
 /// Represents a plane in 3-space.
+#[repr(C)]
 #[derive(Default, Copy, Clone, Debug, PartialEq)]
 pub struct Plane {
   pub normal: Vec3,

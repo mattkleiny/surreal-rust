@@ -9,6 +9,7 @@ macro_rules! impl_ray {
     }
 
     /// Represents a ray.
+    #[repr(C)]
     #[derive(Copy, Clone, Debug, PartialEq)]
     pub struct $type {
       pub origin: $vec,

@@ -3,6 +3,7 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 pub use aabb::*;
+pub use fields::*;
 pub use frustum::*;
 pub use glam::*;
 pub use planes::*;
@@ -14,6 +15,7 @@ pub use vectors::*;
 use super::*;
 
 mod aabb;
+mod fields;
 mod frustum;
 mod planes;
 mod rays;

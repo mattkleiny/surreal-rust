@@ -1,7 +1,7 @@
 use crate::maths::{DVec2, DVec3, Triangle, Vec2, Vec3, Vector};
 
 /// Delaunay triangulation algorithm.
-pub trait DelaunayTriangulation {
+pub trait Delaunay {
   type Vector: Vector;
 
   /// Triangulates the given set of points.
@@ -11,7 +11,7 @@ pub trait DelaunayTriangulation {
 /// Implements the Delaunay triangulation algorithm for the given vector type.
 macro_rules! impl_delaunay {
   ($type:ty) => {
-    impl DelaunayTriangulation for [$type] {
+    impl Delaunay for [$type] {
       type Vector = $type;
 
       fn triangulate(&self) -> Vec<Triangle<Self::Vector>> {
