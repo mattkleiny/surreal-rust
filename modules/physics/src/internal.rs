@@ -6,9 +6,9 @@ use super::*;
 /// algorithm to simulate the physics of the game world.
 #[derive(Default)]
 pub struct InternalPhysicsBackend {
-  rigidbodies: ResourceStorage<RigidbodyId, Rigidbody>,
-  colliders: ResourceStorage<ColliderId, Collider>,
-  effectors: ResourceStorage<EffectorId, Effector>,
+  rigidbodies: ResourceArena<RigidbodyId, Rigidbody>,
+  colliders: ResourceArena<ColliderId, Collider>,
+  effectors: ResourceArena<EffectorId, Effector>,
 }
 
 /// The internal representation of a rigidbody.

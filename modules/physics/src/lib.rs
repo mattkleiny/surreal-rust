@@ -3,7 +3,7 @@
 #![allow(dead_code)]
 
 use common::{
-  collections::ResourceStorage,
+  collections::ResourceArena,
   maths::{Quat, Vec3},
 };
 

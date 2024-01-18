@@ -187,6 +187,12 @@ impl<'a> VirtualPath<'a> {
 
     Ok(buffer)
   }
+
+  /// Converts the path to a string.
+  #[inline]
+  pub fn to_string(&self) -> String {
+    format!("{:}://{:}", self.scheme, self.location)
+  }
 }
 
 impl<'a> std::fmt::Debug for VirtualPath<'a> {

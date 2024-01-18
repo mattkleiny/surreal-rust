@@ -68,12 +68,12 @@ macro_rules! impl_rid {
 ///
 /// This allows for opaque decoupling of user-facing resource IDs and internal
 /// data structures.
-pub struct ResourceStorage<K, V> {
+pub struct ResourceArena<K, V> {
   entries: RwLock<Arena<V>>,
   _key: std::marker::PhantomData<K>,
 }
 
-impl<K, V> Default for ResourceStorage<K, V> {
+impl<K, V> Default for ResourceArena<K, V> {
   fn default() -> Self {
     Self {
       entries: RwLock::new(Arena::new()),
@@ -82,7 +82,7 @@ impl<K, V> Default for ResourceStorage<K, V> {
   }
 }
 
-impl<K: Into<ArenaIndex> + From<ArenaIndex>, V> ResourceStorage<K, V> {
+impl<K: Into<ArenaIndex> + From<ArenaIndex>, V> ResourceArena<K, V> {
   /// Creates a new [`V`] in the storage with the given factory method.
   pub fn create(&self, factory: impl Fn() -> V) -> K {
     self.insert(factory())
@@ -150,7 +150,7 @@ mod tests {
 
   #[test]
   fn resource_storage_should_read_and_write_entries() {
-    let storage = ResourceStorage::<TestId, TestResource>::default();
+    let storage = ResourceArena::<TestId, TestResource>::default();
 
     let id1 = storage.insert(TestResource { value: 0 });
     let id2 = storage.insert(TestResource { value: 1 });

@@ -1,16 +1,19 @@
 //! Asset management for Surreal.
 
+use std::any::Any;
+
 pub use exporters::*;
 pub use importers::*;
 
 mod exporters;
 mod importers;
 
-use common::io::VirtualPath;
+use common::{
+  collections::{FastHashMap, ResourceArena},
+  io::VirtualPath,
+};
 
 common::impl_rid!(AssetId);
-
-// TODO: abstract over asset read/write semantics
 
 /// A database for managing assets.
 ///
@@ -31,7 +34,22 @@ common::impl_rid!(AssetId);
 /// - A 'key', which is the name of the asset within the asset bundle.
 /// - A 'guid', which is a globally unique identifier for the asset.
 #[derive(Default)]
-pub struct AssetDatabase {}
+pub struct AssetDatabase {
+  // core asset storage
+  _assets: ResourceArena<AssetId, AssetState>,
+
+  // lookup tables
+  _assets_by_path: FastHashMap<String, AssetId>,
+  _assets_by_key: FastHashMap<String, AssetId>,
+  _assets_by_guid: FastHashMap<String, AssetId>,
+}
+
+/// Represents the internal state of an asset.
+pub enum AssetState {
+  Unloaded,
+  Loaded(Box<dyn Any>),
+  Orphaned,
+}
 
 impl AssetDatabase {
   /// Gets an asset from the database, or loads it from the file system.
@@ -72,8 +90,8 @@ impl<A> std::ops::Deref for Asset<A> {
 /// flat file system is a kind of 'bundle' which contains all other bundles.
 pub struct AssetBundle {}
 
-/// A trait for asset bundle protocols.
+/// A trait for asset bundle codecs.
 ///
-/// This trait is implemented by asset bundle protocols, which are responsible
+/// This trait is implemented by asset bundle codecs, which are responsible
 /// for packing assets into asset bundles, and unpacking them later.
-pub trait AssetBundleProtocol {}
+pub trait AssetBundleCodec {}
