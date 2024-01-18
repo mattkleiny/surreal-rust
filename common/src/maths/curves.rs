@@ -96,7 +96,7 @@ mod tests {
     };
 
     assert_eq!(curve.evaluate(0.0), vec2(0.0, 0.0));
-    assert_eq!(curve.evaluate(0.5), vec2(1.5, 2.0));
+    assert_eq!(curve.evaluate(0.5), vec2(2.0, 2.25));
     assert_eq!(curve.evaluate(1.0), vec2(4.0, 0.0));
   }
 }

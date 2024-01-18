@@ -26,6 +26,22 @@
       ],
       "group": "test",
       "label": "rust: cargo test"
+    },
+    {
+      "type": "cargo",
+      "command": "llvm-cov",
+      "args": [
+        "--lcov",
+        "--output-path",
+        "lcov.info",
+        "--all",
+        "--all-features"
+      ],
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "group": "test",
+      "label": "rust: cargo cover"
     }
   ]
 }

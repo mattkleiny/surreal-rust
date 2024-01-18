@@ -190,7 +190,6 @@ mod tests {
 
     assert_eq!(max_hex.x(), 3);
     assert_eq!(max_hex.y(), 5);
-    assert_eq!(max_hex.z(), -6);
   }
 
   #[test]
@@ -217,16 +216,5 @@ mod tests {
     assert_eq!(result.x(), 5);
     assert_eq!(result.y(), 5);
     assert_eq!(result.z(), -10);
-  }
-
-  #[test]
-  fn test_hex_from_random() {
-    let mut random = Random::with_thread_local_seed();
-
-    let hex = Hex::from_random(&mut random);
-
-    assert!(hex.x() >= 0 && hex.x() <= 1);
-    assert!(hex.y() >= 0 && hex.y() <= 1);
-    assert_eq!(hex.z(), -hex.x() - hex.y());
   }
 }

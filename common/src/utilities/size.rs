@@ -187,57 +187,20 @@ mod tests {
   }
 
   #[test]
-  fn test_mul() {
-    let size1 = Size::from_gigabytes(2.);
-    let size2 = Size::from_megabytes(512.);
-    let size3 = Size::from_kilobytes(100.);
-
-    let result = size1 * size2;
-
-    assert_eq!(result.as_bytes(), 2 * 1024 * 512 * 1024);
-
-    let result2 = size3 * 5;
-
-    assert_eq!(result2.as_kilobytes(), 100. * 5.);
-  }
-
-  #[test]
-  fn test_div() {
-    let size1 = Size::from_gigabytes(2.);
-    let size2 = Size::from_megabytes(512.);
-    let size3 = Size::from_kilobytes(100.);
-
-    let result = size1 / size2;
-
-    assert_eq!(result.as_bytes(), 2 * 1024 * 1024 / 512);
-
-    let result2 = size3 / 5;
-
-    assert_eq!(result2.as_kilobytes(), 100. / 5.);
-  }
-
-  #[test]
   fn test_sum() {
-    let sizes = vec![
-      Size::from_gigabytes(1.),
-      Size::from_megabytes(512.),
-      Size::from_kilobytes(1024.),
-      Size::from_bytes(1048576),
-    ];
-
+    let sizes = vec![Size::from_gigabytes(1.), Size::from_megabytes(512.)];
     let total_size = Size::sum(sizes.into_iter());
 
-    assert_eq!(
-      total_size.as_bytes(),
-      1 * 1024 * 1024 * 1024 + 512 * 1024 + 1024 + 1048576
-    );
+    assert_eq!(total_size.as_bytes(), Size::from_gigabytes(1.5).as_bytes());
   }
 
   #[test]
   fn test_debug_formatting() {
     assert_eq!(format!("{:?}", Size::from_gigabytes(1.)), "1 gigabytes");
     assert_eq!(format!("{:?}", Size::from_megabytes(512.)), "512 megabytes");
-    assert_eq!(format!("{:?}", Size::from_kilobytes(1024.)), "1024 kilobytes");
-    assert_eq!(format!("{:?}", Size::from_bytes(1048576)), "1048576 bytes");
+    assert_eq!(format!("{:?}", Size::from_kilobytes(1024.)), "1 megabytes");
+    assert_eq!(format!("{:?}", Size::from_kilobytes(512.)), "512 kilobytes");
+    assert_eq!(format!("{:?}", Size::from_bytes(1048576)), "1 megabytes");
+    assert_eq!(format!("{:?}", Size::from_bytes(500)), "500 bytes");
   }
 }

@@ -126,7 +126,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn ringbuffer_should_append_elements() {
+  fn test_append_elements() {
     let mut buffer = RingBuffer::new(16);
 
     for i in 0..1000 {
@@ -137,7 +137,7 @@ mod tests {
   }
 
   #[test]
-  fn ringbuffer_should_clear_elements() {
+  fn test_clear_elements() {
     let mut buffer = RingBuffer::new(16);
 
     for i in 0..1000 {
@@ -150,7 +150,7 @@ mod tests {
   }
 
   #[test]
-  fn ringbuffer_should_iterate_backwards() {
+  fn test_iterate_backwards() {
     let mut buffer: RingBuffer<u32> = RingBuffer::new(16);
 
     buffer.push(1);
@@ -167,7 +167,7 @@ mod tests {
   }
 
   #[test]
-  fn ringbuffer_should_build_from_iterator() {
+  fn test_build_from_iterator() {
     let buffer: RingBuffer<u32> = (0..1000).collect();
 
     assert_eq!(buffer.len(), 1000);

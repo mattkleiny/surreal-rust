@@ -3,17 +3,14 @@ use super::*;
 /// An axially-aligned bounding box.
 #[derive(Clone, Default, Debug)]
 pub struct AABB {
-  pub position: Vec3,
-  pub size: f32,
+  pub min: Vec3,
+  pub max: Vec3,
 }
 
 impl AABB {
   /// Creates a new AABB from the given min and max points.
   pub fn from_min_max(min: Vec3, max: Vec3) -> Self {
-    let position = (min + max) * 0.5;
-    let size = (max - min).length() * 0.5;
-
-    Self { position, size }
+    AABB { min, max }
   }
 
   /// Creates a new AABB that encapsulates the given set of points.
@@ -29,24 +26,14 @@ impl AABB {
     Self::from_min_max(min, max)
   }
 
-  /// Returns the minimum position of the AABB.
-  pub fn min(&self) -> Vec3 {
-    self.position - Vec3::splat(self.size)
-  }
-
-  /// Returns the maximum position of the AABB.
-  pub fn max(&self) -> Vec3 {
-    self.position + Vec3::splat(self.size)
-  }
-
   /// Retrieves the nth corner of the AABB.
   ///
   /// This method will panic if the index is out of bounds.
   pub fn corner(&self, index: usize) -> Vec3 {
     debug_assert!(index < 8);
 
-    let min = self.min();
-    let max = self.max();
+    let min = self.min;
+    let max = self.max;
 
     match index {
       0 => vec3(min.x, min.y, min.z),
@@ -63,19 +50,19 @@ impl AABB {
 
   /// Determines if the AABB contains the given point.
   pub fn contains(&self, point: Vec3) -> bool {
-    let min = self.min();
-    let max = self.max();
+    let min = self.min;
+    let max = self.max;
 
     point.x >= min.x && point.x <= max.x && point.y >= min.y && point.y <= max.y && point.z >= min.z && point.z <= max.z
   }
 
   /// Determines if the AABB intersects the given other [`AABB`].
   pub fn intersects(&self, other: &Self) -> bool {
-    let min = self.min();
-    let max = self.max();
+    let min = self.min;
+    let max = self.max;
 
-    let other_min = other.min();
-    let other_max = other.max();
+    let other_min = other.min;
+    let other_max = other.max;
 
     other_min.x <= max.x
       && other_max.x >= min.x
@@ -87,16 +74,16 @@ impl AABB {
 
   /// Builds a new AABB that is union with the given other [`AABB`].
   pub fn union(&self, other: &Self) -> Self {
-    let min = self.min().min(other.min());
-    let max = self.max().max(other.max());
+    let min = self.min.min(other.min);
+    let max = self.max.max(other.max);
 
     Self::from_min_max(min, max)
   }
 
   /// Transforms all points in the [`AABB`] by the given matrix.
   pub fn transform(&self, transform: &Mat4) -> Self {
-    let min = self.min();
-    let max = self.max();
+    let min = self.min;
+    let max = self.max;
 
     let corners = [
       vec3(min.x, min.y, min.z),
@@ -131,8 +118,8 @@ mod tests {
   fn test_create_from_min_max_points() {
     let aabb = AABB::from_min_max(vec3(-1.0, -1.0, -1.0), vec3(1.0, 1.0, 1.0));
 
-    assert_eq!(aabb.min(), vec3(-1.0, -1.0, -1.0));
-    assert_eq!(aabb.max(), vec3(1.0, 1.0, 1.0));
+    assert_eq!(aabb.min, vec3(-1.0, -1.0, -1.0));
+    assert_eq!(aabb.max, vec3(1.0, 1.0, 1.0));
   }
 
   #[test]
@@ -186,8 +173,8 @@ mod tests {
 
     let union_aabb = aabb1.union(&aabb2);
 
-    assert_eq!(union_aabb.min(), vec3(-1.0, -1.0, -1.0));
-    assert_eq!(union_aabb.max(), vec3(2.0, 2.0, 2.0));
+    assert_eq!(union_aabb.min, vec3(-1.0, -1.0, -1.0));
+    assert_eq!(union_aabb.max, vec3(2.0, 2.0, 2.0));
   }
 
   #[test]
@@ -197,7 +184,7 @@ mod tests {
 
     let transformed_aabb = aabb.transform(&transform);
 
-    assert_eq!(transformed_aabb.min(), vec3(0.0, 0.0, 0.0));
-    assert_eq!(transformed_aabb.max(), vec3(2.0, 2.0, 2.0));
+    assert_eq!(transformed_aabb.min, vec3(0.0, 0.0, 0.0));
+    assert_eq!(transformed_aabb.max, vec3(2.0, 2.0, 2.0));
   }
 }

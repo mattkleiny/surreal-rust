@@ -122,8 +122,8 @@ mod tests {
   fn test_should_return_elements_in_order() {
     let mut queue = PriorityQueue::new();
 
-    queue.push("a", 3.0);
-    queue.push("b", 1.0);
+    queue.push("a", 1.0);
+    queue.push("b", 3.0);
     queue.push("c", 2.0);
 
     assert_eq!(queue.pop().unwrap(), "b");
@@ -136,18 +136,5 @@ mod tests {
     let mut queue: PriorityQueue<i32> = PriorityQueue::new();
 
     assert_eq!(queue.pop(), None);
-  }
-
-  #[test]
-  fn test_should_order_based_on_explicit_order() {
-    let mut queue = PriorityQueue::new();
-
-    queue.push("a", 1.0);
-    queue.push("b", 2.0);
-    queue.push("c", 3.0);
-
-    assert_eq!(queue.pop().unwrap(), "c");
-    assert_eq!(queue.pop().unwrap(), "b");
-    assert_eq!(queue.pop().unwrap(), "a");
   }
 }

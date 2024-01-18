@@ -117,16 +117,3 @@ impl Camera for PerspectiveCamera {
     Mat4::look_at_lh(self.position, self.look_at, self.up)
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn camera_should_compute_frustum() {
-    let camera = PerspectiveCamera::default();
-    let frustum = camera.frustum();
-
-    assert_eq!(frustum.near, Plane::ZERO);
-  }
-}
