@@ -1,3 +1,5 @@
+//! Render pipeline abstractions.
+
 use common::collections::SmallVec;
 
 use super::*;
@@ -112,7 +114,7 @@ pub mod forward {
       self.color_target.deactivate();
     }
 
-    fn end_frame(&self, scene: &dyn RenderScene, _renderer: &mut Renderer) {
+    fn end_frame(&self, _scene: &dyn RenderScene, _renderer: &mut Renderer) {
       self.color_target.blit_to_display(TextureFilter::Nearest);
     }
   }
