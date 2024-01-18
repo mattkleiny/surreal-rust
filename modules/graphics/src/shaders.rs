@@ -5,6 +5,7 @@
 //!
 //! For higher-level shader control see the material module instead.
 
+use core::str;
 use std::{cell::RefCell, rc::Rc};
 
 use common::{
@@ -14,11 +15,13 @@ use common::{
     DMat2, DMat3, DMat4, DQuat, DVec2, DVec3, DVec4, Degrees, Mat2, Mat3, Mat4, Quat, Radians, Vec2, Vec3, Vec4,
   },
 };
-
-use super::*;
+pub use templates::*;
 
 mod glsl;
 mod shady;
+mod templates;
+
+use super::*;
 
 /// Different types of shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -89,15 +92,6 @@ impl ShaderProgram {
     Self::from_path::<shady::ShadyShaderLanguage>(graphics, path)
   }
 
-  /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
-    let program = Self::new(graphics)?;
-
-    program.load_code::<S>(code)?;
-
-    Ok(program)
-  }
-
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
   pub fn from_path<'a, S: ShaderLanguage>(
     graphics: &GraphicsEngine,
@@ -107,6 +101,24 @@ impl ShaderProgram {
     let code = path.read_all_text()?;
 
     Self::from_code::<S>(graphics, &code)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given raw shader code.
+  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
+    let program = Self::new(graphics)?;
+
+    program.load_code::<S>(code)?;
+
+    Ok(program)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given [`ShaderKernel`]s.
+  pub fn from_kernels(graphics: &GraphicsEngine, kernels: &[ShaderKernel]) -> common::Result<Self> {
+    let program = Self::new(graphics)?;
+
+    program.load_kernels(kernels)?;
+
+    Ok(program)
   }
 
   /// Returns the [`ShaderId`] of the underlying program.
@@ -146,23 +158,33 @@ impl ShaderProgram {
     }
   }
 
-  /// Reloads the [`ShaderProgram`] from the given shader code.
-  pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> common::Result<()> {
-    let state = self.state.borrow();
-    let graphics = &state.graphics;
-    let shaders = S::parse_kernels(text)?;
-
-    graphics.shader_link(state.id, &shaders)?;
-
-    Ok(())
-  }
-
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
   pub fn load_from_path<'a, S: ShaderLanguage>(&self, path: impl Into<VirtualPath<'a>>) -> common::Result<()> {
     let path = path.into();
     let source_code = path.read_all_text()?;
 
     self.load_code::<S>(&source_code)?;
+
+    Ok(())
+  }
+
+  /// Reloads the [`ShaderProgram`] from the given shader code.
+  pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> common::Result<()> {
+    let state = self.state.borrow();
+    let graphics = &state.graphics;
+    let shaders = S::parse_kernels(text)?;
+
+    self.load_kernels(&shaders)?;
+
+    Ok(())
+  }
+
+  /// Reloads the [`ShaderProgram`] from the given shader code.
+  pub fn load_kernels(&self, kernels: &[ShaderKernel]) -> common::Result<()> {
+    let state = self.state.borrow();
+    let graphics = &state.graphics;
+
+    graphics.shader_link(state.id, &kernels)?;
 
     Ok(())
   }
