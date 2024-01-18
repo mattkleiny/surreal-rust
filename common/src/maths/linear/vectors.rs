@@ -48,7 +48,7 @@ pub trait Vector:
   type Space: Space;
 
   /// The type of the scalar that this vector is composed of.
-  type Scalar: scalars::Scalar;
+  type Scalar: Scalar;
 }
 
 macro_rules! impl_vector {

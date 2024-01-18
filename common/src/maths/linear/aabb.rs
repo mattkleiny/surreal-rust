@@ -2,7 +2,7 @@ use super::*;
 
 /// An axially-aligned bounding box.
 #[repr(C)]
-#[derive(Clone, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct AABB {
   pub min: Vec3,
   pub max: Vec3,
