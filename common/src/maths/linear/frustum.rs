@@ -98,12 +98,26 @@ impl Frustum {
 
   /// Converts this frustum to an array of planes.
   pub fn into_array(self) -> [Plane; 6] {
-    [self.near, self.far, self.left, self.right, self.top, self.bottom]
+    [
+      self.near,
+      self.far,
+      self.left,
+      self.right,
+      self.top,
+      self.bottom,
+    ]
   }
 
   /// Converts this frustum to an array of planes.
   pub fn to_array(&self) -> [Plane; 6] {
-    [self.near, self.far, self.left, self.right, self.top, self.bottom]
+    [
+      self.near,
+      self.far,
+      self.left,
+      self.right,
+      self.top,
+      self.bottom,
+    ]
   }
 
   /// Converts this frustum to a slice of planes.

@@ -43,7 +43,11 @@ impl<K: Eq + Hash, V> MultiMap<K, V> {
   where
     V: PartialEq,
   {
-    self.entries.get(key).map(|vec| vec.contains(value)).unwrap_or(false)
+    self
+      .entries
+      .get(key)
+      .map(|vec| vec.contains(value))
+      .unwrap_or(false)
   }
 
   /// Gets all values for the given key.

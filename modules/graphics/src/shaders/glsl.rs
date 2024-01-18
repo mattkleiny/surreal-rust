@@ -3,9 +3,9 @@
 use super::*;
 
 /// The OpenGL [`ShaderLanguage`] implementation.
-pub struct GlslShaderLanguage;
+pub struct GlslLanguage;
 
-impl ShaderLanguage for GlslShaderLanguage {
+impl ShaderLanguage for GlslLanguage {
   /// Parses the given raw GLSL source and performs some basic pre-processing.
   ///
   /// Allows for the following basic transformations:
@@ -70,7 +70,7 @@ mod tests {
 
   #[test]
   fn parse_glsl_source_should_build_valid_code() {
-    let result = glsl::GlslShaderLanguage::parse_kernels(
+    let result = glsl::GlslLanguage::parse_kernels(
       r"
       #version 330 core
 
@@ -85,8 +85,8 @@ mod tests {
       layout(location = 1) in vec2 a_tex_coord;
       layout(location = 2) in vec4 a_color;
 
-      out vec2 v_uv;
-      out vec4 v_color;
+      varying vec2 v_uv;
+      varying vec4 v_color;
 
       void main() {
         v_uv    = a_uv;
@@ -98,9 +98,6 @@ mod tests {
       #shader_type fragment
 
       uniform sampler2d u_texture;
-
-      in vec2 v_uv;
-      in vec4 v_color;
 
       void main() {
         gl_FragColor = texture(u_texture, v_uv) * v_color;

@@ -89,12 +89,28 @@ pub trait PhysicsBackend {
   // colliders
   fn collider_create_sphere(&self, initial_position: Vec3, radius: f32) -> ColliderId;
   fn collider_create_box(&self, initial_position: Vec3, size: Vec3) -> ColliderId;
-  fn collider_create_capsule(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId;
-  fn collider_create_cylinder(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId;
+  fn collider_create_capsule(&self, initial_position: Vec3, radius: f32, height: f32)
+    -> ColliderId;
+  fn collider_create_cylinder(
+    &self,
+    initial_position: Vec3,
+    radius: f32,
+    height: f32,
+  ) -> ColliderId;
   fn collider_create_cone(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId;
   fn collider_create_convex_hull(&self, initial_position: Vec3, vertices: &[Vec3]) -> ColliderId;
-  fn collider_create_triangle_mesh(&self, initial_position: Vec3, vertices: &[Vec3], indices: &[u32]) -> ColliderId;
-  fn collider_create_height_field(&self, initial_position: Vec3, size: Vec3, heights: &[f32]) -> ColliderId;
+  fn collider_create_triangle_mesh(
+    &self,
+    initial_position: Vec3,
+    vertices: &[Vec3],
+    indices: &[u32],
+  ) -> ColliderId;
+  fn collider_create_height_field(
+    &self,
+    initial_position: Vec3,
+    size: Vec3,
+    heights: &[f32],
+  ) -> ColliderId;
   fn collider_get_kind(&self, collider: ColliderId) -> ColliderKind;
   fn collider_set_position(&self, collider: ColliderId, position: Vec3);
   fn collider_get_position(&self, collider: ColliderId) -> Vec3;

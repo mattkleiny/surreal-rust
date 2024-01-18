@@ -142,7 +142,11 @@ pub trait GraphicsBackend {
 
   // textures
   fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError>;
-  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError>;
+  fn texture_set_options(
+    &self,
+    texture: TextureId,
+    sampler: &TextureSampler,
+  ) -> Result<(), TextureError>;
   fn texture_initialize(
     &self,
     texture: TextureId,
@@ -182,7 +186,12 @@ pub trait GraphicsBackend {
   fn shader_create(&self) -> Result<ShaderId, ShaderError>;
   fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> Result<(), ShaderError>;
   fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize>;
-  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError>;
+  fn shader_set_uniform(
+    &self,
+    shader: ShaderId,
+    location: usize,
+    value: &ShaderUniform,
+  ) -> Result<(), ShaderError>;
   fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError>;
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError>;
 

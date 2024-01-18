@@ -155,7 +155,10 @@ impl Rectangle {
   /// Determines if the rectangle contains the given other rectangle.
   pub fn intersects(&self, other: &Self) -> bool {
     // check if this rectangle intersects the given other rectangle
-    self.min.x <= other.max.x && self.max.x >= other.min.x && self.min.y <= other.max.y && self.max.y >= other.min.y
+    self.min.x <= other.max.x
+      && self.max.x >= other.min.x
+      && self.min.y <= other.max.y
+      && self.max.y >= other.min.y
   }
 
   /// Splits the rectangle into four quadrants.

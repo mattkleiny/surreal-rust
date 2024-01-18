@@ -101,11 +101,21 @@ impl PhysicsBackend for InternalPhysicsBackend {
     todo!()
   }
 
-  fn collider_create_capsule(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId {
+  fn collider_create_capsule(
+    &self,
+    initial_position: Vec3,
+    radius: f32,
+    height: f32,
+  ) -> ColliderId {
     todo!()
   }
 
-  fn collider_create_cylinder(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId {
+  fn collider_create_cylinder(
+    &self,
+    initial_position: Vec3,
+    radius: f32,
+    height: f32,
+  ) -> ColliderId {
     todo!()
   }
 
@@ -117,11 +127,21 @@ impl PhysicsBackend for InternalPhysicsBackend {
     todo!()
   }
 
-  fn collider_create_triangle_mesh(&self, initial_position: Vec3, vertices: &[Vec3], indices: &[u32]) -> ColliderId {
+  fn collider_create_triangle_mesh(
+    &self,
+    initial_position: Vec3,
+    vertices: &[Vec3],
+    indices: &[u32],
+  ) -> ColliderId {
     todo!()
   }
 
-  fn collider_create_height_field(&self, initial_position: Vec3, size: Vec3, heights: &[f32]) -> ColliderId {
+  fn collider_create_height_field(
+    &self,
+    initial_position: Vec3,
+    size: Vec3,
+    heights: &[f32],
+  ) -> ColliderId {
     todo!()
   }
 

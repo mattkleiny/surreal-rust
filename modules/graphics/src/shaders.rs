@@ -8,18 +8,13 @@
 use core::str;
 use std::{cell::RefCell, rc::Rc};
 
-use common::{
-  collections::FastHashMap,
-  io::VirtualPath,
-  maths::{
-    DMat2, DMat3, DMat4, DQuat, DVec2, DVec3, DVec4, Degrees, Mat2, Mat3, Mat4, Quat, Radians, Vec2, Vec3, Vec4,
-  },
-};
+pub use glsl::*;
 pub use templates::*;
 
 mod glsl;
-mod shady;
 mod templates;
+
+use common::{collections::FastHashMap, io::VirtualPath, maths::*};
 
 use super::*;
 
@@ -74,22 +69,15 @@ impl ShaderProgram {
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
   pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
-    Self::from_code::<glsl::GlslShaderLanguage>(graphics, code)
+    Self::from_code::<glsl::GlslLanguage>(graphics, code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> common::Result<Self> {
-    Self::from_path::<glsl::GlslShaderLanguage>(graphics, path)
-  }
-
-  /// Loads a [`ShaderProgram`] from the given Shady shader code.
-  pub fn from_shady(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
-    Self::from_code::<shady::ShadyShaderLanguage>(graphics, code)
-  }
-
-  /// Loads a [`ShaderProgram`] from the given Shady shader code file.
-  pub fn from_shady_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> common::Result<Self> {
-    Self::from_path::<shady::ShadyShaderLanguage>(graphics, path)
+  pub fn from_glsl_path<'a>(
+    graphics: &GraphicsEngine,
+    path: impl Into<VirtualPath<'a>>,
+  ) -> common::Result<Self> {
+    Self::from_path::<glsl::GlslLanguage>(graphics, path)
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
@@ -104,7 +92,10 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
+  pub fn from_code<S: ShaderLanguage>(
+    graphics: &GraphicsEngine,
+    code: &str,
+  ) -> common::Result<Self> {
     let program = Self::new(graphics)?;
 
     program.load_code::<S>(code)?;
@@ -123,7 +114,9 @@ impl ShaderProgram {
 
   /// Returns the [`ShaderId`] of the underlying program.
   pub fn id(&self) -> ShaderId {
-    self.state.borrow().id
+    let state = self.state.borrow();
+
+    state.id
   }
 
   /// Retrieves the binding location of the given shader uniform in the
@@ -159,7 +152,10 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<'a, S: ShaderLanguage>(&self, path: impl Into<VirtualPath<'a>>) -> common::Result<()> {
+  pub fn load_from_path<'a, S: ShaderLanguage>(
+    &self,
+    path: impl Into<VirtualPath<'a>>,
+  ) -> common::Result<()> {
     let path = path.into();
     let source_code = path.read_all_text()?;
 
@@ -253,7 +249,12 @@ where
   for<'a> &'a U: Into<ShaderUniform>,
 {
   fn from(value: &[U]) -> Self {
-    Self::Array(value.iter().map(|v| v.into()).collect::<Vec<ShaderUniform>>())
+    Self::Array(
+      value
+        .iter()
+        .map(|v| v.into())
+        .collect::<Vec<ShaderUniform>>(),
+    )
   }
 }
 

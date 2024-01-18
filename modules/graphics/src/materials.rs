@@ -74,8 +74,12 @@ impl MaterialUniformSet {
 
   /// Sets the given [`UniformKey`] as a uniform with a single texture in the
   /// set.
-  pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
-  where
+  pub fn set_texture<'a, K>(
+    &'a mut self,
+    key: K,
+    texture: &Texture,
+    sampler: Option<TextureSampler>,
+  ) where
     K: Into<UniformKey<&'a Texture>>,
   {
     let slot = self.allocate_texture_slot(texture);
@@ -174,8 +178,12 @@ impl Material {
   }
 
   /// Sets the given [`UniformKey`] with a single texture.
-  pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
-  where
+  pub fn set_texture<'a, K>(
+    &'a mut self,
+    key: K,
+    texture: &Texture,
+    sampler: Option<TextureSampler>,
+  ) where
     K: Into<UniformKey<&'a Texture>>,
   {
     self.uniforms.set_texture(key, texture, sampler);

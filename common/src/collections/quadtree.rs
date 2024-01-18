@@ -156,7 +156,12 @@ impl<T> QuadTree<T> {
   where
     T: Clone,
   {
-    fn insert_recursive<T: Clone>(node: &mut QuadTreeNode<T>, value: T, bounds: Rectangle, depth: usize) -> bool {
+    fn insert_recursive<T: Clone>(
+      node: &mut QuadTreeNode<T>,
+      value: T,
+      bounds: Rectangle,
+      depth: usize,
+    ) -> bool {
       if depth > 100 {
         panic!("exceeded maximum recursion depth");
       }
@@ -218,7 +223,12 @@ impl<T> QuadTree<T> {
 
   /// Finds all values in the [`QuadTree`] that intersect the bounds.
   pub fn find_in_bounds(&self, bounds: Rectangle) -> Vec<&T> {
-    fn find_recursive<'a, T>(node: &'a QuadTreeNode<T>, bounds: Rectangle, results: &mut Vec<&'a T>, depth: usize) {
+    fn find_recursive<'a, T>(
+      node: &'a QuadTreeNode<T>,
+      bounds: Rectangle,
+      results: &mut Vec<&'a T>,
+      depth: usize,
+    ) {
       if depth > 100 {
         panic!("exceeded maximum recursion depth");
       }
@@ -320,7 +330,9 @@ impl<T> QuadTree<T> {
     }
 
     if let Some(root) = &self.root {
-      IterRecursive { stack: vec![(root, 0)] }
+      IterRecursive {
+        stack: vec![(root, 0)],
+      }
     } else {
       IterRecursive {
         stack: Vec::with_capacity(0),
