@@ -3,6 +3,7 @@
 use std::ffi::CString;
 
 use graphics::{Color32, Image};
+pub use sdl2_sys as sys; // re-export the SDL2 bindings
 
 /// Represents a window.
 pub struct Window {

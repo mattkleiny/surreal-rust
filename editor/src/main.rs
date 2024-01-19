@@ -1,15 +1,13 @@
 //! The main editor binary for the Surreal Project.
 
-use sdl::{Window, WindowSettings};
+use surreal_editor::{EditorWindowHost, ProjectWindow};
 
 fn main() {
-  let window = Window::new(&WindowSettings {
-    title: "Surreal Editor",
-    ..Default::default()
-  })
-  .unwrap();
+  let mut host = EditorWindowHost::new();
 
-  while window.update() {
-    window.present();
+  host.add_window(ProjectWindow::new());
+
+  while host.update() {
+    host.present();
   }
 }
