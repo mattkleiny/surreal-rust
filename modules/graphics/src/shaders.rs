@@ -73,10 +73,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path<'a>(
-    graphics: &GraphicsEngine,
-    path: impl Into<VirtualPath<'a>>,
-  ) -> common::Result<Self> {
+  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> common::Result<Self> {
     Self::from_path::<glsl::GlslLanguage>(graphics, path)
   }
 
@@ -92,10 +89,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code<S: ShaderLanguage>(
-    graphics: &GraphicsEngine,
-    code: &str,
-  ) -> common::Result<Self> {
+  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
     let program = Self::new(graphics)?;
 
     program.load_code::<S>(code)?;
@@ -152,10 +146,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<'a, S: ShaderLanguage>(
-    &self,
-    path: impl Into<VirtualPath<'a>>,
-  ) -> common::Result<()> {
+  pub fn load_from_path<'a, S: ShaderLanguage>(&self, path: impl Into<VirtualPath<'a>>) -> common::Result<()> {
     let path = path.into();
     let source_code = path.read_all_text()?;
 
@@ -249,12 +240,7 @@ where
   for<'a> &'a U: Into<ShaderUniform>,
 {
   fn from(value: &[U]) -> Self {
-    Self::Array(
-      value
-        .iter()
-        .map(|v| v.into())
-        .collect::<Vec<ShaderUniform>>(),
-    )
+    Self::Array(value.iter().map(|v| v.into()).collect::<Vec<ShaderUniform>>())
   }
 }
 

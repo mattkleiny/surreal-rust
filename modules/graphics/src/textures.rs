@@ -86,10 +86,7 @@ impl Texture {
   }
 
   /// Loads a texture from the given image.
-  pub fn from_image<T: Texel + Clone>(
-    graphics: &GraphicsEngine,
-    image: &dyn Image<Pixel = T>,
-  ) -> common::Result<Self> {
+  pub fn from_image<T: Texel + Clone>(graphics: &GraphicsEngine, image: &dyn Image<Pixel = T>) -> common::Result<Self> {
     let texture = Self::new(graphics)?;
 
     texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
@@ -263,10 +260,7 @@ impl Texture {
 
 impl Drop for TextureState {
   fn drop(&mut self) {
-    self
-      .graphics
-      .texture_delete(self.id)
-      .expect("Failed to delete texture");
+    self.graphics.texture_delete(self.id).expect("Failed to delete texture");
   }
 }
 

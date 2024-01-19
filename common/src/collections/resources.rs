@@ -17,10 +17,11 @@ macro_rules! impl_rid {
       pub const NONE: Self = Self($crate::collections::ArenaIndex::NONE);
     }
 
-    impl From<$name> for u64 {
+    impl From<u32> for $name {
       #[inline]
-      fn from(id: $name) -> Self {
-        id.0.into()
+      fn from(id: u32) -> Self {
+        let id: u64 = id.into();
+        Self((id.into()))
       }
     }
 
@@ -39,11 +40,10 @@ macro_rules! impl_rid {
       }
     }
 
-    impl From<u32> for $name {
+    impl From<$name> for u64 {
       #[inline]
-      fn from(id: u32) -> Self {
-        let id: u64 = id.into();
-        Self((id.into()))
+      fn from(id: $name) -> Self {
+        id.0.into()
       }
     }
 
@@ -58,6 +58,13 @@ macro_rules! impl_rid {
       #[inline]
       fn from(id: $name) -> Self {
         id.0
+      }
+    }
+
+    impl $crate::maths::FromRandom for $name {
+      #[inline]
+      fn from_random(random: &mut $crate::maths::Random) -> Self {
+        Self::from(random.next_u64())
       }
     }
   };

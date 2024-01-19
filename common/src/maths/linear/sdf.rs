@@ -53,8 +53,7 @@ impl SDF for Cylinder {
   type Vector = Vec3;
 
   fn distance_to(&self, point: Vec3) -> f32 {
-    let delta =
-      (point - self.center).abs() - Vec3::new(self.radius, self.height / 2.0, self.radius);
+    let delta = (point - self.center).abs() - Vec3::new(self.radius, self.height / 2.0, self.radius);
 
     delta.max(Vec3::ZERO).length() + delta.min(Vec3::ZERO).max_element()
   }

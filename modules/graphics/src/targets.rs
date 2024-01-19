@@ -31,13 +31,7 @@ pub struct RenderTextureDescriptor {
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
   pub fn to_texture(&self, graphics: &GraphicsEngine) -> common::Result<Texture> {
-    Texture::with_options_and_size(
-      graphics,
-      &self.options,
-      self.width,
-      self.height,
-      self.options.format,
-    )
+    Texture::with_options_and_size(graphics, &self.options, self.width, self.height, self.options.format)
   }
 }
 
@@ -59,10 +53,7 @@ struct RenderTargetState {
 
 impl RenderTarget {
   /// Creates a new [`RenderTarget`] on the GPU with the given attachments.
-  pub fn new(
-    graphics: &GraphicsEngine,
-    descriptor: &RenderTargetDescriptor,
-  ) -> common::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine, descriptor: &RenderTargetDescriptor) -> common::Result<Self> {
     let color_attachment = descriptor.color_attachment.to_texture(graphics)?;
 
     let depth_attachment = descriptor
@@ -141,19 +132,9 @@ impl RenderTarget {
     let state = self.state.borrow();
 
     let source_color = &state.color_attachment;
-    let source = Rectangle::from_corner_points(
-      0.,
-      0.,
-      source_color.width() as f32,
-      source_color.height() as f32,
-    );
+    let source = Rectangle::from_corner_points(0., 0., source_color.width() as f32, source_color.height() as f32);
     let dest_color = other.color_attachment();
-    let dest = Rectangle::from_corner_points(
-      0.,
-      0.,
-      dest_color.width() as f32,
-      dest_color.height() as f32,
-    );
+    let dest = Rectangle::from_corner_points(0., 0., dest_color.width() as f32, dest_color.height() as f32);
 
     state
       .graphics

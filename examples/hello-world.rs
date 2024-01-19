@@ -1,10 +1,9 @@
-use graphics::{Material, SHADER_SPRITE_MULTITEX};
 use surreal::{
   common::{
     maths::{FromRandom, Lerp, PingPong},
     utilities::DeltaClock,
   },
-  graphics::{Color, GraphicsEngine},
+  graphics::{Color, GraphicsEngine, Material, SHADER_SPRITE_MULTITEX},
   sdl2::{Window, WindowSettings},
 };
 

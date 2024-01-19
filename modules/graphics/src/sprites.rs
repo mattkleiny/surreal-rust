@@ -215,12 +215,7 @@ impl SpriteBatch {
       vertices.write_data(&self.vertices);
     });
 
-    mesh.draw_sub(
-      material,
-      PrimitiveTopology::Triangles,
-      vertex_count,
-      index_count,
-    );
+    mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
 
     self.vertices.clear();
   }
@@ -347,12 +342,7 @@ impl MultiSpriteBatch {
       vertices.write_data(&self.vertices);
     });
 
-    mesh.draw_sub(
-      material,
-      PrimitiveTopology::Triangles,
-      vertex_count,
-      index_count,
-    );
+    mesh.draw_sub(material, PrimitiveTopology::Triangles, vertex_count, index_count);
 
     self.vertices.clear();
     self.textures.clear();

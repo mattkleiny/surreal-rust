@@ -180,12 +180,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         return Err(BufferError::NullPointer);
       }
 
-      gl::GetNamedBufferSubData(
-        buffer.into(),
-        offset as isize,
-        length as isize,
-        pointer as *mut c_void,
-      );
+      gl::GetNamedBufferSubData(buffer.into(), offset as isize, length as isize, pointer as *mut c_void);
 
       Ok(())
     }
@@ -240,11 +235,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn texture_set_options(
-    &self,
-    texture: TextureId,
-    sampler: &TextureSampler,
-  ) -> Result<(), TextureError> {
+  fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError> {
     unsafe {
       let min_filter = match sampler.minify_filter {
         TextureFilter::Nearest => gl::NEAREST,
@@ -447,9 +438,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             info_log.as_mut_ptr() as *mut _,
           );
 
-          return Err(ShaderError::CompileError(
-            String::from_utf8(info_log).unwrap(),
-          ));
+          return Err(ShaderError::CompileError(String::from_utf8(info_log).unwrap()));
         }
 
         gl::AttachShader(shader, shader_id);
@@ -476,9 +465,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           info_log.as_mut_ptr() as *mut _,
         );
 
-        return Err(ShaderError::CompileError(
-          String::from_utf8(info_log).unwrap(),
-        ));
+        return Err(ShaderError::CompileError(String::from_utf8(info_log).unwrap()));
       }
 
       // delete the kernels now that we've linked
@@ -503,12 +490,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn shader_set_uniform(
-    &self,
-    shader: ShaderId,
-    location: usize,
-    value: &ShaderUniform,
-  ) -> Result<(), ShaderError> {
+  fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
     unsafe {
       let shader_id = shader.into();
 
@@ -532,112 +514,39 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           gl::ProgramUniform3f(shader_id, location as i32, value.x, value.y, value.z);
         }
         ShaderUniform::Vec4(value) => {
-          gl::ProgramUniform4f(
-            shader_id,
-            location as i32,
-            value.x,
-            value.y,
-            value.z,
-            value.w,
-          );
+          gl::ProgramUniform4f(shader_id, location as i32, value.x, value.y, value.z, value.w);
         }
-        ShaderUniform::DVec2(value) => {
-          gl::ProgramUniform2d(shader_id, location as i32, value.x, value.y)
+        ShaderUniform::DVec2(value) => gl::ProgramUniform2d(shader_id, location as i32, value.x, value.y),
+        ShaderUniform::DVec3(value) => gl::ProgramUniform3d(shader_id, location as i32, value.x, value.y, value.z),
+        ShaderUniform::DVec4(value) => {
+          gl::ProgramUniform4d(shader_id, location as i32, value.x, value.y, value.z, value.w)
         }
-        ShaderUniform::DVec3(value) => {
-          gl::ProgramUniform3d(shader_id, location as i32, value.x, value.y, value.z)
-        }
-        ShaderUniform::DVec4(value) => gl::ProgramUniform4d(
-          shader_id,
-          location as i32,
-          value.x,
-          value.y,
-          value.z,
-          value.w,
-        ),
         ShaderUniform::Mat2(value) => {
-          gl::ProgramUniformMatrix2fv(
-            shader_id,
-            location as i32,
-            1,
-            gl::FALSE,
-            &value.to_cols_array()[0],
-          );
+          gl::ProgramUniformMatrix2fv(shader_id, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
         ShaderUniform::Mat3(value) => {
-          gl::ProgramUniformMatrix3fv(
-            shader_id,
-            location as i32,
-            1,
-            gl::FALSE,
-            &value.to_cols_array()[0],
-          );
+          gl::ProgramUniformMatrix3fv(shader_id, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
         ShaderUniform::Mat4(value) => {
-          gl::ProgramUniformMatrix4fv(
-            shader_id,
-            location as i32,
-            1,
-            gl::FALSE,
-            &value.to_cols_array()[0],
-          );
+          gl::ProgramUniformMatrix4fv(shader_id, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
         ShaderUniform::DMat2(value) => {
-          gl::ProgramUniformMatrix2dv(
-            shader_id,
-            location as i32,
-            1,
-            gl::FALSE,
-            &value.to_cols_array()[0],
-          );
+          gl::ProgramUniformMatrix2dv(shader_id, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
         ShaderUniform::DMat3(value) => {
-          gl::ProgramUniformMatrix3dv(
-            shader_id,
-            location as i32,
-            1,
-            gl::FALSE,
-            &value.to_cols_array()[0],
-          );
+          gl::ProgramUniformMatrix3dv(shader_id, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
         ShaderUniform::DMat4(value) => {
-          gl::ProgramUniformMatrix4dv(
-            shader_id,
-            location as i32,
-            1,
-            gl::FALSE,
-            &value.to_cols_array()[0],
-          );
+          gl::ProgramUniformMatrix4dv(shader_id, location as i32, 1, gl::FALSE, &value.to_cols_array()[0]);
         }
         ShaderUniform::Quat(value) => {
-          gl::ProgramUniform4f(
-            shader_id,
-            location as i32,
-            value.x,
-            value.y,
-            value.z,
-            value.w,
-          );
+          gl::ProgramUniform4f(shader_id, location as i32, value.x, value.y, value.z, value.w);
         }
         ShaderUniform::DQuat(value) => {
-          gl::ProgramUniform4d(
-            shader_id,
-            location as i32,
-            value.x,
-            value.y,
-            value.z,
-            value.w,
-          );
+          gl::ProgramUniform4d(shader_id, location as i32, value.x, value.y, value.z, value.w);
         }
         ShaderUniform::Color(color) => {
-          gl::ProgramUniform4f(
-            shader_id,
-            location as i32,
-            color.r,
-            color.g,
-            color.b,
-            color.a,
-          );
+          gl::ProgramUniform4f(shader_id, location as i32, color.r, color.g, color.b, color.a);
         }
         ShaderUniform::Color32(color) => {
           gl::ProgramUniform4ui(
@@ -797,12 +706,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
       };
 
       if index_count > 0 {
-        gl::DrawElements(
-          topology,
-          index_count as i32,
-          gl::UNSIGNED_INT,
-          std::ptr::null(),
-        );
+        gl::DrawElements(topology, index_count as i32, gl::UNSIGNED_INT, std::ptr::null());
       } else {
         gl::DrawArrays(topology, 0, vertex_count as i32);
       }
