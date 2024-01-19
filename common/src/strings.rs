@@ -1,5 +1,6 @@
 use std::{
   borrow::Cow,
+  fmt::{Debug, Display},
   sync::{atomic::AtomicU32, RwLock},
 };
 
@@ -17,9 +18,29 @@ pub struct String {}
 pub type String = std::string::String;
 
 /// Represents an interned string that can be used as a name.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct StringName {
   id: u32,
+}
+
+impl Debug for StringName {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    if let Some(value) = StringNamePool::instance().lookup(self.id) {
+      write!(f, "{:?}", value)
+    } else {
+      write!(f, "StringName({})", self.id)
+    }
+  }
+}
+
+impl Display for StringName {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    if let Some(value) = StringNamePool::instance().lookup(self.id) {
+      write!(f, "{}", value)
+    } else {
+      write!(f, "")
+    }
+  }
 }
 
 impl From<&str> for StringName {
@@ -44,33 +65,51 @@ impl<'a> From<Cow<'a, str>> for StringName {
 #[derive(Singleton)]
 struct StringNamePool {
   next_id: AtomicU32,
-  strings: RwLock<FastHashMap<String, u32>>,
+  strings_by_id: RwLock<FastHashMap<u32, String>>,
 }
 
 impl Default for StringNamePool {
   fn default() -> Self {
     Self {
       next_id: AtomicU32::new(1),
-      strings: RwLock::new(FastHashMap::default()),
+      strings_by_id: RwLock::new(FastHashMap::default()),
     }
   }
 }
 
 impl StringNamePool {
+  /// Looks up the string with the given ID.
+  pub fn lookup(&self, id: u32) -> Option<String> {
+    let strings = self.strings_by_id.read().unwrap();
+
+    if let Some(value) = strings.get(&id) {
+      // TODO: remove this clone
+      Some(value.clone())
+    } else {
+      None
+    }
+  }
+
   /// Interns the given string and returns its ID.
   pub fn intern(&self, value: &str) -> u32 {
-    let strings = self.strings.read().unwrap();
+    // we need to manually scan the strings here because we optimize
+    // for the case where the string is already interned
+    let strings = self.strings_by_id.read().unwrap();
 
-    if let Some(id) = strings.get(value) {
-      return *id;
+    for (id, string) in strings.iter() {
+      if string == value {
+        return *id;
+      }
     }
 
+    // we need to drop the read lock before we can write to the map
     drop(strings);
 
-    let mut strings = self.strings.write().unwrap();
-    let id = self.next_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+    // insert the string into the map
+    let mut strings = self.strings_by_id.write().unwrap();
+    let id = self.next_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
-    strings.insert(value.to_owned(), id);
+    strings.insert(id, value.to_owned());
 
     id
   }
