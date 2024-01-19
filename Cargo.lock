@@ -561,7 +561,6 @@ dependencies = [
  "surreal-audio",
  "surreal-common",
  "surreal-editor",
- "surreal-gba",
  "surreal-graphics",
  "surreal-input",
  "surreal-macros",
@@ -612,22 +611,12 @@ dependencies = [
 name = "surreal-editor"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "surreal-audio",
  "surreal-common",
  "surreal-graphics",
  "surreal-input",
  "surreal-sdl",
- "thiserror",
-]
-
-[[package]]
-name = "surreal-gba"
-version = "0.1.0"
-dependencies = [
- "surreal-audio",
- "surreal-common",
- "surreal-graphics",
- "surreal-input",
  "thiserror",
 ]
 

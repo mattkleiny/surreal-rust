@@ -29,17 +29,11 @@ pub extern crate scene;
 pub extern crate ui;
 
 pub mod backends {
-  //! Conveniently re-exports the backend crates
-
-  #[cfg(feature = "gba")]
-  pub extern crate gba;
   #[cfg(feature = "sdl")]
   pub extern crate sdl;
 }
 
 pub mod prelude {
-  //! Conveniently re-exports the most commonly used types from the project
-
   #[cfg(feature = "assets")]
   pub use assets::*;
   #[cfg(feature = "audio")]

@@ -27,7 +27,6 @@ editor = { package = "surreal-editor", path = "./editor", optional = true }
 
 # backends
 sdl = { package = "surreal-sdl", path = "./backends/sdl", optional = true }
-gba = { package = "surreal-gba", path = "./backends/gba", optional = true }
 
 # modules
 assets = { package = "surreal-assets", path = "./modules/assets", optional = true }

@@ -6,9 +6,13 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
+# core dependencies
 common = { package = "surreal-common", path = "../common" }
 audio = { package = "surreal-audio", path = "../modules/audio" }
 graphics = { package = "surreal-graphics", path = "../modules/graphics" }
 input = { package = "surreal-input", path = "../modules/input" }
 sdl = { package = "surreal-sdl", path = "../backends/sdl" }
+
+# third-party dependencies
+serde = { version = "1.0.159", features = ["derive"] }
 thiserror = "1.0.26"
