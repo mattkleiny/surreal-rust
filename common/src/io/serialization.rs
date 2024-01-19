@@ -42,8 +42,8 @@ pub trait Serializable: serde::Serialize + Sized {
   }
 
   /// Serializes the type to a binary file.
-  fn to_binary_file(&self, path: &VirtualPath) -> crate::Result<()> {
-    let mut stream = path.open_output_stream()?;
+  fn to_binary_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
+    let mut stream = path.into().open_output_stream()?;
 
     Ok(binary::serialize_into(&mut stream, self)?)
   }
@@ -141,8 +141,8 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
 
   /// Deserializes the type from a binary file.
   #[cfg(feature = "binary")]
-  fn from_binary_file(path: &VirtualPath) -> crate::Result<Self> {
-    let mut stream = path.open_input_stream()?;
+  fn from_binary_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
+    let mut stream = path.into().open_input_stream()?;
 
     Ok(binary::deserialize_from(&mut stream)?)
   }

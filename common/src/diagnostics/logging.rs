@@ -1,5 +1,3 @@
-//! Logging support for Surreal.
-
 /// Writes a trace message to the log.
 #[macro_export]
 macro_rules! trace {
@@ -29,3 +27,6 @@ macro_rules! warn {
 macro_rules! error {
   ($($arg:tt)*) => {};
 }
+
+/// A sink for log output.
+pub trait LogSink {}

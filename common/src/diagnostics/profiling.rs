@@ -1,5 +1,3 @@
-//! Profiling utilities
-
 pub use macros::profile as profiling;
 
 /// Notifies the profiler that a frame has started.
@@ -36,3 +34,6 @@ macro_rules! profile_frame_end {
     todo!();
   };
 }
+
+/// A sink for profiling output.
+pub trait ProfilerSink {}
