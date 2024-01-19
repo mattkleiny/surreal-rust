@@ -6,7 +6,7 @@
 ///
 /// The generation is incremented every time an entry is removed from the arena.
 /// This allows us to detect when an index is no longer valid.
-#[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ArenaIndex {
   index: u32,
   generation: u16,

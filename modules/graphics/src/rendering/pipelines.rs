@@ -1,13 +1,11 @@
 //! Render pipeline abstractions.
 
-use common::collections::SmallVec;
-
 use super::*;
 
 /// Represents a scene that can be rendered by a [`RenderPipeline`].
 pub trait RenderScene {
   /// Gets the cameras that should be used to render this scene.
-  fn cameras(&self) -> SmallVec<[&dyn RenderCamera; 4]>;
+  fn cameras(&self) -> Vec<&dyn RenderCamera>;
 }
 
 /// Represents a camera that can be used to render a scene.

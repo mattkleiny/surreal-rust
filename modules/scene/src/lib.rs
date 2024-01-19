@@ -12,13 +12,14 @@
 #![feature(impl_trait_in_assoc_type)]
 
 pub use components::*;
-pub use nodes::*;
+pub use graph::*;
 pub use tags::*;
+pub use transforms::*;
 
 mod components;
 mod graph;
-mod nodes;
 mod tags;
+mod transforms;
 
 /// A notification for some event that occurred in the scene.
 pub enum SceneEvent<'a> {
@@ -28,16 +29,10 @@ pub enum SceneEvent<'a> {
   Disable,
   Destroy,
   Update(f32),
-  Draw(&'a mut SceneRenderContext<'a>),
+  Render(&'a mut SceneRenderContext<'a>),
 }
 
-/// Context for a [`SceneEvent`].
-#[derive(Default)]
-pub struct SceneContext<'a> {
-  _phantom: std::marker::PhantomData<&'a ()>,
-}
-
-#[derive(Default)]
+/// Context for a scene render event.
 pub struct SceneRenderContext<'a> {
-  _phantom: std::marker::PhantomData<&'a ()>,
+  renderer: &'a mut graphics::Renderer,
 }

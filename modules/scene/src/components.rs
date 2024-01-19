@@ -1,33 +1,12 @@
 use std::fmt::Debug;
 
-use super::{SceneContext, SceneEvent, SceneRenderContext};
+use super::{SceneEvent, SceneRenderContext};
 
 /// Represents a component in a scene.
 ///
 /// Components are attached to [`SceneNode`]s. They receive callbacks in
 /// response to scene lifecycle events, and can access and mutate data from
 /// their parent node.
-///
-/// # Examples
-///
-/// ```
-/// use surreal_scene::{SceneComponent, SceneContext, SceneEvent};
-///
-/// struct TestComponent {}
-///
-/// impl SceneComponent for TestComponent {
-///   fn on_update(&mut self, context: SceneContext, delta_time: f32) {
-///     println!("TestComponent::on_update");
-///   }
-/// }
-///
-/// let mut component = TestComponent {};
-///
-/// component.notify(
-///   SceneContext::default(),
-///   &mut SceneEvent::Update(0.16)
-/// );
-/// ```
 #[allow(unused_variables)]
 pub trait SceneComponent {
   /// Returns a friendly name for this component, for debugging/editor/etc.
@@ -38,50 +17,31 @@ pub trait SceneComponent {
   }
 
   /// Notifies of an incoming [`SceneEvent`] to the graph or sub-graph.
-  fn notify(&mut self, context: SceneContext, event: &mut SceneEvent) {
+  fn notify(&mut self, event: &mut SceneEvent) {
     match event {
-      SceneEvent::Awake => self.on_awake(context),
-      SceneEvent::Start => self.on_start(context),
-      SceneEvent::Enable => self.on_enable(context),
-      SceneEvent::Disable => self.on_disable(context),
-      SceneEvent::Destroy => self.on_destroy(context),
-      SceneEvent::Update(delta_time) => self.on_update(context, *delta_time),
-      SceneEvent::Draw(render_context) => self.on_draw(context, render_context),
+      SceneEvent::Awake => self.on_awake(),
+      SceneEvent::Start => self.on_start(),
+      SceneEvent::Enable => self.on_enable(),
+      SceneEvent::Disable => self.on_disable(),
+      SceneEvent::Destroy => self.on_destroy(),
+      SceneEvent::Update(delta_time) => self.on_update(*delta_time),
+      SceneEvent::Render(context) => self.on_draw(context),
     }
   }
 
-  fn on_awake(&mut self, context: SceneContext) {}
-  fn on_start(&mut self, context: SceneContext) {}
-  fn on_enable(&mut self, context: SceneContext) {}
-  fn on_disable(&mut self, context: SceneContext) {}
-  fn on_destroy(&mut self, context: SceneContext) {}
-  fn on_update(&mut self, context: SceneContext, delta_time: f32) {}
-  fn on_draw(&mut self, context: SceneContext, render_context: &mut SceneRenderContext) {}
+  fn on_awake(&mut self) {}
+  fn on_start(&mut self) {}
+  fn on_enable(&mut self) {}
+  fn on_disable(&mut self) {}
+  fn on_destroy(&mut self) {}
+  fn on_update(&mut self, delta_time: f32) {}
+  fn on_draw(&mut self, render_context: &mut SceneRenderContext) {}
 }
 
 /// A set of [`SceneComponent`]s in a [`SceneNode`].
 ///
 /// This is a simple wrapper around a [`Vec`] of [`Box`]ed [`SceneComponent`]s.
 /// It provides a few convenience methods for working with the set.
-///
-/// # Examples
-///
-/// ```
-/// use surreal_scene::{SceneComponent, SceneComponentSet};
-///
-/// struct Foo;
-/// impl SceneComponent for Foo {}
-///
-/// struct Bar;
-/// impl SceneComponent for Bar {}
-///
-/// let mut set = SceneComponentSet::default();
-///
-/// set.push(Foo);
-/// set.push(Bar);
-///
-/// assert_eq!(set.iter().count(), 2);
-/// ```
 #[derive(Default)]
 pub struct SceneComponentSet {
   // TODO: hierarchical bit mask over ComponentKind?
@@ -171,60 +131,54 @@ mod tests {
     }
 
     impl SceneComponent for TestComponent {
-      fn on_awake(&mut self, _context: SceneContext) {
+      fn on_awake(&mut self) {
         self.awake = true;
       }
 
-      fn on_start(&mut self, _context: SceneContext) {
+      fn on_start(&mut self) {
         self.start = true;
       }
 
-      fn on_enable(&mut self, _context: SceneContext) {
+      fn on_enable(&mut self) {
         self.enable = true;
       }
 
-      fn on_disable(&mut self, _context: SceneContext) {
+      fn on_disable(&mut self) {
         self.disable = true;
       }
 
-      fn on_destroy(&mut self, _context: SceneContext) {
+      fn on_destroy(&mut self) {
         self.destroy = true;
       }
 
-      fn on_update(&mut self, _context: SceneContext, _delta_time: f32) {
+      fn on_update(&mut self, _delta_time: f32) {
         self.update = true;
       }
 
-      fn on_draw(&mut self, _context: SceneContext, _render_context: &mut SceneRenderContext) {
+      fn on_draw(&mut self, _render_context: &mut SceneRenderContext) {
         self.draw = true;
       }
     }
 
     let mut component = TestComponent::default();
 
-    component.notify(SceneContext::default(), &mut SceneEvent::Awake);
+    component.notify(&mut SceneEvent::Awake);
     assert!(component.awake);
 
-    component.notify(SceneContext::default(), &mut SceneEvent::Start);
+    component.notify(&mut SceneEvent::Start);
     assert!(component.start);
 
-    component.notify(SceneContext::default(), &mut SceneEvent::Enable);
+    component.notify(&mut SceneEvent::Enable);
     assert!(component.enable);
 
-    component.notify(SceneContext::default(), &mut SceneEvent::Disable);
+    component.notify(&mut SceneEvent::Disable);
     assert!(component.disable);
 
-    component.notify(SceneContext::default(), &mut SceneEvent::Destroy);
+    component.notify(&mut SceneEvent::Destroy);
     assert!(component.destroy);
 
-    component.notify(SceneContext::default(), &mut SceneEvent::Update(0.16));
+    component.notify(&mut SceneEvent::Update(0.16));
     assert!(component.update);
-
-    component.notify(
-      SceneContext::default(),
-      &mut SceneEvent::Draw(&mut SceneRenderContext::default()),
-    );
-    assert!(component.draw);
   }
 
   #[test]

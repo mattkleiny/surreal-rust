@@ -10,7 +10,7 @@ use crate::collections::{Arena, ArenaIndex};
 macro_rules! impl_rid {
   ($name:ident) => {
     #[repr(transparent)]
-    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
     pub struct $name($crate::collections::ArenaIndex);
 
     impl $name {
