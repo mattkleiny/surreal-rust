@@ -619,12 +619,13 @@ dependencies = [
  "surreal-assets",
  "surreal-audio",
  "surreal-common",
+ "surreal-gba",
  "surreal-graphics",
  "surreal-input",
  "surreal-macros",
  "surreal-physics",
  "surreal-scene",
- "surreal-sdl2",
+ "surreal-sdl",
  "surreal-ui",
 ]
 
@@ -673,6 +674,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "surreal-gba"
+version = "0.1.0"
+dependencies = [
+ "surreal-audio",
+ "surreal-common",
+ "surreal-graphics",
+ "surreal-input",
+ "thiserror",
+]
+
+[[package]]
 name = "surreal-graphics"
 version = "0.1.0"
 dependencies = [
@@ -717,7 +729,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "surreal-sdl2"
+name = "surreal-sdl"
 version = "0.1.0"
 dependencies = [
  "sdl2-sys",

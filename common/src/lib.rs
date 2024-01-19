@@ -7,6 +7,7 @@
 #![feature(anonymous_lifetime_in_impl_trait)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(type_alias_impl_trait)]
+#![feature(lazy_cell)]
 
 #[macro_use]
 extern crate serde;
@@ -18,4 +19,7 @@ pub mod collections;
 pub mod diagnostics;
 pub mod io;
 pub mod maths;
+pub mod strings;
 pub mod utilities;
+
+// TODO: allow no_std as a target for the engine

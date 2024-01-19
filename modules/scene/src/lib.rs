@@ -24,8 +24,8 @@ use std::borrow::Cow;
 
 use common::collections::FastHashSet;
 
-common::impl_string!(NodePath);
-common::impl_string!(Tag);
+common::impl_cow_string!(NodePath);
+common::impl_cow_string!(Tag);
 
 /// The ID of the layer that a [`SceneNode`] inhabits.
 pub type LayerId = u16;
@@ -43,14 +43,6 @@ pub enum SceneEvent<'a> {
   Update(f32),
   Render(&'a mut graphics::Renderer),
   TransformChanged,
-}
-
-impl<'a> NodePath<'a> {
-  /// Splits the path into it's first component and the rest of the path.
-  #[inline(always)]
-  fn split_first(&'a self) -> Option<(&'a str, &'a str)> {
-    self.0.split_once('/')
-  }
 }
 
 #[cfg(test)]

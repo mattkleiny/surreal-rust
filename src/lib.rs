@@ -23,7 +23,12 @@ pub extern crate input;
 pub extern crate physics;
 #[cfg(feature = "scene")]
 pub extern crate scene;
-#[cfg(feature = "sdl2")]
-pub extern crate sdl2;
 #[cfg(feature = "ui")]
 pub extern crate ui;
+
+pub mod backends {
+  #[cfg(feature = "gba")]
+  pub extern crate gba;
+  #[cfg(feature = "sdl")]
+  pub extern crate sdl;
+}

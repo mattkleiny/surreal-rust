@@ -25,7 +25,8 @@ common = { package = "surreal-common", path = "./common" }
 macros = { package = "surreal-macros", path = "./macros", optional = true }
 
 # backends
-sdl2 = { package = "surreal-sdl2", path = "./backends/sdl2", optional = true }
+sdl = { package = "surreal-sdl", path = "./backends/sdl", optional = true }
+gba = { package = "surreal-gba", path = "./backends/gba", optional = true }
 
 # modules
 assets = { package = "surreal-assets", path = "./modules/assets", optional = true }

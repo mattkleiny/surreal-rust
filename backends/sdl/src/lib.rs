@@ -1,4 +1,4 @@
-//! SDL2 backend for Surreal.
+//! SDL bindings for Surreal.
 
 use std::ffi::CString;
 

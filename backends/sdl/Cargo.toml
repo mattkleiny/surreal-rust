@@ -1,6 +1,6 @@
 [package]
-name = "surreal-sdl2"
-description = "SDL2 bindings for Surreal"
+name = "surreal-sdl"
+description = "SDL bindings for Surreal"
 authors.workspace = true
 edition.workspace = true
 version.workspace = true

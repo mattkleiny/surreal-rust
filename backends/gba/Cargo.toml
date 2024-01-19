@@ -1,0 +1,13 @@
+[package]
+name = "surreal-gba"
+description = "Game Boy Advance bindings for Surreal"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+common = { package = "surreal-common", path = "../../common" }
+audio = { package = "surreal-audio", path = "../../modules/audio" }
+graphics = { package = "surreal-graphics", path = "../../modules/graphics" }
+input = { package = "surreal-input", path = "../../modules/input" }
+thiserror = "1.0.26"

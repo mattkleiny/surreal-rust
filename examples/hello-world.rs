@@ -1,10 +1,10 @@
 use surreal::{
+  backends::sdl::{Window, WindowSettings},
   common::{
     maths::{FromRandom, Lerp, PingPong},
     utilities::DeltaClock,
   },
   graphics::{Color, GraphicsEngine},
-  sdl2::{Window, WindowSettings},
 };
 
 fn main() -> surreal::common::Result<()> {

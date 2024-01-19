@@ -1,6 +1,10 @@
-use crate::maths::{Quat, Vec2, Vec3, Vec4};
+use crate::{
+  maths::{Quat, Vec2, Vec3, Vec4},
+  strings::StringName,
+};
 
 /// Different kinds of [`Variant`]s that are supported.
+#[repr(C)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum VariantKind {
   Null,
@@ -16,6 +20,7 @@ pub enum VariantKind {
   F32,
   F64,
   String,
+  StringName,
   Vec2,
   Vec3,
   Vec4,
@@ -23,6 +28,7 @@ pub enum VariantKind {
 }
 
 /// A type that can hold varying different values.
+#[repr(C)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Variant {
   Null,
@@ -38,6 +44,7 @@ pub enum Variant {
   F32(f32),
   F64(f64),
   String(String),
+  StringName(StringName),
   Vec2(Vec2),
   Vec3(Vec3),
   Vec4(Vec4),
@@ -61,6 +68,7 @@ impl Variant {
       Variant::F32(_) => VariantKind::F32,
       Variant::F64(_) => VariantKind::F64,
       Variant::String(_) => VariantKind::String,
+      Variant::StringName(_) => VariantKind::StringName,
       Variant::Vec2(_) => VariantKind::Vec2,
       Variant::Vec3(_) => VariantKind::Vec3,
       Variant::Vec4(_) => VariantKind::Vec4,
@@ -102,6 +110,7 @@ impl_variant!(i64, I64);
 impl_variant!(f32, F32);
 impl_variant!(f64, F64);
 impl_variant!(String, String);
+impl_variant!(StringName, StringName);
 impl_variant!(Vec2, Vec2);
 impl_variant!(Vec3, Vec3);
 impl_variant!(Vec4, Vec4);
