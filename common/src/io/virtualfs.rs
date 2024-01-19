@@ -1,6 +1,9 @@
 //! A virtual file system with paths and common operations.
 
-use std::borrow::{Borrow, Cow};
+use std::{
+  borrow::{Borrow, Cow},
+  sync::RwLock,
+};
 
 pub use local::*;
 pub use memory::*;
@@ -9,6 +12,7 @@ mod local;
 mod memory;
 
 use anyhow::anyhow;
+use macros::Singleton;
 
 use super::{InputStream, OutputStream};
 
@@ -17,7 +21,7 @@ use super::{InputStream, OutputStream};
 /// File systems are resolved from the scheme used in [`VirtualPath`]s, and
 /// allow operations to be invoked against the underlying operating system and
 /// file format.
-pub trait FileSystem {
+pub trait FileSystem: Send + Sync + 'static {
   /// Returns `true` if the given path can be handled by this [`FileSystem`].
   fn can_handle(&self, path: &VirtualPath) -> bool;
 
@@ -36,31 +40,44 @@ pub trait FileSystem {
 /// This is a singleton that is used to manage [`FileSystem`] implementations.
 /// File systems can be registered here, and will be used subsequently for file
 /// operations on [`VirtualPath`] instances.
+#[derive(Singleton)]
 pub struct FileSystemManager {
-  _file_systems: Vec<Box<dyn FileSystem>>,
+  file_systems: RwLock<Vec<Box<dyn FileSystem>>>,
 }
 
 impl Default for FileSystemManager {
   fn default() -> Self {
     Self {
       #[rustfmt::skip]
-      _file_systems: vec![
-        Box::new(LocalFileSystem::new()),
-        Box::new(MemoryFileSystem::new()),
-      ],
+      file_systems: RwLock::new(vec![
+        Box::new(LocalFileSystem::default()),
+        Box::new(MemoryFileSystem::default()),
+      ]),
     }
   }
 }
 
 impl FileSystemManager {
   /// Registers a new [`FileSystem`] with the manager.
-  pub fn register(_file_system: impl FileSystem + 'static) {
-    todo!()
+  pub fn register(file_system: impl FileSystem + 'static) {
+    let manager = Self::instance();
+    let mut file_systems = manager.file_systems.write().unwrap();
+
+    file_systems.push(Box::new(file_system));
   }
 
   /// Finds the appropriate [`FileSystem`] for the given [`VirtualPath`].
-  pub fn find(_path: &VirtualPath) -> Option<&'static dyn FileSystem> {
-    todo!()
+  pub fn find(path: &VirtualPath) -> Option<&'static dyn FileSystem> {
+    let manager = Self::instance();
+    let file_systems = manager.file_systems.read().unwrap();
+
+    for file_system in file_systems.iter() {
+      if file_system.can_handle(path) {
+        return Some(file_system.as_ref());
+      }
+    }
+
+    None
   }
 }
 

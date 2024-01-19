@@ -1,30 +1,12 @@
 //! The local [`FileSystem`] implementation.
 
-use std::{
-  fs::OpenOptions,
-  path::{Path, PathBuf},
-};
+use std::{fs::OpenOptions, path::PathBuf};
 
 use super::*;
 
 /// A [`FileSystem`] for the local OS file system.
-pub struct LocalFileSystem {
-  root: PathBuf,
-}
-
-impl Default for LocalFileSystem {
-  fn default() -> Self {
-    Self::new()
-  }
-}
-
-impl LocalFileSystem {
-  pub fn new() -> Self {
-    Self {
-      root: std::env::current_dir().expect("Unable to get current directory"),
-    }
-  }
-}
+#[derive(Default)]
+pub struct LocalFileSystem {}
 
 impl FileSystem for LocalFileSystem {
   fn can_handle(&self, path: &VirtualPath) -> bool {
@@ -32,15 +14,15 @@ impl FileSystem for LocalFileSystem {
   }
 
   fn exists(&self, path: &VirtualPath) -> bool {
-    to_path(&self.root, path).exists()
+    to_path(path).exists()
   }
 
   fn is_file(&self, path: &VirtualPath) -> bool {
-    to_path(&self.root, path).is_file()
+    to_path(path).is_file()
   }
 
   fn is_directory(&self, path: &VirtualPath) -> bool {
-    to_path(&self.root, path).is_dir()
+    to_path(path).is_dir()
   }
 
   fn open_read(&self, path: &VirtualPath) -> crate::Result<Box<dyn InputStream>> {
@@ -48,7 +30,7 @@ impl FileSystem for LocalFileSystem {
       .read(true)
       .write(false)
       .create(false)
-      .open(to_path(&self.root, path))?;
+      .open(to_path(path))?;
 
     Ok(Box::new(std::io::BufReader::new(file)))
   }
@@ -59,18 +41,14 @@ impl FileSystem for LocalFileSystem {
       .write(true)
       .create(true)
       .truncate(true)
-      .open(to_path(&self.root, path))?;
+      .open(to_path(path))?;
 
     Ok(Box::new(std::io::BufWriter::new(file)))
   }
 }
 
 /// Converts a [`VirtualPath`] into a [`Path`].
-fn to_path(root: &Path, path: &VirtualPath) -> PathBuf {
-  let mut local_path = PathBuf::new();
-
-  local_path.push(root);
-  local_path.push(path.location.as_ref());
-
-  local_path
+#[inline(always)]
+fn to_path(path: &VirtualPath) -> PathBuf {
+  PathBuf::from(path.location.as_ref())
 }
