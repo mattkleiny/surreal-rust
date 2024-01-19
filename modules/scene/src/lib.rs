@@ -12,6 +12,7 @@
 
 pub use components::*;
 pub use graph::*;
+pub use rendering::*;
 pub use transform::*;
 
 mod components;
@@ -41,6 +42,7 @@ pub enum SceneEvent<'a> {
   Destroy,
   Update(f32),
   Render(&'a mut graphics::Renderer),
+  TransformChanged,
 }
 
 impl<'a> NodePath<'a> {

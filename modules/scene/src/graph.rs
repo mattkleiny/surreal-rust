@@ -31,6 +31,7 @@ bitflags! {
 ///
 /// Notifications are sent down the graph via the [`SceneEvent`] type, which can
 /// be used to inform recursive operations on the graph and it's children.
+#[derive(Default)]
 pub struct SceneGraph<'a, T: Transform = ()> {
   pub root: SceneNode<'a, T>,
   groups: FastHashMap<String, FastHashSet<SceneNodeId>>,
@@ -47,17 +48,12 @@ impl<'a, T: Transform> SceneGraph<'a, T> {
 
   /// Updates the scene with a single time-step.
   pub fn update(&mut self, delta_time: f32) {
-    self.notify(SceneEvent::Update(delta_time));
+    self.root.notify(&mut SceneEvent::Update(delta_time));
   }
 
   /// Draws the scene to the given [`Renderer`].
   pub fn render(&mut self, renderer: &mut Renderer) {
-    self.notify(SceneEvent::Render(renderer));
-  }
-
-  /// Notifies all nodes in the scene graph of a [`SceneEvent`].
-  fn notify(&mut self, mut event: SceneEvent) {
-    self.root.notify(&mut event);
+    self.root.notify(&mut SceneEvent::Render(renderer));
   }
 
   /// Adds a [`SceneNode`] to a [`SceneGroup`], or creates the group anew.
@@ -135,7 +131,7 @@ impl<'a, T: Transform> Debug for SceneGraph<'a, T> {
 
 impl<'a, T: Transform> Drop for SceneGraph<'a, T> {
   fn drop(&mut self) {
-    self.notify(SceneEvent::Destroy);
+    self.root.notify(&mut SceneEvent::Destroy);
   }
 }
 
@@ -316,7 +312,22 @@ impl<'a, T: Transform> SceneNode<'a, T> {
 
   /// Adds a new [`SceneComponent`] to the node.
   pub fn add_component<C: SceneComponent + 'static>(&mut self, component: C) {
-    self.components.push(component);
+    self.components.add(component);
+  }
+
+  /// Gets the [`SceneComponent`] of the given type in this node.
+  pub fn get_component<C: SceneComponent + 'static>(&self) -> Option<&C> {
+    self.components.get()
+  }
+
+  /// Mutably gets the [`SceneComponent`] of the given type in this node.
+  pub fn get_component_mut<C: SceneComponent + 'static>(&mut self) -> Option<&mut C> {
+    self.components.get_mut()
+  }
+
+  /// Removes the [`SceneComponent`] of the given type from this node.
+  pub fn remove_component<C: SceneComponent + 'static>(&mut self) -> common::Result<()> {
+    self.components.remove::<C>()
   }
 
   /// Notify this node of the given event.
@@ -352,6 +363,9 @@ impl<'a, T: Transform> SceneNode<'a, T> {
       SceneEvent::Render(_) if self.is_visible => {
         self.notify_children(event);
       }
+      SceneEvent::TransformChanged => {
+        self.notify_children(event);
+      }
       _ => {} // discard this event
     }
   }
@@ -360,7 +374,7 @@ impl<'a, T: Transform> SceneNode<'a, T> {
   fn update_transform(&mut self, parent: &T) {
     self.transform.update_transform(parent);
 
-    self.is_transform_dirty = true;
+    self.update_child_transforms();
   }
 
   /// Updates the transform of all of this node's child [`SceneNode`]s.
@@ -414,12 +428,12 @@ impl<'a, T: Transform> SceneNode<'a, T> {
   }
 
   /// Tries to locate a node in this hierarchy by it's [`NodePath`].
-  pub fn find_by_path(&self, _node_path: impl Into<NodePath<'a>>) -> Option<&SceneNode<'a, T>> {
+  pub fn find_by_path(&self, _path: impl Into<NodePath<'a>>) -> Option<&SceneNode<'a, T>> {
     todo!()
   }
 
   /// Tries to mutably locate a node in this hierarchy by it's [`NodePath`].
-  pub fn find_by_path_mut(&mut self, _node_path: impl Into<NodePath<'a>>) -> Option<&mut SceneNode<'a, T>> {
+  pub fn find_by_path_mut(&mut self, _path: impl Into<NodePath<'a>>) -> Option<&mut SceneNode<'a, T>> {
     todo!()
   }
 
@@ -548,7 +562,7 @@ impl<'a, T: Transform> SceneNodeBuilder<'a, T> {
 
   /// Adds a component to the [`SceneNode`].
   pub fn with_component(mut self, component: impl SceneComponent + 'static) -> Self {
-    self.components.push(component);
+    self.components.add(component);
     self
   }
 

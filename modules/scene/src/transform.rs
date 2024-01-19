@@ -1,6 +1,14 @@
 use common::maths::{Angle, Mat4, Quat, Vec2, Vec3};
 
-use super::SceneNodeBuilder;
+use super::{SceneGraph, SceneNode, SceneNodeBuilder};
+
+pub type SceneGraph2D<'a> = SceneGraph<'a, Transform2D>;
+pub type SceneNode2D<'a> = SceneNode<'a, Transform2D>;
+pub type SceneNodeBuilder2D<'a> = SceneNodeBuilder<'a, Transform2D>;
+
+pub type SceneGraph3D<'a> = SceneGraph<'a, Transform3D>;
+pub type SceneNode3D<'a> = SceneNode<'a, Transform3D>;
+pub type SceneNodeBuilder3D<'a> = SceneNodeBuilder<'a, Transform3D>;
 
 /// Represents a transform used in the hierarchy of a [`SceneGraph`].
 ///
@@ -29,13 +37,13 @@ pub struct Transform2D {
 
 impl Transform for Transform2D {
   fn update_transform(&mut self, parent: &Self) {
-    let trs = Mat4::from_scale_rotation_translation(
+    let local_transform = Mat4::from_scale_rotation_translation(
       self.scale.extend(1.0),
       Quat::from_rotation_z(self.rotation.into()),
       self.position.extend(0.0),
     );
 
-    self.local_to_world = parent.local_to_world * trs;
+    self.local_to_world = parent.local_to_world * local_transform;
   }
 }
 
@@ -71,9 +79,9 @@ pub struct Transform3D {
 
 impl Transform for Transform3D {
   fn update_transform(&mut self, parent: &Self) {
-    let trs = Mat4::from_scale_rotation_translation(self.scale, self.rotation, self.position);
+    let local_transform = Mat4::from_scale_rotation_translation(self.scale, self.rotation, self.position);
 
-    self.local_to_world = parent.local_to_world * trs;
+    self.local_to_world = parent.local_to_world * local_transform;
   }
 }
 

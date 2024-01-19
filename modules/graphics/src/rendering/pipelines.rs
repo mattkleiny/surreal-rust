@@ -80,40 +80,28 @@ pub mod forward {
   use super::*;
 
   /// A [`RenderPass`] that renders all objects in the scene to a depth target.
-  struct DepthPass {
-    depth_target: RenderTarget,
-  }
+  struct DepthPass {}
 
   impl RenderPass for DepthPass {
     fn render_camera(&self, camera: &dyn RenderCamera, renderer: &mut Renderer) {
-      self.depth_target.activate();
-
       for object in camera.cull_visible_objects() {
         object.render(renderer);
       }
-
-      self.depth_target.deactivate();
     }
   }
 
   /// A [`RenderPass`] that renders all objects in the scene to a color target.
-  struct ColorPass {
-    color_target: RenderTarget,
-  }
+  struct ColorPass {}
 
   impl RenderPass for ColorPass {
     fn render_camera(&self, camera: &dyn RenderCamera, renderer: &mut Renderer) {
-      self.color_target.activate();
-
       for object in camera.cull_visible_objects() {
         object.render(renderer);
       }
-
-      self.color_target.deactivate();
     }
 
     fn end_frame(&self, _scene: &dyn RenderScene, _renderer: &mut Renderer) {
-      self.color_target.blit_to_display(TextureFilter::Nearest);
+      // TODO: Blit the color target to the screen.
     }
   }
 
@@ -122,46 +110,9 @@ pub mod forward {
     pub fn new_forward_pipeline(graphics: &GraphicsEngine) -> Self {
       let renderer = Renderer::new(graphics);
 
-      let depth_target = RenderTarget::new(
-        &graphics,
-        &RenderTargetDescriptor {
-          color_attachment: RenderTextureDescriptor {
-            width: 1920,
-            height: 1080,
-            options: TextureOptions {
-              format: TextureFormat::RGBA32,
-              ..Default::default()
-            },
-          },
-          depth_attachment: None,
-          stencil_attachment: None,
-        },
-      )
-      .expect("Failed to create depth target");
-
-      let color_target = RenderTarget::new(
-        &graphics,
-        &RenderTargetDescriptor {
-          color_attachment: RenderTextureDescriptor {
-            width: 1920,
-            height: 1080,
-            options: TextureOptions {
-              format: TextureFormat::RGBA32,
-              ..Default::default()
-            },
-          },
-          depth_attachment: None,
-          stencil_attachment: None,
-        },
-      )
-      .expect("Failed to create color target");
-
       MultiPassPipeline {
         renderer,
-        passes: vec![
-          Box::new(DepthPass { depth_target }),
-          Box::new(ColorPass { color_target }),
-        ],
+        passes: vec![Box::new(DepthPass {}), Box::new(ColorPass {})],
       }
     }
   }

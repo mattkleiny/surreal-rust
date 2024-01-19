@@ -1,4 +1,7 @@
-use std::fmt::Debug;
+use std::{
+  any::{Any, TypeId},
+  fmt::Debug,
+};
 
 use super::SceneEvent;
 
@@ -26,6 +29,7 @@ pub trait SceneComponent {
       SceneEvent::Destroy => self.on_destroy(),
       SceneEvent::Update(delta_time) => self.on_update(*delta_time),
       SceneEvent::Render(context) => self.on_draw(context),
+      SceneEvent::TransformChanged => self.on_transform_changed(),
     }
   }
 
@@ -36,6 +40,7 @@ pub trait SceneComponent {
   fn on_destroy(&mut self) {}
   fn on_update(&mut self, delta_time: f32) {}
   fn on_draw(&mut self, render_context: &mut graphics::Renderer) {}
+  fn on_transform_changed(&mut self) {}
 }
 
 /// A set of [`SceneComponent`]s in a [`SceneNode`].
@@ -66,9 +71,44 @@ impl SceneComponentSet {
     self.components.len()
   }
 
+  /// Gets the [`SceneComponent`] of the given type in this set.
+  pub fn get<C: SceneComponent + 'static>(&self) -> Option<&C> {
+    for component in &self.components {
+      if TypeId::of::<C>() == component.type_id() {
+        return Some(unsafe { &*(component.as_ref() as *const dyn SceneComponent as *const C) });
+      }
+    }
+
+    None
+  }
+
+  /// Mutably gets the [`SceneComponent`] of the given type in this set.
+  pub fn get_mut<C: SceneComponent + 'static>(&mut self) -> Option<&mut C> {
+    // TODO: fix this
+    // for component in &mut self.components {
+    //   if TypeId::of::<C>() == component.type_id() {
+    //     return Some(unsafe { &mut *(component.as_mut() as *mut dyn SceneComponent
+    // as *mut C) });   }
+    // }
+
+    None
+  }
+
   /// Adds a new [`SceneComponent`] to the set.
-  pub fn push<C: SceneComponent + 'static>(&mut self, component: C) {
+  pub fn add<C: SceneComponent + 'static>(&mut self, component: C) {
     self.components.push(Box::new(component));
+  }
+
+  /// Removes the [`SceneComponent`] of the given type from this set.
+  pub fn remove<C: SceneComponent + 'static>(&mut self) -> common::Result<()> {
+    for (index, component) in self.components.iter().enumerate() {
+      if TypeId::of::<C>() == component.type_id() {
+        self.components.remove(index);
+        return Ok(());
+      }
+    }
+
+    return Err(common::anyhow!("Component not found"));
   }
 
   /// Iterates the [`SceneComponent`]s in this set.
@@ -201,8 +241,8 @@ mod tests {
 
     let mut set = SceneComponentSet::default();
 
-    set.push(TestComponent1 {});
-    set.push(TestComponent2 {});
+    set.add(TestComponent1 {});
+    set.add(TestComponent2 {});
 
     assert_eq!(set.iter().count(), 2);
   }
@@ -217,8 +257,8 @@ mod tests {
 
     let mut set = SceneComponentSet::default();
 
-    set.push(TestComponent1 {});
-    set.push(TestComponent2 {});
+    set.add(TestComponent1 {});
+    set.add(TestComponent2 {});
 
     assert_eq!(format!("{:?}", set), "[\"TestComponent1\", \"TestComponent2\"]");
   }
