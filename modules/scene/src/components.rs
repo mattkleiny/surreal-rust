@@ -56,6 +56,16 @@ impl SceneComponentSet {
     }
   }
 
+  /// Returns `true` if this set contains no [`SceneComponent`]s.
+  pub fn is_empty(&self) -> bool {
+    self.components.is_empty()
+  }
+
+  /// Returns the number of [`SceneComponent`]s in this set.
+  pub fn len(&self) -> usize {
+    self.components.len()
+  }
+
   /// Adds a new [`SceneComponent`] to the set.
   pub fn push<C: SceneComponent + 'static>(&mut self, component: C) {
     self.components.push(Box::new(component));

@@ -31,12 +31,12 @@ bitflags! {
 ///
 /// Notifications are sent down the graph via the [`SceneEvent`] type, which can
 /// be used to inform recursive operations on the graph and it's children.
-pub struct SceneGraph<'a, T: SceneTransform = ()> {
+pub struct SceneGraph<'a, T: Transform = ()> {
   pub root: SceneNode<'a, T>,
   groups: FastHashMap<String, FastHashSet<SceneNodeId>>,
 }
 
-impl<'a, T: SceneTransform> SceneGraph<'a, T> {
+impl<'a, T: Transform> SceneGraph<'a, T> {
   /// Creates a new [`SceneGraph`] with the given root [`SceneNode`].
   pub fn new(root: impl Into<SceneNode<'a, T>>) -> Self {
     Self {
@@ -51,7 +51,7 @@ impl<'a, T: SceneTransform> SceneGraph<'a, T> {
   }
 
   /// Draws the scene to the given [`Renderer`].
-  pub fn draw(&mut self, renderer: &mut Renderer) {
+  pub fn render(&mut self, renderer: &mut Renderer) {
     self.notify(SceneEvent::Render(renderer));
   }
 
@@ -117,7 +117,7 @@ impl<'a, T: SceneTransform> SceneGraph<'a, T> {
   }
 }
 
-impl<'a, T: SceneTransform> Debug for SceneGraph<'a, T> {
+impl<'a, T: Transform> Debug for SceneGraph<'a, T> {
   fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     for (node, level) in self.root.iter_recursive() {
       let indent = if level > 0 {
@@ -133,7 +133,7 @@ impl<'a, T: SceneTransform> Debug for SceneGraph<'a, T> {
   }
 }
 
-impl<'a, T: SceneTransform> Drop for SceneGraph<'a, T> {
+impl<'a, T: Transform> Drop for SceneGraph<'a, T> {
   fn drop(&mut self) {
     self.notify(SceneEvent::Destroy);
   }
@@ -144,7 +144,14 @@ impl<'a, T: SceneTransform> Drop for SceneGraph<'a, T> {
 /// A node is a sub-tree of [`SceneNode`]s that represent a scene in a
 /// [`SceneGraph`]. Each node can contain one or more [`SceneComponent`]s to
 /// build up logic from pieces.
-pub struct SceneNode<'a, T: SceneTransform = ()> {
+///
+/// The transform type, `T`, is used to represent the position of the node
+/// relative to it's parent, but the type of transform is generic across the
+/// scene graph. This allows for 2D and 3D scenes to be represented using the
+/// same types.
+///
+/// See the [`SceneTransform`] type for more information.
+pub struct SceneNode<'a, T: Transform> {
   id: SceneNodeId,
   name: Option<String>,
   flags: NodeFlags,
@@ -158,7 +165,7 @@ pub struct SceneNode<'a, T: SceneTransform = ()> {
   children: Vec<SceneNode<'a, T>>,
 }
 
-impl<'a, T: SceneTransform> Default for SceneNode<'a, T> {
+impl<'a, T: Transform> Default for SceneNode<'a, T> {
   fn default() -> Self {
     Self {
       id: SceneNodeId::random(),
@@ -176,7 +183,7 @@ impl<'a, T: SceneTransform> Default for SceneNode<'a, T> {
   }
 }
 
-impl<'a, T: SceneTransform> SceneNode<'a, T> {
+impl<'a, T: Transform> SceneNode<'a, T> {
   /// Gets the ID of this [`SceneNode`].
   pub fn id(&self) -> SceneNodeId {
     self.id
@@ -349,15 +356,31 @@ impl<'a, T: SceneTransform> SceneNode<'a, T> {
     }
   }
 
+  /// Updates the transform of this node relative to it's parent.
+  fn update_transform(&mut self, parent: &T) {
+    self.transform.update_transform(parent);
+
+    self.is_transform_dirty = true;
+  }
+
   /// Updates the transform of all of this node's child [`SceneNode`]s.
   fn update_child_transforms(&mut self) {
+    for child in &mut self.children {
+      child.update_transform(&self.transform);
+    }
+
     self.is_transform_dirty = false;
-    todo!()
   }
 
   /// Notifies this node's child [`SceneNode`]s of the given [`SceneEvent`].
-  fn notify_children(&mut self, _event: &mut SceneEvent) {
-    todo!()
+  fn notify_children(&mut self, event: &mut SceneEvent) {
+    for child in &mut self.children {
+      child.notify(event);
+    }
+
+    for component in &mut self.components {
+      component.notify(event);
+    }
   }
 
   /// Tries to locate the node with the given [`SceneNodeId`] in this hierarchy.
@@ -419,12 +442,12 @@ impl<'a, T: SceneTransform> SceneNode<'a, T> {
 
   /// Iterates all child [`SceneNode`]s of this node.
   pub fn iter(&'a self) -> impl Iterator<Item = &SceneNode<'a, T>> {
-    struct Iter<'a, T: SceneTransform> {
+    struct Iter<'a, T: Transform> {
       node: &'a SceneNode<'a, T>,
       index: usize,
     }
 
-    impl<'a, T: SceneTransform> Iterator for Iter<'a, T> {
+    impl<'a, T: Transform> Iterator for Iter<'a, T> {
       type Item = &'a SceneNode<'a, T>;
 
       fn next(&mut self) -> Option<Self::Item> {
@@ -447,11 +470,11 @@ impl<'a, T: SceneTransform> SceneNode<'a, T> {
 
   /// Iterates all child [`SceneNode`]s of this node, recursively.
   pub fn iter_recursive(&'a self) -> impl Iterator<Item = (&SceneNode<'a, T>, usize)> {
-    struct IterRecursive<'a, T: SceneTransform> {
+    struct IterRecursive<'a, T: Transform> {
       stack: Vec<(&'a SceneNode<'a, T>, usize)>,
     }
 
-    impl<'a, T: SceneTransform> Iterator for IterRecursive<'a, T> {
+    impl<'a, T: Transform> Iterator for IterRecursive<'a, T> {
       type Item = (&'a SceneNode<'a, T>, usize);
 
       fn next(&mut self) -> Option<Self::Item> {
@@ -471,7 +494,7 @@ impl<'a, T: SceneTransform> SceneNode<'a, T> {
   }
 }
 
-impl<'a, T: SceneTransform> Debug for SceneNode<'a, T> {
+impl<'a, T: Transform> Debug for SceneNode<'a, T> {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("SceneNode")
       .field("id", &self.id)
@@ -483,7 +506,7 @@ impl<'a, T: SceneTransform> Debug for SceneNode<'a, T> {
   }
 }
 
-impl<'a, T: SceneTransform> IntoIterator for &'a SceneNode<'a, T> {
+impl<'a, T: Transform> IntoIterator for &'a SceneNode<'a, T> {
   type Item = &'a SceneNode<'a, T>;
   type IntoIter = impl Iterator<Item = Self::Item>;
 
@@ -495,7 +518,7 @@ impl<'a, T: SceneTransform> IntoIterator for &'a SceneNode<'a, T> {
 /// A utility builder for [`SceneNode`]s.
 #[must_use]
 #[derive(Default)]
-pub struct SceneNodeBuilder<'a, T: SceneTransform = ()> {
+pub struct SceneNodeBuilder<'a, T: Transform = ()> {
   pub name: Option<String>,
   pub layer_id: LayerId,
   pub tags: TagSet<'a>,
@@ -504,7 +527,7 @@ pub struct SceneNodeBuilder<'a, T: SceneTransform = ()> {
   pub children: Vec<SceneNode<'a, T>>,
 }
 
-impl<'a, T: SceneTransform> SceneNodeBuilder<'a, T> {
+impl<'a, T: Transform> SceneNodeBuilder<'a, T> {
   /// Sets the name of the [`SceneNode`].
   pub fn with_name(mut self, name: impl Into<String>) -> Self {
     self.name = Some(name.into());
@@ -540,20 +563,20 @@ impl<'a, T: SceneTransform> SceneNodeBuilder<'a, T> {
     SceneNode {
       id: SceneNodeId::random(),
       name: self.name,
-      flags: NodeFlags::default(),
       is_visible: true,
       is_enabled: true,
-      is_transform_dirty: false,
+      is_transform_dirty: true,
       layer_id: self.layer_id,
       tags: self.tags.clone(),
       transform: self.transform,
       components: self.components,
       children: self.children,
+      ..Default::default()
     }
   }
 }
 
-impl<'a, T: SceneTransform> From<SceneNodeBuilder<'a, T>> for SceneNode<'a, T> {
+impl<'a, T: Transform> From<SceneNodeBuilder<'a, T>> for SceneNode<'a, T> {
   fn from(value: SceneNodeBuilder<'a, T>) -> Self {
     value.build()
   }

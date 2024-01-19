@@ -50,3 +50,26 @@ impl<'a> NodePath<'a> {
     self.0.split_once('/')
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use common::maths::Vec2;
+
+  use super::*;
+
+  #[test]
+  fn test_basic_scene_api() {
+    let graphics = graphics::GraphicsEngine::headless();
+
+    let mut renderer = graphics::Renderer::new(&graphics);
+    let mut scene = SceneGraph::new(
+      SceneNodeBuilder::<Transform2D>::default()
+        .with_name("root")
+        .with_position(Vec2::new(0.0, 0.0))
+        .build(),
+    );
+
+    scene.update(0.16);
+    scene.render(&mut renderer);
+  }
+}

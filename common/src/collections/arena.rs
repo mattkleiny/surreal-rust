@@ -259,7 +259,7 @@ impl<T> Arena<T> {
     /// caution and only to facilitate a cleaner API.
     #[inline(always)]
     #[allow(invalid_reference_casting)]
-    pub(crate) fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
+    fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
       // TODO: find a way to remove this completely
       unsafe {
         let pointer = value as *const T;
