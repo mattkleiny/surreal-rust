@@ -1,12 +1,12 @@
 use std::{
   borrow::Cow,
   fmt::{Debug, Display},
-  sync::{atomic::AtomicU32, RwLock},
+  sync::RwLock,
 };
 
 use macros::Singleton;
 
-use crate::collections::FastHashMap;
+use crate::{Arena, ArenaIndex};
 
 /// A custom string implementation for no_std targets.
 #[cfg(feature = "no_std")]
@@ -18,24 +18,26 @@ pub struct String {}
 pub type String = std::string::String;
 
 /// Represents an interned string that can be used as a name.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct StringName {
-  id: u32,
-}
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+pub struct StringName(ArenaIndex);
 
 impl Debug for StringName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    if let Some(value) = StringNamePool::instance().lookup(self.id) {
+    let pool = StringNamePool::instance();
+
+    if let Some(value) = pool.lookup(self.0) {
       write!(f, "{:?}", value)
     } else {
-      write!(f, "StringName({})", self.id)
+      write!(f, "StringName({:?})", self.0)
     }
   }
 }
 
 impl Display for StringName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    if let Some(value) = StringNamePool::instance().lookup(self.id) {
+    let pool = StringNamePool::instance();
+
+    if let Some(value) = pool.lookup(self.0) {
       write!(f, "{}", value)
     } else {
       write!(f, "")
@@ -47,7 +49,7 @@ impl From<&str> for StringName {
   fn from(value: &str) -> Self {
     let pool = StringNamePool::instance();
 
-    StringName { id: pool.intern(value) }
+    StringName(pool.intern(value))
   }
 }
 
@@ -55,34 +57,30 @@ impl<'a> From<Cow<'a, str>> for StringName {
   fn from(value: Cow<'a, str>) -> Self {
     let pool = StringNamePool::instance();
 
-    StringName {
-      id: pool.intern(&value),
-    }
+    StringName(pool.intern(&value))
   }
 }
 
 /// An internal global pool of interned strings.
 #[derive(Singleton)]
 struct StringNamePool {
-  next_id: AtomicU32,
-  strings_by_id: RwLock<FastHashMap<u32, String>>,
+  strings_by_id: RwLock<Arena<String>>,
 }
 
 impl Default for StringNamePool {
   fn default() -> Self {
     Self {
-      next_id: AtomicU32::new(1),
-      strings_by_id: RwLock::new(FastHashMap::default()),
+      strings_by_id: RwLock::new(Arena::default()),
     }
   }
 }
 
 impl StringNamePool {
   /// Looks up the string with the given ID.
-  pub fn lookup(&self, id: u32) -> Option<String> {
+  pub fn lookup(&self, id: ArenaIndex) -> Option<String> {
     let strings = self.strings_by_id.read().unwrap();
 
-    if let Some(value) = strings.get(&id) {
+    if let Some(value) = strings.get(id) {
       // TODO: remove this clone
       Some(value.clone())
     } else {
@@ -91,14 +89,14 @@ impl StringNamePool {
   }
 
   /// Interns the given string and returns its ID.
-  pub fn intern(&self, value: &str) -> u32 {
+  pub fn intern(&self, value: &str) -> ArenaIndex {
     // we need to manually scan the strings here because we optimize
     // for the case where the string is already interned
     let strings = self.strings_by_id.read().unwrap();
 
     for (id, string) in strings.iter() {
       if string == value {
-        return *id;
+        return id;
       }
     }
 
@@ -106,12 +104,7 @@ impl StringNamePool {
     drop(strings);
 
     // insert the string into the map
-    let mut strings = self.strings_by_id.write().unwrap();
-    let id = self.next_id.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-
-    strings.insert(id, value.to_owned());
-
-    id
+    self.strings_by_id.write().unwrap().insert(value.to_owned())
   }
 }
 
@@ -154,8 +147,8 @@ mod tests {
 
   #[test]
   fn test_string_name_should_convert_from_reference() {
-    let name1: StringName = "test".into();
-    let name2: StringName = "test".into();
+    let name1 = StringName::from("test");
+    let name2 = StringName::from("test");
 
     assert_eq!(name1, name2);
   }
