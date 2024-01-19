@@ -53,7 +53,6 @@ pub struct MultiSpriteBatch {
   mesh: Mesh<MultiSpriteVertex>,
   material: Option<Material>,
   vertices: Vec<MultiSpriteVertex>,
-  last_texture: Option<Texture>,
   textures: TextureBindingSet,
 }
 
@@ -246,7 +245,6 @@ impl MultiSpriteBatch {
       mesh,
       vertices,
       material: None,
-      last_texture: None,
       textures: TextureBindingSet::default(),
     })
   }
@@ -332,9 +330,8 @@ impl MultiSpriteBatch {
     let index_count = sprite_count * 6;
     let mesh = &mut self.mesh;
 
-    if let Some(texture) = &self.last_texture {
+    for (_index, _texture_id) in self.textures.iter().enumerate() {
       // TODO: set all of the textures into an array?
-      material.set_texture("u_texture", texture, None);
     }
 
     // write vertices to mesh

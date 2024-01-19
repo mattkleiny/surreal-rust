@@ -245,4 +245,9 @@ impl TextureBindingSet {
   pub fn clear(&mut self) {
     self.slots.fill(None);
   }
+
+  /// Returns an iterator over all texture IDs in the set.
+  pub fn iter(&self) -> impl Iterator<Item = &TextureId> {
+    self.slots.iter().filter_map(|slot| slot.as_ref())
+  }
 }

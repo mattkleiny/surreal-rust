@@ -49,7 +49,6 @@ pub trait SceneComponent {
 /// It provides a few convenience methods for working with the set.
 #[derive(Default)]
 pub struct SceneComponentSet {
-  // TODO: hierarchical bit mask over ComponentKind?
   components: Vec<Box<dyn SceneComponent>>,
 }
 

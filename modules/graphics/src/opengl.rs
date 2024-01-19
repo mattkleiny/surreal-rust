@@ -599,14 +599,21 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
           }
         }
         ShaderUniform::Array(uniforms) => {
-          for (index, uniform) in uniforms.iter().enumerate() {
-            self.shader_set_uniform(shader, location + index, uniform)?;
-          }
+          self.shader_set_uniforms(shader, location, uniforms)?;
         }
       };
 
       Ok(())
     }
+  }
+
+  fn shader_set_uniforms(
+    &self,
+    _shader: ShaderId,
+    _location: usize,
+    _value: &[ShaderUniform],
+  ) -> Result<(), ShaderError> {
+    todo!()
   }
 
   fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError> {

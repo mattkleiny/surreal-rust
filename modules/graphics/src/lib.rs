@@ -183,6 +183,7 @@ pub trait GraphicsBackend {
   fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> Result<(), ShaderError>;
   fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize>;
   fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError>;
+  fn shader_set_uniforms(&self, shader: ShaderId, location: usize, value: &[ShaderUniform]) -> Result<(), ShaderError>;
   fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError>;
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError>;
 
