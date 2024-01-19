@@ -2,23 +2,22 @@ use surreal::prelude::*;
 
 fn main() -> surreal::common::Result<()> {
   let window = Window::new(&WindowSettings {
-    title: "Hello World!",
+    title: "Hello Scene!",
     ..Default::default()
   })?;
 
   let graphics = GraphicsEngine::opengl(&window);
 
+  let mut scene = SceneGraph2D::default();
+  let mut pipeline = MultiPassPipeline::new_forward_pipeline(&graphics);
   let mut clock = DeltaClock::default();
-  let mut total_time = 0.0;
-
-  let color1 = Color::random();
-  let color2 = Color::random();
 
   while window.update() {
     let delta_time = clock.tick();
-    total_time += delta_time;
 
-    graphics.clear_color_buffer(Color::lerp(color1, color2, total_time.ping_pong()));
+    scene.update(delta_time);
+    pipeline.render(&scene);
+
     window.present();
   }
 

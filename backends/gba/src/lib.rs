@@ -2,3 +2,5 @@
 //! build games for GBA ROMs.
 
 #![no_std]
+
+pub struct GbaBackend;
