@@ -52,3 +52,16 @@ impl FileSystem for LocalFileSystem {
 fn to_path(path: &VirtualPath) -> PathBuf {
   PathBuf::from(path.location.as_ref())
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_read_file_from_disk() {
+    let path = VirtualPath::from("local://../assets/fonts/bitboy8_v1.otf");
+    let bytes = path.read_all_bytes().unwrap();
+
+    assert!(bytes.len() > 0);
+  }
+}

@@ -1,9 +1,7 @@
 //! An in-memory [`FileSystem`] implementation.
 
-use std::cell::UnsafeCell;
 
 use super::*;
-use crate::collections::FastHashMap;
 
 /// A [`FileSystem`] for the in-memory file system.
 #[derive(Default)]

@@ -67,17 +67,17 @@ impl FileSystemManager {
   }
 
   /// Finds the appropriate [`FileSystem`] for the given [`VirtualPath`].
-  pub fn find(path: &VirtualPath) -> Option<&'static dyn FileSystem> {
+  pub fn with_filesystem<R>(path: &VirtualPath, body: impl FnOnce(&dyn FileSystem) -> R) -> R {
     let manager = Self::instance();
     let file_systems = manager.file_systems.read().unwrap();
 
     for file_system in file_systems.iter() {
       if file_system.can_handle(path) {
-        return Some(file_system.as_ref());
+        return body(file_system.as_ref());
       }
     }
 
-    None
+    panic!("No file system found for scheme {}", path.scheme());
   }
 }
 
@@ -154,35 +154,30 @@ impl<'a> VirtualPath<'a> {
   }
 
   /// Determines if the path exists.
-  pub fn exists(&self) -> crate::Result<bool> {
-    let file_system =
-      FileSystemManager::find(self).ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
-
-    Ok(file_system.exists(self))
+  pub fn exists(&self) -> bool {
+    FileSystemManager::with_filesystem(self, |file_system| file_system.exists(self))
   }
 
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
-    let file_system =
-      FileSystemManager::find(self).ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
+    FileSystemManager::with_filesystem(self, |file_system| {
+      let stream = file_system
+        .open_read(self)
+        .map_err(|error| anyhow!("Unable to open input stream for {}. Error {}", self, error))?;
 
-    let stream = file_system
-      .open_read(self)
-      .map_err(|error| anyhow!("Unable to open input stream for {}. Error {}", self, error))?;
-
-    Ok(stream)
+      Ok(stream)
+    })
   }
 
   /// Opens a writer for the given path.
   pub fn open_output_stream(&self) -> crate::Result<Box<dyn OutputStream>> {
-    let file_system =
-      FileSystemManager::find(self).ok_or(anyhow!("No file system found for scheme {}", self.scheme))?;
+    FileSystemManager::with_filesystem(self, |file_system| {
+      let stream = file_system
+        .open_write(self)
+        .map_err(|error| anyhow!("Unable to open output stream for {}. Error {}", self, error))?;
 
-    let stream = file_system
-      .open_write(self)
-      .map_err(|error| anyhow!("Unable to open output stream for {}. Error {}", self, error))?;
-
-    Ok(stream)
+      Ok(stream)
+    })
   }
 
   /// Attempts to read all bytes from the given path.
