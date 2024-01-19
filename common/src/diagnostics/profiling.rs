@@ -2,20 +2,37 @@
 
 pub use macros::profile as profiling;
 
-/// Is the profiler enabled?
-#[inline]
-pub fn is_profiling_enabled() -> bool {
-  false
+/// Notifies the profiler that a frame has started.
+#[macro_export]
+macro_rules! profile_frame_start {
+  () => {
+    todo!();
+  };
 }
 
-/// Enables the profiler.
-#[inline]
-pub fn enable_profiling() {}
+/// Notifies the profiler that a scope has started.
+#[macro_export]
+macro_rules! profile_scope {
+  ($name:expr) => {
+    todo!();
+  };
+  ($name:expr, $args:expr) => {
+    todo!();
+  };
+}
 
-/// Disables the profiler.
-#[inline]
-pub fn disable_profiling() {}
+/// Notifies the profiler that a function has started.
+#[macro_export]
+macro_rules! profile_function {
+  ($name:expr) => {
+    todo!();
+  };
+}
 
-/// Notifies the profiler that a frame has completed.
-#[inline]
-pub fn finish_frame() {}
+/// Notifies the profiler that a frame has ended.
+#[macro_export]
+macro_rules! profile_frame_end {
+  () => {
+    todo!();
+  };
+}

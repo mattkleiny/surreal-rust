@@ -1,6 +1,5 @@
 //! General utilities.
 
-pub use bytemuck;
 pub use events::*;
 pub use size::*;
 pub use timing::*;
@@ -12,6 +11,8 @@ mod size;
 mod timing;
 mod variant;
 mod version;
+
+pub use macros::Singleton;
 
 /// Implements a new server type for the given backend.
 #[macro_export]
