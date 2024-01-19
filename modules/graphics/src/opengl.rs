@@ -1,15 +1,11 @@
 //! The OpenGL backend implementation for the graphics subsystem.
 
-use std::{
-  cell::RefCell,
-  collections::HashMap,
-  ffi::{c_void, CString},
-};
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::ffi::{c_void, CString};
 
-use common::{
-  maths::{Rectangle, UVec2},
-  utilities::Size,
-};
+use common::maths::{Rectangle, UVec2};
+use common::utilities::Size;
 
 use super::*;
 

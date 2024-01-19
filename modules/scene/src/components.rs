@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use super::{SceneEvent, SceneRenderContext};
+use super::SceneEvent;
 
 /// Represents a component in a scene.
 ///
@@ -35,7 +35,7 @@ pub trait SceneComponent {
   fn on_disable(&mut self) {}
   fn on_destroy(&mut self) {}
   fn on_update(&mut self, delta_time: f32) {}
-  fn on_draw(&mut self, render_context: &mut SceneRenderContext) {}
+  fn on_draw(&mut self, render_context: &mut graphics::Renderer) {}
 }
 
 /// A set of [`SceneComponent`]s in a [`SceneNode`].
@@ -155,7 +155,7 @@ mod tests {
         self.update = true;
       }
 
-      fn on_draw(&mut self, _render_context: &mut SceneRenderContext) {
+      fn on_draw(&mut self, _render_context: &mut graphics::Renderer) {
         self.draw = true;
       }
     }

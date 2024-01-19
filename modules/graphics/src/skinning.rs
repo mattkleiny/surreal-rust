@@ -1,6 +1,8 @@
 //! Basic bone-mesh skinning support for Surreal
 
-use common::{collections::FastHashMap, maths::Mat4, utilities::TimeSpan};
+use common::collections::FastHashMap;
+use common::maths::Mat4;
+use common::utilities::TimeSpan;
 
 use crate::{
   BufferUsage, GraphicsEngine, Material, Mesh, PrimitiveTopology, UniformKey, Vertex, VertexDescriptor, VertexKind,

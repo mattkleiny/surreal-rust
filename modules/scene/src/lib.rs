@@ -13,13 +13,15 @@
 
 pub use components::*;
 pub use graph::*;
-pub use tags::*;
-pub use transforms::*;
+pub use transform::*;
 
 mod components;
 mod graph;
-mod tags;
-mod transforms;
+mod transform;
+
+use std::borrow::Cow;
+
+use common::collections::FastHashSet;
 
 /// A notification for some event that occurred in the scene.
 pub enum SceneEvent<'a> {
@@ -29,10 +31,45 @@ pub enum SceneEvent<'a> {
   Disable,
   Destroy,
   Update(f32),
-  Render(&'a mut SceneRenderContext<'a>),
+  Render(&'a mut graphics::Renderer),
 }
 
-/// Context for a scene render event.
-pub struct SceneRenderContext<'a> {
-  renderer: &'a mut graphics::Renderer,
+/// The ID of the layer that a [`SceneNode`] inhabits.
+pub type LayerId = u16;
+
+/// A set of one or more [`Tag`]s.
+pub type TagSet<'a> = FastHashSet<Tag<'a>>;
+
+/// A tag that can be applied to a [`SceneNode`].
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Tag<'a>(Cow<'a, str>);
+
+impl<'a> From<&'a str> for Tag<'a> {
+  fn from(value: &'a str) -> Self {
+    Self(Cow::Borrowed(value))
+  }
+}
+
+impl<'a> From<String> for Tag<'a> {
+  fn from(value: String) -> Self {
+    Self(Cow::Owned(value))
+  }
+}
+
+/// Encapsulates a path to a [`SceneNode`] in a [`SceneGraph`].
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct NodePath<'a>(&'a str);
+
+impl<'a> NodePath<'a> {
+  /// Splits the path into it's first component and the rest of the path as two
+  /// pieces.
+  pub fn split_first(&self) -> Option<(&'a str, &'a str)> {
+    self.0.split_once('/')
+  }
+}
+
+impl<'a> From<&'a str> for NodePath<'a> {
+  fn from(value: &'a str) -> Self {
+    Self(value)
+  }
 }

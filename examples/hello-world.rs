@@ -1,11 +1,7 @@
-use surreal::{
-  common::{
-    maths::{FromRandom, Lerp, PingPong},
-    utilities::DeltaClock,
-  },
-  graphics::{Color, GraphicsEngine, Material, SHADER_SPRITE_MULTITEX},
-  sdl2::{Window, WindowSettings},
-};
+use surreal::common::maths::{FromRandom, Lerp, PingPong};
+use surreal::common::utilities::DeltaClock;
+use surreal::graphics::{Color, GraphicsEngine, Material, SHADER_SPRITE_MULTITEX};
+use surreal::sdl2::{Window, WindowSettings};
 
 fn main() -> surreal::common::Result<()> {
   let window = Window::new(&WindowSettings {

@@ -4,7 +4,8 @@
 //! and form the basis of more complex render pipelines (deferred pipelines,
 //! post-processing, etc).
 
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use common::maths::Rectangle;
 

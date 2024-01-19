@@ -1,10 +1,8 @@
 use std::fmt::{Debug, Formatter};
 
 use bitflags::bitflags;
-use common::{
-  collections::{FastHashMap, FastHashSet},
-  maths::FromRandom,
-};
+use common::collections::{FastHashMap, FastHashSet};
+use common::maths::FromRandom;
 use graphics::Renderer;
 
 use super::*;
@@ -20,24 +18,6 @@ bitflags! {
     const AWAKE = 0b00000001;
     const STARTED = 0b00000010;
     const ENABLED = 0b00000100;
-  }
-}
-
-/// Encapsulates a path to a [`SceneNode`] in a [`SceneGraph`].
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct NodePath<'a>(&'a str);
-
-impl<'a> NodePath<'a> {
-  /// Splits the path into it's first component and the rest of the path as two
-  /// pieces.
-  pub fn split_first(&self) -> Option<(&'a str, &'a str)> {
-    self.0.split_once('/')
-  }
-}
-
-impl<'a> From<&'a str> for NodePath<'a> {
-  fn from(value: &'a str) -> Self {
-    Self(value)
   }
 }
 
@@ -76,7 +56,7 @@ impl<'a, T: SceneTransform> SceneGraph<'a, T> {
 
   /// Draws the scene to the given [`Renderer`].
   pub fn draw(&mut self, renderer: &mut Renderer) {
-    self.notify(SceneEvent::Render(&mut SceneRenderContext { renderer }));
+    self.notify(SceneEvent::Render(renderer));
   }
 
   /// Notifies all nodes in the scene graph of a [`SceneEvent`].

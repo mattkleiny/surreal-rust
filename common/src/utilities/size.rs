@@ -1,8 +1,6 @@
-use std::{
-  fmt::{Debug, Formatter},
-  iter::Sum,
-  ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
-};
+use std::fmt::{Debug, Formatter};
+use std::iter::Sum;
+use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
 /// A canonical representation of size, with simple conversions between units.
 #[derive(Serialize, Deserialize, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
