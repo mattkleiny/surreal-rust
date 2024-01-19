@@ -1,8 +1,10 @@
 use std::fmt::{Debug, Formatter};
 
 use bitflags::bitflags;
-use common::collections::{FastHashMap, FastHashSet};
-use common::maths::FromRandom;
+use common::{
+  collections::{FastHashMap, FastHashSet},
+  maths::FromRandom,
+};
 use graphics::Renderer;
 
 use super::*;
@@ -29,15 +31,9 @@ bitflags! {
 ///
 /// Notifications are sent down the graph via the [`SceneEvent`] type, which can
 /// be used to inform recursive operations on the graph and it's children.
-pub struct SceneGraph<'a, T: SceneTransform> {
-  root: SceneNode<'a, T>,
-  groups: FastHashMap<String, SceneGroup>,
-}
-
-/// A grouping of nodes in a [`SceneGraph`].
-#[derive(Default)]
-struct SceneGroup {
-  members: FastHashSet<SceneNodeId>,
+pub struct SceneGraph<'a, T: SceneTransform = ()> {
+  pub root: SceneNode<'a, T>,
+  groups: FastHashMap<String, FastHashSet<SceneNodeId>>,
 }
 
 impl<'a, T: SceneTransform> SceneGraph<'a, T> {
@@ -69,7 +65,7 @@ impl<'a, T: SceneTransform> SceneGraph<'a, T> {
     let name = name.into();
     let group = self.groups.entry(name).or_default();
 
-    group.members.insert(node_id);
+    group.insert(node_id);
   }
 
   /// Removes a [`SceneNode`] from a [`SceneGroup`].
@@ -77,9 +73,9 @@ impl<'a, T: SceneTransform> SceneGraph<'a, T> {
     let name = name.into();
 
     if let Some(group) = self.groups.get_mut(&name) {
-      group.members.retain(|id| *id != node_id);
+      group.retain(|id| *id != node_id);
 
-      if group.members.is_empty() {
+      if group.is_empty() {
         self.groups.remove(&name);
       }
     }
@@ -148,9 +144,7 @@ impl<'a, T: SceneTransform> Drop for SceneGraph<'a, T> {
 /// A node is a sub-tree of [`SceneNode`]s that represent a scene in a
 /// [`SceneGraph`]. Each node can contain one or more [`SceneComponent`]s to
 /// build up logic from pieces.
-///
-/// A node has a position, orientation, and scale relative to its parent node.
-pub struct SceneNode<'a, T: SceneTransform> {
+pub struct SceneNode<'a, T: SceneTransform = ()> {
   id: SceneNodeId,
   name: Option<String>,
   flags: NodeFlags,
@@ -495,5 +489,72 @@ impl<'a, T: SceneTransform> IntoIterator for &'a SceneNode<'a, T> {
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
+  }
+}
+
+/// A utility builder for [`SceneNode`]s.
+#[must_use]
+#[derive(Default)]
+pub struct SceneNodeBuilder<'a, T: SceneTransform = ()> {
+  pub name: Option<String>,
+  pub layer_id: LayerId,
+  pub tags: TagSet<'a>,
+  pub transform: T,
+  pub components: SceneComponentSet,
+  pub children: Vec<SceneNode<'a, T>>,
+}
+
+impl<'a, T: SceneTransform> SceneNodeBuilder<'a, T> {
+  /// Sets the name of the [`SceneNode`].
+  pub fn with_name(mut self, name: impl Into<String>) -> Self {
+    self.name = Some(name.into());
+    self
+  }
+
+  /// Sets the layer ID of the [`SceneNode`].
+  pub fn with_layer_id(mut self, layer_id: LayerId) -> Self {
+    self.layer_id = layer_id;
+    self
+  }
+
+  /// Adds a tag to the [`SceneNode`].
+  pub fn with_tag(mut self, tag: impl Into<Tag<'a>>) -> Self {
+    self.tags.insert(tag.into());
+    self
+  }
+
+  /// Adds a component to the [`SceneNode`].
+  pub fn with_component(mut self, component: impl SceneComponent + 'static) -> Self {
+    self.components.push(component);
+    self
+  }
+
+  /// Adds a child [`SceneNode`] to the [`SceneNode`].
+  pub fn with_child(mut self, child: impl Into<SceneNode<'a, T>>) -> Self {
+    self.children.push(child.into());
+    self
+  }
+
+  /// Builds the resultant [`SceneNode`].
+  pub fn build(self) -> SceneNode<'a, T> {
+    SceneNode {
+      id: SceneNodeId::random(),
+      name: self.name,
+      flags: NodeFlags::default(),
+      is_visible: true,
+      is_enabled: true,
+      is_transform_dirty: false,
+      layer_id: self.layer_id,
+      tags: self.tags.clone(),
+      transform: self.transform,
+      components: self.components,
+      children: self.children,
+    }
+  }
+}
+
+impl<'a, T: SceneTransform> From<SceneNodeBuilder<'a, T>> for SceneNode<'a, T> {
+  fn from(value: SceneNodeBuilder<'a, T>) -> Self {
+    value.build()
   }
 }

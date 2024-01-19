@@ -44,3 +44,24 @@ macro_rules! impl_server {
     }
   };
 }
+
+/// Implements owned and borrowed string conversions for a type.
+#[macro_export]
+macro_rules! impl_string {
+  ($type:ident) => {
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+    pub struct $type<'a>(Cow<'a, str>);
+
+    impl<'a> From<&'a str> for $type<'a> {
+      fn from(value: &'a str) -> Self {
+        Self(std::borrow::Cow::Borrowed(value))
+      }
+    }
+
+    impl<'a> From<String> for $type<'a> {
+      fn from(value: String) -> Self {
+        Self(std::borrow::Cow::Owned(value))
+      }
+    }
+  };
+}

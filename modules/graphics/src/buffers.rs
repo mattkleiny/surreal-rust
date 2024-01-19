@@ -4,8 +4,7 @@
 //! however they can also be used as an in intermediate store for compute
 //! shaders.
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use super::*;
 

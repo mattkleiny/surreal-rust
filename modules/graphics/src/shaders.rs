@@ -6,8 +6,7 @@
 //! For higher-level shader control see the material module instead.
 
 use core::str;
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 pub use glsl::*;
 pub use templates::*;
@@ -15,9 +14,7 @@ pub use templates::*;
 mod glsl;
 mod templates;
 
-use common::collections::FastHashMap;
-use common::io::VirtualPath;
-use common::maths::*;
+use common::{collections::FastHashMap, io::VirtualPath, maths::*};
 
 use super::*;
 

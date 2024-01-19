@@ -1,5 +1,7 @@
-use crate::collections::FastHashMap;
-use crate::maths::{ivec2, IVec2};
+use crate::{
+  collections::FastHashMap,
+  maths::{ivec2, IVec2},
+};
 
 /// A sparse spatial hash grid implementation.
 ///

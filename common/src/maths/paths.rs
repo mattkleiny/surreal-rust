@@ -1,5 +1,4 @@
-use std::collections::VecDeque;
-use std::hash::Hash;
+use std::{collections::VecDeque, hash::Hash};
 
 use super::*;
 use crate::collections::{FastHashMap, PriorityQueue};

@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use std::hash::Hash;
+use std::{collections::HashMap, hash::Hash};
 
 /// A simple [`HashMap`]  with multiple values per key.
 #[derive(Default, Debug)]

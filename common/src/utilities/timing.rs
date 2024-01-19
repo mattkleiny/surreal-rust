@@ -1,9 +1,11 @@
 //! General utilities related to time.
 
-use std::fmt::{Display, Formatter};
-use std::iter::Sum;
-use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
-use std::time::{Duration, Instant};
+use std::{
+  fmt::{Display, Formatter},
+  iter::Sum,
+  ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
+  time::{Duration, Instant},
+};
 
 use crate::collections::RingBuffer;
 

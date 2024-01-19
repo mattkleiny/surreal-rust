@@ -3,11 +3,12 @@
 //! Meshes abstract over vertex and index data on the GPU as well, and
 //! provide utilities for constructing data from pieces.
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
-use common::maths::{vec2, Vec2, Vec3};
-use common::utilities::Size;
+use common::{
+  maths::{vec2, Vec2, Vec3},
+  utilities::Size,
+};
 
 use super::*;
 
