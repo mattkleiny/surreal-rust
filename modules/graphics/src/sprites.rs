@@ -3,7 +3,7 @@
 //! Sprites are very common in projects, so this is a dedicated batch to
 //! support.
 
-use common::maths::{vec2, Mat2, Radians, Vec2};
+use common::maths::{vec2, Angle, Mat2, Vec2};
 
 use super::*;
 
@@ -83,7 +83,7 @@ impl Vertex for MultiSpriteVertex {
 /// Options for drawing a sprite.
 pub struct SpriteOptions {
   pub position: Vec2,
-  pub rotation: Radians,
+  pub rotation: Angle,
   pub scale: Vec2,
   pub color: Color32,
 }
@@ -92,7 +92,7 @@ impl Default for SpriteOptions {
   fn default() -> Self {
     Self {
       position: Vec2::ZERO,
-      rotation: Radians::ZERO,
+      rotation: Angle::ZERO,
       scale: Vec2::ONE,
       color: Color32::WHITE,
     }

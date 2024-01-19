@@ -271,8 +271,7 @@ impl<U> From<&'static str> for UniformKey<U> {
 impl_uniform!(bool as Bool);
 impl_uniform!(u32 as U32);
 impl_uniform!(f32 as F32);
-impl_uniform!(Degrees as F32);
-impl_uniform!(Radians as F32);
+impl_uniform!(Angle as F32);
 impl_uniform!(Vec2 as Vec2);
 impl_uniform!(Vec3 as Vec3);
 impl_uniform!(Vec4 as Vec4);

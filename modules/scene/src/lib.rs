@@ -53,7 +53,7 @@ impl<'a> NodePath<'a> {
 
 #[cfg(test)]
 mod tests {
-  use common::maths::Vec2;
+  use common::maths::{Angle, Vec2};
 
   use super::*;
 
@@ -66,10 +66,22 @@ mod tests {
       SceneNodeBuilder::<Transform2D>::default()
         .with_name("root")
         .with_position(Vec2::new(0.0, 0.0))
+        .with_child(
+          SceneNodeBuilder::<Transform2D>::default()
+            .with_name("child 1")
+            .with_position(Vec2::new(1.0, 1.0)),
+        )
+        .with_child(
+          SceneNodeBuilder::<Transform2D>::default()
+            .with_name("child 2")
+            .with_rotation(Angle::Degrees(30.0)),
+        )
         .build(),
     );
 
     scene.update(0.16);
     scene.render(&mut renderer);
+
+    println!("{:#?}", scene);
   }
 }

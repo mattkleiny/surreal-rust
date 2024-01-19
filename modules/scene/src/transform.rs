@@ -1,4 +1,4 @@
-use common::maths::{Mat4, Quat, Vec2, Vec3};
+use common::maths::{Angle, Mat4, Quat, Vec2, Vec3};
 
 use super::SceneNodeBuilder;
 
@@ -22,7 +22,7 @@ impl Transform for () {
 #[derive(Default)]
 pub struct Transform2D {
   position: Vec2,
-  rotation: f32,
+  rotation: Angle,
   scale: Vec2,
   local_to_world: Mat4,
 }
@@ -31,7 +31,7 @@ impl Transform for Transform2D {
   fn update_transform(&mut self, parent: &Self) {
     let trs = Mat4::from_scale_rotation_translation(
       self.scale.extend(1.0),
-      Quat::from_rotation_z(self.rotation),
+      Quat::from_rotation_z(self.rotation.into()),
       self.position.extend(0.0),
     );
 
@@ -48,7 +48,7 @@ impl<'a> SceneNodeBuilder<'a, Transform2D> {
   }
 
   /// Sets the rotation of the node.
-  pub fn with_rotation(mut self, rotation: f32) -> Self {
+  pub fn with_rotation(mut self, rotation: Angle) -> Self {
     self.transform.rotation = rotation;
     self
   }
