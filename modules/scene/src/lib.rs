@@ -17,6 +17,7 @@ pub use transform::*;
 
 mod components;
 mod graph;
+mod rendering;
 mod transform;
 
 use std::borrow::Cow;
