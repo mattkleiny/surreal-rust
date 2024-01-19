@@ -116,7 +116,7 @@ pub trait GraphicsBackend {
 
   // intrinsics
   fn viewport_size(&self) -> (usize, usize);
-  fn set_viewport_size(&self, size: common::maths::UVec2);
+  fn set_viewport_size(&self, size: common::UVec2);
   fn set_blend_state(&self, blend_state: BlendState);
   fn set_culling_mode(&self, culling_mode: CullingMode);
   fn set_scissor_mode(&self, scissor_mode: ScissorMode);
@@ -171,7 +171,7 @@ pub trait GraphicsBackend {
   fn texture_write_sub_data(
     &self,
     texture: TextureId,
-    region: &common::maths::Rectangle,
+    region: &common::Rectangle,
     pixels: *const u8,
     pixel_format: TextureFormat,
     mip_level: usize,
@@ -215,15 +215,15 @@ pub trait GraphicsBackend {
     &self,
     from: TargetId,
     to: TargetId,
-    source_rect: &common::maths::Rectangle,
-    dest_rect: &common::maths::Rectangle,
+    source_rect: &common::Rectangle,
+    dest_rect: &common::Rectangle,
     filter: TextureFilter,
   ) -> Result<(), TargetError>;
   fn target_blit_to_display(
     &self,
     target: TargetId,
-    source_rect: &common::maths::Rectangle,
-    dest_rect: &common::maths::Rectangle,
+    source_rect: &common::Rectangle,
+    dest_rect: &common::Rectangle,
     filter: TextureFilter,
   ) -> Result<(), TargetError>;
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError>;

@@ -15,6 +15,8 @@ pub extern crate assets;
 #[cfg(feature = "audio")]
 pub extern crate audio;
 pub extern crate common;
+#[cfg(feature = "editor")]
+pub extern crate editor;
 #[cfg(feature = "graphics")]
 pub extern crate graphics;
 #[cfg(feature = "input")]
@@ -42,9 +44,9 @@ pub mod prelude {
   pub use assets::*;
   #[cfg(feature = "audio")]
   pub use audio::*;
-  pub use common::{collections::*, diagnostics::*, io::*, maths::*, strings::*, utilities::*, *};
-  #[cfg(feature = "gba")]
-  pub use gba::*;
+  pub use common::*;
+  #[cfg(feature = "editor")]
+  pub use editor::*;
   #[cfg(feature = "graphics")]
   pub use graphics::*;
   #[cfg(feature = "input")]
@@ -53,8 +55,6 @@ pub mod prelude {
   pub use physics::*;
   #[cfg(feature = "scene")]
   pub use scene::*;
-  #[cfg(feature = "sdl")]
-  pub use sdl::*;
   #[cfg(feature = "ui")]
   pub use ui::*;
 }

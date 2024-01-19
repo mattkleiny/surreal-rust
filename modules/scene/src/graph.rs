@@ -1,10 +1,7 @@
 use std::fmt::{Debug, Formatter};
 
 use bitflags::bitflags;
-use common::{
-  collections::{FastHashMap, FastHashSet},
-  maths::FromRandom,
-};
+use common::{FastHashMap, FastHashSet, FromRandom};
 use graphics::Renderer;
 
 use super::*;

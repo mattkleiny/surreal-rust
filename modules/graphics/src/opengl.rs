@@ -6,10 +6,7 @@ use std::{
   ffi::{c_void, CString},
 };
 
-use common::{
-  maths::{Rectangle, UVec2},
-  utilities::Size,
-};
+use common::{Rectangle, Size, UVec2};
 
 use super::*;
 

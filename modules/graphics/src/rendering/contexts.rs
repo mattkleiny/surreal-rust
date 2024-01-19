@@ -2,7 +2,7 @@
 
 use std::any::{Any, TypeId};
 
-use common::collections::FastHashMap;
+use common::FastHashMap;
 
 use super::*;
 

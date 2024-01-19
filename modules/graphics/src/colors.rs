@@ -6,7 +6,7 @@
 
 use std::ops::{Div, Mul};
 
-use common::maths::{ApproxEq, FromRandom, Lerp, Random, Scalar};
+use common::{ApproxEq, FromRandom, Lerp, Random, Scalar};
 
 /// Represents a type of pixel.
 pub trait Pixel: Copy + Default {

@@ -101,7 +101,7 @@ pub mod forward {
     }
 
     fn end_frame(&self, _scene: &dyn RenderScene, _renderer: &mut Renderer) {
-      // TODO: Blit the color target to the screen.
+      // TODO: blit the color target to the screen.
     }
   }
 

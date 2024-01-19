@@ -7,7 +7,7 @@
 
 use std::ops::Index;
 
-use common::io::VirtualPath;
+use common::VirtualPath;
 
 use super::*;
 

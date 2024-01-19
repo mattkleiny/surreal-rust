@@ -11,10 +11,10 @@ macro_rules! impl_rid {
   ($name:ident) => {
     #[repr(transparent)]
     #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-    pub struct $name($crate::collections::ArenaIndex);
+    pub struct $name($crate::ArenaIndex);
 
     impl $name {
-      pub const NONE: Self = Self($crate::collections::ArenaIndex::NONE);
+      pub const NONE: Self = Self($crate::ArenaIndex::NONE);
     }
 
     impl From<u32> for $name {
@@ -47,23 +47,23 @@ macro_rules! impl_rid {
       }
     }
 
-    impl From<$crate::collections::ArenaIndex> for $name {
+    impl From<$crate::ArenaIndex> for $name {
       #[inline]
-      fn from(id: $crate::collections::ArenaIndex) -> Self {
+      fn from(id: $crate::ArenaIndex) -> Self {
         Self(id)
       }
     }
 
-    impl From<$name> for $crate::collections::ArenaIndex {
+    impl From<$name> for $crate::ArenaIndex {
       #[inline]
       fn from(id: $name) -> Self {
         id.0
       }
     }
 
-    impl $crate::maths::FromRandom for $name {
+    impl $crate::FromRandom for $name {
       #[inline]
-      fn from_random(random: &mut $crate::maths::Random) -> Self {
+      fn from_random(random: &mut $crate::Random) -> Self {
         Self::from(random.next_u64())
       }
     }

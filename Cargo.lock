@@ -560,6 +560,7 @@ dependencies = [
  "surreal-assets",
  "surreal-audio",
  "surreal-common",
+ "surreal-editor",
  "surreal-gba",
  "surreal-graphics",
  "surreal-input",
@@ -605,6 +606,18 @@ dependencies = [
  "thiserror",
  "toml",
  "uuid",
+]
+
+[[package]]
+name = "surreal-editor"
+version = "0.1.0"
+dependencies = [
+ "surreal-audio",
+ "surreal-common",
+ "surreal-graphics",
+ "surreal-input",
+ "surreal-sdl",
+ "thiserror",
 ]
 
 [[package]]

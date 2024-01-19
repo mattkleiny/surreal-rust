@@ -13,13 +13,19 @@
 extern crate serde;
 
 pub use anyhow::{anyhow, bail, Error, Result};
+pub use collections::*;
+pub use diagnostics::*;
+pub use io::*;
 pub use macros;
+pub use maths::*;
+pub use strings::*;
+pub use utilities::*;
 
-pub mod collections;
-pub mod diagnostics;
-pub mod io;
-pub mod maths;
-pub mod strings;
-pub mod utilities;
+mod collections;
+mod diagnostics;
+mod io;
+mod maths;
+mod strings;
+mod utilities;
 
 // TODO: allow no_std as a target for the engine

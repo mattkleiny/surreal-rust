@@ -11,7 +11,7 @@ edition = "2021"
 version = "0.1.0"
 
 [workspace]
-members = ["backends/*", "common", "macros", "modules/*"]
+members = ["backends/*", "common", "editor", "macros", "modules/*"]
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -23,6 +23,7 @@ default = ["macros", "audio", "graphics", "input", "physics"]
 # core
 common = { package = "surreal-common", path = "./common" }
 macros = { package = "surreal-macros", path = "./macros", optional = true }
+editor = { package = "surreal-editor", path = "./editor", optional = true }
 
 # backends
 sdl = { package = "surreal-sdl", path = "./backends/sdl", optional = true }

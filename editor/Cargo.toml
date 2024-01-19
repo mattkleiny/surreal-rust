@@ -1,0 +1,14 @@
+[package]
+name = "surreal-editor"
+description = "The visual editor for the Surreal project"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+common = { package = "surreal-common", path = "../common" }
+audio = { package = "surreal-audio", path = "../modules/audio" }
+graphics = { package = "surreal-graphics", path = "../modules/graphics" }
+input = { package = "surreal-input", path = "../modules/input" }
+sdl = { package = "surreal-sdl", path = "../backends/sdl" }
+thiserror = "1.0.26"

@@ -22,7 +22,7 @@ mod transform;
 
 use std::borrow::Cow;
 
-use common::collections::FastHashSet;
+use common::FastHashSet;
 
 common::impl_cow_string!(NodePath);
 common::impl_cow_string!(Tag);
@@ -47,7 +47,7 @@ pub enum SceneEvent<'a> {
 
 #[cfg(test)]
 mod tests {
-  use common::maths::{Angle, Vec2};
+  use common::{Angle, Vec2};
 
   use super::*;
 

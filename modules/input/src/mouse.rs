@@ -1,4 +1,4 @@
-use common::{collections::FastHashSet, maths::Vec2};
+use common::{FastHashSet, Vec2};
 
 use super::*;
 

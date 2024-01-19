@@ -1,4 +1,4 @@
-use common::maths::{Angle, Mat4, Quat, Vec2, Vec3};
+use common::{Angle, Mat4, Quat, Vec2, Vec3};
 
 use super::{SceneGraph, SceneNode, SceneNodeBuilder};
 

@@ -14,7 +14,7 @@ pub use templates::*;
 mod glsl;
 mod templates;
 
-use common::{collections::FastHashMap, io::VirtualPath, maths::*};
+use common::*;
 
 use super::*;
 

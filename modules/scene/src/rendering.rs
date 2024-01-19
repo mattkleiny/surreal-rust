@@ -1,4 +1,4 @@
-use common::maths::{Camera, Frustum, OrthographicCamera};
+use common::{Camera, Frustum, OrthographicCamera};
 use graphics::{RenderCamera, RenderScene};
 
 use super::*;

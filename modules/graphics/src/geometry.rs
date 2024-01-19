@@ -1,6 +1,6 @@
 //! Geometry batching for common shapes and polygon rendering.
 
-use common::maths::{vec2, Rectangle, Vec2};
+use common::{vec2, Rectangle, Vec2};
 
 use super::*;
 

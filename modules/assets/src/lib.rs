@@ -8,10 +8,7 @@ pub use importers::*;
 mod exporters;
 mod importers;
 
-use common::{
-  collections::{FastHashMap, ResourceArena},
-  io::VirtualPath,
-};
+use common::{FastHashMap, ResourceArena, VirtualPath};
 
 common::impl_rid!(AssetId);
 

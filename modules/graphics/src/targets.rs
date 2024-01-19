@@ -6,7 +6,7 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use common::maths::Rectangle;
+use common::Rectangle;
 
 use super::*;
 

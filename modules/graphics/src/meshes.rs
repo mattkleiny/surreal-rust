@@ -5,10 +5,7 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use common::{
-  maths::{vec2, Vec2, Vec3},
-  utilities::Size,
-};
+use common::{vec2, Size, Vec2, Vec3};
 
 use super::*;
 
@@ -437,7 +434,7 @@ pub trait MeshBrush<V> {
   fn build(&self, builder: &mut MeshBuilder<V>);
 }
 
-impl MeshBrush<Vertex2> for common::maths::Cube {
+impl MeshBrush<Vertex2> for common::Cube {
   fn build(&self, builder: &mut MeshBuilder<Vertex2>) {
     let min = self.min();
     let max = self.max();
@@ -451,7 +448,7 @@ impl MeshBrush<Vertex2> for common::maths::Cube {
   }
 }
 
-impl MeshBrush<Vertex2> for common::maths::Circle {
+impl MeshBrush<Vertex2> for common::Circle {
   fn build(&self, builder: &mut MeshBuilder<Vertex2>) {
     use std::f32::consts::PI;
 
@@ -477,7 +474,7 @@ impl MeshBrush<Vertex2> for common::maths::Circle {
   }
 }
 
-impl MeshBrush<Vertex3> for common::maths::Cube {
+impl MeshBrush<Vertex3> for common::Cube {
   fn build(&self, builder: &mut MeshBuilder<Vertex3>) {
     let min = self.min();
     let max = self.max();

@@ -1,4 +1,4 @@
-use common::utilities::{Size, TimeSpan};
+use common::{Size, TimeSpan};
 
 /// Describes sampling rates for an audio clip.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

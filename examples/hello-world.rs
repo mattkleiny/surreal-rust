@@ -1,4 +1,4 @@
-use surreal::prelude::*;
+use surreal::{backends::sdl::*, prelude::*};
 
 fn main() -> surreal::common::Result<()> {
   let window = Window::new(&WindowSettings {

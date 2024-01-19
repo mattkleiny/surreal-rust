@@ -2,10 +2,7 @@
 
 #![allow(dead_code)]
 
-use common::{
-  collections::ResourceArena,
-  maths::{Quat, Vec3},
-};
+use common::{Quat, ResourceArena, Vec3};
 
 mod internal;
 

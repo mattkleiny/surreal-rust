@@ -1,6 +1,6 @@
 //! Basic bone-mesh skinning support for Surreal
 
-use common::{collections::FastHashMap, maths::Mat4, utilities::TimeSpan};
+use common::{FastHashMap, Mat4, TimeSpan};
 
 use crate::{
   BufferUsage, GraphicsEngine, Material, Mesh, PrimitiveTopology, UniformKey, Vertex, VertexDescriptor, VertexKind,
@@ -289,7 +289,7 @@ impl Vertex for SkinVertex {
 
 #[cfg(test)]
 mod tests {
-  use common::maths::vec3;
+  use common::vec3;
 
   use super::*;
 
