@@ -1,7 +1,13 @@
 //! A packed file system.
 
+use std::fs::File;
+
+use crate::Deserializable;
+
 /// A packed file.
-pub struct PakFile {}
+pub struct PakFile {
+  pub headers: Vec<PakFileHeader>,
+}
 
 /// Header for a Pak file.
 #[repr(C)]
@@ -23,4 +29,23 @@ pub enum PakFileType {
   File,
   Directory,
   Symlink,
+}
+
+impl PakFile {
+  /// Loads the Pak file from the given path.
+  pub fn load(path: &str) -> crate::Result<Self> {
+    let mut file = File::open(path)?;
+    let mut headers = Vec::new();
+
+    loop {
+      let header = match PakFileHeader::from_binary_reader(&mut file) {
+        Ok(header) => header,
+        Err(_) => break,
+      };
+
+      headers.push(header);
+    }
+
+    Ok(Self { headers })
+  }
 }

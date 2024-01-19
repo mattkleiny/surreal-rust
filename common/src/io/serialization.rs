@@ -11,41 +11,18 @@ pub trait Serializable: serde::Serialize + Sized {
     Ok(binary::serialize(self)?)
   }
 
-  /// Serializes the type to a `json` string.
-  #[cfg(feature = "json")]
-  fn to_json(&self) -> crate::Result<String> {
-    Ok(json::to_string(self)?)
-  }
-
-  /// Serializes the type to a `ron` string.
-  #[cfg(feature = "ron")]
-  fn to_ron(&self) -> crate::Result<String> {
-    Ok(ron::to_string(self)?)
-  }
-
-  /// Serializes the type to a `toml` string.
-  #[cfg(feature = "toml")]
-  fn to_toml(&self) -> crate::Result<String> {
-    Ok(toml::to_string(self)?)
-  }
-
-  /// Serializes the type to a `yaml` string.
-  #[cfg(feature = "yaml")]
-  fn to_yaml(&self) -> crate::Result<String> {
-    Ok(yaml::to_string(self)?)
-  }
-
-  /// Serializes the type to a `xml` string.
-  #[cfg(feature = "xml")]
-  fn to_xml(&self) -> crate::Result<String> {
-    Ok(xml::to_string(self)?)
-  }
-
   /// Serializes the type to a binary file.
+  #[cfg(feature = "binary")]
   fn to_binary_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
     let mut stream = path.into().open_output_stream()?;
 
     Ok(binary::serialize_into(&mut stream, self)?)
+  }
+
+  /// Serializes the type to a `json` string.
+  #[cfg(feature = "json")]
+  fn to_json(&self) -> crate::Result<String> {
+    Ok(json::to_string(self)?)
   }
 
   /// Serializes the type to disk in `json` format.
@@ -56,12 +33,10 @@ pub trait Serializable: serde::Serialize + Sized {
     Ok(json::to_writer(&mut stream, self)?)
   }
 
-  /// Serializes the type to disk in `xml` format.
-  #[cfg(feature = "xml")]
-  fn to_xml_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
-    let mut stream = path.into().open_output_stream()?;
-
-    Ok(xml::to_writer(&mut stream, self)?)
+  /// Serializes the type to a `ron` string.
+  #[cfg(feature = "ron")]
+  fn to_ron(&self) -> crate::Result<String> {
+    Ok(ron::to_string(self)?)
   }
 
   /// Serializes the type to disk in `ron` format.
@@ -75,6 +50,12 @@ pub trait Serializable: serde::Serialize + Sized {
     Ok(())
   }
 
+  /// Serializes the type to a `toml` string.
+  #[cfg(feature = "toml")]
+  fn to_toml(&self) -> crate::Result<String> {
+    Ok(toml::to_string(self)?)
+  }
+
   /// Serializes the type to disk in `toml` format.
   #[cfg(feature = "toml")]
   fn to_toml_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
@@ -86,12 +67,32 @@ pub trait Serializable: serde::Serialize + Sized {
     Ok(())
   }
 
+  /// Serializes the type to a `yaml` string.
+  #[cfg(feature = "yaml")]
+  fn to_yaml(&self) -> crate::Result<String> {
+    Ok(yaml::to_string(self)?)
+  }
+
   /// Serializes the type to disk in `yaml` format.
   #[cfg(feature = "yaml")]
   fn to_yaml_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
     let mut stream = path.into().open_output_stream()?;
 
     Ok(yaml::to_writer(&mut stream, self)?)
+  }
+
+  /// Serializes the type to a `xml` string.
+  #[cfg(feature = "xml")]
+  fn to_xml(&self) -> crate::Result<String> {
+    Ok(xml::to_string(self)?)
+  }
+
+  /// Serializes the type to disk in `xml` format.
+  #[cfg(feature = "xml")]
+  fn to_xml_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
+    let mut stream = path.into().open_output_stream()?;
+
+    Ok(xml::to_writer(&mut stream, self)?)
   }
 }
 
@@ -109,34 +110,10 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
     Ok(binary::deserialize(data)?)
   }
 
-  /// Deserializes from the given `json` string.
-  #[cfg(feature = "json")]
-  fn from_json(json: &str) -> crate::Result<Self> {
-    Ok(json::from_str(json)?)
-  }
-
-  /// Deserializes from the given `ron` string.
-  #[cfg(feature = "ron")]
-  fn from_ron(toml: &str) -> crate::Result<Self> {
-    Ok(ron::from_str(toml)?)
-  }
-
-  /// Deserializes from the given `toml` string.
-  #[cfg(feature = "toml")]
-  fn from_toml(toml: &str) -> crate::Result<Self> {
-    Ok(toml::from_str(toml)?)
-  }
-
-  /// Deserializes from the given `yaml` string.
-  #[cfg(feature = "yaml")]
-  fn from_yaml(yaml: &str) -> crate::Result<Self> {
-    Ok(yaml::from_str(yaml)?)
-  }
-
-  /// Deserializes from the given `xml` string.
-  #[cfg(feature = "xml")]
-  fn from_xml(yaml: &str) -> crate::Result<Self> {
-    Ok(xml::from_str(yaml)?)
+  /// Deserializes the object from a byte reader.
+  #[cfg(feature = "binary")]
+  fn from_binary_reader(reader: &mut dyn std::io::Read) -> crate::Result<Self> {
+    Ok(binary::deserialize_from(reader)?)
   }
 
   /// Deserializes the type from a binary file.
@@ -147,12 +124,24 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
     Ok(binary::deserialize_from(&mut stream)?)
   }
 
+  /// Deserializes from the given `json` string.
+  #[cfg(feature = "json")]
+  fn from_json(json: &str) -> crate::Result<Self> {
+    Ok(json::from_str(json)?)
+  }
+
   /// Deserializes from the given `json` file.
   #[cfg(feature = "json")]
   fn from_json_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
     let mut stream = path.into().open_input_stream()?;
 
     Ok(json::from_reader(&mut stream)?)
+  }
+
+  /// Deserializes from the given `ron` string.
+  #[cfg(feature = "ron")]
+  fn from_ron(toml: &str) -> crate::Result<Self> {
+    Ok(ron::from_str(toml)?)
   }
 
   /// Deserializes from the given `ron` file.
@@ -166,6 +155,12 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
     Ok(ron::from_str(&string)?)
   }
 
+  /// Deserializes from the given `toml` string.
+  #[cfg(feature = "toml")]
+  fn from_toml(toml: &str) -> crate::Result<Self> {
+    Ok(toml::from_str(toml)?)
+  }
+
   /// Deserializes from the given `toml` file.
   #[cfg(feature = "toml")]
   fn from_toml_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
@@ -177,12 +172,24 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
     Ok(toml::from_str(&string)?)
   }
 
+  /// Deserializes from the given `yaml` string.
+  #[cfg(feature = "yaml")]
+  fn from_yaml(yaml: &str) -> crate::Result<Self> {
+    Ok(yaml::from_str(yaml)?)
+  }
+
   /// Deserializes from the given `yaml` file.
   #[cfg(feature = "yaml")]
   fn from_yaml_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
     let mut stream = path.into().open_input_stream()?;
 
     Ok(yaml::from_reader(&mut stream)?)
+  }
+
+  /// Deserializes from the given `xml` string.
+  #[cfg(feature = "xml")]
+  fn from_xml(yaml: &str) -> crate::Result<Self> {
+    Ok(xml::from_str(yaml)?)
   }
 
   /// Deserializes from the given `xml` file.
