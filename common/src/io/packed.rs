@@ -1,6 +1,6 @@
 //! A packed file system.
 
-use std::fs::File;
+use std::{fs::File, io::BufReader};
 
 use crate::Deserializable;
 
@@ -34,11 +34,11 @@ pub enum PakFileType {
 impl PakFile {
   /// Loads the Pak file from the given path.
   pub fn load(path: &str) -> crate::Result<Self> {
-    let mut file = File::open(path)?;
+    let mut reader = BufReader::new(File::open(path)?);
     let mut headers = Vec::new();
 
     loop {
-      let header = match PakFileHeader::from_binary_reader(&mut file) {
+      let header = match PakFileHeader::from_binary_stream(&mut reader) {
         Ok(header) => header,
         Err(_) => break,
       };

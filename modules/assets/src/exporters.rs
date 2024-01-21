@@ -1,11 +1,10 @@
+use common::{OutputStream, Result};
+
 /// Exports assets to a specific format.
-///
-/// This trait is implemented by asset exporters, which are used to export
-/// assets to a specific format. This is used to convert assets from one format
-/// to another, or to export assets to a format which can be used by tools.
-pub trait AssetExporter {
+pub trait AssetExporter: Send + Sync + 'static {
+  /// The type of asset processed by this exporter.
   type Asset;
 
-  /// Exports an asset to a specific format.
-  fn export(&self, asset: &Self::Asset) -> Vec<u8>;
+  /// Exports an asset to the given stream.
+  fn export(&self, asset: &Self::Asset, stream: &mut dyn OutputStream) -> Result<()>;
 }
