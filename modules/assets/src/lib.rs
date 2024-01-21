@@ -8,6 +8,9 @@ pub use importers::*;
 mod exporters;
 mod importers;
 
+// TODO: add a small reflection system for reading/writing resource data
+// TODO: add a small UI toolkit for building the editor; for each field render
+
 use common::{FastHashMap, ResourceArena, VirtualPath};
 
 common::impl_rid!(AssetId);

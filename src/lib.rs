@@ -32,23 +32,3 @@ pub mod backends {
   #[cfg(feature = "sdl")]
   pub extern crate sdl;
 }
-
-pub mod prelude {
-  #[cfg(feature = "assets")]
-  pub use assets::*;
-  #[cfg(feature = "audio")]
-  pub use audio::*;
-  pub use common::*;
-  #[cfg(feature = "editor")]
-  pub use editor::*;
-  #[cfg(feature = "graphics")]
-  pub use graphics::*;
-  #[cfg(feature = "input")]
-  pub use input::*;
-  #[cfg(feature = "physics")]
-  pub use physics::*;
-  #[cfg(feature = "scene")]
-  pub use scene::*;
-  #[cfg(feature = "ui")]
-  pub use ui::*;
-}

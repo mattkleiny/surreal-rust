@@ -1,6 +1,6 @@
-use surreal::{backends::sdl::*, prelude::*};
+use surreal::{backends::sdl::*, common::*, graphics::*};
 
-fn main() -> surreal::common::Result<()> {
+fn main() -> Result<()> {
   let window = Window::new(&WindowSettings {
     title: "Hello World!",
     ..Default::default()

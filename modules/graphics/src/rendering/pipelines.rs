@@ -1,5 +1,7 @@
 //! Render pipeline abstractions.
 
+use common::Camera;
+
 use super::*;
 
 /// Represents a scene that can be rendered by a [`RenderPipeline`].
@@ -12,6 +14,13 @@ pub trait RenderScene {
 pub trait RenderCamera {
   /// Finds all visible objects in the scene.
   fn cull_visible_objects(&self) -> Vec<&dyn RenderObject>;
+}
+
+/// Allows a [`Camera`] to be used as a [`RenderCamera`].
+impl<C: Camera> RenderCamera for C {
+  fn cull_visible_objects(&self) -> Vec<&dyn RenderObject> {
+    todo!()
+  }
 }
 
 /// Represents an object capable of being rendered.
@@ -75,8 +84,6 @@ pub trait RenderPass {
 }
 
 pub mod forward {
-  //! A forward rendering pipeline.
-
   use super::*;
 
   /// A [`RenderPass`] that renders all objects in the scene to a depth target.

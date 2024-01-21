@@ -12,7 +12,7 @@ use super::*;
 /// operation, and also exposes some basic lifecycle methods. It's lazily
 /// constructed upon first use and remains alive until the [`Renderer`] is
 /// dropped.
-pub trait RenderContext: Any + Send + Sync + 'static {
+pub trait RenderContext: Any + Send + Sync {
   fn on_begin_with(&mut self) {}
   fn on_end_with(&mut self) {}
   fn on_begin_frame(&mut self) {}

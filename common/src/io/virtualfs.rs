@@ -21,7 +21,7 @@ use super::{InputStream, OutputStream};
 /// File systems are resolved from the scheme used in [`VirtualPath`]s, and
 /// allow operations to be invoked against the underlying operating system and
 /// file format.
-pub trait FileSystem: Send + Sync + 'static {
+pub trait FileSystem: Send + Sync {
   /// Returns `true` if the given path can be handled by this [`FileSystem`].
   fn can_handle(&self, path: &VirtualPath) -> bool;
 

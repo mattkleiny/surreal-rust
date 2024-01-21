@@ -12,7 +12,6 @@
 
 pub use components::*;
 pub use graph::*;
-pub use rendering::*;
 pub use transform::*;
 
 mod components;

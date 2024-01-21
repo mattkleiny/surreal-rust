@@ -1,6 +1,5 @@
 //! An in-memory [`FileSystem`] implementation.
 
-
 use super::*;
 
 /// A [`FileSystem`] for the in-memory file system.

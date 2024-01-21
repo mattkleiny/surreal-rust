@@ -626,6 +626,7 @@ version = "0.1.0"
 dependencies = [
  "gl",
  "image",
+ "serde",
  "surreal-common",
  "thiserror",
 ]

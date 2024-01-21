@@ -28,7 +28,7 @@ pub trait SceneComponent {
       SceneEvent::Disable => self.on_disable(),
       SceneEvent::Destroy => self.on_destroy(),
       SceneEvent::Update(delta_time) => self.on_update(*delta_time),
-      SceneEvent::Render(context) => self.on_draw(context),
+      SceneEvent::Render(renderer) => self.on_draw(renderer),
       SceneEvent::TransformChanged => self.on_transform_changed(),
     }
   }
@@ -39,7 +39,7 @@ pub trait SceneComponent {
   fn on_disable(&mut self) {}
   fn on_destroy(&mut self) {}
   fn on_update(&mut self, delta_time: f32) {}
-  fn on_draw(&mut self, render_context: &mut graphics::Renderer) {}
+  fn on_draw(&mut self, renderer: &mut graphics::Renderer) {}
   fn on_transform_changed(&mut self) {}
 }
 
