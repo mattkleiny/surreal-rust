@@ -108,6 +108,11 @@ impl<'a, T: Transform> SceneGraph<'a, T> {
 
     Ok(())
   }
+
+  /// Iterates all [`SceneNode`]s in the scene graph.
+  pub fn nodes(&'a self) -> impl Iterator<Item = &SceneNode<'a, T>> {
+    self.root.iter_recursive().map(|(node, _)| node)
+  }
 }
 
 impl<'a, T: Transform> Debug for SceneGraph<'a, T> {
@@ -182,6 +187,16 @@ impl<'a, T: Transform> SceneNode<'a, T> {
     self.id
   }
 
+  /// Returns `true` if this [`SceneNode`] has been awakened.
+  pub fn is_awake(&self) -> bool {
+    self.flags.contains(NodeFlags::AWAKE)
+  }
+
+  /// Returns `true` if this [`SceneNode`] has been started.
+  pub fn is_started(&self) -> bool {
+    self.flags.contains(NodeFlags::STARTED)
+  }
+
   /// Gets the name of this [`SceneNode`].
   pub fn name(&self) -> Option<&str> {
     self.name.as_deref()
@@ -213,7 +228,12 @@ impl<'a, T: Transform> SceneNode<'a, T> {
 
   /// Returns `true` if this [`SceneNode`] is enabled.
   pub fn is_enabled(&self) -> bool {
-    self.is_enabled
+    self.is_enabled && self.flags.contains(NodeFlags::ENABLED)
+  }
+
+  /// Returns `true` if this [`SceneNode`] is disabled.
+  pub fn is_disabled(&self) -> bool {
+    !self.is_enabled()
   }
 
   /// Sets whether or not this [`SceneNode`] is enabled.
@@ -327,73 +347,6 @@ impl<'a, T: Transform> SceneNode<'a, T> {
     self.components.remove::<C>()
   }
 
-  /// Notify this node of the given event.
-  fn notify(&mut self, event: &mut SceneEvent) {
-    match event {
-      SceneEvent::Awake if !self.flags.contains(NodeFlags::AWAKE) => {
-        self.notify_children(event);
-        self.flags |= NodeFlags::AWAKE;
-      }
-      SceneEvent::Enable if !self.flags.contains(NodeFlags::ENABLED) => {
-        self.notify_children(event);
-        self.flags |= NodeFlags::ENABLED;
-      }
-      SceneEvent::Disable if self.flags.contains(NodeFlags::ENABLED) => {
-        self.notify_children(event);
-        self.flags &= !NodeFlags::ENABLED;
-      }
-      SceneEvent::Start if !self.flags.contains(NodeFlags::STARTED) => {
-        self.notify_children(event);
-        self.flags |= NodeFlags::STARTED;
-      }
-      SceneEvent::Destroy if self.flags.contains(NodeFlags::AWAKE) => {
-        self.notify_children(event);
-      }
-      SceneEvent::Update(_) if self.is_enabled => {
-        // if our transform is dirty, on the next update we need to notify all children
-        if self.is_transform_dirty {
-          self.update_child_transforms();
-        }
-
-        self.notify_children(event);
-      }
-      SceneEvent::Render(_) if self.is_visible => {
-        self.notify_children(event);
-      }
-      SceneEvent::TransformChanged => {
-        self.notify_children(event);
-      }
-      _ => {} // discard this event
-    }
-  }
-
-  /// Updates the transform of this node relative to it's parent.
-  fn update_transform(&mut self, parent: &T) {
-    self.transform.update_transform(parent);
-
-    self.update_child_transforms();
-  }
-
-  /// Updates the transform of all of this node's child [`SceneNode`]s.
-  fn update_child_transforms(&mut self) {
-    for child in &mut self.children {
-      child.update_transform(&self.transform);
-    }
-
-    self.is_transform_dirty = false;
-  }
-
-  /// Notifies this node's child [`SceneNode`]s of the given [`SceneEvent`].
-  fn notify_children(&mut self, event: &mut SceneEvent) {
-    for child in &mut self.children {
-      child.notify(event);
-    }
-
-    for component in &mut self.components {
-      component.notify(event);
-    }
-  }
-
   /// Tries to locate the node with the given [`SceneNodeId`] in this hierarchy.
   pub fn find_by_id(&self, node_id: SceneNodeId) -> Option<&SceneNode<'a, T>> {
     if self.id == node_id {
@@ -432,23 +385,6 @@ impl<'a, T: Transform> SceneNode<'a, T> {
   /// Tries to mutably locate a node in this hierarchy by it's [`NodePath`].
   pub fn find_by_path_mut(&mut self, _path: impl Into<NodePath<'a>>) -> Option<&mut SceneNode<'a, T>> {
     todo!()
-  }
-
-  /// Tries to locate the [`SceneNode`] with the given [`SceneNodeId`] in this
-  /// hierarchy. If the node is found, remove it from it's parent and return
-  /// it.
-  fn take_node_by_id(&mut self, node_id: SceneNodeId) -> Option<SceneNode<'a, T>> {
-    for i in 0..self.children.len() {
-      if self.children[i].id == node_id {
-        return Some(self.children.remove(i));
-      }
-
-      if let Some(node) = self.children[i].take_node_by_id(node_id) {
-        return Some(node);
-      }
-    }
-
-    None
   }
 
   /// Iterates all child [`SceneNode`]s of this node.
@@ -502,6 +438,162 @@ impl<'a, T: Transform> SceneNode<'a, T> {
     }
 
     IterRecursive { stack: vec![(self, 0)] }
+  }
+
+  /// Notifies this node that it has been added to a scene.
+  fn on_awake(&mut self) {
+    for component in &mut self.components {
+      component.on_awake();
+    }
+  }
+
+  /// Notifies this node that it has been started.
+  fn on_start(&mut self) {
+    for component in &mut self.components {
+      component.on_start();
+    }
+  }
+
+  /// Notifies this node that it has been enabled.
+  fn on_enable(&mut self) {
+    for component in &mut self.components {
+      component.on_enable();
+    }
+  }
+
+  /// Notifies this node that it has been disabled.
+  fn on_disable(&mut self) {
+    for component in &mut self.components {
+      component.on_disable();
+    }
+  }
+
+  /// Notifies this node that it has been destroyed.
+  fn on_destroy(&mut self) {
+    for component in &mut self.components {
+      component.on_destroy();
+    }
+  }
+
+  /// Notifies this node that it has been added to a scene.
+  fn awake_if_necessary(&mut self) {
+    if !self.flags.contains(NodeFlags::AWAKE) {
+      self.notify_children(&mut SceneEvent::Awake);
+      self.on_awake();
+
+      self.flags |= NodeFlags::AWAKE;
+    }
+  }
+
+  /// Notifies this node that it has been started.
+  fn start_if_necessary(&mut self) {
+    if !self.flags.contains(NodeFlags::STARTED) {
+      self.notify(&mut SceneEvent::Start);
+      self.on_start();
+
+      self.flags |= NodeFlags::STARTED;
+    }
+  }
+
+  /// Notifies this node that it has been enabled.
+  fn enable_if_necessary(&mut self) {
+    if !self.flags.contains(NodeFlags::ENABLED) {
+      self.notify(&mut SceneEvent::Enable);
+      self.on_enable();
+
+      self.flags |= NodeFlags::ENABLED;
+    }
+  }
+
+  /// Notifies this node that it has been disabled.
+  fn disable_if_necessary(&mut self) {
+    if self.flags.contains(NodeFlags::ENABLED) {
+      self.notify(&mut SceneEvent::Disable);
+      self.on_disable();
+
+      self.flags.remove(NodeFlags::ENABLED);
+    }
+  }
+
+  /// Notifies this node that it has been destroyed.
+  fn destroy_if_necessary(&mut self) {
+    if self.flags.contains(NodeFlags::AWAKE) {
+      self.notify(&mut SceneEvent::Destroy);
+      self.on_destroy();
+
+      self.flags.remove(NodeFlags::AWAKE);
+    }
+  }
+
+  /// Tries to locate the [`SceneNode`] with the given [`SceneNodeId`] in this
+  /// hierarchy. If the node is found, remove it from it's parent and return
+  /// it.
+  fn take_node_by_id(&mut self, node_id: SceneNodeId) -> Option<SceneNode<'a, T>> {
+    for i in 0..self.children.len() {
+      if self.children[i].id == node_id {
+        return Some(self.children.remove(i));
+      }
+
+      if let Some(node) = self.children[i].take_node_by_id(node_id) {
+        return Some(node);
+      }
+    }
+
+    None
+  }
+
+  /// Updates the transform of this node relative to it's parent.
+  fn update_transform(&mut self, parent: &T) {
+    self.transform.update_transform(parent);
+
+    self.update_child_transforms();
+  }
+
+  /// Updates the transform of all of this node's child [`SceneNode`]s.
+  fn update_child_transforms(&mut self) {
+    for child in &mut self.children {
+      child.update_transform(&self.transform);
+    }
+
+    self.is_transform_dirty = false;
+  }
+
+  /// Notifies this node's child [`SceneNode`]s of the given [`SceneEvent`].
+  fn notify_children(&mut self, event: &mut SceneEvent) {
+    for child in &mut self.children {
+      child.notify(event);
+    }
+
+    for component in &mut self.components {
+      component.notify(event);
+    }
+  }
+
+  /// Notify this node of the given event.
+  fn notify(&mut self, event: &mut SceneEvent) {
+    match event {
+      SceneEvent::Awake => self.awake_if_necessary(),
+      SceneEvent::Enable => self.enable_if_necessary(),
+      SceneEvent::Disable => self.disable_if_necessary(),
+      SceneEvent::Start => self.start_if_necessary(),
+      SceneEvent::Destroy => self.destroy_if_necessary(),
+
+      SceneEvent::Update(_) if self.is_enabled => {
+        // if our transform is dirty, on the next update we need to notify all children
+        if self.is_transform_dirty {
+          self.update_child_transforms();
+        }
+
+        self.notify_children(event);
+      }
+      SceneEvent::Render(_) if self.is_visible => {
+        self.notify_children(event);
+      }
+      SceneEvent::TransformChanged => {
+        self.notify_children(event);
+      }
+      _ => {} // discard this event
+    }
   }
 }
 
@@ -590,5 +682,57 @@ impl<'a, T: Transform> SceneNodeBuilder<'a, T> {
 impl<'a, T: Transform> From<SceneNodeBuilder<'a, T>> for SceneNode<'a, T> {
   fn from(value: SceneNodeBuilder<'a, T>) -> Self {
     value.build()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_scene_graph_awake() {
+    let mut scene_graph = SceneGraph::new(SceneNodeBuilder2D::default().build());
+
+    scene_graph.root.notify(&mut SceneEvent::Awake);
+
+    // Assert that all nodes in the scene graph have been awakened
+    for node in scene_graph.nodes() {
+      assert!(node.is_awake());
+    }
+  }
+
+  #[test]
+  fn test_scene_graph_start() {
+    let mut scene_graph = SceneGraph::new(SceneNodeBuilder2D::default().build());
+
+    scene_graph.root.notify(&mut SceneEvent::Start);
+
+    // Assert that all nodes in the scene graph have been started
+    for node in scene_graph.nodes() {
+      assert!(node.is_started());
+    }
+  }
+
+  #[test]
+  fn test_scene_graph_enable() {
+    let mut scene_graph = SceneGraph::new(SceneNodeBuilder2D::default().build());
+
+    scene_graph.root.notify(&mut SceneEvent::Enable);
+
+    // Assert that all nodes in the scene graph have been enabled
+    for node in scene_graph.nodes() {
+      assert!(node.is_enabled());
+    }
+  }
+
+  #[test]
+  fn test_scene_graph_disable() {
+    let mut scene_graph = SceneGraph::new(SceneNodeBuilder2D::default().build());
+
+    scene_graph.root.notify(&mut SceneEvent::Disable);
+
+    for node in scene_graph.nodes() {
+      assert!(!node.is_enabled());
+    }
   }
 }
