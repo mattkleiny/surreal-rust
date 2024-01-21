@@ -79,6 +79,14 @@ impl Window {
         return Err(WindowError::FailedToCreateRenderer);
       }
 
+      if settings.vsync_enabled {
+        // try adaptive vsync first
+        if SDL_GL_SetSwapInterval(-1) == -1 {
+          // if that fails, try normal vsync
+          SDL_GL_SetSwapInterval(1);
+        }
+      }
+
       SDL_GL_MakeCurrent(window, gl_context);
       SDL_GL_LoadLibrary(std::ptr::null());
 
