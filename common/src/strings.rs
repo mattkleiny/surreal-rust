@@ -113,7 +113,7 @@ impl StringNamePool {
 macro_rules! impl_cow_string {
   ($type:ident) => {
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-    pub struct $type<'a>(Cow<'a, str>);
+    pub struct $type<'a>(std::borrow::Cow<'a, str>);
 
     impl<'a> From<&'a str> for $type<'a> {
       fn from(value: &'a str) -> Self {

@@ -608,6 +608,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "surreal-ecs"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "surreal-common",
+ "thiserror",
+]
+
+[[package]]
 name = "surreal-editor"
 version = "0.1.0"
 dependencies = [

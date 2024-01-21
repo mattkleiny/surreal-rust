@@ -1,0 +1,11 @@
+[package]
+name = "surreal-ecs"
+description = "A simple, fast, and flexible entity-component-system library for Surreal"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+common = { package = "surreal-common", path = "../../common" }
+serde = { version = "1.0.159", features = ["derive"] }
+thiserror = "1.0.26"
