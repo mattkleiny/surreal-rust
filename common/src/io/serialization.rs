@@ -199,7 +199,7 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
 
   /// Deserializes from the given `ron` stream.
   #[cfg(feature = "ron")]
-  fn from_ron_stream(reader: &mut dyn super::InputStream) -> crate::Result<Self> {
+  fn from_ron_stream(_reader: &mut dyn super::InputStream) -> crate::Result<Self> {
     todo!()
   }
 

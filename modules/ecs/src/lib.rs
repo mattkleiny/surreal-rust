@@ -169,7 +169,7 @@ impl EntityManager {
 /// Represents a component that can be attached to an entity.
 pub trait Component: Default + Sized {
   /// The storage type for this component.
-  type Storage: ComponentStorage<Self> = Vec<Self>;
+  type Storage: ComponentStorage<Self> = FastHashMap<EntityId, Self>;
 }
 
 /// Encapsulates the type of a component.

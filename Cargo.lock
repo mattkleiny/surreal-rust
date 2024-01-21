@@ -560,6 +560,7 @@ dependencies = [
  "surreal-assets",
  "surreal-audio",
  "surreal-common",
+ "surreal-ecs",
  "surreal-editor",
  "surreal-graphics",
  "surreal-input",

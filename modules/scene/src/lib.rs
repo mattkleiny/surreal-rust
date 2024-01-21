@@ -19,8 +19,6 @@ mod graph;
 mod rendering;
 mod transform;
 
-use std::borrow::Cow;
-
 use common::FastHashSet;
 
 common::impl_cow_string!(NodePath);
