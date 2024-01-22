@@ -47,7 +47,6 @@ mod compiler {
   }
 }
 
-#[allow(dead_code)]
 mod parser {
   //! A parser for the Shady language
   //!
@@ -121,42 +120,33 @@ mod parser {
   #[derive(Debug, PartialEq)]
   pub struct Parameter {
     pub name: String,
-    pub kind: VariableKind,
+    pub primitive: Primitive,
   }
 
-  /// A variable in a Shady function.
-  #[derive(Debug, PartialEq)]
-  pub struct Variable {
-    pub name: String,
-    pub kind: VariableKind,
-  }
+  /// A cardinality of a vector or matrix in Shady.
+  pub type Cardinality = u8;
 
-  /// A cardinality in Shady.
-  type Cardinality = u8;
-
-  /// A kind of variable in Shady.
+  /// A kind of primitive in Shady, along with it's cardinality.
   #[derive(Debug, PartialEq)]
-  pub enum VariableKind {
-    Integer(Cardinality),
-    Float(Cardinality),
-    Boolean(Cardinality),
-    Vector(Cardinality, Cardinality),
-    Matrix(Cardinality, Cardinality),
-    Sampler(Cardinality),
+  pub struct Primitive(PrimitiveKind, Cardinality);
+
+  /// A kind of primitive in Shady.
+  #[derive(Debug, PartialEq)]
+  pub enum PrimitiveKind {
+    Integer,
+    Float,
+    Boolean,
+    Vector,
+    Matrix,
+    Sampler,
   }
 
   /// Possible types of Shady statements.
   #[derive(Debug, PartialEq)]
   pub enum Statement {
-    Expression(Expression),
     Assignment(String, Expression),
     Return(Expression),
-    If(Expression, Vec<Statement>, Vec<Statement>),
-    While(Expression, Vec<Statement>),
-    For(Expression, Expression, Vec<Statement>),
     Function(String, Vec<Parameter>, Vec<Statement>),
-    Break,
-    Continue,
   }
 
   impl Parseable for Statement {
@@ -189,7 +179,6 @@ mod parser {
   /// A unary operator in a Shady expression.
   #[derive(Copy, Clone, Debug, Eq, PartialEq)]
   pub enum UnaryOperator {
-    Negate,
     Not,
   }
 
@@ -203,11 +192,8 @@ mod parser {
     Modulo,
     Power,
     Equal,
-    NotEqual,
     LessThan,
-    LessThanOrEqual,
     GreaterThan,
-    GreaterThanOrEqual,
     And,
     Or,
   }
@@ -287,11 +273,6 @@ mod parser {
       Ok(self.last_token.as_ref().unwrap())
     }
 
-    /// Returns the last token that was taken from the stream.
-    pub fn last(&self) -> Option<&Token> {
-      self.last_token.as_ref()
-    }
-
     /// Parses a module from the token stream.
     pub fn parse_module(&mut self) -> common::Result<Module> {
       match self.peek() {
@@ -359,10 +340,6 @@ mod parser {
       match self.take_if(|it| matches!(it, Token::Keyword(_))) {
         Some(Token::Keyword(keyword)) if keyword == "let" => self.parse_let_statement(),
         Some(Token::Keyword(keyword)) if keyword == "return" => self.parse_return_statement(),
-        Some(Token::Keyword(keyword)) if keyword == "if" => todo!(),
-        Some(Token::Keyword(keyword)) if keyword == "else" => todo!(),
-        Some(Token::Keyword(keyword)) if keyword == "while" => todo!(),
-        Some(Token::Keyword(keyword)) if keyword == "for" => todo!(),
         Some(Token::Keyword(keyword)) if keyword == "fn" => self.parse_function_statement(),
         _ => self.unexpected_token(),
       }
@@ -424,33 +401,13 @@ mod parser {
 
     /// Parses a parameter from the token stream.
     pub fn parse_parameter(&mut self) -> common::Result<Parameter> {
-      let kind = match self.take() {
-        Some(Token::Keyword(keyword)) if keyword == "int" => VariableKind::Integer(1),
-        Some(Token::Keyword(keyword)) if keyword == "float" => VariableKind::Float(1),
-        Some(Token::Keyword(keyword)) if keyword == "bool" => VariableKind::Boolean(1),
-        Some(Token::Keyword(keyword)) if keyword == "ivec2" => VariableKind::Integer(2),
-        Some(Token::Keyword(keyword)) if keyword == "ivec3" => VariableKind::Integer(3),
-        Some(Token::Keyword(keyword)) if keyword == "ivec4" => VariableKind::Integer(4),
-        Some(Token::Keyword(keyword)) if keyword == "vec2" => VariableKind::Float(2),
-        Some(Token::Keyword(keyword)) if keyword == "vec3" => VariableKind::Float(3),
-        Some(Token::Keyword(keyword)) if keyword == "vec4" => VariableKind::Float(4),
-        Some(Token::Keyword(keyword)) if keyword == "bvec2" => VariableKind::Boolean(2),
-        Some(Token::Keyword(keyword)) if keyword == "bvec3" => VariableKind::Boolean(3),
-        Some(Token::Keyword(keyword)) if keyword == "bvec4" => VariableKind::Boolean(4),
-        Some(Token::Keyword(keyword)) if keyword == "mat2" => VariableKind::Matrix(2, 2),
-        Some(Token::Keyword(keyword)) if keyword == "mat3" => VariableKind::Matrix(3, 3),
-        Some(Token::Keyword(keyword)) if keyword == "mat4" => VariableKind::Matrix(4, 4),
-        Some(Token::Keyword(keyword)) if keyword == "sampler2D" => VariableKind::Sampler(2),
-        Some(Token::Keyword(keyword)) if keyword == "sampler3D" => VariableKind::Sampler(3),
-        _ => return self.unexpected_token(),
-      };
-
+      let primitive = self.parse_primitive()?;
       let name = match self.take() {
         Some(Token::Identifier(name)) => name.clone(),
         _ => return self.unexpected_token(),
       };
 
-      Ok(Parameter { name, kind })
+      Ok(Parameter { name, primitive })
     }
 
     /// Parses an expression from the token stream.
@@ -493,16 +450,6 @@ mod parser {
       }
     }
 
-    /// Parses a literal from the token stream.
-    pub fn parse_literal(&mut self) -> common::Result<Literal> {
-      match self.take() {
-        Some(Token::Integer(value)) => Ok(Literal::Integer(*value)),
-        Some(Token::Float(value)) => Ok(Literal::Float(*value)),
-        Some(Token::Boolean(value)) => Ok(Literal::Boolean(*value)),
-        _ => self.unexpected_token(),
-      }
-    }
-
     /// Parses a binary operator from the token stream.
     pub fn parse_binary_operator(&mut self) -> common::Result<BinaryOperator> {
       match self.take_if(|it| matches!(it, Token::BinaryOperator(_))) {
@@ -519,6 +466,25 @@ mod parser {
       }
     }
 
+    /// Parses a primitive from the token stream.
+    pub fn parse_primitive(&mut self) -> common::Result<Primitive> {
+      match self.take() {
+        Some(Token::Keyword(keyword)) if keyword == "int" => Ok(Primitive(PrimitiveKind::Integer, 1)),
+        Some(Token::Keyword(keyword)) if keyword == "float" => Ok(Primitive(PrimitiveKind::Float, 1)),
+        Some(Token::Keyword(keyword)) if keyword == "bool" => Ok(Primitive(PrimitiveKind::Boolean, 1)),
+        Some(Token::Keyword(keyword)) if keyword == "vec2" => Ok(Primitive(PrimitiveKind::Vector, 2)),
+        Some(Token::Keyword(keyword)) if keyword == "vec3" => Ok(Primitive(PrimitiveKind::Vector, 3)),
+        Some(Token::Keyword(keyword)) if keyword == "vec4" => Ok(Primitive(PrimitiveKind::Vector, 4)),
+        Some(Token::Keyword(keyword)) if keyword == "mat2" => Ok(Primitive(PrimitiveKind::Matrix, 2)),
+        Some(Token::Keyword(keyword)) if keyword == "mat3" => Ok(Primitive(PrimitiveKind::Matrix, 3)),
+        Some(Token::Keyword(keyword)) if keyword == "mat4" => Ok(Primitive(PrimitiveKind::Matrix, 4)),
+        Some(Token::Keyword(keyword)) if keyword == "sampler1D" => Ok(Primitive(PrimitiveKind::Sampler, 1)),
+        Some(Token::Keyword(keyword)) if keyword == "sampler2D" => Ok(Primitive(PrimitiveKind::Sampler, 2)),
+        Some(Token::Keyword(keyword)) if keyword == "sampler3D" => Ok(Primitive(PrimitiveKind::Sampler, 3)),
+        _ => return self.unexpected_token(),
+      }
+    }
+
     /// Creates an error for an unexpected token.
     pub fn unexpected_token<R>(&self) -> common::Result<R> {
       Err(common::anyhow!("unexpected token encountered: {:?}", self.peek()))
@@ -527,7 +493,9 @@ mod parser {
 
   impl Parseable for TokenStream {
     fn parse(code: &str) -> common::Result<Self> {
-      const KEYWORDS: [&str; 19] = [
+      const KEYWORDS: [&str; 22] = [
+        "true",
+        "false",
         "let",
         "return",
         "if",
@@ -544,6 +512,7 @@ mod parser {
         "mat2",
         "mat3",
         "mat4",
+        "sampler1D",
         "sampler2D",
         "sampler3D",
         "#shader_type",
@@ -596,7 +565,11 @@ mod parser {
             }
 
             if KEYWORDS.contains(&string.as_ref()) {
-              tokens.push_back(Token::Keyword(string));
+              match string.as_ref() {
+                "true" => tokens.push_back(Token::Boolean(true)),
+                "false" => tokens.push_back(Token::Boolean(false)),
+                _ => tokens.push_back(Token::Keyword(string)),
+              }
             } else {
               tokens.push_back(Token::Identifier(string));
             }
@@ -731,11 +704,11 @@ mod parser {
           vec![
             Parameter {
               name: "a".to_string(),
-              kind: VariableKind::Integer(1),
+              primitive: Primitive(PrimitiveKind::Integer, 1)
             },
             Parameter {
               name: "b".to_string(),
-              kind: VariableKind::Integer(1),
+              primitive: Primitive(PrimitiveKind::Integer, 1)
             },
           ],
           vec![Statement::Return(Expression::Binary(
