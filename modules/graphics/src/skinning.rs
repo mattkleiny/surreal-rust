@@ -7,7 +7,7 @@ use super::*;
 // TODO: get skinning working with a basic model and add tests
 
 /// The name of the uniform containing the bones of the skeleton.
-pub const UNIFORM_BONES: UniformKey<&[Mat4]> = UniformKey::new("u_bones");
+pub const UNIFORM_BONES: ShaderUniformKey<&[Mat4]> = ShaderUniformKey::new("u_bones");
 
 /// A single bone in a skeleton.
 #[derive(Debug, Clone)]

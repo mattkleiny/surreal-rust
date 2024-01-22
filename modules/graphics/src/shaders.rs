@@ -280,12 +280,12 @@ where
 
 /// Identifies a kind of [`ShaderUniform`] for strongly-typed assignment.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct UniformKey<U> {
+pub struct ShaderUniformKey<U> {
   pub name: &'static str,
   _phantom: std::marker::PhantomData<U>,
 }
 
-impl<U> UniformKey<U> {
+impl<U> ShaderUniformKey<U> {
   /// Creates a new uniform key with the given name.
   #[inline(always)]
   pub const fn new(name: &'static str) -> Self {
@@ -296,9 +296,9 @@ impl<U> UniformKey<U> {
   }
 }
 
-impl<U> From<&'static str> for UniformKey<U> {
+impl<U> From<&'static str> for ShaderUniformKey<U> {
   fn from(name: &'static str) -> Self {
-    UniformKey::new(name)
+    ShaderUniformKey::new(name)
   }
 }
 
@@ -322,3 +322,60 @@ impl_uniform!(Quat as Quat);
 impl_uniform!(DQuat as DQuat);
 impl_uniform!(Color as Color);
 impl_uniform!(Color32 as Color32);
+
+/// A set of [`ShaderUniform`]s that can be passed around the application.
+#[derive(Default, Clone)]
+pub struct ShaderUniformSet {
+  uniforms: FastHashMap<String, ShaderUniform>,
+  textures: TextureBindingSet,
+}
+
+impl ShaderUniformSet {
+  /// Sets the given [`UniformKey`] as a uniform in the set.
+  pub fn set_uniform<K, U>(&mut self, key: K, value: U)
+  where
+    K: Into<ShaderUniformKey<U>>,
+    U: Into<ShaderUniform>,
+  {
+    let key = key.into().name.to_string();
+    let value = value.into();
+
+    self.uniforms.insert(key, value);
+  }
+
+  /// Sets the given [`UniformKey`] as a uniform with a single texture in the
+  /// set.
+  pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
+  where
+    K: Into<ShaderUniformKey<&'a Texture>>,
+  {
+    let slot = self.allocate_texture_slot(texture);
+    let uniform = ShaderUniform::Texture(texture.id(), slot, sampler);
+
+    self.uniforms.insert(key.into().name.to_string(), uniform);
+  }
+
+  /// Applies all of the uniforms to the given shader program.
+  pub fn apply_to_shader(&self, shader: &ShaderProgram) {
+    for (name, uniform) in &self.uniforms {
+      shader.set_uniform(name, uniform);
+    }
+  }
+
+  /// Clears all uniforms from the set.
+  pub fn clear(&mut self) {
+    self.uniforms.clear();
+    self.textures.clear();
+  }
+
+  /// Finds the first free texture slot in the material.
+  ///
+  /// This will also re-organise any old textures back into a linear ordering.
+  fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
+    self.textures.allocate(texture).unwrap_or_else(|| {
+      panic!(
+        "Failed to allocate texture slot. There's a limit of {MAX_TEXTURE_UNITS} concurrent textures per material."
+      )
+    })
+  }
+}

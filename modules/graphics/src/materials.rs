@@ -3,8 +3,6 @@
 //! Materials define all data required to perform some rendering step, from
 //! pipeline state changes through to shader programs and uniforms.
 
-use common::FastHashMap;
-
 use super::*;
 
 /// Blending states for materials.
@@ -52,70 +50,13 @@ pub enum ScissorMode {
   },
 }
 
-/// A set of [`ShaderUniform`]s that can be passed around the application.
-#[derive(Default, Clone)]
-pub struct UniformSet {
-  uniforms: FastHashMap<String, ShaderUniform>,
-  textures: TextureBindingSet,
-}
-
-impl UniformSet {
-  /// Sets the given [`UniformKey`] as a uniform in the set.
-  pub fn set_uniform<K, U>(&mut self, key: K, value: U)
-  where
-    K: Into<UniformKey<U>>,
-    U: Into<ShaderUniform>,
-  {
-    let key = key.into().name.to_string();
-    let value = value.into();
-
-    self.uniforms.insert(key, value);
-  }
-
-  /// Sets the given [`UniformKey`] as a uniform with a single texture in the
-  /// set.
-  pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
-  where
-    K: Into<UniformKey<&'a Texture>>,
-  {
-    let slot = self.allocate_texture_slot(texture);
-    let uniform = ShaderUniform::Texture(texture.id(), slot, sampler);
-
-    self.uniforms.insert(key.into().name.to_string(), uniform);
-  }
-
-  /// Applies all of the uniforms to the given shader program.
-  pub fn apply_to_shader(&self, shader: &ShaderProgram) {
-    for (name, uniform) in &self.uniforms {
-      shader.set_uniform(name, uniform);
-    }
-  }
-
-  /// Clears all uniforms from the set.
-  pub fn clear(&mut self) {
-    self.uniforms.clear();
-    self.textures.clear();
-  }
-
-  /// Finds the first free texture slot in the material.
-  ///
-  /// This will also re-organise any old textures back into a linear ordering.
-  fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
-    self.textures.allocate(texture).unwrap_or_else(|| {
-      panic!(
-        "Failed to allocate texture slot. There's a limit of {MAX_TEXTURE_UNITS} concurrent textures per material."
-      )
-    })
-  }
-}
-
 /// A material describes how to render a mesh and describes the underlying GPU
 /// pipeline state needed.
 #[derive(Clone)]
 pub struct Material {
   graphics: GraphicsEngine,
   shader: ShaderProgram,
-  uniforms: UniformSet,
+  uniforms: ShaderUniformSet,
   blend_state: BlendState,
   culling_mode: CullingMode,
   scissor_mode: ScissorMode,
@@ -127,7 +68,7 @@ impl Material {
     Self {
       graphics: graphics.clone(),
       shader: shader.clone(),
-      uniforms: UniformSet::default(),
+      uniforms: ShaderUniformSet::default(),
       blend_state: BlendState::Disabled,
       culling_mode: CullingMode::Disabled,
       scissor_mode: ScissorMode::Disabled,
@@ -172,7 +113,7 @@ impl Material {
   /// Sets the given [`UniformKey`] with the given value.
   pub fn set_uniform<K, U>(&mut self, key: K, value: U)
   where
-    K: Into<UniformKey<U>>,
+    K: Into<ShaderUniformKey<U>>,
     U: Into<ShaderUniform>,
   {
     self.uniforms.set_uniform(key, value);
@@ -181,7 +122,7 @@ impl Material {
   /// Sets the given [`UniformKey`] with a single texture.
   pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
   where
-    K: Into<UniformKey<&'a Texture>>,
+    K: Into<ShaderUniformKey<&'a Texture>>,
   {
     self.uniforms.set_texture(key, texture, sampler);
   }
@@ -210,49 +151,5 @@ impl Material {
     self.graphics.set_blend_state(BlendState::Disabled);
     self.graphics.set_culling_mode(CullingMode::Disabled);
     self.graphics.set_scissor_mode(ScissorMode::Disabled);
-  }
-}
-
-/// Keeps texture assignments uniquely associated with slot indices.
-///
-/// This is useful for tracking unique texture assignments across multiple
-/// materials, invocations, vertices, etc.
-#[derive(Default, Clone)]
-pub struct TextureBindingSet {
-  slots: [Option<TextureId>; MAX_TEXTURE_UNITS],
-}
-
-impl TextureBindingSet {
-  /// Allocates a texture slot for the given texture.
-  ///
-  /// If the texture is already bound, it will return the existing slot.
-  /// Otherwise the first empty slot will be used.
-  ///
-  /// If we've allocated all texture slots, `None` will be returned.
-  pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
-    for (index, slot) in self.slots.iter_mut().enumerate() {
-      match slot {
-        Some(existing) if *existing == texture.id() => {
-          return Some(index as u8);
-        }
-        None => {
-          *slot = Some(texture.id());
-          return Some(index as u8);
-        }
-        _ => continue,
-      }
-    }
-
-    None
-  }
-
-  /// Clears all used texture slots from the bindings.
-  pub fn clear(&mut self) {
-    self.slots.fill(None);
-  }
-
-  /// Returns an iterator over all texture IDs in the set.
-  pub fn iter(&self) -> impl Iterator<Item = &TextureId> {
-    self.slots.iter().filter_map(|slot| slot.as_ref())
   }
 }
