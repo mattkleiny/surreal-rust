@@ -2,9 +2,10 @@ use std::fmt::{Debug, Formatter};
 
 use bitflags::bitflags;
 use common::{Camera, FastHashMap, FastHashSet, FromRandom, Frustum};
-use graphics::{MaterialSortingKey, RenderObject, RenderScene, Renderer, VisibleObject, VisibleObjectSet};
 
 use super::*;
+
+mod rendering;
 
 common::impl_rid!(SceneNodeId);
 
@@ -49,7 +50,7 @@ impl<'a, T: Transform> SceneGraph<'a, T> {
   }
 
   /// Draws the scene to the given [`Renderer`].
-  pub fn render(&mut self, renderer: &mut Renderer) {
+  pub fn render(&mut self, renderer: &mut graphics::Renderer) {
     self.root.notify(&mut SceneEvent::Render(renderer));
   }
 
@@ -112,57 +113,6 @@ impl<'a, T: Transform> SceneGraph<'a, T> {
   /// Iterates all [`SceneNode`]s in the scene graph.
   pub fn nodes(&'a self) -> impl Iterator<Item = &SceneNode<'a, T>> {
     self.root.iter_recursive().map(|(node, _)| node)
-  }
-}
-
-/// Allows arbitrary scene graphs to be rendered.
-impl<'a, T: Transform> RenderScene for SceneGraph<'a, T> {
-  fn cameras(&self) -> Vec<&dyn Camera> {
-    todo!()
-  }
-
-  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet<u64> {
-    let frustum = camera.frustum();
-    let mut objects = Vec::new();
-
-    // cull visible objects from the scene
-    self.root.walk_recursive(|node| {
-      if !node.is_visible_to(&frustum) {
-        return false;
-      }
-
-      objects.push(VisibleObject {
-        identifier: node.id().into(),
-        material_sort_key: MaterialSortingKey::default(),
-      });
-
-      true
-    });
-
-    VisibleObjectSet { frustum, objects }
-  }
-
-  fn get_object(&self, identifier: u64) -> Option<&dyn RenderObject> {
-    self
-      .root
-      .find_by_id(SceneNodeId::from(identifier))
-      .map(|node| node as &dyn RenderObject)
-  }
-}
-
-impl<'a, T: Transform> Debug for SceneGraph<'a, T> {
-  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    for (node, level) in self.root.iter_recursive() {
-      let indent = if level > 0 {
-        " ".repeat(level * 2) + "⤷"
-      } else {
-        " ".repeat(level * 2)
-      };
-
-      writeln!(formatter, "{indent}{node:?}")?;
-    }
-
-    Ok(())
   }
 }
 
@@ -248,6 +198,9 @@ impl<'a, T: Transform> SceneNode<'a, T> {
   }
 
   /// Returns `true` if this [`SceneNode`] is visible to the given frustum.
+  ///
+  /// We do this by asking all components if they're visible, and if any of them
+  /// are, we're visible.
   pub fn is_visible_to(&self, frustum: &Frustum) -> bool {
     if !self.is_visible() {
       return false;
@@ -655,15 +608,6 @@ impl<'a, T: Transform> SceneNode<'a, T> {
         self.notify_children(event);
       }
       _ => {} // discard this event
-    }
-  }
-}
-
-/// Allows arbitrary scene nodes to be rendered.
-impl<'a, T: Transform> RenderObject for SceneNode<'a, T> {
-  fn render(&self, renderer: &mut Renderer) {
-    for component in &self.components {
-      component.on_draw(renderer);
     }
   }
 }

@@ -14,6 +14,18 @@ mod version;
 
 pub use macros::Singleton;
 
+/// Reinterprets the given reference as a reference to a different type.
+#[inline(always)]
+pub unsafe fn reinterpret_cast<T, U>(value: &T) -> &U {
+  unsafe { &*(value as *const T as *const U) }
+}
+
+/// Mutably reinterprets the given reference as a reference to a different type.
+#[inline(always)]
+pub unsafe fn reinterpret_cast_mut<T, U>(value: &mut T) -> &mut U {
+  unsafe { &mut *(value as *mut T as *mut U) }
+}
+
 /// Implements a new server type for the given backend.
 #[macro_export]
 macro_rules! impl_server {

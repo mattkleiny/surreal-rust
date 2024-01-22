@@ -1,11 +1,13 @@
 use common::{Angle, Mat4, Quat, Vec2, Vec3};
 
-use super::{SceneGraph, SceneNode, SceneNodeBuilder};
+use super::*;
 
+// common 2d types
 pub type SceneGraph2D<'a> = SceneGraph<'a, Transform2D>;
 pub type SceneNode2D<'a> = SceneNode<'a, Transform2D>;
 pub type SceneNodeBuilder2D<'a> = SceneNodeBuilder<'a, Transform2D>;
 
+// common 3d types
 pub type SceneGraph3D<'a> = SceneGraph<'a, Transform3D>;
 pub type SceneNode3D<'a> = SceneNode<'a, Transform3D>;
 pub type SceneNodeBuilder3D<'a> = SceneNodeBuilder<'a, Transform3D>;

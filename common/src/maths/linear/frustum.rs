@@ -1,4 +1,5 @@
 use super::*;
+use crate::reinterpret_cast;
 
 /// A frustum in 3-space.
 #[repr(C)]
@@ -108,7 +109,7 @@ impl Frustum {
 
   /// Converts this frustum to a slice of planes.
   pub fn as_slice(&self) -> &[Plane; 6] {
-    unsafe { &*(self as *const Self as *const [Plane; 6]) }
+    unsafe { reinterpret_cast(self) }
   }
 }
 

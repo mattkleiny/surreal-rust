@@ -3,9 +3,9 @@ use std::{
   fmt::Debug,
 };
 
-use common::Frustum;
+use common::{reinterpret_cast, Frustum, StringName};
 
-use super::SceneEvent;
+use super::*;
 
 /// Represents a component in a scene.
 ///
@@ -15,11 +15,27 @@ use super::SceneEvent;
 #[allow(unused_variables)]
 pub trait SceneComponent {
   /// Returns a friendly name for this component, for debugging/editor/etc.
-  fn name(&self) -> &str {
+  fn name(&self) -> StringName {
     let name = std::any::type_name::<Self>();
+    let name = name.rsplit_once("::").map(|split| split.1).unwrap_or(name);
 
-    name.rsplit_once("::").map(|split| split.1).unwrap_or(name)
+    StringName::from(name)
   }
+
+  /// Determines if this component is visible to the given [`Frustum`].
+  #[inline]
+  fn is_visible_to(&self, frustum: &Frustum) -> bool {
+    false
+  }
+
+  fn on_awake(&mut self) {}
+  fn on_start(&mut self) {}
+  fn on_enable(&mut self) {}
+  fn on_disable(&mut self) {}
+  fn on_destroy(&mut self) {}
+  fn on_update(&mut self, delta_time: f32) {}
+  fn on_draw(&self, renderer: &mut graphics::Renderer) {}
+  fn on_transform_changed(&mut self) {}
 
   /// Notifies of an incoming [`SceneEvent`] to the graph or sub-graph.
   fn notify(&mut self, event: &mut SceneEvent) {
@@ -33,21 +49,6 @@ pub trait SceneComponent {
       SceneEvent::Render(renderer) => self.on_draw(renderer),
       SceneEvent::TransformChanged => self.on_transform_changed(),
     }
-  }
-
-  fn on_awake(&mut self) {}
-  fn on_start(&mut self) {}
-  fn on_enable(&mut self) {}
-  fn on_disable(&mut self) {}
-  fn on_destroy(&mut self) {}
-  fn on_update(&mut self, delta_time: f32) {}
-  fn on_draw(&self, renderer: &mut graphics::Renderer) {}
-  fn on_transform_changed(&mut self) {}
-
-  /// Determines if this component is visible to the given [`Frustum`].
-  #[inline]
-  fn is_visible_to(&self, frustum: &Frustum) -> bool {
-    false
   }
 }
 
@@ -82,7 +83,7 @@ impl SceneComponentSet {
   pub fn get<C: SceneComponent + 'static>(&self) -> Option<&C> {
     for component in &self.components {
       if TypeId::of::<C>() == component.type_id() {
-        return Some(unsafe { &*(component.as_ref() as *const dyn SceneComponent as *const C) });
+        return Some(unsafe { reinterpret_cast(component) as &Box<C> });
       }
     }
 
@@ -170,8 +171,8 @@ mod tests {
     let component1 = TestComponent1 {};
     let component2 = TestComponent2 {};
 
-    assert_eq!(component1.name(), "TestComponent1");
-    assert_eq!(component2.name(), "TestComponent2");
+    assert_eq!(component1.name(), StringName::from("TestComponent1"));
+    assert_eq!(component2.name(), StringName::from("TestComponent2"));
   }
 
   #[test]
