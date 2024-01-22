@@ -2,9 +2,9 @@
 
 use common::{FastHashMap, Mat4, TimeSpan};
 
-use crate::{
-  BufferUsage, GraphicsEngine, Material, Mesh, PrimitiveTopology, UniformKey, Vertex, VertexDescriptor, VertexKind,
-};
+use super::*;
+
+// TODO: get skinning working with a basic model and add tests
 
 /// The name of the uniform containing the bones of the skeleton.
 pub const UNIFORM_BONES: UniformKey<&[Mat4]> = UniformKey::new("u_bones");

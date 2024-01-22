@@ -4,16 +4,18 @@ use common::Camera;
 
 use super::*;
 
+// TODO: finalize this API and get some tests in place.
+
 /// Represents a scene that can be rendered by a [`RenderPipeline`].
 pub trait RenderScene {
   /// Gets the cameras that should be used to render this scene.
   fn cameras(&self) -> Vec<&dyn Camera>;
 
-  /// Gets the objects that should be rendered by the given camera.
-  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet<u64>;
-
   /// Gets the object with the given identifier.
   fn get_object(&self, identifier: u64) -> Option<&dyn RenderObject>;
+
+  /// Gets the objects that should be rendered by the given camera.
+  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet<u64>;
 }
 
 /// Represents an object capable of being rendered.

@@ -3,6 +3,8 @@ use common::Frustum;
 
 use super::*;
 
+// TODO: flesh out the culling system and add some tests
+
 bitflags! {
   /// Flags that indicate the required state of the graphics pipeline for a material.
   #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]

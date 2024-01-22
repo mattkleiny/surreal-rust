@@ -8,24 +8,45 @@
 use core::str;
 use std::{cell::RefCell, rc::Rc};
 
-use bitflags::bitflags;
-pub use glsl::*;
+pub use lang::*;
 pub use templates::*;
 
-mod glsl;
 mod templates;
 
+use bitflags::bitflags;
 use common::*;
 
 use super::*;
 
-/// Represents a language for [`ShaderKernel`] compilation.
-///
-/// Abstracting over shader languages allows us to build out new language
-/// paradigms in the future.
-pub trait ShaderLanguage {
-  /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-  fn parse_kernels(source_code: &str) -> common::Result<Vec<ShaderKernel>>;
+pub mod lang {
+  //! Shader language support for the shader system
+  pub use glsl::*;
+  pub use hlsl::*;
+  pub use shady::*;
+
+  mod glsl;
+  mod hlsl;
+  mod shady;
+
+  use super::*;
+
+  /// Represents a language for [`ShaderKernel`]s.
+  ///
+  /// Abstracting over shader languages allows us to build out new languages.
+  pub trait ShaderLanguage {
+    /// Parses the given raw source code into one or more [`ShaderKernel`]s.
+    fn parse_kernels(source_code: &str) -> common::Result<Vec<super::ShaderKernel>>;
+  }
+}
+
+bitflags! {
+  /// Metadata flags indicating what state the shader program requires.
+  #[derive(Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+  pub struct ShaderFlags: u32 {
+    const ALPHA_TESTING = 0b0000001;
+    const DEPTH_TESTING = 0b00000010;
+    const DEPTH_WRITING = 0b00000100;
+  }
 }
 
 /// Different types of shaders supported by the engine.
@@ -41,16 +62,6 @@ pub enum ShaderKind {
 pub struct ShaderKernel {
   pub kind: ShaderKind,
   pub code: String,
-}
-
-bitflags! {
-  /// Metadata flags indicating what state the shader program requires.
-  #[derive(Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
-  pub struct ShaderFlags: u32 {
-    const ALPHA_TESTING = 0b0000001;
-    const DEPTH_TESTING = 0b00000010;
-    const DEPTH_WRITING = 0b00000100;
-  }
 }
 
 /// Represents a single compiled shader program.
@@ -80,27 +91,6 @@ impl ShaderProgram {
     })
   }
 
-  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
-  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
-    Self::from_code::<glsl::GlslLanguage>(graphics, code)
-  }
-
-  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> common::Result<Self> {
-    Self::from_path::<glsl::GlslLanguage>(graphics, path)
-  }
-
-  /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_path<'a, S: ShaderLanguage>(
-    graphics: &GraphicsEngine,
-    path: impl Into<VirtualPath<'a>>,
-  ) -> common::Result<Self> {
-    let path = path.into();
-    let code = path.read_all_text()?;
-
-    Self::from_code::<S>(graphics, &code)
-  }
-
   /// Loads a [`ShaderProgram`] from the given raw shader code.
   pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
     let program = Self::new(graphics)?;
@@ -108,6 +98,28 @@ impl ShaderProgram {
     program.load_code::<S>(code)?;
 
     Ok(program)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
+  pub fn from_path<'a, S: ShaderLanguage>(
+    graphics: &GraphicsEngine,
+    path: impl Into<VirtualPath<'a>>,
+  ) -> common::Result<Self> {
+    let mut stream = path.into().open_input_stream()?;
+
+    Self::from_stream::<S>(graphics, &mut stream)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
+  pub fn from_stream<'a, S: ShaderLanguage>(
+    graphics: &GraphicsEngine,
+    stream: &mut dyn InputStream,
+  ) -> common::Result<Self> {
+    let mut code = String::new();
+
+    stream.read_to_string(&mut code)?;
+
+    Self::from_code::<S>(graphics, &code)
   }
 
   /// Loads a [`ShaderProgram`] from the given [`ShaderKernel`]s.
@@ -161,21 +173,31 @@ impl ShaderProgram {
     }
   }
 
-  /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<'a, S: ShaderLanguage>(&self, path: impl Into<VirtualPath<'a>>) -> common::Result<()> {
-    let path = path.into();
-    let source_code = path.read_all_text()?;
-
-    self.load_code::<S>(&source_code)?;
-
-    Ok(())
-  }
-
   /// Reloads the [`ShaderProgram`] from the given shader code.
   pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> common::Result<()> {
     let shaders = S::parse_kernels(text)?;
 
     self.load_kernels(&shaders)?;
+
+    Ok(())
+  }
+
+  /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
+  pub fn load_from_path<'a, S: ShaderLanguage>(&self, path: impl Into<VirtualPath<'a>>) -> common::Result<()> {
+    let mut stream = path.into().open_input_stream()?;
+
+    self.load_from_stream::<S>(&mut stream)?;
+
+    Ok(())
+  }
+
+  /// Reloads the [`ShaderProgram`] from a stream.
+  pub fn load_from_stream<S: ShaderLanguage>(&self, stream: &mut dyn InputStream) -> common::Result<()> {
+    let mut source_code = String::new();
+
+    stream.read_to_string(&mut source_code)?;
+
+    self.load_code::<S>(&source_code)?;
 
     Ok(())
   }
@@ -199,11 +221,6 @@ impl Drop for ShaderProgramState {
       .shader_delete(self.id)
       .expect("Failed to delete shader program");
   }
-}
-
-/// An [`AssetLoader`] for shader programs
-pub struct ShaderProgramLoader {
-  pub graphics: GraphicsEngine,
 }
 
 /// Implements uniform value transformation for common types.

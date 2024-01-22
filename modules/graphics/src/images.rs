@@ -4,6 +4,8 @@ use image::{Rgba32FImage, RgbaImage};
 
 use super::*;
 
+// TODO: implement some image manipulation functions
+
 /// Represents an image of pixels.
 pub trait Image {
   type Pixel;

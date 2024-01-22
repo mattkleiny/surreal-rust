@@ -6,6 +6,8 @@ use common::Rectangle;
 
 use super::*;
 
+// TODO: implement more commands
+
 /// A thread-safe queue of [`RenderCommand`]s.
 ///
 /// Commands form the basis of the rendering system. They are enqueued by

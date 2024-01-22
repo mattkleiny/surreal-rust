@@ -3,9 +3,26 @@
 use super::*;
 
 /// The OpenGL [`ShaderLanguage`] implementation.
-pub struct GlslLanguage;
+pub struct GLSL;
 
-impl ShaderLanguage for GlslLanguage {
+impl ShaderProgram {
+  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
+  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
+    Self::from_code::<GLSL>(graphics, code)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
+  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> common::Result<Self> {
+    Self::from_path::<GLSL>(graphics, path)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given raw GLSL stream.
+  pub fn from_glsl_stream<'a>(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> common::Result<Self> {
+    Self::from_stream::<GLSL>(graphics, stream)
+  }
+}
+
+impl ShaderLanguage for GLSL {
   /// Parses the given raw GLSL source and performs some basic pre-processing.
   ///
   /// Allows for the following basic transformations:
@@ -70,7 +87,7 @@ mod tests {
 
   #[test]
   fn parse_glsl_source_should_build_valid_code() {
-    let result = glsl::GlslLanguage::parse_kernels(
+    let result = GLSL::parse_kernels(
       r"
       #version 330 core
 
