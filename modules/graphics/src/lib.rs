@@ -1,5 +1,6 @@
 //! Graphics engine for Surreal.
 
+#![feature(associated_type_defaults)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(slice_group_by)]
 

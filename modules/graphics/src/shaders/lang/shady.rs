@@ -37,131 +37,147 @@ mod compiler {
   //!
   //! This compiler will transpile Shady code into GLSL code that can be used
   //! with the graphics engine.
-  use std::fmt::Debug;
-
   use super::{parser::*, *};
 
   /// Compiles the given Shady module into a list of [`ShaderKernel`]s.
   pub fn compile(module: Module) -> common::Result<Vec<ShaderKernel>> {
     let mut kernels = Vec::with_capacity(module.kernels.len());
+    let mut builder = StringBuilder::default();
 
     for kernel in module.kernels {
-      kernels.push(compile_kernel(kernel)?);
+      kernels.push(kernel.compile(&mut builder)?);
     }
 
     Ok(kernels)
   }
 
-  fn compile_kernel(kernel: Kernel) -> common::Result<ShaderKernel> {
-    let mut builder = StringBuilder::default();
+  /// A trait for types that can be compiled to a string.
+  trait Compilable: Sized {
+    /// The output type of the compilation.
+    type Output = ();
 
-    builder.push_line("void main()");
-    builder.push_line("{");
-    builder.indent();
-
-    for statement in kernel.statements {
-      compile_statement(statement, &mut builder)?;
-    }
-
-    builder.dedent();
-    builder.push_line("}");
-
-    Ok(ShaderKernel {
-      code: builder.into_string(),
-      kind: match kernel.kind {
-        KernelKind::Vertex => ShaderKind::Vertex,
-        KernelKind::Fragment => ShaderKind::Fragment,
-      },
-    })
+    /// Compiles the value into a string.
+    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output>;
   }
 
-  fn compile_statement(statement: Statement, builder: &mut StringBuilder) -> common::Result<()> {
-    match statement {
-      Statement::Function(name, _parameters, body) => {
-        builder.push("void ");
-        builder.push(&name);
-        builder.push_line("()");
-        builder.push_line("{");
-        builder.indent();
+  impl Compilable for Kernel {
+    type Output = ShaderKernel;
 
-        for statement in body {
-          compile_statement(statement, builder)?;
+    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+      builder.push_line("void main()");
+      builder.push_line("{");
+      builder.indent();
+
+      for statement in &self.statements {
+        statement.compile(builder)?;
+      }
+
+      builder.dedent();
+      builder.push_line("}");
+
+      Ok(ShaderKernel {
+        code: builder.flush_to_string(),
+        kind: match self.kind {
+          KernelKind::Vertex => ShaderKind::Vertex,
+          KernelKind::Fragment => ShaderKind::Fragment,
+        },
+      })
+    }
+  }
+
+  impl Compilable for Statement {
+    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+      match self {
+        Statement::Function(name, _parameters, body) => {
+          builder.push("void ");
+          builder.push(&name);
+          builder.push_line("()");
+          builder.push_line("{");
+          builder.indent();
+
+          for statement in body {
+            statement.compile(builder)?;
+          }
+
+          builder.dedent();
+          builder.push_line("}");
         }
+        Statement::Assignment(name, value) => {
+          // TODO: work out the type of the value
+          builder.push(&name);
+          builder.push(" = ");
 
-        builder.dedent();
-        builder.push_line("}");
+          value.compile(builder)?;
+
+          builder.push_line(";");
+        }
+        Statement::Return(value) => {
+          builder.push("return ");
+
+          value.compile(builder)?;
+
+          builder.push_line("");
+        }
       }
-      Statement::Assignment(name, value) => {
-        // TODO: work out the type of the value
-        builder.push(&name);
-        builder.push(" = ");
 
-        compile_expression(value, builder)?;
-
-        builder.push_line(";");
-      }
-      Statement::Return(value) => {
-        builder.push("return ");
-
-        compile_expression(value, builder)?;
-
-        builder.push_line("");
-      }
+      Ok(())
     }
-
-    Ok(())
   }
 
-  fn compile_expression(expression: Expression, builder: &mut StringBuilder) -> common::Result<()> {
-    match expression {
-      Expression::Literal(literal) => match literal {
-        Literal::Integer(value) => builder.push(&value.to_string()),
-        Literal::Float(value) => builder.push(&value.to_string()),
-        Literal::Boolean(value) => builder.push(&value.to_string()),
-      },
-      Expression::Identifier(name) => builder.push(&name),
-      Expression::Binary(left, operator, right) => {
-        compile_expression(*left, builder)?;
-        compile_binary_operator(operator, builder)?;
-        compile_expression(*right, builder)?;
+  impl Compilable for Expression {
+    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+      match self {
+        Expression::Literal(literal) => match literal {
+          Literal::Integer(value) => builder.push(&value.to_string()),
+          Literal::Float(value) => builder.push(&value.to_string()),
+          Literal::Boolean(value) => builder.push(&value.to_string()),
+        },
+        Expression::Identifier(name) => builder.push(&name),
+        Expression::Binary(left, operator, right) => {
+          left.compile(builder)?;
+          builder.push(" ");
+          operator.compile(builder)?;
+          builder.push(" ");
+          right.compile(builder)?;
+        }
+        Expression::Unary(operator, expression) => {
+          operator.compile(builder)?;
+          expression.compile(builder)?;
+        }
       }
-      Expression::Unary(operator, expression) => {
-        compile_unary_operator(operator, builder)?;
-        compile_expression(*expression, builder)?;
+
+      Ok(())
+    }
+  }
+
+  impl Compilable for BinaryOperator {
+    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+      match self {
+        BinaryOperator::Add => builder.push("+"),
+        BinaryOperator::Subtract => builder.push("-"),
+        BinaryOperator::Multiply => builder.push("*"),
+        BinaryOperator::Divide => builder.push("/"),
+        BinaryOperator::Modulo => builder.push("%"),
+        BinaryOperator::Power => builder.push("^"),
+        BinaryOperator::Equal => builder.push("=="),
+        BinaryOperator::LessThan => builder.push("<"),
+        BinaryOperator::GreaterThan => builder.push(">"),
+        BinaryOperator::And => builder.push("&&"),
+        BinaryOperator::Or => builder.push("||"),
       }
-    }
 
-    Ok(())
+      Ok(())
+    }
   }
 
-  fn compile_binary_operator(operator: BinaryOperator, builder: &mut StringBuilder) -> common::Result<()> {
-    match operator {
-      BinaryOperator::Add => builder.push("+"),
-      BinaryOperator::Subtract => builder.push("-"),
-      BinaryOperator::Multiply => builder.push("*"),
-      BinaryOperator::Divide => builder.push("/"),
-      BinaryOperator::Modulo => builder.push("%"),
-      BinaryOperator::Power => builder.push("^"),
-      BinaryOperator::Equal => builder.push("=="),
-      BinaryOperator::LessThan => builder.push("<"),
-      BinaryOperator::GreaterThan => builder.push(">"),
-      BinaryOperator::And => builder.push("&&"),
-      BinaryOperator::Or => builder.push("||"),
+  impl Compilable for UnaryOperator {
+    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+      match self {
+        UnaryOperator::Not => builder.push("!"),
+      }
+
+      Ok(())
     }
-
-    Ok(())
-  }
-
-  fn compile_unary_operator(operator: UnaryOperator, builder: &mut StringBuilder) -> common::Result<()> {
-    match operator {
-      UnaryOperator::Not => builder.push("!"),
-    }
-
-    Ok(())
-  }
-
-  fn _unexpected_value<V: Debug>(value: V) -> common::Result<()> {
-    Err(common::anyhow!("unexpected token encountered: {:?}", value))
   }
 
   /// A helper for building strings.
@@ -200,8 +216,10 @@ mod compiler {
       }
     }
 
-    pub fn into_string(self) -> String {
-      self.buffer
+    pub fn flush_to_string(&mut self) -> String {
+      let output = self.buffer.clone();
+      self.buffer.clear();
+      output
     }
   }
 
@@ -416,8 +434,6 @@ mod parser {
     /// Take the next token from the stream.
     pub fn take(&mut self) -> Option<&Token> {
       self.last_token = self.tokens.pop_front();
-      println!("took token: {:?}", self.last_token);
-
       self.last_token.as_ref()
     }
 
