@@ -634,6 +634,7 @@ dependencies = [
 name = "surreal-graphics"
 version = "0.1.0"
 dependencies = [
+ "bitflags 2.4.1",
  "gl",
  "image",
  "serde",

@@ -1,5 +1,7 @@
 //! Graphics engine for Surreal.
 
+#![feature(impl_trait_in_assoc_type)]
+
 pub use buffers::*;
 pub use colors::*;
 pub use geometry::*;

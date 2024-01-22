@@ -7,20 +7,10 @@ use super::*;
 /// Represents a scene that can be rendered by a [`RenderPipeline`].
 pub trait RenderScene {
   /// Gets the cameras that should be used to render this scene.
-  fn cameras(&self) -> Vec<&dyn RenderCamera>;
-}
+  fn cameras(&self) -> Vec<&dyn Camera>;
 
-/// Represents a camera that can be used to render a scene.
-pub trait RenderCamera {
-  /// Finds all visible objects in the scene.
-  fn cull_visible_objects(&self) -> Vec<&dyn RenderObject>;
-}
-
-/// Allows a [`Camera`] to be used as a [`RenderCamera`].
-impl<C: Camera> RenderCamera for C {
-  fn cull_visible_objects(&self) -> Vec<&dyn RenderObject> {
-    todo!()
-  }
+  /// Gets the objects that should be rendered by the given camera.
+  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet;
 }
 
 /// Represents an object capable of being rendered.
@@ -54,15 +44,15 @@ impl RenderPipeline for MultiPassPipeline {
     // render each camera
     for camera in scene.cameras() {
       for pass in &self.passes {
-        pass.begin_camera(camera, &mut self.renderer);
+        pass.begin_camera(scene, camera, &mut self.renderer);
       }
 
       for pass in &self.passes {
-        pass.render_camera(camera, &mut self.renderer);
+        pass.render_camera(scene, camera, &mut self.renderer);
       }
 
       for pass in &self.passes {
-        pass.end_camera(camera, &mut self.renderer);
+        pass.end_camera(scene, camera, &mut self.renderer);
       }
     }
 
@@ -77,9 +67,9 @@ impl RenderPipeline for MultiPassPipeline {
 #[allow(unused_variables)]
 pub trait RenderPass {
   fn begin_frame(&self, scene: &dyn RenderScene, renderer: &mut Renderer) {}
-  fn begin_camera(&self, camera: &dyn RenderCamera, renderer: &mut Renderer) {}
-  fn render_camera(&self, camera: &dyn RenderCamera, renderer: &mut Renderer) {}
-  fn end_camera(&self, camera: &dyn RenderCamera, renderer: &mut Renderer) {}
+  fn begin_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, renderer: &mut Renderer) {}
+  fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, renderer: &mut Renderer) {}
+  fn end_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, renderer: &mut Renderer) {}
   fn end_frame(&self, scene: &dyn RenderScene, renderer: &mut Renderer) {}
 }
 
@@ -90,9 +80,11 @@ pub mod forward {
   struct DepthPass {}
 
   impl RenderPass for DepthPass {
-    fn render_camera(&self, camera: &dyn RenderCamera, renderer: &mut Renderer) {
-      for object in camera.cull_visible_objects() {
-        object.render(renderer);
+    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, _renderer: &mut Renderer) {
+      let visible_object_set = scene.cull_visible_objects(camera);
+
+      for _object in visible_object_set.objects {
+        todo!()
       }
     }
   }
@@ -101,9 +93,11 @@ pub mod forward {
   struct ColorPass {}
 
   impl RenderPass for ColorPass {
-    fn render_camera(&self, camera: &dyn RenderCamera, renderer: &mut Renderer) {
-      for object in camera.cull_visible_objects() {
-        object.render(renderer);
+    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, _renderer: &mut Renderer) {
+      let visible_object_set = scene.cull_visible_objects(camera);
+
+      for _object in visible_object_set.objects {
+        todo!()
       }
     }
 

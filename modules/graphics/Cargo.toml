@@ -8,6 +8,7 @@ version.workspace = true
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
 serde = { version = "1.0.159", features = ["derive"] }
+bitflags = "2.1.0"
 thiserror = "1.0.26"
 image = "0.24.8"
 gl = "0.14.0"

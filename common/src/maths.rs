@@ -71,7 +71,7 @@ pub trait PingPong {
 macro_rules! impl_ping_pong {
   ($type:ty) => {
     impl PingPong for $type {
-      #[inline]
+      #[inline(always)]
       fn ping_pong(&self) -> Self {
         self.sin() * 2.0 - 1.0
       }
