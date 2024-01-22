@@ -133,9 +133,7 @@ impl<T> QuadTree<T> {
   /// This involves iterating over all the nodes in the [`QuadTree`], so it is
   /// not recommended for use in performance-critical code.
   pub fn contains(&self, value: T) -> bool
-  where
-    T: PartialEq,
-  {
+  where T: PartialEq {
     self.iter().any(|(v, _)| v == &value)
   }
 
@@ -153,9 +151,7 @@ impl<T> QuadTree<T> {
   /// If you instead wish to move an item within the tree, use the [`update`]
   /// method instead.
   pub fn insert(&mut self, value: T, bounds: Rectangle)
-  where
-    T: Clone,
-  {
+  where T: Clone {
     fn insert_recursive<T: Clone>(node: &mut QuadTreeNode<T>, value: T, bounds: Rectangle, depth: usize) -> bool {
       if depth > 100 {
         panic!("exceeded maximum recursion depth");

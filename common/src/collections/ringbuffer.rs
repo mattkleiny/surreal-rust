@@ -11,9 +11,7 @@ pub struct RingBuffer<T> {
 impl<T> RingBuffer<T> {
   /// Creates a new ring buffer with the given capacity.
   pub fn new(capacity: usize) -> Self
-  where
-    T: Clone,
-  {
+  where T: Clone {
     Self {
       cursor: 0,
       elements: vec![None; capacity],

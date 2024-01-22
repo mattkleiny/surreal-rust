@@ -4,3 +4,6 @@ max_width = 120
 wrap_comments = true
 group_imports = "StdExternalCrate"
 imports_granularity = "Crate"
+where_single_line = true
+normalize_comments = true
+overflow_delimited_expr = true

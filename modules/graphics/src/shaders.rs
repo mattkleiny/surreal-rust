@@ -270,8 +270,7 @@ pub enum ShaderUniform {
 /// Allow for the conversion of a slice of values into a shader uniform array,
 /// provided all of the values can be individually converted into a uniform.
 impl<U> From<&[U]> for ShaderUniform
-where
-  for<'a> &'a U: Into<ShaderUniform>,
+where for<'a> &'a U: Into<ShaderUniform>
 {
   fn from(value: &[U]) -> Self {
     Self::Array(value.iter().map(|v| v.into()).collect::<Vec<ShaderUniform>>())
@@ -346,9 +345,7 @@ impl ShaderUniformSet {
   /// Sets the given [`UniformKey`] as a uniform with a single texture in the
   /// set.
   pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
-  where
-    K: Into<ShaderUniformKey<&'a Texture>>,
-  {
+  where K: Into<ShaderUniformKey<&'a Texture>> {
     let slot = self.allocate_texture_slot(texture);
     let uniform = ShaderUniform::Texture(texture.id(), slot, sampler);
 

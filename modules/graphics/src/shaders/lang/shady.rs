@@ -818,18 +818,15 @@ mod parser {
 
       let stream = TokenStream::parse(code).unwrap();
 
-      assert_eq!(
-        stream.tokens,
-        vec![
-          Token::Integer(1),
-          Token::BinaryOperator(BinaryOperator::Add),
-          Token::Integer(2),
-          Token::BinaryOperator(BinaryOperator::Multiply),
-          Token::Float(std::f32::consts::PI),
-          Token::BinaryOperator(BinaryOperator::Subtract),
-          Token::Integer(4),
-        ]
-      );
+      assert_eq!(stream.tokens, vec![
+        Token::Integer(1),
+        Token::BinaryOperator(BinaryOperator::Add),
+        Token::Integer(2),
+        Token::BinaryOperator(BinaryOperator::Multiply),
+        Token::Float(std::f32::consts::PI),
+        Token::BinaryOperator(BinaryOperator::Subtract),
+        Token::Integer(4),
+      ]);
     }
 
     #[test]
@@ -838,18 +835,15 @@ mod parser {
 
       let stream = TokenStream::parse(code).unwrap();
 
-      assert_eq!(
-        stream.tokens,
-        vec![
-          Token::Keyword("let".to_string()),
-          Token::Identifier("x".to_string()),
-          Token::BinaryOperator(BinaryOperator::Equal),
-          Token::Integer(1),
-          Token::BinaryOperator(BinaryOperator::Add),
-          Token::Integer(2),
-          Token::Semicolon,
-        ]
-      );
+      assert_eq!(stream.tokens, vec![
+        Token::Keyword("let".to_string()),
+        Token::Identifier("x".to_string()),
+        Token::BinaryOperator(BinaryOperator::Equal),
+        Token::Integer(1),
+        Token::BinaryOperator(BinaryOperator::Add),
+        Token::Integer(2),
+        Token::Semicolon,
+      ]);
     }
 
     #[test]
@@ -930,18 +924,15 @@ mod parser {
 
       let kernel = Kernel::parse(code).unwrap();
 
-      assert_eq!(
-        kernel,
-        Kernel {
-          kind: KernelKind::Fragment,
-          name: "fragment".to_string(),
-          statements: vec![Statement::Return(Expression::Binary(
-            Box::new(Expression::Literal(Literal::Integer(1))),
-            BinaryOperator::Add,
-            Box::new(Expression::Literal(Literal::Integer(2))),
-          ))],
-        }
-      );
+      assert_eq!(kernel, Kernel {
+        kind: KernelKind::Fragment,
+        name: "fragment".to_string(),
+        statements: vec![Statement::Return(Expression::Binary(
+          Box::new(Expression::Literal(Literal::Integer(1))),
+          BinaryOperator::Add,
+          Box::new(Expression::Literal(Literal::Integer(2))),
+        ))],
+      });
     }
 
     #[test]
@@ -956,21 +947,18 @@ mod parser {
 
       let module = Module::parse(code).unwrap();
 
-      assert_eq!(
-        module,
-        Module {
-          kind: ModuleKind::Canvas,
-          kernels: vec![Kernel {
-            kind: KernelKind::Fragment,
-            name: "fragment".to_string(),
-            statements: vec![Statement::Return(Expression::Binary(
-              Box::new(Expression::Literal(Literal::Integer(1))),
-              BinaryOperator::Add,
-              Box::new(Expression::Literal(Literal::Integer(2))),
-            ))],
-          }],
-        }
-      );
+      assert_eq!(module, Module {
+        kind: ModuleKind::Canvas,
+        kernels: vec![Kernel {
+          kind: KernelKind::Fragment,
+          name: "fragment".to_string(),
+          statements: vec![Statement::Return(Expression::Binary(
+            Box::new(Expression::Literal(Literal::Integer(1))),
+            BinaryOperator::Add,
+            Box::new(Expression::Literal(Literal::Integer(2))),
+          ))],
+        }],
+      });
     }
 
     #[test]

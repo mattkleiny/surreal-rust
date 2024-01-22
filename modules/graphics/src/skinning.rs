@@ -350,28 +350,24 @@ mod tests {
 
   #[test]
   fn animation_should_insert_keyframes_in_chronological_order() {
-    let animation = Animation::from_keyframes(
-      "Idle".to_string(),
-      TimeSpan::from_seconds(3.),
-      vec![
-        Keyframe {
-          normalised_time: 1.,
-          transform: Mat4::IDENTITY,
-        },
-        Keyframe {
-          normalised_time: 0.7,
-          transform: Mat4::IDENTITY,
-        },
-        Keyframe {
-          normalised_time: 0.6,
-          transform: Mat4::IDENTITY,
-        },
-        Keyframe {
-          normalised_time: 0.,
-          transform: Mat4::IDENTITY,
-        },
-      ],
-    );
+    let animation = Animation::from_keyframes("Idle".to_string(), TimeSpan::from_seconds(3.), vec![
+      Keyframe {
+        normalised_time: 1.,
+        transform: Mat4::IDENTITY,
+      },
+      Keyframe {
+        normalised_time: 0.7,
+        transform: Mat4::IDENTITY,
+      },
+      Keyframe {
+        normalised_time: 0.6,
+        transform: Mat4::IDENTITY,
+      },
+      Keyframe {
+        normalised_time: 0.,
+        transform: Mat4::IDENTITY,
+      },
+    ]);
 
     assert_eq!(animation.keyframes[0].normalised_time, 0.);
     assert_eq!(animation.keyframes[1].normalised_time, 0.6);
