@@ -3,6 +3,8 @@ use std::{
   fmt::Debug,
 };
 
+use common::Frustum;
+
 use super::SceneEvent;
 
 /// Represents a component in a scene.
@@ -39,8 +41,14 @@ pub trait SceneComponent {
   fn on_disable(&mut self) {}
   fn on_destroy(&mut self) {}
   fn on_update(&mut self, delta_time: f32) {}
-  fn on_draw(&mut self, renderer: &mut graphics::Renderer) {}
+  fn on_draw(&self, renderer: &mut graphics::Renderer) {}
   fn on_transform_changed(&mut self) {}
+
+  /// Determines if this component is visible to the given [`Frustum`].
+  #[inline]
+  fn is_visible_to(&self, frustum: &Frustum) -> bool {
+    false
+  }
 }
 
 /// A set of [`SceneComponent`]s in a [`SceneNode`].
@@ -176,7 +184,6 @@ mod tests {
       disable: bool,
       destroy: bool,
       update: bool,
-      draw: bool,
     }
 
     impl SceneComponent for TestComponent {
@@ -202,10 +209,6 @@ mod tests {
 
       fn on_update(&mut self, _delta_time: f32) {
         self.update = true;
-      }
-
-      fn on_draw(&mut self, _render_context: &mut graphics::Renderer) {
-        self.draw = true;
       }
     }
 

@@ -16,7 +16,6 @@ pub use transform::*;
 
 mod components;
 mod graph;
-mod rendering;
 mod transform;
 
 use common::FastHashSet;

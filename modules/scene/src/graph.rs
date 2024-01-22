@@ -1,8 +1,8 @@
 use std::fmt::{Debug, Formatter};
 
 use bitflags::bitflags;
-use common::{FastHashMap, FastHashSet, FromRandom};
-use graphics::Renderer;
+use common::{Camera, FastHashMap, FastHashSet, FromRandom, Frustum};
+use graphics::{MaterialSortingKey, RenderObject, RenderScene, Renderer, VisibleObject, VisibleObjectSet};
 
 use super::*;
 
@@ -115,6 +115,41 @@ impl<'a, T: Transform> SceneGraph<'a, T> {
   }
 }
 
+/// Allows arbitrary scene graphs to be rendered.
+impl<'a, T: Transform> RenderScene for SceneGraph<'a, T> {
+  fn cameras(&self) -> Vec<&dyn Camera> {
+    todo!()
+  }
+
+  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet<u64> {
+    let frustum = camera.frustum();
+    let mut objects = Vec::new();
+
+    // cull visible objects from the scene
+    self.root.walk_recursive(|node| {
+      if !node.is_visible_to(&frustum) {
+        return false;
+      }
+
+      objects.push(VisibleObject {
+        identifier: node.id().into(),
+        material_sort_key: MaterialSortingKey::default(),
+      });
+
+      true
+    });
+
+    VisibleObjectSet { frustum, objects }
+  }
+
+  fn get_object(&self, identifier: u64) -> Option<&dyn RenderObject> {
+    self
+      .root
+      .find_by_id(SceneNodeId::from(identifier))
+      .map(|node| node as &dyn RenderObject)
+  }
+}
+
 impl<'a, T: Transform> Debug for SceneGraph<'a, T> {
   fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     for (node, level) in self.root.iter_recursive() {
@@ -210,6 +245,22 @@ impl<'a, T: Transform> SceneNode<'a, T> {
   /// Returns `true` if this [`SceneNode`] is visible.
   pub fn is_visible(&self) -> bool {
     self.is_visible
+  }
+
+  /// Returns `true` if this [`SceneNode`] is visible to the given frustum.
+  pub fn is_visible_to(&self, frustum: &Frustum) -> bool {
+    if !self.is_visible() {
+      return false;
+    }
+
+    // if any of our components are visible, we're visible
+    for component in &self.components {
+      if component.is_visible_to(frustum) {
+        return true;
+      }
+    }
+
+    false
   }
 
   /// Sets whether or not this [`SceneNode`] is visible.
@@ -440,6 +491,17 @@ impl<'a, T: Transform> SceneNode<'a, T> {
     IterRecursive { stack: vec![(self, 0)] }
   }
 
+  /// Recursively walks the [`SceneNode`] hierarchy, calling the given callback
+  pub fn walk_recursive(&self, mut callback: impl FnMut(&SceneNode<'a, T>) -> bool) {
+    if !callback(self) {
+      return;
+    }
+
+    for child in &self.children {
+      child.walk_recursive(&mut callback);
+    }
+  }
+
   /// Notifies this node that it has been added to a scene.
   fn on_awake(&mut self) {
     for component in &mut self.components {
@@ -593,6 +655,15 @@ impl<'a, T: Transform> SceneNode<'a, T> {
         self.notify_children(event);
       }
       _ => {} // discard this event
+    }
+  }
+}
+
+/// Allows arbitrary scene nodes to be rendered.
+impl<'a, T: Transform> RenderObject for SceneNode<'a, T> {
+  fn render(&self, renderer: &mut Renderer) {
+    for component in &self.components {
+      component.on_draw(renderer);
     }
   }
 }

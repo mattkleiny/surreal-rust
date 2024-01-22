@@ -5,7 +5,7 @@ use super::*;
 
 bitflags! {
   /// Flags that indicate the required state of the graphics pipeline for a material.
-  #[derive(Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+  #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
   pub struct MaterialFlags: u32 {
     const ALPHA_BLENDING = 0b00000001;
     const ALPHA_TESTING = 0b00000010;
@@ -22,7 +22,7 @@ bitflags! {
 ///
 /// This is used to sort materials into batches for efficient rendering,
 /// minimizing state changes between draw calls.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+#[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
 pub struct MaterialSortingKey {
   flags: MaterialFlags,
 }
@@ -72,9 +72,9 @@ impl From<&Material> for MaterialSortingKey {
 
 /// Represents an object that is visible to a camera, along with it's material
 /// properties that are used to render it.
-pub struct VisibleObject {
-  /// The object that is visible.
-  pub object: Box<dyn RenderObject>,
+pub struct VisibleObject<I> {
+  /// The identifier of the object.
+  pub identifier: I,
   /// The sorting key for the material of the object.
   pub material_sort_key: MaterialSortingKey,
 }
@@ -84,11 +84,11 @@ pub struct VisibleObject {
 /// This is a subset of the objects in a scene that are visible to a specific
 /// camera, and can be used to optimize rendering by only rendering the objects
 /// that are visible to the camera.
-pub struct VisibleObjectSet {
+pub struct VisibleObjectSet<I> {
   /// The frustum of the camera that was used to cull the objects.
   pub frustum: Frustum,
   /// The objects that are visible to the camera.
-  pub objects: Vec<VisibleObject>,
+  pub objects: Vec<VisibleObject<I>>,
 }
 
 /// Allows iterating over the [`VisibleObject`]s in a [`VisibleObjectSet`] by
@@ -96,14 +96,14 @@ pub struct VisibleObjectSet {
 ///
 /// This is useful for efficiently rendering the objects in a set by minimizing
 /// state changes between draw calls.
-pub struct VisibleObjectIterator<'a> {
-  visible_objects: Vec<&'a [VisibleObject]>,
+pub struct VisibleObjectIterator<'a, I> {
+  visible_objects: Vec<&'a [VisibleObject<I>]>,
   current_index: usize,
 }
 
-impl<'a> IntoIterator for &'a VisibleObjectSet {
-  type Item = &'a [VisibleObject];
-  type IntoIter = VisibleObjectIterator<'a>;
+impl<'a, I> IntoIterator for &'a VisibleObjectSet<I> {
+  type Item = &'a [VisibleObject<I>];
+  type IntoIter = VisibleObjectIterator<'a, I>;
 
   fn into_iter(self) -> Self::IntoIter {
     let visible_objects = self
@@ -118,8 +118,8 @@ impl<'a> IntoIterator for &'a VisibleObjectSet {
   }
 }
 
-impl<'a> Iterator for VisibleObjectIterator<'a> {
-  type Item = &'a [VisibleObject];
+impl<'a, I> Iterator for VisibleObjectIterator<'a, I> {
+  type Item = &'a [VisibleObject<I>];
 
   fn next(&mut self) -> Option<Self::Item> {
     if self.current_index >= self.visible_objects.len() {
@@ -137,6 +137,8 @@ impl<'a> Iterator for VisibleObjectIterator<'a> {
 
 #[cfg(test)]
 mod tests {
+  use common::{FromRandom, Guid};
+
   use super::*;
 
   #[derive(Default)]
@@ -154,15 +156,15 @@ mod tests {
       frustum: Frustum::default(),
       objects: vec![
         VisibleObject {
-          object: Box::new(TestObject::default()),
+          identifier: Guid::random(),
           material_sort_key: MaterialSortingKey::from(MaterialFlags::ALPHA_BLENDING),
         },
         VisibleObject {
-          object: Box::new(TestObject::default()),
+          identifier: Guid::random(),
           material_sort_key: MaterialSortingKey::from(MaterialFlags::DEPTH_TESTING),
         },
         VisibleObject {
-          object: Box::new(TestObject::default()),
+          identifier: Guid::random(),
           material_sort_key: MaterialSortingKey::from(MaterialFlags::ALPHA_BLENDING),
         },
       ],
