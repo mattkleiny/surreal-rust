@@ -28,6 +28,22 @@ pub unsafe fn reinterpret_cast_mut<T, U>(value: &mut T) -> &mut U {
   unsafe { &mut *(value as *mut T as *mut U) }
 }
 
+/// Creates an unsafe mutable alias to the given value.
+///
+/// This breaks many assumptions in the Rust type system, so use with great
+/// caution and only to facilitate a cleaner API.
+#[inline(always)]
+#[allow(invalid_reference_casting)]
+pub unsafe fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
+  // TODO: find a way to remove this completely
+  unsafe {
+    let pointer = value as *const T;
+    let pointer = pointer as *mut T;
+
+    &mut *pointer
+  }
+}
+
 /// Implements a new server type for the given backend.
 #[macro_export]
 macro_rules! impl_server {
@@ -46,9 +62,6 @@ macro_rules! impl_server {
         }
       }
     }
-
-    unsafe impl Send for $type {}
-    unsafe impl Sync for $type {}
 
     impl std::ops::Deref for $type {
       type Target = Box<dyn $backend>;

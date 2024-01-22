@@ -1,3 +1,5 @@
+use crate::unsafe_mutable_alias;
+
 /// Represents a safe index into an [`Arena`].
 ///
 /// This is a 64-bit integer that is split into two parts:
@@ -253,22 +255,6 @@ impl<T> Arena<T> {
       index: usize,
     }
 
-    /// Creates an unsafe mutable alias to the given value.
-    ///
-    /// This breaks many assumptions in the Rust type system, so use with great
-    /// caution and only to facilitate a cleaner API.
-    #[inline(always)]
-    #[allow(invalid_reference_casting)]
-    fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
-      // TODO: find a way to remove this completely
-      unsafe {
-        let pointer = value as *const T;
-        let pointer = pointer as *mut T;
-
-        &mut *pointer
-      }
-    }
-
     impl<'a, T> Iterator for IterMut<'a, T> {
       type Item = (ArenaIndex, &'a mut T);
 
@@ -282,7 +268,7 @@ impl<T> Arena<T> {
 
             self.index += 1;
 
-            let value = unsafe_mutable_alias(value); // elide the lifetime
+            let value = unsafe { unsafe_mutable_alias(value) }; // elide the lifetime
 
             return Some((arena_index, &mut value.value));
           }
