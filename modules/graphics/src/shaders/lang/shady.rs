@@ -58,6 +58,15 @@ mod compiler {
 
     /// Compiles the value into a string.
     fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output>;
+
+    /// Compiles the value into a string and returns it.
+    fn compile_to_string(&self) -> common::Result<String> {
+      let mut builder = StringBuilder::default();
+
+      self.compile(&mut builder)?;
+
+      Ok(builder.flush_to_string())
+    }
   }
 
   impl Compilable for Kernel {
@@ -228,6 +237,35 @@ mod compiler {
     use super::*;
 
     #[test]
+    fn test_compile_basic_expression() {
+      let expression = Expression::Binary(
+        Box::new(Expression::Literal(Literal::Integer(1))),
+        BinaryOperator::Add,
+        Box::new(Expression::Literal(Literal::Integer(2))),
+      );
+
+      let output = expression.compile_to_string().unwrap();
+
+      assert_eq!(output, "1 + 2");
+    }
+
+    #[test]
+    fn test_compile_basic_statement() {
+      let statement = Statement::Assignment(
+        "x".to_string(),
+        Expression::Binary(
+          Box::new(Expression::Literal(Literal::Integer(1))),
+          BinaryOperator::Add,
+          Box::new(Expression::Literal(Literal::Integer(2))),
+        ),
+      );
+
+      let output = statement.compile_to_string().unwrap();
+
+      assert_eq!(output, "x = 1 + 2;\n");
+    }
+
+    #[test]
     fn test_compile_simple_program() {
       let code = r"
         fn fragment() {
@@ -319,7 +357,7 @@ mod parser {
   pub type Cardinality = u8;
 
   #[derive(Debug, PartialEq)]
-  pub struct Primitive(PrimitiveKind, Cardinality);
+  pub struct Primitive(pub PrimitiveKind, pub Cardinality);
 
   #[derive(Debug, PartialEq)]
   pub enum PrimitiveKind {
