@@ -37,13 +37,193 @@ mod compiler {
   //!
   //! This compiler will transpile Shady code into GLSL code that can be used
   //! with the graphics engine.
-  use super::*;
+  use std::fmt::Debug;
+
+  use super::{parser::*, *};
 
   /// Compiles the given Shady module into a list of [`ShaderKernel`]s.
-  pub fn compile(_module: parser::Module) -> common::Result<Vec<ShaderKernel>> {
-    // TODO: implement compiler for Shady
+  pub fn compile(module: Module) -> common::Result<Vec<ShaderKernel>> {
+    let mut kernels = Vec::with_capacity(module.kernels.len());
 
-    todo!()
+    for kernel in module.kernels {
+      kernels.push(compile_kernel(kernel)?);
+    }
+
+    Ok(kernels)
+  }
+
+  fn compile_kernel(kernel: Kernel) -> common::Result<ShaderKernel> {
+    let mut builder = StringBuilder::default();
+
+    builder.push_line("void main()");
+    builder.push_line("{");
+    builder.indent();
+
+    for statement in kernel.statements {
+      compile_statement(statement, &mut builder)?;
+    }
+
+    builder.dedent();
+    builder.push_line("}");
+
+    Ok(ShaderKernel {
+      code: builder.into_string(),
+      kind: match kernel.kind {
+        KernelKind::Vertex => ShaderKind::Vertex,
+        KernelKind::Fragment => ShaderKind::Fragment,
+      },
+    })
+  }
+
+  fn compile_statement(statement: Statement, builder: &mut StringBuilder) -> common::Result<()> {
+    match statement {
+      Statement::Function(name, _parameters, body) => {
+        builder.push("void ");
+        builder.push(&name);
+        builder.push_line("()");
+        builder.push_line("{");
+        builder.indent();
+
+        for statement in body {
+          compile_statement(statement, builder)?;
+        }
+
+        builder.dedent();
+        builder.push_line("}");
+      }
+      Statement::Assignment(name, value) => {
+        // TODO: work out the type of the value
+        builder.push(&name);
+        builder.push(" = ");
+
+        compile_expression(value, builder)?;
+
+        builder.push_line(";");
+      }
+      Statement::Return(value) => {
+        builder.push("return ");
+
+        compile_expression(value, builder)?;
+
+        builder.push_line("");
+      }
+    }
+
+    Ok(())
+  }
+
+  fn compile_expression(expression: Expression, builder: &mut StringBuilder) -> common::Result<()> {
+    match expression {
+      Expression::Literal(literal) => match literal {
+        Literal::Integer(value) => builder.push(&value.to_string()),
+        Literal::Float(value) => builder.push(&value.to_string()),
+        Literal::Boolean(value) => builder.push(&value.to_string()),
+      },
+      Expression::Identifier(name) => builder.push(&name),
+      Expression::Binary(left, operator, right) => {
+        compile_expression(*left, builder)?;
+        compile_binary_operator(operator, builder)?;
+        compile_expression(*right, builder)?;
+      }
+      Expression::Unary(operator, expression) => {
+        compile_unary_operator(operator, builder)?;
+        compile_expression(*expression, builder)?;
+      }
+    }
+
+    Ok(())
+  }
+
+  fn compile_binary_operator(operator: BinaryOperator, builder: &mut StringBuilder) -> common::Result<()> {
+    match operator {
+      BinaryOperator::Add => builder.push("+"),
+      BinaryOperator::Subtract => builder.push("-"),
+      BinaryOperator::Multiply => builder.push("*"),
+      BinaryOperator::Divide => builder.push("/"),
+      BinaryOperator::Modulo => builder.push("%"),
+      BinaryOperator::Power => builder.push("^"),
+      BinaryOperator::Equal => builder.push("=="),
+      BinaryOperator::LessThan => builder.push("<"),
+      BinaryOperator::GreaterThan => builder.push(">"),
+      BinaryOperator::And => builder.push("&&"),
+      BinaryOperator::Or => builder.push("||"),
+    }
+
+    Ok(())
+  }
+
+  fn compile_unary_operator(operator: UnaryOperator, builder: &mut StringBuilder) -> common::Result<()> {
+    match operator {
+      UnaryOperator::Not => builder.push("!"),
+    }
+
+    Ok(())
+  }
+
+  fn _unexpected_value<V: Debug>(value: V) -> common::Result<()> {
+    Err(common::anyhow!("unexpected token encountered: {:?}", value))
+  }
+
+  /// A helper for building strings.
+  #[derive(Default)]
+  struct StringBuilder {
+    buffer: String,
+    indent: usize,
+  }
+
+  impl StringBuilder {
+    pub fn push(&mut self, value: impl AsRef<str>) {
+      self.push_indent();
+
+      self.buffer.push_str(value.as_ref());
+    }
+
+    pub fn push_line(&mut self, value: impl AsRef<str>) {
+      self.push_indent();
+
+      self.push(value);
+      self.push("\n");
+    }
+
+    pub fn indent(&mut self) {
+      self.indent += 1;
+    }
+
+    pub fn dedent(&mut self) {
+      self.indent -= 1;
+    }
+
+    fn push_indent(&mut self) {
+      for _ in 0..self.indent {
+        self.buffer.push(' ');
+        self.buffer.push(' ');
+      }
+    }
+
+    pub fn into_string(self) -> String {
+      self.buffer
+    }
+  }
+
+  #[cfg(test)]
+  mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compile_simple_program() {
+      let code = r"
+        fn fragment() {
+          return 1 + 2;
+        }
+      ";
+
+      let module = parser::parse(code).unwrap();
+      let kernels = compile(module).unwrap();
+
+      assert_eq!(kernels.len(), 1);
+
+      println!("kernels: {:?}", kernels);
+    }
   }
 }
 
@@ -67,7 +247,6 @@ mod parser {
     fn parse(code: &str) -> common::Result<Self>;
   }
 
-  /// Possible types of Shady modules.
   #[derive(Debug, PartialEq)]
   pub enum ModuleKind {
     Standard,
@@ -76,7 +255,6 @@ mod parser {
     Model,
   }
 
-  /// A type of kernel in Shady.
   #[derive(Debug, PartialEq)]
   pub struct Module {
     pub kind: ModuleKind,
@@ -92,14 +270,12 @@ mod parser {
     }
   }
 
-  /// Possible types of Shady kernels.
   #[derive(Debug, PartialEq)]
   pub enum KernelKind {
     Vertex,
     Fragment,
   }
 
-  /// A Shady kernel.
   #[derive(Debug, PartialEq)]
   pub struct Kernel {
     pub kind: KernelKind,
@@ -116,21 +292,17 @@ mod parser {
     }
   }
 
-  /// A parameter in a Shady function.
   #[derive(Debug, PartialEq)]
   pub struct Parameter {
     pub name: String,
     pub primitive: Primitive,
   }
 
-  /// A cardinality of a vector or matrix in Shady.
   pub type Cardinality = u8;
 
-  /// A kind of primitive in Shady, along with it's cardinality.
   #[derive(Debug, PartialEq)]
   pub struct Primitive(PrimitiveKind, Cardinality);
 
-  /// A kind of primitive in Shady.
   #[derive(Debug, PartialEq)]
   pub enum PrimitiveKind {
     Integer,
@@ -141,7 +313,6 @@ mod parser {
     Sampler,
   }
 
-  /// Possible types of Shady statements.
   #[derive(Debug, PartialEq)]
   pub enum Statement {
     Assignment(String, Expression),
@@ -158,7 +329,6 @@ mod parser {
     }
   }
 
-  /// Possible types of Shady expressions.
   #[derive(Debug, PartialEq)]
   pub enum Expression {
     Literal(Literal),
@@ -176,13 +346,11 @@ mod parser {
     }
   }
 
-  /// A unary operator in a Shady expression.
   #[derive(Copy, Clone, Debug, Eq, PartialEq)]
   pub enum UnaryOperator {
     Not,
   }
 
-  /// A binary operator in a Shady expression.
   #[derive(Copy, Clone, Debug, Eq, PartialEq)]
   pub enum BinaryOperator {
     Add,
@@ -198,7 +366,6 @@ mod parser {
     Or,
   }
 
-  /// A literal value.
   #[derive(Debug, PartialEq)]
   pub enum Literal {
     Integer(i32),
@@ -206,7 +373,6 @@ mod parser {
     Boolean(bool),
   }
 
-  /// A token in the token stream.
   #[derive(Debug, PartialEq)]
   pub enum Token {
     Integer(i32),
@@ -273,7 +439,6 @@ mod parser {
       Ok(self.last_token.as_ref().unwrap())
     }
 
-    /// Parses a module from the token stream.
     pub fn parse_module(&mut self) -> common::Result<Module> {
       match self.peek() {
         Some(Token::Keyword(keyword)) if keyword == "#shader_type" => self.parse_shader_type_module(),
@@ -281,7 +446,6 @@ mod parser {
       }
     }
 
-    /// Parses a shader type module from the token stream.
     pub fn parse_shader_type_module(&mut self) -> common::Result<Module> {
       self.take_expect(Token::Keyword("#shader_type".to_string()))?;
 
@@ -297,7 +461,6 @@ mod parser {
       self.parse_module_of_kind(kind)
     }
 
-    /// Parses a standard module from the token stream.
     pub fn parse_module_of_kind(&mut self, kind: ModuleKind) -> common::Result<Module> {
       let mut kernels = Vec::new();
 
@@ -308,7 +471,6 @@ mod parser {
       Ok(Module { kind, kernels })
     }
 
-    /// Parses a kernel from the token stream.
     pub fn parse_kernel(&mut self) -> common::Result<Kernel> {
       match self.peek() {
         Some(Token::Keyword(keyword)) if keyword == "fn" => self.parse_function_kernel(),
@@ -316,7 +478,6 @@ mod parser {
       }
     }
 
-    /// Parses a function kernel from the token stream.
     pub fn parse_function_kernel(&mut self) -> common::Result<Kernel> {
       if let Statement::Function(name, parameters, statements) = self.parse_statement()? {
         if parameters.len() != 0 {
@@ -335,7 +496,6 @@ mod parser {
       }
     }
 
-    /// Parses a statement from the token stream.
     pub fn parse_statement(&mut self) -> common::Result<Statement> {
       match self.take_if(|it| matches!(it, Token::Keyword(_))) {
         Some(Token::Keyword(keyword)) if keyword == "let" => self.parse_let_statement(),
@@ -345,7 +505,6 @@ mod parser {
       }
     }
 
-    /// Parses a let statement from the token stream.
     pub fn parse_let_statement(&mut self) -> common::Result<Statement> {
       let identifier = match self.take() {
         Some(Token::Identifier(identifier)) => identifier.clone(),
@@ -359,7 +518,6 @@ mod parser {
       Ok(Statement::Assignment(identifier, expression))
     }
 
-    /// Parses a return statement from the token stream.
     pub fn parse_return_statement(&mut self) -> common::Result<Statement> {
       let expression = self.parse_expression()?;
 
@@ -368,7 +526,6 @@ mod parser {
       Ok(Statement::Return(expression))
     }
 
-    /// Parses a function statement from the token stream.
     pub fn parse_function_statement(&mut self) -> common::Result<Statement> {
       let name = match self.take() {
         Some(Token::Identifier(name)) => name.clone(),
@@ -399,7 +556,6 @@ mod parser {
       Ok(Statement::Function(name, parameters, statements))
     }
 
-    /// Parses a parameter from the token stream.
     pub fn parse_parameter(&mut self) -> common::Result<Parameter> {
       let primitive = self.parse_primitive()?;
       let name = match self.take() {
@@ -410,12 +566,10 @@ mod parser {
       Ok(Parameter { name, primitive })
     }
 
-    /// Parses an expression from the token stream.
     pub fn parse_expression(&mut self) -> common::Result<Expression> {
       self.parse_binary_expression()
     }
 
-    /// Parses a binary expression from the token stream.
     pub fn parse_binary_expression(&mut self) -> common::Result<Expression> {
       let mut expression = self.parse_unary_expression()?;
 
@@ -428,7 +582,6 @@ mod parser {
       Ok(expression)
     }
 
-    /// Parses a unary expression from the token stream.
     pub fn parse_unary_expression(&mut self) -> common::Result<Expression> {
       if let Ok(operator) = self.parse_unary_operator() {
         let expression = self.parse_unary_expression()?;
@@ -439,7 +592,6 @@ mod parser {
       self.parse_primary_expression()
     }
 
-    /// Parses a primary expression from the token stream.
     pub fn parse_primary_expression(&mut self) -> common::Result<Expression> {
       match self.take() {
         Some(Token::Integer(value)) => Ok(Expression::Literal(Literal::Integer(*value))),
@@ -450,7 +602,6 @@ mod parser {
       }
     }
 
-    /// Parses a binary operator from the token stream.
     pub fn parse_binary_operator(&mut self) -> common::Result<BinaryOperator> {
       match self.take_if(|it| matches!(it, Token::BinaryOperator(_))) {
         Some(Token::BinaryOperator(operator)) => Ok(*operator),
@@ -458,7 +609,6 @@ mod parser {
       }
     }
 
-    /// Parses a unary operator from the token stream.
     pub fn parse_unary_operator(&mut self) -> common::Result<UnaryOperator> {
       match self.take_if(|it| matches!(it, Token::UnaryOperator(_))) {
         Some(Token::UnaryOperator(operator)) => Ok(*operator),
@@ -466,7 +616,6 @@ mod parser {
       }
     }
 
-    /// Parses a primitive from the token stream.
     pub fn parse_primitive(&mut self) -> common::Result<Primitive> {
       match self.take() {
         Some(Token::Keyword(keyword)) if keyword == "int" => Ok(Primitive(PrimitiveKind::Integer, 1)),
@@ -485,7 +634,6 @@ mod parser {
       }
     }
 
-    /// Creates an error for an unexpected token.
     pub fn unexpected_token<R>(&self) -> common::Result<R> {
       Err(common::anyhow!("unexpected token encountered: {:?}", self.peek()))
     }
@@ -576,6 +724,7 @@ mod parser {
           }
 
           // parse operators
+          '!' => tokens.push_back(Token::UnaryOperator(UnaryOperator::Not)),
           '+' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Add)),
           '-' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Subtract)),
           '*' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Multiply)),
@@ -583,7 +732,6 @@ mod parser {
           '%' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Modulo)),
           '^' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Power)),
           '=' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Equal)),
-          '!' => tokens.push_back(Token::UnaryOperator(UnaryOperator::Not)),
           '<' => tokens.push_back(Token::BinaryOperator(BinaryOperator::LessThan)),
           '>' => tokens.push_back(Token::BinaryOperator(BinaryOperator::GreaterThan)),
           '&' => tokens.push_back(Token::BinaryOperator(BinaryOperator::And)),
