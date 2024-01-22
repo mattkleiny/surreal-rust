@@ -23,10 +23,17 @@ pub struct RenderQueue {
 
 /// A single command for a [`RenderQueue`] to execute.
 pub enum RenderCommand {
-  NoOp,
-  /// Draws a sprite texture.
-  DrawSprite {
-    sprite: TextureId,
+  SetShader {
+    shader_id: ShaderId,
+    uniforms: UniformSet,
+  },
+  SetUniform {
+    shader_id: ShaderId,
+    location: usize,
+    uniform: ShaderUniform,
+  },
+  DrawMesh {
+    mesh_id: MeshId,
     region: Rectangle,
     tint: Color,
   },
@@ -53,12 +60,9 @@ impl RenderQueue {
 
     for command in commands.drain(..) {
       match command {
-        RenderCommand::NoOp => {
-          // no-op
-        }
-        RenderCommand::DrawSprite { .. } => {
-          todo!("draw sprite")
-        }
+        RenderCommand::SetShader { .. } => todo!(),
+        RenderCommand::SetUniform { .. } => todo!(),
+        RenderCommand::DrawMesh { .. } => todo!(),
       }
     }
   }
@@ -89,9 +93,10 @@ mod tests {
     renderer.begin_frame();
 
     renderer.with(|queue: &mut RenderQueue| {
-      queue.enqueue(RenderCommand::NoOp);
-      queue.enqueue(RenderCommand::NoOp);
-      queue.enqueue(RenderCommand::NoOp);
+      queue.enqueue(RenderCommand::SetShader {
+        shader_id: ShaderId::from(1u32),
+        uniforms: UniformSet::default(),
+      });
     });
 
     renderer.end_frame();

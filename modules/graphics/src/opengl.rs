@@ -561,7 +561,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         }
         ShaderUniform::Texture(texture, slot, sampler) => {
           gl::ActiveTexture(gl::TEXTURE0 + *slot as u32);
-          gl::BindTexture(gl::TEXTURE_2D, texture.id().into());
+          gl::BindTexture(gl::TEXTURE_2D, (*texture).into());
           gl::ProgramUniform1i(shader_id, location as i32, *slot as i32);
 
           if let Some(sampler) = sampler {

@@ -263,7 +263,7 @@ pub enum ShaderUniform {
   DQuat(DQuat),
   Color(Color),
   Color32(Color32),
-  Texture(Texture, u8, Option<TextureSampler>),
+  Texture(TextureId, u8, Option<TextureSampler>),
   Array(Vec<ShaderUniform>),
 }
 

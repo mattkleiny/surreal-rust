@@ -54,12 +54,12 @@ pub enum ScissorMode {
 
 /// A set of [`ShaderUniform`]s that can be passed around the application.
 #[derive(Default, Clone)]
-pub struct MaterialUniformSet {
+pub struct UniformSet {
   uniforms: FastHashMap<String, ShaderUniform>,
   textures: TextureBindingSet,
 }
 
-impl MaterialUniformSet {
+impl UniformSet {
   /// Sets the given [`UniformKey`] as a uniform in the set.
   pub fn set_uniform<K, U>(&mut self, key: K, value: U)
   where
@@ -79,7 +79,7 @@ impl MaterialUniformSet {
     K: Into<UniformKey<&'a Texture>>,
   {
     let slot = self.allocate_texture_slot(texture);
-    let uniform = ShaderUniform::Texture(texture.clone(), slot, sampler);
+    let uniform = ShaderUniform::Texture(texture.id(), slot, sampler);
 
     self.uniforms.insert(key.into().name.to_string(), uniform);
   }
@@ -103,7 +103,7 @@ impl MaterialUniformSet {
   fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
     self.textures.allocate(texture).unwrap_or_else(|| {
       panic!(
-        "Failed to allocate texture slot. There's a limit of {MAX_TEXTURE_UNITS} concurrent textures per material.",
+        "Failed to allocate texture slot. There's a limit of {MAX_TEXTURE_UNITS} concurrent textures per material."
       )
     })
   }
@@ -115,7 +115,7 @@ impl MaterialUniformSet {
 pub struct Material {
   graphics: GraphicsEngine,
   shader: ShaderProgram,
-  uniforms: MaterialUniformSet,
+  uniforms: UniformSet,
   blend_state: BlendState,
   culling_mode: CullingMode,
   scissor_mode: ScissorMode,
@@ -127,7 +127,7 @@ impl Material {
     Self {
       graphics: graphics.clone(),
       shader: shader.clone(),
-      uniforms: MaterialUniformSet::default(),
+      uniforms: UniformSet::default(),
       blend_state: BlendState::Disabled,
       culling_mode: CullingMode::Disabled,
       scissor_mode: ScissorMode::Disabled,
