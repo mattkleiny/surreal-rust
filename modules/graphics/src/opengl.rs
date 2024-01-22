@@ -487,6 +487,10 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  fn shader_metadata(&self, _shader: ShaderId) -> Result<ShaderFlags, ShaderError> {
+    todo!()
+  }
+
   fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
     unsafe {
       let shader_id = shader.into();

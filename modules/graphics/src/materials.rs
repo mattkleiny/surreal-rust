@@ -134,6 +134,11 @@ impl Material {
     }
   }
 
+  /// Gets the underlying [`ShaderProgram`] of the material.
+  pub fn shader(&self) -> &ShaderProgram {
+    &self.shader
+  }
+
   /// Gets the blend state of the material.
   pub fn blend_state(&self) -> BlendState {
     self.blend_state

@@ -2,7 +2,7 @@ use super::*;
 
 /// A frustum in 3-space.
 #[repr(C)]
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Frustum {
   pub near: Plane,
   pub far: Plane,

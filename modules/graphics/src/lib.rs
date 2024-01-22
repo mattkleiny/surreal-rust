@@ -1,6 +1,7 @@
 //! Graphics engine for Surreal.
 
 #![feature(impl_trait_in_assoc_type)]
+#![feature(slice_group_by)]
 
 pub use buffers::*;
 pub use colors::*;
@@ -183,6 +184,7 @@ pub trait GraphicsBackend {
   // shaders
   fn shader_create(&self) -> Result<ShaderId, ShaderError>;
   fn shader_link(&self, shader: ShaderId, kernels: &[ShaderKernel]) -> Result<(), ShaderError>;
+  fn shader_metadata(&self, shader: ShaderId) -> Result<ShaderFlags, ShaderError>;
   fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize>;
   fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError>;
   fn shader_set_uniforms(&self, shader: ShaderId, location: usize, value: &[ShaderUniform]) -> Result<(), ShaderError>;

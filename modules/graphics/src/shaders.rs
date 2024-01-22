@@ -8,6 +8,7 @@
 use core::str;
 use std::{cell::RefCell, rc::Rc};
 
+use bitflags::bitflags;
 pub use glsl::*;
 pub use templates::*;
 
@@ -17,6 +18,15 @@ mod templates;
 use common::*;
 
 use super::*;
+
+/// Represents a language for [`ShaderKernel`] compilation.
+///
+/// Abstracting over shader languages allows us to build out new language
+/// paradigms in the future.
+pub trait ShaderLanguage {
+  /// Parses the given raw source code into one or more [`ShaderKernel`]s.
+  fn parse_kernels(source_code: &str) -> common::Result<Vec<ShaderKernel>>;
+}
 
 /// Different types of shaders supported by the engine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -33,13 +43,14 @@ pub struct ShaderKernel {
   pub code: String,
 }
 
-/// Represents a language for [`ShaderKernel`] compilation.
-///
-/// Abstracting over shader languages allows us to build out new language
-/// paradigms in the future.
-pub trait ShaderLanguage {
-  /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-  fn parse_kernels(source_code: &str) -> common::Result<Vec<ShaderKernel>>;
+bitflags! {
+  /// Metadata flags indicating what state the shader program requires.
+  #[derive(Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+  pub struct ShaderFlags: u32 {
+    const ALPHA_TESTING = 0b0000001;
+    const DEPTH_TESTING = 0b00000010;
+    const DEPTH_WRITING = 0b00000100;
+  }
 }
 
 /// Represents a single compiled shader program.
@@ -53,6 +64,7 @@ struct ShaderProgramState {
   id: ShaderId,
   graphics: GraphicsEngine,
   location_cache: FastHashMap<String, Option<usize>>,
+  flags: ShaderFlags,
 }
 
 impl ShaderProgram {
@@ -63,6 +75,7 @@ impl ShaderProgram {
         id: graphics.shader_create()?,
         graphics: graphics.clone(),
         location_cache: FastHashMap::default(),
+        flags: ShaderFlags::empty(),
       })),
     })
   }
@@ -108,9 +121,12 @@ impl ShaderProgram {
 
   /// Returns the [`ShaderId`] of the underlying program.
   pub fn id(&self) -> ShaderId {
-    let state = self.state.borrow();
+    self.state.borrow().id
+  }
 
-    state.id
+  /// Returns the [`ShaderFlags`] for the underlying program.
+  pub fn flags(&self) -> ShaderFlags {
+    self.state.borrow().flags
   }
 
   /// Retrieves the binding location of the given shader uniform in the
@@ -166,10 +182,11 @@ impl ShaderProgram {
 
   /// Reloads the [`ShaderProgram`] from the given shader code.
   pub fn load_kernels(&self, kernels: &[ShaderKernel]) -> common::Result<()> {
-    let state = self.state.borrow();
+    let mut state = self.state.borrow_mut();
     let graphics = &state.graphics;
 
     graphics.shader_link(state.id, &kernels)?;
+    state.flags = graphics.shader_metadata(state.id)?;
 
     Ok(())
   }
