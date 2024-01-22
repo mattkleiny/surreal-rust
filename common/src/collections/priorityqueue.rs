@@ -78,7 +78,7 @@ impl<T: PartialEq> Eq for Node<T> {}
 
 impl<T: PartialEq> PartialOrd for Node<T> {
   fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-    self.order.partial_cmp(&other.order)
+    Some(self.cmp(other))
   }
 }
 

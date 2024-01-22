@@ -61,7 +61,7 @@ impl<K: Eq + Hash, V> MultiMap<K, V> {
   /// Inserts the given key-value pair into the map.
   #[inline]
   pub fn insert(&mut self, key: K, value: V) {
-    self.entries.entry(key).or_insert_with(Vec::new).push(value);
+    self.entries.entry(key).or_default().push(value);
   }
 
   /// Removes the given key-value pair from the map.

@@ -90,7 +90,7 @@ impl Texture {
     let texture = Self::new(graphics)?;
 
     texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
-    texture.write_pixels(image.width(), image.height(), &image.pixels());
+    texture.write_pixels(image.width(), image.height(), image.pixels());
 
     Ok(texture)
   }
@@ -193,6 +193,7 @@ impl Texture {
   }
 
   /// Downloads pixel data from the texture.
+  #[allow(clippy::uninit_vec)]
   pub fn read_pixels<T: Texel>(&self) -> Vec<T> {
     let state = self.state.borrow();
 

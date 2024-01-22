@@ -47,8 +47,8 @@ impl From<Angle> for f32 {
 impl From<Angle> for f64 {
   fn from(value: Angle) -> Self {
     match value {
-      Angle::Radians(radians) => radians as f64,
-      Angle::Degrees(degrees) => degrees.to_radians() as f64,
+      Angle::Radians(radians) => radians,
+      Angle::Degrees(degrees) => degrees.to_radians(),
     }
   }
 }

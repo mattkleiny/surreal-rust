@@ -1,5 +1,3 @@
-//! Template shaders and commonly used shader code.
-
 use super::*;
 
 /// A templated shader program that can be used to generate new
@@ -23,7 +21,7 @@ impl<S: ShaderLanguage> ShaderTemplate<S> {
 
   /// Converts the template into a shader program.
   pub fn to_program(&self, graphics: &GraphicsEngine) -> common::Result<ShaderProgram> {
-    ShaderProgram::from_code::<S>(&graphics, &self.code)
+    ShaderProgram::from_code::<S>(graphics, self.code)
   }
 }
 

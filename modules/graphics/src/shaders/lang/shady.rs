@@ -1,5 +1,3 @@
-//! Shady language support for the shader system
-
 use super::*;
 
 /// The Shady [`ShaderLanguage`] implementation.
@@ -17,7 +15,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shady stream.
-  pub fn from_shady_stream<'a>(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> common::Result<Self> {
+  pub fn from_shady_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> common::Result<Self> {
     Self::from_stream::<Shady>(graphics, stream)
   }
 }
@@ -99,7 +97,7 @@ mod compiler {
       match self {
         Statement::Function(name, _parameters, body) => {
           builder.push("void ");
-          builder.push(&name);
+          builder.push(name);
           builder.push_line("()");
           builder.push_line("{");
           builder.indent();
@@ -113,7 +111,7 @@ mod compiler {
         }
         Statement::Assignment(name, value) => {
           // TODO: work out the type of the value
-          builder.push(&name);
+          builder.push(name);
           builder.push(" = ");
 
           value.compile(builder)?;
@@ -141,7 +139,7 @@ mod compiler {
           Literal::Float(value) => builder.push(&value.to_string()),
           Literal::Boolean(value) => builder.push(&value.to_string()),
         },
-        Expression::Identifier(name) => builder.push(&name),
+        Expression::Identifier(name) => builder.push(name),
         Expression::Binary(left, operator, right) => {
           left.compile(builder)?;
           builder.push(" ");
@@ -534,7 +532,7 @@ mod parser {
 
     pub fn parse_function_kernel(&mut self) -> common::Result<Kernel> {
       if let Statement::Function(name, parameters, statements) = self.parse_statement()? {
-        if parameters.len() != 0 {
+        if !parameters.is_empty() {
           return Err(common::anyhow!("function kernels cannot have parameters"));
         }
 
@@ -684,7 +682,7 @@ mod parser {
         Some(Token::Keyword(keyword)) if keyword == "sampler1D" => Ok(Primitive(PrimitiveKind::Sampler, 1)),
         Some(Token::Keyword(keyword)) if keyword == "sampler2D" => Ok(Primitive(PrimitiveKind::Sampler, 2)),
         Some(Token::Keyword(keyword)) if keyword == "sampler3D" => Ok(Primitive(PrimitiveKind::Sampler, 3)),
-        _ => return self.unexpected_token(),
+        _ => self.unexpected_token(),
       }
     }
 
@@ -816,7 +814,7 @@ mod parser {
 
     #[test]
     fn test_parse_basic_tokens_from_expression() {
-      let code = r"1 + 2 * 3.14159 - 4";
+      let code = r"1 + 2 * 3.14159265358979323846264338327950288 - 4";
 
       let stream = TokenStream::parse(code).unwrap();
 
@@ -827,7 +825,7 @@ mod parser {
           Token::BinaryOperator(BinaryOperator::Add),
           Token::Integer(2),
           Token::BinaryOperator(BinaryOperator::Multiply),
-          Token::Float(3.14159),
+          Token::Float(std::f32::consts::PI),
           Token::BinaryOperator(BinaryOperator::Subtract),
           Token::Integer(4),
         ]

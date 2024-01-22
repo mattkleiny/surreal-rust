@@ -1,5 +1,3 @@
-//! GLSL language support for the shader system
-
 use super::*;
 
 /// The OpenGL [`ShaderLanguage`] implementation.
@@ -17,7 +15,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL stream.
-  pub fn from_glsl_stream<'a>(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> common::Result<Self> {
+  pub fn from_glsl_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> common::Result<Self> {
     Self::from_stream::<GLSL>(graphics, stream)
   }
 }

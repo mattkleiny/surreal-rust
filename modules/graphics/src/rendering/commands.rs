@@ -22,16 +22,17 @@ pub struct RenderQueue {
 }
 
 /// A single command for a [`RenderQueue`] to execute.
-pub enum RenderCommand {
+enum RenderCommand {
   SetShader {
     shader_id: ShaderId,
-    uniforms: ShaderUniformSet,
+    uniforms: Box<ShaderUniformSet>,
   },
   SetUniform {
     shader_id: ShaderId,
     location: usize,
     uniform: ShaderUniform,
   },
+  SetRenderTarget {},
   DrawMesh {
     mesh_id: MeshId,
     region: Rectangle,
@@ -41,7 +42,7 @@ pub enum RenderCommand {
 
 impl RenderQueue {
   /// Enqueues a new [`RenderCommand`].
-  pub fn enqueue(&mut self, command: RenderCommand) {
+  fn enqueue(&mut self, command: RenderCommand) {
     let mut commands = self.commands.lock().unwrap();
 
     commands.push(command);
@@ -58,12 +59,8 @@ impl RenderQueue {
   pub fn flush(&mut self, _graphics: &GraphicsEngine) {
     let mut commands = self.commands.lock().unwrap();
 
-    for command in commands.drain(..) {
-      match command {
-        RenderCommand::SetShader { .. } => todo!(),
-        RenderCommand::SetUniform { .. } => todo!(),
-        RenderCommand::DrawMesh { .. } => todo!(),
-      }
+    for _command in commands.drain(..) {
+      todo!()
     }
   }
 }

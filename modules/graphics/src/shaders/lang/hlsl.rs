@@ -1,5 +1,3 @@
-//! HLSL language support for the shader system
-
 use super::*;
 
 /// The HLSL [`ShaderLanguage`] implementation.
@@ -17,7 +15,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw HLSL stream.
-  pub fn from_hlsl_stream<'a>(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> common::Result<Self> {
+  pub fn from_hlsl_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> common::Result<Self> {
     Self::from_stream::<HLSL>(graphics, stream)
   }
 }

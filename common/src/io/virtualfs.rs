@@ -50,8 +50,8 @@ impl Default for FileSystemManager {
     Self {
       #[rustfmt::skip]
       file_systems: RwLock::new(vec![
-        Box::new(LocalFileSystem::default()),
-        Box::new(MemoryFileSystem::default()),
+        Box::<LocalFileSystem>::default(),
+        Box::<MemoryFileSystem>::default(),
       ]),
     }
   }
@@ -118,8 +118,7 @@ impl<'a> VirtualPath<'a> {
 
   /// Returns a new path with a different file extension appended.
   pub fn append_extension(&'a self, new_extension: &'a str) -> Self {
-    let location = self.location.to_owned();
-    let location = format!("{:}.{:}", location, new_extension);
+    let location = format!("{:}.{:}", self.location, new_extension);
 
     Self {
       scheme: self.scheme.clone(),
@@ -198,12 +197,6 @@ impl<'a> VirtualPath<'a> {
     stream.read_to_string(&mut buffer)?;
 
     Ok(buffer)
-  }
-
-  /// Converts the path to a string.
-  #[inline]
-  pub fn to_string(&self) -> String {
-    format!("{:}://{:}", self.scheme, self.location)
   }
 }
 

@@ -105,7 +105,7 @@ impl<T> Buffer<T> {
         state.id,
         state.usage,
         state.kind,
-        data.len() * std::mem::size_of::<T>(),
+        std::mem::size_of_val(data),
         data.as_ptr() as *const u8,
       )
       .expect("Failed to write buffer data");

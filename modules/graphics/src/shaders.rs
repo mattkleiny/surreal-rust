@@ -111,7 +111,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_stream<'a, S: ShaderLanguage>(
+  pub fn from_stream<S: ShaderLanguage>(
     graphics: &GraphicsEngine,
     stream: &mut dyn InputStream,
   ) -> common::Result<Self> {
@@ -207,7 +207,7 @@ impl ShaderProgram {
     let mut state = self.state.borrow_mut();
     let graphics = &state.graphics;
 
-    graphics.shader_link(state.id, &kernels)?;
+    graphics.shader_link(state.id, kernels)?;
     state.flags = graphics.shader_metadata(state.id)?;
 
     Ok(())

@@ -17,12 +17,18 @@ mod version;
 pub use macros::Singleton;
 
 /// Reinterprets the given reference as a reference to a different type.
+///
+/// # Safety
+/// This is only safe if the new type is the same size as the old type.
 #[inline(always)]
 pub unsafe fn reinterpret_cast<T, U>(value: &T) -> &U {
   unsafe { &*(value as *const T as *const U) }
 }
 
 /// Mutably reinterprets the given reference as a reference to a different type.
+///
+/// # Safety
+/// This is only safe if the new type is the same size as the old type.
 #[inline(always)]
 pub unsafe fn reinterpret_cast_mut<T, U>(value: &mut T) -> &mut U {
   unsafe { &mut *(value as *mut T as *mut U) }
@@ -32,6 +38,10 @@ pub unsafe fn reinterpret_cast_mut<T, U>(value: &mut T) -> &mut U {
 ///
 /// This breaks many assumptions in the Rust type system, so use with great
 /// caution and only to facilitate a cleaner API.
+///
+/// # Safety
+/// This is only safe if the given value is not modified while the alias is
+/// alive. This is _very_ hard to guarantee.
 #[inline(always)]
 #[allow(invalid_reference_casting)]
 pub unsafe fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {

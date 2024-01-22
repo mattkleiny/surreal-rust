@@ -80,12 +80,8 @@ impl StringNamePool {
   pub fn lookup(&self, id: ArenaIndex) -> Option<String> {
     let strings = self.strings_by_id.read().unwrap();
 
-    if let Some(value) = strings.get(id) {
-      // TODO: remove this clone
-      Some(value.clone())
-    } else {
-      None
-    }
+    // TODO remove this clone
+    strings.get(id).cloned()
   }
 
   /// Interns the given string and returns its ID.

@@ -8,19 +8,10 @@ pub trait Spline {
 }
 
 /// A Catmull-Rom [`Spline`].
-#[derive(Clone, Debug)]
+#[derive(Default, Clone, Debug)]
 pub struct CatmulRomSpline {
   pub points: Vec<f32>,
   pub continuous: bool,
-}
-
-impl Default for CatmulRomSpline {
-  fn default() -> Self {
-    Self {
-      points: Vec::new(),
-      continuous: false,
-    }
-  }
 }
 
 impl Spline for CatmulRomSpline {

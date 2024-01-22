@@ -6,6 +6,12 @@ pub struct EventBus<E> {
   receiver: mpsc::Receiver<E>,
 }
 
+impl<E> Default for EventBus<E> {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl<E> EventBus<E> {
   /// Creates a new event bus.
   pub fn new() -> Self {
