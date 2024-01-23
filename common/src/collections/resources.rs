@@ -106,7 +106,7 @@ impl<K: Into<ArenaIndex> + From<ArenaIndex>, V> ResourceArena<K, V> {
   pub fn read_all(&self, body: impl FnMut(&V)) {
     let entries = self.entries.read().unwrap();
 
-    entries.iter().map(|(_, v)| v).for_each(body);
+    entries.enumerate().map(|(_, v)| v).for_each(body);
   }
 
   /// Writes the [`V`] associated with the given key.
@@ -120,7 +120,7 @@ impl<K: Into<ArenaIndex> + From<ArenaIndex>, V> ResourceArena<K, V> {
   pub fn write_all(&self, body: impl FnMut(&mut V)) {
     let mut entries = self.entries.write().unwrap();
 
-    entries.iter_mut().map(|(_, v)| v).for_each(body);
+    entries.enumerate_mut().map(|(_, v)| v).for_each(body);
   }
 
   /// Inserts a [`V`] into storage and returns it's [`K`].

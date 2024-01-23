@@ -121,7 +121,9 @@ impl Material {
 
   /// Sets the given [`UniformKey`] with a single texture.
   pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
-  where K: Into<ShaderUniformKey<&'a Texture>> {
+  where
+    K: Into<ShaderUniformKey<&'a Texture>>,
+  {
     self.uniforms.set_texture(key, texture, sampler);
   }
 

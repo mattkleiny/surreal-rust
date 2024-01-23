@@ -1,9 +1,12 @@
-use std::{collections::HashMap, hash::Hash};
+use std::{
+  collections::HashMap,
+  hash::{Hash, RandomState},
+};
 
 /// A simple [`HashMap`]  with multiple values per key.
 #[derive(Default, Debug)]
-pub struct MultiMap<K, V> {
-  entries: HashMap<K, Vec<V>>,
+pub struct MultiMap<K, V, S = RandomState> {
+  entries: HashMap<K, Vec<V>, S>,
 }
 
 impl<K: Eq + Hash, V> MultiMap<K, V> {
@@ -40,7 +43,9 @@ impl<K: Eq + Hash, V> MultiMap<K, V> {
 
   /// Determines if the given key-value pair is contained in the map.
   pub fn contains_value(&self, key: &K, value: &V) -> bool
-  where V: PartialEq {
+  where
+    V: PartialEq,
+  {
     self.entries.get(key).map(|vec| vec.contains(value)).unwrap_or(false)
   }
 
@@ -64,7 +69,9 @@ impl<K: Eq + Hash, V> MultiMap<K, V> {
 
   /// Removes the given key-value pair from the map.
   pub fn remove(&mut self, key: &K, value: V)
-  where V: PartialEq {
+  where
+    V: PartialEq,
+  {
     if let Some(entries) = self.entries.get_mut(key) {
       entries.retain(|v| v != &value);
 

@@ -90,7 +90,7 @@ impl StringNamePool {
     // for the case where the string is already interned
     let strings = self.strings_by_id.read().unwrap();
 
-    for (id, string) in strings.iter() {
+    for (id, string) in strings.enumerate() {
       if string == value {
         return id;
       }

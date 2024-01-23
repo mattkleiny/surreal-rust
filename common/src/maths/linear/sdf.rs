@@ -148,6 +148,6 @@ mod tests {
     let point_outside = Vec3::new(2.0, 2.0, 2.0);
 
     assert_eq!(trapezoid.distance_to(point_inside), 1.5);
-    assert_eq!(trapezoid.distance_to(point_outside), 1.4142135);
+    assert_eq!(trapezoid.distance_to(point_outside), std::f32::consts::SQRT_2);
   }
 }

@@ -86,10 +86,7 @@ impl Texture {
   }
 
   /// Loads a texture from the given image.
-  pub fn from_image<T: Texel + Clone>(
-    graphics: &GraphicsEngine,
-    image: &impl Image<Pixel = T>,
-  ) -> common::Result<Self> {
+  pub fn from_image<T: Texel>(graphics: &GraphicsEngine, image: &impl Image<Pixel = T>) -> common::Result<Self> {
     let texture = Self::new(graphics)?;
 
     texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
@@ -99,12 +96,7 @@ impl Texture {
   }
 
   /// Builds a new colored texture of the given size.
-  pub fn from_color<T: Texel + Clone>(
-    graphics: &GraphicsEngine,
-    width: u32,
-    height: u32,
-    color: T,
-  ) -> common::Result<Self> {
+  pub fn from_color<T: Texel>(graphics: &GraphicsEngine, width: u32, height: u32, color: T) -> common::Result<Self> {
     let texture = Self::new(graphics)?;
     let colors = vec![color; width as usize * height as usize];
 
@@ -328,7 +320,7 @@ impl TextureAtlas {
 }
 
 /// Indicates a kind of pixel that can be used in a texture.
-pub trait Texel {
+pub trait Texel: Clone + Copy + Sized {
   const FORMAT: TextureFormat;
 }
 
@@ -404,5 +396,21 @@ impl TextureBindingSet {
   /// Returns an iterator over all texture IDs in the set.
   pub fn iter(&self) -> impl Iterator<Item = &TextureId> {
     self.slots.iter().filter_map(|slot| slot.as_ref())
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_create_texture_from_image() {
+    let graphics = GraphicsEngine::headless();
+    let image = ColorImage::new(128, 128);
+
+    let texture = Texture::from_image(&graphics, &image).unwrap();
+
+    assert_eq!(texture.width(), 128);
+    assert_eq!(texture.height(), 128);
   }
 }

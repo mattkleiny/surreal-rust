@@ -211,13 +211,46 @@ impl<T> Arena<T> {
   }
 
   /// Iterates over the arena.
-  pub fn iter(&self) -> impl Iterator<Item = (ArenaIndex, &T)> {
+  pub fn iter(&self) -> impl Iterator<Item = &T> {
     pub struct Iter<'a, T> {
       arena: &'a Arena<T>,
       index: usize,
     }
 
     impl<'a, T> Iterator for Iter<'a, T> {
+      type Item = &'a T;
+
+      fn next(&mut self) -> Option<Self::Item> {
+        while let Some(entry) = self.arena.entries.get(self.index) {
+          if let Some(value) = entry {
+            self.index += 1;
+
+            return Some(&value.value);
+          }
+
+          self.index += 1;
+        }
+
+        None
+      }
+
+      fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.arena.entries.len() - self.index;
+        (remaining, Some(remaining))
+      }
+    }
+
+    Iter { arena: self, index: 0 }
+  }
+
+  /// Enumerates the indices and contents of the arena.
+  pub fn enumerate(&self) -> impl Iterator<Item = (ArenaIndex, &T)> {
+    pub struct Enumerate<'a, T> {
+      arena: &'a Arena<T>,
+      index: usize,
+    }
+
+    impl<'a, T> Iterator for Enumerate<'a, T> {
       type Item = (ArenaIndex, &'a T);
 
       fn next(&mut self) -> Option<Self::Item> {
@@ -245,17 +278,17 @@ impl<T> Arena<T> {
       }
     }
 
-    Iter { arena: self, index: 0 }
+    Enumerate { arena: self, index: 0 }
   }
 
-  /// Mutably iterates over the arena.
-  pub fn iter_mut(&mut self) -> impl Iterator<Item = (ArenaIndex, &mut T)> {
-    pub struct IterMut<'a, T> {
+  /// Mutably enumerates the indices and contents of the arena.
+  pub fn enumerate_mut(&mut self) -> impl Iterator<Item = (ArenaIndex, &mut T)> {
+    pub struct EnumerateMut<'a, T> {
       arena: &'a mut Arena<T>,
       index: usize,
     }
 
-    impl<'a, T> Iterator for IterMut<'a, T> {
+    impl<'a, T> Iterator for EnumerateMut<'a, T> {
       type Item = (ArenaIndex, &'a mut T);
 
       fn next(&mut self) -> Option<Self::Item> {
@@ -285,25 +318,16 @@ impl<T> Arena<T> {
       }
     }
 
-    IterMut { arena: self, index: 0 }
+    EnumerateMut { arena: self, index: 0 }
   }
 }
 
 impl<'a, T> IntoIterator for &'a Arena<T> {
-  type Item = (ArenaIndex, &'a T);
+  type Item = &'a T;
   type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
-  }
-}
-
-impl<'a, T> IntoIterator for &'a mut Arena<T> {
-  type Item = (ArenaIndex, &'a mut T);
-  type IntoIter = impl Iterator<Item = Self::Item>;
-
-  fn into_iter(self) -> Self::IntoIter {
-    self.iter_mut()
   }
 }
 
@@ -392,8 +416,8 @@ mod tests {
 
     arena.remove(index2);
 
-    for (index, item) in &arena {
-      println!("{item} at {index:?}");
+    for item in &arena {
+      println!("{item}");
     }
   }
 
@@ -408,7 +432,7 @@ mod tests {
 
     arena.remove(index2);
 
-    for (index, item) in &mut arena {
+    for (index, item) in arena.enumerate_mut() {
       *item = "Test 1";
 
       println!("{item} at {index:?}");

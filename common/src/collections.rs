@@ -1,5 +1,10 @@
 //! Collections and data structures.
 
+use std::{
+  collections::{HashMap, HashSet},
+  hash::BuildHasherDefault,
+};
+
 pub use anymap::*;
 pub use arena::*;
 pub use graphs::*;
@@ -24,7 +29,10 @@ mod ringbuffer;
 mod spatialhash;
 
 /// A faster hash set that is not resilient to DoS attacks.
-pub type FastHashSet<K> = rustc_hash::FxHashSet<K>;
+pub type FastHashSet<K> = HashSet<K, BuildHasherDefault<rustc_hash::FxHasher>>;
 
 /// A faster hash map that is not resilient to DoS attacks.
-pub type FastHashMap<K, V> = rustc_hash::FxHashMap<K, V>;
+pub type FastHashMap<K, V> = HashMap<K, V, BuildHasherDefault<rustc_hash::FxHasher>>;
+
+/// A faster multi-map that is not resilient to DoS attacks.
+pub type FastMultiMap<K, V> = MultiMap<K, V, FastHashMap<K, BuildHasherDefault<rustc_hash::FxHasher>>>;
