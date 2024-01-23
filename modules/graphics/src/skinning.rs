@@ -1,6 +1,6 @@
 //! Basic bone-mesh skinning support for Surreal
 
-use common::{FastHashMap, Mat4, TimeSpan};
+use common::{FastHashMap, Mat4, StringName, TimeSpan};
 
 use super::*;
 
@@ -13,7 +13,7 @@ pub const UNIFORM_BONES: ShaderUniformKey<&[Mat4]> = ShaderUniformKey::new("u_bo
 #[derive(Debug, Clone)]
 pub struct Bone {
   /// A unique name for this bone within the skeleton.
-  pub name: String,
+  pub name: StringName,
   /// Reference to the parent bone.
   pub parent: Option<usize>,
   /// The local transform of this bone.
@@ -32,7 +32,7 @@ pub struct Bone {
 #[derive(Default, Debug, Clone)]
 pub struct Skeleton {
   bones: Vec<Bone>,
-  bones_by_name: FastHashMap<String, usize>,
+  bones_by_name: FastHashMap<StringName, usize>,
 }
 
 impl Skeleton {
@@ -78,20 +78,23 @@ impl Skeleton {
 
   /// Tries to find a bone with the given name.
   pub fn find_bone(&self, name: &str) -> Option<&Bone> {
-    self.bones_by_name.get(name).and_then(|index| self.bones.get(*index))
+    self
+      .bones_by_name
+      .get(&StringName::from(name))
+      .and_then(|index| self.bones.get(*index))
   }
 
   /// Tries to find a bone with the given name.
   pub fn find_bone_mut(&mut self, name: &str) -> Option<&mut Bone> {
     self
       .bones_by_name
-      .get(name)
+      .get(&StringName::from(name))
       .and_then(|index| self.bones.get_mut(*index))
   }
 
   /// Tries to find a bone with the given name, and returns its index.
   pub fn find_bone_index(&self, name: &str) -> Option<usize> {
-    self.bones_by_name.get(name).copied()
+    self.bones_by_name.get(&StringName::from(name)).copied()
   }
 
   /// Borrows a bone from this skeleton.
@@ -289,7 +292,7 @@ impl Vertex for SkinVertex {
 
 #[cfg(test)]
 mod tests {
-  use common::vec3;
+  use common::{vec3, ToStringName};
 
   use super::*;
 
@@ -297,19 +300,19 @@ mod tests {
   fn skeleton_should_transfer_bone_transforms_on_update() {
     let mut skeleton = Skeleton::from_bones(vec![
       Bone {
-        name: "root".to_string(),
+        name: "root".to_string_name(),
         parent: None,
         transform: Mat4::IDENTITY,
         inverse_bind: Mat4::IDENTITY,
       },
       Bone {
-        name: "hip".to_string(),
+        name: "hip".to_string_name(),
         parent: Some(0),
         transform: Mat4::from_translation(vec3(0.0, 0.0, 1.0)),
         inverse_bind: Mat4::IDENTITY,
       },
       Bone {
-        name: "knee".to_string(),
+        name: "knee".to_string_name(),
         parent: Some(1),
         transform: Mat4::from_translation(vec3(0.0, 0.0, 1.0)),
         inverse_bind: Mat4::IDENTITY,
@@ -323,19 +326,19 @@ mod tests {
   fn skeleton_should_find_bone_by_name() {
     let skeleton = Skeleton::from_bones(vec![
       Bone {
-        name: "root".to_string(),
+        name: "root".to_string_name(),
         parent: None,
         transform: Mat4::IDENTITY,
         inverse_bind: Mat4::IDENTITY,
       },
       Bone {
-        name: "hip".to_string(),
+        name: "hip".to_string_name(),
         parent: Some(0),
         transform: Mat4::from_translation(vec3(0.0, 0.0, 1.0)),
         inverse_bind: Mat4::IDENTITY,
       },
       Bone {
-        name: "knee".to_string(),
+        name: "knee".to_string_name(),
         parent: Some(1),
         transform: Mat4::from_translation(vec3(0.0, 0.0, 1.0)),
         inverse_bind: Mat4::IDENTITY,

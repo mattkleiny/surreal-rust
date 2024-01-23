@@ -116,7 +116,7 @@ impl SceneComponentSet {
       }
     }
 
-    return Err(common::anyhow!("Component not found"));
+    Err(common::anyhow!("Component not found"))
   }
 
   /// Iterates the [`SceneComponent`]s in this set.

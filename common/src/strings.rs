@@ -18,8 +18,42 @@ pub struct String {}
 pub type String = std::string::String;
 
 /// Represents an interned string that can be used as a name.
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct StringName(ArenaIndex);
+
+/// A trait for objects that have a name.
+pub trait ToStringName {
+  /// Returns the name of this object as a string.
+  fn to_string_name(&self) -> StringName;
+}
+
+impl ToStringName for String {
+  fn to_string_name(&self) -> StringName {
+    StringName::from(self.as_str())
+  }
+}
+
+impl ToStringName for &str {
+  fn to_string_name(&self) -> StringName {
+    StringName::from(*self)
+  }
+}
+
+impl From<&str> for StringName {
+  fn from(value: &str) -> Self {
+    let pool = StringNamePool::instance();
+
+    StringName(pool.intern(value))
+  }
+}
+
+impl<'a> From<Cow<'a, str>> for StringName {
+  fn from(value: Cow<'a, str>) -> Self {
+    let pool = StringNamePool::instance();
+
+    StringName(pool.intern(&value))
+  }
+}
 
 impl Debug for StringName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -45,26 +79,24 @@ impl Display for StringName {
   }
 }
 
-impl From<&str> for StringName {
-  fn from(value: &str) -> Self {
+impl Drop for StringName {
+  fn drop(&mut self) {
     let pool = StringNamePool::instance();
 
-    StringName(pool.intern(value))
-  }
-}
-
-impl<'a> From<Cow<'a, str>> for StringName {
-  fn from(value: Cow<'a, str>) -> Self {
-    let pool = StringNamePool::instance();
-
-    StringName(pool.intern(&value))
+    pool.remove(self.0)
   }
 }
 
 /// An internal global pool of interned strings.
 #[derive(Singleton)]
 struct StringNamePool {
-  strings_by_id: RwLock<Arena<String>>,
+  strings_by_id: RwLock<Arena<StringPoolEntry>>,
+}
+
+/// An entry in the string pool.
+struct StringPoolEntry {
+  string: String,
+  reference_count: usize,
 }
 
 impl Default for StringNamePool {
@@ -78,29 +110,45 @@ impl Default for StringNamePool {
 impl StringNamePool {
   /// Looks up the string with the given ID.
   pub fn lookup(&self, id: ArenaIndex) -> Option<String> {
-    let strings = self.strings_by_id.read().unwrap();
+    let entries = self.strings_by_id.read().unwrap();
 
-    // TODO remove this clone
-    strings.get(id).cloned()
+    entries.get(id).map(|entry| entry.string.clone())
   }
 
   /// Interns the given string and returns its ID.
   pub fn intern(&self, value: &str) -> ArenaIndex {
     // we need to manually scan the strings here because we optimize
     // for the case where the string is already interned
-    let strings = self.strings_by_id.read().unwrap();
+    let mut entries = self.strings_by_id.write().unwrap();
 
-    for (id, string) in strings.enumerate() {
-      if string == value {
+    for (id, entry) in entries.enumerate_mut() {
+      if entry.string == value {
+        entry.reference_count += 1;
         return id;
       }
     }
 
     // we need to drop the read lock before we can write to the map
-    drop(strings);
+    drop(entries);
 
     // insert the string into the map
-    self.strings_by_id.write().unwrap().insert(value.to_owned())
+    self.strings_by_id.write().unwrap().insert(StringPoolEntry {
+      string: value.to_owned(),
+      reference_count: 1,
+    })
+  }
+
+  /// Removes the string with the given ID.
+  pub fn remove(&self, id: ArenaIndex) {
+    let mut entries = self.strings_by_id.write().unwrap();
+
+    if let Some(entry) = entries.get_mut(id) {
+      entry.reference_count -= 1;
+
+      if entry.reference_count == 0 {
+        entries.remove(id);
+      }
+    }
   }
 }
 
