@@ -1,6 +1,6 @@
 use std::{fmt::Debug, hash::Hash};
 
-use crate::{impl_rid, Arena, Scalar};
+use crate::{impl_rid, Arena, NeighbourList, PathFindingGrid, Scalar};
 
 impl_rid!(GraphNodeId);
 
@@ -49,35 +49,9 @@ pub trait DirectedGraph {
   fn edges_to(&self, node: GraphNodeId) -> impl Iterator<Item = &GraphEdge<Self::Weight>>;
   fn add_edge(&mut self, from: GraphNodeId, to: GraphNodeId, weight: Self::Weight);
   fn remove_edge(&mut self, from: GraphNodeId, to: GraphNodeId);
-
-  /// P
-  fn to_dot(&self) -> String
-  where
-    Self::Node: Debug,
-    Self::Weight: Debug,
-  {
-    // TODO: fix this up
-    let mut dot = String::new();
-
-    dot.push_str("digraph {\n");
-
-    for node in self.nodes() {
-      dot.push_str(&format!("  {:?};\n", node));
-    }
-
-    for edge in self.edges() {
-      dot.push_str(&format!(
-        "  {:?} -> {:?} [label={:?}];\n",
-        edge.from, edge.to, edge.weight
-      ));
-    }
-
-    dot.push_str("}\n");
-
-    dot
-  }
 }
 
+/// The default implementation of a directed graph.
 impl<N, W: Scalar> DirectedGraph for Graph<N, W> {
   type Node = N;
   type Weight = W;
@@ -123,6 +97,23 @@ impl<N, W: Scalar> DirectedGraph for Graph<N, W> {
   }
 }
 
+/// Allows a directed graph to be used for path-finding.
+impl<N> PathFindingGrid<GraphNodeId> for Graph<N, f32> {
+  fn get_cost(&self, from: GraphNodeId, to: GraphNodeId) -> f32 {
+    self
+      .edges_from(from)
+      .find(|edge| edge.to == to)
+      .map(|edge| edge.weight)
+      .unwrap_or(0.0)
+  }
+
+  fn get_neighbours(&self, center: GraphNodeId, results: &mut NeighbourList<GraphNodeId>) {
+    for edge in self.edges_from(center) {
+      results.push(edge.to);
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -148,5 +139,24 @@ mod tests {
     assert_eq!(graph.edges_to(node1).count(), 0);
     assert_eq!(graph.edges_to(node2).count(), 1);
     assert_eq!(graph.edges_to(node3).count(), 2);
+  }
+
+  #[test]
+  fn test_basic_graph_pathing() {
+    let mut graph = Graph::default();
+
+    let node1 = graph.add_node("a");
+    let node2 = graph.add_node("b");
+    let node3 = graph.add_node("c");
+    let node4 = graph.add_node("d");
+
+    graph.add_edge(node1, node2, 1.0);
+    graph.add_edge(node1, node3, 2.0);
+    graph.add_edge(node2, node3, 3.0);
+    graph.add_edge(node3, node4, 1.0);
+
+    let path = Vec::from(graph.find_path(node1, node4, |_, _| 0.0).unwrap());
+
+    assert_eq!(path, vec![node1, node3, node4]);
   }
 }
