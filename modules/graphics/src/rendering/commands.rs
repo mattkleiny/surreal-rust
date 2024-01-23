@@ -22,7 +22,8 @@ pub struct RenderQueue {
 }
 
 /// A single command for a [`RenderQueue`] to execute.
-enum RenderCommand {
+#[allow(dead_code)]
+pub enum RenderCommand {
   SetShader {
     shader_id: ShaderId,
     uniforms: Box<ShaderUniformSet>,
@@ -42,7 +43,7 @@ enum RenderCommand {
 
 impl RenderQueue {
   /// Enqueues a new [`RenderCommand`].
-  fn enqueue(&mut self, command: RenderCommand) {
+  pub fn enqueue(&mut self, command: RenderCommand) {
     let mut commands = self.commands.lock().unwrap();
 
     commands.push(command);
