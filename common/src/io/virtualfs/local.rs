@@ -62,6 +62,6 @@ mod tests {
     let path = VirtualPath::from("local://../assets/fonts/bitboy8_v1.otf");
     let bytes = path.read_all_bytes().unwrap();
 
-    assert!(bytes.len() > 0);
+    assert!(!bytes.is_empty());
   }
 }

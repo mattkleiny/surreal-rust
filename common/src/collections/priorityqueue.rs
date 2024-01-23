@@ -70,7 +70,7 @@ impl<T, W: Ord + Eq> Eq for Node<T, W> {}
 
 impl<T, W: Ord + PartialEq> PartialEq for Node<T, W> {
   fn eq(&self, other: &Self) -> bool {
-    self.order.eq(&other.order)
+    self.order == other.order
   }
 }
 
@@ -82,7 +82,7 @@ impl<T, W: Ord> Ord for Node<T, W> {
 
 impl<T, W: Ord + PartialOrd> PartialOrd for Node<T, W> {
   fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-    self.order.partial_cmp(&other.order)
+    Some(self.order.cmp(&other.order))
   }
 }
 

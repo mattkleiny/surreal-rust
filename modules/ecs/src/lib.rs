@@ -114,10 +114,9 @@ impl EntityManager {
 
   /// Removes the component of the given type from the entity with the given ID.
   pub fn remove_component<C: Component + 'static>(&mut self, entity_id: EntityId) {
-    self.get_storage_mut::<C>().and_then(|storage| {
+    if let Some(storage) = self.get_storage_mut::<C>() {
       storage.remove_component(entity_id);
-      Some(())
-    });
+    }
   }
 
   /// Gets the component of the given type for the given entity.
@@ -152,11 +151,10 @@ impl EntityManager {
 
   /// Mutably gets the storage for the given component type.
   pub fn get_or_create_storage_mut<C: Component + 'static>(&mut self) -> &mut C::Storage {
-    if !self.components.contains_key(&ComponentType::of::<C>()) {
-      self
-        .components
-        .insert(ComponentType::of::<C>(), Box::new(C::Storage::default()));
-    }
+    self
+      .components
+      .entry(ComponentType::of::<C>())
+      .or_insert_with(|| Box::<<C as Component>::Storage>::default());
 
     self
       .components

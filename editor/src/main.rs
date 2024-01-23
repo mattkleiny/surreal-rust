@@ -3,9 +3,9 @@
 use surreal_editor::{EditorWindowHost, ProjectWindow};
 
 fn main() {
-  let mut host = EditorWindowHost::new();
+  let mut host = EditorWindowHost::default();
 
-  host.add_window(ProjectWindow::new());
+  host.add_window(ProjectWindow::default());
 
   while host.update() {
     host.present();

@@ -1,16 +1,12 @@
 //! Windowing implementation for the editor.
 
 /// Hosts the editor windows, processing events and rendering.
+#[derive(Default)]
 pub struct EditorWindowHost {
   windows: Vec<Box<dyn EditorWindow>>,
 }
 
 impl EditorWindowHost {
-  /// Creates a new editor window host.
-  pub fn new() -> Self {
-    EditorWindowHost { windows: Vec::new() }
-  }
-
   /// Adds a window to the editor.
   pub fn add_window<T: EditorWindow + 'static>(&mut self, window: T) {
     self.windows.push(Box::new(window));
@@ -64,13 +60,8 @@ pub trait EditorPanel {}
 /// Layout settings for an editor panel.
 pub struct EditorPanelLayout {}
 
+#[derive(Default)]
 pub struct ProjectWindow {}
-
-impl ProjectWindow {
-  pub fn new() -> Self {
-    ProjectWindow {}
-  }
-}
 
 impl EditorWindow for ProjectWindow {
   fn update(&mut self) -> bool {

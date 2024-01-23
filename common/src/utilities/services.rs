@@ -56,7 +56,7 @@ mod tests {
   fn test_basic_service_add_and_retrieve() {
     let mut services = ServiceCollection::default();
 
-    services.add_service(TestService::default());
+    services.add_service(TestService);
 
     services.get::<TestService>().unwrap();
     services.get_mut::<TestService>().unwrap();
