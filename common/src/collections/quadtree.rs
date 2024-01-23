@@ -2,8 +2,6 @@ use std::fmt::Debug;
 
 use crate::maths::Rectangle;
 
-// TODO: also implement an octree
-
 const THRESHOLD: usize = 16; // the maximum number of values in a leaf node
 const MAX_DEPTH: usize = 8; // the maximum depth of the quadtree
 
@@ -12,19 +10,14 @@ const MAX_DEPTH: usize = 8; // the maximum depth of the quadtree
 /// A Quad Tree is a spatial data structure that can be used to efficiently
 /// store and retrieve values in 2-dimensional space, with fast-lookups for
 /// values based on their coordinates.
-///
-/// A Quad Tree is a tree data structure where each node has at most four
-/// children. Each node represents a rectangular area of space, and each
-/// child represents a quarter of that area. The root node represents the
-/// entire area of space.
 pub struct QuadTree<T> {
   root: Option<QuadTreeNode<T>>,
 }
 
-/// A single node in a [`QuadTree`]. A node can either be a leaf or a branch:
+/// A single node in a [`QuadTree`].
 ///
-/// * A leaf contains a single value and the bounds of that value.
-/// * A branch contains four child nodes.
+/// A node can either be a leaf or a branch. Each branch contains up to
+/// four sub-nodes, each representing a quarter of the parent node's area.
 #[derive(Debug)]
 pub enum QuadTreeNode<T> {
   Empty,
@@ -54,11 +47,37 @@ impl<T> QuadTree<T> {
     Self::default()
   }
 
+  /// Determines if the [`QuadTree`] is empty.
+  pub fn is_empty(&self) -> bool {
+    self.root.is_none()
+  }
+
+  /// Determines the number of values in the [`QuadTree`].
+  pub fn len(&self) -> usize {
+    self.iter().count()
+  }
+
+  /// Clears the [`QuadTree`] of all values.
+  pub fn clear(&mut self) {
+    self.root = None;
+  }
+
+  /// Determines if the [`QuadTree`] contains the given value.
+  ///
+  /// This involves iterating over all the nodes in the [`QuadTree`], so it is
+  /// not recommended for use in performance-critical code.
+  pub fn contains(&self, value: T) -> bool
+  where
+    T: PartialEq,
+  {
+    self.iter().any(|(v, _)| v == &value)
+  }
+
   /// Calculates the total bounds of the [`QuadTree`] by visiting all it's nodes
   pub fn calculate_bounds(&self) -> Rectangle {
     fn calculate_recursive<T>(node: &QuadTreeNode<T>, rect: &mut Rectangle) {
       match node {
-        QuadTreeNode::Empty => {} // no-op; empty leaf
+        QuadTreeNode::Empty => {}
         QuadTreeNode::Leaf(cells) => {
           for cell in cells {
             rect.extend(&cell.bounds);
@@ -79,27 +98,6 @@ impl<T> QuadTree<T> {
     }
 
     bounds
-  }
-
-  /// Determines if the [`QuadTree`] is empty.
-  pub fn is_empty(&self) -> bool {
-    self.root.is_none()
-  }
-
-  /// Determines the number of values in the [`QuadTree`].
-  pub fn len(&self) -> usize {
-    self.iter().count()
-  }
-
-  /// Determines if the [`QuadTree`] contains the given value.
-  ///
-  /// This involves iterating over all the nodes in the [`QuadTree`], so it is
-  /// not recommended for use in performance-critical code.
-  pub fn contains(&self, value: T) -> bool
-  where
-    T: PartialEq,
-  {
-    self.iter().any(|(v, _)| v == &value)
   }
 
   /// Inserts a value into the [`QuadTree`].
@@ -127,24 +125,25 @@ impl<T> QuadTree<T> {
           *node = QuadTreeNode::Leaf(cells);
         }
         QuadTreeNode::Leaf(cells) if cells.len() > THRESHOLD && depth < MAX_DEPTH => {
-          // // if the leaf is already occupied, split the leaf into a branch
-          // // and insert the new value into the appropriate sub-quadrant
-          // let mut branches = Box::new([
-          //   QuadTreeNode::Empty,
-          //   QuadTreeNode::Empty,
-          //   QuadTreeNode::Empty,
-          //   QuadTreeNode::Empty,
-          // ]);
+          // if the leaf is already occupied, split the leaf into a branch
+          // and insert the new value into the appropriate sub-quadrant
+          let mut branches = Box::new([
+            QuadTreeNode::Empty,
+            QuadTreeNode::Empty,
+            QuadTreeNode::Empty,
+            QuadTreeNode::Empty,
+          ]);
 
-          // // work out which sub-quadrant the existing value is in
-          // let quadrant_index = get_quadrant_index(parent_bounds, &value_bounds);
-          // let sub_branch = &mut branches[quadrant_index];
+          // work out which sub-quadrant the existing value is in
+          let quadrant_index = get_quadrant_index(parent, &bounds);
+          let sub_branch = &mut branches[quadrant_index];
 
-          // // insert the existing and new values into the appropriate sub-quadrant
-          // insert_recursive(sub_branch, value, &cell.bounds, value_bounds, depth + 1);
+          for cell in cells.drain(..) {
+            // insert the existing values into the appropriate sub-quadrant
+            insert_recursive(sub_branch, cell.value, parent, cell.bounds, depth + 1);
+          }
 
-          // *node = QuadTreeNode::Branch(cell.clone(), branches);
-          todo!()
+          *node = QuadTreeNode::Branch(branches);
         }
         QuadTreeNode::Leaf(cells) => {
           // if the leaf is under the threshold, insert the new value into the leaf
@@ -170,13 +169,27 @@ impl<T> QuadTree<T> {
   }
 
   /// Removes a value from the [`QuadTree`].
-  pub fn remove(&mut self, _value: T) {
-    todo!()
-  }
+  pub fn remove(&mut self, value: T)
+  where
+    T: PartialEq,
+  {
+    fn remove_recursive<T: PartialEq>(node: &mut QuadTreeNode<T>, value: &T) {
+      match node {
+        QuadTreeNode::Empty => {} // no-op
+        QuadTreeNode::Leaf(cells) => {
+          cells.retain(|cell| cell.value != *value);
+        }
+        QuadTreeNode::Branch(branch) => {
+          for node in branch.iter_mut() {
+            remove_recursive(node, value);
+          }
+        }
+      }
+    }
 
-  /// Clears the [`QuadTree`] of all values.
-  pub fn clear(&mut self) {
-    self.root = None;
+    if let Some(root) = &mut self.root {
+      remove_recursive(root, &value);
+    }
   }
 
   /// Finds all values in the [`QuadTree`] that intersect the bounds.
@@ -287,38 +300,102 @@ impl<T> QuadTree<T> {
   /// Iterates over the values in the [`QuadTree`].
   pub fn iter(&self) -> impl Iterator<Item = (&T, usize)> {
     struct Iter<'a, T> {
-      phantom: std::marker::PhantomData<&'a T>,
+      stack: Vec<IterEntry<'a, T>>,
+    }
+
+    enum IterEntry<'a, T> {
+      Empty,
+      Node(&'a QuadTreeNode<T>, usize),
+      Cell(&'a QuadTreeCell<T>, usize),
     }
 
     impl<'a, T> Iterator for Iter<'a, T> {
       type Item = (&'a T, usize);
 
       fn next(&mut self) -> Option<Self::Item> {
-        todo!()
+        match self.stack.pop() {
+          Some(IterEntry::Node(node, depth)) => match node {
+            QuadTreeNode::Leaf(cells) => {
+              for cell in cells {
+                self.stack.push(IterEntry::Cell(cell, depth));
+              }
+
+              self.next()
+            }
+            QuadTreeNode::Branch(branch) => {
+              for node in branch.iter() {
+                self.stack.push(IterEntry::Node(node, depth + 1));
+              }
+
+              self.next()
+            }
+            _ => None,
+          },
+          Some(IterEntry::Cell(cell, level)) => Some((&cell.value, level)),
+          _ => None,
+        }
       }
     }
 
-    Iter {
-      phantom: std::marker::PhantomData,
+    if let Some(root) = &self.root {
+      Iter {
+        stack: vec![IterEntry::Node(root, 0)],
+      }
+    } else {
+      Iter {
+        stack: vec![IterEntry::Empty],
+      }
     }
   }
 
   /// Mutably iterates over the values in the [`QuadTree`].
   pub fn iter_mut(&mut self) -> impl Iterator<Item = (&mut T, usize)> {
     struct IterMut<'a, T> {
-      phantom: std::marker::PhantomData<&'a T>,
+      stack: Vec<IterEntry<'a, T>>,
+    }
+
+    enum IterEntry<'a, T> {
+      Empty,
+      Node(&'a mut QuadTreeNode<T>, usize),
+      Cell(&'a mut QuadTreeCell<T>, usize),
     }
 
     impl<'a, T> Iterator for IterMut<'a, T> {
       type Item = (&'a mut T, usize);
 
       fn next(&mut self) -> Option<Self::Item> {
-        todo!()
+        match self.stack.pop() {
+          Some(IterEntry::Node(node, depth)) => match node {
+            QuadTreeNode::Leaf(cells) => {
+              for cell in cells {
+                self.stack.push(IterEntry::Cell(cell, depth));
+              }
+
+              self.next()
+            }
+            QuadTreeNode::Branch(branch) => {
+              for node in branch.iter_mut() {
+                self.stack.push(IterEntry::Node(node, depth + 1));
+              }
+
+              self.next()
+            }
+            _ => None,
+          },
+          Some(IterEntry::Cell(cell, level)) => Some((&mut cell.value, level)),
+          _ => None,
+        }
       }
     }
 
-    IterMut {
-      phantom: std::marker::PhantomData,
+    if let Some(root) = &mut self.root {
+      IterMut {
+        stack: vec![IterEntry::Node(root, 0)],
+      }
+    } else {
+      IterMut {
+        stack: vec![IterEntry::Empty],
+      }
     }
   }
 }
@@ -429,10 +506,25 @@ mod tests {
   fn test_quadtree_visualization() {
     let mut tree = QuadTree::default();
 
+    tree.insert(0, Rectangle::from_corner_points(-1., -1., 1., 1.));
     tree.insert(1, Rectangle::from_corner_points(0., 0., 1., 1.));
     tree.insert(2, Rectangle::from_corner_points(1., 0., 2., 1.));
     tree.insert(3, Rectangle::from_corner_points(0., 1., 1., 2.));
     tree.insert(4, Rectangle::from_corner_points(1., 1., 2., 2.));
+    tree.insert(5, Rectangle::from_corner_points(-1., -1., 0., 0.));
+    tree.insert(6, Rectangle::from_corner_points(-2., -2., -1., -1.));
+    tree.insert(7, Rectangle::from_corner_points(-2., -1., -1., 0.));
+    tree.insert(8, Rectangle::from_corner_points(-1., -2., 0., -1.));
+    tree.insert(9, Rectangle::from_corner_points(-1., 0., 0., 1.));
+    tree.insert(10, Rectangle::from_corner_points(-2., 0., -1., 1.));
+    tree.insert(11, Rectangle::from_corner_points(-1., 1., 0., 2.));
+    tree.insert(12, Rectangle::from_corner_points(-2., 1., -1., 2.));
+    tree.insert(13, Rectangle::from_corner_points(0., -1., 1., 0.));
+    tree.insert(14, Rectangle::from_corner_points(0., -2., 1., -1.));
+    tree.insert(15, Rectangle::from_corner_points(1., -1., 2., 0.));
+    tree.insert(16, Rectangle::from_corner_points(1., -2., 2., -1.));
+    tree.insert(17, Rectangle::from_corner_points(0., -1., 1., 0.));
+    tree.insert(18, Rectangle::from_corner_points(0., -2., 1., -1.));
 
     println!("{:#?}", tree);
   }
