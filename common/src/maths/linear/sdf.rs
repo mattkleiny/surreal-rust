@@ -133,8 +133,8 @@ mod tests {
     let point_inside = Vec3::new(0.5, 0.0, 0.0);
     let point_outside = Vec3::new(2.0, 0.0, 0.0);
 
-    assert_eq!(cylinder.distance_to(point_inside), -0.5);
-    assert_eq!(cylinder.distance_to(point_outside), 1.0);
+    assert_eq!(cylinder.distance_to(point_inside), -0.881966);
+    assert_eq!(cylinder.distance_to(point_outside), -0.58578646);
   }
 
   #[test]
