@@ -39,6 +39,11 @@ impl Renderer {
     }
   }
 
+  /// Gets the underlying [`GraphicsEngine`] of the manager.
+  pub fn graphics(&self) -> &GraphicsEngine {
+    &self.graphics
+  }
+
   /// Configures the manager with the given [`RenderContext`].
   pub fn add_context<C: RenderContext>(&mut self, context: C) {
     let key = TypeId::of::<C>();

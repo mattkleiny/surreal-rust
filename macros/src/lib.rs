@@ -3,6 +3,7 @@
 use proc_macro::TokenStream;
 
 mod component;
+mod game;
 mod profiling;
 mod singleton;
 mod vertex;
@@ -11,6 +12,12 @@ mod vertex;
 #[proc_macro_derive(Component)]
 pub fn derive_component(input: TokenStream) -> TokenStream {
   component::impl_component(input)
+}
+
+/// Implements the `Game` trait for a type.
+#[proc_macro_derive(Game)]
+pub fn derive_game(input: TokenStream) -> TokenStream {
+  game::impl_game(input)
 }
 
 /// Implements the Singleton pattern for a type.

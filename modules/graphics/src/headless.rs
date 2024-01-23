@@ -173,10 +173,6 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     Ok(())
   }
 
-  fn shader_set_uniforms(&self, shader: ShaderId, location: usize, value: &[ShaderUniform]) -> Result<(), ShaderError> {
-    Ok(())
-  }
-
   fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError> {
     Ok(())
   }

@@ -10,6 +10,25 @@ use super::*;
 /// The default number of sprites to allocate in a new batch.
 const DEFAULT_SPRITE_COUNT: usize = 1024;
 
+/// Options for drawing a sprite.
+pub struct SpriteOptions {
+  pub position: Vec2,
+  pub rotation: Angle,
+  pub scale: Vec2,
+  pub color: Color32,
+}
+
+impl Default for SpriteOptions {
+  fn default() -> Self {
+    Self {
+      position: Vec2::ZERO,
+      rotation: Angle::ZERO,
+      scale: Vec2::ONE,
+      color: Color32::WHITE,
+    }
+  }
+}
+
 /// A fast and lightweight sprite batch renderer.
 ///
 /// This batch pre-allocates an array of vertices and indices and re-uses them
@@ -36,54 +55,6 @@ struct SpriteVertex {
   pub uv: Vec2,
   #[vertex(4, U8, normalize)]
   pub color: Color32,
-}
-
-/// Similar to [`SpriteBatch`], but allows for multiple textures per batch.
-///
-/// This is useful for rendering sprites from multiple texture sources in a
-/// single draw call, however it requires the underlying shader program to
-/// support multiple textures.
-pub struct MultiSpriteBatch {
-  mesh: Mesh<MultiSpriteVertex>,
-  material: Option<Material>,
-  vertices: Vec<MultiSpriteVertex>,
-  textures: TextureBindingSet,
-}
-
-/// A specialized vertex for use in our sprite batch.
-///
-/// Encodes the texture index in the vertex, for use in the shader.
-/// This allows us to use a single vertex buffer for multiple textures.
-#[repr(C)]
-#[derive(Clone, Debug, Vertex)]
-struct MultiSpriteVertex {
-  #[vertex(2, F32)]
-  pub position: Vec2,
-  #[vertex(2, F32)]
-  pub uv: Vec2,
-  #[vertex(4, U8, normalize)]
-  pub color: Color32,
-  #[vertex(1, U8)]
-  pub texture_id: u8,
-}
-
-/// Options for drawing a sprite.
-pub struct SpriteOptions {
-  pub position: Vec2,
-  pub rotation: Angle,
-  pub scale: Vec2,
-  pub color: Color32,
-}
-
-impl Default for SpriteOptions {
-  fn default() -> Self {
-    Self {
-      position: Vec2::ZERO,
-      rotation: Angle::ZERO,
-      scale: Vec2::ONE,
-      color: Color32::WHITE,
-    }
-  }
 }
 
 impl SpriteBatch {
@@ -206,6 +177,35 @@ impl SpriteBatch {
 
     self.vertices.clear();
   }
+}
+
+/// Similar to [`SpriteBatch`], but allows for multiple textures per batch.
+///
+/// This is useful for rendering sprites from multiple texture sources in a
+/// single draw call, however it requires the underlying shader program to
+/// support multiple textures.
+pub struct MultiSpriteBatch {
+  mesh: Mesh<MultiSpriteVertex>,
+  material: Option<Material>,
+  vertices: Vec<MultiSpriteVertex>,
+  textures: TextureBindingSet,
+}
+
+/// A specialized vertex for use in our sprite batch.
+///
+/// Encodes the texture index in the vertex, for use in the shader.
+/// This allows us to use a single vertex buffer for multiple textures.
+#[repr(C)]
+#[derive(Clone, Debug, Vertex)]
+struct MultiSpriteVertex {
+  #[vertex(2, F32)]
+  pub position: Vec2,
+  #[vertex(2, F32)]
+  pub uv: Vec2,
+  #[vertex(4, U8, normalize)]
+  pub color: Color32,
+  #[vertex(1, U8)]
+  pub texture_id: u8,
 }
 
 impl MultiSpriteBatch {

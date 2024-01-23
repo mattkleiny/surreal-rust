@@ -223,23 +223,6 @@ impl Drop for ShaderProgramState {
   }
 }
 
-/// Implements uniform value transformation for common types.
-macro_rules! impl_uniform {
-  ($type:ty as $value:ident) => {
-    impl From<$type> for ShaderUniform {
-      fn from(value: $type) -> Self {
-        ShaderUniform::$value(value.into())
-      }
-    }
-
-    impl From<&$type> for ShaderUniform {
-      fn from(value: &$type) -> Self {
-        ShaderUniform::$value(value.clone().into())
-      }
-    }
-  };
-}
-
 /// Representation of a single value that can be used in a shader.
 #[derive(Clone)]
 pub enum ShaderUniform {
@@ -267,6 +250,44 @@ pub enum ShaderUniform {
   TextureArray(Vec<TextureId>),
   Array(Vec<ShaderUniform>),
 }
+
+/// Implements uniform value transformation for common types.
+macro_rules! impl_uniform {
+  ($type:ty as $value:ident) => {
+    impl From<$type> for ShaderUniform {
+      fn from(value: $type) -> Self {
+        ShaderUniform::$value(value.into())
+      }
+    }
+
+    impl From<&$type> for ShaderUniform {
+      fn from(value: &$type) -> Self {
+        ShaderUniform::$value(value.to_owned().into())
+      }
+    }
+  };
+}
+
+impl_uniform!(bool as Bool);
+impl_uniform!(u32 as U32);
+impl_uniform!(f32 as F32);
+impl_uniform!(Angle as F32);
+impl_uniform!(Vec2 as Vec2);
+impl_uniform!(Vec3 as Vec3);
+impl_uniform!(Vec4 as Vec4);
+impl_uniform!(DVec2 as DVec2);
+impl_uniform!(DVec3 as DVec3);
+impl_uniform!(DVec4 as DVec4);
+impl_uniform!(Mat2 as Mat2);
+impl_uniform!(Mat3 as Mat3);
+impl_uniform!(Mat4 as Mat4);
+impl_uniform!(DMat2 as DMat2);
+impl_uniform!(DMat3 as DMat3);
+impl_uniform!(DMat4 as DMat4);
+impl_uniform!(Quat as Quat);
+impl_uniform!(DQuat as DQuat);
+impl_uniform!(Color as Color);
+impl_uniform!(Color32 as Color32);
 
 /// Allow for the conversion of a slice of values into a shader uniform array,
 /// provided all of the values can be individually converted into a uniform.
@@ -302,27 +323,6 @@ impl<U> From<&'static str> for ShaderUniformKey<U> {
     ShaderUniformKey::new(name)
   }
 }
-
-impl_uniform!(bool as Bool);
-impl_uniform!(u32 as U32);
-impl_uniform!(f32 as F32);
-impl_uniform!(Angle as F32);
-impl_uniform!(Vec2 as Vec2);
-impl_uniform!(Vec3 as Vec3);
-impl_uniform!(Vec4 as Vec4);
-impl_uniform!(DVec2 as DVec2);
-impl_uniform!(DVec3 as DVec3);
-impl_uniform!(DVec4 as DVec4);
-impl_uniform!(Mat2 as Mat2);
-impl_uniform!(Mat3 as Mat3);
-impl_uniform!(Mat4 as Mat4);
-impl_uniform!(DMat2 as DMat2);
-impl_uniform!(DMat3 as DMat3);
-impl_uniform!(DMat4 as DMat4);
-impl_uniform!(Quat as Quat);
-impl_uniform!(DQuat as DQuat);
-impl_uniform!(Color as Color);
-impl_uniform!(Color32 as Color32);
 
 /// A set of [`ShaderUniform`]s that can be passed around the application.
 #[derive(Default, Clone)]

@@ -613,22 +613,13 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             texture_ids.as_ptr() as *const _,
           );
         }
-        ShaderUniform::Array(uniforms) => {
-          self.shader_set_uniforms(shader, location, uniforms)?;
+        ShaderUniform::Array(_entries) => {
+          todo!()
         }
       };
 
       Ok(())
     }
-  }
-
-  fn shader_set_uniforms(
-    &self,
-    _shader: ShaderId,
-    _location: usize,
-    _value: &[ShaderUniform],
-  ) -> Result<(), ShaderError> {
-    todo!()
   }
 
   fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError> {
