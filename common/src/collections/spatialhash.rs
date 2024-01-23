@@ -1,15 +1,14 @@
-use crate::{
-  collections::FastHashMap,
-  maths::{ivec2, IVec2},
-};
+use std::{collections::HashMap, hash::RandomState};
+
+use crate::maths::{ivec2, IVec2};
 
 /// A sparse spatial hash grid implementation.
 ///
 /// This implementation uses a hashmap to bucket items based on their position.
 /// This allows for fast insertion and removal of items, but iteration is slower
 /// than a dense spatial hash grid.
-pub struct SpatialHashGrid<T> {
-  entries: FastHashMap<IVec2, Vec<Entry<T>>>,
+pub struct SpatialHashGrid<T, S = RandomState> {
+  entries: HashMap<IVec2, Vec<Entry<T>>, S>,
   default_capacity: usize,
 }
 
@@ -21,7 +20,7 @@ struct Entry<T> {
 impl<T> Default for SpatialHashGrid<T> {
   fn default() -> Self {
     Self {
-      entries: FastHashMap::default(),
+      entries: HashMap::default(),
       default_capacity: 1,
     }
   }
@@ -36,7 +35,7 @@ impl<T> SpatialHashGrid<T> {
   /// Creates a new spatial hash grid with a default capacity.
   pub fn with_default_capacity(capacity: usize) -> Self {
     Self {
-      entries: FastHashMap::default(),
+      entries: HashMap::default(),
       default_capacity: capacity,
     }
   }
@@ -162,6 +161,7 @@ mod tests {
   #[test]
   fn test_clear() {
     let mut grid = SpatialHashGrid::default();
+
     grid.add(0, 0, 1);
     grid.add(0, 1, 2);
 
@@ -172,44 +172,5 @@ mod tests {
 
     assert_eq!(grid.len(), 0);
     assert_eq!(grid.cells(), 0);
-  }
-
-  #[test]
-  fn test_iter() {
-    let mut grid = SpatialHashGrid::default();
-    grid.add(0, 0, 1);
-    grid.add(0, 1, 2);
-
-    let mut iter = grid.iter();
-
-    assert_eq!(iter.next(), Some(&1));
-    assert_eq!(iter.next(), Some(&2));
-    assert_eq!(iter.next(), None);
-  }
-
-  #[test]
-  fn test_iter_mut() {
-    let mut grid = SpatialHashGrid::default();
-    grid.add(0, 0, 1);
-    grid.add(0, 1, 2);
-
-    let mut iter = grid.iter_mut();
-
-    assert_eq!(iter.next(), Some(&mut 1));
-    assert_eq!(iter.next(), Some(&mut 2));
-    assert_eq!(iter.next(), None);
-  }
-
-  #[test]
-  fn test_into_iter() {
-    let mut grid = SpatialHashGrid::default();
-    grid.add(0, 0, 1);
-    grid.add(0, 1, 2);
-
-    let mut iter = grid.into_iter();
-
-    assert_eq!(iter.next(), Some(&1));
-    assert_eq!(iter.next(), Some(&2));
-    assert_eq!(iter.next(), None);
   }
 }

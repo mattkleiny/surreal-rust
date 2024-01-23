@@ -1,12 +1,13 @@
-use std::any::{Any, TypeId};
+use std::{
+  any::{Any, TypeId},
+  collections::HashMap,
+  hash::RandomState,
+};
 
-use crate::collections::FastHashMap;
-
-/// An any-map is a hash map that can contain a single value per unique
-/// [`TypeId`].
+/// An any-map is a hash map that can contain a single value per [`TypeId`].
 #[derive(Default)]
-pub struct AnyMap {
-  entries: FastHashMap<TypeId, Box<dyn Any>>,
+pub struct AnyMap<S = RandomState> {
+  entries: HashMap<TypeId, Box<dyn Any>, S>,
 }
 
 impl AnyMap {
@@ -14,7 +15,7 @@ impl AnyMap {
   #[inline]
   pub fn new() -> Self {
     Self {
-      entries: FastHashMap::default(),
+      entries: HashMap::default(),
     }
   }
 

@@ -36,3 +36,9 @@ pub type FastHashMap<K, V> = HashMap<K, V, BuildHasherDefault<rustc_hash::FxHash
 
 /// A faster multi-map that is not resilient to DoS attacks.
 pub type FastMultiMap<K, V> = MultiMap<K, V, FastHashMap<K, BuildHasherDefault<rustc_hash::FxHasher>>>;
+
+/// A faster any-map that is not resilient to DoS attacks.
+pub type FastAnyMap = AnyMap<BuildHasherDefault<rustc_hash::FxHasher>>;
+
+/// A faster spatial hash grid that is not resilient to DoS attacks.
+pub type FastSpatialHashGrid<T> = SpatialHashGrid<T, BuildHasherDefault<rustc_hash::FxHasher>>;

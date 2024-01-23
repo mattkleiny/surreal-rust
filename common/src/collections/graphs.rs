@@ -5,6 +5,7 @@ use crate::{impl_rid, Arena, Scalar};
 impl_rid!(GraphNodeId);
 
 /// An edge in a directed graph with a weight.
+#[derive(Debug)]
 pub struct GraphEdge<W: Scalar = f32> {
   pub from: GraphNodeId,
   pub to: GraphNodeId,
@@ -12,18 +13,32 @@ pub struct GraphEdge<W: Scalar = f32> {
 }
 
 // A graph of nodes and Graphedges stored in an adjacency list.
-#[derive(Default)]
+#[derive(Debug)]
 pub struct Graph<N, W: Scalar = f32> {
   nodes: Arena<N>,
   edges: Vec<GraphEdge<W>>,
 }
 
+impl<N, W: Scalar> Default for Graph<N, W> {
+  fn default() -> Self {
+    Self {
+      nodes: Arena::default(),
+      edges: Vec::default(),
+    }
+  }
+}
+
 /// Represents a directed graph of nodes, with support for weighted edges.
 pub trait DirectedGraph {
+  /// The type of node in the graph.
   type Node;
+
+  /// The type of weight on the edges.
   type Weight: Scalar;
 
   // node access
+  fn node(&self, node: GraphNodeId) -> Option<&Self::Node>;
+  fn node_mut(&mut self, node: GraphNodeId) -> Option<&mut Self::Node>;
   fn nodes(&self) -> impl Iterator<Item = &Self::Node>;
   fn add_node(&mut self, node: Self::Node) -> GraphNodeId;
   fn remove_node(&mut self, node: GraphNodeId) -> Option<Self::Node>;
@@ -34,11 +49,46 @@ pub trait DirectedGraph {
   fn edges_to(&self, node: GraphNodeId) -> impl Iterator<Item = &GraphEdge<Self::Weight>>;
   fn add_edge(&mut self, from: GraphNodeId, to: GraphNodeId, weight: Self::Weight);
   fn remove_edge(&mut self, from: GraphNodeId, to: GraphNodeId);
+
+  /// P
+  fn to_dot(&self) -> String
+  where
+    Self::Node: Debug,
+    Self::Weight: Debug,
+  {
+    // TODO: fix this up
+    let mut dot = String::new();
+
+    dot.push_str("digraph {\n");
+
+    for node in self.nodes() {
+      dot.push_str(&format!("  {:?};\n", node));
+    }
+
+    for edge in self.edges() {
+      dot.push_str(&format!(
+        "  {:?} -> {:?} [label={:?}];\n",
+        edge.from, edge.to, edge.weight
+      ));
+    }
+
+    dot.push_str("}\n");
+
+    dot
+  }
 }
 
 impl<N, W: Scalar> DirectedGraph for Graph<N, W> {
   type Node = N;
   type Weight = W;
+
+  fn node(&self, node: GraphNodeId) -> Option<&Self::Node> {
+    self.nodes.get(node.into())
+  }
+
+  fn node_mut(&mut self, node: GraphNodeId) -> Option<&mut Self::Node> {
+    self.nodes.get_mut(node.into())
+  }
 
   fn nodes(&self) -> impl Iterator<Item = &Self::Node> {
     self.nodes.iter()
