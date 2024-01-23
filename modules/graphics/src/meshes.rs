@@ -5,7 +5,7 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use common::{vec2, Size, Vec2, Vec3};
+use common::{macros::Vertex, vec2, Size, Vec2, Vec3};
 
 use super::*;
 
@@ -73,10 +73,13 @@ impl VertexKind {
 
 /// A simple vertex in 2-space with UV and color.
 #[repr(C)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Vertex)]
 pub struct Vertex2 {
+  #[vertex(2, F32)]
   pub position: Vec2,
+  #[vertex(2, F32)]
   pub uv: Vec2,
+  #[vertex(4, U8, normalize)]
   pub color: Color32,
 }
 
@@ -91,21 +94,15 @@ impl Vertex2 {
   }
 }
 
-impl Vertex for Vertex2 {
-  #[rustfmt::skip]
-  const DESCRIPTORS: &'static [VertexDescriptor] = &[
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-  ];
-}
-
 /// A simple vertex in 3-space with UV and color.
 #[repr(C)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Vertex)]
 pub struct Vertex3 {
+  #[vertex(3, F32)]
   pub position: Vec3,
+  #[vertex(2, F32)]
   pub uv: Vec2,
+  #[vertex(4, U8, normalize)]
   pub color: Color32,
 }
 
@@ -118,15 +115,6 @@ impl Vertex3 {
       color: color.into(),
     }
   }
-}
-
-impl Vertex for Vertex3 {
-  #[rustfmt::skip]
-  const DESCRIPTORS: &'static [VertexDescriptor] = &[
-    VertexDescriptor { count: 3, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-  ];
 }
 
 /// A mesh of vertices of [`V`] that has been uploaded to the GPU.

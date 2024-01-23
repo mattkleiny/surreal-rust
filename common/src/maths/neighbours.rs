@@ -1,16 +1,13 @@
 use super::*;
 
 /// Provides a Von Neumann neighbourhood expansion for points in 2-space.
-pub trait VonNeumannNeighbourhood {
-  type Output;
-
-  fn von_neighbours(&self) -> Self::Output;
+pub trait VonNeumannNeighbourhood: Sized {
+  /// Computes the Von Neumann neighbourhood of a point.
+  fn von_neighbours(&self) -> [Self; 4];
 }
 
 impl VonNeumannNeighbourhood for Vec2 {
-  type Output = [Vec2; 4];
-
-  fn von_neighbours(&self) -> Self::Output {
+  fn von_neighbours(&self) -> [Self; 4] {
     [
       vec2(self.x - 1., self.y), // left
       vec2(self.x, self.y + 1.), // top
@@ -21,9 +18,7 @@ impl VonNeumannNeighbourhood for Vec2 {
 }
 
 impl VonNeumannNeighbourhood for IVec2 {
-  type Output = [IVec2; 4];
-
-  fn von_neighbours(&self) -> Self::Output {
+  fn von_neighbours(&self) -> [Self; 4] {
     [
       ivec2(self.x - 1, self.y), // left
       ivec2(self.x, self.y + 1), // top
@@ -34,16 +29,13 @@ impl VonNeumannNeighbourhood for IVec2 {
 }
 
 /// Provides a Moore neighbourhood expansion for points in 2-space.
-pub trait MooreNeighbourhood {
-  type Output;
-
-  fn moore_neighbours(&self) -> Self::Output;
+pub trait MooreNeighbourhood: Sized {
+  /// Calculates the Moore neighbourhood of a point in 2-space.
+  fn moore_neighbours(&self) -> [Self; 8];
 }
 
 impl MooreNeighbourhood for Vec2 {
-  type Output = [Vec2; 8];
-
-  fn moore_neighbours(&self) -> Self::Output {
+  fn moore_neighbours(&self) -> [Self; 8] {
     [
       vec2(self.x - 1., self.y - 1.), // bottom left
       vec2(self.x - 1., self.y),      // left
@@ -58,9 +50,7 @@ impl MooreNeighbourhood for Vec2 {
 }
 
 impl MooreNeighbourhood for IVec2 {
-  type Output = [IVec2; 8];
-
-  fn moore_neighbours(&self) -> Self::Output {
+  fn moore_neighbours(&self) -> [Self; 8] {
     [
       ivec2(self.x - 1, self.y - 1), // bottom left
       ivec2(self.x - 1, self.y),     // left

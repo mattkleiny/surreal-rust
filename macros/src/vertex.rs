@@ -4,30 +4,8 @@ use syn::{parse_macro_input, spanned::Spanned, Attribute, Data, DeriveInput, Fie
 
 pub fn impl_vertex_trait(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
+  let descriptors = parse_struct(&input.data);
   let name = &input.ident;
-
-  // parses the given `struct`s fields into a series of `VertexDescriptor`s.
-  let descriptors = match input.data {
-    // discover struct definitions
-    Data::Struct(ref data) => {
-      match data.fields {
-        // discover named fields (x: f32, y: f32, etc).
-        Fields::Named(ref fields) => {
-          fields.named.iter().map(|field| {
-            // parse #[vertex(...)] attributes
-            let (count, kind, normalize) = parse_vertex_attributes(&field.attrs);
-
-            // build the descriptor
-            quote_spanned! {field.span() =>
-              VertexDescriptor { count: #count, kind: VertexKind::#kind, should_normalize: #normalize }
-            }
-          })
-        }
-        _ => panic!("Only named struct fields are supported"),
-      }
-    }
-    _ => panic!("Only structs are supported"),
-  };
 
   let expanded = quote! {
     impl Vertex for #name {
@@ -40,47 +18,72 @@ pub fn impl_vertex_trait(input: TokenStream) -> TokenStream {
   expanded.into()
 }
 
+/// Parses the struct and returns a list of vertex descriptors.
+fn parse_struct(data: &Data) -> Vec<proc_macro2::TokenStream> {
+  match data {
+    Data::Struct(ref data) => match data.fields {
+      Fields::Named(ref fields) => fields
+        .named
+        .iter()
+        .map(|field| {
+          let (count, kind, normalize) = parse_vertex_attributes(&field.attrs);
+
+          quote_spanned! { field.span() =>
+            VertexDescriptor {
+              count: #count,
+              kind: VertexKind::#kind,
+              should_normalize: #normalize,
+            }
+          }
+        })
+        .collect(),
+      Fields::Unnamed(_) => panic!("`#[derive(Vertex)]` does not support tuple structs"),
+      Fields::Unit => panic!("`#[derive(Vertex)]` does not support unit structs"),
+    },
+    Data::Enum(_) => panic!("`#[derive(Vertex)]` does not support enums"),
+    Data::Union(_) => panic!("`#[derive(Vertex)]` does not support unions"),
+  }
+}
+
+/// Parses the `#[vertex]` attribute on a field.
 fn parse_vertex_attributes(attributes: &Vec<Attribute>) -> (usize, proc_macro2::TokenStream, bool) {
+  let mut count = None;
+  let mut kind = None;
+  let mut normalize = false;
+
   for attribute in attributes {
     if let Ok(meta) = attribute.parse_meta() {
       if meta.path().is_ident("vertex") {
-        let count: Option<usize> = Some(2);
-        let kind: Option<proc_macro2::TokenStream> = Some(quote!(F32));
-        let normalize: Option<bool> = Some(false);
+        if let Meta::List(list) = meta {
+          // extract count, kind and normalize from the attribute based on order
+          let entries = list.nested.iter().collect::<Vec<_>>();
 
-        match meta {
-          Meta::List(ref list) => {
-            for nested in &list.nested {
-              match nested {
-                NestedMeta::Meta(ref meta) => match meta {
-                  Meta::Path(_) => panic!("It was a path!"),
-                  Meta::List(_) => panic!("It was a list!"),
-                  Meta::NameValue(_) => panic!("It was a name value!"),
-                },
-                NestedMeta::Lit(ref literal) => match literal {
-                  Lit::Str(_) => {}
-                  Lit::ByteStr(_) => {}
-                  Lit::Byte(_) => {}
-                  Lit::Char(_) => {}
-                  Lit::Int(_) => {}
-                  Lit::Float(_) => {}
-                  Lit::Bool(_) => {}
-                  Lit::Verbatim(_) => {}
-                },
-              }
-            }
+          let count_entry = entries.first();
+          let kind_entry = entries.get(1);
+          let normalize_entry = entries.get(2);
+
+          if let Some(NestedMeta::Lit(Lit::Int(value))) = count_entry {
+            count = Some(value.base10_parse::<usize>().unwrap());
+          } else {
+            panic!("`#[vertex]` attribute requires a count");
           }
-          _ => panic!("#[vertex] must be tuple of (count, kind, normalize)"),
-        }
 
-        return (
-          count.expect("`#[vertex(count)]` is missing or invalid"),
-          kind.expect("`#[vertex(kind)]` is missing or invalid"),
-          normalize.expect("`#[vertex(normalize)]` is missing or invalid"),
-        );
+          if let Some(NestedMeta::Meta(Meta::Path(path))) = kind_entry {
+            kind = Some(quote! { #path });
+          } else {
+            panic!("`#[vertex]` attribute requires a kind");
+          }
+
+          if let Some(NestedMeta::Meta(Meta::Path(path))) = normalize_entry {
+            normalize = path.is_ident("normalize");
+          }
+        }
       }
-    };
+    }
   }
 
-  panic!("`#[vertex]` attribute is missing");
+  match (count, kind) {
+    (Some(count), Some(kind)) => (count, kind, normalize),
+    _ => panic!("`#[vertex]` attribute is missing required fields"),
+  }
 }

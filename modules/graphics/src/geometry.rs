@@ -1,6 +1,6 @@
 //! Geometry batching for common shapes and polygon rendering.
 
-use common::{vec2, Rectangle, Vec2};
+use common::{macros::Vertex, vec2, Rectangle, Vec2};
 
 use super::*;
 
@@ -17,18 +17,12 @@ pub struct GeometryBatch {
 
 /// A specialized vertex for use in our geometry batch.
 #[repr(C)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Vertex)]
 struct GeometryVertex {
+  #[vertex(2, F32)]
   pub position: Vec2,
+  #[vertex(4, U8, normalize)]
   pub color: Color32,
-}
-
-impl Vertex for GeometryVertex {
-  #[rustfmt::skip]
-  const DESCRIPTORS: &'static [VertexDescriptor] = &[
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-  ];
 }
 
 impl GeometryBatch {

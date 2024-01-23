@@ -1,6 +1,6 @@
 //! Basic bone-mesh skinning support for Surreal
 
-use common::{FastHashMap, Mat4, StringName, TimeSpan};
+use common::{macros::Vertex, FastHashMap, Mat4, StringName, TimeSpan};
 
 use super::*;
 
@@ -270,24 +270,18 @@ impl SkinnedMesh {
 
 /// A single vertex in a [`SkinnedMesh`].
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Vertex)]
 pub struct SkinVertex {
+  #[vertex(3, F32)]
   position: [f32; 3],
+  #[vertex(3, F32)]
   normal: [f32; 3],
+  #[vertex(2, F32)]
   uv: [f32; 2],
+  #[vertex(4, U32)]
   bone_indices: [u32; 4],
+  #[vertex(4, F32)]
   bone_weights: [f32; 4],
-}
-
-impl Vertex for SkinVertex {
-  #[rustfmt::skip]
-  const DESCRIPTORS: &'static [VertexDescriptor] = &[
-    VertexDescriptor { count: 3, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 3, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::U32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::F32, should_normalize: false },
-  ];
 }
 
 #[cfg(test)]

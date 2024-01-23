@@ -3,7 +3,7 @@
 //! Sprites are very common in projects, so this is a dedicated batch to
 //! support.
 
-use common::{vec2, Angle, Mat2, Vec2};
+use common::{macros::Vertex, vec2, Angle, Mat2, Vec2};
 
 use super::*;
 
@@ -28,20 +28,14 @@ pub struct SpriteBatch {
 
 /// A specialized vertex for use in our sprite batch.
 #[repr(C)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Vertex)]
 struct SpriteVertex {
+  #[vertex(2, F32)]
   pub position: Vec2,
+  #[vertex(2, F32)]
   pub uv: Vec2,
+  #[vertex(4, U8, normalize)]
   pub color: Color32,
-}
-
-impl Vertex for SpriteVertex {
-  #[rustfmt::skip]
-  const DESCRIPTORS: &'static [VertexDescriptor] = &[
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-  ];
 }
 
 /// Similar to [`SpriteBatch`], but allows for multiple textures per batch.
@@ -61,22 +55,16 @@ pub struct MultiSpriteBatch {
 /// Encodes the texture index in the vertex, for use in the shader.
 /// This allows us to use a single vertex buffer for multiple textures.
 #[repr(C)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Vertex)]
 struct MultiSpriteVertex {
+  #[vertex(2, F32)]
   pub position: Vec2,
+  #[vertex(2, F32)]
   pub uv: Vec2,
+  #[vertex(4, U8, normalize)]
   pub color: Color32,
+  #[vertex(1, U8)]
   pub texture_id: u8,
-}
-
-impl Vertex for MultiSpriteVertex {
-  #[rustfmt::skip]
-  const DESCRIPTORS: &'static [VertexDescriptor] = &[
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 2, kind: VertexKind::F32, should_normalize: false },
-    VertexDescriptor { count: 4, kind: VertexKind::U8, should_normalize: true },
-    VertexDescriptor { count: 1, kind: VertexKind::U8, should_normalize: false },
-  ];
 }
 
 /// Options for drawing a sprite.

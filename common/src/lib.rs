@@ -5,6 +5,7 @@
 
 #![allow(incomplete_features)]
 #![feature(anonymous_lifetime_in_impl_trait)]
+#![feature(associated_type_defaults)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(type_alias_impl_trait)]
 #![feature(lazy_cell)]
