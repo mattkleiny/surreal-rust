@@ -28,77 +28,61 @@ impl<N, W: Scalar> Default for Graph<N, W> {
   }
 }
 
-/// Represents a directed graph of nodes, with support for weighted edges.
-pub trait DirectedGraph {
-  /// The type of node in the graph.
-  type Node;
-
-  /// The type of weight on the edges.
-  type Weight: Scalar;
-
-  // node access
-  fn node(&self, node: GraphNodeId) -> Option<&Self::Node>;
-  fn node_mut(&mut self, node: GraphNodeId) -> Option<&mut Self::Node>;
-  fn nodes(&self) -> impl Iterator<Item = &Self::Node>;
-  fn add_node(&mut self, node: Self::Node) -> GraphNodeId;
-  fn remove_node(&mut self, node: GraphNodeId) -> Option<Self::Node>;
-
-  // edge access
-  fn edges(&self) -> impl Iterator<Item = &GraphEdge<Self::Weight>>;
-  fn edges_from(&self, node: GraphNodeId) -> impl Iterator<Item = &GraphEdge<Self::Weight>>;
-  fn edges_to(&self, node: GraphNodeId) -> impl Iterator<Item = &GraphEdge<Self::Weight>>;
-  fn add_edge(&mut self, from: GraphNodeId, to: GraphNodeId, weight: Self::Weight);
-  fn remove_edge(&mut self, from: GraphNodeId, to: GraphNodeId);
-}
-
-/// The default implementation of a directed graph.
-impl<N, W: Scalar> DirectedGraph for Graph<N, W> {
-  type Node = N;
-  type Weight = W;
-
-  fn node(&self, node: GraphNodeId) -> Option<&Self::Node> {
+impl<N, W: Scalar> Graph<N, W> {
+  /// Gets a reference to the node with the given id.
+  pub fn node(&self, node: GraphNodeId) -> Option<&N> {
     self.nodes.get(node.into())
   }
 
-  fn node_mut(&mut self, node: GraphNodeId) -> Option<&mut Self::Node> {
+  /// Gets a mutable reference to the node with the given id.
+  pub fn node_mut(&mut self, node: GraphNodeId) -> Option<&mut N> {
     self.nodes.get_mut(node.into())
   }
 
-  fn nodes(&self) -> impl Iterator<Item = &Self::Node> {
+  /// Iterates over the nodes in the graph.
+  pub fn nodes(&self) -> impl Iterator<Item = &N> {
     self.nodes.iter()
   }
 
-  fn add_node(&mut self, node: Self::Node) -> GraphNodeId {
+  /// Adds a new node to the graph.
+  pub fn add_node(&mut self, node: N) -> GraphNodeId {
     self.nodes.insert(node).into()
   }
 
-  fn remove_node(&mut self, node: GraphNodeId) -> Option<Self::Node> {
+  /// Removes a node from the graph.
+  pub fn remove_node(&mut self, node: GraphNodeId) -> Option<N> {
     self.nodes.remove(node.into())
   }
 
-  fn edges(&self) -> impl Iterator<Item = &GraphEdge<Self::Weight>> {
+  /// Iterates over the edges in the graph.
+  pub fn edges(&self) -> impl Iterator<Item = &GraphEdge<W>> {
     self.edges.iter()
   }
 
-  fn edges_from(&self, node: GraphNodeId) -> impl Iterator<Item = &GraphEdge<Self::Weight>> {
+  /// Iterates over the edges that start at the given node.
+  pub fn edges_from(&self, node: GraphNodeId) -> impl Iterator<Item = &GraphEdge<W>> {
     self.edges.iter().filter(move |edge| edge.from == node)
   }
 
-  fn edges_to(&self, node: GraphNodeId) -> impl Iterator<Item = &GraphEdge<Self::Weight>> {
+  /// Iterates over the edges that end at the given node.
+  pub fn edges_to(&self, node: GraphNodeId) -> impl Iterator<Item = &GraphEdge<W>> {
     self.edges.iter().filter(move |edge| edge.to == node)
   }
 
-  fn add_edge(&mut self, from: GraphNodeId, to: GraphNodeId, weight: Self::Weight) {
+  /// Adds a new edge to the graph.
+  pub fn add_edge(&mut self, from: GraphNodeId, to: GraphNodeId, weight: W) {
     self.edges.push(GraphEdge { from, to, weight });
   }
 
-  fn remove_edge(&mut self, from: GraphNodeId, to: GraphNodeId) {
+  /// Removes an edge from the graph.
+  pub fn remove_edge(&mut self, from: GraphNodeId, to: GraphNodeId) {
     self.edges.retain(|edge| edge.from != from || edge.to != to);
   }
 }
 
 /// Allows a directed graph to be used for path-finding.
 impl<N> PathFindingGrid<GraphNodeId> for Graph<N, f32> {
+  /// Gets the pathing cost between the given two node.
   fn get_cost(&self, from: GraphNodeId, to: GraphNodeId) -> f32 {
     self
       .edges_from(from)
@@ -107,6 +91,7 @@ impl<N> PathFindingGrid<GraphNodeId> for Graph<N, f32> {
       .unwrap_or(0.0)
   }
 
+  /// Gets the potential neighbours around the given node.
   fn get_neighbours(&self, center: GraphNodeId, results: &mut NeighbourList<GraphNodeId>) {
     for edge in self.edges_from(center) {
       results.push(edge.to);
