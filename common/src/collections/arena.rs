@@ -11,7 +11,7 @@ use crate::unsafe_mutable_alias;
 #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ArenaIndex {
   index: u32,
-  generation: u16,
+  generation: u32,
 }
 
 impl ArenaIndex {
@@ -25,7 +25,7 @@ impl ArenaIndex {
 impl From<u64> for ArenaIndex {
   #[inline]
   fn from(packed: u64) -> Self {
-    let generation = (packed >> 32) as u16;
+    let generation = (packed >> 32) as u32;
     let index = packed as u32;
 
     ArenaIndex { index, generation }
@@ -37,13 +37,6 @@ impl From<ArenaIndex> for u64 {
   fn from(value: ArenaIndex) -> Self {
     (value.generation as u64) << 32 | value.index as u64
   }
-}
-
-/// A single entry in an `Arena`.
-#[derive(Debug)]
-struct ArenaEntry<T> {
-  value: T,
-  generation: u16,
 }
 
 /// A simple generational arena of elements of type [`T`] .
@@ -59,8 +52,15 @@ struct ArenaEntry<T> {
 #[derive(Debug)]
 pub struct Arena<T> {
   entries: Vec<Option<ArenaEntry<T>>>,
-  current_generation: u16,
+  current_generation: u32,
   is_generation_dirty: bool,
+}
+
+/// A single entry in an `Arena`.
+#[derive(Debug)]
+struct ArenaEntry<T> {
+  value: T,
+  generation: u32,
 }
 
 impl<T> Default for Arena<T> {
@@ -243,6 +243,41 @@ impl<T> Arena<T> {
     Iter { arena: self, index: 0 }
   }
 
+  /// Mutably iterates over the arena.
+  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
+    pub struct IterMut<'a, T> {
+      arena: &'a mut Arena<T>,
+      index: usize,
+    }
+
+    impl<'a, T> Iterator for IterMut<'a, T> {
+      type Item = &'a mut T;
+
+      fn next(&mut self) -> Option<Self::Item> {
+        while let Some(entry) = self.arena.entries.get_mut(self.index) {
+          if let Some(value) = entry.as_mut() {
+            self.index += 1;
+
+            let value = unsafe { unsafe_mutable_alias(value) }; // elide the lifetime
+
+            return Some(&mut value.value);
+          }
+
+          self.index += 1;
+        }
+
+        None
+      }
+
+      fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.arena.entries.len() - self.index;
+        (remaining, Some(remaining))
+      }
+    }
+
+    IterMut { arena: self, index: 0 }
+  }
+
   /// Enumerates the indices and contents of the arena.
   pub fn enumerate(&self) -> impl Iterator<Item = (ArenaIndex, &T)> {
     pub struct Enumerate<'a, T> {
@@ -322,6 +357,7 @@ impl<T> Arena<T> {
   }
 }
 
+/// Iterates over the arena.
 impl<'a, T> IntoIterator for &'a Arena<T> {
   type Item = &'a T;
   type IntoIter = impl Iterator<Item = Self::Item>;
@@ -331,6 +367,17 @@ impl<'a, T> IntoIterator for &'a Arena<T> {
   }
 }
 
+/// Mutably iterates over the arena.
+impl<'a, T> IntoIterator for &'a mut Arena<T> {
+  type Item = &'a mut T;
+  type IntoIter = impl Iterator<Item = Self::Item>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter_mut()
+  }
+}
+
+/// Allows an arena to be created from an iterator.
 impl<A> FromIterator<A> for Arena<A> {
   fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
     let mut result = Self::default();
@@ -422,7 +469,7 @@ mod tests {
   }
 
   #[test]
-  fn test_iterate_mutably() {
+  fn test_enumerate_mut() {
     let mut arena = Arena::new();
 
     arena.insert("Item 1");

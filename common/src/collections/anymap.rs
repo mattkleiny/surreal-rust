@@ -5,6 +5,10 @@ use std::{
 };
 
 /// An any-map is a hash map that can contain a single value per [`TypeId`].
+///
+/// Any-maps are useful for storing values of different types in a single
+/// container. They are also useful for storing values of the same type, but
+/// where the type is not known at compile time.
 #[derive(Default)]
 pub struct AnyMap<S = RandomState> {
   entries: HashMap<TypeId, Box<dyn Any>, S>,

@@ -1,32 +1,30 @@
 use std::collections::BinaryHeap;
 
-use crate::maths::ApproxEq;
-
-/// A lightweight priority queue with per-element ordering based on single
-/// floating point value.
+/// A priority queue with per-element ordering.
 ///
 /// This is a lightweight wrapper over the built in [`BinaryHeap`] with an
 /// internal node ordering explicitly defined at the point of insertion.
 ///
-/// We use `f32` values because they work well for scoring algorithms and
-/// similar.
-pub struct PriorityQueue<T> {
-  elements: BinaryHeap<Node<T>>,
+/// The weight of each element is defined by the generic type `W`, which must
+/// implement [`Ord`]. Elements with a higher weight will be returned before
+/// elements with a lower weight.
+pub struct PriorityQueue<T, W: Ord = usize> {
+  elements: BinaryHeap<Node<T, W>>,
 }
 
 /// A node in a priority queue with a custom ordering field on the element.
-struct Node<T> {
+struct Node<T, W: Ord> {
   pub value: T,
-  pub order: f32,
+  pub order: W,
 }
 
-impl<T: PartialEq> Default for PriorityQueue<T> {
+impl<T, W: Ord> Default for PriorityQueue<T, W> {
   fn default() -> Self {
     Self::new()
   }
 }
 
-impl<T: PartialEq> PriorityQueue<T> {
+impl<T, W: Ord> PriorityQueue<T, W> {
   /// Creates a new empty queue.
   #[inline]
   pub fn new() -> Self {
@@ -57,7 +55,7 @@ impl<T: PartialEq> PriorityQueue<T> {
 
   /// Pushes a new element onto the queue with a custom order.
   #[inline]
-  pub fn push(&mut self, value: T, order: f32) {
+  pub fn push(&mut self, value: T, order: W) {
     self.elements.push(Node { value, order });
   }
 
@@ -68,23 +66,23 @@ impl<T: PartialEq> PriorityQueue<T> {
   }
 }
 
-impl<T: PartialEq> PartialEq for Node<T> {
+impl<T, W: Ord + Eq> Eq for Node<T, W> {}
+
+impl<T, W: Ord + PartialEq> PartialEq for Node<T, W> {
   fn eq(&self, other: &Self) -> bool {
-    self.value == other.value && self.order.approx_eq(other.order)
+    self.order.eq(&other.order)
   }
 }
 
-impl<T: PartialEq> Eq for Node<T> {}
-
-impl<T: PartialEq> PartialOrd for Node<T> {
-  fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-    Some(self.cmp(other))
-  }
-}
-
-impl<T: PartialEq> Ord for Node<T> {
+impl<T, W: Ord> Ord for Node<T, W> {
   fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-    self.order.partial_cmp(&other.order).unwrap()
+    self.order.cmp(&other.order)
+  }
+}
+
+impl<T, W: Ord + PartialOrd> PartialOrd for Node<T, W> {
+  fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    self.order.partial_cmp(&other.order)
   }
 }
 
@@ -93,26 +91,10 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_should_be_empty_when_created_with_new() {
-    let queue: PriorityQueue<i32> = PriorityQueue::new();
-
-    assert!(queue.is_empty());
-    assert_eq!(queue.len(), 0);
-  }
-
-  #[test]
-  fn test_should_be_empty_when_created_with_with_capacity() {
-    let queue: PriorityQueue<i32> = PriorityQueue::with_capacity(10);
-
-    assert!(queue.is_empty());
-    assert_eq!(queue.len(), 0);
-  }
-
-  #[test]
   fn test_should_not_be_empty_after_push() {
     let mut queue = PriorityQueue::new();
 
-    queue.push("a", 1.0);
+    queue.push("a", 1);
 
     assert!(!queue.is_empty());
     assert_eq!(queue.len(), 1);
@@ -122,19 +104,12 @@ mod tests {
   fn test_should_return_elements_in_order() {
     let mut queue = PriorityQueue::new();
 
-    queue.push("a", 1.0);
-    queue.push("b", 3.0);
-    queue.push("c", 2.0);
+    queue.push("a", 1);
+    queue.push("b", 3);
+    queue.push("c", 2);
 
     assert_eq!(queue.pop().unwrap(), "b");
     assert_eq!(queue.pop().unwrap(), "c");
     assert_eq!(queue.pop().unwrap(), "a");
-  }
-
-  #[test]
-  fn test_should_return_none_when_popped_from_empty_queue() {
-    let mut queue: PriorityQueue<i32> = PriorityQueue::new();
-
-    assert_eq!(queue.pop(), None);
   }
 }

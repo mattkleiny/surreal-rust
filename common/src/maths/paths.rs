@@ -35,7 +35,7 @@ pub trait PathFindingGrid<T: Copy + Hash + Eq = IVec2> {
     came_from.insert(start, start);
     cost_so_far.insert(start, 0.);
 
-    frontier.push(start, 0.);
+    frontier.push(start, 0);
 
     let mut neighbours = NeighbourList::new();
 
@@ -80,7 +80,8 @@ pub trait PathFindingGrid<T: Copy + Hash + Eq = IVec2> {
 
           let priority = new_cost + heuristic(neighbour, &goal);
 
-          frontier.push(*neighbour, priority);
+          // TODO: allow floating point priorities?
+          frontier.push(*neighbour, priority.ceil() as usize);
         }
       }
     }

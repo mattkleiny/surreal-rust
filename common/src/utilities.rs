@@ -25,7 +25,7 @@ pub unsafe fn reinterpret_cast<T, U>(value: &T) -> &U {
   unsafe { &*(value as *const T as *const U) }
 }
 
-/// Mutably reinterprets the given reference as a reference to a different type.
+/// Reinterprets the given mutable reference as a reference to a different type.
 ///
 /// # Safety
 /// This is only safe if the new type is the same size as the old type.

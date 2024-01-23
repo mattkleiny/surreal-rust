@@ -4,6 +4,18 @@ use std::{
 };
 
 /// A simple [`HashMap`]  with multiple values per key.
+///
+/// A multi-map is a hash map that can contain multiple values per key. It's a
+/// thin wrapper around a [`HashMap`] that provides some convenience methods for
+/// accessing items in the map.
+///
+/// Multi-maps are useful for storing multiple values of the same type per key,
+/// for example, a list of entities per tile, or a list of items per entity,
+/// etc.
+///
+/// The default MultiMap uses the same hashing algorithm as [`HashMap`], but
+/// you can specify a different algorithm if you wish. A [`FastHashMap`] exists
+/// to provide a faster hashing algorithm, but it's not as secure.
 #[derive(Default, Debug)]
 pub struct MultiMap<K, V, S = RandomState> {
   entries: HashMap<K, Vec<V>, S>,

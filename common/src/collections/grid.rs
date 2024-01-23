@@ -1,4 +1,7 @@
 /// A simple 2d grid of [`T`]s.
+///
+/// A grid is a 2d array of items. It's a thin wrapper around a [`Vec`] that
+/// provides some convenience methods for accessing items in the grid.
 #[derive(Clone, Debug)]
 pub struct Grid<T> {
   stride: usize,
