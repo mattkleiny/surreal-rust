@@ -264,6 +264,7 @@ pub enum ShaderUniform {
   Color(Color),
   Color32(Color32),
   Texture(TextureId, u8, Option<TextureSampler>),
+  TextureArray(Vec<TextureId>),
   Array(Vec<ShaderUniform>),
 }
 
@@ -331,7 +332,7 @@ pub struct ShaderUniformSet {
 }
 
 impl ShaderUniformSet {
-  /// Sets the given [`UniformKey`] as a uniform in the set.
+  /// Sets the given key as a uniform.
   pub fn set_uniform<K, U>(&mut self, key: K, value: U)
   where
     K: Into<ShaderUniformKey<U>>,
@@ -343,16 +344,16 @@ impl ShaderUniformSet {
     self.uniforms.insert(key, value);
   }
 
-  /// Sets the given [`UniformKey`] as a uniform with a single texture in the
-  /// set.
+  /// Sets the given key as a uniform with a single texture.
   pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
   where
     K: Into<ShaderUniformKey<&'a Texture>>,
   {
+    let key = key.into().name.to_string();
     let slot = self.allocate_texture_slot(texture);
     let uniform = ShaderUniform::Texture(texture.id(), slot, sampler);
 
-    self.uniforms.insert(key.into().name.to_string(), uniform);
+    self.uniforms.insert(key, uniform);
   }
 
   /// Applies all of the uniforms to the given shader program.

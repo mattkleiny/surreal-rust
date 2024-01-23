@@ -393,6 +393,11 @@ impl TextureBindingSet {
     self.slots.fill(None);
   }
 
+  /// Returns a vector of all texture IDs in the set.
+  pub fn to_vec(&self) -> Vec<TextureId> {
+    self.iter().copied().collect()
+  }
+
   /// Returns an iterator over all texture IDs in the set.
   pub fn iter(&self) -> impl Iterator<Item = &TextureId> {
     self.slots.iter().filter_map(|slot| slot.as_ref())

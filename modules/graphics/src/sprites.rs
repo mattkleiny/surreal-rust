@@ -317,10 +317,10 @@ impl MultiSpriteBatch {
     let sprite_count = vertex_count / 4;
     let index_count = sprite_count * 6;
     let mesh = &mut self.mesh;
+    let texture_ids = self.textures.to_vec();
 
-    for (_index, _texture_id) in self.textures.iter().enumerate() {
-      // TODO: set all of the textures into an array?
-    }
+    // set texture array
+    material.set_uniform("u_textures", ShaderUniform::TextureArray(texture_ids));
 
     // write vertices to mesh
     mesh.with_buffers(|vertices, _| {

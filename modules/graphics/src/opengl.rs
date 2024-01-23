@@ -602,6 +602,17 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
             gl::BindSampler(*slot as u32, 0);
           }
         }
+        ShaderUniform::TextureArray(entries) => {
+          let start_index = location;
+          let texture_ids = entries.iter().map(|entry| (*entry).into()).collect::<Vec<_>>();
+
+          gl::ProgramUniform1uiv(
+            shader_id,
+            start_index as i32,
+            entries.len() as i32,
+            texture_ids.as_ptr() as *const _,
+          );
+        }
         ShaderUniform::Array(uniforms) => {
           self.shader_set_uniforms(shader, location, uniforms)?;
         }
