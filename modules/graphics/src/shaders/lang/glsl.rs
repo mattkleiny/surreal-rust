@@ -10,7 +10,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> common::Result<Self> {
+  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl AsVirtualPath) -> common::Result<Self> {
     Self::from_path::<GLSL>(graphics, path)
   }
 
@@ -55,7 +55,7 @@ impl ShaderLanguage for GLSL {
           let path = path.replace(['"', '"', ';'], "");
 
           // fetch and splat the dependent shader
-          let dependent_file = VirtualPath::from(&path);
+          let dependent_file = path.to_virtual_path();
           let dependent_code = dependent_file.read_all_text()?;
 
           if let Some(shader) = result.last_mut() {

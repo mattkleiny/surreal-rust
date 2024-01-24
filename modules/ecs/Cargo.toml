@@ -3,7 +3,6 @@ name = "surreal-ecs"
 description = "A simple, fast, and flexible entity-component-system library for Surreal"
 authors.workspace = true
 edition.workspace = true
-version.workspace = true
 
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }

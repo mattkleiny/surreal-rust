@@ -1,8 +1,9 @@
 [package]
-name = "surreal-ui"
-description = "UI engine for Surreal"
+name = "surreal-scripting"
+description = "A scripting engine for Surreal"
 authors.workspace = true
 edition.workspace = true
 
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
+thiserror = "1.0.26"

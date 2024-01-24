@@ -3,8 +3,6 @@ name = "surreal-graphics"
 description = "Surreal graphics engine"
 authors.workspace = true
 edition.workspace = true
-version.workspace = true
-
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
 serde = { version = "1.0.159", features = ["derive"] }

@@ -1,6 +1,6 @@
 //! Project configuration for the editor.
 
-use common::{info, Version, VirtualPath};
+use common::{info, AsVirtualPath, Version, VirtualPath};
 use serde::{Deserialize, Serialize};
 
 /// The current [`Version`] of the [`Project`] schema.
@@ -20,11 +20,11 @@ pub enum ProjectError {
 /// A project is a collection of assets and settings that can be loaded and
 /// edited in the editor. Projects are stored in the _local_ file system and
 /// can be loaded from any location.
-pub struct Project<'a> {
+pub struct Project {
   /// The top-level details for this project.
   pub details: ProjectDetails,
-  pub asset_path: VirtualPath<'a>,
-  pub target_path: VirtualPath<'a>,
+  pub asset_path: VirtualPath,
+  pub target_path: VirtualPath,
 }
 
 /// Top-level details for a [`Project`].
@@ -35,11 +35,11 @@ pub struct ProjectDetails {
   pub version: Version,
 }
 
-impl<'a> Project<'a> {
+impl Project {
   /// Opens a project at the given path, or creates a new one if it doesn't
   /// exist.
-  pub fn open_or_create(name: &str, root_path: &'a str) -> common::Result<Self> {
-    let root_path = VirtualPath::from(root_path);
+  pub fn open_or_create(name: &str, root_path: &str) -> common::Result<Self> {
+    let root_path = root_path.to_virtual_path();
 
     let asset_path = root_path.join("assets");
     let target_path = root_path.join("target");
@@ -72,7 +72,7 @@ impl<'a> Project<'a> {
 
   /// The root [`VirtualPath`] for the project.
   pub fn root_path(&self) -> VirtualPath {
-    VirtualPath::from(&self.details.path)
+    self.details.path.to_virtual_path()
   }
 
   /// Reads the [`Version`] of the project from the settings file.

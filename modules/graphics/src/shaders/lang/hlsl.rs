@@ -10,7 +10,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw HLSL shader code file.
-  pub fn from_hlsl_path<'a>(graphics: &GraphicsEngine, path: impl Into<VirtualPath<'a>>) -> common::Result<Self> {
+  pub fn from_hlsl_path<'a>(graphics: &GraphicsEngine, path: impl AsVirtualPath) -> common::Result<Self> {
     Self::from_path::<HLSL>(graphics, path)
   }
 

@@ -11,7 +11,7 @@ mod importers;
 // TODO: add a small reflection system for reading/writing resource data
 // TODO: add a small UI toolkit for building the editor; for each field render
 
-use common::{FastHashMap, ResourceArena, VirtualPath};
+use common::{AsVirtualPath, FastHashMap, ResourceArena};
 
 common::impl_rid!(AssetId, "Identifies an asset in an asset database.");
 
@@ -53,7 +53,7 @@ pub enum AssetState {
 
 impl AssetDatabase {
   /// Gets an asset from the database, or loads it from the file system.
-  pub fn load<'a, A>(&self, _path: impl Into<VirtualPath<'a>>) -> Asset<A> {
+  pub fn load<'a, A>(&self, _path: impl AsVirtualPath) -> Asset<A> {
     todo!()
   }
 }

@@ -50,7 +50,7 @@ impl FileSystem for LocalFileSystem {
 /// Converts a [`VirtualPath`] into a [`Path`].
 #[inline(always)]
 fn to_path(path: &VirtualPath) -> PathBuf {
-  PathBuf::from(path.location.as_ref())
+  PathBuf::from(&path.location)
 }
 
 #[cfg(test)]
@@ -59,7 +59,7 @@ mod tests {
 
   #[test]
   fn test_read_file_from_disk() {
-    let path = VirtualPath::from("local://../assets/fonts/bitboy8_v1.otf");
+    let path = "local://../assets/fonts/bitboy8_v1.otf".to_virtual_path();
     let bytes = path.read_all_bytes().unwrap();
 
     assert!(!bytes.is_empty());

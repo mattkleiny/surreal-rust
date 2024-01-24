@@ -44,6 +44,13 @@ impl<R: AsRef<str>> PartialEq<R> for StringName {
   }
 }
 
+impl PartialEq<StringName> for &str {
+  #[inline]
+  fn eq(&self, other: &StringName) -> bool {
+    other == self
+  }
+}
+
 /// Pretty-prints a string name.
 impl Debug for StringName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

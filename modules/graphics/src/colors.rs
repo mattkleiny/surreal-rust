@@ -6,7 +6,7 @@
 
 use std::ops::{Div, Index, Mul};
 
-use common::{ApproxEq, FromRandom, Lerp, Random, Scalar, VirtualPath};
+use common::{ApproxEq, AsVirtualPath, FromRandom, Lerp, Random, Scalar};
 use serde::{Deserialize, Serialize};
 
 /// Represents a type of pixel.
@@ -339,8 +339,8 @@ impl<P: Pixel> ColorPalette<P> {
   }
 
   /// Loads a palette from the given file path.
-  pub fn from_file<'a>(path: impl Into<VirtualPath<'a>>) -> common::Result<Self> {
-    let path = path.into();
+  pub fn from_file<'a>(path: impl AsVirtualPath) -> common::Result<Self> {
+    let path = path.to_virtual_path();
     let stream = path.open_input_stream()?;
 
     Self::from_bytes(stream)

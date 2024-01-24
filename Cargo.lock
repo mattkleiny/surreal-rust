@@ -573,7 +573,7 @@ dependencies = [
 
 [[package]]
 name = "surreal-assets"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "serde",
  "surreal-common",
@@ -582,7 +582,7 @@ dependencies = [
 
 [[package]]
 name = "surreal-audio"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "surreal-common",
  "thiserror",
@@ -610,7 +610,7 @@ dependencies = [
 
 [[package]]
 name = "surreal-ecs"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "serde",
  "surreal-common",
@@ -632,7 +632,7 @@ dependencies = [
 
 [[package]]
 name = "surreal-graphics"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "bitflags 2.4.1",
  "gl",
@@ -644,7 +644,7 @@ dependencies = [
 
 [[package]]
 name = "surreal-input"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "surreal-common",
  "thiserror",
@@ -661,7 +661,7 @@ dependencies = [
 
 [[package]]
 name = "surreal-physics"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "surreal-common",
  "thiserror",
@@ -669,7 +669,7 @@ dependencies = [
 
 [[package]]
 name = "surreal-scene"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "bitflags 2.4.1",
  "surreal-common",
@@ -677,8 +677,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "surreal-scripting"
+version = "0.0.0"
+dependencies = [
+ "surreal-common",
+ "thiserror",
+]
+
+[[package]]
 name = "surreal-sdl"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "sdl2-sys",
  "surreal-audio",
@@ -690,7 +698,7 @@ dependencies = [
 
 [[package]]
 name = "surreal-ui"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "surreal-common",
 ]
