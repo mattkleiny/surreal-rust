@@ -6,9 +6,6 @@
 
 use crate::StringName;
 
-/// An empty list of properties.
-const EMPTY_PROPERTIES: Vec<Property> = vec![];
-
 /// Description of a reflected property.
 #[derive(Debug)]
 pub struct Property {
@@ -16,10 +13,12 @@ pub struct Property {
   pub name: &'static str,
   /// The type of the property.
   pub kind: &'static str,
+  /// Accesses an instance of this property on the given value.
+  pub accessor: fn(Address) -> Address,
 }
 
 /// Allows for the reflection of types.
-pub trait Reflect {
+pub trait Reflect: Sized {
   /// Gets the name of this type.
   fn name(&self) -> StringName {
     let name = std::any::type_name::<Self>();
@@ -29,35 +28,90 @@ pub trait Reflect {
   }
 
   /// Gets the properties of this type.
-  fn properties(&self) -> Vec<Property>;
+  fn properties(&self) -> &[Property];
+
+  /// Attempts to find the property with the given name.
+  fn property(&self, name: &'static str) -> Option<&Property> {
+    self.properties().iter().find(|property| property.name == name)
+  }
+
+  /// Attempts to get the value of the given property.
+  fn get_property<T>(&self, name: &'static str) -> Option<&T> {
+    self.property(name).map(|_property| {
+      todo!();
+    })
+  }
+
+  /// Attempts to set the value of the given property.
+  fn set_property<T>(&mut self, name: &'static str, _value: T) {
+    self.property(name).map(|_property| {
+      todo!();
+    });
+  }
 }
 
 /// Implements reflection for the given primitive type.
-macro_rules! impl_reflect_primitive {
+macro_rules! impl_reflect {
   ($type:ty) => {
     impl Reflect for $type {
       #[inline(always)]
-      fn properties(&self) -> Vec<Property> {
-        EMPTY_PROPERTIES
+      fn properties(&self) -> &[Property] {
+        &[]
       }
     }
   };
 }
 
-impl_reflect_primitive!(bool);
-impl_reflect_primitive!(char);
-impl_reflect_primitive!(u8);
-impl_reflect_primitive!(u16);
-impl_reflect_primitive!(u32);
-impl_reflect_primitive!(u64);
-impl_reflect_primitive!(i8);
-impl_reflect_primitive!(i16);
-impl_reflect_primitive!(i32);
-impl_reflect_primitive!(i64);
-impl_reflect_primitive!(f32);
-impl_reflect_primitive!(f64);
-impl_reflect_primitive!(String);
-impl_reflect_primitive!(StringName);
+impl_reflect!(bool);
+impl_reflect!(char);
+impl_reflect!(u8);
+impl_reflect!(u16);
+impl_reflect!(u32);
+impl_reflect!(u64);
+impl_reflect!(i8);
+impl_reflect!(i16);
+impl_reflect!(i32);
+impl_reflect!(i64);
+impl_reflect!(f32);
+impl_reflect!(f64);
+impl_reflect!(String);
+impl_reflect!(StringName);
+
+/// The address of a value.
+///
+/// This is an opaque type that represents the address of a value in memory.
+/// This is used to implement reflection for types that do not implement
+/// `Reflect` themselves, allowing us to read and write data from and to them
+/// dynamically at runtime.
+///
+/// # Safety
+/// This type is unsafe because it allows for the creation of invalid pointers.
+/// It is up to the user to ensure that the address is valid.
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Address(usize);
+
+impl Address {
+  #[inline(always)]
+  pub fn from_ptr<T>(ptr: *const T) -> Self {
+    Self(ptr as usize)
+  }
+
+  #[inline(always)]
+  pub fn from_mut<T>(ptr: *mut T) -> Self {
+    Self(ptr as usize)
+  }
+
+  #[inline(always)]
+  pub fn as_ptr<T>(&self) -> *const T {
+    self.0 as *const T
+  }
+
+  #[inline(always)]
+  pub fn as_mut_ptr<T>(&self) -> *mut T {
+    self.0 as *mut T
+  }
+}
 
 #[cfg(test)]
 mod tests {
@@ -65,8 +119,8 @@ mod tests {
 
   use super::*;
 
-  #[derive(Reflect)]
   #[allow(dead_code)]
+  #[derive(Reflect)]
   struct TestStruct {
     name: String,
     value: u32,
@@ -100,7 +154,19 @@ mod tests {
     assert_eq!(properties[0].kind, "String");
     assert_eq!(properties[1].name, "value");
     assert_eq!(properties[1].kind, "u32");
+  }
 
-    println!("{:#?}", properties)
+  #[test]
+  fn test_struct_fields_should_be_readable() {
+    let value = TestStruct {
+      name: "Test".to_string(),
+      value: 42,
+    };
+
+    let name = value.get_property("name");
+    let value = value.get_property("value");
+
+    assert_eq!(name, Some(&"Test".to_string()));
+    assert_eq!(value, Some(&42));
   }
 }

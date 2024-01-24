@@ -4,7 +4,7 @@ use syn::{parse_macro_input, DeriveInput};
 
 pub fn impl_reflect(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
-  let name = &input.ident;
+  let ident = &input.ident;
 
   // parse the fields of the struct
   let fields: Vec<_> = match input.data {
@@ -22,21 +22,25 @@ pub fn impl_reflect(input: TokenStream) -> TokenStream {
     quote! {
       name: stringify!(#name),
       kind: stringify!(#ty),
+      accessor: |address: Address| {
+        todo!()
+      },
     }
   })
   .collect();
 
+  let length = fields.len();
+
   let expanded = quote! {
     /// Implements reflection for the given type.
-    impl Reflect for #name {
-      fn properties(&self) -> Vec<Property> {
-        let mut properties = Vec::new();
+    impl Reflect for #ident {
+      #[inline]
+      fn properties(&self) -> &[Property] {
+        static PROPERTIES: [Property; #length] = [
+          #(Property { #fields },)*
+        ];
 
-        #(
-          properties.push(Property { #fields });
-        )*
-
-        properties
+        &PROPERTIES
       }
      }
   };
