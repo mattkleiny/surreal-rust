@@ -6,44 +6,47 @@ pub fn impl_reflect(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
   let ident = &input.ident;
 
-  // parse the fields of the struct
-  let fields: Vec<_> = match input.data {
-    syn::Data::Struct(ref data_struct) => match &data_struct.fields {
-      syn::Fields::Named(fields) => fields.named.iter(),
-      syn::Fields::Unnamed(fields) => fields.unnamed.iter(),
-      _ => panic!("Only structs are supported"),
-    },
-    _ => panic!("Only structs are supported"),
-  }
-  .map(|field| {
-    let name = field.ident.as_ref().unwrap();
-    let ty = &field.ty;
-
-    quote! {
-      name: stringify!(#name),
-      kind: stringify!(#ty),
-      accessor: |address: Address| {
-        todo!()
-      },
-    }
-  })
-  .collect();
-
-  let length = fields.len();
-
-  let expanded = quote! {
-    /// Implements reflection for the given type.
-    impl Reflect for #ident {
-      #[inline]
-      fn properties(&self) -> &[Property] {
-        static PROPERTIES: [Property; #length] = [
-          #(Property { #fields },)*
-        ];
-
-        &PROPERTIES
+  let output = match input.data {
+    // expand structs into reflectable types
+    syn::Data::Struct(ref struct_info) => {
+      let fields = match &struct_info.fields {
+        syn::Fields::Named(fields) => fields.named.iter(),
+        syn::Fields::Unnamed(fields) => fields.unnamed.iter(),
+        _ => panic!("Only structs are supported"),
       }
-     }
+      .map(|field| {
+        let field_name = field.ident.as_ref().unwrap();
+        let field_type = &field.ty;
+
+        quote! {
+          name: stringify!(#field_name),
+          kind: stringify!(#field_type),
+          offset: std::mem::offset_of!(#ident, #field_name),
+        }
+      });
+
+      let length = fields.len();
+
+      quote! {
+        impl StructType for #ident {
+          #[inline]
+          fn fields(&self) -> &[FieldInfo] {
+            static FIELDS: [FieldInfo; #length] = [
+              #(FieldInfo { #fields },)*
+            ];
+
+            &FIELDS
+          }
+        }
+      }
+    }
+    syn::Data::Enum(_enum_info) => {
+      todo!();
+    }
+    syn::Data::Union(_union_info) => {
+      todo!();
+    }
   };
 
-  expanded.into()
+  output.into()
 }
