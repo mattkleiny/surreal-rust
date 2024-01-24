@@ -7,9 +7,8 @@ pub fn impl_singleton(input: TokenStream) -> TokenStream {
   let name = &input.ident;
 
   let expanded = quote! {
-    impl #name {
-      /// Returns a reference to the singleton instance.
-      pub fn instance() -> &'static Self {
+    impl Singleton for #name {
+      fn instance() -> &'static Self {
         static INSTANCE: std::sync::LazyLock<#name> = std::sync::LazyLock::new(|| #name::default());
 
         std::ops::Deref::deref(&INSTANCE)

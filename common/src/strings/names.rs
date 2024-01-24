@@ -3,9 +3,7 @@ use std::{
   sync::RwLock,
 };
 
-use macros::Singleton;
-
-use crate::{Arena, ArenaIndex};
+use crate::{Arena, ArenaIndex, Singleton};
 
 /// Represents an interned string that can be used as a name.
 #[derive(Clone, Eq, PartialEq, Hash)]

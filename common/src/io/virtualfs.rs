@@ -12,9 +12,9 @@ mod local;
 mod memory;
 
 use anyhow::anyhow;
-use macros::Singleton;
 
 use super::{InputStream, OutputStream};
+use crate::Singleton;
 
 /// Represents a type capable of acting as a file system.
 ///
