@@ -2,7 +2,7 @@ use std::{fmt::Debug, hash::Hash};
 
 use crate::{impl_rid, Arena, NeighbourList, PathFindingGrid, Scalar};
 
-impl_rid!(GraphNodeId);
+impl_rid!(GraphNodeId, "Identifies a node in a graph.");
 
 /// An edge in a directed graph with a weight.
 #[derive(Debug)]

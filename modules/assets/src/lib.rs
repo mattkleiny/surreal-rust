@@ -13,7 +13,7 @@ mod importers;
 
 use common::{FastHashMap, ResourceArena, VirtualPath};
 
-common::impl_rid!(AssetId);
+common::impl_rid!(AssetId, "Identifies an asset in an asset database.");
 
 /// A database for managing assets.
 ///

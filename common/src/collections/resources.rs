@@ -8,7 +8,8 @@ use crate::collections::{Arena, ArenaIndex};
 /// [`ArenaIndex`], and can be used as a key in [`ResourceStorage`].
 #[macro_export]
 macro_rules! impl_rid {
-  ($name:ident) => {
+  ($name:ident, $comment:literal) => {
+    #[doc = $comment]
     #[repr(transparent)]
     #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
     pub struct $name($crate::ArenaIndex);
@@ -149,7 +150,7 @@ impl<K: Into<ArenaIndex> + From<ArenaIndex>, V> ResourceArena<K, V> {
 mod tests {
   use super::*;
 
-  impl_rid!(TestId);
+  impl_rid!(TestId, "A test ID for test resoucres");
 
   pub struct TestResource {
     value: u16,

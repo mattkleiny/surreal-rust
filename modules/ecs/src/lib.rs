@@ -9,7 +9,7 @@
 
 use common::{Arena, ArenaIndex, FastHashMap, StringName};
 
-common::impl_rid!(EntityId);
+common::impl_rid!(EntityId, "Identifies an entity in an ECS.");
 
 /// Represents an entity.
 #[derive(Default)]
@@ -17,92 +17,28 @@ pub struct Entity {
   pub name: Option<StringName>,
 }
 
-/// A reference to an entity in the entity manager.
-pub struct EntityRef<'a> {
-  entity_id: EntityId,
-  entity_manager: &'a EntityManager,
-}
-
-impl<'a> EntityRef<'a> {
-  /// Gets the component of the given type for this entity.
-  #[inline]
-  pub fn get_component<C: Component + 'static>(&self) -> Option<&C> {
-    self.entity_manager.get_component::<C>(self.entity_id)
-  }
-}
-
-/// A mutable reference to an entity in the entity manager.
-pub struct EntityRefMut<'a> {
-  entity_id: EntityId,
-  entity_manager: &'a mut EntityManager,
-}
-
-impl<'a> EntityRefMut<'a> {
-  /// Adds a component of the given type to this entity.
-  #[inline]
-  pub fn add_component<C: Component + 'static>(&mut self, component: C) {
-    self.entity_manager.add_component(self.entity_id, component);
-  }
-
-  /// Removes the component of the given type from this entity.
-  #[inline]
-  pub fn remove_component<C: Component + 'static>(&mut self) {
-    self.entity_manager.remove_component::<C>(self.entity_id);
-  }
-
-  /// Gets the component of the given type for this entity.
-  #[inline]
-  pub fn get_component<C: Component + 'static>(&self) -> Option<&C> {
-    self.entity_manager.get_component::<C>(self.entity_id)
-  }
-
-  /// Mutably gets the component of the given type for this entity.
-  #[inline]
-  pub fn get_component_mut<C: Component + 'static>(&mut self) -> Option<&mut C> {
-    self.entity_manager.get_component_mut::<C>(self.entity_id)
-  }
-}
-
-/// A manager for entities.
+/// An ECS world of entities and systems.
 #[derive(Default)]
-pub struct EntityManager {
+pub struct World {
   entities: Arena<Entity>,
   components: FastHashMap<ComponentType, Box<dyn std::any::Any>>,
+  systems: Vec<Box<dyn System>>,
 }
 
-impl EntityManager {
+impl World {
+  /// Updates this world's systems.
+  pub fn update(&self, _delta: f32) {
+    todo!()
+  }
+
   /// Creates a new entity.
-  pub fn create_entity(&mut self) -> EntityRefMut {
-    let entity_id = EntityId::from(self.entities.insert(Entity { name: None }));
-
-    EntityRefMut {
-      entity_id,
-      entity_manager: self,
-    }
+  pub fn create_entity(&mut self) -> EntityId {
+    self.entities.insert(Entity { name: None }).into()
   }
 
-  /// Gets a reference to the entity with the given ID.
-  pub fn get_entity(&self, entity_id: EntityId) -> Option<EntityRef> {
-    if !self.entities.contains(entity_id.into()) {
-      return None;
-    }
-
-    Some(EntityRef {
-      entity_id,
-      entity_manager: self,
-    })
-  }
-
-  /// Gets a mutable reference to the entity with the given ID.
-  pub fn get_entity_mut(&mut self, entity_id: EntityId) -> Option<EntityRefMut> {
-    if !self.entities.contains(entity_id.into()) {
-      return None;
-    }
-
-    Some(EntityRefMut {
-      entity_id,
-      entity_manager: self,
-    })
+  /// Adds a system to this world.
+  pub fn add_system<S: System + 'static>(&mut self, system: S) {
+    self.systems.push(Box::new(system));
   }
 
   /// Adds a component of the given type to the entity with the given ID.
@@ -264,6 +200,19 @@ impl<C: Component> ComponentStorage<C> for FastHashMap<EntityId, C> {
   }
 }
 
+/// A system that can be run on a world.
+pub trait System {
+  /// Runs this system on the given world.
+  fn run(&mut self, world: &mut World, delta: f32);
+}
+
+/// A system that runs a function on a world.
+impl<F: FnMut(&mut World, f32)> System for F {
+  fn run(&mut self, world: &mut World, delta: f32) {
+    self(world, delta);
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -277,9 +226,24 @@ mod tests {
 
   #[test]
   fn test_basic_component_access() {
-    let mut entity_manager = EntityManager::default();
-    let mut entity = entity_manager.create_entity();
+    let mut world = World::default();
 
-    entity.add_component(TestComponent {});
+    let entity1 = world.create_entity();
+    let entity2 = world.create_entity();
+
+    world.add_component(entity1, TestComponent {});
+    world.add_component(entity2, TestComponent {});
+  }
+
+  #[test]
+  fn test_basic_system_access() {
+    let mut world = World::default();
+
+    let _entity1 = world.create_entity();
+    let _entity2 = world.create_entity();
+
+    world.add_system(|_world: &mut World, _| {
+      todo!("Implement this system");
+    });
   }
 }

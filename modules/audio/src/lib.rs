@@ -8,8 +8,8 @@ mod sampling;
 
 pub use openal::OpenALHost;
 
-common::impl_rid!(ClipId);
-common::impl_rid!(SourceId);
+common::impl_rid!(ClipId, "Identifies an Audio Clip.");
+common::impl_rid!(SourceId, "Identifies an Audio Source.");
 
 common::impl_server!(AudioEngine, AudioBackend);
 

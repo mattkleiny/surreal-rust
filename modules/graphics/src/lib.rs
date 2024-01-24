@@ -34,11 +34,11 @@ mod textures;
 
 pub use opengl::OpenGLHost;
 
-common::impl_rid!(BufferId);
-common::impl_rid!(TextureId);
-common::impl_rid!(ShaderId);
-common::impl_rid!(MeshId);
-common::impl_rid!(TargetId);
+common::impl_rid!(BufferId, "Identifies a graphics buffer.");
+common::impl_rid!(TextureId, "Identifies a texture.");
+common::impl_rid!(ShaderId, "Identifies a shader program.");
+common::impl_rid!(MeshId, "Identifies a mesh.");
+common::impl_rid!(TargetId, "Identifies a render target.");
 
 common::impl_server!(GraphicsEngine, GraphicsBackend);
 

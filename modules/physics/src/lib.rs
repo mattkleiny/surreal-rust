@@ -6,9 +6,9 @@ use common::{Quat, ResourceArena, Vec3};
 
 mod internal;
 
-common::impl_rid!(ColliderId);
-common::impl_rid!(RigidbodyId);
-common::impl_rid!(EffectorId);
+common::impl_rid!(ColliderId, "Identifies a collider.");
+common::impl_rid!(BodyId, "Identifies a physics body.");
+common::impl_rid!(EffectorId, "Identifies an effector.");
 
 common::impl_server!(PhysicsEngine, PhysicsBackend);
 
@@ -26,7 +26,7 @@ impl PhysicsEngine {
 
 /// Possible kinds of rigidbodies.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum RigidbodyKind {
+pub enum BodyKind {
   Static,
   Dynamic,
   Kinematic,
@@ -67,21 +67,21 @@ pub trait PhysicsBackend {
   /// Resets the entire physics simulation.
   fn reset(&self);
 
-  // rigid-bodies
-  fn rigidbody_create(&self, kind: RigidbodyKind, initial_position: Vec3) -> RigidbodyId;
-  fn rigidbody_add_collider(&self, body: RigidbodyId, collider: ColliderId);
-  fn rigidbody_remove_collider(&self, body: RigidbodyId, collider: ColliderId);
-  fn rigidbody_set_position(&self, body: RigidbodyId, position: Vec3);
-  fn rigidbody_get_position(&self, body: RigidbodyId) -> Vec3;
-  fn rigidbody_set_rotation(&self, body: RigidbodyId, rotation: Quat);
-  fn rigidbody_get_rotation(&self, body: RigidbodyId) -> Quat;
-  fn rigidbody_set_scale(&self, body: RigidbodyId, scale: Vec3);
-  fn rigidbody_get_scale(&self, body: RigidbodyId) -> Vec3;
-  fn rigidbody_set_velocity(&self, body: RigidbodyId, velocity: Vec3);
-  fn rigidbody_get_velocity(&self, body: RigidbodyId) -> Vec3;
-  fn rigidbody_set_angular_velocity(&self, body: RigidbodyId, velocity: Vec3);
-  fn rigidbody_get_angular_velocity(&self, body: RigidbodyId) -> Vec3;
-  fn rigidbody_delete(&self, body: RigidbodyId);
+  // rigidodies
+  fn body_create(&self, kind: BodyKind, initial_position: Vec3) -> BodyId;
+  fn body_add_collider(&self, body: BodyId, collider: ColliderId);
+  fn body_remove_collider(&self, body: BodyId, collider: ColliderId);
+  fn body_set_position(&self, body: BodyId, position: Vec3);
+  fn body_get_position(&self, body: BodyId) -> Vec3;
+  fn body_set_rotation(&self, body: BodyId, rotation: Quat);
+  fn body_get_rotation(&self, body: BodyId) -> Quat;
+  fn body_set_scale(&self, body: BodyId, scale: Vec3);
+  fn body_get_scale(&self, body: BodyId) -> Vec3;
+  fn body_set_velocity(&self, body: BodyId, velocity: Vec3);
+  fn body_get_velocity(&self, body: BodyId) -> Vec3;
+  fn body_set_angular_velocity(&self, body: BodyId, velocity: Vec3);
+  fn body_get_angular_velocity(&self, body: BodyId) -> Vec3;
+  fn body_delete(&self, body: BodyId);
 
   // colliders
   fn collider_create_sphere(&self, initial_position: Vec3, radius: f32) -> ColliderId;

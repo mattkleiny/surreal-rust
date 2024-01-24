@@ -6,14 +6,14 @@ use super::*;
 /// algorithm to simulate the physics of the game world.
 #[derive(Default)]
 pub struct InternalPhysicsBackend {
-  rigidbodies: ResourceArena<RigidbodyId, Rigidbody>,
+  bodies: ResourceArena<BodyId, Body>,
   colliders: ResourceArena<ColliderId, Collider>,
   effectors: ResourceArena<EffectorId, Effector>,
 }
 
 /// The internal representation of a rigidbody.
-struct Rigidbody {
-  _kind: RigidbodyKind,
+struct Body {
+  _kind: BodyKind,
   colliders: Vec<ColliderId>,
 }
 
@@ -37,59 +37,59 @@ impl PhysicsBackend for InternalPhysicsBackend {
     todo!()
   }
 
-  fn rigidbody_create(&self, kind: RigidbodyKind, initial_position: Vec3) -> RigidbodyId {
+  fn body_create(&self, kind: BodyKind, initial_position: Vec3) -> BodyId {
     todo!()
   }
 
-  fn rigidbody_add_collider(&self, body: RigidbodyId, collider: ColliderId) {
+  fn body_add_collider(&self, body: BodyId, collider: ColliderId) {
     todo!()
   }
 
-  fn rigidbody_remove_collider(&self, body: RigidbodyId, collider: ColliderId) {
+  fn body_remove_collider(&self, body: BodyId, collider: ColliderId) {
     todo!()
   }
 
-  fn rigidbody_set_position(&self, body: RigidbodyId, position: Vec3) {
+  fn body_set_position(&self, body: BodyId, position: Vec3) {
     todo!()
   }
 
-  fn rigidbody_get_position(&self, body: RigidbodyId) -> Vec3 {
+  fn body_get_position(&self, body: BodyId) -> Vec3 {
     todo!()
   }
 
-  fn rigidbody_set_rotation(&self, body: RigidbodyId, rotation: Quat) {
+  fn body_set_rotation(&self, body: BodyId, rotation: Quat) {
     todo!()
   }
 
-  fn rigidbody_get_rotation(&self, body: RigidbodyId) -> Quat {
+  fn body_get_rotation(&self, body: BodyId) -> Quat {
     todo!()
   }
 
-  fn rigidbody_set_scale(&self, body: RigidbodyId, scale: Vec3) {
+  fn body_set_scale(&self, body: BodyId, scale: Vec3) {
     todo!()
   }
 
-  fn rigidbody_get_scale(&self, body: RigidbodyId) -> Vec3 {
+  fn body_get_scale(&self, body: BodyId) -> Vec3 {
     todo!()
   }
 
-  fn rigidbody_set_velocity(&self, body: RigidbodyId, velocity: Vec3) {
+  fn body_set_velocity(&self, body: BodyId, velocity: Vec3) {
     todo!()
   }
 
-  fn rigidbody_get_velocity(&self, body: RigidbodyId) -> Vec3 {
+  fn body_get_velocity(&self, body: BodyId) -> Vec3 {
     todo!()
   }
 
-  fn rigidbody_set_angular_velocity(&self, body: RigidbodyId, velocity: Vec3) {
+  fn body_set_angular_velocity(&self, body: BodyId, velocity: Vec3) {
     todo!()
   }
 
-  fn rigidbody_get_angular_velocity(&self, body: RigidbodyId) -> Vec3 {
+  fn body_get_angular_velocity(&self, body: BodyId) -> Vec3 {
     todo!()
   }
 
-  fn rigidbody_delete(&self, body: RigidbodyId) {
+  fn body_delete(&self, body: BodyId) {
     todo!()
   }
 
