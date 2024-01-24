@@ -184,12 +184,9 @@ impl VirtualPath {
 
   /// Attempts to read all text from the given path.
   pub fn read_all_text(&self) -> crate::Result<String> {
-    let mut buffer = String::new();
     let mut stream = self.open_input_stream()?;
 
-    stream.read_to_string(&mut buffer)?;
-
-    Ok(buffer)
+    Ok(stream.to_string()?)
   }
 }
 
@@ -216,13 +213,13 @@ impl std::fmt::Display for VirtualPath {
 }
 
 /// Represents a type that can be converted into a [`VirtualPath`].
-pub trait AsVirtualPath {
+pub trait ToVirtualPath {
   /// Converts the type into a [`VirtualPath`].
   fn to_virtual_path(&self) -> VirtualPath;
 }
 
 /// Allow string references to be converted into [`VirtualPath`] instances.
-impl<R: AsRef<str>> AsVirtualPath for R {
+impl<R: AsRef<str>> ToVirtualPath for R {
   #[inline]
   fn to_virtual_path(&self) -> VirtualPath {
     let value = self.as_ref();

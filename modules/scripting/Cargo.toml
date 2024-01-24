@@ -7,3 +7,4 @@ edition.workspace = true
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
 thiserror = "1.0.26"
+mlua = { version = "0.9.4", features = ["vendored", "lua54"] }

@@ -10,7 +10,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shady shader code file.
-  pub fn from_shady_path<'a>(graphics: &GraphicsEngine, path: impl AsVirtualPath) -> common::Result<Self> {
+  pub fn from_shady_path<'a>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> common::Result<Self> {
     Self::from_path::<Shady>(graphics, path)
   }
 

@@ -1,4 +1,4 @@
-use super::VirtualPath;
+use super::ToVirtualPath;
 
 /// Allows serialization to different types implicitly.
 ///
@@ -13,8 +13,8 @@ pub trait Serializable: serde::Serialize + Sized {
 
   /// Serializes the type to a binary file.
   #[cfg(feature = "binary")]
-  fn to_binary_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
-    let mut stream = path.into().open_output_stream()?;
+  fn to_binary_file(&self, path: impl ToVirtualPath) -> crate::Result<()> {
+    let mut stream = path.to_virtual_path().open_output_stream()?;
 
     self.to_binary_stream(&mut stream)
   }
@@ -33,8 +33,8 @@ pub trait Serializable: serde::Serialize + Sized {
 
   /// Serializes the type to disk in `json` format.
   #[cfg(feature = "json")]
-  fn to_json_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
-    let mut stream = path.into().open_output_stream()?;
+  fn to_json_file(&self, path: impl ToVirtualPath) -> crate::Result<()> {
+    let mut stream = path.to_virtual_path().open_output_stream()?;
 
     self.to_json_stream(&mut stream)
   }
@@ -53,8 +53,8 @@ pub trait Serializable: serde::Serialize + Sized {
 
   /// Serializes the type to disk in `ron` format.
   #[cfg(feature = "ron")]
-  fn to_ron_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
-    let mut stream = path.into().open_output_stream()?;
+  fn to_ron_file(&self, path: impl ToVirtualPath) -> crate::Result<()> {
+    let mut stream = path.to_virtual_path().open_output_stream()?;
     let string = ron::to_string(self)?;
 
     stream.write_all(string.as_bytes())?;
@@ -76,8 +76,8 @@ pub trait Serializable: serde::Serialize + Sized {
 
   /// Serializes the type to disk in `toml` format.
   #[cfg(feature = "toml")]
-  fn to_toml_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
-    let mut stream = path.into().open_output_stream()?;
+  fn to_toml_file(&self, path: impl ToVirtualPath) -> crate::Result<()> {
+    let mut stream = path.to_virtual_path().open_output_stream()?;
     let string = toml::to_string(self)?;
 
     stream.write_all(string.as_bytes())?;
@@ -99,8 +99,8 @@ pub trait Serializable: serde::Serialize + Sized {
 
   /// Serializes the type to disk in `yaml` format.
   #[cfg(feature = "yaml")]
-  fn to_yaml_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
-    let mut stream = path.into().open_output_stream()?;
+  fn to_yaml_file(&self, path: impl ToVirtualPath) -> crate::Result<()> {
+    let mut stream = path.to_virtual_path().open_output_stream()?;
 
     Ok(yaml::to_writer(&mut stream, self)?)
   }
@@ -119,8 +119,8 @@ pub trait Serializable: serde::Serialize + Sized {
 
   /// Serializes the type to disk in `xml` format.
   #[cfg(feature = "xml")]
-  fn to_xml_file(&self, path: impl Into<VirtualPath>) -> crate::Result<()> {
-    let mut stream = path.into().open_output_stream()?;
+  fn to_xml_file(&self, path: impl ToVirtualPath) -> crate::Result<()> {
+    let mut stream = path.to_virtual_path().open_output_stream()?;
 
     Ok(xml::to_writer(&mut stream, self)?)
   }
@@ -148,8 +148,8 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
 
   /// Deserializes the type from a binary file.
   #[cfg(feature = "binary")]
-  fn from_binary_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
-    let mut stream = path.into().open_input_stream()?;
+  fn from_binary_file(path: impl ToVirtualPath) -> crate::Result<Self> {
+    let mut stream = path.to_virtual_path().open_input_stream()?;
 
     Ok(binary::deserialize_from(&mut stream)?)
   }
@@ -168,8 +168,8 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
 
   /// Deserializes from the given `json` file.
   #[cfg(feature = "json")]
-  fn from_json_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
-    let mut stream = path.into().open_input_stream()?;
+  fn from_json_file(path: impl ToVirtualPath) -> crate::Result<Self> {
+    let mut stream = path.to_virtual_path().open_input_stream()?;
 
     Ok(json::from_reader(&mut stream)?)
   }
@@ -188,11 +188,9 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
 
   /// Deserializes from the given `ron` file.
   #[cfg(feature = "ron")]
-  fn from_ron_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
-    let mut stream = path.into().open_input_stream()?;
-    let mut string = String::new();
-
-    stream.read_to_string(&mut string)?;
+  fn from_ron_file(path: impl ToVirtualPath) -> crate::Result<Self> {
+    let mut stream = path.to_virtual_path().open_input_stream()?;
+    let string = stream.to_string()?;
 
     Ok(ron::from_str(&string)?)
   }
@@ -211,8 +209,8 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
 
   /// Deserializes from the given `toml` file.
   #[cfg(feature = "toml")]
-  fn from_toml_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
-    let mut stream = path.into().open_input_stream()?;
+  fn from_toml_file(path: impl ToVirtualPath) -> crate::Result<Self> {
+    let mut stream = path.to_virtual_path().open_input_stream()?;
     let mut string = String::new();
 
     stream.read_to_string(&mut string)?;
@@ -234,8 +232,8 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
 
   /// Deserializes from the given `yaml` file.
   #[cfg(feature = "yaml")]
-  fn from_yaml_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
-    let mut stream = path.into().open_input_stream()?;
+  fn from_yaml_file(path: impl ToVirtualPath) -> crate::Result<Self> {
+    let mut stream = path.to_virtual_path().open_input_stream()?;
 
     Ok(yaml::from_reader(&mut stream)?)
   }
@@ -254,8 +252,8 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
 
   /// Deserializes from the given `xml` file.
   #[cfg(feature = "xml")]
-  fn from_xml_file(path: impl Into<VirtualPath>) -> crate::Result<Self> {
-    let mut stream = path.into().open_input_stream()?;
+  fn from_xml_file(path: impl ToVirtualPath) -> crate::Result<Self> {
+    let mut stream = path.to_virtual_path().open_input_stream()?;
 
     Ok(xml::from_reader(&mut stream)?)
   }

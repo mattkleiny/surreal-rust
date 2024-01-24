@@ -101,7 +101,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_path<S: ShaderLanguage>(graphics: &GraphicsEngine, path: impl AsVirtualPath) -> common::Result<Self> {
+  pub fn from_path<S: ShaderLanguage>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> common::Result<Self> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream()?;
 
@@ -181,7 +181,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<S: ShaderLanguage>(&self, path: impl AsVirtualPath) -> common::Result<()> {
+  pub fn load_from_path<S: ShaderLanguage>(&self, path: impl ToVirtualPath) -> common::Result<()> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream()?;
 

@@ -18,6 +18,8 @@ pub trait InputStream: Seek + BufRead {
   fn read_f64(&mut self) -> crate::Result<f64>;
   fn read_string(&mut self) -> crate::Result<String>;
   fn read_bytes(&mut self, amount: usize) -> crate::Result<Vec<u8>>;
+  fn to_buffer(&mut self) -> crate::Result<Vec<u8>>;
+  fn to_string(&mut self) -> crate::Result<String>;
 }
 
 macro_rules! impl_read {
@@ -111,11 +113,26 @@ impl<T: BufRead + Seek> InputStream for T {
     Ok(String::from_utf8(buffer)?)
   }
 
-  #[inline]
   fn read_bytes(&mut self, amount: usize) -> crate::Result<Vec<u8>> {
     let mut buffer = vec![0; amount];
 
     self.read_exact(&mut buffer)?;
+
+    Ok(buffer)
+  }
+
+  fn to_buffer(&mut self) -> crate::Result<Vec<u8>> {
+    let mut buffer = Vec::new();
+
+    self.read_to_end(&mut buffer)?;
+
+    Ok(buffer)
+  }
+
+  fn to_string(&mut self) -> crate::Result<String> {
+    let mut buffer = String::new();
+
+    self.read_to_string(&mut buffer)?;
 
     Ok(buffer)
   }

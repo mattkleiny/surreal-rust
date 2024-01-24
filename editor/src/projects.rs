@@ -1,6 +1,6 @@
 //! Project configuration for the editor.
 
-use common::{info, AsVirtualPath, Version, VirtualPath};
+use common::{info, ToVirtualPath, Version, VirtualPath};
 use serde::{Deserialize, Serialize};
 
 /// The current [`Version`] of the [`Project`] schema.

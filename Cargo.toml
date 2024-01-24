@@ -36,4 +36,5 @@ graphics = { package = "surreal-graphics", path = "./modules/graphics", optional
 input = { package = "surreal-input", path = "./modules/input", optional = true }
 physics = { package = "surreal-physics", path = "./modules/physics", optional = true }
 scene = { package = "surreal-scene", path = "./modules/scene", optional = true }
+scripting = { package = "surreal-scripting", path = "./modules/scripting", optional = true }
 ui = { package = "surreal-ui", path = "./modules/ui", optional = true }
