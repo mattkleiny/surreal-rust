@@ -17,7 +17,12 @@ members = ["backends/*", "common", "editor", "macros", "modules/*"]
 opt-level = 3
 
 [features]
-default = ["macros", "audio", "graphics", "input", "physics"]
+default = []
+
+[workspace.dependencies]
+# shared dependencies
+serde = { version = "1.0.159", features = ["derive"] }
+bitflags = "2.1.0"
 
 [dependencies]
 # core
@@ -39,10 +44,6 @@ scene = { package = "surreal-scene", path = "./modules/scene", optional = true }
 scripting = { package = "surreal-scripting", path = "./modules/scripting", optional = true }
 ui = { package = "surreal-ui", path = "./modules/ui", optional = true }
 
-[workspace.dependencies]
-serde = { version = "1.0.159", features = ["derive"] }
-bitflags = "2.1.0"
-
 [[example]]
 name = "hello-world"
-required-features = ["sdl"]
+required-features = ["sdl", "graphics"]
