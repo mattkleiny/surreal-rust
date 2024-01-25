@@ -15,7 +15,7 @@ impl ScriptLanguage for BASIC {
     &["bas", "basic"]
   }
 
-  fn parse_code(&self, code: &str) -> Result<ast::Module, ScriptError> {
+  fn parse_code(&self, code: &str) -> Result<ast::Module, ScriptParseError> {
     let _module = parser::parse(code)?;
 
     todo!()
@@ -28,7 +28,7 @@ mod parser {
   use super::*;
 
   /// Parses the given BASIC code into a [`Module`].
-  pub fn parse(code: &str) -> Result<ast::Module, ScriptError> {
+  pub fn parse(code: &str) -> Result<ast::Module, ScriptParseError> {
     let mut stream = TokenStream::tokenize(code)?;
     let module = stream.parse_script_module()?;
 
@@ -78,24 +78,24 @@ mod parser {
   }
 
   impl TokenStream {
-    pub fn parse_script_module(&mut self) -> Result<ast::Module, ScriptError> {
+    pub fn parse_script_module(&mut self) -> Result<ast::Module, ScriptParseError> {
       todo!()
     }
 
-    pub fn parse_statement(&mut self) -> Result<ast::Statement, ScriptError> {
+    pub fn parse_statement(&mut self) -> Result<ast::Statement, ScriptParseError> {
       todo!()
     }
 
-    pub fn parse_expression(&mut self) -> Result<ast::Expression, ScriptError> {
+    pub fn parse_expression(&mut self) -> Result<ast::Expression, ScriptParseError> {
       todo!()
     }
 
-    pub fn parse_literal(&mut self) -> Result<ast::Literal, ScriptError> {
+    pub fn parse_literal(&mut self) -> Result<ast::Literal, ScriptParseError> {
       todo!()
     }
 
     /// Tokenizes the given BASIC code into a [`TokenStream`].
-    pub fn tokenize(code: &str) -> Result<Self, ScriptError> {
+    pub fn tokenize(code: &str) -> Result<Self, ScriptParseError> {
       // tokenize the code
       let mut tokens = VecDeque::<Token>::new();
       let mut chars = code.chars().peekable();
@@ -120,7 +120,9 @@ mod parser {
               }
             }
 
-            tokens.push_back(Token::Number(number.parse().map_err(|_| ScriptError::ParseError)?));
+            tokens.push_back(Token::Number(
+              number.parse().map_err(|_| ScriptParseError::InvalidSyntax)?,
+            ));
           }
 
           // parse keywords and identifiers
@@ -171,7 +173,7 @@ mod parser {
           '|' => tokens.push_back(Token::Operator(Operator::Or)),
 
           // parse other tokens
-          _ => return Err(ScriptError::ParseError),
+          _ => return Err(ScriptParseError::InvalidSyntax),
         }
       }
 

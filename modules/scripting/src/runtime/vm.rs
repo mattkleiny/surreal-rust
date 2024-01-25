@@ -87,16 +87,19 @@ mod bytecode {
 
 mod assembly {
   use super::*;
-  use crate::ScriptError;
+
+  /// Represents an error that occurred while assembling bytecode.
+  #[derive(Debug)]
+  pub enum AssemblyError {}
 
   /// Allows assembly of a type to bytecode.
   pub trait Assembler: Sized {
     /// Assembles the type into bytecode instructions.
-    fn assemble(&self) -> Result<Vec<Instruction>, ScriptError>;
+    fn assemble(&self) -> Result<Vec<Instruction>, AssemblyError>;
   }
 
   impl Assembler for crate::lang::ast::Module {
-    fn assemble(&self) -> Result<Vec<Instruction>, ScriptError> {
+    fn assemble(&self) -> Result<Vec<Instruction>, AssemblyError> {
       use crate::lang::ast::*;
 
       struct Assembler {

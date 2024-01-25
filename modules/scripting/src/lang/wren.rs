@@ -15,7 +15,7 @@ impl ScriptLanguage for Wren {
     &["wren"]
   }
 
-  fn parse_code(&self, _code: &str) -> Result<ast::Module, ScriptError> {
+  fn parse_code(&self, _code: &str) -> Result<ast::Module, ScriptParseError> {
     let _module = parser::parse(_code)?;
 
     todo!()
@@ -26,7 +26,7 @@ mod parser {
   use super::*;
 
   /// Parses the given Wren code into a [`Module`].
-  pub fn parse(_code: &str) -> Result<ast::Module, ScriptError> {
+  pub fn parse(_code: &str) -> Result<ast::Module, ScriptParseError> {
     todo!()
   }
 

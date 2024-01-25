@@ -19,13 +19,6 @@
 
 // TODO: better error handling across the project
 
-/// Represents an error that occurred while parsing a script.
-#[derive(Debug)]
-pub enum ScriptError {
-  ParseError,
-  BytecodeError,
-}
-
 #[allow(dead_code)]
 pub mod lang {
   //! Language support for the scripting system.
@@ -35,12 +28,17 @@ pub mod lang {
   pub use basic::*;
   pub use wren::*;
 
-  use crate::ScriptError;
-
   pub mod ast;
 
   mod basic;
   mod wren;
+
+  /// Represents an error that occurred while parsing a script.
+  #[derive(Debug)]
+  pub enum ScriptParseError {
+    FailedToReadStream,
+    InvalidSyntax,
+  }
 
   /// Represents a scripting language for Surreal.
   pub trait ScriptLanguage {
@@ -53,22 +51,24 @@ pub mod lang {
     fn file_extensions(&self) -> &[&'static str];
 
     /// Parses the file at the given path.
-    fn parse_path(&self, path: impl common::ToVirtualPath) -> Result<ast::Module, ScriptError> {
+    fn parse_path(&self, path: impl common::ToVirtualPath) -> Result<ast::Module, ScriptParseError> {
       let path = path.to_virtual_path();
-      let mut stream = path.open_input_stream().map_err(|_| ScriptError::ParseError)?;
+      let mut stream = path
+        .open_input_stream()
+        .map_err(|_| ScriptParseError::FailedToReadStream)?;
 
       self.parse_stream(&mut stream)
     }
 
     /// Parses the given stream.
-    fn parse_stream(&self, stream: &mut dyn common::InputStream) -> Result<ast::Module, ScriptError> {
-      let code = stream.to_string().map_err(|_| ScriptError::ParseError)?;
+    fn parse_stream(&self, stream: &mut dyn common::InputStream) -> Result<ast::Module, ScriptParseError> {
+      let code = stream.to_string().map_err(|_| ScriptParseError::FailedToReadStream)?;
 
       self.parse_code(&code)
     }
 
     /// Parses the given raw code.
-    fn parse_code(&self, code: &str) -> Result<ast::Module, ScriptError>;
+    fn parse_code(&self, code: &str) -> Result<ast::Module, ScriptParseError>;
   }
 }
 
@@ -84,6 +84,12 @@ pub mod runtime {
 
   mod interpret;
   mod vm;
+
+  /// Represents an error that occurred while executing a script.
+  #[derive(Debug)]
+  pub enum ScriptExecuteError {
+    ParseError,
+  }
 
   /// A runtime capable of executing a script.
   ///
