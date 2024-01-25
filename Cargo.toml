@@ -45,4 +45,4 @@ bitflags = "2.1.0"
 
 [[example]]
 name = "hello-world"
-features = ["sdl"]
+required-features = ["sdl"]

@@ -21,8 +21,12 @@ bitflags! {
   }
 }
 
+/// A possible error that can occur when working with a [`SceneGraph`].
 #[derive(Debug)]
-pub enum SceneError {}
+pub enum SceneError {
+  CannotFindNode,
+  CannotReparentNodeToSelf,
+}
 
 /// A graph of [`SceneNode`]s that represent a scene in space.
 ///
@@ -79,19 +83,19 @@ impl<'a, T: Transform> SceneGraph<'a, T> {
   }
 
   /// Re-parents a [`SceneNode`] to a new parent.
-  pub fn reparent_node(&mut self, node_to_move_id: SceneNodeId, new_parent_id: SceneNodeId) -> common::Result<()> {
+  pub fn reparent_node(&mut self, node_to_move_id: SceneNodeId, new_parent_id: SceneNodeId) -> Result<(), SceneError> {
     let node_to_move = self
       .root
       .take_node_by_id(node_to_move_id)
-      .ok_or(common::anyhow!("Unable to locate node to move"))?;
+      .ok_or(SceneError::CannotFindNode)?;
 
     let new_parent = self
       .root
       .find_by_id_mut(new_parent_id)
-      .ok_or(common::anyhow!("Unable to find target node"))?;
+      .ok_or(SceneError::CannotFindNode)?;
 
     if node_to_move.children.iter().any(|node| node.id == new_parent_id) {
-      return Err(common::anyhow!("Unable to reparent node to a child of itself"));
+      return Err(SceneError::CannotReparentNodeToSelf);
     }
 
     new_parent.children.push(node_to_move);
@@ -101,11 +105,11 @@ impl<'a, T: Transform> SceneGraph<'a, T> {
   }
 
   /// Destroys a [`SceneNode`] and all of it's children.
-  pub fn delete_node(&mut self, node_to_delete_id: SceneNodeId) -> common::Result<()> {
+  pub fn delete_node(&mut self, node_to_delete_id: SceneNodeId) -> Result<(), SceneError> {
     let mut node_to_delete = self
       .root
       .take_node_by_id(node_to_delete_id)
-      .ok_or(common::anyhow!("Unable to find node to delete"))?;
+      .ok_or(SceneError::CannotFindNode)?;
 
     node_to_delete.notify(&mut SceneEvent::Destroy);
     drop(node_to_delete);
@@ -350,7 +354,7 @@ impl<'a, T: Transform> SceneNode<'a, T> {
   }
 
   /// Removes the [`SceneComponent`] of the given type from this node.
-  pub fn remove_component<C: SceneComponent + 'static>(&mut self) -> common::Result<()> {
+  pub fn remove_component<C: SceneComponent + 'static>(&mut self) -> Option<()> {
     self.components.remove::<C>()
   }
 

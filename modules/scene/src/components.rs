@@ -108,15 +108,16 @@ impl SceneComponentSet {
   }
 
   /// Removes the [`SceneComponent`] of the given type from this set.
-  pub fn remove<C: SceneComponent + 'static>(&mut self) -> common::Result<()> {
+  pub fn remove<C: SceneComponent + 'static>(&mut self) -> Option<()> {
     for (index, component) in self.components.iter().enumerate() {
       if TypeId::of::<C>() == component.type_id() {
         self.components.remove(index);
-        return Ok(());
+
+        return Some(());
       }
     }
 
-    Err(common::anyhow!("Component not found"))
+    None
   }
 
   /// Iterates the [`SceneComponent`]s in this set.

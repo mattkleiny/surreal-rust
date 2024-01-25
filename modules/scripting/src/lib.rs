@@ -17,6 +17,15 @@
 //! as flexible as possible, allowing for multiple execution models to be used,
 //! such as a virtual machine or an interpreter.
 
+// TODO: better error handling across the project
+
+/// Represents an error that occurred while parsing a script.
+#[derive(Debug)]
+pub enum ScriptError {
+  ParseError,
+  BytecodeError,
+}
+
 #[allow(dead_code)]
 pub mod lang {
   //! Language support for the scripting system.
@@ -25,6 +34,8 @@ pub mod lang {
   //! tree (AST). This AST is shared between all scripting languages.
   pub use basic::*;
   pub use wren::*;
+
+  use crate::ScriptError;
 
   pub mod ast;
 
@@ -42,22 +53,22 @@ pub mod lang {
     fn file_extensions(&self) -> &[&'static str];
 
     /// Parses the file at the given path.
-    fn parse_path(&self, path: impl common::ToVirtualPath) -> common::Result<ast::Module> {
+    fn parse_path(&self, path: impl common::ToVirtualPath) -> Result<ast::Module, ScriptError> {
       let path = path.to_virtual_path();
-      let mut stream = path.open_input_stream()?;
+      let mut stream = path.open_input_stream().map_err(|_| ScriptError::ParseError)?;
 
       self.parse_stream(&mut stream)
     }
 
     /// Parses the given stream.
-    fn parse_stream(&self, stream: &mut dyn common::InputStream) -> common::Result<ast::Module> {
-      let code = stream.to_string()?;
+    fn parse_stream(&self, stream: &mut dyn common::InputStream) -> Result<ast::Module, ScriptError> {
+      let code = stream.to_string().map_err(|_| ScriptError::ParseError)?;
 
       self.parse_code(&code)
     }
 
     /// Parses the given raw code.
-    fn parse_code(&self, code: &str) -> common::Result<ast::Module>;
+    fn parse_code(&self, code: &str) -> Result<ast::Module, ScriptError>;
   }
 }
 

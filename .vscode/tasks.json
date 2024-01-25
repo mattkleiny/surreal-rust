@@ -4,10 +4,7 @@
     {
       "type": "cargo",
       "command": "build",
-      "args": [
-        "--all",
-        "--all-features"
-      ],
+      "args": [],
       "problemMatcher": [
         "$rustc"
       ],
@@ -17,10 +14,7 @@
     {
       "type": "cargo",
       "command": "test",
-      "args": [
-        "--all",
-        "--all-features"
-      ],
+      "args": [],
       "problemMatcher": [
         "$rustc"
       ],
@@ -34,8 +28,6 @@
         "--lcov",
         "--output-path",
         "lcov.info",
-        "--all",
-        "--all-features"
       ],
       "problemMatcher": [
         "$rustc"

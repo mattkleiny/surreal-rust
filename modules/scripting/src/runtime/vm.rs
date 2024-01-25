@@ -87,15 +87,16 @@ mod bytecode {
 
 mod assembly {
   use super::*;
+  use crate::ScriptError;
 
   /// Allows assembly of a type to bytecode.
   pub trait Assembler: Sized {
     /// Assembles the type into bytecode instructions.
-    fn assemble(&self) -> common::Result<Vec<Instruction>>;
+    fn assemble(&self) -> Result<Vec<Instruction>, ScriptError>;
   }
 
   impl Assembler for crate::lang::ast::Module {
-    fn assemble(&self) -> common::Result<Vec<Instruction>> {
+    fn assemble(&self) -> Result<Vec<Instruction>, ScriptError> {
       use crate::lang::ast::*;
 
       struct Assembler {

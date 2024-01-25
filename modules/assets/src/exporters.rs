@@ -2,7 +2,7 @@ use common::OutputStream;
 
 /// An error that can occur when exporting an asset.
 #[derive(Debug)]
-enum AssetExportError {}
+pub enum AssetExportError {}
 
 /// Exports assets to a specific format.
 pub trait AssetExporter: Send + Sync + 'static {

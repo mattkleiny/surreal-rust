@@ -15,7 +15,7 @@ impl ScriptLanguage for BASIC {
     &["bas", "basic"]
   }
 
-  fn parse_code(&self, code: &str) -> common::Result<ast::Module> {
+  fn parse_code(&self, code: &str) -> Result<ast::Module, ScriptError> {
     let _module = parser::parse(code)?;
 
     todo!()
@@ -28,7 +28,7 @@ mod parser {
   use super::*;
 
   /// Parses the given BASIC code into a [`Module`].
-  pub fn parse(code: &str) -> common::Result<ast::Module> {
+  pub fn parse(code: &str) -> Result<ast::Module, ScriptError> {
     let mut stream = TokenStream::tokenize(code)?;
     let module = stream.parse_script_module()?;
 
@@ -78,24 +78,24 @@ mod parser {
   }
 
   impl TokenStream {
-    pub fn parse_script_module(&mut self) -> common::Result<ast::Module> {
+    pub fn parse_script_module(&mut self) -> Result<ast::Module, ScriptError> {
       todo!()
     }
 
-    pub fn parse_statement(&mut self) -> common::Result<ast::Statement> {
+    pub fn parse_statement(&mut self) -> Result<ast::Statement, ScriptError> {
       todo!()
     }
 
-    pub fn parse_expression(&mut self) -> common::Result<ast::Expression> {
+    pub fn parse_expression(&mut self) -> Result<ast::Expression, ScriptError> {
       todo!()
     }
 
-    pub fn parse_literal(&mut self) -> common::Result<ast::Literal> {
+    pub fn parse_literal(&mut self) -> Result<ast::Literal, ScriptError> {
       todo!()
     }
 
     /// Tokenizes the given BASIC code into a [`TokenStream`].
-    pub fn tokenize(code: &str) -> common::Result<Self> {
+    pub fn tokenize(code: &str) -> Result<Self, ScriptError> {
       // tokenize the code
       let mut tokens = VecDeque::<Token>::new();
       let mut chars = code.chars().peekable();
@@ -120,7 +120,7 @@ mod parser {
               }
             }
 
-            tokens.push_back(Token::Number(number.parse()?));
+            tokens.push_back(Token::Number(number.parse().map_err(|_| ScriptError::ParseError)?));
           }
 
           // parse keywords and identifiers
@@ -171,7 +171,7 @@ mod parser {
           '|' => tokens.push_back(Token::Operator(Operator::Or)),
 
           // parse other tokens
-          _ => common::bail!("unexpected token: {}", c),
+          _ => return Err(ScriptError::ParseError),
         }
       }
 
