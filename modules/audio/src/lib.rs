@@ -26,18 +26,15 @@ impl AudioEngine {
 }
 
 /// A possible error when interacting with clips.
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum ClipError {
-  #[error("the given clip ID {0:?} is invalid")]
   InvalidId(ClipId),
-  #[error("the given buffer pointer is null")]
   NullPointer,
 }
 
 /// A possible error when interacting with sources.
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum SourceError {
-  #[error("the given source ID {0:?} is invalid")]
   InvalidId(SourceId),
 }
 

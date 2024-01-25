@@ -25,7 +25,7 @@ impl FileSystem for LocalFileSystem {
     to_path(path).is_dir()
   }
 
-  fn open_read(&self, path: &VirtualPath) -> crate::Result<Box<dyn InputStream>> {
+  fn open_read(&self, path: &VirtualPath) -> Result<Box<dyn InputStream>, FileSystemError> {
     let file = OpenOptions::new()
       .read(true)
       .write(false)
@@ -35,7 +35,7 @@ impl FileSystem for LocalFileSystem {
     Ok(Box::new(std::io::BufReader::new(file)))
   }
 
-  fn open_write(&self, path: &VirtualPath) -> crate::Result<Box<dyn OutputStream>> {
+  fn open_write(&self, path: &VirtualPath) -> Result<Box<dyn OutputStream>, FileSystemError> {
     let file = OpenOptions::new()
       .read(false)
       .write(true)

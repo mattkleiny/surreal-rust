@@ -1,4 +1,8 @@
-use common::{InputStream, Result};
+use common::InputStream;
+
+/// An error that can occur when exporting an asset.
+#[derive(Debug)]
+pub enum AssetImportError {}
 
 /// Imports assets from a specific format.
 pub trait AssetImporter: Send + Sync + 'static {
@@ -6,5 +10,5 @@ pub trait AssetImporter: Send + Sync + 'static {
   type Asset;
 
   /// Imports an asset from the given stream.
-  fn import(&self, data: &mut dyn InputStream) -> Result<Self::Asset>;
+  fn import(&self, data: &mut dyn InputStream) -> Result<Self::Asset, AssetImportError>;
 }

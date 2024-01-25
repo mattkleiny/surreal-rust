@@ -37,7 +37,7 @@ pub mod lang {
   /// Abstracting over shader languages allows us to build out new languages.
   pub trait ShaderLanguage {
     /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-    fn parse_kernels(source_code: &str) -> common::Result<Vec<super::ShaderKernel>>;
+    fn parse_kernels(source_code: &str) -> Result<Vec<super::ShaderKernel>, ShaderError>;
   }
 }
 
@@ -88,7 +88,7 @@ struct ShaderProgramState {
 
 impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
-  pub fn new(graphics: &GraphicsEngine) -> common::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine) -> Result<Self, ShaderError> {
     Ok(Self {
       state: Rc::new(RefCell::new(ShaderProgramState {
         id: graphics.shader_create()?,
@@ -100,9 +100,12 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_path<S: ShaderLanguage>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> common::Result<Self> {
+  pub fn from_path<S: ShaderLanguage>(
+    graphics: &GraphicsEngine,
+    path: impl ToVirtualPath,
+  ) -> Result<Self, ShaderError> {
     let path = path.to_virtual_path();
-    let mut stream = path.open_input_stream()?;
+    let mut stream = path.open_input_stream().map_err(|_| ShaderError::FailedToLoad)?;
 
     Self::from_stream::<S>(graphics, &mut stream)
   }
@@ -111,14 +114,14 @@ impl ShaderProgram {
   pub fn from_stream<S: ShaderLanguage>(
     graphics: &GraphicsEngine,
     stream: &mut dyn InputStream,
-  ) -> common::Result<Self> {
-    let code = stream.to_string()?;
+  ) -> Result<Self, ShaderError> {
+    let code = stream.to_string().map_err(|_| ShaderError::FailedToLoad)?;
 
     Self::from_code::<S>(graphics, &code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
+  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> Result<Self, ShaderError> {
     let program = Self::new(graphics)?;
 
     program.load_code::<S>(code)?;
@@ -127,7 +130,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given [`ShaderKernel`]s.
-  pub fn from_kernels(graphics: &GraphicsEngine, kernels: &[ShaderKernel]) -> common::Result<Self> {
+  pub fn from_kernels(graphics: &GraphicsEngine, kernels: &[ShaderKernel]) -> Result<Self, ShaderError> {
     let program = Self::new(graphics)?;
 
     program.load_kernels(kernels)?;
@@ -178,9 +181,9 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<S: ShaderLanguage>(&self, path: impl ToVirtualPath) -> common::Result<()> {
+  pub fn load_from_path<S: ShaderLanguage>(&self, path: impl ToVirtualPath) -> Result<(), ShaderError> {
     let path = path.to_virtual_path();
-    let mut stream = path.open_input_stream()?;
+    let mut stream = path.open_input_stream().map_err(|_| ShaderError::FailedToLoad)?;
 
     self.load_from_stream::<S>(&mut stream)?;
 
@@ -188,10 +191,12 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a stream.
-  pub fn load_from_stream<S: ShaderLanguage>(&self, stream: &mut dyn InputStream) -> common::Result<()> {
+  pub fn load_from_stream<S: ShaderLanguage>(&self, stream: &mut dyn InputStream) -> Result<(), ShaderError> {
     let mut source_code = String::new();
 
-    stream.read_to_string(&mut source_code)?;
+    stream
+      .read_to_string(&mut source_code)
+      .map_err(|_| ShaderError::FailedToLoad)?;
 
     self.load_code::<S>(&source_code)?;
 
@@ -199,7 +204,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from the given shader code.
-  pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> common::Result<()> {
+  pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> Result<(), ShaderError> {
     let shaders = S::parse_kernels(text)?;
 
     self.load_kernels(&shaders)?;
@@ -208,7 +213,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from the given shader code.
-  pub fn load_kernels(&self, kernels: &[ShaderKernel]) -> common::Result<()> {
+  pub fn load_kernels(&self, kernels: &[ShaderKernel]) -> Result<(), ShaderError> {
     let mut state = self.state.borrow_mut();
     let graphics = &state.graphics;
 

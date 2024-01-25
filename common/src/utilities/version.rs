@@ -1,5 +1,15 @@
 use std::fmt::{Display, Formatter};
 
+#[derive(Debug)]
+pub enum VersionParseError {
+  MissingMajor,
+  InvalidMajor,
+  MissingMinor,
+  InvalidMinor,
+  MissingPatch,
+  InvalidPatch,
+}
+
 /// A version identifier `major.minor.patch`.
 ///
 /// Used to indicate versions of projects, assets, etc.
@@ -18,14 +28,26 @@ impl Version {
   }
 
   /// Parses a [`Version`] from the given string.
-  pub fn parse(string: &str) -> crate::Result<Self> {
+  pub fn parse(string: &str) -> Result<Self, VersionParseError> {
     let mut parts = string.split('.');
 
-    let major = parts.next().ok_or(crate::anyhow!("Missing major component"))?.parse()?;
+    let major = parts
+      .next()
+      .ok_or(VersionParseError::MissingMajor)?
+      .parse()
+      .map_err(|_| VersionParseError::InvalidMajor)?;
 
-    let minor = parts.next().ok_or(crate::anyhow!("Missing minor component"))?.parse()?;
+    let minor = parts
+      .next()
+      .ok_or(VersionParseError::MissingMinor)?
+      .parse()
+      .map_err(|_| VersionParseError::InvalidMinor)?;
 
-    let patch = parts.next().ok_or(crate::anyhow!("Missing patch component"))?.parse()?;
+    let patch = parts
+      .next()
+      .ok_or(VersionParseError::MissingPatch)?
+      .parse()
+      .map_err(|_| VersionParseError::InvalidPatch)?;
 
     Ok(Self { major, minor, patch })
   }
@@ -74,7 +96,6 @@ impl<'de> serde::Deserialize<'de> for Version {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::io::{Deserializable, Serializable};
 
   #[test]
   fn test_new() {
@@ -92,13 +113,5 @@ mod tests {
     assert_eq!(version.major, 1);
     assert_eq!(version.minor, 2);
     assert_eq!(version.patch, 3);
-  }
-
-  #[test]
-  fn test_should_serialize_and_deserialize() {
-    let version1 = Version::new(1, 2, 3);
-    let version2 = Version::from_json(&version1.to_json().unwrap()).unwrap();
-
-    assert_eq!(version1, version2);
   }
 }

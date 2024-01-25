@@ -1,10 +1,11 @@
 use surreal::{backends::sdl::*, common::*, graphics::*};
 
-fn main() -> Result<()> {
+fn main() {
   let window = Window::new(&WindowSettings {
     title: "Hello World!",
     ..Default::default()
-  })?;
+  })
+  .expect("Failed to create window");
 
   let graphics = GraphicsEngine::opengl(&window);
 
@@ -21,6 +22,4 @@ fn main() -> Result<()> {
     graphics.clear_color_buffer(Color::lerp(color1, color2, total_time.ping_pong()));
     window.present();
   }
-
-  Ok(())
 }

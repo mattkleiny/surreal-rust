@@ -20,7 +20,7 @@ impl<S: ShaderLanguage> ShaderTemplate<S> {
   }
 
   /// Converts the template into a shader program.
-  pub fn to_program(&self, graphics: &GraphicsEngine) -> common::Result<ShaderProgram> {
+  pub fn to_program(&self, graphics: &GraphicsEngine) -> Result<ShaderProgram, ShaderError> {
     ShaderProgram::from_code::<S>(graphics, self.code)
   }
 }

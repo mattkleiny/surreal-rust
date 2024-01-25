@@ -9,12 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
-name = "anyhow"
-version = "1.0.66"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "216261ddc8289130e551ddcd5ce8a064710c0d064a4d2895c67151c92b5443f6"
-
-[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -424,14 +418,12 @@ name = "surreal-audio"
 version = "0.0.0"
 dependencies = [
  "surreal-common",
- "thiserror",
 ]
 
 [[package]]
 name = "surreal-common"
 version = "0.0.0"
 dependencies = [
- "anyhow",
  "bincode",
  "glam",
  "ron",
@@ -442,7 +434,6 @@ dependencies = [
  "serde_yaml",
  "smallvec",
  "surreal-macros",
- "thiserror",
  "toml",
  "uuid",
 ]
@@ -476,7 +467,6 @@ dependencies = [
  "image",
  "serde",
  "surreal-common",
- "thiserror",
 ]
 
 [[package]]
@@ -527,7 +517,6 @@ dependencies = [
  "surreal-common",
  "surreal-graphics",
  "surreal-input",
- "thiserror",
 ]
 
 [[package]]

@@ -244,7 +244,7 @@ pub struct SkinnedMesh {
 
 impl SkinnedMesh {
   /// Creates a new skinned mesh.
-  pub fn new(server: &GraphicsEngine) -> common::Result<Self> {
+  pub fn new(server: &GraphicsEngine) -> Result<Self, MeshError> {
     Ok(Self {
       mesh: Mesh::new(server, BufferUsage::Dynamic)?,
       skin: Skin::default(),

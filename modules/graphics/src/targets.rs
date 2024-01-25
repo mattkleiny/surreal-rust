@@ -30,7 +30,7 @@ pub struct RenderTextureDescriptor {
 
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
-  pub fn to_texture(&self, graphics: &GraphicsEngine) -> common::Result<Texture> {
+  pub fn to_texture(&self, graphics: &GraphicsEngine) -> Result<Texture, TextureError> {
     Texture::with_options_and_size(graphics, &self.options, self.width, self.height, self.options.format)
   }
 }
@@ -53,8 +53,11 @@ struct RenderTargetState {
 
 impl RenderTarget {
   /// Creates a new [`RenderTarget`] on the GPU with the given attachments.
-  pub fn new(graphics: &GraphicsEngine, descriptor: &RenderTargetDescriptor) -> common::Result<Self> {
-    let color_attachment = descriptor.color_attachment.to_texture(graphics)?;
+  pub fn new(graphics: &GraphicsEngine, descriptor: &RenderTargetDescriptor) -> Result<Self, TargetError> {
+    let color_attachment = descriptor
+      .color_attachment
+      .to_texture(graphics)
+      .map_err(|_| TargetError::FailedToBuildAttachments)?;
 
     let depth_attachment = descriptor
       .depth_attachment

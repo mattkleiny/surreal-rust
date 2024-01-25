@@ -21,6 +21,9 @@ bitflags! {
   }
 }
 
+#[derive(Debug)]
+pub enum SceneError {}
+
 /// A graph of [`SceneNode`]s that represent a scene in space.
 ///
 /// Graphs are composed of [`SceneNode`]s in a recursive tree structure. Each

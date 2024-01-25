@@ -5,24 +5,24 @@ pub struct Shady;
 
 impl ShaderProgram {
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
-  pub fn from_shady(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
+  pub fn from_shady(graphics: &GraphicsEngine, code: &str) -> Result<Self, ShaderError> {
     Self::from_code::<Shady>(graphics, code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shady shader code file.
-  pub fn from_shady_path<'a>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> common::Result<Self> {
+  pub fn from_shady_path<'a>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> Result<Self, ShaderError> {
     Self::from_path::<Shady>(graphics, path)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shady stream.
-  pub fn from_shady_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> common::Result<Self> {
+  pub fn from_shady_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
     Self::from_stream::<Shady>(graphics, stream)
   }
 }
 
 impl ShaderLanguage for Shady {
   /// Parses the given raw Shady source and compiles it shader kernels.
-  fn parse_kernels(source_code: &str) -> common::Result<Vec<ShaderKernel>> {
+  fn parse_kernels(source_code: &str) -> Result<Vec<ShaderKernel>, ShaderError> {
     let module = parser::parse(source_code)?;
     let kernels = compiler::compile(module)?;
 
@@ -38,7 +38,7 @@ mod compiler {
   use super::{parser::*, *};
 
   /// Compiles the given Shady module into a list of [`ShaderKernel`]s.
-  pub fn compile(module: Module) -> common::Result<Vec<ShaderKernel>> {
+  pub fn compile(module: Module) -> Result<Vec<ShaderKernel>, ShaderError> {
     let mut kernels = Vec::with_capacity(module.kernels.len());
     let mut builder = StringBuilder::default();
 
@@ -55,10 +55,10 @@ mod compiler {
     type Output = ();
 
     /// Compiles the value into a string.
-    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output>;
+    fn compile(&self, builder: &mut StringBuilder) -> Result<Self::Output, ShaderError>;
 
     /// Compiles the value into a string and returns it.
-    fn compile_to_string(&self) -> common::Result<String> {
+    fn compile_to_string(&self) -> Result<String, ShaderError> {
       let mut builder = StringBuilder::default();
 
       self.compile(&mut builder)?;
@@ -70,7 +70,7 @@ mod compiler {
   impl Compilable for Kernel {
     type Output = ShaderKernel;
 
-    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+    fn compile(&self, builder: &mut StringBuilder) -> Result<Self::Output, ShaderError> {
       builder.push_line("void main()");
       builder.push_line("{");
       builder.indent();
@@ -93,7 +93,7 @@ mod compiler {
   }
 
   impl Compilable for Statement {
-    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+    fn compile(&self, builder: &mut StringBuilder) -> Result<Self::Output, ShaderError> {
       match self {
         Statement::Function(name, _parameters, body) => {
           builder.push("void ");
@@ -132,7 +132,7 @@ mod compiler {
   }
 
   impl Compilable for Expression {
-    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+    fn compile(&self, builder: &mut StringBuilder) -> Result<Self::Output, ShaderError> {
       match self {
         Expression::Literal(literal) => match literal {
           Literal::Integer(value) => builder.push(&value.to_string()),
@@ -158,7 +158,7 @@ mod compiler {
   }
 
   impl Compilable for BinaryOperator {
-    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+    fn compile(&self, builder: &mut StringBuilder) -> Result<Self::Output, ShaderError> {
       match self {
         BinaryOperator::Add => builder.push("+"),
         BinaryOperator::Subtract => builder.push("-"),
@@ -178,7 +178,7 @@ mod compiler {
   }
 
   impl Compilable for UnaryOperator {
-    fn compile(&self, builder: &mut StringBuilder) -> common::Result<Self::Output> {
+    fn compile(&self, builder: &mut StringBuilder) -> Result<Self::Output, ShaderError> {
       match self {
         UnaryOperator::Not => builder.push("!"),
       }
@@ -291,14 +291,14 @@ mod parser {
   use super::*;
 
   /// Parses the given Shady source code into a module.
-  pub fn parse(code: &str) -> common::Result<Module> {
+  pub fn parse(code: &str) -> Result<Module, ShaderError> {
     Module::parse(code)
   }
 
   /// A trait for types that can be parsed from a string.
   trait Parseable: Sized {
     /// Parse the given code into a result.
-    fn parse(code: &str) -> common::Result<Self>;
+    fn parse(code: &str) -> Result<Self, ShaderError>;
   }
 
   #[derive(Debug, PartialEq)]
@@ -316,7 +316,7 @@ mod parser {
   }
 
   impl Parseable for Module {
-    fn parse(code: &str) -> common::Result<Self> {
+    fn parse(code: &str) -> Result<Self, ShaderError> {
       let mut stream = TokenStream::parse(code)?;
       let module = stream.parse_module()?;
 
@@ -338,7 +338,7 @@ mod parser {
   }
 
   impl Parseable for Kernel {
-    fn parse(code: &str) -> common::Result<Self> {
+    fn parse(code: &str) -> Result<Self, ShaderError> {
       let mut stream = TokenStream::parse(code)?;
       let kernel = stream.parse_kernel()?;
 
@@ -375,7 +375,7 @@ mod parser {
   }
 
   impl Parseable for Statement {
-    fn parse(code: &str) -> common::Result<Self> {
+    fn parse(code: &str) -> Result<Self, ShaderError> {
       let mut stream = TokenStream::parse(code)?;
       let statement = stream.parse_statement()?;
 
@@ -392,7 +392,7 @@ mod parser {
   }
 
   impl Parseable for Expression {
-    fn parse(code: &str) -> common::Result<Self> {
+    fn parse(code: &str) -> Result<Self, ShaderError> {
       let mut stream = TokenStream::parse(code)?;
       let expression = stream.parse_expression()?;
 
@@ -483,7 +483,7 @@ mod parser {
     }
 
     /// Takes the next token, expecting it to match the predicate.
-    pub fn take_expect(&mut self, token: Token) -> common::Result<&Token> {
+    pub fn take_expect(&mut self, token: Token) -> Result<&Token, ShaderError> {
       if self.take_if(|it| *it == token).is_none() {
         return self.unexpected_token();
       }
@@ -491,14 +491,14 @@ mod parser {
       Ok(self.last_token.as_ref().unwrap())
     }
 
-    pub fn parse_module(&mut self) -> common::Result<Module> {
+    pub fn parse_module(&mut self) -> Result<Module, ShaderError> {
       match self.peek() {
         Some(Token::Keyword(keyword)) if keyword == "#shader_type" => self.parse_shader_type_module(),
         _ => self.parse_module_of_kind(ModuleKind::Standard),
       }
     }
 
-    pub fn parse_shader_type_module(&mut self) -> common::Result<Module> {
+    pub fn parse_shader_type_module(&mut self) -> Result<Module, ShaderError> {
       self.take_expect(Token::Keyword("#shader_type".to_string()))?;
 
       let kind = match self.take() {
@@ -513,7 +513,7 @@ mod parser {
       self.parse_module_of_kind(kind)
     }
 
-    pub fn parse_module_of_kind(&mut self, kind: ModuleKind) -> common::Result<Module> {
+    pub fn parse_module_of_kind(&mut self, kind: ModuleKind) -> Result<Module, ShaderError> {
       let mut kernels = Vec::new();
 
       while self.matches(|it| matches!(it, Token::Keyword(_))) {
@@ -523,23 +523,25 @@ mod parser {
       Ok(Module { kind, kernels })
     }
 
-    pub fn parse_kernel(&mut self) -> common::Result<Kernel> {
+    pub fn parse_kernel(&mut self) -> Result<Kernel, ShaderError> {
       match self.peek() {
         Some(Token::Keyword(keyword)) if keyword == "fn" => self.parse_function_kernel(),
         _ => self.unexpected_token(),
       }
     }
 
-    pub fn parse_function_kernel(&mut self) -> common::Result<Kernel> {
+    pub fn parse_function_kernel(&mut self) -> Result<Kernel, ShaderError> {
       if let Statement::Function(name, parameters, statements) = self.parse_statement()? {
         if !parameters.is_empty() {
-          return Err(common::anyhow!("function kernels cannot have parameters"));
+          return Err(ShaderError::CompileError(
+            "function kernels cannot have parameters".to_string(),
+          ));
         }
 
         let kind = match name.as_ref() {
           "vertex" => KernelKind::Vertex,
           "fragment" => KernelKind::Fragment,
-          _ => return Err(common::anyhow!("invalid kernel name: {}", name)),
+          _ => return Err(ShaderError::CompileError(format!("invalid kernel name: {}", name))),
         };
 
         Ok(Kernel { kind, name, statements })
@@ -548,7 +550,7 @@ mod parser {
       }
     }
 
-    pub fn parse_statement(&mut self) -> common::Result<Statement> {
+    pub fn parse_statement(&mut self) -> Result<Statement, ShaderError> {
       match self.take_if(|it| matches!(it, Token::Keyword(_))) {
         Some(Token::Keyword(keyword)) if keyword == "let" => self.parse_let_statement(),
         Some(Token::Keyword(keyword)) if keyword == "return" => self.parse_return_statement(),
@@ -557,7 +559,7 @@ mod parser {
       }
     }
 
-    pub fn parse_let_statement(&mut self) -> common::Result<Statement> {
+    pub fn parse_let_statement(&mut self) -> Result<Statement, ShaderError> {
       let identifier = match self.take() {
         Some(Token::Identifier(identifier)) => identifier.clone(),
         _ => return self.unexpected_token(),
@@ -570,7 +572,7 @@ mod parser {
       Ok(Statement::Assignment(identifier, expression))
     }
 
-    pub fn parse_return_statement(&mut self) -> common::Result<Statement> {
+    pub fn parse_return_statement(&mut self) -> Result<Statement, ShaderError> {
       let expression = self.parse_expression()?;
 
       self.take_expect(Token::Semicolon)?;
@@ -578,7 +580,7 @@ mod parser {
       Ok(Statement::Return(expression))
     }
 
-    pub fn parse_function_statement(&mut self) -> common::Result<Statement> {
+    pub fn parse_function_statement(&mut self) -> Result<Statement, ShaderError> {
       let name = match self.take() {
         Some(Token::Identifier(name)) => name.clone(),
         _ => return self.unexpected_token(),
@@ -608,7 +610,7 @@ mod parser {
       Ok(Statement::Function(name, parameters, statements))
     }
 
-    pub fn parse_parameter(&mut self) -> common::Result<Parameter> {
+    pub fn parse_parameter(&mut self) -> Result<Parameter, ShaderError> {
       let primitive = self.parse_primitive()?;
       let name = match self.take() {
         Some(Token::Identifier(name)) => name.clone(),
@@ -618,11 +620,11 @@ mod parser {
       Ok(Parameter { name, primitive })
     }
 
-    pub fn parse_expression(&mut self) -> common::Result<Expression> {
+    pub fn parse_expression(&mut self) -> Result<Expression, ShaderError> {
       self.parse_binary_expression()
     }
 
-    pub fn parse_binary_expression(&mut self) -> common::Result<Expression> {
+    pub fn parse_binary_expression(&mut self) -> Result<Expression, ShaderError> {
       let mut expression = self.parse_unary_expression()?;
 
       while let Ok(operator) = self.parse_binary_operator() {
@@ -634,7 +636,7 @@ mod parser {
       Ok(expression)
     }
 
-    pub fn parse_unary_expression(&mut self) -> common::Result<Expression> {
+    pub fn parse_unary_expression(&mut self) -> Result<Expression, ShaderError> {
       if let Ok(operator) = self.parse_unary_operator() {
         let expression = self.parse_unary_expression()?;
 
@@ -644,7 +646,7 @@ mod parser {
       self.parse_primary_expression()
     }
 
-    pub fn parse_primary_expression(&mut self) -> common::Result<Expression> {
+    pub fn parse_primary_expression(&mut self) -> Result<Expression, ShaderError> {
       match self.take() {
         Some(Token::Integer(value)) => Ok(Expression::Literal(Literal::Integer(*value))),
         Some(Token::Float(value)) => Ok(Expression::Literal(Literal::Float(*value))),
@@ -654,21 +656,21 @@ mod parser {
       }
     }
 
-    pub fn parse_binary_operator(&mut self) -> common::Result<BinaryOperator> {
+    pub fn parse_binary_operator(&mut self) -> Result<BinaryOperator, ShaderError> {
       match self.take_if(|it| matches!(it, Token::BinaryOperator(_))) {
         Some(Token::BinaryOperator(operator)) => Ok(*operator),
         _ => self.unexpected_token(),
       }
     }
 
-    pub fn parse_unary_operator(&mut self) -> common::Result<UnaryOperator> {
+    pub fn parse_unary_operator(&mut self) -> Result<UnaryOperator, ShaderError> {
       match self.take_if(|it| matches!(it, Token::UnaryOperator(_))) {
         Some(Token::UnaryOperator(operator)) => Ok(*operator),
         _ => self.unexpected_token(),
       }
     }
 
-    pub fn parse_primitive(&mut self) -> common::Result<Primitive> {
+    pub fn parse_primitive(&mut self) -> Result<Primitive, ShaderError> {
       match self.take() {
         Some(Token::Keyword(keyword)) if keyword == "int" => Ok(Primitive(PrimitiveKind::Integer, 1)),
         Some(Token::Keyword(keyword)) if keyword == "float" => Ok(Primitive(PrimitiveKind::Float, 1)),
@@ -686,13 +688,16 @@ mod parser {
       }
     }
 
-    pub fn unexpected_token<R>(&self) -> common::Result<R> {
-      Err(common::anyhow!("unexpected token encountered: {:?}", self.peek()))
+    pub fn unexpected_token<R>(&self) -> Result<R, ShaderError> {
+      Err(ShaderError::CompileError(format!(
+        "unexpected token encountered: {:?}",
+        self.peek()
+      )))
     }
   }
 
   impl Parseable for TokenStream {
-    fn parse(code: &str) -> common::Result<Self> {
+    fn parse(code: &str) -> Result<Self, ShaderError> {
       // tokenize the code
       let mut tokens = VecDeque::<Token>::new();
       let mut chars = code.chars().peekable();
@@ -718,9 +723,13 @@ mod parser {
             }
 
             if number.contains('.') {
-              tokens.push_back(Token::Float(number.parse()?));
+              tokens.push_back(Token::Float(number.parse().map_err(|_| {
+                ShaderError::CompileError(format!("invalid float literal: {}", number))
+              })?));
             } else {
-              tokens.push_back(Token::Integer(number.parse()?));
+              tokens.push_back(Token::Integer(number.parse().map_err(|_| {
+                ShaderError::CompileError(format!("invalid integer literal: {}", number))
+              })?));
             }
           }
 

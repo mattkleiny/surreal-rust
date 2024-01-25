@@ -23,11 +23,11 @@ impl FileSystem for MemoryFileSystem {
     todo!()
   }
 
-  fn open_read(&self, _path: &VirtualPath) -> crate::Result<Box<dyn InputStream>> {
+  fn open_read(&self, _path: &VirtualPath) -> Result<Box<dyn InputStream>, FileSystemError> {
     todo!()
   }
 
-  fn open_write(&self, _path: &VirtualPath) -> crate::Result<Box<dyn OutputStream>> {
+  fn open_write(&self, _path: &VirtualPath) -> Result<Box<dyn OutputStream>, FileSystemError> {
     todo!()
   }
 }

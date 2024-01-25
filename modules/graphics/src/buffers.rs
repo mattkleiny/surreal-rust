@@ -40,7 +40,7 @@ struct BufferState {
 
 impl<T> Buffer<T> {
   /// Constructs a new empty buffer on the GPU.
-  pub fn new(graphics: &GraphicsEngine, kind: BufferKind, usage: BufferUsage) -> common::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine, kind: BufferKind, usage: BufferUsage) -> Result<Self, BufferError> {
     Ok(Self {
       state: Rc::new(RefCell::new(BufferState {
         id: graphics.buffer_create()?,

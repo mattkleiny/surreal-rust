@@ -10,4 +10,3 @@ audio = { package = "surreal-audio", path = "../../modules/audio" }
 graphics = { package = "surreal-graphics", path = "../../modules/graphics" }
 input = { package = "surreal-input", path = "../../modules/input" }
 sdl2-sys = { version = "0.36.0", features = ["bundled"] }
-thiserror = "1.0.26"

@@ -10,7 +10,6 @@
 #![feature(type_alias_impl_trait)]
 #![feature(lazy_cell)]
 
-pub use anyhow::{anyhow, bail, Error, Result};
 pub use collections::*;
 pub use diagnostics::*;
 pub use io::*;
@@ -25,5 +24,3 @@ mod io;
 mod maths;
 mod strings;
 mod utilities;
-
-// TODO: allow no_std as a target for the engine

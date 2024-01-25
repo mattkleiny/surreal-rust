@@ -317,6 +317,15 @@ macro_rules! impl_std_ops {
 impl_std_ops!(Color, f32);
 impl_std_ops!(Color32, u8);
 
+/// Represents an error that can occur when parsing a color palette.
+#[derive(Debug)]
+pub enum ColorPaletteError {
+  GeneralIoError,
+  InvalidHeader,
+  InvalidColorCount,
+  InvalidColorComponent,
+}
+
 /// A palette of colors of type [`P`].
 #[derive(Default, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -341,27 +350,32 @@ impl<P: Pixel> ColorPalette<P> {
   }
 
   /// Loads a palette from the given file path.
-  pub fn from_path<'a>(path: impl ToVirtualPath) -> common::Result<Self> {
+  pub fn from_path<'a>(path: impl ToVirtualPath) -> Result<Self, ColorPaletteError> {
     let path = path.to_virtual_path();
-    let stream = path.open_input_stream()?;
+    let stream = path
+      .open_input_stream()
+      .map_err(|_| ColorPaletteError::GeneralIoError)?;
 
     Self::from_bytes(stream)
   }
 
   /// Loads a palette from the given reader.
-  pub fn from_bytes(reader: impl std::io::BufRead) -> common::Result<Self> {
-    let lines: Vec<_> = reader.lines().collect::<Result<_, _>>()?;
+  pub fn from_bytes(reader: impl std::io::BufRead) -> Result<Self, ColorPaletteError> {
+    let lines: Vec<_> = reader
+      .lines()
+      .collect::<Result<_, _>>()
+      .map_err(|_| ColorPaletteError::GeneralIoError)?;
 
     if lines[0] != "JASC-PAL" {
-      return Err(common::anyhow!("Expected A JASC-PAL file format"));
+      return Err(ColorPaletteError::InvalidHeader);
     }
 
     if lines[1] != "0100" {
-      return Err(common::anyhow!("Expected a 0100 magic header"));
+      return Err(ColorPaletteError::InvalidHeader);
     }
 
     // read palette size and start building palette
-    let count: usize = lines[2].parse()?;
+    let count: usize = lines[2].parse().map_err(|_| ColorPaletteError::InvalidColorCount)?;
     let mut colors = vec![P::default(); count];
 
     for (index, color) in colors.iter_mut().enumerate() {
@@ -369,13 +383,19 @@ impl<P: Pixel> ColorPalette<P> {
       let components = lines[index].split(' ').collect::<Vec<_>>();
 
       if components.len() != 3 {
-        return Err(common::anyhow!("Expected 3 color components on line {}", index + 1));
+        return Err(ColorPaletteError::InvalidColorComponent);
       }
 
       *color = P::from_bytes(&[
-        components[0].parse()?,
-        components[1].parse()?,
-        components[2].parse()?,
+        components[0]
+          .parse()
+          .map_err(|_| ColorPaletteError::InvalidColorComponent)?,
+        components[1]
+          .parse()
+          .map_err(|_| ColorPaletteError::InvalidColorComponent)?,
+        components[2]
+          .parse()
+          .map_err(|_| ColorPaletteError::InvalidColorComponent)?,
         255,
       ]);
     }

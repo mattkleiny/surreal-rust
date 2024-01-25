@@ -8,10 +8,29 @@ pub use memory::*;
 mod local;
 mod memory;
 
-use anyhow::anyhow;
-
 use super::{InputStream, OutputStream};
 use crate::{Singleton, StringName, ToStringName};
+
+/// A potential error that can occur when interacting with a [`FileSystem`].
+#[derive(Debug)]
+pub enum FileSystemError {
+  GeneralError(std::io::Error),
+  StreamError(super::StreamError),
+}
+
+impl From<std::io::Error> for FileSystemError {
+  #[inline]
+  fn from(error: std::io::Error) -> Self {
+    Self::GeneralError(error)
+  }
+}
+
+impl From<super::StreamError> for FileSystemError {
+  #[inline]
+  fn from(error: super::StreamError) -> Self {
+    Self::StreamError(error)
+  }
+}
 
 /// Represents a type capable of acting as a file system.
 ///
@@ -28,8 +47,8 @@ pub trait FileSystem: Send + Sync {
   fn is_directory(&self, path: &VirtualPath) -> bool;
 
   // read and write
-  fn open_read(&self, path: &VirtualPath) -> crate::Result<Box<dyn InputStream>>;
-  fn open_write(&self, path: &VirtualPath) -> crate::Result<Box<dyn OutputStream>>;
+  fn open_read(&self, path: &VirtualPath) -> Result<Box<dyn InputStream>, FileSystemError>;
+  fn open_write(&self, path: &VirtualPath) -> Result<Box<dyn OutputStream>, FileSystemError>;
 }
 
 /// Static central manager for [`FileSystem`] implementations.
@@ -151,29 +170,17 @@ impl VirtualPath {
   }
 
   /// Opens a reader for the given path.
-  pub fn open_input_stream(&self) -> crate::Result<Box<dyn InputStream>> {
-    FileSystemManager::with_filesystem(self, |file_system| {
-      let stream = file_system
-        .open_read(self)
-        .map_err(|error| anyhow!("Unable to open input stream for {}. Error {}", self, error))?;
-
-      Ok(stream)
-    })
+  pub fn open_input_stream(&self) -> Result<Box<dyn InputStream>, FileSystemError> {
+    FileSystemManager::with_filesystem(self, |file_system| Ok(file_system.open_read(self)?))
   }
 
   /// Opens a writer for the given path.
-  pub fn open_output_stream(&self) -> crate::Result<Box<dyn OutputStream>> {
-    FileSystemManager::with_filesystem(self, |file_system| {
-      let stream = file_system
-        .open_write(self)
-        .map_err(|error| anyhow!("Unable to open output stream for {}. Error {}", self, error))?;
-
-      Ok(stream)
-    })
+  pub fn open_output_stream(&self) -> Result<Box<dyn OutputStream>, FileSystemError> {
+    FileSystemManager::with_filesystem(self, |file_system| Ok(file_system.open_write(self)?))
   }
 
   /// Attempts to read all bytes from the given path.
-  pub fn read_all_bytes(&self) -> crate::Result<Vec<u8>> {
+  pub fn read_all_bytes(&self) -> Result<Vec<u8>, FileSystemError> {
     let mut buffer = Vec::new();
     let mut stream = self.open_input_stream()?;
 
@@ -183,7 +190,7 @@ impl VirtualPath {
   }
 
   /// Attempts to read all text from the given path.
-  pub fn read_all_text(&self) -> crate::Result<String> {
+  pub fn read_all_text(&self) -> Result<String, FileSystemError> {
     let mut stream = self.open_input_stream()?;
 
     Ok(stream.to_string()?)

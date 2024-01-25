@@ -144,9 +144,9 @@ impl<V> MeshState<V> {
 
 impl<V: Vertex> Mesh<V> {
   /// Constructs a new blank mesh on the GPU.
-  pub fn new(graphics: &GraphicsEngine, usage: BufferUsage) -> common::Result<Self> {
-    let vertices = Buffer::new(graphics, BufferKind::Element, usage)?;
-    let indices = Buffer::new(graphics, BufferKind::Index, usage)?;
+  pub fn new(graphics: &GraphicsEngine, usage: BufferUsage) -> Result<Self, MeshError> {
+    let vertices = Buffer::new(graphics, BufferKind::Element, usage).map_err(|_| MeshError::FailedToCreate)?;
+    let indices = Buffer::new(graphics, BufferKind::Index, usage).map_err(|_| MeshError::FailedToCreate)?;
 
     Ok(Self {
       state: Rc::new(RefCell::new(MeshState {

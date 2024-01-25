@@ -33,19 +33,16 @@ impl Default for WindowSettings {
 }
 
 /// Represents an error that can occur when creating a window.
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum WindowError {
-  #[error("failed to initialize")]
   FailedToInitialize,
-  #[error("failed to create main window")]
   FailedToCreateWindow,
-  #[error("failed to create main renderer")]
   FailedToCreateRenderer,
 }
 
 impl Window {
   /// Creates a new window.
-  pub fn new(settings: &WindowSettings) -> common::Result<Self, WindowError> {
+  pub fn new(settings: &WindowSettings) -> Result<Self, WindowError> {
     use sdl2_sys::*;
 
     unsafe {

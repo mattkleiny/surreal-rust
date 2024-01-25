@@ -7,11 +7,9 @@ edition.workspace = true
 macros = { package = "surreal-macros", path = "../macros" }
 
 # core dependencies
-anyhow = { workspace = true }
 glam = { version = "0.25.0", features = ["serde"] }
 rustc-hash = "1.1.0"
 smallvec = "1.8"
-thiserror = { workspace = true }
 uuid = { version = "1.2.2", features = ["serde"] }
 
 # serde and friends

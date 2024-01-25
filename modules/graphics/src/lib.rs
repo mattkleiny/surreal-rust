@@ -55,44 +55,40 @@ impl GraphicsEngine {
 }
 
 /// A possible error when interacting with buffers.
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum BufferError {
-  #[error("the given buffer ID {0:?} is invalid")]
   InvalidId(BufferId),
-  #[error("the buffer is not large enough to hold the requested data")]
   BufferTooSmall,
-  #[error("the given buffer pointer is null")]
   NullPointer,
 }
 
 /// A possible error when interacting with textures.
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum TextureError {
-  #[error("the given texture ID {0:?} is invalid")]
   InvalidId(TextureId),
 }
 
 /// A possible error when interacting with shaders.
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum ShaderError {
-  #[error("the given shader ID {0:?} is invalid")]
   InvalidId(ShaderId),
-  #[error("the shader failed to compile")]
   CompileError(String),
+  FailedToLoad,
+  InvalidInclude,
 }
 
 /// A possible error when interacting with meshes.
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum MeshError {
-  #[error("the given mesh ID {0:?} is invalid")]
   InvalidId(MeshId),
+  FailedToCreate,
 }
 
 /// A possible error when interacting with render targets.
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum TargetError {
-  #[error("the given target ID {0:?} is invalid")]
   InvalidId(TargetId),
+  FailedToBuildAttachments,
 }
 
 /// An abstraction on top of the underlying graphics API.

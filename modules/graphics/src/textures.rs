@@ -81,12 +81,12 @@ struct TextureState {
 
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new(graphics: &GraphicsEngine) -> common::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine) -> Result<Self, TextureError> {
     Self::with_options(graphics, &TextureOptions::default())
   }
 
   /// Loads a texture from the given image.
-  pub fn from_image<T: Texel>(graphics: &GraphicsEngine, image: &impl Image<Pixel = T>) -> common::Result<Self> {
+  pub fn from_image<T: Texel>(graphics: &GraphicsEngine, image: &impl Image<Pixel = T>) -> Result<Self, TextureError> {
     let texture = Self::new(graphics)?;
 
     texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
@@ -96,7 +96,12 @@ impl Texture {
   }
 
   /// Builds a new colored texture of the given size.
-  pub fn from_color<T: Texel>(graphics: &GraphicsEngine, width: u32, height: u32, color: T) -> common::Result<Self> {
+  pub fn from_color<T: Texel>(
+    graphics: &GraphicsEngine,
+    width: u32,
+    height: u32,
+    color: T,
+  ) -> Result<Self, TextureError> {
     let texture = Self::new(graphics)?;
     let colors = vec![color; width as usize * height as usize];
 
@@ -106,7 +111,7 @@ impl Texture {
   }
 
   /// Creates a new blank texture on the GPU with the given options.
-  pub fn with_options(graphics: &GraphicsEngine, options: &TextureOptions) -> common::Result<Self> {
+  pub fn with_options(graphics: &GraphicsEngine, options: &TextureOptions) -> Result<Self, TextureError> {
     Ok(Self {
       state: Rc::new(RefCell::new(TextureState {
         id: graphics.texture_create(&options.sampler)?,
@@ -126,7 +131,7 @@ impl Texture {
     width: u32,
     height: u32,
     format: TextureFormat,
-  ) -> common::Result<Self> {
+  ) -> Result<Self, TextureError> {
     let texture = Self::with_options(graphics, options)?;
 
     texture.initialize(width, height, format);
@@ -354,7 +359,6 @@ impl_texel!((f32,), R32);
 impl_texel!((f32, f32), RG32);
 impl_texel!((f32, f32, f32), RGB32);
 impl_texel!((f32, f32, f32, f32), RGBA32);
-
 
 #[cfg(test)]
 mod tests {

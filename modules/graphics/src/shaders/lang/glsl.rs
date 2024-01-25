@@ -5,17 +5,17 @@ pub struct GLSL;
 
 impl ShaderProgram {
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
-  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
+  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> Result<Self, ShaderError> {
     Self::from_code::<GLSL>(graphics, code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> common::Result<Self> {
+  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> Result<Self, ShaderError> {
     Self::from_path::<GLSL>(graphics, path)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL stream.
-  pub fn from_glsl_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> common::Result<Self> {
+  pub fn from_glsl_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
     Self::from_stream::<GLSL>(graphics, stream)
   }
 }
@@ -29,7 +29,7 @@ impl ShaderLanguage for GLSL {
   /// * Shared code amongst each shader definition by placing it prior to the
   ///   #shader_type directives.
   /// * Allows #include directives to fetch other files.
-  fn parse_kernels(source_code: &str) -> common::Result<Vec<ShaderKernel>> {
+  fn parse_kernels(source_code: &str) -> Result<Vec<ShaderKernel>, ShaderError> {
     use common::*;
 
     let mut result = Vec::with_capacity(2); // usually 2 shaders per file
@@ -56,7 +56,9 @@ impl ShaderLanguage for GLSL {
 
           // fetch and splat the dependent shader
           let dependent_file = path.to_virtual_path();
-          let dependent_code = dependent_file.read_all_text()?;
+          let dependent_code = dependent_file
+            .read_all_text()
+            .map_err(|_| ShaderError::InvalidInclude)?;
 
           if let Some(shader) = result.last_mut() {
             shader.code.push_str(&dependent_code);

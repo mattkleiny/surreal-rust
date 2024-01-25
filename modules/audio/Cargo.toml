@@ -6,4 +6,3 @@ edition.workspace = true
 
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
-thiserror = { workspace = true }

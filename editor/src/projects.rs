@@ -5,6 +5,13 @@ use common::{info, ToVirtualPath, Version, VirtualPath};
 /// The current [`Version`] of the [`Project`] schema.
 pub const DEFAULT_PROJECT_VERSION: Version = Version::new(0, 0, 1);
 
+/// An error that can occur when working with a [`Project`].
+#[derive(Debug)]
+pub enum ProjectError {
+  InvalidVersion,
+  GeneralIoError,
+}
+
 /// Represents a project in the Surreal editor.
 ///
 /// A project is a collection of assets and settings that can be loaded and
@@ -29,7 +36,7 @@ pub struct ProjectDetails {
 impl Project {
   /// Opens a project at the given path, or creates a new one if it doesn't
   /// exist.
-  pub fn open_or_create(name: &str, root_path: &str) -> common::Result<Self> {
+  pub fn open_or_create(name: &str, root_path: &str) -> Result<Self, ProjectError> {
     let root_path = root_path.to_virtual_path();
 
     let asset_path = root_path.join("assets");
@@ -57,7 +64,7 @@ impl Project {
   }
 
   /// Discovers all available projects beneath a given path.
-  pub fn discover(_root_path: impl AsRef<str>) -> common::Result<Vec<ProjectDetails>> {
+  pub fn discover(_root_path: impl AsRef<str>) -> Result<Vec<ProjectDetails>, ProjectError> {
     todo!()
   }
 
@@ -67,10 +74,10 @@ impl Project {
   }
 
   /// Reads the [`Version`] of the project from the settings file.
-  pub fn version(&self) -> common::Result<Version> {
+  pub fn version(&self) -> Result<Version, ProjectError> {
     let path = self.root_path().join("/Settings/ProjectVersion.txt");
-    let raw = path.read_all_text()?;
+    let raw = path.read_all_text().map_err(|_| ProjectError::GeneralIoError)?;
 
-    Version::parse(&raw)
+    Version::parse(&raw).map_err(|_| ProjectError::InvalidVersion)
   }
 }

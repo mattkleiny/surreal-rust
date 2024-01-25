@@ -27,7 +27,7 @@ struct GeometryVertex {
 
 impl GeometryBatch {
   /// Creates a new geometry batch.
-  pub fn new(graphics: &GraphicsEngine) -> common::Result<Self> {
+  pub fn new(graphics: &GraphicsEngine) -> Result<Self, MeshError> {
     Ok(Self {
       mesh: Mesh::new(graphics, BufferUsage::Dynamic)?,
       vertices: Vec::new(),
