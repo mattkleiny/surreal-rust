@@ -42,11 +42,6 @@ common::impl_rid!(TargetId, "Identifies a render target.");
 
 common::impl_server!(GraphicsEngine, GraphicsBackend);
 
-/// The nominal max number of texture units that might be be bound in the GPU.
-///
-/// This is a hint for sizing arrays and other data structures.
-const MAX_TEXTURE_UNITS: usize = 32;
-
 impl GraphicsEngine {
   /// Creates a new [`GraphicsEngine`] with a no-op, headless backend.
   pub fn headless() -> Self {

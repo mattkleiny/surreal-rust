@@ -693,31 +693,6 @@ mod parser {
 
   impl Parseable for TokenStream {
     fn parse(code: &str) -> common::Result<Self> {
-      const KEYWORDS: [&str; 22] = [
-        "true",
-        "false",
-        "let",
-        "return",
-        "if",
-        "else",
-        "while",
-        "for",
-        "fn",
-        "int",
-        "float",
-        "bool",
-        "vec2",
-        "vec3",
-        "vec4",
-        "mat2",
-        "mat3",
-        "mat4",
-        "sampler1D",
-        "sampler2D",
-        "sampler3D",
-        "#shader_type",
-      ];
-
       // tokenize the code
       let mut tokens = VecDeque::<Token>::new();
       let mut chars = code.chars().peekable();
@@ -764,15 +739,31 @@ mod parser {
               }
             }
 
-            if KEYWORDS.contains(&string.as_ref()) {
-              match string.as_ref() {
-                "true" => tokens.push_back(Token::Boolean(true)),
-                "false" => tokens.push_back(Token::Boolean(false)),
-                _ => tokens.push_back(Token::Keyword(string)),
-              }
-            } else {
-              tokens.push_back(Token::Identifier(string));
-            }
+            tokens.push_back(match string.as_str() {
+              "true" => Token::Boolean(true),
+              "false" => Token::Boolean(false),
+              "let" => Token::Keyword(string),
+              "return" => Token::Keyword(string),
+              "if" => Token::Keyword(string),
+              "else" => Token::Keyword(string),
+              "while" => Token::Keyword(string),
+              "for" => Token::Keyword(string),
+              "fn" => Token::Keyword(string),
+              "int" => Token::Keyword(string),
+              "float" => Token::Keyword(string),
+              "bool" => Token::Keyword(string),
+              "vec2" => Token::Keyword(string),
+              "vec3" => Token::Keyword(string),
+              "vec4" => Token::Keyword(string),
+              "mat2" => Token::Keyword(string),
+              "mat3" => Token::Keyword(string),
+              "mat4" => Token::Keyword(string),
+              "sampler1D" => Token::Keyword(string),
+              "sampler2D" => Token::Keyword(string),
+              "sampler3D" => Token::Keyword(string),
+              "#shader_type" => Token::Keyword(string),
+              _ => Token::Identifier(string),
+            });
           }
 
           // parse operators

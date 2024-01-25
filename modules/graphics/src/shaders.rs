@@ -39,6 +39,12 @@ pub mod lang {
   }
 }
 
+/// The nominal max number of texture units that might be be bound in the GPU
+/// for a single shader program.
+///
+/// This is a hint for sizing arrays and other data structures.
+const MAX_TEXTURE_UNITS: usize = 32;
+
 bitflags! {
   /// Metadata flags indicating what state the shader program requires.
   #[derive(Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
@@ -91,15 +97,6 @@ impl ShaderProgram {
     })
   }
 
-  /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
-    let program = Self::new(graphics)?;
-
-    program.load_code::<S>(code)?;
-
-    Ok(program)
-  }
-
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
   pub fn from_path<S: ShaderLanguage>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> common::Result<Self> {
     let path = path.to_virtual_path();
@@ -113,11 +110,18 @@ impl ShaderProgram {
     graphics: &GraphicsEngine,
     stream: &mut dyn InputStream,
   ) -> common::Result<Self> {
-    let mut code = String::new();
-
-    stream.read_to_string(&mut code)?;
+    let code = stream.to_string()?;
 
     Self::from_code::<S>(graphics, &code)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given raw shader code.
+  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> common::Result<Self> {
+    let program = Self::new(graphics)?;
+
+    program.load_code::<S>(code)?;
+
+    Ok(program)
   }
 
   /// Loads a [`ShaderProgram`] from the given [`ShaderKernel`]s.
@@ -171,15 +175,6 @@ impl ShaderProgram {
     }
   }
 
-  /// Reloads the [`ShaderProgram`] from the given shader code.
-  pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> common::Result<()> {
-    let shaders = S::parse_kernels(text)?;
-
-    self.load_kernels(&shaders)?;
-
-    Ok(())
-  }
-
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
   pub fn load_from_path<S: ShaderLanguage>(&self, path: impl ToVirtualPath) -> common::Result<()> {
     let path = path.to_virtual_path();
@@ -197,6 +192,15 @@ impl ShaderProgram {
     stream.read_to_string(&mut source_code)?;
 
     self.load_code::<S>(&source_code)?;
+
+    Ok(())
+  }
+
+  /// Reloads the [`ShaderProgram`] from the given shader code.
+  pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> common::Result<()> {
+    let shaders = S::parse_kernels(text)?;
+
+    self.load_kernels(&shaders)?;
 
     Ok(())
   }
@@ -377,5 +381,54 @@ impl ShaderUniformSet {
         "Failed to allocate texture slot. There's a limit of {MAX_TEXTURE_UNITS} concurrent textures per material."
       )
     })
+  }
+}
+
+/// Keeps texture assignments uniquely associated with slot indices.
+///
+/// This is useful for tracking unique texture assignments across multiple
+/// materials, invocations, vertices, etc.
+#[derive(Default, Clone)]
+pub struct TextureBindingSet {
+  slots: [Option<TextureId>; MAX_TEXTURE_UNITS],
+}
+
+impl TextureBindingSet {
+  /// Allocates a texture slot for the given texture.
+  ///
+  /// If the texture is already bound, it will return the existing slot.
+  /// Otherwise the first empty slot will be used.
+  ///
+  /// If we've allocated all texture slots, `None` will be returned.
+  pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
+    for (index, slot) in self.slots.iter_mut().enumerate() {
+      match slot {
+        Some(existing) if *existing == texture.id() => {
+          return Some(index as u8);
+        }
+        None => {
+          *slot = Some(texture.id());
+          return Some(index as u8);
+        }
+        _ => continue,
+      }
+    }
+
+    None
+  }
+
+  /// Clears all used texture slots from the bindings.
+  pub fn clear(&mut self) {
+    self.slots.fill(None);
+  }
+
+  /// Returns a vector of all texture IDs in the set.
+  pub fn to_vec(&self) -> Vec<TextureId> {
+    self.iter().copied().collect()
+  }
+
+  /// Returns an iterator over all texture IDs in the set.
+  pub fn iter(&self) -> impl Iterator<Item = &TextureId> {
+    self.slots.iter().filter_map(|slot| slot.as_ref())
   }
 }
