@@ -28,8 +28,8 @@ mod parser {
 
   use crate::lang::ast;
 
-  /// Parses the given BASIC code into a [`ScriptModule`].
-  pub fn parse(code: &str) -> common::Result<ast::ScriptModule> {
+  /// Parses the given BASIC code into a [`Module`].
+  pub fn parse(code: &str) -> common::Result<ast::Module> {
     let mut stream = TokenStream::tokenize(code)?;
     let module = stream.parse_script_module()?;
 
@@ -80,7 +80,7 @@ mod parser {
 
   impl TokenStream {
     /// Parses a [`ScriptModule`] from the [`TokenStream`].
-    pub fn parse_script_module(&mut self) -> common::Result<ast::ScriptModule> {
+    pub fn parse_script_module(&mut self) -> common::Result<ast::Module> {
       todo!()
     }
 

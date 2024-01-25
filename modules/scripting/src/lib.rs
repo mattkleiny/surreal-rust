@@ -1,8 +1,28 @@
 //! Scripting engine for Surreal.
+//!
+//! The scripting engine is responsible for parsing and executing scripts.
+//! It is designed to be as flexible as possible, allowing for multiple
+//! scripting languages to be used.
+//!
+//! The scripting engine is split into two parts: the language and the runtime.
+//!
+//! The language is responsible for parsing the script into an abstract syntax
+//! tree (AST). The AST is shared between all scripting languages, and is
+//! general enough to support multiple paradigms.
+//!
+//! Integration of languages occurs at the AST level as much as possible, though
+//! there are some cases where the runtime must be aware of the language.
+//!
+//! The runtime is responsible for executing the script. It is designed to be
+//! as flexible as possible, allowing for multiple execution models to be used,
+//! such as a virtual machine or an interpreter.
 
 #[allow(dead_code)]
 pub mod lang {
   //! Language support for the scripting system.
+  //!
+  //! This module is responsible for parsing scripts into an abstract syntax
+  //! tree (AST). This AST is shared between all scripting languages.
   pub use ast::*;
   pub use basic::*;
   pub use wren::*;
@@ -44,6 +64,10 @@ pub mod lang {
 #[allow(dead_code)]
 pub mod runtime {
   //! Runtime support for the scripting system.
+  //!
+  //! This module is responsible for executing scripts. It is designed to be
+  //! as flexible as possible, allowing for multiple execution models to be
+  //! used, such as a virtual machine or an interpreter.
   pub use interpret::*;
   pub use vm::*;
 

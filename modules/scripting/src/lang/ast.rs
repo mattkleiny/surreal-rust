@@ -5,7 +5,9 @@
 /// Modules are the top-level unit of compilation in Surreal. Each module
 /// represents a single compilation unit, and can be imported by other modules
 /// (potentially in different languages).
-pub struct ScriptModule {}
+pub struct Module {
+  statements: Vec<Statement>,
+}
 
 /// A statement in a script.
 #[derive(Debug, PartialEq)]
@@ -23,7 +25,6 @@ pub enum Statement {
 
 /// An expression in a script.
 #[derive(Debug, PartialEq)]
-
 pub enum Expression {
   Binary(BinaryOperator, Box<Expression>, Box<Expression>),
   Unary(UnaryOperator, Box<Expression>),
@@ -102,3 +103,59 @@ macro_rules! impl_token_stream {
 }
 
 pub(crate) use impl_token_stream;
+
+/// Allows visiting a script's AST.
+#[allow(unused_variables)]
+pub trait Visitor {
+  fn visit_module(&mut self, module: &Module) {
+    for statement in &module.statements {
+      self.visit_statement(statement);
+    }
+  }
+
+  fn visit_statement(&mut self, statement: &Statement) {
+    match statement {
+      Statement::Expression(expression) => self.visit_expression(expression),
+      _ => {}
+    }
+  }
+
+  fn visit_expression(&mut self, expression: &Expression) {
+    match expression {
+      Expression::Literal(literal) => self.visit_literal(literal),
+      _ => {}
+    }
+  }
+
+  fn visit_literal(&mut self, literal: &Literal) {
+    // no-op
+  }
+}
+
+impl Module {
+  #[inline(always)]
+  pub fn accept(&self, visitor: &mut dyn Visitor) {
+    visitor.visit_module(self);
+  }
+}
+
+impl Statement {
+  #[inline(always)]
+  pub fn accept(&self, visitor: &mut dyn Visitor) {
+    visitor.visit_statement(self);
+  }
+}
+
+impl Expression {
+  #[inline(always)]
+  pub fn accept(&self, visitor: &mut dyn Visitor) {
+    visitor.visit_expression(self);
+  }
+}
+
+impl Literal {
+  #[inline(always)]
+  pub fn accept(&self, visitor: &mut dyn Visitor) {
+    visitor.visit_literal(self);
+  }
+}

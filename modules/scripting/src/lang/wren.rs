@@ -24,10 +24,10 @@ impl ScriptLanguage for Wren {
 
 mod parser {
   //! Parser for the Wren language.
-  use crate::lang::ScriptModule;
+  use crate::lang::Module;
 
-  /// Parses the given Wren code into a [`ScriptModule`].
-  pub fn parse(_code: &str) -> common::Result<ScriptModule> {
+  /// Parses the given Wren code into a [`Module`].
+  pub fn parse(_code: &str) -> common::Result<Module> {
     todo!()
   }
 

@@ -1,6 +1,9 @@
 use super::ScriptRuntime;
 
 /// Allows interpreting scripts.
-pub struct ScriptInterpreter {}
+///
+/// This is a simple tree-walk interpreter.
+#[derive(Default)]
+pub struct Interpreter {}
 
-impl ScriptRuntime for ScriptInterpreter {}
+impl ScriptRuntime for Interpreter {}
