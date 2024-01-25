@@ -1,4 +1,4 @@
-use super::ScriptLanguage;
+use super::*;
 
 /// The Wren [`ScriptLanguage`] implementation.
 ///
@@ -15,7 +15,7 @@ impl ScriptLanguage for Wren {
     &["wren"]
   }
 
-  fn compile_code(&self, _code: &str) -> common::Result<()> {
+  fn parse_code(&self, _code: &str) -> common::Result<ast::Module> {
     let _module = parser::parse(_code)?;
 
     todo!()
@@ -23,14 +23,15 @@ impl ScriptLanguage for Wren {
 }
 
 mod parser {
-  //! Parser for the Wren language.
-  use crate::lang::Module;
+  use super::*;
 
   /// Parses the given Wren code into a [`Module`].
-  pub fn parse(_code: &str) -> common::Result<Module> {
+  pub fn parse(_code: &str) -> common::Result<ast::Module> {
     todo!()
   }
 
   #[derive(Debug, PartialEq)]
   enum Token {}
+
+  ast::impl_token_stream!(Token as TokenStream);
 }

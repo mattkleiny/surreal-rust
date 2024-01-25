@@ -23,11 +23,11 @@ pub mod lang {
   //!
   //! This module is responsible for parsing scripts into an abstract syntax
   //! tree (AST). This AST is shared between all scripting languages.
-  pub use ast::*;
   pub use basic::*;
   pub use wren::*;
 
-  mod ast;
+  pub mod ast;
+
   mod basic;
   mod wren;
 
@@ -41,23 +41,23 @@ pub mod lang {
     /// For example, the file extension for Lua is "lua".
     fn file_extensions(&self) -> &[&'static str];
 
-    /// Compiles the file at the given path.
-    fn compile_path(&self, path: impl common::ToVirtualPath) -> common::Result<()> {
+    /// Parses the file at the given path.
+    fn parse_path(&self, path: impl common::ToVirtualPath) -> common::Result<ast::Module> {
       let path = path.to_virtual_path();
       let mut stream = path.open_input_stream()?;
 
-      self.compile_stream(&mut stream)
+      self.parse_stream(&mut stream)
     }
 
     /// Parses the given stream.
-    fn compile_stream(&self, stream: &mut dyn common::InputStream) -> common::Result<()> {
+    fn parse_stream(&self, stream: &mut dyn common::InputStream) -> common::Result<ast::Module> {
       let code = stream.to_string()?;
 
-      self.compile_code(&code)
+      self.parse_code(&code)
     }
 
     /// Parses the given raw code.
-    fn compile_code(&self, code: &str) -> common::Result<()>;
+    fn parse_code(&self, code: &str) -> common::Result<ast::Module>;
   }
 }
 

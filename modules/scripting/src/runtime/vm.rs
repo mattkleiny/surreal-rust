@@ -1,3 +1,5 @@
+use common::StringName;
+
 use super::ScriptRuntime;
 
 /// Allows executing script bytecode.
@@ -5,55 +7,38 @@ use super::ScriptRuntime;
 /// This is a virtual machine, with a stack-based architecture.
 #[derive(Default)]
 pub struct VirtualMachine {
-  /// The stack of values.
-  stack: Vec<bytecode::OpCode>,
-  /// The current instruction pointer.
+  stack: Vec<bytecode::Literal>,
   instruction_pointer: usize,
-  /// The current instruction.
   instruction: Option<Instruction>,
-  /// The current frame.
   frame: Option<StackFrame>,
-  /// The current call stack.
   call_stack: Vec<StackFrame>,
 }
 
 /// A single frame in the call stack.
+#[derive(Debug)]
 struct StackFrame {
-  /// The instruction pointer for the frame.
   instruction_pointer: usize,
-  /// The frame's instruction.
   instruction: Instruction,
-  /// The frame's stack.
-  stack: Vec<()>,
-  /// The frame's locals.
-  locals: Vec<()>,
-  /// The frame's upvalues.
-  upvalues: Vec<()>,
+  stack: Vec<bytecode::Literal>,
+  locals: Vec<StackLocal>,
+}
+
+/// A local variable in a stack frame.
+#[derive(Debug)]
+struct StackLocal {
+  name: StringName,
+  value: bytecode::Literal,
 }
 
 /// A single instruction in a script.
 #[derive(Debug)]
 struct Instruction {
-  /// The opcode for the instruction.
   pub opcode: bytecode::OpCode,
 }
 
 impl ScriptRuntime for VirtualMachine {}
 
 mod bytecode {
-  //! Bytecode representation of a script for the Virtual Machine.
-
-  /// Converts the type into bytecode.
-  pub trait ToByteCode {
-    fn to_bytecode(&self) -> common::Result<Vec<u8>>;
-  }
-
-  /// Converts the bytecode into the type.
-  pub trait FromByteCode: Sized {
-    fn from_bytecode(bytes: &[u8]) -> common::Result<Self>;
-  }
-
-  /// A single opcode in a script.
   #[derive(Debug)]
   pub enum OpCode {
     NoOp,
@@ -101,7 +86,6 @@ mod bytecode {
 }
 
 mod assembly {
-  /// Assembler/disassembler for bytecode.
   use super::*;
 
   /// Allows assembly of a type to bytecode.
@@ -110,10 +94,9 @@ mod assembly {
     fn assemble(&self) -> common::Result<Vec<Instruction>>;
   }
 
-  /// Allow assembly of modules to bytecode.
-  impl Assembler for crate::lang::Module {
+  impl Assembler for crate::lang::ast::Module {
     fn assemble(&self) -> common::Result<Vec<Instruction>> {
-      use crate::lang::*;
+      use crate::lang::ast::*;
 
       struct Assembler {
         instructions: Vec<Instruction>,

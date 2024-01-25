@@ -1,12 +1,12 @@
-use super::ScriptLanguage;
+use super::*;
 
 /// The BASIC [`ScriptLanguage`] implementation.
 ///
 /// This is a very simple language that is intended to be used for testing.
 /// It is not intended to be used for any real scripting.
-pub struct Basic;
+pub struct BASIC;
 
-impl ScriptLanguage for Basic {
+impl ScriptLanguage for BASIC {
   fn name(&self) -> &'static str {
     "BASIC"
   }
@@ -15,7 +15,7 @@ impl ScriptLanguage for Basic {
     &["bas", "basic"]
   }
 
-  fn compile_code(&self, code: &str) -> common::Result<()> {
+  fn parse_code(&self, code: &str) -> common::Result<ast::Module> {
     let _module = parser::parse(code)?;
 
     todo!()
@@ -23,10 +23,9 @@ impl ScriptLanguage for Basic {
 }
 
 mod parser {
-  //! Parser for the BASIC language.
   use std::collections::VecDeque;
 
-  use crate::lang::ast;
+  use super::*;
 
   /// Parses the given BASIC code into a [`Module`].
   pub fn parse(code: &str) -> common::Result<ast::Module> {
@@ -79,7 +78,6 @@ mod parser {
   }
 
   impl TokenStream {
-    /// Parses a [`ScriptModule`] from the [`TokenStream`].
     pub fn parse_script_module(&mut self) -> common::Result<ast::Module> {
       todo!()
     }
@@ -184,7 +182,7 @@ mod parser {
     }
   }
 
-  crate::lang::ast::impl_token_stream!(Token as TokenStream);
+  ast::impl_token_stream!(Token as TokenStream);
 
   #[cfg(test)]
   mod tests {

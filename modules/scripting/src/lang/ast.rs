@@ -1,5 +1,3 @@
-//! Shared internal AST for the scripting languages.
-
 /// A parsed script module.
 ///
 /// Modules are the top-level unit of compilation in Surreal. Each module
