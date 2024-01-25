@@ -1,0 +1,80 @@
+Core:
+  [ ] Get asset management loading working
+  [ ] Get hot reload for assets working
+    [ ] Dependent file hot reloads (for shader includes, etc?)
+  [✔] Fix virtual file system (registry + more formats)
+  [ ] Get top-level crash handler working
+  [✔] Allow reads from buffers and textures
+  [✔] Finalize core maths library
+  [ ] Add lots of tests
+  [ ] Fix up lifetimes for core types (graphics, etc)
+  [ ] Give documentation a bit of love
+  [ ] Swap to stable (instead of nightly)?
+  [✔] Scene graph
+  [ ] Scene graph loader
+  [ ] Symmetric matrices for intersection tests, etc?
+  [ ] Support for custom allocators? (A frame arena for scratch work, perhaps?)
+  [ ] Use static pointers for graphics server, audio server, etc?
+  [ ] Add matrix inversion and more core linear algebra or instead use an existing crate
+  [ ] Lightweight entity component system?
+  [ ] In-game console (with command history, interpreter, etc)
+  [ ] Configuration variables (cvars, doom-like but more ergonomic?)
+  [ ] Better core smart pointer type instead of using Rc<RefCell>, etc.
+
+AI:
+  [ ] Basic automata
+    [ ] Behaviour trees?
+    [ ] Decision trees?
+    [ ] State machines?
+  [✔] Path-finding support (A*)
+  [ ] Navigation meshes?
+  [ ] Dijkstra maps for 2d flow finding?
+
+Graphics:
+  [ ] Add bitmap fonts
+  [ ] Add vector fonts
+  [ ] Improve vector font rendering and caching
+  [✔] Get #[derive(Vertex)] working
+  [ ] Font layout/galley system
+  [ ] Add sprite pivots, transforms, etc
+  [ ] Add sprite animations
+  [ ] Add tilemap pivots, transforms, etc
+  [ ] Add tilemap animations
+  [ ] Add texture atlases?
+  [ ] Automatic sprite atlas baking/packing?
+  [ ] Draw lists? (load/store actions, render targets, command buffer and post processing)
+  [✔] Sprite transforms for rotations/shear/etc
+  [✔] Sprite batching that supports multiple textures per draw call
+  [✔] Fix sprite batching when there are implicit textures in a material (i.e. slots are relative to material)
+  [ ] Swap to WGPU and consider implementing a resource abstraction system (ala jdh)
+  [ ] Custom shading language ala GDShader.
+
+Audio:
+  [ ] Get audio backend playing simple buffered sounds
+  [ ] Support buffered audio
+  [ ] Support streaming audio
+
+Scripting:
+  [ ] Finish Lox implementation and basic virtual machine
+  [ ] Add Lisp implementation and virtual machine
+  [ ] Add BASIC implementation and virtual machine, and lots of common operations
+  [ ] Consider other languages and ideas
+  [ ] Custom scripting language ala GDScript.
+
+Physics:
+  [ ] Basic 2d physics
+  [ ] Basic 3d physics
+
+Editor:
+  [ ] Tauri-based editor with web frontend technologies
+  [ ] How to integrate render target output from UI into Tauri/Canvas?
+  [ ] Integrate the editor into VSCode and use it to provide basic scene editing/etc?
+    [ ] Define the scene file format, and other data structures as well?
+    [ ] Consider visual graph models for state machines, behaviour trees, etc
+    [ ] Consider visual timeline editor for sprite animatinos and events?
+  [ ] Graph editor for VS Code symlinked into the project folder?
+
+User Interface:
+  [ ] `egui` based UI Rust framework?
+    [ ] `rsx` style markup for egui function invocations.
+    [ ] `redux` style state management in a central store
