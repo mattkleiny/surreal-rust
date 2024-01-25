@@ -14,5 +14,4 @@ input = { package = "surreal-input", path = "../modules/input" }
 sdl = { package = "surreal-sdl", path = "../backends/sdl" }
 
 # third-party dependencies
-serde = { version = "1.0.159", features = ["derive"] }
-thiserror = "1.0.26"
+serde = { version = "1.0.159", features = ["derive"], optional = true }

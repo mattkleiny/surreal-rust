@@ -2,7 +2,6 @@
 name = "surreal-macros"
 authors.workspace = true
 edition.workspace = true
-version.workspace = true
 
 [lib]
 proc-macro = true

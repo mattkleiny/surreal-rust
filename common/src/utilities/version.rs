@@ -1,7 +1,5 @@
 use std::fmt::{Display, Formatter};
 
-use serde::{Deserializer, Serializer};
-
 /// A version identifier `major.minor.patch`.
 ///
 /// Used to indicate versions of projects, assets, etc.
@@ -39,14 +37,16 @@ impl Display for Version {
   }
 }
 
+#[cfg(feature = "serde")]
 impl serde::Serialize for Version {
-  fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+  fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
     serializer.serialize_str(&format!("{}.{}.{}", self.major, self.minor, self.patch))
   }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for Version {
-  fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+  fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
     struct Visitor;
 
     impl<'de> serde::de::Visitor<'de> for Visitor {

@@ -171,7 +171,8 @@ impl FrameTimer {
 }
 
 /// A representation of a span of time.
-#[derive(Serialize, Deserialize, Default, Copy, Clone, Debug, PartialEq, PartialOrd)]
+#[derive(Default, Copy, Clone, Debug, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TimeSpan {
   seconds: f32,
 }

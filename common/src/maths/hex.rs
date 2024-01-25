@@ -9,7 +9,8 @@ pub const fn hex(x: i32, y: i32) -> Hex {
 
 /// Defines a position in a hexagonal grid.
 #[repr(packed)]
-#[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Hex {
   /// X axial coordinate; (sometimes called q or i).
   pub x: i32,

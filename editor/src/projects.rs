@@ -1,19 +1,9 @@
 //! Project configuration for the editor.
 
 use common::{info, ToVirtualPath, Version, VirtualPath};
-use serde::{Deserialize, Serialize};
 
 /// The current [`Version`] of the [`Project`] schema.
 pub const DEFAULT_PROJECT_VERSION: Version = Version::new(0, 0, 1);
-
-/// Possible errors when loading a project.
-#[derive(thiserror::Error, Debug, Copy, Clone, Eq, PartialEq)]
-pub enum ProjectError {
-  #[error("An invalid project format was detected")]
-  InvalidFormat,
-  #[error("The project version is incompatible with the current editor version")]
-  IncompatibleVersion,
-}
 
 /// Represents a project in the Surreal editor.
 ///
@@ -28,7 +18,8 @@ pub struct Project {
 }
 
 /// Top-level details for a [`Project`].
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ProjectDetails {
   pub name: String,
   pub path: String,

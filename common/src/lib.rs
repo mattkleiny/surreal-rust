@@ -10,9 +10,6 @@
 #![feature(type_alias_impl_trait)]
 #![feature(lazy_cell)]
 
-#[macro_use]
-extern crate serde;
-
 pub use anyhow::{anyhow, bail, Error, Result};
 pub use collections::*;
 pub use diagnostics::*;

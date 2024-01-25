@@ -7,4 +7,4 @@ edition.workspace = true
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
 graphics = { package = "surreal-graphics", path = "../graphics" }
-bitflags = "2.1.0"
+bitflags = { workspace = true }

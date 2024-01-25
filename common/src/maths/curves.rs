@@ -6,7 +6,8 @@ pub trait Curve {
 }
 
 /// A linear curve in 2-space.
-#[derive(Serialize, Deserialize, Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Line {
   pub a: Vec2,
   pub b: Vec2,
@@ -19,7 +20,8 @@ impl Curve for Line {
 }
 
 /// Represents a quadratic bezier curve in 2-space.
-#[derive(Serialize, Deserialize, Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct QuadraticBezier {
   pub start: Vec2,
   pub control: Vec2,
@@ -36,7 +38,8 @@ impl Curve for QuadraticBezier {
 }
 
 /// Represents a cubic bezier curve in 2-space.
-#[derive(Serialize, Deserialize, Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CubicBezier {
   pub start: Vec2,
   pub control1: Vec2,

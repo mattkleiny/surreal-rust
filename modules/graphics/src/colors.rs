@@ -7,7 +7,6 @@
 use std::ops::{Div, Index, Mul};
 
 use common::{ApproxEq, FromRandom, Lerp, Random, Scalar, ToVirtualPath};
-use serde::{Deserialize, Serialize};
 
 /// Represents a type of pixel.
 pub trait Pixel: Copy + Default {
@@ -23,7 +22,8 @@ pub trait Pixel: Copy + Default {
 
 /// A simple floating point color value with 4 channels (RGBA).
 #[repr(C)]
-#[derive(Serialize, Deserialize, Copy, Clone, Default, Debug)]
+#[derive(Copy, Clone, Default, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Color {
   pub r: f32,
   pub g: f32,
@@ -105,7 +105,8 @@ impl FromRandom for Color {
 
 /// A simple 32-bit color value with 4 channels (RGBA).
 #[repr(C)]
-#[derive(Serialize, Deserialize, Copy, Clone, Default, Debug, Eq)]
+#[derive(Copy, Clone, Default, Debug, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Color32 {
   pub r: u8,
   pub g: u8,
@@ -318,6 +319,7 @@ impl_std_ops!(Color32, u8);
 
 /// A palette of colors of type [`P`].
 #[derive(Default, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ColorPalette<P> {
   colors: Vec<P>,
 }

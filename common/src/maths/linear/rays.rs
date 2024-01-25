@@ -10,7 +10,8 @@ macro_rules! impl_ray {
 
     /// Represents a ray.
     #[repr(C)]
-    #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
     pub struct $type {
       pub origin: $vec,
       pub direction: $vec,

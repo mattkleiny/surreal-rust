@@ -1,9 +1,5 @@
 //! A packed file system.
 
-use std::{fs::File, io::BufReader};
-
-use crate::Deserializable;
-
 /// A packed file.
 pub struct PakFile {
   pub headers: Vec<PakFileHeader>,
@@ -11,7 +7,8 @@ pub struct PakFile {
 
 /// Header for a Pak file.
 #[repr(C)]
-#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+#[derive(Default, Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PakFileHeader {
   pub name: String,
   pub offset: u64,
@@ -23,29 +20,11 @@ pub struct PakFileHeader {
 
 /// The type of the Pak file.
 #[repr(C)]
-#[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PakFileType {
   #[default]
   File,
   Directory,
   Symlink,
-}
-
-impl PakFile {
-  /// Loads the Pak file from the given path.
-  pub fn load(path: &str) -> crate::Result<Self> {
-    let mut reader = BufReader::new(File::open(path)?);
-    let mut headers = Vec::new();
-
-    loop {
-      let header = match PakFileHeader::from_binary_stream(&mut reader) {
-        Ok(header) => header,
-        Err(_) => break,
-      };
-
-      headers.push(header);
-    }
-
-    Ok(Self { headers })
-  }
 }

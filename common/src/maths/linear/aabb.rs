@@ -2,7 +2,8 @@ use super::*;
 
 /// An axially-aligned bounding box.
 #[repr(C)]
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+#[derive(Clone, Default, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AABB {
   pub min: Vec3,
   pub max: Vec3,

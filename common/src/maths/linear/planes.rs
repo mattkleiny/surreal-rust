@@ -2,7 +2,8 @@ use super::*;
 
 /// Represents a plane in 3-space.
 #[repr(C)]
-#[derive(Serialize, Deserialize, Default, Copy, Clone, Debug, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Plane {
   pub normal: Vec3,
   pub distance: f32,

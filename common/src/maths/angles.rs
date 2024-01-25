@@ -4,7 +4,8 @@ use super::{FromRandom, Random};
 
 /// Represents an angle in either degrees or radians.
 #[repr(C)]
-#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Angle {
   Radians(f64),
   Degrees(f64),

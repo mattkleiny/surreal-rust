@@ -38,3 +38,9 @@ physics = { package = "surreal-physics", path = "./modules/physics", optional = 
 scene = { package = "surreal-scene", path = "./modules/scene", optional = true }
 scripting = { package = "surreal-scripting", path = "./modules/scripting", optional = true }
 ui = { package = "surreal-ui", path = "./modules/ui", optional = true }
+
+[workspace.dependencies]
+serde = { version = "1.0.159", features = ["derive"] }
+anyhow = "1.0.66"
+thiserror = "1.0.26"
+bitflags = "2.1.0"

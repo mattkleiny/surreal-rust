@@ -3,10 +3,11 @@ name = "surreal-graphics"
 description = "Surreal graphics engine"
 authors.workspace = true
 edition.workspace = true
+
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
-serde = { version = "1.0.159", features = ["derive"] }
-bitflags = "2.1.0"
-thiserror = "1.0.26"
-image = "0.24.8"
+serde = { workspace = true, optional = true }
+bitflags = { workspace = true }
+thiserror = { workspace = true }
+image = { version = "0.24.8", default-features = false, features = ["png"] }
 gl = "0.14.0"
