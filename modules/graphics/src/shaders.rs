@@ -23,10 +23,12 @@ pub mod lang {
   pub use glsl::*;
   pub use hlsl::*;
   pub use shady::*;
+  pub use visual::*;
 
   mod glsl;
   mod hlsl;
   mod shady;
+  mod visual;
 
   use super::*;
 
