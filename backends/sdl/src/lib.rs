@@ -2,8 +2,15 @@
 
 use std::ffi::CString;
 
-use graphics::{Color32, Image};
 pub use sdl2_sys as sys; // re-export the SDL2 bindings
+
+/// Represents an error that can occur when creating a window.
+#[derive(Debug)]
+pub enum WindowError {
+  FailedToInitialize,
+  FailedToCreateWindow,
+  FailedToCreateRenderer,
+}
 
 /// Represents a window.
 pub struct Window {
@@ -17,7 +24,7 @@ pub struct WindowSettings {
   pub width: u32,
   pub height: u32,
   pub vsync_enabled: bool,
-  pub icon: Option<Box<dyn Image<Pixel = Color32>>>,
+  pub icon: Option<graphics::Color32Image>,
 }
 
 impl Default for WindowSettings {
@@ -30,14 +37,6 @@ impl Default for WindowSettings {
       icon: None,
     }
   }
-}
-
-/// Represents an error that can occur when creating a window.
-#[derive(Debug)]
-pub enum WindowError {
-  FailedToInitialize,
-  FailedToCreateWindow,
-  FailedToCreateRenderer,
 }
 
 impl Window {
@@ -87,7 +86,36 @@ impl Window {
       SDL_GL_MakeCurrent(window, gl_context);
       SDL_GL_LoadLibrary(std::ptr::null());
 
-      Ok(Self { window, gl_context })
+      let window = Self { window, gl_context };
+
+      // set the window icon
+      if let Some(icon) = &settings.icon {
+        window.set_window_icon(&icon);
+      }
+
+      Ok(window)
+    }
+  }
+
+  /// Sets the window icon.
+  pub fn set_window_icon(&self, icon: &graphics::Color32Image) {
+    use sdl2_sys::*;
+
+    unsafe {
+      let surface = SDL_CreateRGBSurfaceFrom(
+        icon.as_ptr() as *mut _,
+        icon.width() as i32,
+        icon.height() as i32,
+        32,
+        icon.width() as i32 * 4,
+        0x000000ff,
+        0x0000ff00,
+        0x00ff0000,
+        0xff000000,
+      );
+
+      SDL_SetWindowIcon(self.window, surface);
+      SDL_FreeSurface(surface);
     }
   }
 

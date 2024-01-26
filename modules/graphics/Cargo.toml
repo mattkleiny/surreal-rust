@@ -8,5 +8,7 @@ edition.workspace = true
 common = { package = "surreal-common", path = "../../common" }
 serde = { workspace = true, optional = true }
 bitflags = { workspace = true }
+
+# local dependencies
 image = { version = "0.24.8", default-features = false, features = ["png"] }
 gl = "0.14.0"

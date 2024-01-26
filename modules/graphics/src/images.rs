@@ -6,10 +6,48 @@ use super::*;
 pub type ColorImage = image::ImageBuffer<Color, Vec<f32>>;
 pub type Color32Image = image::ImageBuffer<Color32, Vec<u8>>;
 
+/// An error that occurred while loading an image.
+#[derive(Debug)]
+pub enum ImageError {
+  IoError,
+  ImageError(image::ImageError),
+}
+
 /// A simplified representation of an image of pixels.
 pub trait Image {
   /// The pixel type of the image.
   type Pixel: Pixel;
+
+  /// Loads an image from the path.
+  fn from_path(path: impl common::ToVirtualPath) -> Result<Self, ImageError>
+  where
+    Self: Sized + FromDynamicImage,
+  {
+    let path = path.to_virtual_path();
+    let stream = path.open_input_stream().map_err(|_| ImageError::IoError)?;
+
+    Self::from_stream(stream)
+  }
+
+  /// Loads an image from the given stream.
+  fn from_stream(stream: impl common::InputStream) -> Result<Self, ImageError>
+  where
+    Self: Sized + FromDynamicImage,
+  {
+    Ok(Self::from_dynamic_image(
+      image::load(stream, image::ImageFormat::Png).map_err(|it| ImageError::ImageError(it))?,
+    ))
+  }
+
+  /// Loads an image from the given slice of bytes.
+  fn from_slice(slice: &[u8]) -> Result<Self, ImageError>
+  where
+    Self: Sized + FromDynamicImage,
+  {
+    Ok(Self::from_dynamic_image(
+      image::load_from_memory(slice).map_err(|it| ImageError::ImageError(it))?,
+    ))
+  }
 
   // image queries
   fn width(&self) -> u32;
@@ -24,7 +62,7 @@ pub trait Image {
   fn as_slice_mut(&mut self) -> &mut [Self::Pixel];
 }
 
-/// Implements [`Image`] for the given image type.
+/// Implements [`Image`] for the all image type and pixel type combinations.
 impl<P: image::Pixel + crate::Pixel> Image for image::ImageBuffer<P, Vec<<P as image::Pixel>::Subpixel>> {
   type Pixel = P;
 
@@ -179,6 +217,26 @@ macro_rules! impl_pixel {
 
 impl_pixel!(Color, "RGBA");
 impl_pixel!(Color32, "RGBA");
+
+/// Converts the given [`image::DynamicImage`] into the given image type.
+pub trait FromDynamicImage {
+  /// The image type to convert to.
+  fn from_dynamic_image(image: image::DynamicImage) -> Self;
+}
+
+impl FromDynamicImage for ColorImage {
+  #[inline]
+  fn from_dynamic_image(image: image::DynamicImage) -> Self {
+    unsafe { std::mem::transmute(image.to_rgba32f()) }
+  }
+}
+
+impl FromDynamicImage for Color32Image {
+  #[inline]
+  fn from_dynamic_image(image: image::DynamicImage) -> Self {
+    unsafe { std::mem::transmute(image.to_rgba8()) }
+  }
+}
 
 #[cfg(test)]
 mod tests {
