@@ -39,17 +39,18 @@ struct Instruction {
 impl ScriptRuntime for VirtualMachine {}
 
 mod bytecode {
-  #[derive(Debug)]
-  pub enum OpCode {
-    NoOp,
-    Stack(StackOp),
-    Math(MathOp),
+  pub trait ToByteCode {
+    fn to_bytecode(&self, buffer: &mut Vec<u8>);
   }
 
   #[derive(Debug)]
-  pub enum StackOp {
+  pub enum OpCode {
+    NoOp,
     Push(Literal),
     Pop,
+    Math(MathOp),
+    JumpIfTrue(usize),
+    JumpIfFalse(usize),
   }
 
   #[derive(Debug)]
@@ -83,6 +84,100 @@ mod bytecode {
     Boolean(bool),
     Nil,
   }
+
+  impl ToByteCode for &[super::Instruction] {
+    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
+      buffer.extend_from_slice(&self.len().to_le_bytes());
+
+      for instruction in self.iter() {
+        instruction.to_bytecode(buffer);
+      }
+    }
+  }
+
+  impl ToByteCode for super::Instruction {
+    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
+      self.opcode.to_bytecode(buffer);
+    }
+  }
+
+  impl ToByteCode for OpCode {
+    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
+      match self {
+        OpCode::NoOp => {
+          buffer.push(0x00);
+        }
+        OpCode::Push(literal) => {
+          buffer.push(0x01);
+          literal.to_bytecode(buffer);
+        }
+        OpCode::Pop => buffer.push(0x02),
+        OpCode::Math(math_op) => {
+          buffer.push(0x03);
+          math_op.to_bytecode(buffer);
+        }
+        OpCode::JumpIfTrue(offset) => {
+          buffer.push(0x04);
+          buffer.extend_from_slice(&offset.to_le_bytes());
+        }
+        OpCode::JumpIfFalse(offset) => {
+          buffer.push(0x05);
+          buffer.extend_from_slice(&offset.to_le_bytes());
+        }
+      }
+    }
+  }
+
+  impl ToByteCode for MathOp {
+    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
+      match self {
+        MathOp::Add => buffer.push(0x00),
+        MathOp::Subtract => buffer.push(0x01),
+        MathOp::Multiply => buffer.push(0x02),
+        MathOp::Divide => buffer.push(0x03),
+        MathOp::Modulo => buffer.push(0x04),
+        MathOp::Power => buffer.push(0x05),
+        MathOp::BitwiseAnd => buffer.push(0x06),
+        MathOp::BitwiseOr => buffer.push(0x07),
+        MathOp::BitwiseXor => buffer.push(0x08),
+        MathOp::LeftShift => buffer.push(0x09),
+        MathOp::RightShift => buffer.push(0x0A),
+        MathOp::Equal => buffer.push(0x0B),
+        MathOp::NotEqual => buffer.push(0x0C),
+        MathOp::LessThan => buffer.push(0x0D),
+        MathOp::LessThanOrEqual => buffer.push(0x0E),
+        MathOp::GreaterThan => buffer.push(0x0F),
+        MathOp::GreaterThanOrEqual => buffer.push(0x10),
+        MathOp::And => buffer.push(0x11),
+        MathOp::Or => buffer.push(0x12),
+      }
+    }
+  }
+
+  impl ToByteCode for Literal {
+    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
+      match self {
+        Literal::Nil => buffer.push(0x00),
+        Literal::Number(number) => {
+          buffer.push(0x01);
+          buffer.extend_from_slice(&number.to_le_bytes());
+        }
+        Literal::Boolean(bool) => {
+          buffer.push(0x02);
+          buffer.push(if *bool { 0x01 } else { 0x00 });
+        }
+        Literal::Float(float) => {
+          buffer.push(0x03);
+          buffer.extend_from_slice(&float.to_le_bytes());
+        }
+        Literal::String(string) => {
+          buffer.push(0x04);
+          buffer.extend_from_slice(&string.len().to_le_bytes());
+          buffer.extend_from_slice(string.as_bytes());
+        }
+      }
+    }
+  }
 }
 
 mod assembly {
@@ -92,9 +187,9 @@ mod assembly {
   #[derive(Debug)]
   pub enum AssemblyError {}
 
-  /// Allows assembly of a type to bytecode.
+  /// Allows assembly of a type to a VM instruction.
   pub trait Assembler: Sized {
-    /// Assembles the type into bytecode instructions.
+    /// Assembles the type into VM instruction.
     fn assemble(&self) -> Result<Vec<Instruction>, AssemblyError>;
   }
 

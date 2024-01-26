@@ -4,7 +4,27 @@
 /// represents a single compilation unit, and can be imported by other modules
 /// (potentially in different languages).
 pub struct Module {
-  statements: Vec<Statement>,
+  imports: Vec<Import>,
+  functions: Vec<Function>,
+}
+
+/// An import in a script.
+pub struct Import {
+  path: String,
+  alias: Option<String>,
+}
+
+/// A function in a script.
+pub struct Function {
+  name: String,
+  parameters: Vec<String>,
+  body: Vec<Statement>,
+}
+
+/// A function parameter.
+pub struct Parameter {
+  name: String,
+  default: Option<Expression>,
 }
 
 /// A statement in a script.
@@ -106,7 +126,21 @@ pub(crate) use impl_token_stream;
 #[allow(unused_variables)]
 pub trait Visitor {
   fn visit_module(&mut self, module: &Module) {
-    for statement in &module.statements {
+    for import in &module.imports {
+      self.visit_import(import);
+    }
+
+    for function in &module.functions {
+      self.visit_function(function);
+    }
+  }
+
+  fn visit_import(&mut self, import: &Import) {
+    // no-op
+  }
+
+  fn visit_function(&mut self, function: &Function) {
+    for statement in &function.body {
       self.visit_statement(statement);
     }
   }
