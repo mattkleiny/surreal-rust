@@ -1,6 +1,4 @@
-use common::{FastHashSet, Vec2};
-
-use super::*;
+use common::Vec2;
 
 /// A mouse event.
 #[derive(Debug, Clone)]
@@ -20,25 +18,4 @@ pub enum MouseButton {
 }
 
 /// A mouse input device.
-pub struct MouseDevice {
-  _cursor_pos: Vec2,
-  _cursor_delta: Vec2,
-  _pressed_buttons: FastHashSet<MouseButton>,
-  queued_events: Vec<MouseEvent>,
-}
-
-impl InputDevice for MouseDevice {
-  fn update(&mut self, _delta_time: f32) {
-    todo!()
-  }
-
-  fn drain_events(&mut self) -> Vec<InputEvent> {
-    let mut events = Vec::with_capacity(self.queued_events.len());
-
-    for event in self.queued_events.drain(..) {
-      events.push(InputEvent::MouseEvent(event));
-    }
-
-    events
-  }
-}
+pub trait MouseDevice {}

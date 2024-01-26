@@ -2,7 +2,10 @@
 
 use std::ffi::CString;
 
-pub use sdl2_sys as sys; // re-export the SDL2 bindings
+use common::FastHashSet;
+use input::VirtualKey;
+pub use sdl2_sys as sys;
+use sys::{SDL_KeyCode, SDL_Keycode};
 
 /// Represents an error that can occur when creating a window.
 #[derive(Debug)]
@@ -16,6 +19,7 @@ pub enum WindowError {
 pub struct Window {
   window: *mut sdl2_sys::SDL_Window,
   gl_context: sdl2_sys::SDL_GLContext,
+  keyboard_state: FastHashSet<input::VirtualKey>,
 }
 
 /// Settings for a window.
@@ -86,7 +90,11 @@ impl Window {
       SDL_GL_MakeCurrent(window, gl_context);
       SDL_GL_LoadLibrary(std::ptr::null());
 
-      let window = Self { window, gl_context };
+      let window = Self {
+        window,
+        gl_context,
+        keyboard_state: FastHashSet::default(),
+      };
 
       // set the window icon
       if let Some(icon) = &settings.icon {
@@ -120,7 +128,7 @@ impl Window {
   }
 
   /// Runs the main window event pump.
-  pub fn update(&self) -> bool {
+  pub fn update(&mut self) -> bool {
     use sdl2_sys::*;
 
     unsafe {
@@ -132,6 +140,18 @@ impl Window {
       while SDL_PollEvent(&mut event) != 0 {
         if event.type_ == SDL_EventType::SDL_QUIT as u32 {
           running = false;
+        }
+
+        if event.type_ == SDL_EventType::SDL_KEYDOWN as u32 {
+          if let Some(virtual_key) = input::VirtualKey::from_keycode(event.key.keysym.sym) {
+            self.keyboard_state.insert(virtual_key);
+          }
+        }
+
+        if event.type_ == SDL_EventType::SDL_KEYUP as u32 {
+          if let Some(virtual_key) = input::VirtualKey::from_keycode(event.key.keysym.sym) {
+            self.keyboard_state.remove(&virtual_key);
+          }
         }
       }
 
@@ -149,6 +169,31 @@ impl Window {
   }
 }
 
+impl graphics::OpenGLHost for Window {
+  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void {
+    let name = CString::new(name).unwrap();
+    unsafe { sdl2_sys::SDL_GL_GetProcAddress(name.as_ptr() as *const _) as *const _ }
+  }
+}
+
+impl audio::OpenALHost for Window {
+  fn get_proc_address(&self, _name: &str) -> *const std::ffi::c_void {
+    todo!()
+  }
+}
+
+impl input::KeyboardDevice for Window {
+  fn is_key_down(&self, key: input::VirtualKey) -> bool {
+    self.keyboard_state.contains(&key)
+  }
+
+  fn is_key_up(&self, key: input::VirtualKey) -> bool {
+    !self.keyboard_state.contains(&key)
+  }
+}
+
+impl input::MouseDevice for Window {}
+
 impl Drop for Window {
   /// Destroys the window.
   fn drop(&mut self) {
@@ -163,15 +208,17 @@ impl Drop for Window {
   }
 }
 
-impl graphics::OpenGLHost for Window {
-  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void {
-    let name = CString::new(name).unwrap();
-    unsafe { sdl2_sys::SDL_GL_GetProcAddress(name.as_ptr() as *const _) as *const _ }
-  }
+trait FromScanCode: Sized {
+  fn from_keycode(scan_code: SDL_Keycode) -> Option<Self>;
 }
 
-impl audio::OpenALHost for Window {
-  fn get_proc_address(&self, _name: &str) -> *const std::ffi::c_void {
-    todo!()
+impl FromScanCode for VirtualKey {
+  fn from_keycode(scan_code: SDL_Keycode) -> Option<Self> {
+    use VirtualKey::*;
+
+    match unsafe { std::mem::transmute(scan_code) } {
+      SDL_KeyCode::SDLK_ESCAPE => Some(Escape),
+      _ => None,
+    }
   }
 }

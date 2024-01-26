@@ -1,5 +1,3 @@
-use super::*;
-
 /// Possible key codes on a keyboard.
 #[derive(Debug, Clone)]
 pub enum KeyCode {
@@ -8,7 +6,7 @@ pub enum KeyCode {
 }
 
 /// Possible virtual keys on a keyboard.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum VirtualKey {
   Escape,
   F(u8),
@@ -22,7 +20,7 @@ pub enum VirtualKey {
 }
 
 /// A possible arrow key on a keyboard.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ArrowKey {
   Up,
   Down,
@@ -38,22 +36,7 @@ pub enum KeyboardEvent {
 }
 
 /// A keyboard input device.
-pub struct KeyboardDevice {
-  queued_events: Vec<KeyboardEvent>,
-}
-
-impl InputDevice for KeyboardDevice {
-  fn update(&mut self, _delta_time: f32) {
-    todo!()
-  }
-
-  fn drain_events(&mut self) -> Vec<InputEvent> {
-    let mut events = Vec::with_capacity(self.queued_events.len());
-
-    for event in self.queued_events.drain(..) {
-      events.push(InputEvent::KeyboardEvent(event));
-    }
-
-    events
-  }
+pub trait KeyboardDevice {
+  fn is_key_down(&self, key: VirtualKey) -> bool;
+  fn is_key_up(&self, key: VirtualKey) -> bool;
 }
