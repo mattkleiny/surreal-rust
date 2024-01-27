@@ -1,6 +1,9 @@
 //! A virtual file system with paths and common operations.
 
-use std::sync::RwLock;
+use std::{
+  borrow::{Borrow, Cow},
+  sync::RwLock,
+};
 
 pub use local::*;
 pub use memory::*;
@@ -9,7 +12,7 @@ mod local;
 mod memory;
 
 use super::{InputStream, OutputStream};
-use crate::{Singleton, StringName, ToStringName};
+use crate::Singleton;
 
 /// A potential error that can occur when interacting with a [`FileSystem`].
 #[derive(Debug)]
@@ -108,19 +111,19 @@ impl FileSystemManager {
 /// packed storage scheme `packed://Assets.pak/Textures/Texture01.png`.
 #[derive(Clone)]
 pub struct VirtualPath {
-  scheme: StringName,
-  location: String,
+  scheme: Cow<'static, str>,
+  location: Cow<'static, str>,
 }
 
 impl VirtualPath {
   /// The scheme of the path.
-  pub fn scheme(&self) -> &StringName {
-    &self.scheme
+  pub fn scheme(&self) -> &str {
+    &self.scheme.borrow()
   }
 
   /// The location of the path.
   pub fn location(&self) -> &str {
-    &self.location
+    &self.location.borrow()
   }
 
   /// Returns the file extension of the path.
@@ -136,7 +139,7 @@ impl VirtualPath {
   pub fn append_extension(&self, new_extension: &str) -> Self {
     Self {
       scheme: self.scheme.clone(),
-      location: format!("{:}.{:}", self.location, new_extension),
+      location: Cow::Owned(format!("{:}.{:}", self.location, new_extension)),
     }
   }
 
@@ -144,7 +147,7 @@ impl VirtualPath {
   pub fn change_extension(&self, new_extension: &str) -> Self {
     Self {
       scheme: self.scheme.clone(),
-      location: self.location.replace(self.extension(), new_extension),
+      location: Cow::Owned(self.location.replace(self.extension(), new_extension)),
     }
   }
 
@@ -160,7 +163,7 @@ impl VirtualPath {
 
     Self {
       scheme: self.scheme.clone(),
-      location: path,
+      location: Cow::Owned(path),
     }
   }
 
@@ -226,15 +229,27 @@ pub trait ToVirtualPath {
 }
 
 /// Allow string references to be converted into [`VirtualPath`] instances.
-impl<R: AsRef<str>> ToVirtualPath for R {
+impl ToVirtualPath for &'static str {
   #[inline]
   fn to_virtual_path(&self) -> VirtualPath {
-    let value = self.as_ref();
-    let (scheme, location) = value.split_once("://").unwrap_or(("local", value));
+    let (scheme, location) = self.split_once("://").unwrap_or(("local", self));
 
     VirtualPath {
-      scheme: scheme.to_string_name(),
-      location: location.to_string(),
+      scheme: Cow::Borrowed(scheme),
+      location: Cow::Borrowed(location),
+    }
+  }
+}
+
+/// Allow string references to be converted into [`VirtualPath`] instances.
+impl ToVirtualPath for String {
+  #[inline]
+  fn to_virtual_path(&self) -> VirtualPath {
+    let (scheme, location) = self.split_once("://").unwrap_or(("local", self));
+
+    VirtualPath {
+      scheme: Cow::Owned(scheme.to_string()),
+      location: Cow::Owned(location.to_string()),
     }
   }
 }

@@ -50,7 +50,7 @@ impl FileSystem for LocalFileSystem {
 /// Converts a [`VirtualPath`] into a [`Path`].
 #[inline(always)]
 fn to_path(path: &VirtualPath) -> PathBuf {
-  PathBuf::from(&path.location)
+  PathBuf::from(&path.location.as_ref())
 }
 
 #[cfg(test)]

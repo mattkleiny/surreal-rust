@@ -4,6 +4,7 @@ pub use console::*;
 
 /// A level for log messages.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum LogLevel {
   Trace,
   Debug,
@@ -22,6 +23,14 @@ impl Display for LogLevel {
       LogLevel::Error => write!(f, "ERROR"),
     }
   }
+}
+
+/// An event that is logged.
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct LogEvent {
+  pub level: LogLevel,
+  pub message: String,
 }
 
 /// A sink for log output.
@@ -102,7 +111,7 @@ mod console {
 
   impl ConsoleLog {
     /// Creates a new console log sink.
-    pub fn new_target(name: impl AsRef<str>, min_level: LogLevel) -> ConsoleLog {
+    pub fn for_target(name: impl AsRef<str>, min_level: LogLevel) -> ConsoleLog {
       ConsoleLog {
         name: Cow::Owned(name.as_ref().to_owned()),
         min_level,
@@ -110,7 +119,7 @@ mod console {
     }
 
     /// Creates a new console log sink for the current module.
-    pub const fn new_module(min_level: LogLevel) -> ConsoleLog {
+    pub const fn for_module(min_level: LogLevel) -> ConsoleLog {
       ConsoleLog {
         name: Cow::Borrowed(std::module_path!()),
         min_level,
@@ -134,7 +143,7 @@ mod console {
   mod tests {
     use super::*;
 
-    static LOG: ConsoleLog = ConsoleLog::new_module(LogLevel::Trace);
+    static LOG: ConsoleLog = ConsoleLog::for_module(LogLevel::Trace);
 
     #[test]
     fn test_console_log_operations() {

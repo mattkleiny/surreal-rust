@@ -34,8 +34,7 @@ pub struct ProjectDetails {
 }
 
 impl Project {
-  /// Opens a project at the given path, or creates a new one if it doesn't
-  /// exist.
+  /// Opens a project at the given path, or creates a new one.
   pub fn open_or_create(name: &str, root_path: &str) -> Result<Self, ProjectError> {
     let root_path = root_path.to_virtual_path();
 
