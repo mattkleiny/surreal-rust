@@ -6,8 +6,6 @@ mod headless;
 mod openal;
 mod sampling;
 
-pub use openal::OpenALHost;
-
 common::impl_rid!(ClipId, "Identifies an Audio Clip.");
 common::impl_rid!(SourceId, "Identifies an Audio Source.");
 
@@ -20,8 +18,8 @@ impl AudioEngine {
   }
 
   /// Creates a new [`AudioEngine`] with a OpenAL backend.
-  pub fn openal(host: &dyn openal::OpenALHost) -> Self {
-    Self::new(openal::OpenALAudioBackend::new(host))
+  pub fn openal() -> Self {
+    Self::new(openal::OpenALAudioBackend::new())
   }
 }
 
