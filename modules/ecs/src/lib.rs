@@ -7,6 +7,12 @@
 #![feature(core_intrinsics)]
 #![allow(internal_features)]
 
+#[cfg(feature = "diagnostics")]
+pub use diagnostics::*;
+
+#[cfg(feature = "diagnostics")]
+mod diagnostics;
+
 use common::{Arena, ArenaIndex, FastHashMap, StringName};
 
 common::impl_rid!(EntityId, "Identifies an entity in an ECS.");
@@ -23,6 +29,9 @@ pub struct World {
   entities: Arena<Entity>,
   components: FastHashMap<ComponentType, Box<dyn std::any::Any>>,
   systems: Vec<Box<dyn System>>,
+
+  #[cfg(feature = "diagnostics")]
+  diagnostics: WorldDiagnostics,
 }
 
 impl World {

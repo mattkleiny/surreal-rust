@@ -7,3 +7,6 @@ edition.workspace = true
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
 serde = { workspace = true, optional = true }
+
+[features]
+diagnostics = []
