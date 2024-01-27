@@ -38,7 +38,7 @@ pub struct DiagnosticServer {}
 impl DiagnosticServer {
   /// Starts a diagnostic server on the given port.
   pub async fn start(_port: usize) -> Result<DiagnosticServer, DiagnosticServerError> {
-    todo!()
+    Ok(Self {})
   }
 }
 
@@ -54,7 +54,17 @@ pub struct DiagnosticClient {
 impl DiagnosticClient {
   /// Connects to a diagnostic server at the given address.
   pub async fn connect(_address: impl AsRef<str>) -> Result<DiagnosticClient, DiagnosticClientError> {
-    todo!()
+    Ok(Self { _listeners: Vec::new() })
+  }
+
+  /// Adds a listener to the client.
+  pub fn add_listener(&mut self, listener: impl DiagnosticListener + 'static) {
+    self._listeners.push(Box::new(listener));
+  }
+
+  /// Removes a listener from the client.
+  pub fn remove_listener(&mut self, listener: &impl DiagnosticListener) {
+    self._listeners.retain(|it| !std::ptr::eq(it.as_ref(), listener));
   }
 }
 

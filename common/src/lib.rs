@@ -9,6 +9,7 @@
 #![feature(impl_trait_in_assoc_type)]
 #![feature(type_alias_impl_trait)]
 #![feature(lazy_cell)]
+#![feature(noop_waker)]
 
 pub use collections::*;
 pub use concurrency::*;
