@@ -31,7 +31,7 @@ pub struct World {
   systems: Vec<Box<dyn System>>,
 
   #[cfg(feature = "diagnostics")]
-  diagnostics: WorldDiagnostics,
+  _diagnostics: WorldDiagnostics,
 }
 
 impl World {

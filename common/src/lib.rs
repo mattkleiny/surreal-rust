@@ -11,6 +11,7 @@
 #![feature(lazy_cell)]
 
 pub use collections::*;
+pub use concurrency::*;
 pub use diagnostics::*;
 pub use io::*;
 pub use macros;
@@ -19,6 +20,7 @@ pub use strings::*;
 pub use utilities::*;
 
 mod collections;
+mod concurrency;
 mod diagnostics;
 mod io;
 mod maths;
