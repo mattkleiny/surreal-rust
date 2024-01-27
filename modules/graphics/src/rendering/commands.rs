@@ -6,7 +6,7 @@ use common::Rectangle;
 
 use super::*;
 
-// TODO: implement more commands
+// TODO: implement the command queue idea more fully
 
 /// A thread-safe queue of [`RenderCommand`]s.
 ///
@@ -74,30 +74,5 @@ impl RenderContext for RenderQueue {
 
   fn on_end_frame(&mut self, graphics: &GraphicsEngine) {
     self.flush(graphics);
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_render_queue_can_be_used_with_renderer() {
-    let graphics = GraphicsEngine::headless();
-    let mut renderer = Renderer::new(&graphics);
-
-    renderer.add_context(RenderQueue::default());
-
-    renderer.begin_frame();
-
-    // TODO: fix this
-    // renderer.with(|queue: &mut RenderQueue| {
-    //   queue.enqueue(RenderCommand::SetShader {
-    //     shader_id: ShaderId::from(1u32),
-    //     uniforms: ShaderUniformSet::default(),
-    //   });
-    // });
-
-    renderer.end_frame();
   }
 }

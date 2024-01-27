@@ -17,8 +17,6 @@
 //! as flexible as possible, allowing for multiple execution models to be used,
 //! such as a virtual machine or an interpreter.
 
-// TODO: better error handling across the project
-
 #[allow(dead_code)]
 pub mod lang {
   //! Language support for the scripting system.

@@ -4,8 +4,6 @@ use common::{macros::Vertex, FastHashMap, Mat4, StringName, TimeSpan};
 
 use super::*;
 
-// TODO: get skinning working with a basic model and add tests
-
 /// The name of the uniform containing the bones of the skeleton.
 pub const UNIFORM_BONES: ShaderUniformKey<&[Mat4]> = ShaderUniformKey::new("u_bones");
 

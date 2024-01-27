@@ -46,6 +46,8 @@ mod compiler {
       kernels.push(kernel.compile(&mut builder)?);
     }
 
+    // TODO: finish this
+
     Ok(kernels)
   }
 
