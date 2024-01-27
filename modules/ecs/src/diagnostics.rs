@@ -8,8 +8,8 @@ pub use profiler::*;
 #[derive(Default)]
 pub struct WorldDiagnostics {
   debuggers: Vec<Box<dyn DebugListener>>,
-  collectors: Vec<Box<dyn MetricsListener>>,
   profilers: Vec<Box<dyn ProfileListener>>,
+  collectors: Vec<Box<dyn MetricsListener>>,
 }
 
 impl DebugListener for WorldDiagnostics {
@@ -44,18 +44,18 @@ mod debugging {
   }
 }
 
-mod metrics {
-  pub enum MetricsEvent {}
-
-  pub trait MetricsListener {
-    fn on_metric_event(&mut self, event: &MetricsEvent);
-  }
-}
-
 mod profiler {
   pub enum ProfilingEvent {}
 
   pub trait ProfileListener {
     fn on_profiling_event(&mut self, event: &ProfilingEvent);
+  }
+}
+
+mod metrics {
+  pub enum MetricsEvent {}
+
+  pub trait MetricsListener {
+    fn on_metric_event(&mut self, event: &MetricsEvent);
   }
 }

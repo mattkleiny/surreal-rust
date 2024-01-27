@@ -1,9 +1,11 @@
 //! Diagnostic utilities for the engine.
 
-pub use debugging::*;
 pub use logging::*;
+pub use metrics::*;
 pub use profiling::*;
+pub use server::*;
 
-mod debugging;
 mod logging;
+mod metrics;
 mod profiling;
+mod server;
