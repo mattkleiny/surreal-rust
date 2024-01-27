@@ -36,9 +36,8 @@ pub enum DiagnosticServerError {}
 pub struct DiagnosticServer {}
 
 impl DiagnosticServer {
-  /// Starts a diagnostic server on the given port.
-  pub async fn start(_port: usize) -> Result<DiagnosticServer, DiagnosticServerError> {
-    Ok(Self {})
+  pub async fn start_tcp(port: usize) -> Result<DiagnosticServer, DiagnosticServerError> {
+    todo!()
   }
 }
 
@@ -68,6 +67,28 @@ impl DiagnosticClient {
   }
 }
 
+#[cfg(target_os = "windows")]
+mod windows {
+  //! Windows-specific implementation details for the diagnostic server.
+
+  use super::*;
+
+  impl DiagnosticServer {
+    pub async fn start_named_pipes(name: &'static str) -> Result<DiagnosticServer, DiagnosticServerError> {
+      todo!()
+    }
+  }
+}
+
+#[cfg(target_os = "unix")]
+mod unix {
+  //! Unix-specific implementation details for the diagnostic server.
+
+  use super::*;
+
+  impl DiagnosticServer {}
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -76,7 +97,7 @@ mod tests {
   fn test_server_client_interaction() {
     use crate::BlockableFuture;
 
-    let _server = DiagnosticServer::start(1234).block();
+    let _server = DiagnosticServer::start_tcp(1234).block();
     let _client = DiagnosticClient::connect("localhost:1234").block();
   }
 }

@@ -9,12 +9,10 @@ pub fn impl_profiling(item: TokenStream) -> TokenStream {
   let block = function.block;
 
   // rewrite the function to wrap the block in a profiling scope
-  function.block = Box::<syn::Block>::new(parse_quote! {
-    {
-      diagnostics::profile_function!(#name);
-      #block
-    }
-  });
+  function.block = Box::new(parse_quote! {{
+    diagnostics::profile_function!(#name);
+    #block
+  }});
 
   let expanded = quote! {
     #function

@@ -1,7 +1,7 @@
 pub use macros::profile as profiling;
 
 /// A sink for profiling output.
-pub trait ProfilerSink {}
+pub trait Profiler {}
 
 /// Notifies the profiler that a frame has started.
 #[macro_export]
