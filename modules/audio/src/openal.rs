@@ -2,21 +2,12 @@
 
 use super::*;
 
-/// An abstraction over the host capable of running OpenAL.
-///
-/// This type implemented by the host application and is used to provide the
-/// audio backend with access to the host's OpenAL functions.
-pub trait OpenALHost {
-  /// Gets the address of an OpenAL function.
-  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void;
-}
-
 /// A OpenAL-based [`AudioBackend`] implementation.
 pub struct OpenALAudioBackend {}
 
 impl OpenALAudioBackend {
   /// Creates a new OpenAL graphics backend.
-  pub fn new(_host: &dyn OpenALHost) -> Self {
+  pub fn new() -> Self {
     todo!()
   }
 }

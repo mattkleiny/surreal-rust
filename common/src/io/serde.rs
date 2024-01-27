@@ -15,7 +15,7 @@ pub trait Serializable: serde::Serialize + Sized {
   /// Serializes the object to a byte array.
   #[cfg(feature = "binary")]
   fn to_binary(&self) -> Result<Vec<u8>, SerializationError> {
-    Ok(binary::serialize(self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(binary::serialize(self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to a binary file.
@@ -24,7 +24,7 @@ pub trait Serializable: serde::Serialize + Sized {
     let mut stream = path
       .to_virtual_path()
       .open_output_stream()
-      .map_err(|_| SerializationError::FailedToDeserialize)?;
+      .map_err(|_| SerializationError::FailedToSerialize)?;
 
     self.to_binary_stream(&mut stream)
   }
@@ -32,13 +32,13 @@ pub trait Serializable: serde::Serialize + Sized {
   /// Serializes the type to a binary stream.
   #[cfg(feature = "binary")]
   fn to_binary_stream(&self, stream: &mut dyn super::OutputStream) -> Result<(), SerializationError> {
-    Ok(binary::serialize_into(stream, self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(binary::serialize_into(stream, self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to a `json` string.
   #[cfg(feature = "json")]
   fn to_json(&self) -> Result<String, SerializationError> {
-    Ok(json::to_string(self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(json::to_string(self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to disk in `json` format.
@@ -47,7 +47,7 @@ pub trait Serializable: serde::Serialize + Sized {
     let mut stream = path
       .to_virtual_path()
       .open_output_stream()
-      .map_err(|_| SerializationError::FailedToDeserialize)?;
+      .map_err(|_| SerializationError::FailedToSerialize)?;
 
     self.to_json_stream(&mut stream)
   }
@@ -55,13 +55,13 @@ pub trait Serializable: serde::Serialize + Sized {
   /// Serializes the type to stream in `json` format.
   #[cfg(feature = "json")]
   fn to_json_stream(&self, stream: &mut dyn super::OutputStream) -> Result<(), SerializationError> {
-    Ok(json::to_writer(stream, self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(json::to_writer(stream, self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to a `ron` string.
   #[cfg(feature = "ron")]
   fn to_ron(&self) -> Result<String, SerializationError> {
-    Ok(ron::to_string(self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(ron::to_string(self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to disk in `ron` format.
@@ -70,13 +70,13 @@ pub trait Serializable: serde::Serialize + Sized {
     let mut stream = path
       .to_virtual_path()
       .open_output_stream()
-      .map_err(|_| SerializationError::FailedToDeserialize)?;
+      .map_err(|_| SerializationError::FailedToSerialize)?;
 
-    let string = ron::to_string(self).map_err(|_| SerializationError::FailedToDeserialize)?;
+    let string = ron::to_string(self).map_err(|_| SerializationError::FailedToSerialize)?;
 
     stream
       .write_all(string.as_bytes())
-      .map_err(|_| SerializationError::FailedToDeserialize)?;
+      .map_err(|_| SerializationError::FailedToSerialize)?;
 
     Ok(())
   }
@@ -84,13 +84,13 @@ pub trait Serializable: serde::Serialize + Sized {
   /// Serializes the type to stream in `ron` format.
   #[cfg(feature = "ron")]
   fn to_ron_stream(&self, stream: &mut dyn super::OutputStream) -> Result<(), SerializationError> {
-    Ok(ron::ser::to_writer(stream, self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(ron::ser::to_writer(stream, self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to a `toml` string.
   #[cfg(feature = "toml")]
   fn to_toml(&self) -> Result<String, SerializationError> {
-    Ok(toml::to_string(self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(toml::to_string(self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to disk in `toml` format.
@@ -99,27 +99,33 @@ pub trait Serializable: serde::Serialize + Sized {
     let mut stream = path
       .to_virtual_path()
       .open_output_stream()
-      .map_err(|_| SerializationError::FailedToDeserialize)?;
+      .map_err(|_| SerializationError::FailedToSerialize)?;
 
-    let string = toml::to_string(self).map_err(|_| SerializationError::FailedToDeserialize)?;
+    let string = toml::to_string(self).map_err(|_| SerializationError::FailedToSerialize)?;
 
     stream
       .write_all(string.as_bytes())
-      .map_err(|_| SerializationError::FailedToDeserialize)?;
+      .map_err(|_| SerializationError::FailedToSerialize)?;
 
     Ok(())
   }
 
   /// Serializes the type to stream in `toml` format.
   #[cfg(feature = "toml")]
-  fn to_toml_stream(&self, _stream: &mut dyn super::OutputStream) -> Result<(), SerializationError> {
-    todo!()
+  fn to_toml_stream(&self, stream: &mut dyn super::OutputStream) -> Result<(), SerializationError> {
+    let string = toml::to_string(self).map_err(|_| SerializationError::FailedToSerialize)?;
+
+    stream
+      .write_all(string.as_bytes())
+      .map_err(|_| SerializationError::FailedToSerialize)?;
+
+    Ok(())
   }
 
   /// Serializes the type to a `yaml` string.
   #[cfg(feature = "yaml")]
   fn to_yaml(&self) -> Result<String, SerializationError> {
-    Ok(yaml::to_string(self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(yaml::to_string(self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to disk in `yaml` format.
@@ -128,21 +134,21 @@ pub trait Serializable: serde::Serialize + Sized {
     let mut stream = path
       .to_virtual_path()
       .open_output_stream()
-      .map_err(|_| SerializationError::FailedToDeserialize)?;
+      .map_err(|_| SerializationError::FailedToSerialize)?;
 
-    Ok(yaml::to_writer(&mut stream, self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(yaml::to_writer(&mut stream, self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to stream in `yaml` format.
   #[cfg(feature = "yaml")]
   fn to_yaml_stream(&self, stream: &mut dyn super::OutputStream) -> Result<(), SerializationError> {
-    Ok(yaml::to_writer(stream, self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(yaml::to_writer(stream, self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to a `xml` string.
   #[cfg(feature = "xml")]
   fn to_xml(&self) -> Result<String, SerializationError> {
-    Ok(xml::to_string(self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(xml::to_string(self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to disk in `xml` format.
@@ -151,15 +157,15 @@ pub trait Serializable: serde::Serialize + Sized {
     let mut stream = path
       .to_virtual_path()
       .open_output_stream()
-      .map_err(|_| SerializationError::FailedToDeserialize)?;
+      .map_err(|_| SerializationError::FailedToSerialize)?;
 
-    Ok(xml::to_writer(&mut stream, self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(xml::to_writer(&mut stream, self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 
   /// Serializes the type to stream in `xml` format.
   #[cfg(feature = "xml")]
   fn to_xml_stream(&self, stream: &mut dyn super::OutputStream) -> Result<(), SerializationError> {
-    Ok(xml::to_writer(stream, self).map_err(|_| SerializationError::FailedToDeserialize)?)
+    Ok(xml::to_writer(stream, self).map_err(|_| SerializationError::FailedToSerialize)?)
   }
 }
 

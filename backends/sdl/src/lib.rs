@@ -176,12 +176,6 @@ impl graphics::OpenGLHost for Window {
   }
 }
 
-impl audio::OpenALHost for Window {
-  fn get_proc_address(&self, _name: &str) -> *const std::ffi::c_void {
-    todo!()
-  }
-}
-
 impl input::KeyboardDevice for Window {
   fn is_key_down(&self, key: input::VirtualKey) -> bool {
     self.keyboard_state.contains(&key)

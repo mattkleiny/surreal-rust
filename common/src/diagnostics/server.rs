@@ -36,7 +36,7 @@ pub enum DiagnosticServerError {}
 pub struct DiagnosticServer {}
 
 impl DiagnosticServer {
-  pub async fn start_tcp(port: usize) -> Result<DiagnosticServer, DiagnosticServerError> {
+  pub async fn start(name: &str) -> Result<DiagnosticServer, DiagnosticServerError> {
     todo!()
   }
 }
@@ -97,7 +97,7 @@ mod tests {
   fn test_server_client_interaction() {
     use crate::BlockableFuture;
 
-    // let _server = DiagnosticServer::start_tcp(1234).block();
+    // let _server = DiagnosticServer::start(1234).block();
     // let _client = DiagnosticClient::connect("localhost:1234").block();
   }
 }
