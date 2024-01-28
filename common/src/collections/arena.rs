@@ -27,68 +27,57 @@ pub trait ArenaIndex {
 macro_rules! impl_arena_index {
   ($name:ident, $comment:literal) => {
     #[doc = $comment]
+    #[repr(transparent)]
     #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
-    pub struct $name {
-      ordinal: u32,
-      generation: u32,
-    }
+    pub struct $name(u64);
 
     impl $name {
       /// A sentinel value representing an empty index.
-      pub const NONE: Self = Self {
-        ordinal: 0,
-        generation: 0,
-      };
+      pub const NONE: Self = Self(0);
+    }
+
+    impl $crate::ArenaIndex for $name {
+      #[inline(always)]
+      fn from_parts(ordinal: u32, generation: u32) -> Self {
+        Self((ordinal as u64) | ((generation as u64) << 32))
+      }
+
+      #[inline(always)]
+      fn generation(&self) -> u32 {
+        (self.0 >> 32) as u32
+      }
+
+      #[inline(always)]
+      fn ordinal(&self) -> u32 {
+        self.0 as u32
+      }
     }
 
     impl From<u32> for $name {
       #[inline]
-      fn from(id: u32) -> Self {
-        Self {
-          ordinal: id,
-          generation: 0,
-        }
+      fn from(value: u32) -> Self {
+        <Self as $crate::ArenaIndex>::from_parts(value, 0)
       }
     }
 
     impl From<$name> for u32 {
       #[inline(always)]
       fn from(value: $name) -> Self {
-        value.ordinal
+        value.0 as u32
       }
     }
 
     impl From<u64> for $name {
       #[inline(always)]
       fn from(packed: u64) -> Self {
-        let generation = (packed >> 32) as u32;
-        let ordinal = packed as u32;
-
-        Self { ordinal, generation }
+        Self(packed)
       }
     }
 
     impl From<$name> for u64 {
       #[inline(always)]
       fn from(value: $name) -> Self {
-        (value.generation as u64) << 32 | value.ordinal as u64
-      }
-    }
-
-    impl $crate::ArenaIndex for $name {
-      #[inline(always)]
-      fn from_parts(ordinal: u32, generation: u32) -> Self {
-        Self { ordinal, generation }
-      }
-
-      #[inline(always)]
-      fn generation(&self) -> u32 {
-        self.generation
-      }
-
-      #[inline(always)]
-      fn ordinal(&self) -> u32 {
-        self.ordinal
+        value.0
       }
     }
 
@@ -492,10 +481,7 @@ mod tests {
     let index1 = arena.insert("Item 1");
     let index2 = arena.insert("Item 2");
 
-    let index3 = TestId {
-      ordinal: 23,
-      generation: 0,
-    };
+    let index3 = TestId(0);
 
     assert!(arena.get(index1).is_some());
     assert!(arena.get_mut(index2).is_some());
@@ -514,8 +500,8 @@ mod tests {
 
     let index4 = arena.insert("Item 4");
 
-    assert_eq!(index2.ordinal, index4.ordinal);
-    assert_ne!(index2.generation, index4.generation);
+    assert_eq!(index2.ordinal(), index4.ordinal());
+    assert_ne!(index2.generation(), index4.generation());
   }
 
   #[test]
@@ -554,10 +540,7 @@ mod tests {
 
   #[test]
   fn test_should_pack_and_unpack_from_u64() {
-    let index = TestId {
-      ordinal: 10,
-      generation: 3,
-    };
+    let index = TestId::from_parts(10, 3);
 
     let packed: u64 = index.into();
     let unpacked = TestId::from(packed);
