@@ -17,7 +17,7 @@ pub trait SDF {
   fn distance_to(&self, point: Self::Vector) -> <Self::Vector as Vector>::Scalar;
 
   /// Converts this signed distance field into an evaluated field structure.
-  fn to_field(&self) -> Field<Self::Vector> {
+  fn to_field(&self, _size: Self::Vector, _step: Self::Vector) -> Field<Self::Vector> {
     todo!()
   }
 }

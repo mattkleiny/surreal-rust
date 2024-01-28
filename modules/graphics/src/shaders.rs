@@ -19,7 +19,6 @@ use common::*;
 use super::*;
 
 pub mod lang {
-  //! Shader language support for the shader system
   pub use glsl::*;
   pub use hlsl::*;
   pub use shady::*;
@@ -33,11 +32,9 @@ pub mod lang {
   use super::*;
 
   /// Represents a language for [`ShaderKernel`]s.
-  ///
-  /// Abstracting over shader languages allows us to build out new languages.
   pub trait ShaderLanguage {
     /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-    fn parse_kernels(source_code: &str) -> Result<Vec<super::ShaderKernel>, ShaderError>;
+    fn parse_kernels(source_code: &str) -> Result<Vec<ShaderKernel>, ShaderError>;
   }
 }
 

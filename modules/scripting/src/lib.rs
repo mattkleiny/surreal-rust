@@ -19,10 +19,6 @@
 
 #[allow(dead_code)]
 pub mod lang {
-  //! Language support for the scripting system.
-  //!
-  //! This module is responsible for parsing scripts into an abstract syntax
-  //! tree (AST). This AST is shared between all scripting languages.
   pub use basic::*;
   pub use wren::*;
 
@@ -72,11 +68,6 @@ pub mod lang {
 
 #[allow(dead_code)]
 pub mod runtime {
-  //! Runtime support for the scripting system.
-  //!
-  //! This module is responsible for executing scripts. It is designed to be
-  //! as flexible as possible, allowing for multiple execution models to be
-  //! used, such as a virtual machine or an interpreter.
   pub use interpret::*;
   pub use vm::*;
 
