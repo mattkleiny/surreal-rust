@@ -427,3 +427,21 @@ impl PhysicsBackend for InternalPhysicsBackend {
     effectors.remove(effector);
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_basic_behaviour() {
+    let backend = InternalPhysicsBackend::default();
+
+    let body = backend.body_create(BodyKind::Dynamic, Vec3::ZERO);
+    let collider = backend.collider_create_sphere(Vec3::ZERO, 1.0);
+
+    backend.body_add_collider(body, collider);
+
+    backend.step(1.0);
+    backend.step(1.0);
+  }
+}
