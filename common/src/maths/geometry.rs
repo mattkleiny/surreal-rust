@@ -1,10 +1,12 @@
 //! Helpers for working with geometry
 
 pub use convexhull::*;
+pub use csg::*;
 pub use delaunay::*;
 pub use earcut::*;
 
 mod convexhull;
+mod csg;
 mod delaunay;
 mod earcut;
 
