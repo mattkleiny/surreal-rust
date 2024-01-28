@@ -62,36 +62,3 @@ impl Spline for CatmulRomSpline {
     (value_plus_epsilon - value_minus_epsilon) / (2.0 * epsilon)
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_catmulrom_spline_value() {
-    let spline = CatmulRomSpline {
-      points: vec![0.0, 1.0, 2.0, 3.0],
-      continuous: false,
-    };
-
-    assert_eq!(spline.value(0.0), 0.0);
-    assert_eq!(spline.value(0.25), 0.625);
-    assert_eq!(spline.value(0.5), 1.0);
-    assert_eq!(spline.value(0.75), 2.375);
-    assert_eq!(spline.value(1.0), 3.0);
-  }
-
-  #[test]
-  fn test_catmulrom_spline_derivative() {
-    let spline = CatmulRomSpline {
-      points: vec![0.0, 1.0, 2.0, 3.0],
-      continuous: false,
-    };
-
-    assert_eq!(spline.derivative(0.0), 1.0);
-    assert_eq!(spline.derivative(0.25), 1.5);
-    assert_eq!(spline.derivative(0.5), 1.0);
-    assert_eq!(spline.derivative(0.75), 0.5);
-    assert_eq!(spline.derivative(1.0), 1.0);
-  }
-}

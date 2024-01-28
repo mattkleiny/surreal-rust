@@ -14,6 +14,7 @@ pub use ranges::*;
 pub use rectangles::*;
 pub use shapes::*;
 pub use splines::*;
+pub use viewports::*;
 
 mod angles;
 mod cameras;
@@ -29,6 +30,7 @@ mod ranges;
 mod rectangles;
 mod shapes;
 mod splines;
+mod viewports;
 
 /// A globally unique identifier.
 pub type Guid = uuid::Uuid;
