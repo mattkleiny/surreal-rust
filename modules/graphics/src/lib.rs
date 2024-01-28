@@ -2,7 +2,6 @@
 
 #![feature(associated_type_defaults)]
 #![feature(impl_trait_in_assoc_type)]
-#![feature(slice_group_by)]
 
 pub use buffers::*;
 pub use colors::*;
@@ -89,6 +88,10 @@ pub enum MeshError {
 pub enum TargetError {
   InvalidId(TargetId),
   FailedToBuildAttachments,
+}
+
+pub trait GraphicsVisitor {
+    
 }
 
 /// An abstraction on top of the underlying graphics API.

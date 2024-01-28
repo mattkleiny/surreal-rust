@@ -143,13 +143,13 @@ impl Window {
         }
 
         if event.type_ == SDL_EventType::SDL_KEYDOWN as u32 {
-          if let Some(virtual_key) = input::VirtualKey::from_keycode(event.key.keysym.sym) {
+          if let Some(virtual_key) = from_scancode(event.key.keysym.sym) {
             self.keyboard_state.insert(virtual_key);
           }
         }
 
         if event.type_ == SDL_EventType::SDL_KEYUP as u32 {
-          if let Some(virtual_key) = input::VirtualKey::from_keycode(event.key.keysym.sym) {
+          if let Some(virtual_key) = from_scancode(event.key.keysym.sym) {
             self.keyboard_state.remove(&virtual_key);
           }
         }
@@ -202,17 +202,11 @@ impl Drop for Window {
   }
 }
 
-trait FromScanCode: Sized {
-  fn from_keycode(scan_code: SDL_Keycode) -> Option<Self>;
-}
+fn from_scancode(scan_code: SDL_Keycode) -> Option<input::VirtualKey> {
+  use input::VirtualKey::*;
 
-impl FromScanCode for VirtualKey {
-  fn from_keycode(scan_code: SDL_Keycode) -> Option<Self> {
-    use VirtualKey::*;
-
-    match unsafe { std::mem::transmute(scan_code) } {
-      SDL_KeyCode::SDLK_ESCAPE => Some(Escape),
-      _ => None,
-    }
+  match unsafe { std::mem::transmute(scan_code) } {
+    SDL_KeyCode::SDLK_ESCAPE => Some(Escape),
+    _ => None,
   }
 }

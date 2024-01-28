@@ -4,8 +4,7 @@ use common::{vec3, Arena};
 
 use super::*;
 
-/// Gravity on Earth.
-const DEFAULT_GRAVITY: Vec3 = vec3(0.0, -9.81, 0.0);
+const EARTH_GRAVITY: Vec3 = vec3(0.0, -9.81, 0.0);
 
 /// The default, home-baked [`PhysicsBackend`].
 ///
@@ -19,20 +18,16 @@ pub struct InternalPhysicsBackend {
   effectors: RwLock<Arena<EffectorId, Effector>>,
 }
 
-/// Internal settings for the physics backend.
 struct Settings {
   gravity: Vec3,
 }
 
 impl Default for Settings {
   fn default() -> Self {
-    Self {
-      gravity: DEFAULT_GRAVITY,
-    }
+    Self { gravity: EARTH_GRAVITY }
   }
 }
 
-/// The internal representation of a rigidbody.
 struct Body {
   kind: BodyKind,
   position: Vec3,
@@ -43,7 +38,6 @@ struct Body {
   colliders: Vec<ColliderId>,
 }
 
-/// The internal representation of a collider.
 struct Collider {
   kind: ColliderKind,
   shape: ColliderShape,
@@ -52,7 +46,6 @@ struct Collider {
   scale: Vec3,
 }
 
-/// Internal representation of a collider shape.
 enum ColliderShape {
   Sphere { radius: f32 },
   Box { size: Vec3 },
@@ -64,7 +57,6 @@ enum ColliderShape {
   HeightField { size: Vec3, heights: Vec<f32> },
 }
 
-/// The internal representation of an effector.
 struct Effector {
   _kind: EffectorKind,
 }
@@ -95,6 +87,29 @@ impl PhysicsBackend for InternalPhysicsBackend {
     bodies.clear();
     colliders.clear();
     effectors.clear();
+  }
+
+  fn accept(&self, visitor: &mut dyn PhysicsVisitor) {
+    let bodies = self.bodies.read().unwrap();
+    for (id, body) in bodies.enumerate() {
+      visitor.visit_body(id, body.kind, body.position, body.rotation, body.scale);
+    }
+
+    drop(bodies);
+
+    let colliders = self.colliders.read().unwrap();
+    for (id, collider) in colliders.enumerate() {
+      visitor.visit_collider(id, collider.kind, collider.position, collider.rotation, collider.scale);
+    }
+
+    drop(colliders);
+
+    let effectors = self.effectors.read().unwrap();
+    for (id, effector) in effectors.enumerate() {
+      visitor.visit_effector(id, effector._kind, Vec3::ZERO, Quat::IDENTITY, Vec3::ZERO);
+    }
+
+    drop(effectors);
   }
 
   fn body_create(&self, kind: BodyKind, initial_position: Vec3) -> BodyId {

@@ -110,7 +110,7 @@ impl<'a, I> IntoIterator for &'a VisibleObjectSet<I> {
   fn into_iter(self) -> Self::IntoIter {
     let visible_objects = self
       .objects
-      .group_by(|a, b| a.material_sort_key == b.material_sort_key)
+      .chunk_by(|a, b| a.material_sort_key == b.material_sort_key)
       .collect();
 
     VisibleObjectIterator {

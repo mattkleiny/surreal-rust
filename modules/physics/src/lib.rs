@@ -61,10 +61,8 @@ pub enum EffectorKind {
 /// world. It is responsible for updating the position and orientation of
 /// physical objects, and for detecting collisions between objects.
 pub trait PhysicsBackend {
-  /// Advances the physics simulation by the given amount of time.
+  // core
   fn step(&self, delta_time: f32);
-
-  /// Resets the entire physics simulation.
   fn reset(&self);
 
   // rigidodies
