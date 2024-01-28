@@ -1,6 +1,6 @@
 //! Basic bone-mesh skinning support for Surreal
 
-use common::{macros::Vertex, FastHashMap, Mat4, StringName, TimeSpan};
+use common::{FastHashMap, Mat4, StringName, TimeSpan};
 
 use super::*;
 

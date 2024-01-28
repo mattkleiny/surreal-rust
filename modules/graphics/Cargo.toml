@@ -6,6 +6,7 @@ edition.workspace = true
 
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
+macros = { package = "surreal-macros", path = "../../macros" }
 serde = { workspace = true, optional = true }
 bitflags = { workspace = true }
 

@@ -5,8 +5,8 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-pub use common::macros::Vertex;
 use common::{vec2, Size, Vec2, Vec3};
+pub use macros::Vertex;
 
 use super::*;
 

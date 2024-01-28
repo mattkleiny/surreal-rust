@@ -4,6 +4,6 @@ use surreal_editor::*;
 
 fn main() {
   start_editor(EditorConfig {
-    hosting_mode: HostingMode::OutOfProcess,
+    hosting_mode: HostingModel::OutOfProcess,
   })
 }

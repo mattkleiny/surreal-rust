@@ -2,11 +2,18 @@
 
 use proc_macro::TokenStream;
 
+mod binary;
 mod component;
 mod profiling;
 mod reflect;
 mod singleton;
 mod vertex;
+
+/// Derives the `FromBinary` and `ToBinary` traits for a type.
+#[proc_macro_derive(Binary)]
+pub fn derive_binary(input: TokenStream) -> TokenStream {
+  binary::impl_binary(input)
+}
 
 /// Derives the `Component` trait for a type.
 #[proc_macro_derive(Component)]

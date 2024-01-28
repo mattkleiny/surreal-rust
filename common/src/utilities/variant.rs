@@ -3,30 +3,6 @@ use crate::{
   strings::StringName,
 };
 
-/// Different kinds of [`Variant`]s that are supported.
-#[repr(C)]
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum VariantKind {
-  Null,
-  Bool,
-  U8,
-  U16,
-  U32,
-  U64,
-  I8,
-  I16,
-  I32,
-  I64,
-  F32,
-  F64,
-  String,
-  StringName,
-  Vec2,
-  Vec3,
-  Vec4,
-  Quat,
-}
-
 /// A type that can hold varying different values.
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq)]
@@ -49,32 +25,7 @@ pub enum Variant {
   Vec3(Vec3),
   Vec4(Vec4),
   Quat(Quat),
-}
-
-impl Variant {
-  /// Determines the [`VariantKind`] of this value.
-  pub const fn kind(&self) -> VariantKind {
-    match self {
-      Variant::Null => VariantKind::Null,
-      Variant::Bool(_) => VariantKind::Bool,
-      Variant::U8(_) => VariantKind::U8,
-      Variant::U16(_) => VariantKind::U16,
-      Variant::U32(_) => VariantKind::U32,
-      Variant::U64(_) => VariantKind::U64,
-      Variant::I8(_) => VariantKind::I8,
-      Variant::I16(_) => VariantKind::I16,
-      Variant::I32(_) => VariantKind::I32,
-      Variant::I64(_) => VariantKind::I64,
-      Variant::F32(_) => VariantKind::F32,
-      Variant::F64(_) => VariantKind::F64,
-      Variant::String(_) => VariantKind::String,
-      Variant::StringName(_) => VariantKind::StringName,
-      Variant::Vec2(_) => VariantKind::Vec2,
-      Variant::Vec3(_) => VariantKind::Vec3,
-      Variant::Vec4(_) => VariantKind::Vec4,
-      Variant::Quat(_) => VariantKind::Quat,
-    }
-  }
+  Packed(Vec<u8>),
 }
 
 macro_rules! impl_variant {
@@ -119,18 +70,6 @@ impl_variant!(Quat, Quat);
 #[cfg(test)]
 mod tests {
   use super::*;
-
-  #[test]
-  fn test_variant_kind() {
-    let variant = Variant::Null;
-    assert_eq!(variant.kind(), VariantKind::Null);
-
-    let variant = Variant::Bool(true);
-    assert_eq!(variant.kind(), VariantKind::Bool);
-
-    let variant = Variant::U8(10);
-    assert_eq!(variant.kind(), VariantKind::U8);
-  }
 
   #[test]
   fn test_variant_conversion() {

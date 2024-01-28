@@ -15,7 +15,6 @@ pub use collections::*;
 pub use concurrency::*;
 pub use diagnostics::*;
 pub use io::*;
-pub use macros;
 pub use maths::*;
 pub use strings::*;
 pub use utilities::*;

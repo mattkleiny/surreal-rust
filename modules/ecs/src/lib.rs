@@ -7,13 +7,8 @@
 #![feature(core_intrinsics)]
 #![allow(internal_features)]
 
-#[cfg(feature = "diagnostics")]
-pub use diagnostics::*;
-
-#[cfg(feature = "diagnostics")]
-mod diagnostics;
-
 use common::{Arena, ArenaIndex, FastHashMap, StringName};
+pub use macros::Component;
 
 common::impl_rid!(EntityId, "Identifies an entity in an ECS.");
 

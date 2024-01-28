@@ -1,5 +1,3 @@
-//! Application and engine telemetry and metrics.
-
 /// Indicates a kind of telemetry.
 pub trait Telemetry {
   /// The name of the telemetry.
@@ -59,7 +57,6 @@ macro_rules! impl_telemetry {
 
 pub mod frames {
   //! Frame rate telemetry.
-
   use super::*;
 
   pub struct FramesPerSecond {

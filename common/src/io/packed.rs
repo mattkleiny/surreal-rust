@@ -1,12 +1,13 @@
 //! A packed file system.
 
 /// A packed file.
+#[derive(Default, Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PakFile {
   pub headers: Vec<PakFileHeader>,
 }
 
 /// Header for a Pak file.
-#[repr(C)]
 #[derive(Default, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct PakFileHeader {
@@ -19,7 +20,6 @@ pub struct PakFileHeader {
 }
 
 /// The type of the Pak file.
-#[repr(C)]
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PakFileType {

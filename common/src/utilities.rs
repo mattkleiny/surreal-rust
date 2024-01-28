@@ -4,7 +4,7 @@ pub use events::*;
 pub use reflect::*;
 pub use services::*;
 pub use size::*;
-pub use timing::*;
+pub use time::*;
 pub use variant::*;
 pub use version::*;
 
@@ -12,7 +12,7 @@ mod events;
 mod reflect;
 mod services;
 mod size;
-mod timing;
+mod time;
 mod variant;
 mod version;
 

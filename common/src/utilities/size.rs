@@ -4,7 +4,10 @@ use std::{
   ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
 };
 
+use crate::{FromBinary, ToBinary};
+
 /// A canonical representation of size, with simple conversions between units.
+#[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Size(usize);
@@ -152,6 +155,18 @@ impl Debug for Size {
       _ if self.as_kilobytes() >= 1. => write!(formatter, "{} kilobytes", self.as_kilobytes()),
       _ => write!(formatter, "{} bytes", self.as_bytes()),
     }
+  }
+}
+
+impl ToBinary for Size {
+  fn to_binary(&self) -> Vec<u8> {
+    self.as_bytes().to_binary()
+  }
+}
+
+impl FromBinary for Size {
+  fn from_binary(bytes: &[u8]) -> Self {
+    Self::from_bytes(usize::from_binary(bytes))
   }
 }
 

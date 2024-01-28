@@ -1,174 +1,11 @@
-//! General utilities related to time.
-
 use std::{
   fmt::{Display, Formatter},
   iter::Sum,
   ops::{Add, AddAssign, Div, Mul, Sub, SubAssign},
-  time::{Duration, Instant},
+  time::Duration,
 };
 
-use crate::collections::RingBuffer;
-
-/// A high resolution timestamp that can be used to calculate intervals.
-#[repr(transparent)]
-#[derive(Copy, Clone, Debug)]
-pub struct TimeStamp {
-  instant: Instant,
-}
-
-impl TimeStamp {
-  /// Creates a new timestamp from the current time.
-  #[inline]
-  pub fn now() -> Self {
-    TimeStamp {
-      instant: Instant::now(),
-    }
-  }
-}
-
-impl Sub for TimeStamp {
-  type Output = TimeSpan;
-
-  #[must_use]
-  fn sub(self, rhs: Self) -> Self::Output {
-    TimeSpan::from(self.instant.duration_since(rhs.instant))
-  }
-}
-
-/// A simple clock for measuring the time between ticks.
-#[derive(Debug)]
-pub struct DeltaClock {
-  start_time: TimeStamp,
-  last_time: TimeStamp,
-  last_delta_time: f32,
-  max_delta_time: f32,
-}
-
-impl Default for DeltaClock {
-  fn default() -> Self {
-    Self::new()
-  }
-}
-
-impl DeltaClock {
-  /// Creates a new clock.
-  pub fn new() -> Self {
-    Self {
-      start_time: TimeStamp::now(),
-      last_time: TimeStamp::now(),
-      last_delta_time: 0.,
-      max_delta_time: 0.16 * 2.,
-    }
-  }
-
-  /// Ticks the clock by a single frame, returning a time delta in seconds.
-  pub fn tick(&mut self) -> f32 {
-    let current_time = TimeStamp::now();
-    let delta_time = current_time - self.last_time;
-
-    self.last_time = current_time;
-    self.last_delta_time = delta_time.total_seconds().min(self.max_delta_time);
-
-    self.last_delta_time
-  }
-
-  /// The last delta time observed on the [`DeltaClock`], in seconds.
-  #[inline]
-  pub fn last_delta_time(&self) -> f32 {
-    self.last_delta_time
-  }
-
-  /// The total time observed since the [`DeltaClock`] was created.
-  pub fn total_time(&self) -> f32 {
-    let now = TimeStamp::now();
-
-    (now - self.start_time).total_seconds()
-  }
-}
-
-/// Counts frames per second using a smoothed average.
-#[derive(Debug)]
-pub struct FrameCounter {
-  samples: RingBuffer<f32>,
-}
-
-impl FrameCounter {
-  pub fn new(samples: usize) -> Self {
-    Self {
-      samples: RingBuffer::new(samples),
-    }
-  }
-
-  pub fn tick(&mut self, delta_time: f32) {
-    self.samples.push(delta_time);
-  }
-
-  pub fn average_frame_time(&self) -> f32 {
-    let mut total_frame_time = 0.;
-
-    for sample in &self.samples {
-      total_frame_time += sample;
-    }
-
-    total_frame_time / self.samples.len() as f32
-  }
-
-  pub fn fps(&self) -> f32 {
-    1. / self.average_frame_time()
-  }
-}
-
-/// A simple time which ticks on a given basis and returns true if an interval
-/// has elapsed.
-#[derive(Clone, Debug)]
-pub struct IntervalTimer {
-  time_elapsed: f32,
-  interval: TimeSpan,
-}
-
-impl IntervalTimer {
-  pub fn new(interval: TimeSpan) -> Self {
-    Self {
-      time_elapsed: 0.,
-      interval,
-    }
-  }
-
-  pub fn tick(&mut self, delta_time: f32) -> bool {
-    self.time_elapsed += delta_time;
-    self.time_elapsed >= self.interval.total_seconds()
-  }
-
-  pub fn reset(&mut self) {
-    self.time_elapsed = 0.;
-  }
-}
-
-/// A simple time which ticks on a given basis and returns true if the given
-/// number of frames have elapsed.
-#[derive(Clone, Debug)]
-pub struct FrameTimer {
-  frames_elapsed: u64,
-  interval_in_frames: u64,
-}
-
-impl FrameTimer {
-  pub fn new(interval_in_frames: u64) -> Self {
-    Self {
-      frames_elapsed: 0,
-      interval_in_frames,
-    }
-  }
-
-  pub fn tick(&mut self) -> bool {
-    self.frames_elapsed += 1;
-    self.frames_elapsed >= self.interval_in_frames
-  }
-
-  pub fn reset(&mut self) {
-    self.frames_elapsed = 0;
-  }
-}
+use crate::{FromBinary, ToBinary};
 
 /// A representation of a span of time.
 #[derive(Default, Copy, Clone, Debug, PartialEq, PartialOrd)]
@@ -319,6 +156,20 @@ impl Display for TimeSpan {
   }
 }
 
+impl ToBinary for TimeSpan {
+  #[inline]
+  fn to_binary(&self) -> Vec<u8> {
+    self.seconds.to_binary()
+  }
+}
+
+impl FromBinary for TimeSpan {
+  #[inline]
+  fn from_binary(bytes: &[u8]) -> Self {
+    Self::from_seconds(f32::from_binary(bytes))
+  }
+}
+
 /// Allows a type to be converted into a [`TimeSpan`].
 pub trait IntoTimeSpan {
   /// Creates a [`TimeSpan`] representing milliseconds.
@@ -376,38 +227,6 @@ impl_into_time_span!(f64);
 #[cfg(test)]
 mod tests {
   use super::*;
-
-  #[test]
-  fn test_fps_counter_should_accumulate_over_time() {
-    let mut counter = FrameCounter::new(100);
-
-    counter.tick(0.016);
-    counter.tick(0.016);
-    counter.tick(0.016);
-    counter.tick(0.016);
-    counter.tick(0.016);
-  }
-
-  #[test]
-  fn test_interval_timer_should_tick_on_a_fixed_basis() {
-    let mut timer = IntervalTimer::new(TimeSpan::from_seconds(1.));
-
-    assert!(!timer.tick(0.5));
-    assert!(timer.tick(0.5));
-
-    timer.reset();
-
-    assert!(!timer.tick(0.5));
-  }
-
-  #[test]
-  fn test_frame_timer_should_tick_correctly() {
-    let mut timer = FrameTimer::new(3);
-
-    assert!(!timer.tick());
-    assert!(!timer.tick());
-    assert!(timer.tick());
-  }
 
   #[test]
   fn test_time_span_from_millis() {

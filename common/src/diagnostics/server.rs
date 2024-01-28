@@ -3,7 +3,11 @@
 //! This is primarily used for debugging and profiling, and is not intended to
 //! be used in production.
 
+use crate::TimeStamp;
+
 /// An event that can be sent to a diagnostic listener.
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum DiagnosticEvent {
   Log {
     level: super::LogLevel,
@@ -11,8 +15,8 @@ pub enum DiagnosticEvent {
   },
   Profile {
     name: String,
-    start: std::time::Instant,
-    end: std::time::Instant,
+    start: TimeStamp,
+    end: TimeStamp,
   },
 }
 
@@ -30,20 +34,14 @@ impl<F: FnMut(&DiagnosticEvent)> DiagnosticListener for F {
 
 /// A potential error that can occur when starting a diagnostic server.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum DiagnosticServerError {}
+pub enum DiagnosticError {
+  FailedToStart,
+  FailedToConnect,
+  FailedToSend,
+}
 
 /// A server that exposes diagnostic information to clients.
 pub struct DiagnosticServer {}
-
-impl DiagnosticServer {
-  pub async fn start(name: &str) -> Result<DiagnosticServer, DiagnosticServerError> {
-    todo!()
-  }
-}
-
-/// A potential error that can occur when connecting to a diagnostic server.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum DiagnosticClientError {}
 
 /// A client that can connect to a diagnostic server.
 pub struct DiagnosticClient {
@@ -51,11 +49,6 @@ pub struct DiagnosticClient {
 }
 
 impl DiagnosticClient {
-  /// Connects to a diagnostic server at the given address.
-  pub async fn connect(_address: impl AsRef<str>) -> Result<DiagnosticClient, DiagnosticClientError> {
-    Ok(Self { _listeners: Vec::new() })
-  }
-
   /// Adds a listener to the client.
   pub fn add_listener(&mut self, listener: impl DiagnosticListener + 'static) {
     self._listeners.push(Box::new(listener));
@@ -67,37 +60,26 @@ impl DiagnosticClient {
   }
 }
 
-#[cfg(target_os = "windows")]
-mod windows {
-  //! Windows-specific implementation details for the diagnostic server.
-
+mod universal {
+  //! Universal implementation details for the diagnostic server.
   use super::*;
 
   impl DiagnosticServer {
-    pub async fn start_named_pipes(name: &'static str) -> Result<DiagnosticServer, DiagnosticServerError> {
+    pub async fn start_tcp(_address: impl AsRef<str>) -> Result<DiagnosticServer, DiagnosticError> {
+      todo!()
+    }
+  }
+
+  impl DiagnosticClient {
+    pub async fn connect_tcp(_address: impl AsRef<str>) -> Result<DiagnosticClient, DiagnosticError> {
       todo!()
     }
   }
 }
 
-#[cfg(target_os = "unix")]
-mod unix {
-  //! Unix-specific implementation details for the diagnostic server.
+#[cfg(target_os = "windows")]
+mod windows {
+  //! Windows-specific implementation details for the diagnostic server.
 
-  use super::*;
-
-  impl DiagnosticServer {}
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_server_client_interaction() {
-    use crate::BlockableFuture;
-
-    // let _server = DiagnosticServer::start(1234).block();
-    // let _client = DiagnosticClient::connect("localhost:1234").block();
-  }
+  // TODO: implement named pipe support
 }
