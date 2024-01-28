@@ -7,10 +7,10 @@
 #![feature(core_intrinsics)]
 #![allow(internal_features)]
 
-use common::{Arena, ArenaIndex, FastHashMap, StringName};
+use common::{Arena, FastHashMap, StringName};
 pub use macros::Component;
 
-common::impl_rid!(EntityId, "Identifies an entity in an ECS.");
+common::impl_arena_index!(EntityId, "Identifies an entity in an ECS.");
 
 /// Represents an entity.
 #[derive(Default)]
@@ -21,7 +21,7 @@ pub struct Entity {
 /// An ECS world of entities and systems.
 #[derive(Default)]
 pub struct World {
-  entities: Arena<Entity>,
+  entities: Arena<EntityId, Entity>,
   components: FastHashMap<ComponentType, Box<dyn std::any::Any>>,
   systems: Vec<Box<dyn System>>,
 
@@ -37,7 +37,7 @@ impl World {
 
   /// Creates a new entity.
   pub fn create_entity(&mut self) -> EntityId {
-    self.entities.insert(Entity { name: None }).into()
+    self.entities.insert(Entity { name: None })
   }
 
   /// Adds a system to this world.
@@ -167,7 +167,7 @@ impl<C: Component> ComponentStorage<C> for Vec<C> {
 }
 
 /// Dense storage for a component using an arena.
-impl<C: Component> ComponentStorage<C> for Arena<C> {
+impl<C: Component> ComponentStorage<C> for Arena<EntityId, C> {
   fn add_component(&mut self, _entity_id: EntityId, _component: C) {
     todo!()
   }
@@ -177,11 +177,11 @@ impl<C: Component> ComponentStorage<C> for Arena<C> {
   }
 
   fn get_component(&self, entity_id: EntityId) -> Option<&C> {
-    self.get(ArenaIndex::from(entity_id))
+    self.get(entity_id)
   }
 
   fn get_component_mut(&mut self, entity_id: EntityId) -> Option<&mut C> {
-    self.get_mut(ArenaIndex::from(entity_id))
+    self.get_mut(entity_id)
   }
 }
 

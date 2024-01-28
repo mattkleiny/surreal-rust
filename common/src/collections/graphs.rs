@@ -1,8 +1,8 @@
 use std::{fmt::Debug, hash::Hash};
 
-use crate::{impl_rid, Arena, NeighbourList, PathFindingGrid, Scalar};
+use crate::{impl_arena_index, Arena, NeighbourList, PathFindingGrid, Scalar};
 
-impl_rid!(GraphNodeId, "Identifies a node in a graph.");
+impl_arena_index!(GraphNodeId, "Identifies a node in a graph.");
 
 /// An edge in a directed graph with a weight.
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub struct GraphEdge<W: Scalar = f32> {
 // A graph of nodes and Graphedges stored in an adjacency list.
 #[derive(Debug)]
 pub struct Graph<N, W: Scalar = f32> {
-  nodes: Arena<N>,
+  nodes: Arena<GraphNodeId, N>,
   edges: Vec<GraphEdge<W>>,
 }
 
@@ -46,12 +46,12 @@ impl<N, W: Scalar> Graph<N, W> {
 
   /// Adds a new node to the graph.
   pub fn add_node(&mut self, node: N) -> GraphNodeId {
-    self.nodes.insert(node).into()
+    self.nodes.insert(node)
   }
 
   /// Removes a node from the graph.
   pub fn remove_node(&mut self, node: GraphNodeId) -> Option<N> {
-    self.nodes.remove(node.into())
+    self.nodes.remove(node)
   }
 
   /// Iterates over the edges in the graph.

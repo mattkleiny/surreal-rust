@@ -8,9 +8,9 @@ pub use importers::*;
 mod exporters;
 mod importers;
 
-use common::{FastHashMap, ResourceArena, ToVirtualPath};
+use common::{Arena, FastHashMap, ToVirtualPath};
 
-common::impl_rid!(AssetId, "Identifies an asset in an asset database.");
+common::impl_arena_index!(AssetId, "Identifies an asset in an asset database.");
 
 /// A database for managing assets.
 ///
@@ -33,7 +33,7 @@ common::impl_rid!(AssetId, "Identifies an asset in an asset database.");
 #[derive(Default)]
 pub struct AssetDatabase {
   // core asset storage
-  _assets: ResourceArena<AssetId, AssetState>,
+  _assets: Arena<AssetId, AssetState>,
 
   // lookup tables
   _assets_by_path: FastHashMap<String, AssetId>,

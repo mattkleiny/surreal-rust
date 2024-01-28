@@ -3,11 +3,13 @@ use std::{
   sync::RwLock,
 };
 
-use crate::{Arena, ArenaIndex, Singleton};
+use crate::{Arena, Singleton};
+
+crate::impl_arena_index!(StringId, "Identifies a string in a string pool.");
 
 /// Represents an interned string that can be used as a name.
 #[derive(Clone, Eq, PartialEq, Hash)]
-pub struct StringName(ArenaIndex);
+pub struct StringName(StringId);
 
 /// A trait for objects that have a [`StringName`].
 pub trait ToStringName {
@@ -80,7 +82,7 @@ impl Display for StringName {
 /// An internal global pool of interned strings.
 #[derive(Singleton)]
 struct StringNamePool {
-  strings_by_id: RwLock<Arena<StringPoolEntry>>,
+  strings_by_id: RwLock<Arena<StringId, StringPoolEntry>>,
 }
 
 /// An entry in the string pool.
@@ -101,7 +103,7 @@ impl StringNamePool {
   /// Looks up the string with the given ID.
   ///
   /// If the string is not interned, returns `None`.
-  pub fn lookup(&self, id: ArenaIndex) -> Option<String> {
+  pub fn lookup(&self, id: StringId) -> Option<String> {
     let entries = self.strings_by_id.read().unwrap();
 
     entries.get(id).map(|entry| entry.string.clone())
@@ -111,7 +113,7 @@ impl StringNamePool {
   ///
   /// If the string is already interned, its reference count is incremented.
   /// Otherwise, it is inserted into the pool.
-  pub fn intern(&self, value: &str) -> ArenaIndex {
+  pub fn intern(&self, value: &str) -> StringId {
     // we need to manually scan the strings here because we optimize
     // for the case where the string is already interned
     let mut entries = self.strings_by_id.write().unwrap();
@@ -138,7 +140,7 @@ impl StringNamePool {
   /// If the reference count reaches zero, the string is removed from the pool.
   /// Otherwise, the reference count is decremented.
   #[allow(dead_code)] // TODO: consider if this should be used
-  pub fn decrement(&self, id: ArenaIndex) {
+  pub fn decrement(&self, id: StringId) {
     let mut entries = self.strings_by_id.write().unwrap();
 
     if let Some(entry) = entries.get_mut(id) {

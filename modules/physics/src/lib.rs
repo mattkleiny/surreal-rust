@@ -2,13 +2,13 @@
 
 #![allow(dead_code)]
 
-use common::{Quat, ResourceArena, Vec3};
+use common::{Quat, Vec3};
 
 mod internal;
 
-common::impl_rid!(ColliderId, "Identifies a collider.");
-common::impl_rid!(BodyId, "Identifies a physics body.");
-common::impl_rid!(EffectorId, "Identifies an effector.");
+common::impl_arena_index!(ColliderId, "Identifies a collider.");
+common::impl_arena_index!(BodyId, "Identifies a physics body.");
+common::impl_arena_index!(EffectorId, "Identifies an effector.");
 
 common::impl_server!(PhysicsEngine, PhysicsBackend);
 

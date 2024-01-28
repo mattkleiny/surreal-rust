@@ -7,7 +7,7 @@ use super::*;
 
 mod rendering;
 
-common::impl_rid!(SceneNodeId, "Identifies a node in a scene graph.");
+common::impl_arena_index!(SceneNodeId, "Identifies a node in a scene graph.");
 
 bitflags! {
   /// Internal flags for a [`SceneNode`], indicating the current state of the

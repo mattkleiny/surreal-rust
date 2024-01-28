@@ -1,3 +1,7 @@
+use std::sync::RwLock;
+
+use common::Arena;
+
 use super::*;
 
 /// The default, home-baked [`PhysicsBackend`].
@@ -6,14 +10,19 @@ use super::*;
 /// algorithm to simulate the physics of the game world.
 #[derive(Default)]
 pub struct InternalPhysicsBackend {
-  bodies: ResourceArena<BodyId, Body>,
-  colliders: ResourceArena<ColliderId, Collider>,
-  effectors: ResourceArena<EffectorId, Effector>,
+  bodies: RwLock<Arena<BodyId, Body>>,
+  colliders: RwLock<Arena<ColliderId, Collider>>,
+  effectors: RwLock<Arena<EffectorId, Effector>>,
 }
 
 /// The internal representation of a rigidbody.
 struct Body {
-  _kind: BodyKind,
+  kind: BodyKind,
+  position: Vec3,
+  rotation: Quat,
+  scale: Vec3,
+  velocity: Vec3,
+  angular_velocity: Vec3,
   colliders: Vec<ColliderId>,
 }
 
@@ -30,67 +39,154 @@ struct Effector {
 #[allow(unused_variables)]
 impl PhysicsBackend for InternalPhysicsBackend {
   fn step(&self, delta_time: f32) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+    let mut colliders = self.colliders.write().unwrap();
+
+    for body in bodies.iter_mut() {
+      body.position += body.velocity * delta_time;
+    }
+
+    for collider in colliders.iter_mut() {
+      // TODO: collision checks
+    }
   }
 
   fn reset(&self) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+    let mut colliders = self.colliders.write().unwrap();
+    let mut effectors = self.effectors.write().unwrap();
+
+    bodies.clear();
+    colliders.clear();
+    effectors.clear();
   }
 
   fn body_create(&self, kind: BodyKind, initial_position: Vec3) -> BodyId {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+
+    let id = bodies.insert(Body {
+      kind,
+      position: initial_position,
+      rotation: Quat::IDENTITY,
+      scale: Vec3::ONE,
+      velocity: Vec3::ZERO,
+      angular_velocity: Vec3::ZERO,
+      colliders: Vec::new(),
+    });
+
+    id
   }
 
   fn body_add_collider(&self, body: BodyId, collider: ColliderId) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+
+    if let Some(body) = bodies.get_mut(body) {
+      body.colliders.push(collider);
+    }
   }
 
   fn body_remove_collider(&self, body: BodyId, collider: ColliderId) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+
+    if let Some(body) = bodies.get_mut(body) {
+      body.colliders.retain(|&it| it != collider);
+    }
   }
 
   fn body_set_position(&self, body: BodyId, position: Vec3) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+
+    if let Some(body) = bodies.get_mut(body) {
+      body.position = position;
+    }
   }
 
   fn body_get_position(&self, body: BodyId) -> Vec3 {
-    todo!()
+    let bodies = self.bodies.read().unwrap();
+
+    if let Some(body) = bodies.get(body) {
+      body.position
+    } else {
+      Vec3::ZERO
+    }
   }
 
   fn body_set_rotation(&self, body: BodyId, rotation: Quat) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+
+    if let Some(body) = bodies.get_mut(body) {
+      body.rotation = rotation;
+    }
   }
 
   fn body_get_rotation(&self, body: BodyId) -> Quat {
-    todo!()
+    let bodies = self.bodies.read().unwrap();
+
+    if let Some(body) = bodies.get(body) {
+      body.rotation
+    } else {
+      Quat::IDENTITY
+    }
   }
 
   fn body_set_scale(&self, body: BodyId, scale: Vec3) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+
+    if let Some(body) = bodies.get_mut(body) {
+      body.scale = scale;
+    }
   }
 
   fn body_get_scale(&self, body: BodyId) -> Vec3 {
-    todo!()
+    let bodies = self.bodies.read().unwrap();
+
+    if let Some(body) = bodies.get(body) {
+      body.scale
+    } else {
+      Vec3::ONE
+    }
   }
 
   fn body_set_velocity(&self, body: BodyId, velocity: Vec3) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+
+    if let Some(body) = bodies.get_mut(body) {
+      body.velocity = velocity;
+    }
   }
 
   fn body_get_velocity(&self, body: BodyId) -> Vec3 {
-    todo!()
+    let bodies = self.bodies.read().unwrap();
+
+    if let Some(body) = bodies.get(body) {
+      body.velocity
+    } else {
+      Vec3::ZERO
+    }
   }
 
   fn body_set_angular_velocity(&self, body: BodyId, velocity: Vec3) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+
+    if let Some(body) = bodies.get_mut(body) {
+      body.angular_velocity = velocity;
+    }
   }
 
   fn body_get_angular_velocity(&self, body: BodyId) -> Vec3 {
-    todo!()
+    let bodies = self.bodies.read().unwrap();
+
+    if let Some(body) = bodies.get(body) {
+      body.angular_velocity
+    } else {
+      Vec3::ZERO
+    }
   }
 
   fn body_delete(&self, body: BodyId) {
-    todo!()
+    let mut bodies = self.bodies.write().unwrap();
+
+    bodies.remove(body);
   }
 
   fn collider_create_sphere(&self, initial_position: Vec3, radius: f32) -> ColliderId {
@@ -154,7 +250,9 @@ impl PhysicsBackend for InternalPhysicsBackend {
   }
 
   fn collider_delete(&self, collider: ColliderId) {
-    todo!()
+    let mut colliders = self.colliders.write().unwrap();
+
+    colliders.remove(collider);
   }
 
   fn effector_create_wind(&self, initial_position: Vec3) -> EffectorId {
@@ -202,6 +300,8 @@ impl PhysicsBackend for InternalPhysicsBackend {
   }
 
   fn effector_delete(&self, effector: EffectorId) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.remove(effector);
   }
 }

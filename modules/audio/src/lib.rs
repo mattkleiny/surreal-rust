@@ -6,8 +6,8 @@ mod headless;
 mod openal;
 mod sampling;
 
-common::impl_rid!(ClipId, "Identifies an Audio Clip.");
-common::impl_rid!(SourceId, "Identifies an Audio Source.");
+common::impl_arena_index!(ClipId, "identifies an Audio Clip.");
+common::impl_arena_index!(SourceId, "identifies an Audio Source.");
 
 common::impl_server!(AudioEngine, AudioBackend);
 

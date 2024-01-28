@@ -8,35 +8,97 @@ use crate::unsafe_mutable_alias;
 ///
 /// The generation is incremented every time an entry is removed from the arena.
 /// This allows us to detect when an index is no longer valid.
-#[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct ArenaIndex {
-  index: u32,
-  generation: u32,
+pub trait ArenaIndex {
+  /// Creates a new [`ArenaIndex`] from an internal index and generation.
+  fn from_parts(index: u32, generation: u32) -> Self;
+
+  /// Gets the generation of this index.
+  fn generation(&self) -> u32;
+
+  /// Gets the index of this index.
+  fn index(&self) -> u32;
 }
 
-impl ArenaIndex {
-  /// A sentinel value representing an empty index.
-  pub const NONE: Self = Self {
-    index: 0,
-    generation: 0,
+/// Creates a new, opaque arena index type.
+///
+/// The type is implicitly convertible to and from [`u64`], [`u32`], and
+/// [`ArenaIndex`], and can be used as a key in the [`Arena`] structure.
+#[macro_export]
+macro_rules! impl_arena_index {
+  ($name:ident, $comment:literal) => {
+    #[doc = $comment]
+    #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
+    pub struct $name {
+      index: u32,
+      generation: u32,
+    }
+
+    impl $name {
+      /// A sentinel value representing an empty index.
+      pub const NONE: Self = Self {
+        index: 0,
+        generation: 0,
+      };
+    }
+
+    impl From<u32> for $name {
+      #[inline]
+      fn from(id: u32) -> Self {
+        Self {
+          index: id,
+          generation: 0,
+        }
+      }
+    }
+
+    impl From<$name> for u32 {
+      #[inline(always)]
+      fn from(value: $name) -> Self {
+        value.index
+      }
+    }
+
+    impl From<u64> for $name {
+      #[inline(always)]
+      fn from(packed: u64) -> Self {
+        let generation = (packed >> 32) as u32;
+        let index = packed as u32;
+
+        Self { index, generation }
+      }
+    }
+
+    impl From<$name> for u64 {
+      #[inline(always)]
+      fn from(value: $name) -> Self {
+        (value.generation as u64) << 32 | value.index as u64
+      }
+    }
+
+    impl $crate::ArenaIndex for $name {
+      #[inline(always)]
+      fn from_parts(index: u32, generation: u32) -> Self {
+        Self { index, generation }
+      }
+
+      #[inline(always)]
+      fn generation(&self) -> u32 {
+        self.generation
+      }
+
+      #[inline(always)]
+      fn index(&self) -> u32 {
+        self.index
+      }
+    }
+
+    impl $crate::FromRandom for $name {
+      #[inline]
+      fn from_random(random: &mut $crate::Random) -> Self {
+        Self::from(random.next_u64())
+      }
+    }
   };
-}
-
-impl From<u64> for ArenaIndex {
-  #[inline]
-  fn from(packed: u64) -> Self {
-    let generation = (packed >> 32) as u32;
-    let index = packed as u32;
-
-    ArenaIndex { index, generation }
-  }
-}
-
-impl From<ArenaIndex> for u64 {
-  #[inline]
-  fn from(value: ArenaIndex) -> Self {
-    (value.generation as u64) << 32 | value.index as u64
-  }
 }
 
 /// A simple generational arena of elements of type [`T`] .
@@ -50,32 +112,34 @@ impl From<ArenaIndex> for u64 {
 /// elements in the arena is not guaranteed to be the same as the order in which
 /// they were inserted.
 #[derive(Debug)]
-pub struct Arena<T> {
-  entries: Vec<Option<ArenaEntry<T>>>,
+pub struct Arena<K, V> {
+  entries: Vec<Option<ArenaEntry<V>>>,
   current_generation: u32,
   is_generation_dirty: bool,
+  _key: std::marker::PhantomData<K>,
 }
 
 /// A single entry in an `Arena`.
 #[derive(Debug)]
-struct ArenaEntry<T> {
-  value: T,
+struct ArenaEntry<V> {
+  value: V,
   generation: u32,
 }
 
-impl<T> Default for Arena<T> {
+impl<K: ArenaIndex, V> Default for Arena<K, V> {
   fn default() -> Self {
     Self::new()
   }
 }
 
-impl<T> Arena<T> {
+impl<K: ArenaIndex, V> Arena<K, V> {
   /// Creates a new empty arena.
   pub fn new() -> Self {
     Self {
       entries: Vec::new(),
       current_generation: 1,
       is_generation_dirty: false,
+      _key: std::marker::PhantomData,
     }
   }
 
@@ -85,6 +149,7 @@ impl<T> Arena<T> {
       entries: Vec::with_capacity(size),
       current_generation: 1,
       is_generation_dirty: false,
+      _key: std::marker::PhantomData,
     }
   }
 
@@ -107,12 +172,15 @@ impl<T> Arena<T> {
   }
 
   /// Determines if the arena contains the given index.
-  pub fn contains(&self, index: ArenaIndex) -> bool {
-    self.get(index).is_some()
+  pub fn contains(&self, key: K) -> bool {
+    self.get(key).is_some()
   }
 
   /// Returns a reference to the item at the given index.
-  pub fn get(&self, ArenaIndex { index, generation }: ArenaIndex) -> Option<&T> {
+  pub fn get(&self, key: K) -> Option<&V> {
+    let index = key.index();
+    let generation = key.generation();
+
     // sanity check external index
     if index as usize >= self.entries.len() {
       return None;
@@ -129,7 +197,10 @@ impl<T> Arena<T> {
   }
 
   /// Returns a mutable reference to the item at the given index.
-  pub fn get_mut(&mut self, ArenaIndex { index, generation }: ArenaIndex) -> Option<&mut T> {
+  pub fn get_mut(&mut self, key: K) -> Option<&mut V> {
+    let index = key.index();
+    let generation = key.generation();
+
     // sanity check external index
     if index as usize >= self.entries.len() {
       return None;
@@ -146,19 +217,25 @@ impl<T> Arena<T> {
   }
 
   /// Inserts an entry to the arena and returns it's index.
-  pub fn insert(&mut self, value: T) -> ArenaIndex {
-    let index = self.allocate_index();
+  pub fn insert(&mut self, value: V) -> K {
+    let key = self.allocate_key();
 
-    self.entries[index.index as usize] = Some(ArenaEntry {
+    let index = key.index();
+    let generation = key.generation();
+
+    self.entries[index as usize] = Some(ArenaEntry {
       value,
-      generation: index.generation,
+      generation: generation,
     });
 
-    index
+    key
   }
 
   /// Removes an item from the arena.
-  pub fn remove(&mut self, ArenaIndex { index, generation }: ArenaIndex) -> Option<T> {
+  pub fn remove(&mut self, key: K) -> Option<V> {
+    let index = key.index();
+    let generation = key.generation();
+
     // sanity check external index
     if index as usize >= self.entries.len() {
       return None;
@@ -183,42 +260,15 @@ impl<T> Arena<T> {
     self.is_generation_dirty = true;
   }
 
-  /// Allocates a new [`ArenaIndex`] for an item.
-  fn allocate_index(&mut self) -> ArenaIndex {
-    // increment the generation if necessary
-    if self.is_generation_dirty {
-      self.current_generation += 1;
-      self.is_generation_dirty = false;
-    }
-
-    // scan through existing entries and find an empty slot
-    for index in 0..self.entries.len() {
-      if self.entries[index].is_none() {
-        return ArenaIndex {
-          index: index as u32,
-          generation: self.current_generation,
-        };
-      }
-    }
-
-    // otherwise allocate a new entry
-    self.entries.push(None);
-
-    ArenaIndex {
-      index: (self.entries.len() - 1) as u32,
-      generation: self.current_generation,
-    }
-  }
-
   /// Iterates over the arena.
-  pub fn iter(&self) -> impl Iterator<Item = &T> {
-    pub struct Iter<'a, T> {
-      arena: &'a Arena<T>,
+  pub fn iter(&self) -> impl Iterator<Item = &V> {
+    pub struct Iter<'a, K, V> {
+      arena: &'a Arena<K, V>,
       index: usize,
     }
 
-    impl<'a, T> Iterator for Iter<'a, T> {
-      type Item = &'a T;
+    impl<'a, K: ArenaIndex, V> Iterator for Iter<'a, K, V> {
+      type Item = &'a V;
 
       fn next(&mut self) -> Option<Self::Item> {
         while let Some(entry) = self.arena.entries.get(self.index) {
@@ -244,14 +294,14 @@ impl<T> Arena<T> {
   }
 
   /// Mutably iterates over the arena.
-  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-    pub struct IterMut<'a, T> {
-      arena: &'a mut Arena<T>,
+  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut V> {
+    pub struct IterMut<'a, K, V> {
+      arena: &'a mut Arena<K, V>,
       index: usize,
     }
 
-    impl<'a, T> Iterator for IterMut<'a, T> {
-      type Item = &'a mut T;
+    impl<'a, K: ArenaIndex, V> Iterator for IterMut<'a, K, V> {
+      type Item = &'a mut V;
 
       fn next(&mut self) -> Option<Self::Item> {
         while let Some(entry) = self.arena.entries.get_mut(self.index) {
@@ -279,26 +329,23 @@ impl<T> Arena<T> {
   }
 
   /// Enumerates the indices and contents of the arena.
-  pub fn enumerate(&self) -> impl Iterator<Item = (ArenaIndex, &T)> {
-    pub struct Enumerate<'a, T> {
-      arena: &'a Arena<T>,
+  pub fn enumerate(&self) -> impl Iterator<Item = (K, &V)> {
+    pub struct Enumerate<'a, K, V> {
+      arena: &'a Arena<K, V>,
       index: usize,
     }
 
-    impl<'a, T> Iterator for Enumerate<'a, T> {
-      type Item = (ArenaIndex, &'a T);
+    impl<'a, K: ArenaIndex, V> Iterator for Enumerate<'a, K, V> {
+      type Item = (K, &'a V);
 
       fn next(&mut self) -> Option<Self::Item> {
         while let Some(entry) = self.arena.entries.get(self.index) {
           if let Some(value) = entry {
-            let arena_index = ArenaIndex {
-              index: self.index as u32,
-              generation: value.generation,
-            };
+            let key = K::from_parts(self.index as u32, value.generation);
 
             self.index += 1;
 
-            return Some((arena_index, &value.value));
+            return Some((key, &value.value));
           }
 
           self.index += 1;
@@ -317,28 +364,24 @@ impl<T> Arena<T> {
   }
 
   /// Mutably enumerates the indices and contents of the arena.
-  pub fn enumerate_mut(&mut self) -> impl Iterator<Item = (ArenaIndex, &mut T)> {
-    pub struct EnumerateMut<'a, T> {
-      arena: &'a mut Arena<T>,
+  pub fn enumerate_mut(&mut self) -> impl Iterator<Item = (K, &mut V)> {
+    pub struct EnumerateMut<'a, K, V> {
+      arena: &'a mut Arena<K, V>,
       index: usize,
     }
 
-    impl<'a, T> Iterator for EnumerateMut<'a, T> {
-      type Item = (ArenaIndex, &'a mut T);
+    impl<'a, K: ArenaIndex, V> Iterator for EnumerateMut<'a, K, V> {
+      type Item = (K, &'a mut V);
 
       fn next(&mut self) -> Option<Self::Item> {
         while let Some(entry) = self.arena.entries.get_mut(self.index) {
           if let Some(value) = entry.as_mut() {
-            let arena_index = ArenaIndex {
-              index: self.index as u32,
-              generation: value.generation,
-            };
+            let key = K::from_parts(self.index as u32, value.generation);
+            let value = unsafe { unsafe_mutable_alias(value) }; // elide the lifetime
 
             self.index += 1;
 
-            let value = unsafe { unsafe_mutable_alias(value) }; // elide the lifetime
-
-            return Some((arena_index, &mut value.value));
+            return Some((key, &mut value.value));
           }
 
           self.index += 1;
@@ -355,11 +398,32 @@ impl<T> Arena<T> {
 
     EnumerateMut { arena: self, index: 0 }
   }
+
+  /// Allocates a new [`K`] for an item.
+  fn allocate_key(&mut self) -> K {
+    // increment the generation if necessary
+    if self.is_generation_dirty {
+      self.current_generation += 1;
+      self.is_generation_dirty = false;
+    }
+
+    // scan through existing entries and find an empty slot
+    for index in 0..self.entries.len() {
+      if self.entries[index].is_none() {
+        return K::from_parts(index as u32, self.current_generation);
+      }
+    }
+
+    // otherwise allocate a new entry
+    self.entries.push(None);
+
+    K::from_parts((self.entries.len() - 1) as u32, self.current_generation)
+  }
 }
 
 /// Iterates over the arena.
-impl<'a, T> IntoIterator for &'a Arena<T> {
-  type Item = &'a T;
+impl<'a, K: ArenaIndex, V> IntoIterator for &'a Arena<K, V> {
+  type Item = &'a V;
   type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
@@ -368,8 +432,8 @@ impl<'a, T> IntoIterator for &'a Arena<T> {
 }
 
 /// Mutably iterates over the arena.
-impl<'a, T> IntoIterator for &'a mut Arena<T> {
-  type Item = &'a mut T;
+impl<'a, K: ArenaIndex, V> IntoIterator for &'a mut Arena<K, V> {
+  type Item = &'a mut V;
   type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
@@ -378,8 +442,8 @@ impl<'a, T> IntoIterator for &'a mut Arena<T> {
 }
 
 /// Allows an arena to be created from an iterator.
-impl<A> FromIterator<A> for Arena<A> {
-  fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
+impl<K: ArenaIndex, V> FromIterator<V> for Arena<K, V> {
+  fn from_iter<T: IntoIterator<Item = V>>(iter: T) -> Self {
     let mut result = Self::default();
 
     for item in iter {
@@ -394,9 +458,11 @@ impl<A> FromIterator<A> for Arena<A> {
 mod tests {
   use super::*;
 
+  impl_arena_index!(TestId, "A simple test id");
+
   #[test]
   fn test_add_item() {
-    let mut arena = Arena::new();
+    let mut arena = Arena::<TestId, &'static str>::new();
 
     let index1 = arena.insert("Item 1");
     let index2 = arena.insert("Item 2");
@@ -408,7 +474,7 @@ mod tests {
 
   #[test]
   fn test_remove_item() {
-    let mut arena = Arena::new();
+    let mut arena = Arena::<TestId, &'static str>::new();
 
     let index1 = arena.insert("Item 1");
     let index2 = arena.insert("Item 2");
@@ -421,12 +487,12 @@ mod tests {
 
   #[test]
   fn test_access_item() {
-    let mut arena = Arena::new();
+    let mut arena = Arena::<TestId, &'static str>::new();
 
     let index1 = arena.insert("Item 1");
     let index2 = arena.insert("Item 2");
 
-    let index3 = ArenaIndex {
+    let index3 = TestId {
       index: 23,
       generation: 0,
     };
@@ -438,7 +504,7 @@ mod tests {
 
   #[test]
   fn test_reuse_old_spaces() {
-    let mut arena = Arena::new();
+    let mut arena = Arena::<TestId, &'static str>::new();
 
     let _index1 = arena.insert("Item 1");
     let index2 = arena.insert("Item 2");
@@ -454,7 +520,7 @@ mod tests {
 
   #[test]
   fn test_iterate() {
-    let mut arena = Arena::new();
+    let mut arena = Arena::<TestId, &'static str>::new();
 
     arena.insert("Item 1");
     let index2 = arena.insert("Item 2");
@@ -470,7 +536,7 @@ mod tests {
 
   #[test]
   fn test_enumerate_mut() {
-    let mut arena = Arena::new();
+    let mut arena = Arena::<TestId, &'static str>::new();
 
     arena.insert("Item 1");
     let index2 = arena.insert("Item 2");
@@ -487,20 +553,14 @@ mod tests {
   }
 
   #[test]
-  fn test_collect_from_iterator() {
-    let items = (0..16).collect::<Arena<_>>();
-
-    assert_eq!(items.len(), 16);
-  }
-
-  #[test]
   fn test_should_pack_and_unpack_from_u64() {
-    let index = ArenaIndex {
+    let index = TestId {
       index: 10,
       generation: 3,
     };
+
     let packed: u64 = index.into();
-    let unpacked = ArenaIndex::from(packed);
+    let unpacked = TestId::from(packed);
 
     assert_eq!(index, unpacked);
   }

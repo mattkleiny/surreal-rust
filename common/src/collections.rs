@@ -12,7 +12,6 @@ pub use grid::*;
 pub use multimap::*;
 pub use priorityqueue::*;
 pub use quadtree::*;
-pub use resources::*;
 pub use ringbuffer::*;
 pub use smallvec::{smallvec, SmallVec};
 pub use spatialhash::*;
@@ -24,7 +23,6 @@ mod grid;
 mod multimap;
 mod priorityqueue;
 mod quadtree;
-mod resources;
 mod ringbuffer;
 mod spatialhash;
 
