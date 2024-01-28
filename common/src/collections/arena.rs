@@ -9,14 +9,14 @@ use crate::unsafe_mutable_alias;
 /// The generation is incremented every time an entry is removed from the arena.
 /// This allows us to detect when an index is no longer valid.
 pub trait ArenaIndex {
-  /// Creates a new [`ArenaIndex`] from an internal index and generation.
-  fn from_parts(index: u32, generation: u32) -> Self;
+  /// Creates a new [`ArenaIndex`] from an ordinal and generation.
+  fn from_parts(ordinal: u32, generation: u32) -> Self;
 
   /// Gets the generation of this index.
   fn generation(&self) -> u32;
 
-  /// Gets the index of this index.
-  fn index(&self) -> u32;
+  /// Gets the ordinal of this index.
+  fn ordinal(&self) -> u32;
 }
 
 /// Creates a new, opaque arena index type.
@@ -29,14 +29,14 @@ macro_rules! impl_arena_index {
     #[doc = $comment]
     #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
     pub struct $name {
-      index: u32,
+      ordinal: u32,
       generation: u32,
     }
 
     impl $name {
       /// A sentinel value representing an empty index.
       pub const NONE: Self = Self {
-        index: 0,
+        ordinal: 0,
         generation: 0,
       };
     }
@@ -45,7 +45,7 @@ macro_rules! impl_arena_index {
       #[inline]
       fn from(id: u32) -> Self {
         Self {
-          index: id,
+          ordinal: id,
           generation: 0,
         }
       }
@@ -54,7 +54,7 @@ macro_rules! impl_arena_index {
     impl From<$name> for u32 {
       #[inline(always)]
       fn from(value: $name) -> Self {
-        value.index
+        value.ordinal
       }
     }
 
@@ -62,23 +62,23 @@ macro_rules! impl_arena_index {
       #[inline(always)]
       fn from(packed: u64) -> Self {
         let generation = (packed >> 32) as u32;
-        let index = packed as u32;
+        let ordinal = packed as u32;
 
-        Self { index, generation }
+        Self { ordinal, generation }
       }
     }
 
     impl From<$name> for u64 {
       #[inline(always)]
       fn from(value: $name) -> Self {
-        (value.generation as u64) << 32 | value.index as u64
+        (value.generation as u64) << 32 | value.ordinal as u64
       }
     }
 
     impl $crate::ArenaIndex for $name {
       #[inline(always)]
-      fn from_parts(index: u32, generation: u32) -> Self {
-        Self { index, generation }
+      fn from_parts(ordinal: u32, generation: u32) -> Self {
+        Self { ordinal, generation }
       }
 
       #[inline(always)]
@@ -87,8 +87,8 @@ macro_rules! impl_arena_index {
       }
 
       #[inline(always)]
-      fn index(&self) -> u32 {
-        self.index
+      fn ordinal(&self) -> u32 {
+        self.ordinal
       }
     }
 
@@ -178,16 +178,16 @@ impl<K: ArenaIndex, V> Arena<K, V> {
 
   /// Returns a reference to the item at the given index.
   pub fn get(&self, key: K) -> Option<&V> {
-    let index = key.index();
+    let ordinal = key.ordinal();
     let generation = key.generation();
 
     // sanity check external index
-    if index as usize >= self.entries.len() {
+    if ordinal as usize >= self.entries.len() {
       return None;
     }
 
     // if this entry exists and the generation matches
-    if let Some(Some(entry)) = self.entries.get(index as usize) {
+    if let Some(Some(entry)) = self.entries.get(ordinal as usize) {
       if entry.generation == generation {
         return Some(&entry.value);
       }
@@ -198,16 +198,16 @@ impl<K: ArenaIndex, V> Arena<K, V> {
 
   /// Returns a mutable reference to the item at the given index.
   pub fn get_mut(&mut self, key: K) -> Option<&mut V> {
-    let index = key.index();
+    let ordinal = key.ordinal();
     let generation = key.generation();
 
     // sanity check external index
-    if index as usize >= self.entries.len() {
+    if ordinal as usize >= self.entries.len() {
       return None;
     }
 
     // if this entry exists and the generation matches
-    if let Some(Some(entry)) = self.entries.get_mut(index as usize) {
+    if let Some(Some(entry)) = self.entries.get_mut(ordinal as usize) {
       if entry.generation == generation {
         return Some(&mut entry.value);
       }
@@ -220,10 +220,10 @@ impl<K: ArenaIndex, V> Arena<K, V> {
   pub fn insert(&mut self, value: V) -> K {
     let key = self.allocate_key();
 
-    let index = key.index();
+    let ordinal = key.ordinal();
     let generation = key.generation();
 
-    self.entries[index as usize] = Some(ArenaEntry {
+    self.entries[ordinal as usize] = Some(ArenaEntry {
       value,
       generation: generation,
     });
@@ -233,18 +233,18 @@ impl<K: ArenaIndex, V> Arena<K, V> {
 
   /// Removes an item from the arena.
   pub fn remove(&mut self, key: K) -> Option<V> {
-    let index = key.index();
+    let ordinal = key.ordinal();
     let generation = key.generation();
 
     // sanity check external index
-    if index as usize >= self.entries.len() {
+    if ordinal as usize >= self.entries.len() {
       return None;
     }
 
     // if this is the relevant entry and the generation matches
-    if let Some(entry) = &self.entries[index as usize] {
+    if let Some(entry) = &self.entries[ordinal as usize] {
       if generation == entry.generation {
-        let entry = self.entries[index as usize].take().unwrap();
+        let entry = self.entries[ordinal as usize].take().unwrap();
         self.is_generation_dirty = true;
 
         return Some(entry.value);
@@ -493,7 +493,7 @@ mod tests {
     let index2 = arena.insert("Item 2");
 
     let index3 = TestId {
-      index: 23,
+      ordinal: 23,
       generation: 0,
     };
 
@@ -514,7 +514,7 @@ mod tests {
 
     let index4 = arena.insert("Item 4");
 
-    assert_eq!(index2.index, index4.index);
+    assert_eq!(index2.ordinal, index4.ordinal);
     assert_ne!(index2.generation, index4.generation);
   }
 
@@ -555,7 +555,7 @@ mod tests {
   #[test]
   fn test_should_pack_and_unpack_from_u64() {
     let index = TestId {
-      index: 10,
+      ordinal: 10,
       generation: 3,
     };
 
