@@ -1,0 +1,8 @@
+[package]
+name = "surreal-networking"
+description = "Networking engine for Surreal"
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+common = { package = "surreal-common", path = "../../common" }

@@ -10,6 +10,8 @@
 //! dependency, and features enabled/disabled to toggle the set of requirements
 //! needed for any particular project.
 
+#[cfg(feature = "ai")]
+pub extern crate ai;
 #[cfg(feature = "assets")]
 pub extern crate assets;
 #[cfg(feature = "audio")]
@@ -23,6 +25,8 @@ pub extern crate editor;
 pub extern crate graphics;
 #[cfg(feature = "input")]
 pub extern crate input;
+#[cfg(feature = "networking")]
+pub extern crate networking;
 #[cfg(feature = "physics")]
 pub extern crate physics;
 #[cfg(feature = "scene")]

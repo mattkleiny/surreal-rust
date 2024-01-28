@@ -97,5 +97,3 @@ impl Default for Trapezoid {
     }
   }
 }
-
-// TODO: implement more types of shpaes

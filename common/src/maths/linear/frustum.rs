@@ -114,4 +114,59 @@ impl Frustum {
   }
 }
 
-// TODO: implement tests for frustums
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_contains_point() {
+    let frustum = Frustum::from_ortho_planes(Vec3::ZERO, 10.0, -1.0, 1.0);
+
+    assert!(frustum.contains_point(Vec3::ZERO));
+    assert!(frustum.contains_point(Vec3::new(5.0, 5.0, 0.0)));
+    assert!(!frustum.contains_point(Vec3::new(15.0, 15.0, 0.0)));
+  }
+
+  #[test]
+  fn test_contains_sphere() {
+    let frustum = Frustum::from_ortho_planes(Vec3::ZERO, 10.0, -1.0, 1.0);
+
+    let sphere_inside = Sphere {
+      center: Vec3::ZERO,
+      radius: 5.0,
+    };
+
+    let sphere_outside = Sphere {
+      center: Vec3::new(15.0, 15.0, 0.0),
+      radius: 5.0,
+    };
+
+    assert!(frustum.contains_sphere(sphere_inside));
+    assert!(!frustum.contains_sphere(sphere_outside));
+  }
+
+  #[test]
+  fn test_contains_aabb() {
+    let frustum = Frustum::from_ortho_planes(Vec3::ZERO, 10.0, -1.0, 1.0);
+
+    let aabb_inside = AABB::from_min_max(Vec3::new(-5.0, -5.0, -5.0), Vec3::new(5.0, 5.0, 5.0));
+    let aabb_outside = AABB::from_min_max(Vec3::new(-15.0, -15.0, -15.0), Vec3::new(-10.0, -10.0, -10.0));
+
+    assert!(frustum.contains_aabb(aabb_inside));
+    assert!(!frustum.contains_aabb(aabb_outside));
+  }
+
+  #[test]
+  fn test_as_slice() {
+    let frustum = Frustum::from_ortho_planes(Vec3::ZERO, 10.0, -1.0, 1.0);
+
+    let planes = frustum.as_slice();
+
+    assert_eq!(planes[0], frustum.near);
+    assert_eq!(planes[1], frustum.far);
+    assert_eq!(planes[2], frustum.left);
+    assert_eq!(planes[3], frustum.right);
+    assert_eq!(planes[4], frustum.top);
+    assert_eq!(planes[5], frustum.bottom);
+  }
+}

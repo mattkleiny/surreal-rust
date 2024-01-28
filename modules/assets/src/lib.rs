@@ -8,8 +8,6 @@ pub use importers::*;
 mod exporters;
 mod importers;
 
-// TODO: add a small UI toolkit for building the editor; for each field render
-
 use common::{FastHashMap, ResourceArena, ToVirtualPath};
 
 common::impl_rid!(AssetId, "Identifies an asset in an asset database.");
@@ -46,8 +44,8 @@ pub struct AssetDatabase {
 /// Represents the internal state of an asset.
 pub enum AssetState {
   Unloaded,
-  Loaded(Box<dyn Any>),
   Orphaned,
+  Loaded(Box<dyn Any>),
 }
 
 impl AssetDatabase {
