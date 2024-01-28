@@ -1,8 +1,11 @@
 use std::sync::RwLock;
 
-use common::Arena;
+use common::{vec3, Arena};
 
 use super::*;
+
+/// Gravity on Earth.
+const DEFAULT_GRAVITY: Vec3 = vec3(0.0, -9.81, 0.0);
 
 /// The default, home-baked [`PhysicsBackend`].
 ///
@@ -10,9 +13,23 @@ use super::*;
 /// algorithm to simulate the physics of the game world.
 #[derive(Default)]
 pub struct InternalPhysicsBackend {
+  settings: RwLock<Settings>,
   bodies: RwLock<Arena<BodyId, Body>>,
   colliders: RwLock<Arena<ColliderId, Collider>>,
   effectors: RwLock<Arena<EffectorId, Effector>>,
+}
+
+/// Internal settings for the physics backend.
+struct Settings {
+  gravity: Vec3,
+}
+
+impl Default for Settings {
+  fn default() -> Self {
+    Self {
+      gravity: DEFAULT_GRAVITY,
+    }
+  }
 }
 
 /// The internal representation of a rigidbody.
@@ -55,11 +72,14 @@ struct Effector {
 #[allow(unused_variables)]
 impl PhysicsBackend for InternalPhysicsBackend {
   fn step(&self, delta_time: f32) {
+    let settings = self.settings.read().unwrap();
+
     let mut bodies = self.bodies.write().unwrap();
     let mut colliders = self.colliders.write().unwrap();
 
     for body in bodies.iter_mut() {
       body.position += body.velocity * delta_time;
+      body.position += settings.gravity * delta_time;
     }
 
     for collider in colliders.iter_mut() {
@@ -443,5 +463,9 @@ mod tests {
 
     backend.step(1.0);
     backend.step(1.0);
+
+    let position = backend.body_get_position(body);
+
+    assert_eq!(position, vec3(0.0, -19.62, 0.0));
   }
 }
