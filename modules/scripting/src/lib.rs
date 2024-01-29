@@ -84,5 +84,13 @@ pub mod runtime {
   ///
   /// This is either a virtual machine or an interpreter, depending on the
   /// desired execution model.
-  pub trait ScriptRuntime {}
+  pub trait ScriptRuntime {
+    /// Calls the function with the given name and parameters, returns the
+    /// return value of the function if any.
+    fn call_function(
+      &mut self,
+      name: impl AsRef<str>,
+      parameters: &[common::Variant],
+    ) -> Result<Vec<common::Variant>, ScriptExecuteError>;
+  }
 }

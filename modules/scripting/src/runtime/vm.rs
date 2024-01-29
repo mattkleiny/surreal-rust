@@ -36,7 +36,15 @@ struct Instruction {
   pub opcode: bytecode::OpCode,
 }
 
-impl ScriptRuntime for VirtualMachine {}
+impl ScriptRuntime for VirtualMachine {
+  fn call_function(
+    &mut self,
+    _name: impl AsRef<str>,
+    _parameters: &[common::Variant],
+  ) -> Result<Vec<common::Variant>, super::ScriptExecuteError> {
+    todo!()
+  }
+}
 
 mod bytecode {
   pub trait ToByteCode {

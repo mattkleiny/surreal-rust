@@ -29,7 +29,6 @@ pub enum Variant {
   Vec3(Vec3),
   Vec4(Vec4),
   Quat(Quat),
-  Packed(Vec<u8>),
 }
 
 macro_rules! impl_variant {
