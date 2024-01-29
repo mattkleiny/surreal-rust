@@ -11,6 +11,7 @@
 #![feature(lazy_cell)]
 #![feature(noop_waker)]
 
+pub use abstractions::*;
 pub use collections::*;
 pub use concurrency::*;
 pub use diagnostics::*;
@@ -19,6 +20,7 @@ pub use maths::*;
 pub use strings::*;
 pub use utilities::*;
 
+mod abstractions;
 mod collections;
 mod concurrency;
 mod diagnostics;

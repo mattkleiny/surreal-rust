@@ -3,7 +3,6 @@
 use std::ffi::CString;
 
 use common::FastHashSet;
-use input::VirtualKey;
 pub use sdl2_sys as sys;
 use sys::{SDL_KeyCode, SDL_Keycode};
 
@@ -45,7 +44,7 @@ impl Default for WindowSettings {
 
 impl Window {
   /// Creates a new window.
-  pub fn new(settings: &WindowSettings) -> Result<Self, WindowError> {
+  pub fn new(settings: WindowSettings) -> Result<Self, WindowError> {
     use sdl2_sys::*;
 
     unsafe {

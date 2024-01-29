@@ -393,6 +393,8 @@ dependencies = [
  "surreal-ai",
  "surreal-assets",
  "surreal-audio",
+ "surreal-backend-console",
+ "surreal-backend-sdl",
  "surreal-common",
  "surreal-ecs",
  "surreal-editor",
@@ -402,7 +404,6 @@ dependencies = [
  "surreal-physics",
  "surreal-scene",
  "surreal-scripting",
- "surreal-sdl",
  "surreal-ui",
 ]
 
@@ -426,6 +427,25 @@ name = "surreal-audio"
 version = "0.0.0"
 dependencies = [
  "surreal-common",
+]
+
+[[package]]
+name = "surreal-backend-console"
+version = "0.0.0"
+dependencies = [
+ "surreal-common",
+ "surreal-input",
+]
+
+[[package]]
+name = "surreal-backend-sdl"
+version = "0.0.0"
+dependencies = [
+ "sdl2-sys",
+ "surreal-audio",
+ "surreal-common",
+ "surreal-graphics",
+ "surreal-input",
 ]
 
 [[package]]
@@ -462,10 +482,10 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "surreal-audio",
+ "surreal-backend-sdl",
  "surreal-common",
  "surreal-graphics",
  "surreal-input",
- "surreal-sdl",
 ]
 
 [[package]]
@@ -524,17 +544,6 @@ name = "surreal-scripting"
 version = "0.0.0"
 dependencies = [
  "surreal-common",
-]
-
-[[package]]
-name = "surreal-sdl"
-version = "0.0.0"
-dependencies = [
- "sdl2-sys",
- "surreal-audio",
- "surreal-common",
- "surreal-graphics",
- "surreal-input",
 ]
 
 [[package]]

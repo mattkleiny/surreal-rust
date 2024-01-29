@@ -58,7 +58,19 @@ enum ColliderShape {
 }
 
 struct Effector {
-  _kind: EffectorKind,
+  kind: EffectorKind,
+  shape: EffectorShape,
+  position: Vec3,
+  rotation: Quat,
+  scale: Vec3,
+  strength: f32,
+}
+
+enum EffectorShape {
+  Sphere { radius: f32 },
+  Box { size: Vec3 },
+  Capsule { radius: f32, height: f32 },
+  Cylinder { radius: f32, height: f32 },
 }
 
 #[allow(unused_variables)]
@@ -68,6 +80,7 @@ impl PhysicsBackend for InternalPhysicsBackend {
 
     let mut bodies = self.bodies.write().unwrap();
     let mut colliders = self.colliders.write().unwrap();
+    let effectors = self.effectors.read().unwrap();
 
     for body in bodies.iter_mut() {
       body.position += body.velocity * delta_time;
@@ -76,6 +89,10 @@ impl PhysicsBackend for InternalPhysicsBackend {
 
     for collider in colliders.iter_mut() {
       // TODO: collision checks
+    }
+
+    for effector in effectors.iter() {
+      // TODO: apply effectors
     }
   }
 
@@ -87,29 +104,6 @@ impl PhysicsBackend for InternalPhysicsBackend {
     bodies.clear();
     colliders.clear();
     effectors.clear();
-  }
-
-  fn accept(&self, visitor: &mut dyn PhysicsVisitor) {
-    let bodies = self.bodies.read().unwrap();
-    for (id, body) in bodies.enumerate() {
-      visitor.visit_body(id, body.kind, body.position, body.rotation, body.scale);
-    }
-
-    drop(bodies);
-
-    let colliders = self.colliders.read().unwrap();
-    for (id, collider) in colliders.enumerate() {
-      visitor.visit_collider(id, collider.kind, collider.position, collider.rotation, collider.scale);
-    }
-
-    drop(colliders);
-
-    let effectors = self.effectors.read().unwrap();
-    for (id, effector) in effectors.enumerate() {
-      visitor.visit_effector(id, effector._kind, Vec3::ZERO, Quat::IDENTITY, Vec3::ZERO);
-    }
-
-    drop(effectors);
   }
 
   fn body_create(&self, kind: BodyKind, initial_position: Vec3) -> BodyId {
@@ -238,11 +232,11 @@ impl PhysicsBackend for InternalPhysicsBackend {
     bodies.remove(body);
   }
 
-  fn collider_create_sphere(&self, initial_position: Vec3, radius: f32) -> ColliderId {
+  fn collider_create_sphere(&self, kind: ColliderKind, initial_position: Vec3, radius: f32) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
     colliders.insert(Collider {
-      kind: ColliderKind::Sphere,
+      kind,
       shape: ColliderShape::Sphere { radius },
       position: initial_position,
       rotation: Quat::IDENTITY,
@@ -250,11 +244,11 @@ impl PhysicsBackend for InternalPhysicsBackend {
     })
   }
 
-  fn collider_create_box(&self, initial_position: Vec3, size: Vec3) -> ColliderId {
+  fn collider_create_box(&self, kind: ColliderKind, initial_position: Vec3, size: Vec3) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
     colliders.insert(Collider {
-      kind: ColliderKind::Box,
+      kind,
       shape: ColliderShape::Box { size },
       position: initial_position,
       rotation: Quat::IDENTITY,
@@ -262,11 +256,17 @@ impl PhysicsBackend for InternalPhysicsBackend {
     })
   }
 
-  fn collider_create_capsule(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId {
+  fn collider_create_capsule(
+    &self,
+    kind: ColliderKind,
+    initial_position: Vec3,
+    radius: f32,
+    height: f32,
+  ) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
     colliders.insert(Collider {
-      kind: ColliderKind::Capsule,
+      kind,
       shape: ColliderShape::Capsule { radius, height },
       position: initial_position,
       rotation: Quat::IDENTITY,
@@ -274,11 +274,17 @@ impl PhysicsBackend for InternalPhysicsBackend {
     })
   }
 
-  fn collider_create_cylinder(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId {
+  fn collider_create_cylinder(
+    &self,
+    kind: ColliderKind,
+    initial_position: Vec3,
+    radius: f32,
+    height: f32,
+  ) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
     colliders.insert(Collider {
-      kind: ColliderKind::Cylinder,
+      kind,
       shape: ColliderShape::Cylinder { radius, height },
       position: initial_position,
       rotation: Quat::IDENTITY,
@@ -286,11 +292,11 @@ impl PhysicsBackend for InternalPhysicsBackend {
     })
   }
 
-  fn collider_create_cone(&self, initial_position: Vec3, radius: f32, height: f32) -> ColliderId {
+  fn collider_create_cone(&self, kind: ColliderKind, initial_position: Vec3, radius: f32, height: f32) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
     colliders.insert(Collider {
-      kind: ColliderKind::Cone,
+      kind,
       shape: ColliderShape::Cone { radius, height },
       position: initial_position,
       rotation: Quat::IDENTITY,
@@ -298,11 +304,11 @@ impl PhysicsBackend for InternalPhysicsBackend {
     })
   }
 
-  fn collider_create_convex_hull(&self, initial_position: Vec3, vertices: &[Vec3]) -> ColliderId {
+  fn collider_create_convex_hull(&self, kind: ColliderKind, initial_position: Vec3, vertices: &[Vec3]) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
     colliders.insert(Collider {
-      kind: ColliderKind::ConvexHull,
+      kind,
       shape: ColliderShape::ConvexHull {
         vertices: vertices.to_vec(),
       },
@@ -312,11 +318,17 @@ impl PhysicsBackend for InternalPhysicsBackend {
     })
   }
 
-  fn collider_create_triangle_mesh(&self, initial_position: Vec3, vertices: &[Vec3], indices: &[u32]) -> ColliderId {
+  fn collider_create_triangle_mesh(
+    &self,
+    kind: ColliderKind,
+    initial_position: Vec3,
+    vertices: &[Vec3],
+    indices: &[u32],
+  ) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
     colliders.insert(Collider {
-      kind: ColliderKind::TriangleMesh,
+      kind,
       shape: ColliderShape::TriangleMesh {
         vertices: vertices.to_vec(),
         indices: indices.to_vec(),
@@ -327,11 +339,17 @@ impl PhysicsBackend for InternalPhysicsBackend {
     })
   }
 
-  fn collider_create_height_field(&self, initial_position: Vec3, size: Vec3, heights: &[f32]) -> ColliderId {
+  fn collider_create_height_field(
+    &self,
+    kind: ColliderKind,
+    initial_position: Vec3,
+    size: Vec3,
+    heights: &[f32],
+  ) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
     colliders.insert(Collider {
-      kind: ColliderKind::HeightField,
+      kind,
       shape: ColliderShape::HeightField {
         size,
         heights: heights.to_vec(),
@@ -348,7 +366,7 @@ impl PhysicsBackend for InternalPhysicsBackend {
     if let Some(collider) = colliders.get(collider) {
       collider.kind
     } else {
-      ColliderKind::Sphere
+      ColliderKind::Trigger
     }
   }
 
@@ -412,48 +430,150 @@ impl PhysicsBackend for InternalPhysicsBackend {
     colliders.remove(collider);
   }
 
-  fn effector_create_wind(&self, initial_position: Vec3) -> EffectorId {
-    todo!()
+  fn effector_create_sphere(&self, kind: EffectorKind, initial_position: Vec3, radius: f32) -> EffectorId {
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.insert(Effector {
+      kind,
+      shape: EffectorShape::Sphere { radius },
+      position: initial_position,
+      rotation: Quat::IDENTITY,
+      scale: Vec3::ZERO,
+      strength: 0.0,
+    })
   }
 
-  fn effector_create_gravity(&self, initial_position: Vec3) -> EffectorId {
-    todo!()
+  fn effector_create_box(&self, kind: EffectorKind, initial_position: Vec3, size: Vec3) -> EffectorId {
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.insert(Effector {
+      kind,
+      shape: EffectorShape::Box { size },
+      position: initial_position,
+      rotation: Quat::IDENTITY,
+      scale: Vec3::ZERO,
+      strength: 0.0,
+    })
+  }
+
+  fn effector_create_capsule(
+    &self,
+    kind: EffectorKind,
+    initial_position: Vec3,
+    radius: f32,
+    height: f32,
+  ) -> EffectorId {
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.insert(Effector {
+      kind,
+      shape: EffectorShape::Capsule { radius, height },
+      position: initial_position,
+      rotation: Quat::IDENTITY,
+      scale: Vec3::ZERO,
+      strength: 0.0,
+    })
+  }
+
+  fn effector_create_cylinder(
+    &self,
+    kind: EffectorKind,
+    initial_position: Vec3,
+    radius: f32,
+    height: f32,
+  ) -> EffectorId {
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.insert(Effector {
+      kind,
+      shape: EffectorShape::Cylinder { radius, height },
+      position: initial_position,
+      rotation: Quat::IDENTITY,
+      scale: Vec3::ZERO,
+      strength: 0.0,
+    })
   }
 
   fn effector_get_kind(&self, effector: EffectorId) -> EffectorKind {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    if let Some(effector) = effectors.get(effector) {
+      effector.kind
+    } else {
+      EffectorKind::Gravity
+    }
   }
 
   fn effector_set_position(&self, effector: EffectorId, position: Vec3) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    if let Some(effector) = effectors.get_mut(effector) {
+      effector.position = position;
+    }
   }
 
   fn effector_get_position(&self, effector: EffectorId) -> Vec3 {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    if let Some(effector) = effectors.get(effector) {
+      effector.position
+    } else {
+      Vec3::ZERO
+    }
   }
 
   fn effector_set_rotation(&self, effector: EffectorId, rotation: Quat) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    if let Some(effector) = effectors.get_mut(effector) {
+      effector.rotation = rotation;
+    }
   }
 
   fn effector_get_rotation(&self, effector: EffectorId) -> Quat {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    if let Some(effector) = effectors.get(effector) {
+      effector.rotation
+    } else {
+      Quat::IDENTITY
+    }
   }
 
   fn effector_set_scale(&self, effector: EffectorId, scale: Vec3) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    if let Some(effector) = effectors.get_mut(effector) {
+      effector.scale = scale;
+    }
   }
 
   fn effector_get_scale(&self, effector: EffectorId) -> Vec3 {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    if let Some(effector) = effectors.get(effector) {
+      effector.scale
+    } else {
+      Vec3::ZERO
+    }
   }
 
   fn effector_set_strength(&self, effector: EffectorId, strength: f32) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    if let Some(effector) = effectors.get_mut(effector) {
+      effector.strength = strength;
+    }
   }
 
   fn effector_get_strength(&self, effector: EffectorId) -> f32 {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    if let Some(effector) = effectors.get(effector) {
+      effector.strength
+    } else {
+      0.0
+    }
   }
 
   fn effector_delete(&self, effector: EffectorId) {
@@ -472,7 +592,7 @@ mod tests {
     let backend = InternalPhysicsBackend::default();
 
     let body = backend.body_create(BodyKind::Dynamic, Vec3::ZERO);
-    let collider = backend.collider_create_sphere(Vec3::ZERO, 1.0);
+    let collider = backend.collider_create_sphere(ColliderKind::Solid, Vec3::ZERO, 1.0);
 
     backend.body_add_collider(body, collider);
 

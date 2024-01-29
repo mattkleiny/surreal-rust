@@ -90,9 +90,7 @@ pub enum TargetError {
   FailedToBuildAttachments,
 }
 
-pub trait GraphicsVisitor {
-    
-}
+pub trait GraphicsVisitor {}
 
 /// An abstraction on top of the underlying graphics API.
 ///
@@ -100,6 +98,7 @@ pub trait GraphicsVisitor {
 /// hide away implementation details and lifetimes. The backend forms the
 /// foundation of higher-level abstractions that make it simpler to build
 /// graphics programs.
+#[rustfmt::skip]
 #[allow(clippy::too_many_arguments)]
 pub trait GraphicsBackend {
   // frame operations
@@ -119,59 +118,17 @@ pub trait GraphicsBackend {
 
   // buffers
   fn buffer_create(&self) -> Result<BufferId, BufferError>;
-  fn buffer_read_data(
-    &self,
-    buffer: BufferId,
-    offset: usize,
-    length: usize,
-    pointer: *mut u8,
-  ) -> Result<(), BufferError>;
-  fn buffer_write_data(
-    &self,
-    buffer: BufferId,
-    usage: BufferUsage,
-    kind: BufferKind,
-    length: usize,
-    pointer: *const u8,
-  ) -> Result<(), BufferError>;
+  fn buffer_read_data(&self, buffer: BufferId, offset: usize, length: usize, pointer: *mut u8) -> Result<(), BufferError>;
+  fn buffer_write_data(&self, buffer: BufferId, usage: BufferUsage, kind: BufferKind, length: usize, pointer: *const u8) -> Result<(), BufferError>;
   fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError>;
 
   // textures
   fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError>;
   fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError>;
-  fn texture_initialize(
-    &self,
-    texture: TextureId,
-    width: u32,
-    height: u32,
-    format: TextureFormat,
-  ) -> Result<(), TextureError>;
-  fn texture_read_data(
-    &self,
-    texture: TextureId,
-    length: usize,
-    pixel_format: TextureFormat,
-    pixels: *mut u8,
-    mip_level: usize,
-  ) -> Result<(), TextureError>;
-  fn texture_write_data(
-    &self,
-    texture: TextureId,
-    width: u32,
-    height: u32,
-    pixels: *const u8,
-    internal_format: TextureFormat,
-    pixel_format: TextureFormat,
-    mip_level: usize,
-  ) -> Result<(), TextureError>;
-  fn texture_write_sub_data(
-    &self,
-    texture: TextureId,
-    region: &common::Rectangle,
-    pixels: *const u8,
-    pixel_format: TextureFormat,
-    mip_level: usize,
-  ) -> Result<(), TextureError>;
+  fn texture_initialize(&self, texture: TextureId, width: u32, height: u32, format: TextureFormat) -> Result<(), TextureError>;
+  fn texture_read_data(&self, texture: TextureId, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) -> Result<(), TextureError>;
+  fn texture_write_data(&self, texture: TextureId, width: u32, height: u32, pixels: *const u8, internal_format: TextureFormat, pixel_format: TextureFormat, mip_level: usize) -> Result<(), TextureError>;
+  fn texture_write_sub_data(&self, texture: TextureId, region: &common::Rectangle, pixels: *const u8, pixel_format: TextureFormat, mip_level: usize) -> Result<(), TextureError>;
   fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError>;
 
   // shaders
@@ -184,44 +141,15 @@ pub trait GraphicsBackend {
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError>;
 
   // meshes
-  fn mesh_create(
-    &self,
-    vertices: BufferId,
-    indices: BufferId,
-    descriptors: &[VertexDescriptor],
-  ) -> Result<MeshId, MeshError>;
-  fn mesh_draw(
-    &self,
-    mesh: MeshId,
-    topology: PrimitiveTopology,
-    vertex_count: usize,
-    index_count: usize,
-  ) -> Result<(), MeshError>;
+  fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> Result<MeshId, MeshError>;
+  fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) -> Result<(), MeshError>;
   fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError>;
 
   // render targets
-  fn target_create(
-    &self,
-    color_attachment: TextureId,
-    depth_attachment: Option<TextureId>,
-    stencil_attachment: Option<TextureId>,
-  ) -> Result<TargetId, TargetError>;
+  fn target_create(&self, color_attachment: TextureId, depth_attachment: Option<TextureId>, stencil_attachment: Option<TextureId>) -> Result<TargetId, TargetError>;
   fn target_activate(&self, target: TargetId) -> Result<(), TargetError>;
   fn target_set_default(&self) -> Result<(), TargetError>;
-  fn target_blit(
-    &self,
-    from: TargetId,
-    to: TargetId,
-    source_rect: &common::Rectangle,
-    dest_rect: &common::Rectangle,
-    filter: TextureFilter,
-  ) -> Result<(), TargetError>;
-  fn target_blit_to_display(
-    &self,
-    target: TargetId,
-    source_rect: &common::Rectangle,
-    dest_rect: &common::Rectangle,
-    filter: TextureFilter,
-  ) -> Result<(), TargetError>;
+  fn target_blit(&self, from: TargetId, to: TargetId, source_rect: &common::Rectangle, dest_rect: &common::Rectangle, filter: TextureFilter) -> Result<(), TargetError>;
+  fn target_blit_to_display(&self, target: TargetId, source_rect: &common::Rectangle, dest_rect: &common::Rectangle, filter: TextureFilter) -> Result<(), TargetError>;
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError>;
 }

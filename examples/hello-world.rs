@@ -2,7 +2,7 @@ use input::KeyboardDevice;
 use surreal::{backends::sdl::*, common::*, graphics::*};
 
 fn main() {
-  let mut window = Window::new(&WindowSettings {
+  let mut window = Window::new(WindowSettings {
     title: "Hello World!",
     ..Default::default()
   })

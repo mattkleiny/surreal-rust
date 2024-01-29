@@ -49,6 +49,7 @@ pub trait AudioBackend {
 /// Represents an audio device.
 ///
 /// A device is capable of playing audio clips via audio sources.
+#[rustfmt::skip]
 pub trait AudioDevice {
   // clips
   fn clip_create(&self) -> Result<ClipId, ClipError>;
