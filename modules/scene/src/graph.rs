@@ -40,6 +40,17 @@ pub enum SceneError {
 pub struct SceneGraph<'a, T: Transform = ()> {
   pub root: SceneNode<'a, T>,
   groups: FastHashMap<String, FastHashSet<SceneNodeId>>,
+  listeners: Vec<Box<dyn common::SceneListener>>,
+}
+
+impl<'a, T: Transform> common::Scene for SceneGraph<'a, T> {
+  fn add_listener(&mut self, listener: Box<dyn common::SceneListener>) {
+    self.listeners.push(listener);
+  }
+
+  fn remove_listener(&mut self, listener: Box<dyn common::SceneListener>) {
+    self.listeners.retain(|x| !std::ptr::eq(x.as_ref(), listener.as_ref()));
+  }
 }
 
 impl<'a, T: Transform> SceneGraph<'a, T> {
@@ -48,6 +59,7 @@ impl<'a, T: Transform> SceneGraph<'a, T> {
     Self {
       root: root.into(),
       groups: FastHashMap::default(),
+      listeners: Vec::default(),
     }
   }
 
@@ -704,5 +716,26 @@ impl<'a, T: Transform> SceneNodeBuilder<'a, T> {
 impl<'a, T: Transform> From<SceneNodeBuilder<'a, T>> for SceneNode<'a, T> {
   fn from(value: SceneNodeBuilder<'a, T>) -> Self {
     value.build()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use common::{Scene, SceneListener};
+
+  use super::*;
+
+  #[test]
+  fn test_add_listener_to_scene() {
+    struct TestListener {}
+
+    impl SceneListener for TestListener {}
+
+    let mut graph = SceneGraph2D::default();
+
+    graph.add_listener(Box::new(TestListener {}));
+    graph.add_listener(Box::new(TestListener {}));
+
+    assert_eq!(graph.listeners.len(), 2);
   }
 }
