@@ -4,6 +4,10 @@ use crate::{
 };
 
 /// A type that can hold varying different values.
+///
+/// This is an abstraction over the different primitive types that are often
+/// shuffled around in the engine. It allows for a more generic API that can
+/// handle any type of value.
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Variant {

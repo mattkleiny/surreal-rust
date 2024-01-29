@@ -12,8 +12,10 @@ pub use paths::*;
 pub use random::*;
 pub use ranges::*;
 pub use rectangles::*;
+pub use size::*;
 pub use shapes::*;
 pub use splines::*;
+pub use time::*;
 pub use viewports::*;
 
 mod angles;
@@ -29,7 +31,9 @@ mod random;
 mod ranges;
 mod rectangles;
 mod shapes;
+mod size;
 mod splines;
+mod time;
 mod viewports;
 
 /// A globally unique identifier.

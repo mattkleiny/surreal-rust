@@ -2,20 +2,12 @@
 
 pub use events::*;
 pub use reflect::*;
-pub use services::*;
 pub use settings::*;
-pub use size::*;
-pub use time::*;
-pub use variant::*;
 pub use version::*;
 
 mod events;
 mod reflect;
-mod services;
 mod settings;
-mod size;
-mod time;
-mod variant;
 mod version;
 
 pub use macros::{Reflect, Singleton};
