@@ -297,18 +297,7 @@ mod parser {
     Module::parse(code)
   }
 
-  /// A trait for types that can be parsed from a string.
-  trait Parseable: Sized {
-    /// Parse the given code into a result.
-    fn parse(code: &str) -> Result<Self, ShaderError> {
-      let mut stream = TokenStream::parse(code)?;
-
-      Self::from_token_stream(&mut stream)
-    }
-
-    /// Parse the given token stream into a result.
-    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError>;
-  }
+  pub type Cardinality = u8;
 
   #[derive(Debug, PartialEq)]
   pub enum ModuleKind {
@@ -324,12 +313,6 @@ mod parser {
     pub kernels: Vec<Kernel>,
   }
 
-  impl Parseable for Module {
-    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
-      stream.parse_module()
-    }
-  }
-
   #[derive(Debug, PartialEq)]
   pub enum KernelKind {
     Vertex,
@@ -343,19 +326,11 @@ mod parser {
     pub statements: Vec<Statement>,
   }
 
-  impl Parseable for Kernel {
-    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
-      stream.parse_kernel()
-    }
-  }
-
   #[derive(Debug, PartialEq)]
   pub struct Parameter {
     pub name: String,
     pub primitive: Primitive,
   }
-
-  pub type Cardinality = u8;
 
   #[derive(Debug, PartialEq)]
   pub struct Primitive(pub PrimitiveKind, pub Cardinality);
@@ -377,24 +352,12 @@ mod parser {
     Function(String, Vec<Parameter>, Vec<Statement>),
   }
 
-  impl Parseable for Statement {
-    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
-      stream.parse_statement()
-    }
-  }
-
   #[derive(Debug, PartialEq)]
   pub enum Expression {
     Literal(Literal),
     Identifier(String),
     Binary(Box<Expression>, BinaryOperator, Box<Expression>),
     Unary(UnaryOperator, Box<Expression>),
-  }
-
-  impl Parseable for Expression {
-    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
-      stream.parse_expression()
-    }
   }
 
   #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -801,6 +764,43 @@ mod parser {
         "unexpected token encountered: {:?}",
         self.peek()
       )))
+    }
+  }
+
+  /// A trait for types that can be parsed from a string.
+  trait Parseable: Sized {
+    /// Parse the given code into a result.
+    fn parse(code: &str) -> Result<Self, ShaderError> {
+      let mut stream = TokenStream::parse(code)?;
+
+      Self::from_token_stream(&mut stream)
+    }
+
+    /// Parse the given token stream into a result.
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError>;
+  }
+
+  impl Parseable for Module {
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
+      stream.parse_module()
+    }
+  }
+
+  impl Parseable for Kernel {
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
+      stream.parse_kernel()
+    }
+  }
+
+  impl Parseable for Statement {
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
+      stream.parse_statement()
+    }
+  }
+
+  impl Parseable for Expression {
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
+      stream.parse_expression()
     }
   }
 
