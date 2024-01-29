@@ -10,7 +10,6 @@ pub struct VirtualMachine {
   stack: Vec<bytecode::Literal>,
   instruction_pointer: usize,
   instruction: Option<Instruction>,
-  frame: Option<StackFrame>,
   call_stack: Vec<StackFrame>,
 }
 

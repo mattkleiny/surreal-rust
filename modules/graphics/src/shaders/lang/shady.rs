@@ -300,7 +300,14 @@ mod parser {
   /// A trait for types that can be parsed from a string.
   trait Parseable: Sized {
     /// Parse the given code into a result.
-    fn parse(code: &str) -> Result<Self, ShaderError>;
+    fn parse(code: &str) -> Result<Self, ShaderError> {
+      let mut stream = TokenStream::parse(code)?;
+
+      Self::from_token_stream(&mut stream)
+    }
+
+    /// Parse the given token stream into a result.
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError>;
   }
 
   #[derive(Debug, PartialEq)]
@@ -318,11 +325,8 @@ mod parser {
   }
 
   impl Parseable for Module {
-    fn parse(code: &str) -> Result<Self, ShaderError> {
-      let mut stream = TokenStream::parse(code)?;
-      let module = stream.parse_module()?;
-
-      Ok(module)
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
+      stream.parse_module()
     }
   }
 
@@ -340,11 +344,8 @@ mod parser {
   }
 
   impl Parseable for Kernel {
-    fn parse(code: &str) -> Result<Self, ShaderError> {
-      let mut stream = TokenStream::parse(code)?;
-      let kernel = stream.parse_kernel()?;
-
-      Ok(kernel)
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
+      stream.parse_kernel()
     }
   }
 
@@ -377,11 +378,8 @@ mod parser {
   }
 
   impl Parseable for Statement {
-    fn parse(code: &str) -> Result<Self, ShaderError> {
-      let mut stream = TokenStream::parse(code)?;
-      let statement = stream.parse_statement()?;
-
-      Ok(statement)
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
+      stream.parse_statement()
     }
   }
 
@@ -394,11 +392,8 @@ mod parser {
   }
 
   impl Parseable for Expression {
-    fn parse(code: &str) -> Result<Self, ShaderError> {
-      let mut stream = TokenStream::parse(code)?;
-      let expression = stream.parse_expression()?;
-
-      Ok(expression)
+    fn from_token_stream(stream: &mut TokenStream) -> Result<Self, ShaderError> {
+      stream.parse_expression()
     }
   }
 
@@ -456,6 +451,117 @@ mod parser {
   }
 
   impl TokenStream {
+    /// Parses the given code into a token stream.
+    pub fn parse(code: &str) -> Result<Self, ShaderError> {
+      // tokenize the code
+      let mut tokens = VecDeque::<Token>::new();
+      let mut chars = code.chars().peekable();
+
+      while let Some(c) = chars.next() {
+        match c {
+          // skip whitespace
+          c if c.is_whitespace() => continue,
+
+          // parse numbers
+          c if c.is_numeric() => {
+            let mut number = String::new();
+
+            number.push(c);
+
+            while let Some(c) = chars.peek() {
+              if c.is_numeric() || *c == '.' {
+                number.push(*c);
+                chars.next();
+              } else {
+                break;
+              }
+            }
+
+            if number.contains('.') {
+              tokens.push_back(Token::Float(number.parse().map_err(|_| {
+                ShaderError::CompileError(format!("invalid float literal: {}", number))
+              })?));
+            } else {
+              tokens.push_back(Token::Integer(number.parse().map_err(|_| {
+                ShaderError::CompileError(format!("invalid integer literal: {}", number))
+              })?));
+            }
+          }
+
+          // parse keywords and identifiers
+          c if c.is_ascii_alphabetic() || c == '#' => {
+            let mut string = String::new();
+
+            string.push(c);
+
+            while let Some(c) = chars.peek() {
+              if c.is_ascii_alphanumeric() || *c == '_' {
+                string.push(*c);
+                chars.next();
+              } else {
+                break;
+              }
+            }
+
+            tokens.push_back(match string.as_str() {
+              "true" => Token::Boolean(true),
+              "false" => Token::Boolean(false),
+              "let" => Token::Keyword(string),
+              "return" => Token::Keyword(string),
+              "if" => Token::Keyword(string),
+              "else" => Token::Keyword(string),
+              "while" => Token::Keyword(string),
+              "for" => Token::Keyword(string),
+              "fn" => Token::Keyword(string),
+              "int" => Token::Keyword(string),
+              "float" => Token::Keyword(string),
+              "bool" => Token::Keyword(string),
+              "vec2" => Token::Keyword(string),
+              "vec3" => Token::Keyword(string),
+              "vec4" => Token::Keyword(string),
+              "mat2" => Token::Keyword(string),
+              "mat3" => Token::Keyword(string),
+              "mat4" => Token::Keyword(string),
+              "sampler1D" => Token::Keyword(string),
+              "sampler2D" => Token::Keyword(string),
+              "sampler3D" => Token::Keyword(string),
+              "#shader_type" => Token::Keyword(string),
+              _ => Token::Identifier(string),
+            });
+          }
+
+          // parse operators
+          '!' => tokens.push_back(Token::UnaryOperator(UnaryOperator::Not)),
+          '+' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Add)),
+          '-' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Subtract)),
+          '*' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Multiply)),
+          '/' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Divide)),
+          '%' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Modulo)),
+          '^' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Power)),
+          '=' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Equal)),
+          '<' => tokens.push_back(Token::BinaryOperator(BinaryOperator::LessThan)),
+          '>' => tokens.push_back(Token::BinaryOperator(BinaryOperator::GreaterThan)),
+          '&' => tokens.push_back(Token::BinaryOperator(BinaryOperator::And)),
+          '|' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Or)),
+          ';' => tokens.push_back(Token::Semicolon),
+          ':' => tokens.push_back(Token::Colon),
+          '(' => tokens.push_back(Token::LeftParenthesis),
+          ')' => tokens.push_back(Token::RightParenthesis),
+          '{' => tokens.push_back(Token::LeftBrace),
+          '}' => tokens.push_back(Token::RightBrace),
+          ',' => tokens.push_back(Token::Comma),
+
+          // parse other tokens
+          _ => panic!("unexpected token: {}", c),
+        }
+      }
+
+      Ok(TokenStream {
+        tokens,
+        last_token: None,
+      })
+    }
+
     /// Peek at the next token in the stream.
     pub fn peek(&self) -> Option<&Token> {
       self.tokens.front()
@@ -695,118 +801,6 @@ mod parser {
         "unexpected token encountered: {:?}",
         self.peek()
       )))
-    }
-  }
-
-  impl Parseable for TokenStream {
-    fn parse(code: &str) -> Result<Self, ShaderError> {
-      // tokenize the code
-      let mut tokens = VecDeque::<Token>::new();
-      let mut chars = code.chars().peekable();
-
-      while let Some(c) = chars.next() {
-        match c {
-          // skip whitespace
-          c if c.is_whitespace() => continue,
-
-          // parse numbers
-          c if c.is_numeric() => {
-            let mut number = String::new();
-
-            number.push(c);
-
-            while let Some(c) = chars.peek() {
-              if c.is_numeric() || *c == '.' {
-                number.push(*c);
-                chars.next();
-              } else {
-                break;
-              }
-            }
-
-            if number.contains('.') {
-              tokens.push_back(Token::Float(number.parse().map_err(|_| {
-                ShaderError::CompileError(format!("invalid float literal: {}", number))
-              })?));
-            } else {
-              tokens.push_back(Token::Integer(number.parse().map_err(|_| {
-                ShaderError::CompileError(format!("invalid integer literal: {}", number))
-              })?));
-            }
-          }
-
-          // parse keywords and identifiers
-          c if c.is_ascii_alphabetic() || c == '#' => {
-            let mut string = String::new();
-
-            string.push(c);
-
-            while let Some(c) = chars.peek() {
-              if c.is_ascii_alphanumeric() || *c == '_' {
-                string.push(*c);
-                chars.next();
-              } else {
-                break;
-              }
-            }
-
-            tokens.push_back(match string.as_str() {
-              "true" => Token::Boolean(true),
-              "false" => Token::Boolean(false),
-              "let" => Token::Keyword(string),
-              "return" => Token::Keyword(string),
-              "if" => Token::Keyword(string),
-              "else" => Token::Keyword(string),
-              "while" => Token::Keyword(string),
-              "for" => Token::Keyword(string),
-              "fn" => Token::Keyword(string),
-              "int" => Token::Keyword(string),
-              "float" => Token::Keyword(string),
-              "bool" => Token::Keyword(string),
-              "vec2" => Token::Keyword(string),
-              "vec3" => Token::Keyword(string),
-              "vec4" => Token::Keyword(string),
-              "mat2" => Token::Keyword(string),
-              "mat3" => Token::Keyword(string),
-              "mat4" => Token::Keyword(string),
-              "sampler1D" => Token::Keyword(string),
-              "sampler2D" => Token::Keyword(string),
-              "sampler3D" => Token::Keyword(string),
-              "#shader_type" => Token::Keyword(string),
-              _ => Token::Identifier(string),
-            });
-          }
-
-          // parse operators
-          '!' => tokens.push_back(Token::UnaryOperator(UnaryOperator::Not)),
-          '+' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Add)),
-          '-' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Subtract)),
-          '*' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Multiply)),
-          '/' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Divide)),
-          '%' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Modulo)),
-          '^' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Power)),
-          '=' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Equal)),
-          '<' => tokens.push_back(Token::BinaryOperator(BinaryOperator::LessThan)),
-          '>' => tokens.push_back(Token::BinaryOperator(BinaryOperator::GreaterThan)),
-          '&' => tokens.push_back(Token::BinaryOperator(BinaryOperator::And)),
-          '|' => tokens.push_back(Token::BinaryOperator(BinaryOperator::Or)),
-          ';' => tokens.push_back(Token::Semicolon),
-          ':' => tokens.push_back(Token::Colon),
-          '(' => tokens.push_back(Token::LeftParenthesis),
-          ')' => tokens.push_back(Token::RightParenthesis),
-          '{' => tokens.push_back(Token::LeftBrace),
-          '}' => tokens.push_back(Token::RightBrace),
-          ',' => tokens.push_back(Token::Comma),
-
-          // parse other tokens
-          _ => panic!("unexpected token: {}", c),
-        }
-      }
-
-      Ok(TokenStream {
-        tokens,
-        last_token: None,
-      })
     }
   }
 

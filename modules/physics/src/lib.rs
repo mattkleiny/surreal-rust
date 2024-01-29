@@ -2,9 +2,12 @@
 
 #![allow(dead_code)]
 
-use common::{Quat, Vec3};
+pub use scenes::*;
 
 mod internal;
+mod scenes;
+
+use common::{Quat, Vec3};
 
 common::impl_arena_index!(ColliderId, "Identifies a collider.");
 common::impl_arena_index!(BodyId, "Identifies a physics body.");
