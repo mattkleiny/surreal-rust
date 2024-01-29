@@ -25,3 +25,130 @@ impl ShaderLanguage for Visual {
     todo!()
   }
 }
+
+#[allow(dead_code)]
+mod definition {
+  //! Internal representation of a Visual Shader.
+  use common::ToVirtualPath;
+
+  use super::*;
+
+  impl VisualShaderDefinition {
+    pub fn from_path(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
+      let path = path.to_virtual_path();
+      let mut stream = path.open_input_stream().map_err(|_| ShaderError::FailedToLoad)?;
+
+      Self::from_stream(&mut stream)
+    }
+
+    pub fn from_stream(stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
+      #[cfg(feature = "serde")]
+      let definition: Self = Self::from_xml_stream(stream).map_err(|_| ShaderError::FailedToLoad)?;
+
+      #[cfg(not(feature = "serde"))]
+      let definition: Self = todo!();
+
+      Ok(definition)
+    }
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  struct VisualShaderDefinition {
+    name: String,
+    description: Option<String>,
+    inputs: Vec<VisualShaderInput>,
+    outputs: Vec<VisualShaderOutput>,
+    uniforms: Vec<VisualShaderUniform>,
+    functions: Vec<VisualShaderFunction>,
+    code: String,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  struct VisualShaderInput {
+    name: String,
+    kind: VisualShaderKind,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  struct VisualShaderOutput {
+    name: String,
+    kind: VisualShaderKind,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  struct VisualShaderUniform {
+    name: String,
+    kind: VisualShaderKind,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  struct VisualShaderFunction {
+    name: String,
+    inputs: Vec<VisualShaderInput>,
+    outputs: Vec<VisualShaderOutput>,
+    code: String,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  enum VisualShaderKind {
+    Scalar(ScalarKind),
+    Vector(VectorKind),
+    Matrix(MatrixKind),
+    Sampler(SamplerKind),
+    Struct(StructKind),
+    Array(ArrayKind),
+    Void,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  enum ScalarKind {
+    Float,
+    Int,
+    Bool,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  enum VectorKind {
+    Float2,
+    Float3,
+    Float4,
+    Int2,
+    Int3,
+    Int4,
+    Bool2,
+    Bool3,
+    Bool4,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  enum MatrixKind {
+    Float2x2,
+    Float3x3,
+    Float4x4,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  enum SamplerKind {
+    Texture2D,
+    Texture3D,
+    TextureCube,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  struct StructKind {
+    name: String,
+    fields: Vec<VisualShaderField>,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  struct ArrayKind {
+    kind: Box<VisualShaderKind>,
+    size: usize,
+  }
+
+  #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+  struct VisualShaderField {
+    name: String,
+    kind: VisualShaderKind,
+  }
+}

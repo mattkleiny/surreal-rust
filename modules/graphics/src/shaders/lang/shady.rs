@@ -46,8 +46,6 @@ mod compiler {
       kernels.push(kernel.compile(&mut builder)?);
     }
 
-    // TODO: finish this
-
     Ok(kernels)
   }
 
@@ -218,17 +216,17 @@ mod compiler {
       self.indent -= 1;
     }
 
+    pub fn flush_to_string(&mut self) -> String {
+      let output = self.buffer.clone();
+      self.buffer.clear();
+      output
+    }
+
     fn push_indent(&mut self) {
       for _ in 0..self.indent {
         self.buffer.push(' ');
         self.buffer.push(' ');
       }
-    }
-
-    pub fn flush_to_string(&mut self) -> String {
-      let output = self.buffer.clone();
-      self.buffer.clear();
-      output
     }
   }
 
