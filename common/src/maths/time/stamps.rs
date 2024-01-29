@@ -26,16 +26,14 @@ impl Sub for TimeStamp {
 
 #[cfg(feature = "serde")]
 impl serde::Serialize for TimeStamp {
-  fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-    serializer.serialize_f64(self.0.elapsed().as_secs_f64())
+  fn serialize<S: serde::Serializer>(&self, _serializer: S) -> Result<S::Ok, S::Error> {
+    todo!()
   }
 }
 
 #[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for TimeStamp {
-  fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-    let seconds = f64::deserialize(deserializer)?;
-
-    Ok(TimeStamp(Instant::now() - std::time::Duration::from_secs_f64(seconds)))
+  fn deserialize<D: serde::Deserializer<'de>>(_deserializer: D) -> Result<Self, D::Error> {
+    todo!()
   }
 }

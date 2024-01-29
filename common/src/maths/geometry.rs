@@ -1,14 +1,10 @@
 //! Helpers for working with geometry
 
-pub use convexhull::*;
 pub use csg::*;
-pub use delaunay::*;
-pub use earcut::*;
 
-mod convexhull;
 mod csg;
-mod delaunay;
-mod earcut;
+
+// TODO: implement geometry helpers like ear cutting and triangulation
 
 use super::{DVec2, DVec3, Vec2, Vec3, Vector};
 
@@ -22,6 +18,7 @@ pub struct Triangle<V: Vector> {
   pub c: V,
 }
 
+// Common triangle types
 pub type Triangle2 = Triangle<Vec2>;
 pub type DTriangle2 = Triangle<DVec2>;
 pub type Triangle3 = Triangle<Vec3>;
@@ -57,6 +54,7 @@ impl<V: Vector> Polygon<V> {
   }
 }
 
+// Common polygon types
 pub type Polygon2 = Polygon<Vec2>;
 pub type DPolygon2 = Polygon<DVec2>;
 pub type Polygon3 = Polygon<Vec3>;

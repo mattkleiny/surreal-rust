@@ -7,5 +7,5 @@
 
 /// Represents a node that allows Constructive Solid Geometry (CSG) operations.
 pub trait CSG {
-  // TODO: implement me
+  fn union(self, other: &dyn CSG) -> Box<dyn CSG>;
 }

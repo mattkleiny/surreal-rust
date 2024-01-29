@@ -93,3 +93,13 @@ impl Camera for PerspectiveCamera {
     Mat4::look_at_lh(self.position, self.look_at, self.up)
   }
 }
+
+/// Manages the viewport of a camera.
+pub trait Viewport {
+  /// Applies the viewport to the given camera.
+  fn apply_to(&self, camera: &mut dyn Camera);
+}
+
+pub struct FillViewport {}
+pub struct FitViewport {}
+pub struct StretchViewport {}
