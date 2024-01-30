@@ -1,6 +1,6 @@
 //! Rendering support for scene graphs
 
-use graphics::{RenderFrame, RenderObject, RenderScene, VisibleObjectSet};
+use graphics::{RenderFrame, RenderObject, RenderScene, VisibleObject, VisibleObjectSet};
 
 use super::*;
 
@@ -10,7 +10,7 @@ impl<'a, T: Transform> RenderScene for SceneGraph<'a, T> {
     todo!()
   }
 
-  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet<u64> {
+  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet<'a> {
     let frustum = camera.frustum();
     let objects = Vec::new();
 
@@ -20,23 +20,12 @@ impl<'a, T: Transform> RenderScene for SceneGraph<'a, T> {
         return false;
       }
 
-      // TODO: fix this up
-      // objects.push(VisibleObject {
-      //   material: todo!(),
-      //   identifier: node.id().into(),
-      // });
+      // TODO: push the object to the list
 
       true
     });
 
     VisibleObjectSet { frustum, objects }
-  }
-
-  fn get_object(&self, identifier: u64) -> Option<&dyn RenderObject> {
-    self
-      .root
-      .find_by_id(SceneNodeId::from(identifier))
-      .map(|node| node as &dyn RenderObject)
   }
 }
 

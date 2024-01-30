@@ -19,10 +19,8 @@ impl<'a> RenderFrame<'a> {
     for (material, group) in visible_object_set.group_by_material() {
       self.queue.set_material(material);
 
-      for object in group {
-        let render_object = scene.get_object(object.identifier).unwrap();
-
-        render_object.render(self);
+      for entry in group {
+        entry.object.render(self)
       }
     }
   }
@@ -33,11 +31,8 @@ pub trait RenderScene {
   /// Gets the cameras that should be used to render this scene.
   fn cameras(&self) -> Vec<&dyn Camera>;
 
-  /// Gets the object with the given identifier.
-  fn get_object(&self, identifier: u64) -> Option<&dyn RenderObject>;
-
   /// Gets the objects that should be rendered by the given camera.
-  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet<u64>;
+  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet;
 }
 
 /// Represents an object capable of being rendered.
