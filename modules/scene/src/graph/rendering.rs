@@ -1,6 +1,6 @@
 //! Rendering support for scene graphs
 
-use graphics::{RenderFrame, RenderObject, RenderScene, VisibleObject, VisibleObjectSet};
+use graphics::{RenderFrame, RenderObject, RenderScene, VisibleObjectSet};
 
 use super::*;
 
@@ -26,22 +26,6 @@ impl<'a, T: Transform> RenderScene for SceneGraph<'a, T> {
     });
 
     VisibleObjectSet { frustum, objects }
-  }
-}
-
-impl<'a, T: Transform> Debug for SceneGraph<'a, T> {
-  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    for (node, level) in self.root.iter_recursive() {
-      let indent = if level > 0 {
-        " ".repeat(level * 2) + "⤷"
-      } else {
-        " ".repeat(level * 2)
-      };
-
-      writeln!(formatter, "{indent}{node:?}")?;
-    }
-
-    Ok(())
   }
 }
 
