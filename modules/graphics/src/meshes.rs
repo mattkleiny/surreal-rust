@@ -181,12 +181,19 @@ impl<V: Vertex> Mesh<V> {
     builder.to_mesh(graphics)
   }
 
-  /// Acquires mutable write access the mesh buffers.
-  pub fn with_buffers(&mut self, body: impl FnOnce(&mut Buffer<V>, &mut Buffer<Index>)) {
-    let state = &mut self.state.borrow_mut();
-    let (vertices, indices) = state.borrow_buffers_mut();
+  /// Returns the identifier of this mesh.
+  pub fn id(&self) -> MeshId {
+    self.state.borrow().id
+  }
 
-    body(vertices, indices);
+  /// Returns the number of vertices in the mesh.
+  pub fn vertices(&self) -> usize {
+    self.state.borrow().vertices.len()
+  }
+
+  /// Returns the number of indices in the mesh.
+  pub fn indices(&self) -> usize {
+    self.state.borrow().indices.len()
   }
 
   /// Draws this mesh with the given material and topology.
@@ -208,6 +215,14 @@ impl<V: Vertex> Mesh<V> {
       .expect("Failed to draw mesh");
 
     material.unbind();
+  }
+
+  /// Acquires mutable write access the mesh buffers.
+  pub fn with_buffers(&mut self, body: impl FnOnce(&mut Buffer<V>, &mut Buffer<Index>)) {
+    let state = &mut self.state.borrow_mut();
+    let (vertices, indices) = state.borrow_buffers_mut();
+
+    body(vertices, indices);
   }
 }
 

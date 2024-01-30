@@ -29,13 +29,6 @@ pub struct MaterialSortingKey {
   flags: MaterialFlags,
 }
 
-impl From<MaterialFlags> for MaterialSortingKey {
-  /// Gets the sorting key for the given material flags.
-  fn from(flags: MaterialFlags) -> Self {
-    Self { flags }
-  }
-}
-
 impl From<&Material> for MaterialSortingKey {
   /// Gets the sorting key for the given material.
   fn from(material: &Material) -> Self {
@@ -74,11 +67,11 @@ impl From<&Material> for MaterialSortingKey {
 
 /// Represents an object that is visible to a camera, along with it's material
 /// properties that are used to render it.
-pub struct VisibleObject<I> {
+pub struct VisibleObject<'a, I> {
   /// The identifier of the object.
   pub identifier: I,
   /// The sorting key for the material of the object.
-  pub material_sort_key: MaterialSortingKey,
+  pub material: &'a Material,
 }
 
 /// A set of visible objects that can be rendered in a scene.
@@ -86,96 +79,19 @@ pub struct VisibleObject<I> {
 /// This is a subset of the objects in a scene that are visible to a specific
 /// camera, and can be used to optimize rendering by only rendering the objects
 /// that are visible to the camera.
-pub struct VisibleObjectSet<I> {
+pub struct VisibleObjectSet<'a, I> {
   /// The frustum of the camera that was used to cull the objects.
   pub frustum: Frustum,
   /// The objects that are visible to the camera.
-  pub objects: Vec<VisibleObject<I>>,
+  pub objects: Vec<VisibleObject<'a, I>>,
 }
 
-/// Allows iterating over the [`VisibleObject`]s in a [`VisibleObjectSet`] by
-/// batching them by [`MaterialSortingKey`].
-///
-/// This is useful for efficiently rendering the objects in a set by minimizing
-/// state changes between draw calls.
-pub struct VisibleObjectIterator<'a, I> {
-  visible_objects: Vec<&'a [VisibleObject<I>]>,
-  current_index: usize,
-}
-
-impl<'a, I> IntoIterator for &'a VisibleObjectSet<I> {
-  type Item = &'a [VisibleObject<I>];
-  type IntoIter = VisibleObjectIterator<'a, I>;
-
-  fn into_iter(self) -> Self::IntoIter {
-    let visible_objects = self
+impl<'a, I> VisibleObjectSet<'a, I> {
+  /// Gets an iterator over the objects in the set.
+  pub fn group_by_material(&self) -> impl Iterator<Item = (&'a Material, &[VisibleObject<'a, I>])> {
+    self
       .objects
-      .chunk_by(|a, b| a.material_sort_key == b.material_sort_key)
-      .collect();
-
-    VisibleObjectIterator {
-      visible_objects,
-      current_index: 0,
-    }
-  }
-}
-
-impl<'a, I> Iterator for VisibleObjectIterator<'a, I> {
-  type Item = &'a [VisibleObject<I>];
-
-  fn next(&mut self) -> Option<Self::Item> {
-    if self.current_index >= self.visible_objects.len() {
-      return None;
-    }
-
-    let index = self.current_index;
-    let batch = self.visible_objects[index];
-
-    self.current_index += 1;
-
-    Some(batch)
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use common::{FromRandom, Guid};
-
-  use super::*;
-
-  #[derive(Default)]
-  struct TestObject;
-
-  impl RenderObject for TestObject {
-    fn render(&self, _renderer: &mut Renderer) {
-      // no-op
-    }
-  }
-
-  #[test]
-  fn test_iteration_over_group_by_key() {
-    let objects = VisibleObjectSet {
-      frustum: Frustum::default(),
-      objects: vec![
-        VisibleObject {
-          identifier: Guid::random(),
-          material_sort_key: MaterialSortingKey::from(MaterialFlags::ALPHA_BLENDING),
-        },
-        VisibleObject {
-          identifier: Guid::random(),
-          material_sort_key: MaterialSortingKey::from(MaterialFlags::DEPTH_TESTING),
-        },
-        VisibleObject {
-          identifier: Guid::random(),
-          material_sort_key: MaterialSortingKey::from(MaterialFlags::ALPHA_BLENDING),
-        },
-      ],
-    };
-
-    for batch in &objects {
-      for object in batch {
-        println!("{:?}", object.material_sort_key);
-      }
-    }
+      .chunk_by(|a, b| MaterialSortingKey::from(a.material) == MaterialSortingKey::from(b.material))
+      .map(|chunk| (chunk[0].material, chunk))
   }
 }

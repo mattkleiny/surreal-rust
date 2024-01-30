@@ -109,61 +109,36 @@ impl RenderQueue {
     self.enqueue(RenderCommand::ClearDepthBuffer { depth });
   }
 
-  /// Enables the given shader and render state.
-  pub fn set_shader(
-    &mut self,
-    shader_id: ShaderId,
-    uniforms: Box<ShaderUniformSet>,
-    blend_state: BlendState,
-    culling_mode: CullingMode,
-    scissor_mode: ScissorMode,
-  ) {
-    self.enqueue(RenderCommand::SetShader {
-      shader_id,
-      uniforms,
-      blend_state,
-      culling_mode,
-      scissor_mode,
-    });
-  }
-
   /// Enables the given material.
   pub fn set_material(&mut self, material: &Material) {
-    self.set_shader(
-      material.shader().id(),
-      Box::new(material.uniforms().clone()),
-      material.blend_state(),
-      material.culling_mode(),
-      material.scissor_mode(),
-    );
-  }
-
-  /// Sets the given uniform on the given shader by it's name.
-  pub fn set_uniform_by_key(&mut self, shader_id: ShaderId, key: String, uniform: ShaderUniform) {
-    self.enqueue(RenderCommand::SetUniformByKey {
-      shader_id,
-      key,
-      uniform,
+    self.enqueue(RenderCommand::SetShader {
+      shader_id: material.shader().id(),
+      uniforms: Box::new(material.uniforms().clone()),
+      blend_state: material.blend_state(),
+      culling_mode: material.culling_mode(),
+      scissor_mode: material.scissor_mode(),
     });
   }
 
-  /// Sets the given uniform on the given shader by it's location.
-  pub fn set_uniform_by_location(&mut self, shader_id: ShaderId, location: usize, uniform: ShaderUniform) {
-    self.enqueue(RenderCommand::SetUniformByLocation {
-      shader_id,
-      location,
-      uniform,
-    });
-  }
-
-  /// Issues a draw call for the given mesh.
-  pub fn draw_mesh(&mut self, mesh_id: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
+  /// Draws the given [`Mesh`].
+  pub fn draw_mesh<V: Vertex>(&mut self, mesh: &Mesh<V>, topology: PrimitiveTopology) {
     self.enqueue(RenderCommand::DrawMesh {
-      mesh_id,
+      mesh_id: mesh.id(),
       topology,
-      vertex_count,
-      index_count,
-    });
+      vertex_count: mesh.vertices(),
+      index_count: mesh.indices(),
+    })
+  }
+
+  /// Draws the given [`VisibleObjectSet`].
+  pub fn draw_objects<'a, I>(&mut self, objects: &VisibleObjectSet<'a, I>) {
+    for (material, group) in objects.group_by_material() {
+      self.set_material(material);
+
+      for _object in group {
+        // TODO: draw this object
+      }
+    }
   }
 
   /// Clears all [`RenderCommand`] from the queue.
@@ -249,17 +224,6 @@ impl RenderQueue {
     let mut commands = self.commands.lock().unwrap();
 
     commands.push(command);
-  }
-}
-
-/// Allow [`RenderCommandQueue`] to be used as a [`RenderContext`].
-impl RenderContext for RenderQueue {
-  fn on_begin_frame(&mut self, _graphics: &GraphicsEngine) {
-    self.clear();
-  }
-
-  fn on_end_frame(&mut self, graphics: &GraphicsEngine) {
-    self.flush(graphics).expect("Failed to flush render queue");
   }
 }
 

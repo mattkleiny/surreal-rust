@@ -1,6 +1,6 @@
 //! Rendering support for scene graphs
 
-use graphics::{MaterialSortingKey, RenderObject, RenderScene, Renderer, VisibleObject, VisibleObjectSet};
+use graphics::{RenderFrame, RenderObject, RenderScene, VisibleObjectSet};
 
 use super::*;
 
@@ -12,7 +12,7 @@ impl<'a, T: Transform> RenderScene for SceneGraph<'a, T> {
 
   fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet<u64> {
     let frustum = camera.frustum();
-    let mut objects = Vec::new();
+    let objects = Vec::new();
 
     // walk the tree and find visible objects
     self.root.walk_recursive(|node| {
@@ -20,10 +20,11 @@ impl<'a, T: Transform> RenderScene for SceneGraph<'a, T> {
         return false;
       }
 
-      objects.push(VisibleObject {
-        identifier: node.id().into(),
-        material_sort_key: MaterialSortingKey::default(),
-      });
+      // TODO: fix this up
+      // objects.push(VisibleObject {
+      //   material: todo!(),
+      //   identifier: node.id().into(),
+      // });
 
       true
     });
@@ -57,9 +58,9 @@ impl<'a, T: Transform> Debug for SceneGraph<'a, T> {
 
 /// Allows arbitrary scene nodes to be rendered to a render pipeline.
 impl<'a, T: Transform> RenderObject for SceneNode<'a, T> {
-  fn render(&self, renderer: &mut Renderer) {
+  fn render(&self, frame: &mut RenderFrame<'_>) {
     for component in &self.components {
-      component.on_draw(renderer);
+      component.on_draw(frame.renderer);
     }
   }
 }

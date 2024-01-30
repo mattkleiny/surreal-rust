@@ -4,7 +4,12 @@ use common::Camera;
 
 use super::*;
 
-// TODO: finalize this API and get some tests in place.
+/// A frame of rendering.
+pub struct RenderFrame<'a> {
+  pub delta_time: f32,
+  pub queue: &'a mut RenderQueue,
+  pub renderer: &'a mut Renderer,
+}
 
 /// Represents a scene that can be rendered by a [`RenderPipeline`].
 pub trait RenderScene {
@@ -21,7 +26,7 @@ pub trait RenderScene {
 /// Represents an object capable of being rendered.
 pub trait RenderObject {
   /// Renders the object to the given [`Renderer`].
-  fn render(&self, renderer: &mut Renderer);
+  fn render(&self, frame: &mut RenderFrame<'_>);
 }
 
 /// Represents a pipeline capable of rendering a scene.
@@ -30,40 +35,47 @@ pub trait RenderObject {
 /// scene. Each pass is responsible for rendering a specific set of objects.
 pub trait RenderPipeline {
   /// Renders the given scene.
-  fn render(&mut self, scene: &dyn RenderScene);
+  fn render(&mut self, scene: &dyn RenderScene, delta_time: f32);
 }
 
 /// A [`RenderPipeline`] that executes many [`RenderPass`]es in order.
 pub struct MultiPassPipeline {
   renderer: Renderer,
+  queue: RenderQueue,
   passes: Vec<Box<dyn RenderPass>>,
 }
 
 impl RenderPipeline for MultiPassPipeline {
-  fn render(&mut self, scene: &dyn RenderScene) {
+  fn render(&mut self, scene: &dyn RenderScene, delta_time: f32) {
+    let mut frame = RenderFrame {
+      delta_time,
+      queue: &mut self.queue,
+      renderer: &mut self.renderer,
+    };
+
     // begin the frame
     for pass in &self.passes {
-      pass.begin_frame(scene, &mut self.renderer);
+      pass.begin_frame(scene, &mut frame);
     }
 
     // render each camera
     for camera in scene.cameras() {
       for pass in &self.passes {
-        pass.begin_camera(scene, camera, &mut self.renderer);
+        pass.begin_camera(scene, camera, &mut frame);
       }
 
       for pass in &self.passes {
-        pass.render_camera(scene, camera, &mut self.renderer);
+        pass.render_camera(scene, camera, &mut frame);
       }
 
       for pass in &self.passes {
-        pass.end_camera(scene, camera, &mut self.renderer);
+        pass.end_camera(scene, camera, &mut frame);
       }
     }
 
     // finalize the frame
     for pass in &self.passes {
-      pass.end_frame(scene, &mut self.renderer);
+      pass.end_frame(scene, &mut frame);
     }
   }
 }
@@ -71,11 +83,11 @@ impl RenderPipeline for MultiPassPipeline {
 /// A single pass of a [`MultiPassPipeline`].
 #[allow(unused_variables)]
 pub trait RenderPass {
-  fn begin_frame(&self, scene: &dyn RenderScene, renderer: &mut Renderer) {}
-  fn begin_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, renderer: &mut Renderer) {}
-  fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, renderer: &mut Renderer) {}
-  fn end_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, renderer: &mut Renderer) {}
-  fn end_frame(&self, scene: &dyn RenderScene, renderer: &mut Renderer) {}
+  fn begin_frame(&self, scene: &dyn RenderScene, frame: &mut RenderFrame<'_>) {}
+  fn begin_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {}
+  fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {}
+  fn end_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {}
+  fn end_frame(&self, scene: &dyn RenderScene, frame: &mut RenderFrame<'_>) {}
 }
 
 pub mod forward {
@@ -85,12 +97,12 @@ pub mod forward {
   struct DepthPass {}
 
   impl RenderPass for DepthPass {
-    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, _renderer: &mut Renderer) {
+    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
       let visible_object_set = scene.cull_visible_objects(camera);
 
-      for _object in visible_object_set.objects {
-        todo!()
-      }
+      frame.queue.clear_color_buffer(Color::BLACK);
+
+      for _object in visible_object_set.objects {}
     }
   }
 
@@ -98,15 +110,23 @@ pub mod forward {
   struct ColorPass {}
 
   impl RenderPass for ColorPass {
-    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, _renderer: &mut Renderer) {
+    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
       let visible_object_set = scene.cull_visible_objects(camera);
 
-      for _object in visible_object_set.objects {
-        todo!()
+      frame.queue.clear_color_buffer(Color::BLACK);
+
+      for (material, group) in visible_object_set.group_by_material() {
+        frame.queue.set_material(material);
+
+        for object in group {
+          let object = scene.get_object(object.identifier).unwrap();
+
+          object.render(frame);
+        }
       }
     }
 
-    fn end_frame(&self, _scene: &dyn RenderScene, _renderer: &mut Renderer) {
+    fn end_frame(&self, _scene: &dyn RenderScene, _frame: &mut RenderFrame<'_>) {
       // TODO: blit the color target to the screen.
     }
   }
@@ -114,10 +134,9 @@ pub mod forward {
   impl MultiPassPipeline {
     /// Builds a new [`MultiPassPipeline`] for forward rendering.
     pub fn new_forward_pipeline(graphics: &GraphicsEngine) -> Self {
-      let renderer = Renderer::new(graphics);
-
       MultiPassPipeline {
-        renderer,
+        renderer: Renderer::new(graphics),
+        queue: RenderQueue::default(),
         passes: vec![Box::new(DepthPass {}), Box::new(ColorPass {})],
       }
     }
