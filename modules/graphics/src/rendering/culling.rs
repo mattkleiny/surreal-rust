@@ -54,7 +54,10 @@ bitflags! {
 
 impl<'a> VisibleObjectSet<'a> {
   /// Groups the objects by material sorting key.
-  pub fn group_by_material(&self) -> impl Iterator<Item = (&'a Material, &[VisibleObject<'a>])> {
+  pub fn group_by_material(
+    &self,
+    required_flags: MaterialFlags,
+  ) -> impl Iterator<Item = (&'a Material, &[VisibleObject<'a>])> {
     self
       .objects
       .chunk_by(|a, b| {
@@ -63,7 +66,12 @@ impl<'a> VisibleObjectSet<'a> {
 
         a == b
       })
-      .map(|chunk| (chunk[0].material, chunk))
+      .filter(move |it| {
+        let flags = it[0].material.flags();
+
+        flags.contains(required_flags)
+      })
+      .map(|it| (it[0].material, it))
   }
 }
 
@@ -75,34 +83,8 @@ impl MaterialSortingKey {
   /// pipeline, and the last 32 bits represent the ID of the shader that should
   /// be used to render the material.
   pub fn for_material(material: &Material) -> Self {
-    let mut flags = MaterialFlags::empty();
-
     let shader = material.shader();
-    let metadata = shader.flags();
-
-    if material.blend_state() != BlendState::Disabled {
-      flags.insert(MaterialFlags::ALPHA_BLENDING);
-    }
-
-    if material.culling_mode() != CullingMode::Disabled {
-      flags.insert(MaterialFlags::BACKFACE_CULLING);
-    }
-
-    if material.scissor_mode() != ScissorMode::Disabled {
-      flags.insert(MaterialFlags::SCISSOR_TESTING);
-    }
-
-    if metadata.contains(ShaderFlags::ALPHA_TESTING) {
-      flags.insert(MaterialFlags::ALPHA_TESTING);
-    }
-
-    if metadata.contains(ShaderFlags::DEPTH_TESTING) {
-      flags.insert(MaterialFlags::DEPTH_TESTING);
-    }
-
-    if metadata.contains(ShaderFlags::DEPTH_WRITING) {
-      flags.insert(MaterialFlags::DEPTH_WRITING);
-    }
+    let flags = material.flags();
 
     let flags = u64::from(flags.bits());
     let shader = u64::from(shader.id());

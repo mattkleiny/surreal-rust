@@ -14,9 +14,11 @@ pub struct RenderFrame<'a> {
 impl<'a> RenderFrame<'a> {
   /// Draws the object visible to the given camera.
   pub fn draw_camera(&mut self, scene: &dyn RenderScene, camera: &dyn Camera) {
-    let visible_object_set = scene.cull_visible_objects(camera);
+    // find all objects visible to the camera
+    let visible_objects = scene.cull_visible_objects(camera);
 
-    for (material, group) in visible_object_set.group_by_material() {
+    // render each object, minimizing state changes by material
+    for (material, group) in visible_objects.group_by_material(MaterialFlags::all()) {
       self.queue.set_material(material);
 
       for entry in group {

@@ -80,6 +80,40 @@ impl Material {
     &self.shader
   }
 
+  /// Gets the flags of the material.
+  pub fn flags(&self) -> MaterialFlags {
+    let mut flags = MaterialFlags::empty();
+
+    let shader = &self.shader;
+    let metadata = shader.flags();
+
+    if self.blend_state() != BlendState::Disabled {
+      flags.insert(MaterialFlags::ALPHA_BLENDING);
+    }
+
+    if self.culling_mode() != CullingMode::Disabled {
+      flags.insert(MaterialFlags::BACKFACE_CULLING);
+    }
+
+    if self.scissor_mode() != ScissorMode::Disabled {
+      flags.insert(MaterialFlags::SCISSOR_TESTING);
+    }
+
+    if metadata.contains(ShaderFlags::ALPHA_TESTING) {
+      flags.insert(MaterialFlags::ALPHA_TESTING);
+    }
+
+    if metadata.contains(ShaderFlags::DEPTH_TESTING) {
+      flags.insert(MaterialFlags::DEPTH_TESTING);
+    }
+
+    if metadata.contains(ShaderFlags::DEPTH_WRITING) {
+      flags.insert(MaterialFlags::DEPTH_WRITING);
+    }
+
+    flags
+  }
+
   /// Gets the underlying [`ShaderUniformSet`] of the material.
   pub fn uniforms(&self) -> &ShaderUniformSet {
     &self.uniforms
