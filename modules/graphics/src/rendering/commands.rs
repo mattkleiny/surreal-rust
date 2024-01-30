@@ -262,3 +262,19 @@ impl RenderContext for RenderQueue {
     self.flush(graphics).expect("Failed to flush render queue");
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_basic_commands() {
+    let mut queue = RenderQueue::default();
+    let graphics = GraphicsEngine::headless();
+
+    queue.set_render_target_to_display();
+    queue.clear_color_buffer(Color::BLACK);
+
+    queue.flush(&graphics).unwrap();
+  }
+}
