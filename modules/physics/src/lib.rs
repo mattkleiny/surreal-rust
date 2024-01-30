@@ -4,6 +4,8 @@
 
 pub use scenes::*;
 
+#[cfg(feature = "box2d")]
+mod box2d;
 mod internal;
 mod scenes;
 
@@ -21,9 +23,10 @@ impl PhysicsEngine {
     Self::new(internal::InternalPhysicsBackend::default())
   }
 
-  /// Creates a new [`PhysicsEngine`] with the Bullet backend.
-  pub fn bullet() -> Self {
-    todo!()
+  /// Creates a new [`PhysicsEngine`] with the Box 2D backend.
+  #[cfg(feature = "box2d")]
+  pub fn box2d() -> Self {
+    Self::new(box2d::Box2dPhysicsBackend::default())
   }
 }
 

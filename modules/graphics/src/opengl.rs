@@ -800,17 +800,19 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn target_blit(
+  fn target_blit_to_active(
     &self,
-    from: TargetId,
-    to: TargetId,
-    source_rect: &Rectangle,
-    dest_rect: &Rectangle,
+    target: TargetId,
+    source_rect: Option<Rectangle>,
+    dest_rect: Option<Rectangle>,
     filter: TextureFilter,
   ) -> Result<(), TargetError> {
     unsafe {
-      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, from.into());
-      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, to.into());
+      gl::BindFramebuffer(gl::READ_FRAMEBUFFER, target.into());
+      gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, TargetId::NONE.into());
+
+      let source_rect = source_rect.unwrap_or(Rectangle::from_corner_points(0., 0., 1., 1.));
+      let dest_rect = dest_rect.unwrap_or(Rectangle::from_corner_points(0., 0., 1., 1.));
 
       gl::BlitFramebuffer(
         source_rect.left() as i32,
@@ -833,18 +835,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       Ok(())
     }
-  }
-
-  fn target_blit_to_display(
-    &self,
-    handle: TargetId,
-    source_rect: &Rectangle,
-    dest_rect: &Rectangle,
-    filter: TextureFilter,
-  ) -> Result<(), TargetError> {
-    self.target_blit(handle, TargetId::NONE, source_rect, dest_rect, filter)?;
-
-    Ok(())
   }
 
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {

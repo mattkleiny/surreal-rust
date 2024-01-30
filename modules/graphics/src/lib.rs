@@ -91,8 +91,6 @@ pub enum TargetError {
   FailedToBuildAttachments,
 }
 
-pub trait GraphicsVisitor {}
-
 /// An abstraction on top of the underlying graphics API.
 ///
 /// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
@@ -150,7 +148,6 @@ pub trait GraphicsBackend {
   fn target_create(&self, color_attachment: TextureId, depth_attachment: Option<TextureId>, stencil_attachment: Option<TextureId>) -> Result<TargetId, TargetError>;
   fn target_activate(&self, target: TargetId) -> Result<(), TargetError>;
   fn target_set_default(&self) -> Result<(), TargetError>;
-  fn target_blit(&self, from: TargetId, to: TargetId, source_rect: &common::Rectangle, dest_rect: &common::Rectangle, filter: TextureFilter) -> Result<(), TargetError>;
-  fn target_blit_to_display(&self, target: TargetId, source_rect: &common::Rectangle, dest_rect: &common::Rectangle, filter: TextureFilter) -> Result<(), TargetError>;
+  fn target_blit_to_active(&self, target: TargetId, source_rect: Option<common::Rectangle>, dest_rect: Option<common::Rectangle>, filter: TextureFilter) -> Result<(), TargetError>;
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError>;
 }
