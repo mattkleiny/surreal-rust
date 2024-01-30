@@ -91,8 +91,6 @@ pub enum TargetError {
   FailedToBuildAttachments,
 }
 
-pub trait GraphicsVisitor {}
-
 /// An abstraction on top of the underlying graphics API.
 ///
 /// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
