@@ -12,8 +12,8 @@ pub struct RenderFrame<'a> {
 }
 
 impl<'a> RenderFrame<'a> {
-  /// Draws the given objects to the frame.
-  pub fn draw_scene(&mut self, scene: &dyn RenderScene, camera: &dyn Camera) {
+  /// Draws the object visible to the given camera.
+  pub fn draw_camera(&mut self, scene: &dyn RenderScene, camera: &dyn Camera) {
     let visible_object_set = scene.cull_visible_objects(camera);
 
     for (material, group) in visible_object_set.group_by_material() {
@@ -111,21 +111,27 @@ pub mod forward {
   impl RenderPass for DepthPass {
     fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
       frame.queue.clear_color_buffer(Color::BLACK);
-      frame.draw_scene(scene, camera);
+      frame.draw_camera(scene, camera);
     }
   }
 
   /// A [`RenderPass`] that renders all objects in the scene to a color target.
-  struct ColorPass {}
+  struct ColorPass {
+    color_target: RenderTarget,
+  }
 
   impl RenderPass for ColorPass {
-    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
-      frame.queue.clear_color_buffer(Color::BLACK);
-      frame.draw_scene(scene, camera);
+    fn begin_frame(&self, _scene: &dyn RenderScene, frame: &mut RenderFrame<'_>) {
+      frame.queue.set_render_target(&self.color_target);
     }
 
-    fn end_frame(&self, _scene: &dyn RenderScene, _frame: &mut RenderFrame<'_>) {
-      // TODO: blit the color target to the screen.
+    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
+      frame.queue.clear_color_buffer(Color::BLACK);
+      frame.draw_camera(scene, camera);
+    }
+
+    fn end_frame(&self, _scene: &dyn RenderScene, frame: &mut RenderFrame<'_>) {
+      frame.queue.blit_render_target_to_display(&self.color_target, None);
     }
   }
 
@@ -135,7 +141,21 @@ pub mod forward {
       MultiPassPipeline {
         renderer: Renderer::new(graphics),
         queue: RenderQueue::default(),
-        passes: vec![Box::new(DepthPass {}), Box::new(ColorPass {})],
+        passes: vec![
+          Box::new(DepthPass {}),
+          Box::new(ColorPass {
+            color_target: RenderTarget::new(graphics, &RenderTargetDescriptor {
+              color_attachment: RenderTextureDescriptor {
+                width: 1920,
+                height: 1080,
+                options: TextureOptions::default(),
+              },
+              depth_attachment: None,
+              stencil_attachment: None,
+            })
+            .unwrap(),
+          }),
+        ],
       }
     }
   }

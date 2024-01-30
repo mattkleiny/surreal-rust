@@ -90,8 +90,8 @@ impl RenderQueue {
   }
 
   /// Sets the render target to the given target.
-  pub fn set_render_target(&mut self, target_id: TargetId) {
-    self.enqueue(RenderCommand::SetRenderTarget { target_id });
+  pub fn set_render_target(&mut self, target: &RenderTarget) {
+    self.enqueue(RenderCommand::SetRenderTarget { target_id: target.id() });
   }
 
   /// Sets the render target to the display.
@@ -128,6 +128,29 @@ impl RenderQueue {
       vertex_count: mesh.vertices(),
       index_count: mesh.indices(),
     })
+  }
+
+  /// Blits the given [`RenderTarget`] to the display.
+  pub fn blit_render_target_to_display(&mut self, target: &RenderTarget, clear_color: Option<Color>) {
+    self.enqueue(RenderCommand::SetRenderTargetToDisplay);
+
+    if let Some(color) = clear_color {
+      self.enqueue(RenderCommand::ClearColorBuffer { color });
+    }
+
+    // self.enqueue(RenderCommand::SetShader {
+    //   shader_id: target.blit_shader().id(),
+    //   uniforms: Box::new(target.blit_uniforms().clone()),
+    //   blend_state: BlendState::Disabled,
+    //   culling_mode: CullingMode::Disabled,
+    //   scissor_mode: ScissorMode::Disabled,
+    // });
+    // self.enqueue(RenderCommand::DrawMesh {
+    //   mesh_id: target.blit_mesh().id(),
+    //   topology: PrimitiveTopology::TriangleList,
+    //   vertex_count: target.blit_mesh().vertices(),
+    //   index_count: target.blit_mesh().indices(),
+    // });
   }
 
   /// Clears all [`RenderCommand`] from the queue.

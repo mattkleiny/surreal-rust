@@ -29,6 +29,36 @@ pub struct MaterialSortingKey {
   flags: MaterialFlags,
 }
 
+/// Represents an object that is visible to a camera.
+pub struct VisibleObject<'a> {
+  /// The object itself.
+  pub object: &'a dyn RenderObject,
+  /// The material of the object.
+  pub material: &'a Material,
+}
+
+/// A set of visible objects that can be rendered in a scene.
+///
+/// This is a subset of the objects in a scene that are visible to a specific
+/// camera, and can be used to optimize rendering by only rendering the objects
+/// that are visible to the camera.
+pub struct VisibleObjectSet<'a> {
+  /// The frustum of the camera that was used to cull the objects.
+  pub frustum: Frustum,
+  /// The objects that are visible to the camera.
+  pub objects: Vec<VisibleObject<'a>>,
+}
+
+impl<'a> VisibleObjectSet<'a> {
+  /// Gets an iterator over the objects in the set.
+  pub fn group_by_material(&self) -> impl Iterator<Item = (&'a Material, &[VisibleObject<'a>])> {
+    self
+      .objects
+      .chunk_by(|a, b| MaterialSortingKey::from(a.material) == MaterialSortingKey::from(b.material))
+      .map(|chunk| (chunk[0].material, chunk))
+  }
+}
+
 impl From<&Material> for MaterialSortingKey {
   /// Gets the sorting key for the given material.
   fn from(material: &Material) -> Self {
@@ -62,36 +92,5 @@ impl From<&Material> for MaterialSortingKey {
     }
 
     Self { flags }
-  }
-}
-
-/// Represents an object that is visible to a camera, along with it's material
-/// properties that are used to render it.
-pub struct VisibleObject<'a> {
-  /// The object itself.
-  pub object: &'a dyn RenderObject,
-  /// The sorting key for the material of the object.
-  pub material: &'a Material,
-}
-
-/// A set of visible objects that can be rendered in a scene.
-///
-/// This is a subset of the objects in a scene that are visible to a specific
-/// camera, and can be used to optimize rendering by only rendering the objects
-/// that are visible to the camera.
-pub struct VisibleObjectSet<'a> {
-  /// The frustum of the camera that was used to cull the objects.
-  pub frustum: Frustum,
-  /// The objects that are visible to the camera.
-  pub objects: Vec<VisibleObject<'a>>,
-}
-
-impl<'a> VisibleObjectSet<'a> {
-  /// Gets an iterator over the objects in the set.
-  pub fn group_by_material(&self) -> impl Iterator<Item = (&'a Material, &[VisibleObject<'a>])> {
-    self
-      .objects
-      .chunk_by(|a, b| MaterialSortingKey::from(a.material) == MaterialSortingKey::from(b.material))
-      .map(|chunk| (chunk[0].material, chunk))
   }
 }
