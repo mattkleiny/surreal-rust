@@ -130,17 +130,6 @@ impl RenderQueue {
     })
   }
 
-  /// Draws the given [`VisibleObjectSet`].
-  pub fn draw_objects<'a, I>(&mut self, objects: &VisibleObjectSet<'a, I>) {
-    for (material, group) in objects.group_by_material() {
-      self.set_material(material);
-
-      for _object in group {
-        // TODO: draw this object
-      }
-    }
-  }
-
   /// Clears all [`RenderCommand`] from the queue.
   pub fn clear(&mut self) {
     let mut commands = self.commands.lock().unwrap();

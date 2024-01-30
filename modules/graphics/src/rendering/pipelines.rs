@@ -11,6 +11,23 @@ pub struct RenderFrame<'a> {
   pub renderer: &'a mut Renderer,
 }
 
+impl<'a> RenderFrame<'a> {
+  /// Draws the given objects to the frame.
+  pub fn draw_scene(&mut self, scene: &dyn RenderScene, camera: &dyn Camera) {
+    let visible_object_set = scene.cull_visible_objects(camera);
+
+    for (material, group) in visible_object_set.group_by_material() {
+      self.queue.set_material(material);
+
+      for object in group {
+        let render_object = scene.get_object(object.identifier).unwrap();
+
+        render_object.render(self);
+      }
+    }
+  }
+}
+
 /// Represents a scene that can be rendered by a [`RenderPipeline`].
 pub trait RenderScene {
   /// Gets the cameras that should be used to render this scene.
@@ -98,11 +115,8 @@ pub mod forward {
 
   impl RenderPass for DepthPass {
     fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
-      let visible_object_set = scene.cull_visible_objects(camera);
-
       frame.queue.clear_color_buffer(Color::BLACK);
-
-      for _object in visible_object_set.objects {}
+      frame.draw_scene(scene, camera);
     }
   }
 
@@ -111,19 +125,8 @@ pub mod forward {
 
   impl RenderPass for ColorPass {
     fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
-      let visible_object_set = scene.cull_visible_objects(camera);
-
       frame.queue.clear_color_buffer(Color::BLACK);
-
-      for (material, group) in visible_object_set.group_by_material() {
-        frame.queue.set_material(material);
-
-        for object in group {
-          let object = scene.get_object(object.identifier).unwrap();
-
-          object.render(frame);
-        }
-      }
+      frame.draw_scene(scene, camera);
     }
 
     fn end_frame(&self, _scene: &dyn RenderScene, _frame: &mut RenderFrame<'_>) {
