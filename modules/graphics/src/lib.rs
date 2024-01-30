@@ -74,6 +74,7 @@ pub enum ShaderError {
   CompileError(String),
   FailedToLoad,
   InvalidInclude,
+  InvalidUniform,
 }
 
 /// A possible error when interacting with meshes.
@@ -107,7 +108,7 @@ pub trait GraphicsBackend {
 
   // clear targets
   fn clear_color_buffer(&self, color: Color);
-  fn clear_depth_buffer(&self);
+  fn clear_depth_buffer(&self, depth: f32);
 
   // intrinsics
   fn viewport_size(&self) -> (usize, usize);

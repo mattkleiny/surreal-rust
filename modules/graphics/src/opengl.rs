@@ -57,7 +57,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn clear_depth_buffer(&self) {
+  fn clear_depth_buffer(&self, _depth: f32) {
     unsafe {
       gl::Clear(gl::DEPTH_BUFFER_BIT);
     }

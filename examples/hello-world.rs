@@ -1,5 +1,4 @@
-use input::KeyboardDevice;
-use surreal::{backends::sdl::*, common::*, graphics::*};
+use surreal::{backends::sdl::*, common::*, graphics::*, input::*};
 
 fn main() {
   let mut window = Window::new(WindowSettings {

@@ -80,6 +80,11 @@ impl Material {
     &self.shader
   }
 
+  /// Gets the underlying [`ShaderUniformSet`] of the material.
+  pub fn uniforms(&self) -> &ShaderUniformSet {
+    &self.uniforms
+  }
+
   /// Gets the blend state of the material.
   pub fn blend_state(&self) -> BlendState {
     self.blend_state

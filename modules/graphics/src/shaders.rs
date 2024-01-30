@@ -386,6 +386,20 @@ impl ShaderUniformSet {
       )
     })
   }
+
+  /// Returns an iterator over all uniforms in the set.
+  pub fn iter(&self) -> impl Iterator<Item = (&String, &ShaderUniform)> {
+    self.uniforms.iter()
+  }
+}
+
+impl<'a> IntoIterator for &'a ShaderUniformSet {
+  type Item = (&'a String, &'a ShaderUniform);
+  type IntoIter = impl Iterator<Item = Self::Item>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.uniforms.iter()
+  }
 }
 
 /// Keeps texture assignments uniquely associated with slot indices.

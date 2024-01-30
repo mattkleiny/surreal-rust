@@ -43,7 +43,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     // no-op
   }
 
-  fn clear_depth_buffer(&self) {
+  fn clear_depth_buffer(&self, depth: f32) {
     // no-op
   }
 

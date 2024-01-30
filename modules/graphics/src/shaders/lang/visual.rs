@@ -29,29 +29,6 @@ impl ShaderLanguage for Visual {
 #[allow(dead_code)]
 mod definition {
   //! Internal representation of a Visual Shader.
-  use common::ToVirtualPath;
-
-  use super::*;
-
-  impl VisualShaderDefinition {
-    pub fn from_path(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
-      let path = path.to_virtual_path();
-      let mut stream = path.open_input_stream().map_err(|_| ShaderError::FailedToLoad)?;
-
-      Self::from_stream(&mut stream)
-    }
-
-    pub fn from_stream(stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
-      #[cfg(feature = "serde")]
-      let definition: Self = Self::from_xml_stream(stream).map_err(|_| ShaderError::FailedToLoad)?;
-
-      #[cfg(not(feature = "serde"))]
-      let definition: Self = todo!();
-
-      Ok(definition)
-    }
-  }
-
   #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
   struct VisualShaderDefinition {
     name: String,
