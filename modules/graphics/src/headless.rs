@@ -221,27 +221,15 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     Ok(())
   }
 
-  fn target_blit(
-    &self,
-    from: TargetId,
-    to: TargetId,
-    source_rect: &Rectangle,
-    dest_rect: &Rectangle,
-    filter: TextureFilter,
-  ) -> Result<(), TargetError> {
-    Ok(())
-  }
-
-  fn target_blit_to_display(
+  fn target_blit_to_active(
     &self,
     target: TargetId,
-    source_rect: &Rectangle,
-    dest_rect: &Rectangle,
+    source_rect: Option<common::Rectangle>,
+    dest_rect: Option<common::Rectangle>,
     filter: TextureFilter,
   ) -> Result<(), TargetError> {
     Ok(())
   }
-
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {
     Ok(())
   }

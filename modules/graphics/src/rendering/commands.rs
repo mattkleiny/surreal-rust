@@ -1,5 +1,3 @@
-//! Command queueing for common operations against the renderer.
-
 use std::sync::Mutex;
 
 use super::*;
@@ -16,32 +14,6 @@ use super::*;
 pub struct RenderQueue {
   commands: Mutex<Vec<RenderCommand>>,
 }
-
-#[derive(Debug)]
-pub enum RenderError {
-  BufferError(BufferError),
-  TextureError(TextureError),
-  ShaderError(ShaderError),
-  MeshError(MeshError),
-  TargetError(TargetError),
-}
-
-macro_rules! impl_from_error {
-  ($error:tt) => {
-    impl From<$error> for RenderError {
-      #[inline(always)]
-      fn from(error: $error) -> Self {
-        Self::$error(error)
-      }
-    }
-  };
-}
-
-impl_from_error!(BufferError);
-impl_from_error!(TextureError);
-impl_from_error!(ShaderError);
-impl_from_error!(MeshError);
-impl_from_error!(TargetError);
 
 /// A single command for a [`RenderQueue`] to execute.
 #[allow(dead_code)]
@@ -81,7 +53,36 @@ enum RenderCommand {
     vertex_count: usize,
     index_count: usize,
   },
+  /// Blits the given render target to the active render target.
+  BlitRenderTargetToActive { target_id: TargetId, filter: TextureFilter },
 }
+
+/// Represents an error that occurred while using the render queue.
+#[derive(Debug)]
+pub enum RenderQueueError {
+  BufferError(BufferError),
+  TextureError(TextureError),
+  ShaderError(ShaderError),
+  MeshError(MeshError),
+  TargetError(TargetError),
+}
+
+macro_rules! impl_from_error {
+  ($error:tt) => {
+    impl From<$error> for RenderQueueError {
+      #[inline(always)]
+      fn from(error: $error) -> Self {
+        Self::$error(error)
+      }
+    }
+  };
+}
+
+impl_from_error!(BufferError);
+impl_from_error!(TextureError);
+impl_from_error!(ShaderError);
+impl_from_error!(MeshError);
+impl_from_error!(TargetError);
 
 impl RenderQueue {
   /// Creates a new [`RenderQueue`].
@@ -138,19 +139,10 @@ impl RenderQueue {
       self.enqueue(RenderCommand::ClearColorBuffer { color });
     }
 
-    // self.enqueue(RenderCommand::SetShader {
-    //   shader_id: target.blit_shader().id(),
-    //   uniforms: Box::new(target.blit_uniforms().clone()),
-    //   blend_state: BlendState::Disabled,
-    //   culling_mode: CullingMode::Disabled,
-    //   scissor_mode: ScissorMode::Disabled,
-    // });
-    // self.enqueue(RenderCommand::DrawMesh {
-    //   mesh_id: target.blit_mesh().id(),
-    //   topology: PrimitiveTopology::TriangleList,
-    //   vertex_count: target.blit_mesh().vertices(),
-    //   index_count: target.blit_mesh().indices(),
-    // });
+    self.enqueue(RenderCommand::BlitRenderTargetToActive {
+      target_id: target.id(),
+      filter: TextureFilter::Linear,
+    });
   }
 
   /// Clears all [`RenderCommand`] from the queue.
@@ -161,7 +153,7 @@ impl RenderQueue {
   }
 
   /// Flushes all [`RenderCommand`]s in the queue to the given renderer.
-  pub fn flush(&mut self, graphics: &GraphicsEngine) -> Result<(), RenderError> {
+  pub fn flush(&mut self, graphics: &GraphicsEngine) -> Result<(), RenderQueueError> {
     let mut commands = self.commands.lock().unwrap();
 
     for command in commands.drain(..) {
@@ -224,6 +216,9 @@ impl RenderQueue {
           index_count,
         } => {
           graphics.mesh_draw(mesh_id, topology, vertex_count, index_count)?;
+        }
+        RenderCommand::BlitRenderTargetToActive { target_id, filter } => {
+          graphics.target_blit_to_active(target_id, None, None, filter)?;
         }
       }
     }

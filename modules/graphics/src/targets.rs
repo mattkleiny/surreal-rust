@@ -6,8 +6,6 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use common::Rectangle;
-
 use super::*;
 
 /// Describes how to build a [`RenderTarget`].
@@ -130,34 +128,13 @@ impl RenderTarget {
       .expect("Failed to deactivate render target");
   }
 
-  /// Blits this render target to the given other target.
-  pub fn blit_to(&self, other: &RenderTarget, filter: TextureFilter) {
+  /// Blits this render target to the active target.
+  pub fn blit_to_active(&self, filter: TextureFilter) {
     let state = self.state.borrow();
+    let graphics = &state.graphics;
 
-    let source_color = &state.color_attachment;
-    let source = Rectangle::from_corner_points(0., 0., source_color.width() as f32, source_color.height() as f32);
-    let dest_color = other.color_attachment();
-    let dest = Rectangle::from_corner_points(0., 0., dest_color.width() as f32, dest_color.height() as f32);
-
-    state
-      .graphics
-      .target_blit(state.id, other.id(), &source, &dest, filter)
-      .expect("Failed to blit render target");
-  }
-
-  /// Blits this render target to the active display.
-  pub fn blit_to_display(&self, filter: TextureFilter) {
-    let state = self.state.borrow();
-    let color = &state.color_attachment;
-
-    let (width, height) = state.graphics.viewport_size();
-
-    let source = Rectangle::from_corner_points(0., 0., color.width() as f32, color.height() as f32);
-    let dest = Rectangle::from_corner_points(0., 0., width as f32, height as f32);
-
-    state
-      .graphics
-      .target_blit_to_display(state.id, &source, &dest, filter)
+    graphics
+      .target_blit_to_active(state.id, None, None, filter)
       .expect("Failed to blit render target to display");
   }
 }

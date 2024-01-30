@@ -3,7 +3,39 @@ use common::Frustum;
 
 use super::*;
 
-// TODO: flesh out the culling system and add some tests
+/// A set of visible objects that can be rendered in a scene.
+///
+/// This is a subset of the objects in a scene that are visible to a specific
+/// camera, and can be used to optimize rendering by only rendering the objects
+/// that are visible to the camera.
+pub struct VisibleObjectSet<'a> {
+  /// The frustum of the camera that was used to cull the objects.
+  pub frustum: Frustum,
+  /// The objects that are visible to the camera.
+  pub objects: Vec<VisibleObject<'a>>,
+}
+
+/// Represents an object that is visible to a camera.
+///
+/// This is a reference to an object in a scene, along with the material that
+/// should be used to render it.
+///
+/// This is used to sort objects into batches for efficient rendering,
+/// minimizing state changes between draw calls.
+pub struct VisibleObject<'a> {
+  /// The object itself.
+  pub object: &'a dyn RenderObject,
+  /// The material of the object.
+  pub material: &'a Material,
+}
+
+/// A key that can be used to uniquely identify the kind of material.
+///
+/// This is used to sort materials into batches for efficient rendering,
+/// minimizing state changes between draw calls.
+#[repr(transparent)]
+#[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+pub struct MaterialSortingKey(u64);
 
 bitflags! {
   /// Flags that indicate the required state of the graphics pipeline for a material.
@@ -20,48 +52,29 @@ bitflags! {
   }
 }
 
-/// A key that can be used to uniquely identify the kind of material.
-///
-/// This is used to sort materials into batches for efficient rendering,
-/// minimizing state changes between draw calls.
-#[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
-pub struct MaterialSortingKey {
-  flags: MaterialFlags,
-}
-
-/// Represents an object that is visible to a camera.
-pub struct VisibleObject<'a> {
-  /// The object itself.
-  pub object: &'a dyn RenderObject,
-  /// The material of the object.
-  pub material: &'a Material,
-}
-
-/// A set of visible objects that can be rendered in a scene.
-///
-/// This is a subset of the objects in a scene that are visible to a specific
-/// camera, and can be used to optimize rendering by only rendering the objects
-/// that are visible to the camera.
-pub struct VisibleObjectSet<'a> {
-  /// The frustum of the camera that was used to cull the objects.
-  pub frustum: Frustum,
-  /// The objects that are visible to the camera.
-  pub objects: Vec<VisibleObject<'a>>,
-}
-
 impl<'a> VisibleObjectSet<'a> {
-  /// Gets an iterator over the objects in the set.
+  /// Groups the objects by material sorting key.
   pub fn group_by_material(&self) -> impl Iterator<Item = (&'a Material, &[VisibleObject<'a>])> {
     self
       .objects
-      .chunk_by(|a, b| MaterialSortingKey::from(a.material) == MaterialSortingKey::from(b.material))
+      .chunk_by(|a, b| {
+        let a = MaterialSortingKey::for_material(a.material);
+        let b = MaterialSortingKey::for_material(b.material);
+
+        a == b
+      })
       .map(|chunk| (chunk[0].material, chunk))
   }
 }
 
-impl From<&Material> for MaterialSortingKey {
+impl MaterialSortingKey {
   /// Gets the sorting key for the given material.
-  fn from(material: &Material) -> Self {
+  ///
+  /// A sorting key is defined as a 64-bit integer, where the first 32 bits
+  /// represent the flags that indicate the required state of the graphics
+  /// pipeline, and the last 32 bits represent the ID of the shader that should
+  /// be used to render the material.
+  pub fn for_material(material: &Material) -> Self {
     let mut flags = MaterialFlags::empty();
 
     let shader = material.shader();
@@ -91,6 +104,9 @@ impl From<&Material> for MaterialSortingKey {
       flags.insert(MaterialFlags::DEPTH_WRITING);
     }
 
-    Self { flags }
+    let flags = u64::from(flags.bits());
+    let shader = u64::from(shader.id());
+
+    Self(flags << 32 | shader)
   }
 }
