@@ -2,12 +2,7 @@
 
 #![allow(dead_code)]
 
-pub use scenes::*;
-
-#[cfg(feature = "box2d")]
-mod box2d;
 mod internal;
-mod scenes;
 
 use common::{Quat, Vec3};
 
@@ -21,12 +16,6 @@ impl PhysicsEngine {
   /// Creates a new [`PhysicsEngine`] with the internal backend.
   pub fn internal() -> Self {
     Self::new(internal::InternalPhysicsBackend::default())
-  }
-
-  /// Creates a new [`PhysicsEngine`] with the Box 2D backend.
-  #[cfg(feature = "box2d")]
-  pub fn box2d() -> Self {
-    Self::new(box2d::Box2dPhysicsBackend::default())
   }
 }
 

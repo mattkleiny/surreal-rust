@@ -6,11 +6,13 @@
 //! scene.
 
 pub use assets::*;
+pub use clipboard::*;
 pub use scenes::*;
 pub use services::*;
 pub use variant::*;
 
 mod assets;
+mod clipboard;
 mod scenes;
 mod services;
 mod variant;
