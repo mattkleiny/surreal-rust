@@ -465,8 +465,6 @@ name = "surreal-backend-gba"
 version = "0.0.0"
 dependencies = [
  "embedded-alloc",
- "surreal-common",
- "surreal-input",
 ]
 
 [[package]]

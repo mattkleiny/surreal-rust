@@ -10,6 +10,8 @@
 //! dependency, and features enabled/disabled to toggle the set of requirements
 //! needed for any particular project.
 
+#![no_std]
+
 #[cfg(feature = "ai")]
 pub extern crate ai;
 #[cfg(feature = "assets")]

@@ -5,6 +5,4 @@ authors.workspace = true
 edition.workspace = true
 
 [dependencies]
-common = { package = "surreal-common", path = "../../common" }
-input = { package = "surreal-input", path = "../../modules/input" }
 embedded-alloc = "0.5.1"
