@@ -394,6 +394,7 @@ dependencies = [
  "surreal-assets",
  "surreal-audio",
  "surreal-backend-console",
+ "surreal-backend-gba",
  "surreal-backend-sdl",
  "surreal-common",
  "surreal-ecs",
@@ -431,6 +432,14 @@ dependencies = [
 
 [[package]]
 name = "surreal-backend-console"
+version = "0.0.0"
+dependencies = [
+ "surreal-common",
+ "surreal-input",
+]
+
+[[package]]
+name = "surreal-backend-gba"
 version = "0.0.0"
 dependencies = [
  "surreal-common",
