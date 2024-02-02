@@ -1,6 +1,6 @@
 use std::sync::RwLock;
 
-use common::{vec3, Arena};
+use common::{vec3, Arena, QuadTree, Rectangle};
 
 use super::*;
 
@@ -16,6 +16,8 @@ pub struct InternalPhysicsBackend {
   bodies: RwLock<Arena<BodyId, Body>>,
   colliders: RwLock<Arena<ColliderId, Collider>>,
   effectors: RwLock<Arena<EffectorId, Effector>>,
+  collision_broadphase: RwLock<QuadTree<ColliderId>>,
+  overlapping_collider_pairs: RwLock<Vec<(ColliderId, ColliderId)>>,
 }
 
 struct Settings {
@@ -73,27 +75,67 @@ enum EffectorShape {
   Cylinder { radius: f32, height: f32 },
 }
 
-#[allow(unused_variables)]
-impl PhysicsBackend for InternalPhysicsBackend {
-  fn step(&self, delta_time: f32) {
-    let settings = self.settings.read().unwrap();
+impl Collider {
+  pub fn compute_bounding_rectangle(&self) -> Rectangle {
+    todo!()
+  }
+}
 
+impl InternalPhysicsBackend {
+  fn integrate_physical_forces(&self, delta_time: f32) {
+    let settings = self.settings.read().unwrap();
     let mut bodies = self.bodies.write().unwrap();
-    let mut colliders = self.colliders.write().unwrap();
-    let effectors = self.effectors.read().unwrap();
 
     for body in bodies.iter_mut() {
       body.position += body.velocity * delta_time;
       body.position += settings.gravity * delta_time;
     }
+  }
 
-    for collider in colliders.iter_mut() {
-      // TODO: collision checks
-    }
+  fn apply_collision_broadphase(&self) {
+    let mut tree = self.collision_broadphase.write().unwrap();
+    let colliders = self.colliders.read().unwrap();
 
-    for effector in effectors.iter() {
-      // TODO: apply effectors
+    tree.clear();
+
+    for (collider_id, collider) in colliders.enumerate() {
+      let bounds = collider.compute_bounding_rectangle();
+
+      tree.insert(collider_id, bounds);
     }
+  }
+
+  fn apply_collision_narrowphase(&self) {
+    let tree = self.collision_broadphase.read().unwrap();
+    let colliders = self.colliders.read().unwrap();
+    let mut collider_pairs = self.overlapping_collider_pairs.write().unwrap();
+
+    collider_pairs.clear();
+
+    for (source_id, collider) in colliders.enumerate() {
+      let bounds = collider.compute_bounding_rectangle();
+
+      for other_id in tree.find_in_bounds(bounds) {
+        if source_id == *other_id {
+          continue;
+        }
+
+        if let Some(other_collider) = colliders.get(*other_id) {
+          if collider.position.distance(other_collider.position) < 1.0 {
+            collider_pairs.push((source_id, *other_id));
+          }
+        }
+      }
+    }
+  }
+}
+
+#[allow(unused_variables)]
+impl PhysicsBackend for InternalPhysicsBackend {
+  fn step(&self, delta_time: f32) {
+    self.integrate_physical_forces(delta_time);
+    self.apply_collision_broadphase();
+    self.apply_collision_narrowphase();
   }
 
   fn reset(&self) {

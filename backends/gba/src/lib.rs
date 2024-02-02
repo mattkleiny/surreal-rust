@@ -1,9 +1,5 @@
 //! A backend for Surreal specifically for the GameBoy Advance.
 
-#![no_std]
-
-extern crate alloc;
-
 pub use hardware::*;
 
 /// The runtime for the GameBoy Advance.
