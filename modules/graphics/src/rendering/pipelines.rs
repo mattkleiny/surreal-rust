@@ -22,7 +22,7 @@ impl<'a> RenderFrame<'a> {
       self.queue.set_material(material);
 
       for entry in group {
-        entry.object.render(self)
+        entry.object.render(self);
       }
     }
   }

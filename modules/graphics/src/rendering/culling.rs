@@ -54,10 +54,11 @@ bitflags! {
 
 impl<'a> VisibleObjectSet<'a> {
   /// Groups the objects by material sorting key.
-  pub fn group_by_material(
-    &self,
-    required_flags: MaterialFlags,
-  ) -> impl Iterator<Item = (&'a Material, &[VisibleObject<'a>])> {
+  ///
+  /// The flags parameter can be used to filter the materials that are included
+  /// in the result. Only materials that have all the specified flags will be
+  /// included in the result.
+  pub fn group_by_material(&self, flags: MaterialFlags) -> impl Iterator<Item = (&'a Material, &[VisibleObject<'a>])> {
     self
       .objects
       .chunk_by(|a, b| {
@@ -66,11 +67,7 @@ impl<'a> VisibleObjectSet<'a> {
 
         a == b
       })
-      .filter(move |it| {
-        let flags = it[0].material.flags();
-
-        flags.contains(required_flags)
-      })
+      .filter(move |it| flags.contains(it[0].material.flags()))
       .map(|it| (it[0].material, it))
   }
 }

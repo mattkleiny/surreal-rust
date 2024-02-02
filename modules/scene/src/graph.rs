@@ -2,10 +2,9 @@ use std::fmt::{Debug, Formatter};
 
 use bitflags::bitflags;
 use common::{Camera, FastHashMap, FastHashSet, FromRandom, Frustum};
+use graphics::{RenderFrame, RenderObject, RenderScene, VisibleObjectSet};
 
 use super::*;
-
-mod rendering;
 
 common::impl_arena_index!(SceneNodeId, "Identifies a node in a scene graph.");
 
@@ -154,6 +153,30 @@ impl<'a, T: Transform> Debug for SceneGraph<'a, T> {
 impl<'a, T: Transform> Drop for SceneGraph<'a, T> {
   fn drop(&mut self) {
     self.root.notify(&mut SceneEvent::Destroy);
+  }
+}
+
+impl<'a, T: Transform> RenderScene for SceneGraph<'a, T> {
+  fn cameras(&self) -> Vec<&dyn Camera> {
+    todo!()
+  }
+
+  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet<'a> {
+    let frustum = camera.frustum();
+    let objects = Vec::new();
+
+    // walk the tree and find visible objects
+    self.root.walk_recursive(|node| {
+      if !node.is_visible_to(&frustum) {
+        return false;
+      }
+
+      // TODO: push the object to the list
+
+      true
+    });
+
+    VisibleObjectSet { frustum, objects }
   }
 }
 
@@ -665,6 +688,14 @@ impl<'a, T: Transform> IntoIterator for &'a SceneNode<'a, T> {
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
+  }
+}
+
+impl<'a, T: Transform> RenderObject for SceneNode<'a, T> {
+  fn render(&self, frame: &mut RenderFrame<'_>) {
+    for component in &self.components {
+      component.on_draw(frame.renderer);
+    }
   }
 }
 
