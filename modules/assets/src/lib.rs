@@ -41,6 +41,13 @@ pub struct AssetDatabase {
   _assets_by_guid: FastHashMap<String, AssetId>,
 }
 
+/// A possible error when working with the asset database.
+#[derive(Debug)]
+pub enum AssetDatabaseError {
+  InvalidPath,
+  InvalidVersion,
+}
+
 /// Represents the internal state of an asset.
 pub enum AssetState {
   Unloaded,
@@ -49,6 +56,13 @@ pub enum AssetState {
 }
 
 impl AssetDatabase {
+  /// Opens the asset database at the given path.
+  pub fn open(path: impl ToVirtualPath) -> Result<Self, AssetDatabaseError> {
+    let _path = path.to_virtual_path();
+
+    Err(AssetDatabaseError::InvalidPath)
+  }
+
   /// Gets an asset from the database, or loads it from the file system.
   pub fn load<'a, A>(&self, _path: impl ToVirtualPath) -> Asset<A> {
     todo!()

@@ -1,10 +1,12 @@
 //! General utilities.
 
+pub use errors::*;
 pub use events::*;
 pub use reflect::*;
 pub use settings::*;
 pub use version::*;
 
+mod errors;
 mod events;
 mod reflect;
 mod settings;
