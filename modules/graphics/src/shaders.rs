@@ -20,21 +20,35 @@ use super::*;
 
 pub mod lang {
   pub use glsl::*;
-  pub use hlsl::*;
   pub use shady::*;
   pub use visual::*;
 
   mod glsl;
-  mod hlsl;
   mod shady;
   mod visual;
 
   use super::*;
 
+  /// An environment used to parse and compile shader programs.
+  #[derive(Default)]
+  pub struct ShaderEnvironment {
+    pub constants: Vec<ShaderConstant>,
+  }
+
+  impl ShaderEnvironment {
+    /// An empty shader environment.
+    pub const EMPTY: Self = Self { constants: Vec::new() };
+  }
+  /// A constant value that can be used in a shader.
+  pub struct ShaderConstant {
+    pub name: String,
+    pub value: ShaderUniform,
+  }
+
   /// Represents a language for [`ShaderKernel`]s.
   pub trait ShaderLanguage {
     /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-    fn parse_kernels(source_code: &str) -> Result<Vec<ShaderKernel>, ShaderError>;
+    fn parse_kernels(source_code: &str, environment: &ShaderEnvironment) -> Result<Vec<ShaderKernel>, ShaderError>;
   }
 }
 
@@ -202,7 +216,8 @@ impl ShaderProgram {
 
   /// Reloads the [`ShaderProgram`] from the given shader code.
   pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> Result<(), ShaderError> {
-    let shaders = S::parse_kernels(text)?;
+    // TODO: allow for shader environment to be passed in
+    let shaders = S::parse_kernels(text, &ShaderEnvironment::EMPTY)?;
 
     self.load_kernels(&shaders)?;
 

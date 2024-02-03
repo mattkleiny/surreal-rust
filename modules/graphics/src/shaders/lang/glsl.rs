@@ -29,7 +29,9 @@ impl ShaderLanguage for GLSL {
   /// * Shared code amongst each shader definition by placing it prior to the
   ///   #shader_type directives.
   /// * Allows #include directives to fetch other files.
-  fn parse_kernels(source_code: &str) -> Result<Vec<ShaderKernel>, ShaderError> {
+  /// * Allows #constant directives to include constants from the host
+  ///   environment.
+  fn parse_kernels(source_code: &str, environment: &ShaderEnvironment) -> Result<Vec<ShaderKernel>, ShaderError> {
     use common::*;
 
     let mut result = Vec::with_capacity(2); // usually 2 shaders per file
@@ -66,6 +68,47 @@ impl ShaderLanguage for GLSL {
             shared_code.push_str(&dependent_code);
           }
         }
+      } else if line.trim().starts_with("#constant") {
+        if let Some(name) = line.split_whitespace().nth(1) {
+          for constant in &environment.constants {
+            if constant.name != name {
+              continue;
+            }
+
+            let name = &constant.name;
+            let value = match constant.value {
+              ShaderUniform::Bool(value) => format!("const bool {name}={value}"),
+              ShaderUniform::I32(value) => format!("const int {name}={value}"),
+              ShaderUniform::U32(value) => format!("const uint {name}={value}"),
+              ShaderUniform::F32(value) => format!("const float {name}={value}"),
+              ShaderUniform::Vec2(_) => todo!(),
+              ShaderUniform::Vec3(_) => todo!(),
+              ShaderUniform::Vec4(_) => todo!(),
+              ShaderUniform::DVec2(_) => todo!(),
+              ShaderUniform::DVec3(_) => todo!(),
+              ShaderUniform::DVec4(_) => todo!(),
+              ShaderUniform::Mat2(_) => todo!(),
+              ShaderUniform::Mat3(_) => todo!(),
+              ShaderUniform::Mat4(_) => todo!(),
+              ShaderUniform::DMat2(_) => todo!(),
+              ShaderUniform::DMat3(_) => todo!(),
+              ShaderUniform::DMat4(_) => todo!(),
+              ShaderUniform::Quat(_) => todo!(),
+              ShaderUniform::DQuat(_) => todo!(),
+              ShaderUniform::Color(_) => todo!(),
+              ShaderUniform::Color32(_) => todo!(),
+              ShaderUniform::Texture(_, _, _) => todo!(),
+              ShaderUniform::TextureArray(_) => todo!(),
+              ShaderUniform::Array(_) => todo!(),
+            };
+
+            if let Some(shader) = result.last_mut() {
+              shader.code.push_str(&value);
+            } else {
+              shared_code.push_str(&value);
+            }
+          }
+        }
       } else if let Some(shader) = result.last_mut() {
         // build up the active shader unit
         shader.code.push_str(line);
@@ -89,37 +132,45 @@ mod tests {
   fn parse_glsl_source_should_build_valid_code() {
     let result = GLSL::parse_kernels(
       r"
-      #version 330 core
+        #version 330 core
 
-      // shared code
-      uniform mat4 u_projectionView;
-      uniform vec2 u_resolution;
-      uniform vec4 u_color;
+        // shared code
+        uniform mat4 u_projectionView;
+        uniform vec2 u_resolution;
+        uniform vec4 u_color;
 
-      #shader_type vertex
+        #shader_type vertex
 
-      layout(location = 0) in vec2 a_position;
-      layout(location = 1) in vec2 a_tex_coord;
-      layout(location = 2) in vec4 a_color;
+        layout(location = 0) in vec2 a_position;
+        layout(location = 1) in vec2 a_tex_coord;
+        layout(location = 2) in vec4 a_color;
 
-      varying vec2 v_uv;
-      varying vec4 v_color;
+        varying vec2 v_uv;
+        varying vec4 v_color;
 
-      void main() {
-        v_uv    = a_uv;
-        v_color = a_color * u_color;
+        void main() {
+          v_uv    = a_uv;
+          v_color = a_color * u_color;
 
-        gl_Position = vec4(a_position, 0.0, 1.0) * u_projectionView;
-      }
+          gl_Position = vec4(a_position, 0.0, 1.0) * u_projectionView;
+        }
 
-      #shader_type fragment
+        #shader_type fragment
 
-      uniform sampler2d u_texture;
+        #constant MAX_TEXTURES
 
-      void main() {
-        gl_FragColor = texture(u_texture, v_uv) * v_color;
-      }
-    ",
+        uniform sampler2d u_texture[MAX_TEXTURES];
+
+        void main() {
+          gl_FragColor = texture(u_texture, v_uv) * v_color;
+        }
+      ",
+      &ShaderEnvironment {
+        constants: vec![ShaderConstant {
+          name: "MAX_TEXTURES".to_string(),
+          value: ShaderUniform::U32(MAX_TEXTURE_UNITS as u32),
+        }],
+      },
     )
     .expect("Failed to parse simple shader kernels");
 

@@ -25,7 +25,9 @@ void main() {
 
 #shader_type fragment
 
-uniform sampler2D u_texture[32];
+#constant MAX_TEXTURES;
+
+uniform sampler2D u_texture[MAX_TEXTURES];
 
 void main() {
   gl_FragColor = texture(u_texture[v_texture_id], v_texcoord_0) * v_color;

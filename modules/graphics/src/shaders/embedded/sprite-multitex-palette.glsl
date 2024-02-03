@@ -25,7 +25,9 @@ void main() {
 
 #shader_type fragment
 
-uniform sampler2D u_textures[32];
+#constant MAX_TEXTURES;
+
+uniform sampler2D u_textures[MAX_TEXTURES];
 uniform sampler2D u_palette_tex;
 uniform uint u_palette_width;
 

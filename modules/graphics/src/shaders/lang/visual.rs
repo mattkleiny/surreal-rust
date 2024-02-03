@@ -21,7 +21,7 @@ impl ShaderProgram {
 }
 
 impl ShaderLanguage for Visual {
-  fn parse_kernels(_source_code: &str) -> Result<Vec<ShaderKernel>, ShaderError> {
+  fn parse_kernels(_source_code: &str, _environment: &ShaderEnvironment) -> Result<Vec<ShaderKernel>, ShaderError> {
     todo!()
   }
 }
