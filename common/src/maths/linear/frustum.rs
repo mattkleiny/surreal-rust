@@ -15,6 +15,16 @@ pub struct Frustum {
 }
 
 impl Frustum {
+  /// An empty frustum.
+  pub const EMPTY: Frustum = Frustum {
+    near: Plane::ZERO,
+    far: Plane::ZERO,
+    left: Plane::ZERO,
+    right: Plane::ZERO,
+    top: Plane::ZERO,
+    bottom: Plane::ZERO,
+  };
+
   /// Creates a new frustum from an array of planes.
   pub fn from_array(planes: [Plane; 6]) -> Self {
     Self {

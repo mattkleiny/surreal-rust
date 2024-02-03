@@ -24,12 +24,6 @@ struct Settings {
   gravity: Vec3,
 }
 
-impl Default for Settings {
-  fn default() -> Self {
-    Self { gravity: EARTH_GRAVITY }
-  }
-}
-
 struct Body {
   kind: BodyKind,
   position: Vec3,
@@ -75,9 +69,16 @@ enum EffectorShape {
   Cylinder { radius: f32, height: f32 },
 }
 
+impl Default for Settings {
+  fn default() -> Self {
+    Self { gravity: EARTH_GRAVITY }
+  }
+}
+
 impl Collider {
+  /// Computes the bounding rectangle for this collider.
   pub fn compute_bounding_rectangle(&self) -> Rectangle {
-    todo!()
+    Rectangle::EMPTY // TODO: Implement this
   }
 }
 

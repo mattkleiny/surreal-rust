@@ -15,6 +15,14 @@ pub struct VisibleObjectSet<'a> {
   pub objects: Vec<VisibleObject<'a>>,
 }
 
+impl<'a> VisibleObjectSet<'a> {
+  /// An empty set of objects.
+  pub const EMPTY: VisibleObjectSet<'static> = VisibleObjectSet {
+    frustum: Frustum::EMPTY,
+    objects: Vec::new(),
+  };
+}
+
 /// Represents an object that is visible to a camera.
 ///
 /// This is a reference to an object in a scene, along with the material that

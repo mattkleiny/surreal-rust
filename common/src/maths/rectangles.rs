@@ -9,6 +9,12 @@ pub struct Rectangle {
 }
 
 impl Rectangle {
+  /// An empty rectangle.
+  pub const EMPTY: Rectangle = Rectangle {
+    min: Vec2::ZERO,
+    max: Vec2::ZERO,
+  };
+
   /// Creates a new rectangle from the given corner points.
   #[inline]
   pub const fn new(min: Vec2, max: Vec2) -> Self {

@@ -80,8 +80,13 @@ impl AssetDatabase {
 /// This struct is a 'thin' wrapper around the asset, and is cheap to copy.
 pub struct Asset<A> {
   _id: AssetId,
-  _database: *mut AssetDatabase,
   _kind: std::marker::PhantomData<A>,
+}
+
+impl<A> Default for Asset<A> {
+  fn default() -> Self {
+    todo!()
+  }
 }
 
 impl<A> std::ops::Deref for Asset<A> {

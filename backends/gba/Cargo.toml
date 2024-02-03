@@ -1,8 +1,0 @@
-[package]
-name = "surreal-backend-gba"
-description = "GameBoy Advance backend for Surreal"
-authors.workspace = true
-edition.workspace = true
-
-[dependencies]
-embedded-alloc = "0.5.1"

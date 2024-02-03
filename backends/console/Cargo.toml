@@ -1,9 +1,0 @@
-[package]
-name = "surreal-backend-console"
-description = "Console backend for Surreal"
-authors.workspace = true
-edition.workspace = true
-
-[dependencies]
-common = { package = "surreal-common", path = "../../common" }
-input = { package = "surreal-input", path = "../../modules/input" }

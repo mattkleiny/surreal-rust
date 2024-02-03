@@ -7,4 +7,5 @@ edition.workspace = true
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
 macros = { package = "surreal-macros", path = "../../macros" }
+graphics = { package = "surreal-graphics", path = "../graphics" }
 serde = { workspace = true, optional = true }

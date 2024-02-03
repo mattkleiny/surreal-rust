@@ -39,8 +39,6 @@ pub extern crate scripting;
 pub extern crate ui;
 
 pub mod backends {
-  #[cfg(feature = "console")]
-  pub extern crate console;
   #[cfg(feature = "sdl")]
   pub extern crate sdl;
 }

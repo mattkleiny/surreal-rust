@@ -7,7 +7,8 @@
 #![feature(core_intrinsics)]
 #![allow(internal_features)]
 
-use common::{Arena, FastHashMap, StringName};
+use common::{unsafe_mutable_alias, Arena, FastHashMap, StringName};
+use graphics::{RenderScene, VisibleObjectSet};
 pub use macros::Component;
 
 common::impl_arena_index!(EntityId, "Identifies an entity in an ECS.");
@@ -24,15 +25,16 @@ pub struct World {
   entities: Arena<EntityId, Entity>,
   components: FastHashMap<ComponentType, Box<dyn std::any::Any>>,
   systems: Vec<Box<dyn System>>,
-
-  #[cfg(feature = "diagnostics")]
-  _diagnostics: WorldDiagnostics,
 }
 
 impl World {
   /// Updates this world's systems.
-  pub fn update(&self, _delta: f32) {
-    todo!()
+  pub fn update(&mut self, delta: f32) {
+    let world = unsafe { unsafe_mutable_alias(self) };
+
+    for system in &mut self.systems {
+      system.run(world, delta);
+    }
   }
 
   /// Creates a new entity.
@@ -104,6 +106,16 @@ impl World {
   }
 }
 
+/// Renders the scene for this world.
+impl RenderScene for World {
+  fn cameras(&self) -> Vec<&dyn common::Camera> {
+    vec![]
+  }
+
+  fn cull_visible_objects(&self, _camera: &dyn common::Camera) -> graphics::VisibleObjectSet {
+    VisibleObjectSet::EMPTY
+  }
+}
 /// Represents a component that can be attached to an entity.
 pub trait Component: Default + Sized {
   /// The storage type for this component.

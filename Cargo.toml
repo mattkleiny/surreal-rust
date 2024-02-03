@@ -30,9 +30,7 @@ common = { package = "surreal-common", path = "./common" }
 editor = { package = "surreal-editor", path = "./editor", optional = true }
 
 # backends
-console = { package = "surreal-backend-console", path = "./backends/console", optional = true }
 sdl = { package = "surreal-backend-sdl", path = "./backends/sdl", optional = true }
-gba = { package = "surreal-backend-gba", path = "./backends/gba", optional = true }
 
 # modules
 ai = { package = "surreal-ai", path = "./modules/ai", optional = true }
