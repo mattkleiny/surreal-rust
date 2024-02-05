@@ -19,7 +19,7 @@ pub struct Import {
 pub struct Function {
   pub name: String,
   pub parameters: Vec<String>,
-  pub body: Vec<Statement>,
+  pub statements: Vec<Statement>,
 }
 
 /// A function parameter.
@@ -113,7 +113,7 @@ pub trait Visitor {
   }
 
   fn visit_function(&mut self, function: &Function) {
-    for statement in &function.body {
+    for statement in &function.statements {
       self.visit_statement(statement);
     }
   }
@@ -127,6 +127,13 @@ pub trait Visitor {
 
   fn visit_expression(&mut self, expression: &Expression) {
     match expression {
+      Expression::Binary(_, left, right) => {
+        self.visit_expression(&left);
+        self.visit_expression(&right);
+      }
+      Expression::Unary(_, inner) => {
+        self.visit_expression(&inner);
+      }
       Expression::Literal(literal) => self.visit_literal(literal),
       _ => {}
     }
