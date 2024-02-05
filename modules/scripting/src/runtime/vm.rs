@@ -1,7 +1,7 @@
 pub use bytecode::*;
 pub use compiler::*;
 
-use crate::ast;
+use crate::{ast, ScriptLanguage};
 
 /// A virtual machine, with a stack-based architecture.
 ///
@@ -15,7 +15,9 @@ pub struct VirtualMachine {
 /// An error that can occur when interpreting bytecode.
 #[derive(Debug)]
 pub enum VirtualMachineError {
-  UnexpectedValue,
+  FailedToParse,
+  FailedToCompile,
+  RuntimeError,
 }
 
 impl VirtualMachine {
@@ -36,22 +38,30 @@ impl VirtualMachine {
     }
   }
 
-  /// Interprets the given chunk of bytecode.
+  /// Compiles the given code into bytecode and executes it.
+  pub fn run<S: ScriptLanguage>(&mut self, code: impl AsRef<str>) -> Result<common::Variant, VirtualMachineError> {
+    let module = S::parse_code(code.as_ref()).map_err(|_| VirtualMachineError::FailedToParse)?;
+    let chunk = Compiler::compile_module(&module).map_err(|_| VirtualMachineError::FailedToCompile)?;
+
+    self.execute(chunk)
+  }
+
+  /// Executes the given chunk of bytecode.
   pub fn execute(&mut self, chunk: Chunk) -> Result<common::Variant, VirtualMachineError> {
     self.chunk = chunk;
     self.advance()
   }
 
-  /// Continues running the virtual machine, executing the bytecode.
+  /// Advances running the virtual machine, executing the existing bytecode.
   pub fn advance(&mut self) -> Result<common::Variant, VirtualMachineError> {
     use common::Variant;
 
     macro_rules! unary_op {
-      ($operator:tt) => {
-        if let Some(Value::Number(a)) = self.stack.pop() {
-          self.stack.push(Value::Number($operator a));
+      ($kind:tt, $operator:tt) => {
+        if let Some(Value::$kind(a)) = self.stack.pop() {
+          self.stack.push(Value::$kind($operator a));
         } else {
-          return Err(VirtualMachineError::UnexpectedValue);
+          return Err(VirtualMachineError::RuntimeError);
         }
       };
     }
@@ -61,7 +71,7 @@ impl VirtualMachine {
         if let (Some(Value::$kind(a)), Some(Value::$kind(b))) = (self.stack.pop(), self.stack.pop()) {
           self.stack.push(Value::$kind(a $operator b));
         } else {
-          return Err(VirtualMachineError::UnexpectedValue);
+          return Err(VirtualMachineError::RuntimeError);
         }
       };
     }
@@ -78,17 +88,14 @@ impl VirtualMachine {
         Opcode::Push(value) => self.stack.push(value),
         Opcode::Return => {
           return match self.stack.pop() {
-            Some(Value::Number(value)) => Ok(Variant::F64(value)),
-            Some(Value::String(value)) => Ok(Variant::String(value)),
-            Some(Value::Boolean(value)) => Ok(Variant::Bool(value)),
-            Some(Value::Nil) => Ok(Variant::Null),
+            Some(value) => Ok(value.into()),
             None => Ok(Variant::Null),
           }
         }
         Opcode::Import => todo!(),
 
         // arithmetic
-        Opcode::Negate => unary_op!(-),
+        Opcode::Negate => unary_op!(Number, -),
         Opcode::Add => binary_op!(Number, +),
         Opcode::Subtract => binary_op!(Number, -),
         Opcode::Multiply => binary_op!(Number, *),
@@ -131,6 +138,8 @@ impl VirtualMachine {
 mod bytecode {
   use std::collections::VecDeque;
 
+  use common::Variant;
+
   /// A chunk of bytecode to be executed by the virtual machine.
   #[derive(Default, Debug)]
   pub struct Chunk {
@@ -147,10 +156,10 @@ mod bytecode {
   /// A value that can be stored on the virtual machine's stack.
   #[derive(Debug, Clone, PartialEq)]
   pub enum Value {
+    Nil,
     Number(f64),
     String(String),
     Boolean(bool),
-    Nil,
   }
 
   /// A single instruction in the virtual machine.
@@ -275,6 +284,42 @@ mod bytecode {
       }
     }
   }
+
+  impl From<Variant> for Value {
+    fn from(value: Variant) -> Self {
+      match value {
+        Variant::Null => Value::Nil,
+        Variant::Bool(value) => Value::Boolean(value),
+        Variant::U8(value) => Value::Number(value as f64),
+        Variant::U16(value) => Value::Number(value as f64),
+        Variant::U32(value) => Value::Number(value as f64),
+        Variant::U64(value) => Value::Number(value as f64),
+        Variant::I8(value) => Value::Number(value as f64),
+        Variant::I16(value) => Value::Number(value as f64),
+        Variant::I32(value) => Value::Number(value as f64),
+        Variant::I64(value) => Value::Number(value as f64),
+        Variant::F32(value) => Value::Number(value as f64),
+        Variant::F64(value) => Value::Number(value),
+        Variant::String(value) => Value::String(value),
+        Variant::StringName(value) => Value::String(value.to_string()),
+        Variant::Vec2(_) => todo!(),
+        Variant::Vec3(_) => todo!(),
+        Variant::Vec4(_) => todo!(),
+        Variant::Quat(_) => todo!(),
+      }
+    }
+  }
+
+  impl From<Value> for Variant {
+    fn from(value: Value) -> Self {
+      match value {
+        Value::Nil => Variant::Null,
+        Value::Number(value) => Variant::F64(value),
+        Value::String(value) => Variant::String(value),
+        Value::Boolean(value) => Variant::Bool(value),
+      }
+    }
+  }
 }
 
 mod compiler {
@@ -293,7 +338,7 @@ mod compiler {
 
   impl Compiler {
     /// Compiles the given module into bytecode.
-    pub fn compile(module: &ast::Module) -> Result<bytecode::Chunk, CompileError> {
+    pub fn compile_module(module: &ast::Module) -> Result<bytecode::Chunk, CompileError> {
       let mut compiler = Compiler::default();
 
       module.accept(&mut compiler);
@@ -335,6 +380,7 @@ mod compiler {
           self.push_opcode(Opcode::Return);
         }
         Statement::Return(None) => {
+          self.push_opcode(Opcode::Push(Value::Nil));
           self.push_opcode(Opcode::Return);
         }
         _ => {}
@@ -422,17 +468,6 @@ mod tests {
   }
 
   #[test]
-  fn test_basic_disassembly_of_chunks() {
-    let chunk = Chunk::from_slice(&[
-      instruct!(1, Opcode::Push(Value::Number(1.0))),
-      instruct!(1, Opcode::Push(Value::Number(3.14159))),
-      instruct!(2, Opcode::Return),
-    ]);
-
-    println!("{}", chunk.disassemble());
-  }
-
-  #[test]
   fn test_basic_execution_of_chunks() {
     let mut vm = VirtualMachine::new();
 
@@ -462,19 +497,16 @@ mod tests {
     let module = Module {
       functions: vec![Function {
         name: "main".to_string(),
-        statements: vec![
-          Statement::Expression(Expression::Binary(
-            BinaryOperator::Add,
-            Box::new(Expression::Literal(Literal::Number(3.14159))),
-            Box::new(Expression::Literal(Literal::Number(1.12345))),
-          )),
-          Statement::Return(None),
-        ],
+        statements: vec![Statement::Return(Some(Expression::Binary(
+          BinaryOperator::Add,
+          Box::new(Expression::Literal(Literal::Number(3.14159))),
+          Box::new(Expression::Literal(Literal::Number(1.12345))),
+        )))],
         parameters: vec![],
       }],
     };
 
-    let chunk = Compiler::compile(&module).expect("failed to compile module");
+    let chunk = Compiler::compile_module(&module).expect("failed to compile module");
     let mut vm = VirtualMachine::new();
 
     let result = vm.execute(chunk).expect("failed to interpret chunk");

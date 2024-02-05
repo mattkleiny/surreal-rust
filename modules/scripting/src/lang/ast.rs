@@ -190,9 +190,18 @@ macro_rules! impl_token_stream {
         self.last_token.as_ref()
       }
 
+      /// Takes the next token, checking if it matches the predicate.
+      pub fn take_if(&mut self, predicate: impl FnOnce(&Token) -> bool) -> Option<&Token> {
+        if predicate(self.peek()?) {
+          self.take()
+        } else {
+          None
+        }
+      }
+
       /// Returns an error indicating that an unexpected token was encountered.
-      pub fn unexpected_token<R>(&self) -> Result<R, ScriptParseError> {
-        Err(ScriptParseError::InvalidSyntax(format!(
+      pub fn unexpected_token<R>(&self) -> Result<R, ParserError> {
+        Err(ParserError::InvalidSyntax(format!(
           "unexpected token encountered: {:?}",
           self.peek()
         )))
