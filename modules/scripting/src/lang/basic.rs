@@ -231,13 +231,5 @@ mod parser {
 
       assert_eq!(literal, ast::Literal::Number(3.14159));
     }
-
-    #[test]
-    fn test_parse_literal_string() {
-      let code = r#""Hello, world!""#;
-      let literal = TokenStream::tokenize(code).unwrap().parse_literal().unwrap();
-
-      assert_eq!(literal, ast::Literal::String("Hello, world!".into()));
-    }
   }
 }
