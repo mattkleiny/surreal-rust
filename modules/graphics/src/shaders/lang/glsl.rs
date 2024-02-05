@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use super::*;
 
 /// The OpenGL [`ShaderLanguage`] implementation.
@@ -20,7 +22,33 @@ impl ShaderProgram {
   }
 }
 
+/// Possible versions of OpenGL that can be targeted by a shader program.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum OpenGLVersion {
+  Glsl100,
+  Glsl300,
+  Glsl330,
+  Glsl400,
+  Glsl410,
+  Glsl420,
+  Glsl430,
+  Glsl440,
+  Glsl450,
+  Glsl460,
+  Glsl470,
+  Glsl480,
+  Glsl500,
+}
+
+/// The OpenGL environment for a shader program.
+pub struct OpenGLEnvironment {
+  pub version: OpenGLVersion,
+  pub constants: Vec<ShaderConstant>,
+}
+
 impl ShaderLanguage for GLSL {
+  type Environment = OpenGLEnvironment;
+
   /// Parses the given raw GLSL source and performs some basic pre-processing.
   ///
   /// Allows for the following basic transformations:
@@ -31,11 +59,30 @@ impl ShaderLanguage for GLSL {
   /// * Allows #include directives to fetch other files.
   /// * Allows #constant directives to include constants from the host
   ///   environment.
-  fn parse_kernels(source_code: &str, environment: &ShaderEnvironment) -> Result<Vec<ShaderKernel>, ShaderError> {
+  fn parse_kernels(source_code: &str, environment: &Self::Environment) -> Result<Vec<ShaderKernel>, ShaderError> {
     use common::*;
 
     let mut result = Vec::with_capacity(2); // usually 2 shaders per file
     let mut shared_code = String::new();
+
+    // add the GLSL version directive
+    let version = match environment.opengl_version {
+      OpenGLVersion::Glsl100 => "100",
+      OpenGLVersion::Glsl300 => "300",
+      OpenGLVersion::Glsl330 => "330",
+      OpenGLVersion::Glsl400 => "400",
+      OpenGLVersion::Glsl410 => "410",
+      OpenGLVersion::Glsl420 => "420",
+      OpenGLVersion::Glsl430 => "430",
+      OpenGLVersion::Glsl440 => "440",
+      OpenGLVersion::Glsl450 => "450",
+      OpenGLVersion::Glsl460 => "460",
+      OpenGLVersion::Glsl470 => "470",
+      OpenGLVersion::Glsl480 => "480",
+      OpenGLVersion::Glsl500 => "500",
+    };
+
+    shared_code.write_str(&format!("#version {}\n\n", version));
 
     for line in source_code.lines() {
       if line.trim().starts_with("#shader_type") {
@@ -165,11 +212,12 @@ mod tests {
           gl_FragColor = texture(u_texture, v_uv) * v_color;
         }
       ",
-      &ShaderEnvironment {
+      &OpenGLEnvironment {
         constants: vec![ShaderConstant {
           name: "MAX_TEXTURES".to_string(),
           value: ShaderUniform::U32(MAX_TEXTURE_UNITS as u32),
         }],
+        version: OpenGLVersion::Glsl330,
       },
     )
     .expect("Failed to parse simple shader kernels");

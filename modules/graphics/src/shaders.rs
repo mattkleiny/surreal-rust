@@ -39,6 +39,7 @@ pub mod lang {
     /// An empty shader environment.
     pub const EMPTY: Self = Self { constants: Vec::new() };
   }
+
   /// A constant value that can be used in a shader.
   pub struct ShaderConstant {
     pub name: String,
@@ -47,8 +48,11 @@ pub mod lang {
 
   /// Represents a language for [`ShaderKernel`]s.
   pub trait ShaderLanguage {
+    /// The environment type used to parse and compile shader programs.
+    type Environment = ShaderEnvironment;
+
     /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-    fn parse_kernels(source_code: &str, environment: &ShaderEnvironment) -> Result<Vec<ShaderKernel>, ShaderError>;
+    fn parse_kernels(source_code: &str, environment: &Self::Environment) -> Result<Vec<ShaderKernel>, ShaderError>;
   }
 }
 
