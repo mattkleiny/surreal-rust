@@ -86,3 +86,16 @@ macro_rules! impl_server {
     }
   };
 }
+
+/// Implements a conversion from on error type to a nested variant in another.
+#[macro_export]
+macro_rules! impl_from_error {
+  ($error:tt for $other:tt) => {
+    impl From<$error> for $other {
+      #[inline(always)]
+      fn from(error: $error) -> Self {
+        Self::$error(error)
+      }
+    }
+  };
+}

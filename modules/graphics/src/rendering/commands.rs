@@ -67,22 +67,11 @@ pub enum RenderQueueError {
   TargetError(TargetError),
 }
 
-macro_rules! impl_from_error {
-  ($error:tt) => {
-    impl From<$error> for RenderQueueError {
-      #[inline(always)]
-      fn from(error: $error) -> Self {
-        Self::$error(error)
-      }
-    }
-  };
-}
-
-impl_from_error!(BufferError);
-impl_from_error!(TextureError);
-impl_from_error!(ShaderError);
-impl_from_error!(MeshError);
-impl_from_error!(TargetError);
+common::impl_from_error!(BufferError for RenderQueueError);
+common::impl_from_error!(TextureError for RenderQueueError);
+common::impl_from_error!(ShaderError for RenderQueueError);
+common::impl_from_error!(MeshError for RenderQueueError);
+common::impl_from_error!(TargetError for RenderQueueError);
 
 impl RenderQueue {
   /// Creates a new [`RenderQueue`].
