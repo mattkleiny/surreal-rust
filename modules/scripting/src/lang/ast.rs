@@ -5,7 +5,6 @@
 /// (potentially in different languages).
 #[derive(Default)]
 pub struct Module {
-  pub imports: Vec<Import>,
   pub functions: Vec<Function>,
 }
 
@@ -36,7 +35,7 @@ pub enum Statement {
   If(Expression, Vec<Statement>, Vec<Statement>),
   While(Expression, Vec<Statement>),
   For(String, Expression, Expression, Vec<Statement>),
-  Return(Expression),
+  Return(Option<Expression>),
   Block(Vec<Statement>),
   Continue,
   Break,
@@ -48,10 +47,6 @@ pub enum Expression {
   Binary(BinaryOperator, Box<Expression>, Box<Expression>),
   Unary(UnaryOperator, Box<Expression>),
   Literal(Literal),
-  Identifier(String),
-  Call(Box<Expression>, Vec<Expression>),
-  Index(Box<Expression>, Box<Expression>),
-  Member(Box<Expression>, String),
 }
 
 /// A literal value in a script.
@@ -99,17 +94,9 @@ pub enum UnaryOperator {
 #[allow(unused_variables)]
 pub trait Visitor {
   fn visit_module(&mut self, module: &Module) {
-    for import in &module.imports {
-      self.visit_import(import);
-    }
-
     for function in &module.functions {
       self.visit_function(function);
     }
-  }
-
-  fn visit_import(&mut self, import: &Import) {
-    // no-op
   }
 
   fn visit_function(&mut self, function: &Function) {
@@ -135,7 +122,6 @@ pub trait Visitor {
         self.visit_expression(&inner);
       }
       Expression::Literal(literal) => self.visit_literal(literal),
-      _ => {}
     }
   }
 
@@ -148,13 +134,6 @@ impl Module {
   #[inline(always)]
   pub fn accept(&self, visitor: &mut dyn Visitor) {
     visitor.visit_module(self);
-  }
-}
-
-impl Import {
-  #[inline(always)]
-  pub fn accept(&self, visitor: &mut dyn Visitor) {
-    visitor.visit_import(self);
   }
 }
 

@@ -72,7 +72,6 @@ mod parser {
   #[derive(Debug, PartialEq)]
   enum Token {
     Number(f64),
-    String(String),
     Keyword(Keyword),
     Identifier(String),
     Operator(Operator),
@@ -114,7 +113,6 @@ mod parser {
     pub fn parse_literal(&mut self) -> Result<ast::Literal, ScriptParseError> {
       match self.take() {
         Some(Token::Number(value)) => Ok(ast::Literal::Number(*value)),
-        Some(Token::String(value)) => Ok(ast::Literal::String(value.clone())),
         _ => self.unexpected_token(),
       }
     }

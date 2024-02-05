@@ -1,4 +1,5 @@
-use common::Variant;
+pub use bytecode::*;
+pub use compiler::*;
 
 use crate::ast;
 
@@ -6,8 +7,8 @@ use crate::ast;
 ///
 /// Capable of executing scripts that have been compiled into bytecode.
 pub struct VirtualMachine {
-  chunk: bytecode::Chunk,
-  stack: Vec<bytecode::Value>,
+  chunk: Chunk,
+  stack: Vec<Value>,
   trace_execution: bool,
 }
 
@@ -21,7 +22,7 @@ impl VirtualMachine {
   /// Creates a new virtual machine.
   pub fn new() -> Self {
     Self {
-      chunk: bytecode::Chunk::default(),
+      chunk: Chunk::default(),
       stack: Vec::new(),
       trace_execution: false,
     }
@@ -36,35 +37,34 @@ impl VirtualMachine {
   }
 
   /// Interprets the given chunk of bytecode.
-  pub fn interpret(&mut self, chunk: bytecode::Chunk) -> Result<Variant, VirtualMachineError> {
+  pub fn execute(&mut self, chunk: Chunk) -> Result<common::Variant, VirtualMachineError> {
     self.chunk = chunk;
-
-    self.run()
+    self.advance()
   }
 
   /// Continues running the virtual machine, executing the bytecode.
-  pub fn run(&mut self) -> Result<Variant, VirtualMachineError> {
-    use bytecode::*;
+  pub fn advance(&mut self) -> Result<common::Variant, VirtualMachineError> {
+    use common::Variant;
 
     macro_rules! unary_op {
-    ($operator:tt) => {
-      if let Some(Value::Number(a)) = self.stack.pop() {
-        self.stack.push(Value::Number($operator a));
-      } else {
-        return Err(VirtualMachineError::UnexpectedValue);
-      }
-    };
-  }
+      ($operator:tt) => {
+        if let Some(Value::Number(a)) = self.stack.pop() {
+          self.stack.push(Value::Number($operator a));
+        } else {
+          return Err(VirtualMachineError::UnexpectedValue);
+        }
+      };
+    }
 
     macro_rules! binary_op {
-    ($operator:tt) => {
-      if let (Some(Value::Number(a)), Some(Value::Number(b))) = (self.stack.pop(), self.stack.pop()) {
-        self.stack.push(Value::Number(a $operator b));
-      } else {
-        return Err(VirtualMachineError::UnexpectedValue);
-      }
-    };
-  }
+      ($kind:tt, $operator:tt) => {
+        if let (Some(Value::$kind(a)), Some(Value::$kind(b))) = (self.stack.pop(), self.stack.pop()) {
+          self.stack.push(Value::$kind(a $operator b));
+        } else {
+          return Err(VirtualMachineError::UnexpectedValue);
+        }
+      };
+    }
 
     // execute all instructions in the chunk
     while let Some(Instruction { opcode, .. }) = self.chunk.code.pop_front() {
@@ -74,6 +74,8 @@ impl VirtualMachine {
 
       // execute the instruction
       match opcode {
+        // intrinsics
+        Opcode::Push(value) => self.stack.push(value),
         Opcode::Return => {
           return match self.stack.pop() {
             Some(Value::Number(value)) => Ok(Variant::F64(value)),
@@ -83,12 +85,37 @@ impl VirtualMachine {
             None => Ok(Variant::Null),
           }
         }
-        Opcode::Push(value) => self.stack.push(value),
+        Opcode::Import => todo!(),
+
+        // arithmetic
         Opcode::Negate => unary_op!(-),
-        Opcode::Add => binary_op!(+),
-        Opcode::Subtract => binary_op!(-),
-        Opcode::Multiply => binary_op!(*),
-        Opcode::Divide => binary_op!(/),
+        Opcode::Add => binary_op!(Number, +),
+        Opcode::Subtract => binary_op!(Number, -),
+        Opcode::Multiply => binary_op!(Number, *),
+        Opcode::Divide => binary_op!(Number, /),
+        Opcode::Modulo => binary_op!(Number, %),
+        Opcode::Power => todo!(),
+        Opcode::LeftShift => todo!(),
+        Opcode::RightShift => todo!(),
+
+        // comparison
+        Opcode::Equal => binary_op!(Boolean, ==),
+        Opcode::NotEqual => binary_op!(Boolean, !=),
+        Opcode::LessThan => binary_op!(Boolean, <),
+        Opcode::LessThanOrEqual => binary_op!(Boolean, <=),
+        Opcode::GreaterThan => binary_op!(Boolean, >),
+        Opcode::GreaterThanOrEqual => binary_op!(Boolean, >=),
+
+        // logical
+        Opcode::And => binary_op!(Boolean, &&),
+        Opcode::Or => binary_op!(Boolean, ||),
+        Opcode::Not => todo!(),
+
+        // bitwise
+        Opcode::BitwiseAnd => todo!(),
+        Opcode::BitwiseOr => todo!(),
+        Opcode::BitwiseXor => todo!(),
+        Opcode::BitwiseNot => todo!(),
       }
     }
 
@@ -127,15 +154,43 @@ mod bytecode {
   }
 
   /// A single instruction in the virtual machine.
+  #[repr(u16)]
   #[derive(Debug, Clone, PartialEq)]
   pub enum Opcode {
-    Return,
+    // intrinsics
     Push(Value),
+    Return,
+    Import,
+
+    // arithmetic
     Negate,
     Add,
     Subtract,
     Multiply,
     Divide,
+    Modulo,
+    Power,
+
+    // comparison
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
+
+    // logical
+    And,
+    Or,
+    Not,
+
+    // bitwise
+    BitwiseAnd,
+    BitwiseOr,
+    BitwiseXor,
+    BitwiseNot,
+    LeftShift,
+    RightShift,
   }
 
   impl Chunk {
@@ -171,13 +226,40 @@ mod bytecode {
     /// Disassembles the opcode into a human-readable format.
     pub fn disassemble(&self) -> String {
       match self {
-        Opcode::Return => "RETURN".to_string(),
+        // intrinsics
         Opcode::Push(literal) => format!("PUSH {}", literal.disassemble()),
+        Opcode::Return => "RETURN".to_string(),
+        Opcode::Import => "IMPORT".to_string(),
+
+        // arithmetic
         Opcode::Negate => "NEGATE".to_string(),
         Opcode::Add => "ADD".to_string(),
         Opcode::Subtract => "SUBTRACT".to_string(),
         Opcode::Multiply => "MULTIPLY".to_string(),
         Opcode::Divide => "DIVIDE".to_string(),
+        Opcode::Modulo => "MODULO".to_string(),
+        Opcode::Power => "POWER".to_string(),
+        Opcode::LeftShift => "LEFT_SHIFT".to_string(),
+        Opcode::RightShift => "RIGHT_SHIFT".to_string(),
+
+        // comparison
+        Opcode::Equal => "EQUAL".to_string(),
+        Opcode::NotEqual => "NOT_EQUAL".to_string(),
+        Opcode::LessThan => "LESS_THAN".to_string(),
+        Opcode::LessThanOrEqual => "LESS_THAN_OR_EQUAL".to_string(),
+        Opcode::GreaterThan => "GREATER_THAN".to_string(),
+        Opcode::GreaterThanOrEqual => "GREATER_THAN_OR_EQUAL".to_string(),
+
+        // logical
+        Opcode::And => "AND".to_string(),
+        Opcode::Or => "OR".to_string(),
+        Opcode::Not => "NOT".to_string(),
+
+        // bitwise
+        Opcode::BitwiseAnd => "BITWISE_AND".to_string(),
+        Opcode::BitwiseOr => "BITWISE_OR".to_string(),
+        Opcode::BitwiseXor => "BITWISE_XOR".to_string(),
+        Opcode::BitwiseNot => "BITWISE_NOT".to_string(),
       }
     }
   }
@@ -203,35 +285,20 @@ mod compiler {
   pub enum CompileError {}
 
   /// A compiler for the virtual machine.
+  #[derive(Default)]
   pub struct Compiler {
     chunk: bytecode::Chunk,
     line_number: usize,
-    trace_compilation: bool,
   }
 
   impl Compiler {
-    /// Creates a new compiler.
-    pub fn new() -> Self {
-      Self {
-        chunk: bytecode::Chunk::default(),
-        line_number: 0,
-        trace_compilation: false,
-      }
-    }
+    /// Compiles the given module into bytecode.
+    pub fn compile(module: &ast::Module) -> Result<bytecode::Chunk, CompileError> {
+      let mut compiler = Compiler::default();
 
-    /// Enables tracing for the compiler.
-    pub fn with_tracing(self) -> Self {
-      Self {
-        trace_compilation: true,
-        ..self
-      }
-    }
+      module.accept(&mut compiler);
 
-    /// Compiles the given target into bytecode.
-    pub fn compile(&mut self, target: &ast::Module) -> Result<(), CompileError> {
-      target.accept(self);
-
-      Ok(())
+      Ok(compiler.finalize())
     }
 
     /// Pushes a new line onto the chunk.
@@ -240,12 +307,11 @@ mod compiler {
     }
 
     /// Pushes a new instruction onto the chunk.
-    pub fn push(&mut self, line: usize, opcode: bytecode::Opcode) {
-      if self.trace_compilation {
-        println!("{:?}", opcode.disassemble());
-      }
-
-      self.chunk.code.push_back(bytecode::Instruction { line, opcode });
+    pub fn push_opcode(&mut self, opcode: bytecode::Opcode) {
+      self.chunk.code.push_back(bytecode::Instruction {
+        line: self.line_number,
+        opcode,
+      });
     }
 
     /// Finalizes the compiler, returning the compiled bytecode.
@@ -256,32 +322,94 @@ mod compiler {
 
   impl ast::Visitor for Compiler {
     fn visit_statement(&mut self, statement: &ast::Statement) {
-      self.push_line();
+      use ast::*;
+
+      self.push_line(); // each statement is on a new logical 'line'
 
       match statement {
-        ast::Statement::Expression(expression) => self.visit_expression(expression),
+        Statement::Expression(expression) => {
+          self.visit_expression(expression);
+        }
+        Statement::Return(Some(expression)) => {
+          self.visit_expression(expression);
+          self.push_opcode(Opcode::Return);
+        }
+        Statement::Return(None) => {
+          self.push_opcode(Opcode::Return);
+        }
         _ => {}
       }
     }
 
+    fn visit_function(&mut self, function: &ast::Function) {
+      for statement in &function.statements {
+        self.visit_statement(statement);
+      }
+    }
+
+    fn visit_expression(&mut self, expression: &ast::Expression) {
+      use ast::*;
+
+      match expression {
+        Expression::Binary(operator, left, right) => {
+          self.visit_expression(left);
+          self.visit_expression(right);
+
+          match operator {
+            BinaryOperator::Add => self.push_opcode(Opcode::Add),
+            BinaryOperator::Subtract => self.push_opcode(Opcode::Subtract),
+            BinaryOperator::Multiply => self.push_opcode(Opcode::Multiply),
+            BinaryOperator::Divide => self.push_opcode(Opcode::Divide),
+            BinaryOperator::Modulo => self.push_opcode(Opcode::Modulo),
+            BinaryOperator::Power => self.push_opcode(Opcode::Power),
+            BinaryOperator::BitwiseAnd => self.push_opcode(Opcode::BitwiseAnd),
+            BinaryOperator::BitwiseOr => self.push_opcode(Opcode::BitwiseOr),
+            BinaryOperator::BitwiseXor => self.push_opcode(Opcode::BitwiseXor),
+            BinaryOperator::LeftShift => self.push_opcode(Opcode::LeftShift),
+            BinaryOperator::RightShift => self.push_opcode(Opcode::RightShift),
+            BinaryOperator::Equal => self.push_opcode(Opcode::Equal),
+            BinaryOperator::NotEqual => self.push_opcode(Opcode::NotEqual),
+            BinaryOperator::LessThan => self.push_opcode(Opcode::LessThan),
+            BinaryOperator::LessThanOrEqual => self.push_opcode(Opcode::LessThanOrEqual),
+            BinaryOperator::GreaterThan => self.push_opcode(Opcode::GreaterThan),
+            BinaryOperator::GreaterThanOrEqual => self.push_opcode(Opcode::GreaterThanOrEqual),
+            BinaryOperator::And => self.push_opcode(Opcode::And),
+            BinaryOperator::Or => self.push_opcode(Opcode::Or),
+          }
+        }
+        Expression::Unary(operator, inner) => {
+          self.visit_expression(inner);
+
+          match operator {
+            UnaryOperator::Negate => self.push_opcode(Opcode::Negate),
+            UnaryOperator::BitwiseNot => self.push_opcode(Opcode::BitwiseNot),
+            UnaryOperator::Not => self.push_opcode(Opcode::Not),
+          }
+        }
+        Expression::Literal(value) => {
+          self.visit_literal(value);
+        }
+      }
+    }
+
     fn visit_literal(&mut self, literal: &ast::Literal) {
-      self.push(
-        self.line_number,
-        bytecode::Opcode::Push(match literal {
-          ast::Literal::Number(value) => bytecode::Value::Number(*value),
-          ast::Literal::String(value) => bytecode::Value::String(value.clone()),
-          ast::Literal::Boolean(value) => bytecode::Value::Boolean(*value),
-          ast::Literal::Nil => bytecode::Value::Nil,
-        }),
-      );
+      use ast::*;
+
+      self.push_opcode(Opcode::Push(match literal {
+        Literal::Number(value) => Value::Number(*value),
+        Literal::String(value) => Value::String(value.clone()),
+        Literal::Boolean(value) => Value::Boolean(*value),
+        Literal::Nil => Value::Nil,
+      }));
     }
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use self::compiler::Compiler;
-  use super::{bytecode::*, *};
+  use common::Variant;
+
+  use super::*;
 
   /// Helper macro to create an instruction.
   macro_rules! instruct {
@@ -306,7 +434,7 @@ mod tests {
 
   #[test]
   fn test_basic_execution_of_chunks() {
-    let mut vm = VirtualMachine::new().with_tracing();
+    let mut vm = VirtualMachine::new();
 
     let chunk = Chunk::from_slice(&[
       instruct!(1, Opcode::Push(Value::Number(3.14159))),
@@ -318,11 +446,11 @@ mod tests {
       instruct!(4, Opcode::Return),
     ]);
 
-    let result = vm.interpret(chunk).expect("failed to interpret chunk");
+    let result = vm.execute(chunk).expect("failed to interpret chunk");
 
     assert_eq!(result, Variant::F64(4.42615));
 
-    let result = vm.run().expect("failed to run chunk");
+    let result = vm.advance().expect("failed to run chunk");
 
     assert_eq!(result, Variant::F64(-5.0));
   }
@@ -331,25 +459,26 @@ mod tests {
   fn test_basic_compilation() {
     use ast::*;
 
-    let mut compiler = Compiler::new();
-
     let module = Module {
       functions: vec![Function {
         name: "main".to_string(),
-        statements: vec![Statement::Expression(Expression::Binary(
-          BinaryOperator::Add,
-          Box::new(Expression::Literal(Literal::Number(3.14159))),
-          Box::new(Expression::Literal(Literal::Number(1.12345))),
-        ))],
+        statements: vec![
+          Statement::Expression(Expression::Binary(
+            BinaryOperator::Add,
+            Box::new(Expression::Literal(Literal::Number(3.14159))),
+            Box::new(Expression::Literal(Literal::Number(1.12345))),
+          )),
+          Statement::Return(None),
+        ],
         parameters: vec![],
       }],
-      imports: vec![],
     };
 
-    compiler.compile(&module).expect("failed to compile module");
+    let chunk = Compiler::compile(&module).expect("failed to compile module");
+    let mut vm = VirtualMachine::new();
 
-    let chunk = compiler.finalize();
+    let result = vm.execute(chunk).expect("failed to interpret chunk");
 
-    println!("{}", chunk.disassemble());
+    assert_eq!(result, Variant::F64(4.26504));
   }
 }
