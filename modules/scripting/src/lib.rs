@@ -17,15 +17,15 @@
 //! as flexible as possible, allowing for multiple execution models to be used,
 //! such as a virtual machine or an interpreter.
 
-#[allow(dead_code)]
-pub mod lang {
+pub use lang::*;
+pub use runtime::*;
+
+mod lang {
+  //! Language frontend for the scripting engine.
   pub use basic::*;
-  pub use wren::*;
 
   pub mod ast;
-
   mod basic;
-  mod wren;
 
   /// Represents an error that occurred while parsing a script.
   #[derive(Debug)]
@@ -40,13 +40,12 @@ pub mod lang {
     fn name(&self) -> &'static str;
 
     /// Returns the file extension for the scripting language, sans the dot.
-    ///
-    /// For example, the file extension for Lua is "lua".
     fn file_extensions(&self) -> &[&'static str];
 
     /// Parses the file at the given path.
     fn parse_path(&self, path: impl common::ToVirtualPath) -> Result<ast::Module, ScriptParseError> {
       let path = path.to_virtual_path();
+
       let mut stream = path
         .open_input_stream()
         .map_err(|_| ScriptParseError::FailedToReadStream)?;
@@ -66,31 +65,9 @@ pub mod lang {
   }
 }
 
-#[allow(dead_code)]
-pub mod runtime {
-  pub use interpret::*;
+mod runtime {
+  //! Runtime for the scripting engine.
   pub use vm::*;
 
-  mod interpret;
   mod vm;
-
-  /// Represents an error that occurred while executing a script.
-  #[derive(Debug)]
-  pub enum ScriptExecuteError {
-    ParseError,
-  }
-
-  /// A runtime capable of executing a script.
-  ///
-  /// This is either a virtual machine or an interpreter, depending on the
-  /// desired execution model.
-  pub trait ScriptRuntime {
-    /// Calls the function with the given name and parameters, returns the
-    /// return value of the function if any.
-    fn call_function(
-      &mut self,
-      name: impl AsRef<str>,
-      parameters: &[common::Variant],
-    ) -> Result<Vec<common::Variant>, ScriptExecuteError>;
-  }
 }

@@ -16,9 +16,7 @@ impl ScriptLanguage for BASIC {
   }
 
   fn parse_code(&self, code: &str) -> Result<ast::Module, ScriptParseError> {
-    let _module = parser::parse(code)?;
-
-    todo!()
+    parser::parse(code)
   }
 }
 
@@ -35,15 +33,7 @@ mod parser {
     Ok(module)
   }
 
-  #[derive(Debug, PartialEq)]
-  enum Token {
-    Number(f64),
-    String(String),
-    Keyword(Keyword),
-    Identifier(String),
-    Operator(Operator),
-  }
-
+  /// A keyword in a BASIC script.
   #[derive(Debug, PartialEq)]
   enum Keyword {
     Rem,
@@ -63,6 +53,7 @@ mod parser {
     End,
   }
 
+  /// An operator in a BASIC script.
   #[derive(Debug, PartialEq)]
   enum Operator {
     Plus,
@@ -77,9 +68,30 @@ mod parser {
     Or,
   }
 
+  /// A text token in a BASIC script.
+  #[derive(Debug, PartialEq)]
+  enum Token {
+    Number(f64),
+    String(String),
+    Keyword(Keyword),
+    Identifier(String),
+    Operator(Operator),
+  }
+
   impl TokenStream {
     /// Parses a script module from the token stream.
     pub fn parse_script_module(&mut self) -> Result<ast::Module, ScriptParseError> {
+      let mut module = ast::Module::default();
+
+      while let Some(function) = self.parse_function()? {
+        module.functions.push(function);
+      }
+
+      Ok(module)
+    }
+
+    /// Parses a function from the token stream.
+    pub fn parse_function(&mut self) -> Result<Option<ast::Function>, ScriptParseError> {
       todo!()
     }
 

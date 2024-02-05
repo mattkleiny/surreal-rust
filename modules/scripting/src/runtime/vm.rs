@@ -1,252 +1,220 @@
-use common::StringName;
+use common::Variant;
 
-use super::ScriptRuntime;
-
-/// Allows executing script bytecode.
+/// A virtual machine, with a stack-based architecture.
 ///
-/// This is a virtual machine, with a stack-based architecture.
-#[derive(Default)]
+/// Capable of executing scripts that have been compiled into bytecode.
 pub struct VirtualMachine {
-  stack: Vec<bytecode::Literal>,
-  instruction_pointer: usize,
-  instruction: Option<Instruction>,
-  call_stack: Vec<StackFrame>,
+  stack: Vec<Value>,
+  trace_execution: bool,
 }
 
-/// A single frame in the call stack.
+/// An error that can occur when interpreting bytecode.
 #[derive(Debug)]
-struct StackFrame {
-  instruction_pointer: usize,
-  instruction: Instruction,
-  stack: Vec<bytecode::Literal>,
-  locals: Vec<StackLocal>,
+pub enum InterpretError {
+  CompileError,
+  RuntimeError,
 }
 
-/// A local variable in a stack frame.
-#[derive(Debug)]
-struct StackLocal {
-  name: StringName,
-  value: bytecode::Literal,
+/// A chunk of bytecode to be executed by the virtual machine.
+#[derive(Default)]
+pub struct Chunk {
+  pub code: Vec<Instruction>,
 }
 
-/// A single instruction in a script.
-#[derive(Debug)]
-struct Instruction {
-  pub opcode: bytecode::OpCode,
+// An instruction with the line number it was found on.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Instruction {
+  pub opcode: Opcode,
+  pub line: usize,
 }
 
-impl ScriptRuntime for VirtualMachine {
-  fn call_function(
-    &mut self,
-    _name: impl AsRef<str>,
-    _parameters: &[common::Variant],
-  ) -> Result<Vec<common::Variant>, super::ScriptExecuteError> {
-    todo!()
-  }
+/// A value that can be stored on the virtual machine's stack.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Value {
+  Number(f64),
+  String(String),
+  Boolean(bool),
+  Nil,
 }
 
-mod bytecode {
-  pub trait ToByteCode {
-    fn to_bytecode(&self, buffer: &mut Vec<u8>);
+/// A single instruction in the virtual machine.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Opcode {
+  Return,
+  Push(Value),
+  Negate,
+  Add,
+  Subtract,
+  Multiply,
+  Divide,
+}
+
+impl VirtualMachine {
+  /// Creates a new virtual machine.
+  pub fn new() -> Self {
+    Self {
+      stack: Vec::new(),
+      trace_execution: false,
+    }
   }
 
-  #[derive(Debug)]
-  pub enum OpCode {
-    NoOp,
-    Push(Literal),
-    Pop,
-    Math(MathOp),
-    JumpIfTrue(usize),
-    JumpIfFalse(usize),
+  /// Creates a new virtual machine with tracing enabled.
+  pub fn with_tracing(self) -> Self {
+    Self {
+      trace_execution: true,
+      ..self
+    }
   }
 
-  #[derive(Debug)]
-  pub enum MathOp {
-    Add,
-    Subtract,
-    Multiply,
-    Divide,
-    Modulo,
-    Power,
-    BitwiseAnd,
-    BitwiseOr,
-    BitwiseXor,
-    LeftShift,
-    RightShift,
-    Equal,
-    NotEqual,
-    LessThan,
-    LessThanOrEqual,
-    GreaterThan,
-    GreaterThanOrEqual,
-    And,
-    Or,
-  }
+  /// Interprets the given chunk of bytecode.
+  pub fn interpret(&mut self, chunk: impl Into<Chunk>) -> Result<Variant, InterpretError> {
+    let mut chunk = chunk.into();
 
-  #[derive(Debug)]
-  pub enum Literal {
-    Number(u64),
-    Float(f64),
-    String(String),
-    Boolean(bool),
-    Nil,
-  }
+    macro_rules! unary_op {
+      ($operator:tt) => {
+        if let Some(Value::Number(a)) = self.stack.pop() {
+          self.stack.push(Value::Number($operator a));
+        } else {
+          return Err(InterpretError::RuntimeError);
+        }
+      };
+    }
 
-  impl ToByteCode for &[super::Instruction] {
-    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
-      buffer.extend_from_slice(&self.len().to_le_bytes());
+    macro_rules! binary_op {
+      ($operator:tt) => {
+        if let (Some(Value::Number(a)), Some(Value::Number(b))) = (self.stack.pop(), self.stack.pop()) {
+          self.stack.push(Value::Number(a $operator b));
+        } else {
+          return Err(InterpretError::RuntimeError);
+        }
+      };
+    }
 
-      for instruction in self.iter() {
-        instruction.to_bytecode(buffer);
+    for instruction in chunk.code.drain(..) {
+      if self.trace_execution {
+        println!("{:?}", instruction.opcode.disassemble());
+      }
+
+      match instruction.opcode {
+        Opcode::Return => {
+          return match self.stack.pop() {
+            Some(Value::Number(value)) => Ok(Variant::F64(value)),
+            Some(Value::String(value)) => Ok(Variant::String(value)),
+            Some(Value::Boolean(value)) => Ok(Variant::Bool(value)),
+            Some(Value::Nil) => Ok(Variant::Null),
+            None => Ok(Variant::Null),
+          }
+        }
+        Opcode::Push(value) => self.stack.push(value),
+        Opcode::Negate => unary_op!(-),
+        Opcode::Add => binary_op!(+),
+        Opcode::Subtract => binary_op!(-),
+        Opcode::Multiply => binary_op!(*),
+        Opcode::Divide => binary_op!(/),
       }
     }
+
+    Ok(Variant::Null)
   }
 
-  impl ToByteCode for super::Instruction {
-    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
-      self.opcode.to_bytecode(buffer);
-    }
+  /// Resets the virtual machine to its initial state.
+  pub fn reset(&mut self) {
+    self.stack.clear();
+  }
+}
+
+impl Chunk {
+  /// Creates a new chunk from the given bytecode.
+  pub fn from_slice(code: &[Instruction]) -> Self {
+    Self { code: code.to_vec() }
   }
 
-  impl ToByteCode for OpCode {
-    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
-      match self {
-        OpCode::NoOp => {
-          buffer.push(0x00);
-        }
-        OpCode::Push(literal) => {
-          buffer.push(0x01);
-          literal.to_bytecode(buffer);
-        }
-        OpCode::Pop => buffer.push(0x02),
-        OpCode::Math(math_op) => {
-          buffer.push(0x03);
-          math_op.to_bytecode(buffer);
-        }
-        OpCode::JumpIfTrue(offset) => {
-          buffer.push(0x04);
-          buffer.extend_from_slice(&offset.to_le_bytes());
-        }
-        OpCode::JumpIfFalse(offset) => {
-          buffer.push(0x05);
-          buffer.extend_from_slice(&offset.to_le_bytes());
-        }
+  /// Disassembles the bytecode into a human-readable format.
+  pub fn disassemble(&self) -> String {
+    let mut output = String::new();
+    let mut line_number = 0;
+
+    for Instruction { line, opcode } in &self.code {
+      if line_number == *line {
+        output.push_str("|\t");
+      } else {
+        line_number = *line;
+        output.push_str(&format!("{:04}:\t", line_number));
       }
-    }
-  }
 
-  impl ToByteCode for MathOp {
-    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
-      match self {
-        MathOp::Add => buffer.push(0x00),
-        MathOp::Subtract => buffer.push(0x01),
-        MathOp::Multiply => buffer.push(0x02),
-        MathOp::Divide => buffer.push(0x03),
-        MathOp::Modulo => buffer.push(0x04),
-        MathOp::Power => buffer.push(0x05),
-        MathOp::BitwiseAnd => buffer.push(0x06),
-        MathOp::BitwiseOr => buffer.push(0x07),
-        MathOp::BitwiseXor => buffer.push(0x08),
-        MathOp::LeftShift => buffer.push(0x09),
-        MathOp::RightShift => buffer.push(0x0A),
-        MathOp::Equal => buffer.push(0x0B),
-        MathOp::NotEqual => buffer.push(0x0C),
-        MathOp::LessThan => buffer.push(0x0D),
-        MathOp::LessThanOrEqual => buffer.push(0x0E),
-        MathOp::GreaterThan => buffer.push(0x0F),
-        MathOp::GreaterThanOrEqual => buffer.push(0x10),
-        MathOp::And => buffer.push(0x11),
-        MathOp::Or => buffer.push(0x12),
-      }
+      output.push_str(&opcode.disassemble());
+      output.push_str("\n");
     }
-  }
 
-  impl ToByteCode for Literal {
-    fn to_bytecode(&self, buffer: &mut Vec<u8>) {
-      match self {
-        Literal::Nil => buffer.push(0x00),
-        Literal::Number(number) => {
-          buffer.push(0x01);
-          buffer.extend_from_slice(&number.to_le_bytes());
-        }
-        Literal::Boolean(bool) => {
-          buffer.push(0x02);
-          buffer.push(if *bool { 0x01 } else { 0x00 });
-        }
-        Literal::Float(float) => {
-          buffer.push(0x03);
-          buffer.extend_from_slice(&float.to_le_bytes());
-        }
-        Literal::String(string) => {
-          buffer.push(0x04);
-          buffer.extend_from_slice(&string.len().to_le_bytes());
-          buffer.extend_from_slice(string.as_bytes());
-        }
-      }
+    output
+  }
+}
+
+impl Opcode {
+  /// Disassembles the opcode into a human-readable format.
+  pub fn disassemble(&self) -> String {
+    match self {
+      Opcode::Return => "RETURN".to_string(),
+      Opcode::Push(literal) => format!("PUSH {}", literal.disassemble()),
+      Opcode::Negate => "NEGATE".to_string(),
+      Opcode::Add => "ADD".to_string(),
+      Opcode::Subtract => "SUBTRACT".to_string(),
+      Opcode::Multiply => "MULTIPLY".to_string(),
+      Opcode::Divide => "DIVIDE".to_string(),
     }
   }
 }
 
-mod assembly {
+impl Value {
+  /// Disassembles the value into a human-readable format.
+  pub fn disassemble(&self) -> String {
+    match self {
+      Value::Number(value) => value.to_string(),
+      Value::String(value) => value.clone(),
+      Value::Boolean(value) => value.to_string(),
+      Value::Nil => "NIL".to_string(),
+    }
+  }
+}
+
+#[cfg(test)]
+mod tests {
   use super::*;
 
-  /// Represents an error that occurred while assembling bytecode.
-  #[derive(Debug)]
-  pub enum AssemblyError {}
-
-  /// Allows assembly of a type to a VM instruction.
-  pub trait Assembler: Sized {
-    /// Assembles the type into VM instruction.
-    fn assemble(&self) -> Result<Vec<Instruction>, AssemblyError>;
+  /// Helper macro to create an instruction.
+  macro_rules! instruct {
+    ($line:literal, $opcode:expr) => {
+      Instruction {
+        line: $line,
+        opcode: $opcode,
+      }
+    };
   }
 
-  impl Assembler for crate::lang::ast::Module {
-    fn assemble(&self) -> Result<Vec<Instruction>, AssemblyError> {
-      use crate::lang::ast::*;
+  #[test]
+  fn test_basic_disassembly_of_chunks() {
+    let chunk = Chunk::from_slice(&[
+      instruct!(1, Opcode::Push(Value::Number(1.0))),
+      instruct!(1, Opcode::Push(Value::Number(3.14159))),
+      instruct!(2, Opcode::Return),
+    ]);
 
-      struct Assembler {
-        instructions: Vec<Instruction>,
-      }
+    println!("{}", chunk.disassemble());
+  }
 
-      impl Visitor for Assembler {
-        fn visit_statement(&mut self, statement: &Statement) {
-          match statement {
-            Statement::Expression(_) => todo!(),
-            Statement::Assignment(_, _) => todo!(),
-            Statement::If(_, _, _) => todo!(),
-            Statement::While(_, _) => todo!(),
-            Statement::For(_, _, _, _) => todo!(),
-            Statement::Return(_) => todo!(),
-            Statement::Block(_) => todo!(),
-            Statement::Continue => todo!(),
-            Statement::Break => todo!(),
-          }
-        }
+  #[test]
+  fn test_basic_execution_of_chunks() {
+    let mut vm = VirtualMachine::new().with_tracing();
 
-        fn visit_expression(&mut self, expression: &Expression) {
-          match expression {
-            Expression::Binary(_, _, _) => todo!(),
-            Expression::Unary(_, _) => todo!(),
-            Expression::Literal(_) => todo!(),
-            Expression::Identifier(_) => todo!(),
-            Expression::Call(_, _) => todo!(),
-            Expression::Index(_, _) => todo!(),
-            Expression::Member(_, _) => todo!(),
-          }
-        }
+    let chunk = Chunk::from_slice(&[
+      instruct!(1, Opcode::Push(Value::Number(3.14159))),
+      instruct!(1, Opcode::Push(Value::Number(1.28456))),
+      instruct!(1, Opcode::Add),
+      instruct!(2, Opcode::Return),
+    ]);
 
-        fn visit_literal(&mut self, _literal: &Literal) {
-          todo!()
-        }
-      }
+    let result = vm.interpret(chunk).expect("failed to interpret chunk");
 
-      let mut assembler = Assembler {
-        instructions: Vec::new(),
-      };
-
-      self.accept(&mut assembler);
-
-      Ok(assembler.instructions)
-    }
+    assert_eq!(result, Variant::F64(4.42615));
   }
 }

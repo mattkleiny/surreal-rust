@@ -3,28 +3,29 @@
 /// Modules are the top-level unit of compilation in Surreal. Each module
 /// represents a single compilation unit, and can be imported by other modules
 /// (potentially in different languages).
+#[derive(Default)]
 pub struct Module {
-  imports: Vec<Import>,
-  functions: Vec<Function>,
+  pub imports: Vec<Import>,
+  pub functions: Vec<Function>,
 }
 
 /// An import in a script.
 pub struct Import {
-  path: String,
-  alias: Option<String>,
+  pub path: String,
+  pub alias: Option<String>,
 }
 
 /// A function in a script.
 pub struct Function {
-  name: String,
-  parameters: Vec<String>,
-  body: Vec<Statement>,
+  pub name: String,
+  pub parameters: Vec<String>,
+  pub body: Vec<Statement>,
 }
 
 /// A function parameter.
 pub struct Parameter {
-  name: String,
-  default: Option<Expression>,
+  pub name: String,
+  pub default: Option<Expression>,
 }
 
 /// A statement in a script.
@@ -54,7 +55,7 @@ pub enum Expression {
 }
 
 /// A literal value in a script.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
   Number(f64),
   String(String),
@@ -94,43 +95,7 @@ pub enum UnaryOperator {
   Not,
 }
 
-/// Implements support for a token stream over the given token type.
-///
-/// A token stream is a queue of tokens, with the ability to peek at the next
-/// token, useful for building recursive-descent style parsers.
-macro_rules! impl_token_stream {
-  ($token:ty as $ident:ident) => {
-    struct $ident {
-      tokens: std::collections::VecDeque<$token>,
-      last_token: Option<$token>,
-    }
-
-    impl $ident {
-      /// Peek at the next token in the stream.
-      pub fn peek(&self) -> Option<&Token> {
-        self.tokens.front()
-      }
-
-      /// Take the next token from the stream.
-      pub fn take(&mut self) -> Option<&Token> {
-        self.last_token = self.tokens.pop_front();
-        self.last_token.as_ref()
-      }
-
-      /// Returns an error indicating that an unexpected token was encountered.
-      pub fn unexpected_token<R>(&self) -> Result<R, ScriptParseError> {
-        Err(ScriptParseError::InvalidSyntax(format!(
-          "unexpected token encountered: {:?}",
-          self.peek()
-        )))
-      }
-    }
-  };
-}
-
-pub(crate) use impl_token_stream;
-
-/// Allows visiting a script's AST.
+/// Allows visiting the AST nodes of a script.
 #[allow(unused_variables)]
 pub trait Visitor {
   fn visit_module(&mut self, module: &Module) {
@@ -179,6 +144,20 @@ impl Module {
   }
 }
 
+impl Import {
+  #[inline(always)]
+  pub fn accept(&self, visitor: &mut dyn Visitor) {
+    visitor.visit_import(self);
+  }
+}
+
+impl Function {
+  #[inline(always)]
+  pub fn accept(&self, visitor: &mut dyn Visitor) {
+    visitor.visit_function(self);
+  }
+}
+
 impl Statement {
   #[inline(always)]
   pub fn accept(&self, visitor: &mut dyn Visitor) {
@@ -199,3 +178,41 @@ impl Literal {
     visitor.visit_literal(self);
   }
 }
+
+/// Implements support for a token stream over the given token type.
+///
+/// A token stream is a queue of tokens, with the ability to peek at the next
+/// token, useful for building recursive-descent style parsers.
+macro_rules! impl_token_stream {
+  ($token:ty as $ident:ident) => {
+    #[allow(dead_code)]
+    struct $ident {
+      tokens: std::collections::VecDeque<$token>,
+      last_token: Option<$token>,
+    }
+
+    #[allow(dead_code)]
+    impl $ident {
+      /// Peek at the next token in the stream.
+      pub fn peek(&self) -> Option<&Token> {
+        self.tokens.front()
+      }
+
+      /// Take the next token from the stream.
+      pub fn take(&mut self) -> Option<&Token> {
+        self.last_token = self.tokens.pop_front();
+        self.last_token.as_ref()
+      }
+
+      /// Returns an error indicating that an unexpected token was encountered.
+      pub fn unexpected_token<R>(&self) -> Result<R, ScriptParseError> {
+        Err(ScriptParseError::InvalidSyntax(format!(
+          "unexpected token encountered: {:?}",
+          self.peek()
+        )))
+      }
+    }
+  };
+}
+
+pub(crate) use impl_token_stream;
