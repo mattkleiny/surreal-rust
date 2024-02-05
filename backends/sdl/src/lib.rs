@@ -187,6 +187,16 @@ impl input::KeyboardDevice for Window {
 
 impl input::MouseDevice for Window {}
 
+impl common::Clipboard for Window {
+  fn get_clipboard(&self) -> Option<String> {
+    unsafe { CString::from_raw(sdl2_sys::SDL_GetClipboardText()).into_string().ok() }
+  }
+
+  fn set_clipboard(&mut self, _text: String) {
+    todo!()
+  }
+}
+
 impl Drop for Window {
   /// Destroys the window.
   fn drop(&mut self) {

@@ -47,4 +47,4 @@ ui = { package = "surreal-ui", path = "./modules/ui", optional = true }
 
 [[example]]
 name = "hello-world"
-required-features = ["sdl", "graphics"]
+required-features = ["sdl", "graphics", "input"]
