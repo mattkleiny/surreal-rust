@@ -2,30 +2,9 @@ use std::fmt::Write;
 
 use super::*;
 
-/// The OpenGL [`ShaderLanguage`] implementation.
-pub struct GLSL;
-
-impl ShaderProgram {
-  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
-  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> Result<Self, ShaderError> {
-    Self::from_code::<GLSL>(graphics, code)
-  }
-
-  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> Result<Self, ShaderError> {
-    Self::from_path::<GLSL>(graphics, path)
-  }
-
-  /// Loads a [`ShaderProgram`] from the given raw GLSL stream.
-  pub fn from_glsl_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
-    Self::from_stream::<GLSL>(graphics, stream)
-  }
-}
-
 /// Possible versions of OpenGL that can be targeted by a shader program.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum OpenGLVersion {
-  Glsl100,
   Glsl300,
   Glsl330,
   Glsl400,
@@ -44,6 +23,38 @@ pub enum OpenGLVersion {
 pub struct OpenGLEnvironment {
   pub version: OpenGLVersion,
   pub constants: Vec<ShaderConstant>,
+}
+
+impl Default for OpenGLEnvironment {
+  fn default() -> Self {
+    Self {
+      version: OpenGLVersion::Glsl330,
+      constants: vec![ShaderConstant {
+        name: "MAX_TEXTURES".to_string(),
+        value: ShaderUniform::U32(MAX_TEXTURE_UNITS as u32),
+      }],
+    }
+  }
+}
+
+/// The OpenGL [`ShaderLanguage`] implementation.
+pub struct GLSL;
+
+impl ShaderProgram {
+  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
+  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> Result<Self, ShaderError> {
+    Self::from_code::<GLSL>(graphics, code)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
+  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> Result<Self, ShaderError> {
+    Self::from_path::<GLSL>(graphics, path)
+  }
+
+  /// Loads a [`ShaderProgram`] from the given raw GLSL stream.
+  pub fn from_glsl_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
+    Self::from_stream::<GLSL>(graphics, stream)
+  }
 }
 
 impl ShaderLanguage for GLSL {
@@ -66,23 +77,24 @@ impl ShaderLanguage for GLSL {
     let mut shared_code = String::new();
 
     // add the GLSL version directive
-    let version = match environment.opengl_version {
-      OpenGLVersion::Glsl100 => "100",
-      OpenGLVersion::Glsl300 => "300",
-      OpenGLVersion::Glsl330 => "330",
-      OpenGLVersion::Glsl400 => "400",
-      OpenGLVersion::Glsl410 => "410",
-      OpenGLVersion::Glsl420 => "420",
-      OpenGLVersion::Glsl430 => "430",
-      OpenGLVersion::Glsl440 => "440",
-      OpenGLVersion::Glsl450 => "450",
-      OpenGLVersion::Glsl460 => "460",
-      OpenGLVersion::Glsl470 => "470",
-      OpenGLVersion::Glsl480 => "480",
-      OpenGLVersion::Glsl500 => "500",
+    let version = match environment.version {
+      OpenGLVersion::Glsl300 => "300 core",
+      OpenGLVersion::Glsl330 => "330 core",
+      OpenGLVersion::Glsl400 => "400 core2",
+      OpenGLVersion::Glsl410 => "410 core",
+      OpenGLVersion::Glsl420 => "420 core",
+      OpenGLVersion::Glsl430 => "430 core",
+      OpenGLVersion::Glsl440 => "440 core",
+      OpenGLVersion::Glsl450 => "450 core",
+      OpenGLVersion::Glsl460 => "460 core",
+      OpenGLVersion::Glsl470 => "470 core",
+      OpenGLVersion::Glsl480 => "480 core",
+      OpenGLVersion::Glsl500 => "500 core",
     };
 
-    shared_code.write_str(&format!("#version {}\n\n", version));
+    shared_code
+      .write_str(&format!("#version {}\n\n", version))
+      .map_err(|_| ShaderError::CompileError("Failed to write version".to_string()))?;
 
     for line in source_code.lines() {
       if line.trim().starts_with("#shader_type") {
@@ -217,7 +229,7 @@ mod tests {
           name: "MAX_TEXTURES".to_string(),
           value: ShaderUniform::U32(MAX_TEXTURE_UNITS as u32),
         }],
-        version: OpenGLVersion::Glsl330,
+        version: OpenGLVersion::Glsl420,
       },
     )
     .expect("Failed to parse simple shader kernels");
@@ -225,11 +237,11 @@ mod tests {
     assert_eq!(result.len(), 2);
 
     assert_eq!(result[0].kind, ShaderKind::Vertex);
-    assert!(result[0].code.trim().starts_with("#version 330 core"));
+    assert!(result[0].code.trim().starts_with("#version 420 core"));
     assert!(result[0].code.contains("gl_Position"));
 
     assert_eq!(result[1].kind, ShaderKind::Fragment);
-    assert!(result[1].code.trim().starts_with("#version 330 core"));
+    assert!(result[1].code.trim().starts_with("#version 420 core"));
     assert!(result[1].code.contains("gl_FragColor"));
 
     println!("{result:#?}");
