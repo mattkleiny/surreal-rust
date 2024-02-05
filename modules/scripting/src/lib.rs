@@ -31,7 +31,7 @@ pub mod lang {
   #[derive(Debug)]
   pub enum ScriptParseError {
     FailedToReadStream,
-    InvalidSyntax,
+    InvalidSyntax(String),
   }
 
   /// Represents a scripting language for Surreal.

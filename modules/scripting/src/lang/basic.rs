@@ -38,7 +38,7 @@ mod parser {
   #[derive(Debug, PartialEq)]
   enum Token {
     Number(f64),
-    StringLiteral(String),
+    String(String),
     Keyword(Keyword),
     Identifier(String),
     Operator(Operator),
@@ -78,25 +78,37 @@ mod parser {
   }
 
   impl TokenStream {
+    /// Parses a script module from the token stream.
     pub fn parse_script_module(&mut self) -> Result<ast::Module, ScriptParseError> {
       todo!()
     }
 
+    /// Parses a statement from the token stream.
     pub fn parse_statement(&mut self) -> Result<ast::Statement, ScriptParseError> {
       todo!()
     }
 
+    /// Parses an expression from the token stream.
     pub fn parse_expression(&mut self) -> Result<ast::Expression, ScriptParseError> {
+      self.parse_primary_expression()
+    }
+
+    /// Parses a primary expression from the token stream.
+    pub fn parse_primary_expression(&mut self) -> Result<ast::Expression, ScriptParseError> {
       todo!()
     }
 
+    /// Parses a literal value from the token stream.
     pub fn parse_literal(&mut self) -> Result<ast::Literal, ScriptParseError> {
-      todo!()
+      match self.take() {
+        Some(Token::Number(value)) => Ok(ast::Literal::Number(*value)),
+        Some(Token::String(value)) => Ok(ast::Literal::String(value.clone())),
+        _ => self.unexpected_token(),
+      }
     }
 
     /// Tokenizes the given BASIC code into a [`TokenStream`].
     pub fn tokenize(code: &str) -> Result<Self, ScriptParseError> {
-      // tokenize the code
       let mut tokens = VecDeque::<Token>::new();
       let mut chars = code.chars().peekable();
 
@@ -120,13 +132,13 @@ mod parser {
               }
             }
 
-            tokens.push_back(Token::Number(
-              number.parse().map_err(|_| ScriptParseError::InvalidSyntax)?,
-            ));
+            tokens.push_back(Token::Number(number.parse().map_err(|_| {
+              ScriptParseError::InvalidSyntax("an invalid number was encountered".to_string())
+            })?));
           }
 
           // parse keywords and identifiers
-          c if c.is_ascii_alphabetic() || c == '#' => {
+          c if c.is_ascii_alphabetic() => {
             let mut string = String::new();
 
             string.push(c);
@@ -140,7 +152,7 @@ mod parser {
               }
             }
 
-            tokens.push_back(match string.as_str() {
+            tokens.push_back(match string.to_uppercase().as_str() {
               "REM" => Token::Keyword(Keyword::Rem),
               "LET" => Token::Keyword(Keyword::Let),
               "PRINT" => Token::Keyword(Keyword::Print),
@@ -173,7 +185,11 @@ mod parser {
           '|' => tokens.push_back(Token::Operator(Operator::Or)),
 
           // parse other tokens
-          _ => return Err(ScriptParseError::InvalidSyntax),
+          _ => {
+            return Err(ScriptParseError::InvalidSyntax(
+              "an unexpected character was encountered".to_string(),
+            ))
+          }
         }
       }
 
@@ -206,6 +222,22 @@ mod parser {
 
       assert_eq!(stream.take(), Some(&Token::Keyword(Keyword::Print)));
       assert_eq!(stream.take(), Some(&Token::Identifier("x".into())));
+    }
+
+    #[test]
+    fn test_parse_literal_number() {
+      let code = "3.14159";
+      let literal = TokenStream::tokenize(code).unwrap().parse_literal().unwrap();
+
+      assert_eq!(literal, ast::Literal::Number(3.14159));
+    }
+
+    #[test]
+    fn test_parse_literal_string() {
+      let code = r#""Hello, world!""#;
+      let literal = TokenStream::tokenize(code).unwrap().parse_literal().unwrap();
+
+      assert_eq!(literal, ast::Literal::String("Hello, world!".into()));
     }
   }
 }

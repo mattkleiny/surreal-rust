@@ -116,6 +116,14 @@ macro_rules! impl_token_stream {
         self.last_token = self.tokens.pop_front();
         self.last_token.as_ref()
       }
+
+      /// Returns an error indicating that an unexpected token was encountered.
+      pub fn unexpected_token<R>(&self) -> Result<R, ScriptParseError> {
+        Err(ScriptParseError::InvalidSyntax(format!(
+          "unexpected token encountered: {:?}",
+          self.peek()
+        )))
+      }
     }
   };
 }
