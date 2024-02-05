@@ -1,24 +1,26 @@
+use std::collections::VecDeque;
+
 use common::Variant;
 
 /// A virtual machine, with a stack-based architecture.
 ///
 /// Capable of executing scripts that have been compiled into bytecode.
 pub struct VirtualMachine {
+  chunk: Chunk,
   stack: Vec<Value>,
   trace_execution: bool,
 }
 
 /// An error that can occur when interpreting bytecode.
 #[derive(Debug)]
-pub enum InterpretError {
-  CompileError,
-  RuntimeError,
+pub enum VirtualMachineError {
+  UnexpectedValue,
 }
 
 /// A chunk of bytecode to be executed by the virtual machine.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Chunk {
-  pub code: Vec<Instruction>,
+  pub code: VecDeque<Instruction>,
 }
 
 // An instruction with the line number it was found on.
@@ -53,6 +55,7 @@ impl VirtualMachine {
   /// Creates a new virtual machine.
   pub fn new() -> Self {
     Self {
+      chunk: Chunk::default(),
       stack: Vec::new(),
       trace_execution: false,
     }
@@ -67,15 +70,20 @@ impl VirtualMachine {
   }
 
   /// Interprets the given chunk of bytecode.
-  pub fn interpret(&mut self, chunk: impl Into<Chunk>) -> Result<Variant, InterpretError> {
-    let mut chunk = chunk.into();
+  pub fn interpret(&mut self, chunk: Chunk) -> Result<Variant, VirtualMachineError> {
+    self.chunk = chunk;
 
+    self.run()
+  }
+
+  /// Continues running the virtual machine, executing the bytecode.
+  pub fn run(&mut self) -> Result<Variant, VirtualMachineError> {
     macro_rules! unary_op {
       ($operator:tt) => {
         if let Some(Value::Number(a)) = self.stack.pop() {
           self.stack.push(Value::Number($operator a));
         } else {
-          return Err(InterpretError::RuntimeError);
+          return Err(VirtualMachineError::UnexpectedValue);
         }
       };
     }
@@ -85,17 +93,19 @@ impl VirtualMachine {
         if let (Some(Value::Number(a)), Some(Value::Number(b))) = (self.stack.pop(), self.stack.pop()) {
           self.stack.push(Value::Number(a $operator b));
         } else {
-          return Err(InterpretError::RuntimeError);
+          return Err(VirtualMachineError::UnexpectedValue);
         }
       };
     }
 
-    for instruction in chunk.code.drain(..) {
+    // execute all instructions in the chunk
+    while let Some(Instruction { opcode, .. }) = self.chunk.code.pop_front() {
       if self.trace_execution {
-        println!("{:?}", instruction.opcode.disassemble());
+        println!("{:?}", opcode.disassemble());
       }
 
-      match instruction.opcode {
+      // execute the instruction
+      match opcode {
         Opcode::Return => {
           return match self.stack.pop() {
             Some(Value::Number(value)) => Ok(Variant::F64(value)),
@@ -126,7 +136,9 @@ impl VirtualMachine {
 impl Chunk {
   /// Creates a new chunk from the given bytecode.
   pub fn from_slice(code: &[Instruction]) -> Self {
-    Self { code: code.to_vec() }
+    Self {
+      code: code.into_iter().map(|it| it.to_owned()).collect(),
+    }
   }
 
   /// Disassembles the bytecode into a human-readable format.
@@ -211,10 +223,17 @@ mod tests {
       instruct!(1, Opcode::Push(Value::Number(1.28456))),
       instruct!(1, Opcode::Add),
       instruct!(2, Opcode::Return),
+      instruct!(3, Opcode::Push(Value::Number(5.0))),
+      instruct!(3, Opcode::Negate),
+      instruct!(4, Opcode::Return),
     ]);
 
     let result = vm.interpret(chunk).expect("failed to interpret chunk");
 
     assert_eq!(result, Variant::F64(4.42615));
+
+    let result = vm.run().expect("failed to run chunk");
+
+    assert_eq!(result, Variant::F64(-5.0));
   }
 }
