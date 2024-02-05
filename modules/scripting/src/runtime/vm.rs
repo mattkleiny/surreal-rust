@@ -1,5 +1,4 @@
 use bytecode::*;
-use compiler::*;
 
 use crate::{ast, ScriptLanguage};
 
@@ -41,7 +40,7 @@ impl VirtualMachine {
   /// Compiles the given code into bytecode and executes it.
   pub fn run<S: ScriptLanguage>(&mut self, code: impl AsRef<str>) -> Result<common::Variant, ScriptError> {
     let module = S::parse_code(code.as_ref()).map_err(|_| ScriptError::FailedToParse)?;
-    let chunk = Compiler::compile_module(&module).map_err(|_| ScriptError::FailedToCompile)?;
+    let chunk = Chunk::compile(&module).map_err(|_| ScriptError::FailedToCompile)?;
 
     self.execute(chunk)
   }
@@ -325,27 +324,29 @@ mod bytecode {
 mod compiler {
   use super::*;
 
-  /// Represents an error that occurred while compiling a value.
-  #[derive(Debug)]
-  pub enum CompileError {}
-
-  /// The compiler for the virtual machine.
-  #[derive(Default)]
-  pub struct Compiler {
-    chunk: bytecode::Chunk,
-    line_number: usize,
-  }
-
-  impl Compiler {
+  impl bytecode::Chunk {
     /// Compiles the given module into bytecode.
-    pub fn compile_module(module: &ast::Module) -> Result<bytecode::Chunk, CompileError> {
+    pub fn compile(module: &ast::Module) -> Result<bytecode::Chunk, CompileError> {
       let mut compiler = Compiler::default();
 
       module.accept(&mut compiler);
 
       Ok(compiler.finalize())
     }
+  }
 
+  /// Represents an error that occurred while compiling a value.
+  #[derive(Debug)]
+  pub enum CompileError {}
+
+  /// The compiler for the virtual machine.
+  #[derive(Default)]
+  struct Compiler {
+    chunk: bytecode::Chunk,
+    line_number: usize,
+  }
+
+  impl Compiler {
     /// Pushes a new line onto the chunk.
     pub fn push_line(&mut self) {
       self.line_number += 1;
@@ -506,7 +507,7 @@ mod tests {
       }],
     };
 
-    let chunk = Compiler::compile_module(&module).expect("failed to compile module");
+    let chunk = Chunk::compile(&module).expect("failed to compile module");
     let mut vm = VirtualMachine::new();
 
     let result = vm.execute(chunk).expect("failed to interpret chunk");

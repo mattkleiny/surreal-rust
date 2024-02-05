@@ -31,6 +31,29 @@ pub enum Variant {
   Quat(Quat),
 }
 
+/// Allows for a type to be converted to a [`Variant`].
+pub trait VariantType {
+  /// Converts the type into a [`Variant`].
+  fn to_variant(&self) -> Variant;
+
+  /// Converts a [`Variant`] into the type.
+  fn from_variant(variant: Variant) -> Self;
+}
+
+/// Blanked for all types that can be converted to/from a `Variant`.
+impl<T: From<Variant> + Into<Variant> + Clone> VariantType for T {
+  #[inline]
+  fn to_variant(&self) -> Variant {
+    self.clone().into()
+  }
+
+  #[inline]
+  fn from_variant(variant: Variant) -> Self {
+    variant.into()
+  }
+}
+
+/// Allows conversion to/from a `Variant` for a given type.
 macro_rules! impl_variant {
   ($type:ty, $kind:ident) => {
     impl From<$type> for Variant {
