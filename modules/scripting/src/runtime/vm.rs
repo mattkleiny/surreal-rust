@@ -1,5 +1,5 @@
-pub use bytecode::*;
-pub use compiler::*;
+use bytecode::*;
+use compiler::*;
 
 use crate::{ast, ScriptLanguage};
 
@@ -12,9 +12,9 @@ pub struct VirtualMachine {
   trace_execution: bool,
 }
 
-/// An error that can occur when interpreting bytecode.
+/// An error that can occur when executing a script.
 #[derive(Debug)]
-pub enum VirtualMachineError {
+pub enum ScriptError {
   FailedToParse,
   FailedToCompile,
   RuntimeError,
@@ -39,21 +39,21 @@ impl VirtualMachine {
   }
 
   /// Compiles the given code into bytecode and executes it.
-  pub fn run<S: ScriptLanguage>(&mut self, code: impl AsRef<str>) -> Result<common::Variant, VirtualMachineError> {
-    let module = S::parse_code(code.as_ref()).map_err(|_| VirtualMachineError::FailedToParse)?;
-    let chunk = Compiler::compile_module(&module).map_err(|_| VirtualMachineError::FailedToCompile)?;
+  pub fn run<S: ScriptLanguage>(&mut self, code: impl AsRef<str>) -> Result<common::Variant, ScriptError> {
+    let module = S::parse_code(code.as_ref()).map_err(|_| ScriptError::FailedToParse)?;
+    let chunk = Compiler::compile_module(&module).map_err(|_| ScriptError::FailedToCompile)?;
 
     self.execute(chunk)
   }
 
   /// Executes the given chunk of bytecode.
-  pub fn execute(&mut self, chunk: Chunk) -> Result<common::Variant, VirtualMachineError> {
+  pub fn execute(&mut self, chunk: Chunk) -> Result<common::Variant, ScriptError> {
     self.chunk = chunk;
     self.advance()
   }
 
   /// Advances running the virtual machine, executing the existing bytecode.
-  pub fn advance(&mut self) -> Result<common::Variant, VirtualMachineError> {
+  pub fn advance(&mut self) -> Result<common::Variant, ScriptError> {
     use common::Variant;
 
     macro_rules! unary_op {
@@ -61,7 +61,7 @@ impl VirtualMachine {
         if let Some(Value::$kind(a)) = self.stack.pop() {
           self.stack.push(Value::$kind($operator a));
         } else {
-          return Err(VirtualMachineError::RuntimeError);
+          return Err(ScriptError::RuntimeError);
         }
       };
     }
@@ -71,7 +71,7 @@ impl VirtualMachine {
         if let (Some(Value::$kind(a)), Some(Value::$kind(b))) = (self.stack.pop(), self.stack.pop()) {
           self.stack.push(Value::$kind(a $operator b));
         } else {
-          return Err(VirtualMachineError::RuntimeError);
+          return Err(ScriptError::RuntimeError);
         }
       };
     }
@@ -146,7 +146,7 @@ mod bytecode {
     pub code: VecDeque<Instruction>,
   }
 
-  // An instruction with the line number it was found on.
+  /// An instruction with the line number it was found on.
   #[derive(Debug, Clone, PartialEq)]
   pub struct Instruction {
     pub opcode: Opcode,
@@ -329,7 +329,7 @@ mod compiler {
   #[derive(Debug)]
   pub enum CompileError {}
 
-  /// A compiler for the virtual machine.
+  /// The compiler for the virtual machine.
   #[derive(Default)]
   pub struct Compiler {
     chunk: bytecode::Chunk,

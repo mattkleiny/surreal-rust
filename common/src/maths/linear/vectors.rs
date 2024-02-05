@@ -7,7 +7,8 @@ pub trait Space {
 }
 
 macro_rules! impl_space {
-  ($name:ident, $cardinality:expr) => {
+  ($name:ident, $cardinality:expr, $comment:literal) => {
+    #[doc = $comment]
     pub struct $name;
 
     impl Space for $name {
@@ -16,9 +17,9 @@ macro_rules! impl_space {
   };
 }
 
-impl_space!(R2, 2);
-impl_space!(R3, 3);
-impl_space!(R4, 4);
+impl_space!(R2, 2, "The 2-dimensional vector space.");
+impl_space!(R3, 3, "The 3-dimensional vector space.");
+impl_space!(R4, 4, "The 4-dimensional vector space.");
 
 /// Represents a vector in some vector space.
 pub trait Vector:

@@ -2,8 +2,9 @@
 //!
 //! Surreal is a lightweight game engine built with Rust. It offers an
 //! opinionated set of basic functionalities that game developers require to
-//! get-things-done, without over-emphasising non goals such as performance or
-//! feature-completeness.
+//! get-things-done, without _over-emphasising_ non-goals such as performance or
+//! feature-completeness (though these are still important, of course, we just
+//! don't want to overdo it).
 //!
 //! The engine is built on top of a number of core libraries, which are all
 //! available as separate crates. This root project can be added as a

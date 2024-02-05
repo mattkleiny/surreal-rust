@@ -100,6 +100,11 @@ pub trait Viewport {
   fn apply_to(&self, camera: &mut dyn Camera);
 }
 
+/// A viewport that fills the entire screen with no stretching.
 pub struct FillViewport {}
+
+/// A viewport that fits the entire screen.
 pub struct FitViewport {}
+
+/// A viewport that stretches to fill the entire screen.
 pub struct StretchViewport {}

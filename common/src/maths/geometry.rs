@@ -18,10 +18,16 @@ pub struct Triangle<V: Vector> {
   pub c: V,
 }
 
-// Common triangle types
+/// A 2D triangle.
 pub type Triangle2 = Triangle<Vec2>;
+
+/// A 2D triangle with double precision vertices.
 pub type DTriangle2 = Triangle<DVec2>;
+
+/// A 3D triangle.
 pub type Triangle3 = Triangle<Vec3>;
+
+/// A 3D triangle with double precision vertices.
 pub type DTriangle3 = Triangle<DVec3>;
 
 /// A polygon in a vector space V.
@@ -54,8 +60,14 @@ impl<V: Vector> Polygon<V> {
   }
 }
 
-// Common polygon types
+/// A 2D polygon.
 pub type Polygon2 = Polygon<Vec2>;
+
+/// A 2D polygon with double precision vertices.
 pub type DPolygon2 = Polygon<DVec2>;
+
+/// A 3D polygon.
 pub type Polygon3 = Polygon<Vec3>;
+
+/// A 3D polygon with double precision vertices.
 pub type DPolygon3 = Polygon<DVec3>;

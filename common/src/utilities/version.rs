@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 
+/// An error that occurs when parsing a [`Version`] from a string.
 #[derive(Debug)]
 pub enum VersionParseError {
   MissingMajor,

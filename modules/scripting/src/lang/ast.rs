@@ -1,8 +1,16 @@
+//! Abstract syntax tree for the Surreal scripting language frontend.
+//!
+//! All languages lift to this AST, which is then compilable and executable by
+//! the runtime.
+
 /// A parsed script module.
 ///
 /// Modules are the top-level unit of compilation in Surreal. Each module
-/// represents a single compilation unit, and can be imported by other modules
-/// (potentially in different languages).
+/// contains a set of functions, and can be import and be imported by other
+/// modules (potentially in different languages).
+///
+/// The module is the root of the AST, and is the entry point for compilation
+/// and visitation.
 #[derive(Default)]
 pub struct Module {
   pub functions: Vec<Function>,

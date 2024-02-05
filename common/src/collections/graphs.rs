@@ -12,7 +12,7 @@ pub struct GraphEdge<W: Scalar = f32> {
   pub weight: W,
 }
 
-// A graph of nodes and Graphedges stored in an adjacency list.
+/// A graph of nodes and edges stored in an adjacency list.
 #[derive(Debug)]
 pub struct Graph<N, W: Scalar = f32> {
   nodes: Arena<GraphNodeId, N>,
