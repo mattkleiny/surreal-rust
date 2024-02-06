@@ -507,9 +507,9 @@ mod tests {
       }],
     };
 
-    let chunk = Chunk::compile(&module).expect("failed to compile module");
     let mut vm = VirtualMachine::new();
 
+    let chunk = Chunk::compile(&module).expect("failed to compile module");
     let result = vm.execute(chunk).expect("failed to interpret chunk");
 
     assert_eq!(result, Variant::F64(4.26504));

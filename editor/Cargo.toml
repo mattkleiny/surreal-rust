@@ -15,3 +15,4 @@ sdl = { package = "surreal-backend-sdl", path = "../backends/sdl" }
 
 # third-party dependencies
 serde = { version = "1.0.159", features = ["derive"], optional = true }
+slint = { version = "1.4.1" }
