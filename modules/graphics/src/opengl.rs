@@ -727,6 +727,10 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  fn mesh_draw_multi(&self, _meshes: &[MeshId]) -> Result<(), MeshError> {
+    todo!()
+  }
+
   fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError> {
     unsafe {
       gl::DeleteVertexArrays(1, &mesh.into());

@@ -200,6 +200,10 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     Ok(())
   }
 
+  fn mesh_draw_multi(&self, meshes: &[MeshId]) -> Result<(), MeshError> {
+    Ok(())
+  }
+
   fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError> {
     Ok(())
   }

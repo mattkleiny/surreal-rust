@@ -142,6 +142,7 @@ pub trait GraphicsBackend {
   // meshes
   fn mesh_create(&self, vertices: BufferId, indices: BufferId, descriptors: &[VertexDescriptor]) -> Result<MeshId, MeshError>;
   fn mesh_draw(&self, mesh: MeshId, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) -> Result<(), MeshError>;
+  fn mesh_draw_multi(&self, meshes: &[MeshId]) -> Result<(), MeshError>;
   fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError>;
 
   // render targets

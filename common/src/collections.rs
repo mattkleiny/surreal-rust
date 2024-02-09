@@ -7,6 +7,7 @@ use std::{
 
 pub use anymap::*;
 pub use arena::*;
+pub use freelist::*;
 pub use graphs::*;
 pub use grid::*;
 pub use multimap::*;
@@ -18,6 +19,7 @@ pub use spatialhash::*;
 
 mod anymap;
 mod arena;
+mod freelist;
 mod graphs;
 mod grid;
 mod multimap;
