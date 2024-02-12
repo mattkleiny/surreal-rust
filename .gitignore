@@ -2,3 +2,4 @@
 .idea/
 .run/
 lcov.info
+.DS_Store
