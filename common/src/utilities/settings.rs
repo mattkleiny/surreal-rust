@@ -5,7 +5,7 @@ pub use windows::*;
 
 /// Represents key for a setting of type T.
 pub struct SettingKey<T> {
-  name: &'static str,
+  _name: &'static str,
   phantom: std::marker::PhantomData<T>,
 }
 
@@ -13,7 +13,7 @@ impl<T> SettingKey<T> {
   /// Creates a new setting key with the given name and default value.
   pub const fn new(name: &'static str) -> Self {
     Self {
-      name,
+      _name: name,
       phantom: std::marker::PhantomData,
     }
   }

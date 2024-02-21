@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Formatter};
 
 use bitflags::bitflags;
-use common::{Camera, FastHashMap, FastHashSet, FromRandom, Frustum};
+use common::{Camera, FastHashMap, FromRandom, Frustum};
 use graphics::{RenderFrame, RenderObject, RenderScene, VisibleObjectSet};
 
 use super::*;

@@ -58,6 +58,7 @@ mod compiler {
     fn compile(&self, builder: &mut StringBuilder) -> Result<Self::Output, ShaderError>;
 
     /// Compiles the value into a string and returns it.
+    #[cfg(test)]
     fn compile_to_string(&self) -> Result<String, ShaderError> {
       let mut builder = StringBuilder::default();
 

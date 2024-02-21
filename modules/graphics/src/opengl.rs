@@ -16,7 +16,7 @@ use super::*;
 /// graphics backend with access to the host's OpenGL functions.
 pub trait OpenGLHost {
   /// Gets the address of an OpenGL function.
-  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void;
+  fn get_proc_address(&self, name: &str) -> *const c_void;
 }
 
 /// An OpenGL [`GraphicsBackend`] implementation.
@@ -474,6 +474,10 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     Ok(())
   }
 
+  fn shader_metadata(&self, _shader: ShaderId) -> Result<ShaderFlags, ShaderError> {
+    todo!()
+  }
+
   fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize> {
     unsafe {
       let shader = shader.into();
@@ -485,10 +489,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         location => Some(location as usize),
       }
     }
-  }
-
-  fn shader_metadata(&self, _shader: ShaderId) -> Result<ShaderFlags, ShaderError> {
-    todo!()
   }
 
   fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {

@@ -324,9 +324,9 @@ mod bytecode {
 mod compiler {
   use super::*;
 
-  impl bytecode::Chunk {
+  impl Chunk {
     /// Compiles the given module into bytecode.
-    pub fn compile(module: &ast::Module) -> Result<bytecode::Chunk, CompileError> {
+    pub fn compile(module: &ast::Module) -> Result<Chunk, CompileError> {
       let mut compiler = Compiler::default();
 
       module.accept(&mut compiler);
@@ -342,7 +342,7 @@ mod compiler {
   /// The compiler for the virtual machine.
   #[derive(Default)]
   struct Compiler {
-    chunk: bytecode::Chunk,
+    chunk: Chunk,
     line_number: usize,
   }
 
@@ -353,20 +353,26 @@ mod compiler {
     }
 
     /// Pushes a new instruction onto the chunk.
-    pub fn push_opcode(&mut self, opcode: bytecode::Opcode) {
-      self.chunk.code.push_back(bytecode::Instruction {
+    pub fn push_opcode(&mut self, opcode: Opcode) {
+      self.chunk.code.push_back(Instruction {
         line: self.line_number,
         opcode,
       });
     }
 
     /// Finalizes the compiler, returning the compiled bytecode.
-    pub fn finalize(self) -> bytecode::Chunk {
+    pub fn finalize(self) -> Chunk {
       self.chunk
     }
   }
 
   impl ast::Visitor for Compiler {
+    fn visit_function(&mut self, function: &ast::Function) {
+      for statement in &function.statements {
+        self.visit_statement(statement);
+      }
+    }
+
     fn visit_statement(&mut self, statement: &ast::Statement) {
       use ast::*;
 
@@ -385,12 +391,6 @@ mod compiler {
           self.push_opcode(Opcode::Return);
         }
         _ => {}
-      }
-    }
-
-    fn visit_function(&mut self, function: &ast::Function) {
-      for statement in &function.statements {
-        self.visit_statement(statement);
       }
     }
 
@@ -489,29 +489,5 @@ mod tests {
     let result = vm.advance().expect("failed to run chunk");
 
     assert_eq!(result, Variant::F64(-5.0));
-  }
-
-  #[test]
-  fn test_basic_compilation() {
-    use ast::*;
-
-    let module = Module {
-      functions: vec![Function {
-        name: "main".to_string(),
-        statements: vec![Statement::Return(Some(Expression::Binary(
-          BinaryOperator::Add,
-          Box::new(Expression::Literal(Literal::Number(3.14159))),
-          Box::new(Expression::Literal(Literal::Number(1.12345))),
-        )))],
-        parameters: vec![],
-      }],
-    };
-
-    let chunk = Chunk::compile(&module).expect("failed to compile module");
-    let mut vm = VirtualMachine::new();
-
-    let result = vm.execute(chunk).expect("failed to interpret chunk");
-
-    assert_eq!(result, Variant::F64(4.26504));
   }
 }

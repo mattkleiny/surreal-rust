@@ -161,12 +161,12 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     Ok(())
   }
 
-  fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize> {
-    None
-  }
-
   fn shader_metadata(&self, shader: ShaderId) -> Result<ShaderFlags, ShaderError> {
     Ok(ShaderFlags::empty())
+  }
+
+  fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize> {
+    None
   }
 
   fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
