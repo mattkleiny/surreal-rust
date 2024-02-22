@@ -224,8 +224,8 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   fn target_blit_to_active(
     &self,
     target: TargetId,
-    source_rect: Option<common::Rectangle>,
-    dest_rect: Option<common::Rectangle>,
+    source_rect: Option<Rectangle>,
+    dest_rect: Option<Rectangle>,
     filter: TextureFilter,
   ) -> Result<(), TargetError> {
     Ok(())

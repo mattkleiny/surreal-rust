@@ -121,7 +121,7 @@ mod console {
     /// Creates a new console log sink for the current module.
     pub const fn for_module(min_level: LogLevel) -> ConsoleLog {
       ConsoleLog {
-        name: Cow::Borrowed(std::module_path!()),
+        name: Cow::Borrowed(module_path!()),
         min_level,
       }
     }

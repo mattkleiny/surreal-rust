@@ -112,7 +112,7 @@ impl RenderScene for World {
     vec![]
   }
 
-  fn cull_visible_objects(&self, _camera: &dyn common::Camera) -> graphics::VisibleObjectSet {
+  fn cull_visible_objects(&self, _camera: &dyn common::Camera) -> VisibleObjectSet {
     VisibleObjectSet::EMPTY
   }
 }

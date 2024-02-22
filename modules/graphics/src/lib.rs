@@ -48,7 +48,7 @@ impl GraphicsEngine {
   }
 
   /// Creates a new [`GraphicsEngine`] with an OpenGL backend.
-  pub fn opengl(host: &dyn opengl::OpenGLHost) -> Self {
+  pub fn opengl(host: &dyn OpenGLHost) -> Self {
     Self::new(opengl::OpenGLGraphicsBackend::new(host))
   }
 }

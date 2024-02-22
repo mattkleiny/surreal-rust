@@ -135,7 +135,7 @@ impl<'a, T: Transform> SceneGraph<'a, T> {
 }
 
 impl<'a, T: Transform> Debug for SceneGraph<'a, T> {
-  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     for (node, level) in self.root.iter_recursive() {
       let indent = if level > 0 {
         " ".repeat(level * 2) + "⤷"

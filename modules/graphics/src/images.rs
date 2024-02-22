@@ -63,7 +63,7 @@ pub trait Image {
 }
 
 /// Implements [`Image`] for the all image type and pixel type combinations.
-impl<P: image::Pixel + crate::Pixel> Image for image::ImageBuffer<P, Vec<<P as image::Pixel>::Subpixel>> {
+impl<P: image::Pixel + Pixel> Image for image::ImageBuffer<P, Vec<<P as image::Pixel>::Subpixel>> {
   type Pixel = P;
 
   fn width(&self) -> u32 {

@@ -272,7 +272,7 @@ mod compiler {
         }
       ";
 
-      let module = parser::parse(code).unwrap();
+      let module = parse(code).unwrap();
       let kernels = compile(module).unwrap();
 
       assert_eq!(kernels.len(), 1);
