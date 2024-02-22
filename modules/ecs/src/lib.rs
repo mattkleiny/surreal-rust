@@ -7,7 +7,7 @@
 #![feature(core_intrinsics)]
 #![allow(internal_features)]
 
-use common::{unsafe_mutable_alias, Arena, FastHashMap, StringName};
+use common::{Arena, FastHashMap, StringName, unsafe_mutable_alias};
 use graphics::{RenderScene, VisibleObjectSet};
 pub use macros::Component;
 
@@ -28,6 +28,11 @@ pub struct World {
 }
 
 impl World {
+  /// Creates a new world.
+  pub fn new() -> Self {
+    Self::default()
+  }
+
   /// Updates this world's systems.
   pub fn update(&mut self, delta: f32) {
     let world = unsafe { unsafe_mutable_alias(self) };
@@ -116,6 +121,7 @@ impl RenderScene for World {
     VisibleObjectSet::EMPTY
   }
 }
+
 /// Represents a component that can be attached to an entity.
 pub trait Component: Default + Sized {
   /// The storage type for this component.
@@ -242,7 +248,7 @@ mod tests {
 
   #[test]
   fn test_basic_component_access() {
-    let mut world = World::default();
+    let mut world = World::new();
 
     let entity1 = world.create_entity();
     let entity2 = world.create_entity();

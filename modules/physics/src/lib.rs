@@ -2,9 +2,9 @@
 
 #![allow(dead_code)]
 
-mod internal;
-
 use common::{Quat, Vec2, Vec3};
+
+mod internal;
 
 common::impl_arena_index!(ColliderId, "Identifies a collider.");
 common::impl_arena_index!(BodyId, "Identifies a physics body.");
@@ -72,7 +72,7 @@ pub trait PhysicsWorld {
 /// A world of 2D physics.
 #[rustfmt::skip]
 pub trait PhysicsWorld2D: PhysicsWorld {
-  // rigidodies
+  // bodies
   fn body_create(&self, kind: BodyKind, initial_position: Vec2) -> BodyId;
   fn body_add_collider(&self, body: BodyId, collider: ColliderId);
   fn body_remove_collider(&self, body: BodyId, collider: ColliderId);
@@ -122,7 +122,7 @@ pub trait PhysicsWorld2D: PhysicsWorld {
 /// A world of 3D physics.
 #[rustfmt::skip]
 pub trait PhysicsWorld3D: PhysicsWorld {
-  // rigidodies
+  // bodies
   fn body_create(&self, kind: BodyKind, initial_position: Vec3) -> BodyId;
   fn body_add_collider(&self, body: BodyId, collider: ColliderId);
   fn body_remove_collider(&self, body: BodyId, collider: ColliderId);
