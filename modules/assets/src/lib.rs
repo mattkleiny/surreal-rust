@@ -2,13 +2,12 @@
 
 use std::any::Any;
 
+use common::{Arena, FastHashMap, ToVirtualPath};
 pub use exporters::*;
 pub use importers::*;
 
 mod exporters;
 mod importers;
-
-use common::{Arena, FastHashMap, ToVirtualPath};
 
 common::impl_arena_index!(AssetId, "Identifies an asset in an asset database.");
 
@@ -60,7 +59,7 @@ impl AssetDatabase {
   pub fn open(path: impl ToVirtualPath) -> Result<Self, AssetDatabaseError> {
     let _path = path.to_virtual_path();
 
-    Err(AssetDatabaseError::InvalidPath)
+    todo!()
   }
 
   /// Gets an asset from the database, or loads it from the file system.

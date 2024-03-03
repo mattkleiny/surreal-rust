@@ -32,24 +32,28 @@ pub enum Variant {
 }
 
 /// Allows for a type to be converted to a [`Variant`].
-pub trait VariantType {
+pub trait ToVariant {
   /// Converts the type into a [`Variant`].
   fn to_variant(&self) -> Variant;
+}
 
+/// Allows for a type to be converted from a [`Variant`].
+pub trait FromVariant {
   /// Converts a [`Variant`] into the type.
   fn from_variant(variant: Variant) -> Self;
 }
 
-/// Blanked for all types that can be converted to/from a `Variant`.
-impl<T: From<Variant> + Into<Variant> + Clone> VariantType for T {
+impl<T: Into<Variant> + Clone> ToVariant for T {
   #[inline]
   fn to_variant(&self) -> Variant {
     self.clone().into()
   }
+}
 
+impl<T: From<Variant>> FromVariant for T {
   #[inline]
   fn from_variant(variant: Variant) -> Self {
-    variant.into()
+    Self::from(variant)
   }
 }
 
@@ -99,14 +103,7 @@ mod tests {
 
   #[test]
   fn test_variant_conversion() {
-    let value: bool = true;
-    let variant: Variant = value.into();
-
-    assert_eq!(variant, Variant::Bool(true));
-
-    let variant: Variant = Variant::U8(10);
-    let value: u8 = variant.into();
-
-    assert_eq!(value, 10);
+    assert_eq!(true.to_variant(), Variant::Bool(true));
+    assert_eq!(u8::from_variant(Variant::U8(10)), 10);
   }
 }

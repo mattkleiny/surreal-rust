@@ -1,6 +1,6 @@
 //! Animation support for Surreal
 
-use common::{FastHashMap, Ref, StringName, Vec2};
+use common::{AssetRef, FastHashMap, StringName, TimeSpan, Vec2};
 
 use crate::{Color, Texture};
 
@@ -9,10 +9,11 @@ use crate::{Color, Texture};
 /// The animation tree is a directed acyclic graph (DAG) where each node is an
 /// animation state. The root node is the current animation state, and the leaf
 /// nodes are the animation states that are being dynamically selected.
+#[derive(Default)]
 pub struct AnimationTree<T = ()> {
-  current: Option<StringName>,
   parameters: T,
   nodes: FastHashMap<StringName, AnimationState<T>>,
+  current: Option<StringName>,
 }
 
 /// A single animation state in an animation tree.
@@ -20,19 +21,22 @@ pub struct AnimationState<T> {
   name: StringName,
   clip: AnimationClip,
   transitions: Vec<AnimationTransition<T>>,
-  time: f32,
+  time_elapsed: TimeSpan,
   speed: f32,
 }
 
+/// A condition that must be met for a transition to occur.
+type Condition<T> = Box<dyn Fn(&AnimationState<T>, &T) -> bool>;
+
 /// A transition between two animation states.
 pub struct AnimationTransition<T> {
-  to: StringName,
-  condition: Box<dyn Fn(&AnimationState<T>, &T) -> bool>,
+  target: StringName,
+  condition: Condition<T>,
 }
 
 /// A single clip of animation data.
 pub struct AnimationClip {
-  duration: f32,
+  duration: TimeSpan,
   tracks: Vec<AnimationTrack>,
 }
 
@@ -42,7 +46,7 @@ pub enum AnimationTrack {
   Rotation { keyframes: Vec<Keyframe<f32>> },
   Scale { keyframes: Vec<Keyframe<Vec2>> },
   Color { keyframes: Vec<Keyframe<Color>> },
-  Texture { keyframes: Vec<Keyframe<Ref<Texture>>> },
+  Texture { keyframes: Vec<Keyframe<AssetRef<Texture>>> },
 }
 
 /// A single keyframe of animation data.
@@ -85,15 +89,19 @@ impl<T> AnimationTree<T> {
   /// Updates the animation tree.
   pub fn update(&mut self, delta_time: f32) {
     if let Some(state) = self.current.and_then(|it| self.nodes.get_mut(&it)) {
-      state.time += state.speed * delta_time;
+      state.time_elapsed += TimeSpan::from_seconds(state.speed * delta_time);
 
-      if state.time > state.clip.duration {
-        state.time = state.time % state.clip.duration;
+      // loop the animation if it's finished
+      if state.time_elapsed > state.clip.duration {
+        state.time_elapsed = TimeSpan::ZERO;
       }
 
-      for AnimationTransition { condition, to } in &state.transitions {
+      // evaluate transitions
+      for transition in &state.transitions {
+        let AnimationTransition { condition, target } = transition;
+
         if condition(state, &self.parameters) {
-          self.current = Some(to.clone());
+          self.current = Some(target.clone());
           break;
         }
       }
@@ -122,10 +130,10 @@ mod tests {
       is_falling: false,
     });
 
-    let idle = tree.add_state(AnimationState {
+    tree.add_state(AnimationState {
       name: "idle".to_string_name(),
       clip: AnimationClip {
-        duration: 1.0,
+        duration: TimeSpan::from_seconds(1.0),
         tracks: vec![AnimationTrack::Color {
           keyframes: vec![
             Keyframe {
@@ -133,28 +141,24 @@ mod tests {
               value: Color::WHITE,
             },
             Keyframe {
-              time: 0.5,
-              value: Color::BLACK,
-            },
-            Keyframe {
               time: 1.0,
-              value: Color::WHITE,
+              value: Color::RED,
             },
           ],
         }],
       },
       transitions: vec![AnimationTransition {
-        to: "walk".to_string_name(),
+        target: "walk".to_string_name(),
         condition: Box::new(|_, p| p.is_walking),
       }],
-      time: 0.0,
+      time_elapsed: TimeSpan::ZERO,
       speed: 1.0,
     });
 
-    let walk = tree.add_state(AnimationState {
+    tree.add_state(AnimationState {
       name: "walk".to_string_name(),
       clip: AnimationClip {
-        duration: 1.0,
+        duration: TimeSpan::from_seconds(1.0),
         tracks: vec![AnimationTrack::Color {
           keyframes: vec![
             Keyframe {
@@ -162,21 +166,14 @@ mod tests {
               value: Color::WHITE,
             },
             Keyframe {
-              time: 0.5,
-              value: Color::RED,
-            },
-            Keyframe {
               time: 1.0,
-              value: Color::WHITE,
+              value: Color::BLACK,
             },
           ],
         }],
       },
-      transitions: vec![AnimationTransition {
-        to: "idle".to_string_name(),
-        condition: Box::new(|_, p| !p.is_walking),
-      }],
-      time: 0.0,
+      transitions: vec![],
+      time_elapsed: TimeSpan::ZERO,
       speed: 1.0,
     });
 
