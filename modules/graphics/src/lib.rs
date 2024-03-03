@@ -3,12 +3,14 @@
 #![feature(associated_type_defaults)]
 #![feature(impl_trait_in_assoc_type)]
 
+pub use animations::*;
 pub use buffers::*;
 pub use colors::*;
 pub use geometry::*;
 pub use images::*;
 pub use materials::*;
 pub use meshes::*;
+pub use opengl::OpenGLHost;
 pub use rendering::*;
 pub use shaders::*;
 pub use skinning::*;
@@ -16,6 +18,7 @@ pub use sprites::*;
 pub use targets::*;
 pub use textures::*;
 
+mod animations;
 mod buffers;
 mod colors;
 mod geometry;
@@ -30,8 +33,6 @@ mod skinning;
 mod sprites;
 mod targets;
 mod textures;
-
-pub use opengl::OpenGLHost;
 
 common::impl_arena_index!(BufferId, "Identifies a graphics buffer.");
 common::impl_arena_index!(TextureId, "Identifies a texture.");
