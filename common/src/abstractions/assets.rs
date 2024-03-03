@@ -1,4 +1,4 @@
-use std::ops::{Deref, DerefMut};
+use std::future::Future;
 
 use crate::{Guid, StringName, VirtualPath};
 
@@ -17,16 +17,28 @@ pub struct AssetRef<T> {
   _marker: std::marker::PhantomData<T>,
 }
 
+/// Internal asset data.
+struct AssetData {}
+
 /// The underlying asset identifier.
 ///
 /// If the asset is not loaded, the asset identifier will be `None`, and
 /// attempting to de-reference the asset reference will panic.
 #[derive(Clone, Debug)]
-enum AssetId {
+pub enum AssetId {
   None,
   Name(StringName),
   Path(VirtualPath),
   Guid(Guid),
+}
+
+/// A server capable of loading and unloading assets.
+pub trait AssetServer {
+  /// Resolves the asset data for the given asset identifier.
+  fn resolve(&self, asset_id: &AssetId) -> impl Future<Output = Option<&AssetData>>;
+
+  /// Mutably resolves the asset data for the given asset identifier.
+  fn resolve_mut(&self, asset_id: &AssetId) -> impl Future<Output = Option<&mut AssetData>>;
 }
 
 impl<T> Default for AssetRef<T> {
@@ -40,23 +52,23 @@ impl<T> Default for AssetRef<T> {
 
 impl<T> AssetRef<T> {
   /// Creates a new asset reference from a name.
-  pub const fn from_name(name: StringName) -> Self {
+  pub fn from_name(name: impl Into<StringName>) -> Self {
     Self {
-      asset_id: AssetId::Name(name),
+      asset_id: AssetId::Name(name.into()),
       _marker: std::marker::PhantomData,
     }
   }
 
   /// Creates a new asset reference from a file path.
-  pub const fn from_path(path: VirtualPath) -> Self {
+  pub fn from_path(path: impl Into<VirtualPath>) -> Self {
     Self {
-      asset_id: AssetId::Path(path),
+      asset_id: AssetId::Path(path.into()),
       _marker: std::marker::PhantomData,
     }
   }
 
   /// Creates a new asset reference from a GUID.
-  pub const fn from_guid(guid: Guid) -> Self {
+  pub fn from_guid(guid: Guid) -> Self {
     Self {
       asset_id: AssetId::Guid(guid),
       _marker: std::marker::PhantomData,
@@ -67,44 +79,50 @@ impl<T> AssetRef<T> {
   pub fn is_valid(&self) -> bool {
     !matches!(self.asset_id, AssetId::None)
   }
-}
 
-impl<T> Deref for AssetRef<T> {
-  type Target = T;
-
-  /// Dereferences the asset reference to retrieve the underlying asset data.
-  fn deref(&self) -> &T {
-    if matches!(self.asset_id, AssetId::None) {
-      panic!("Attempted to dereference an unloaded asset")
-    } else {
-      todo!()
-    }
+  /// Attempts to get a reference to the asset data.
+  pub async fn get(&self, server: &impl AssetServer) -> Option<&T> {
+    server.resolve(&self.asset_id).await.map(|data| unsafe {
+      // TODO: find a way to do this without unsafe
+      &*(data as *const AssetData as *const T)
+    })
   }
-}
 
-impl<T> DerefMut for AssetRef<T> {
-  /// Mutably dereferences the asset reference to retrieve the underlying asset
-  /// data.
-  fn deref_mut(&mut self) -> &mut T {
-    if matches!(self.asset_id, AssetId::None) {
-      panic!("Attempted to dereference an unloaded asset")
-    } else {
-      todo!()
-    }
+  /// Attempts to get a mutable reference to the asset data.
+  pub async fn get_mut(&mut self, server: &impl AssetServer) -> Option<&mut T> {
+    server.resolve_mut(&self.asset_id).await.map(|data| unsafe {
+      // TODO: find a way to do this without unsafe
+      &mut *(data as *mut AssetData as *mut T)
+    })
   }
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::{FromRandom, ToStringName, ToVirtualPath};
 
   struct Sprite {}
 
+  struct AssetDatabase {}
+
+  impl AssetServer for AssetDatabase {
+    async fn resolve(&self, _asset_id: &AssetId) -> Option<&AssetData> {
+      None
+    }
+
+    async fn resolve_mut(&self, _asset_id: &AssetId) -> Option<&mut AssetData> {
+      None
+    }
+  }
+
   #[test]
   fn asset_ref_should_construct() {
-    let _sprite = AssetRef::<Sprite>::from_path("local://sprites/test.png".to_virtual_path());
-    let _sprite = AssetRef::<Sprite>::from_name("hero_1".to_string_name());
-    let _sprite = AssetRef::<Sprite>::from_guid(Guid::random());
+    use crate::BlockableFuture;
+
+    let server = AssetDatabase {};
+    let player_sprite = AssetRef::<Sprite>::from_path("local://sprites/player.png");
+    let sprite = player_sprite.get(&server).block();
+
+    assert!(sprite.is_none());
   }
 }

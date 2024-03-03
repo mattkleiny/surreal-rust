@@ -42,16 +42,16 @@ pub struct AnimationClip {
 
 /// A single track of animation data.
 pub enum AnimationTrack {
-  Position { keyframes: Vec<Keyframe<Vec2>> },
-  Rotation { keyframes: Vec<Keyframe<f32>> },
-  Scale { keyframes: Vec<Keyframe<Vec2>> },
-  Color { keyframes: Vec<Keyframe<Color>> },
-  Texture { keyframes: Vec<Keyframe<AssetRef<Texture>>> },
+  Position { keyframes: Vec<AnimationKeyFrame<Vec2>> },
+  Rotation { keyframes: Vec<AnimationKeyFrame<f32>> },
+  Scale { keyframes: Vec<AnimationKeyFrame<Vec2>> },
+  Color { keyframes: Vec<AnimationKeyFrame<Color>> },
+  Texture { keyframes: Vec<AnimationKeyFrame<AssetRef<Texture>>> },
 }
 
 /// A single keyframe of animation data.
 #[derive(Clone, Debug)]
-pub struct Keyframe<T> {
+pub struct AnimationKeyFrame<T> {
   time: f32,
   value: T,
 }
@@ -136,11 +136,11 @@ mod tests {
         duration: TimeSpan::from_seconds(1.0),
         tracks: vec![AnimationTrack::Color {
           keyframes: vec![
-            Keyframe {
+            AnimationKeyFrame {
               time: 0.0,
               value: Color::WHITE,
             },
-            Keyframe {
+            AnimationKeyFrame {
               time: 1.0,
               value: Color::RED,
             },
@@ -161,11 +161,11 @@ mod tests {
         duration: TimeSpan::from_seconds(1.0),
         tracks: vec![AnimationTrack::Color {
           keyframes: vec![
-            Keyframe {
+            AnimationKeyFrame {
               time: 0.0,
               value: Color::WHITE,
             },
-            Keyframe {
+            AnimationKeyFrame {
               time: 1.0,
               value: Color::BLACK,
             },

@@ -43,6 +43,7 @@ pub trait FromVariant {
   fn from_variant(variant: Variant) -> Self;
 }
 
+/// Allows for a type to be converted to a [`Variant`].
 impl<T: Into<Variant> + Clone> ToVariant for T {
   #[inline]
   fn to_variant(&self) -> Variant {
@@ -50,6 +51,7 @@ impl<T: Into<Variant> + Clone> ToVariant for T {
   }
 }
 
+/// Allows for a type to be converted from a [`Variant`].
 impl<T: From<Variant>> FromVariant for T {
   #[inline]
   fn from_variant(variant: Variant) -> Self {

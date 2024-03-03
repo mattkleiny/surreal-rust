@@ -5,11 +5,12 @@ use std::sync::RwLock;
 pub use local::*;
 pub use memory::*;
 
-mod local;
-mod memory;
+use crate::{Singleton, StringName, ToStringName};
 
 use super::{InputStream, OutputStream};
-use crate::{Singleton, StringName, ToStringName};
+
+mod local;
+mod memory;
 
 /// A potential error that can occur when interacting with a [`FileSystem`].
 #[derive(Debug)]
@@ -226,6 +227,22 @@ impl<R: AsRef<str>> ToVirtualPath for R {
       scheme: scheme.to_string_name(),
       location: location.to_string(),
     }
+  }
+}
+
+/// Allow string references to be converted into [`VirtualPath`] instances.
+impl Into<VirtualPath> for &str {
+  #[inline]
+  fn into(self) -> VirtualPath {
+    self.to_virtual_path()
+  }
+}
+
+/// Allow string references to be converted into [`VirtualPath`] instances.
+impl Into<VirtualPath> for String {
+  #[inline]
+  fn into(self) -> VirtualPath {
+    self.as_str().to_virtual_path()
   }
 }
 

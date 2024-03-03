@@ -134,14 +134,14 @@ impl Skeleton {
 
 /// A single keyframe for a [`Bone`] in an [`Animation`].
 #[derive(Debug, Clone)]
-pub struct Keyframe {
+pub struct BoneKeyFrame {
   /// The normalised time of this keyframe, in seconds.
   pub normalised_time: f32,
   /// The local transform of the bone at this keyframe.
   pub transform: Mat4,
 }
 
-impl Default for Keyframe {
+impl Default for BoneKeyFrame {
   fn default() -> Self {
     Self {
       normalised_time: 0.0,
@@ -158,7 +158,7 @@ pub struct Animation {
   /// The total duration of this animation.
   pub duration: TimeSpan,
   /// The individual keyframes of this animation, in chronological order.
-  pub keyframes: Vec<Keyframe>,
+  pub keyframes: Vec<BoneKeyFrame>,
 }
 
 impl Animation {
@@ -168,7 +168,7 @@ impl Animation {
   }
 
   /// Creates a new animation from a list of keyframes.
-  pub fn from_keyframes(name: String, duration: TimeSpan, keyframes: Vec<Keyframe>) -> Self {
+  pub fn from_keyframes(name: String, duration: TimeSpan, keyframes: Vec<BoneKeyFrame>) -> Self {
     let mut animation = Self {
       name,
       duration,
@@ -193,7 +193,7 @@ impl Animation {
   ///
   /// N.B: The keyframe will be inserted into the animation in the correct
   /// order, so we'll need to sort the keyframes after adding a new one.
-  pub fn add_keyframe(&mut self, keyframe: Keyframe) {
+  pub fn add_keyframe(&mut self, keyframe: BoneKeyFrame) {
     self.keyframes.push(keyframe);
 
     self.sort_keyframes()
@@ -284,7 +284,7 @@ pub struct SkinVertex {
 
 #[cfg(test)]
 mod tests {
-  use common::{vec3, ToStringName};
+  use common::{ToStringName, vec3};
 
   use super::*;
 
@@ -346,19 +346,19 @@ mod tests {
   #[test]
   fn animation_should_insert_keyframes_in_chronological_order() {
     let animation = Animation::from_keyframes("Idle".to_string(), TimeSpan::from_seconds(3.), vec![
-      Keyframe {
+      BoneKeyFrame {
         normalised_time: 1.,
         transform: Mat4::IDENTITY,
       },
-      Keyframe {
+      BoneKeyFrame {
         normalised_time: 0.7,
         transform: Mat4::IDENTITY,
       },
-      Keyframe {
+      BoneKeyFrame {
         normalised_time: 0.6,
         transform: Mat4::IDENTITY,
       },
-      Keyframe {
+      BoneKeyFrame {
         normalised_time: 0.,
         transform: Mat4::IDENTITY,
       },
