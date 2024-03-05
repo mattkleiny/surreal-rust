@@ -17,37 +17,28 @@ pub struct AssetRef<T> {
   _marker: std::marker::PhantomData<T>,
 }
 
-/// Internal asset data.
-struct AssetData {}
-
 /// The underlying asset identifier.
 ///
 /// If the asset is not loaded, the asset identifier will be `None`, and
 /// attempting to de-reference the asset reference will panic.
 #[derive(Clone, Debug)]
 pub enum AssetId {
-  None,
   Name(StringName),
   Path(VirtualPath),
   Guid(Guid),
+}
+
+/// Internal asset data.
+enum AssetData {
+  Unloaded,
+  Pending,
+  Loaded(Box<dyn std::any::Any>),
 }
 
 /// A server capable of loading and unloading assets.
 pub trait AssetServer {
   /// Resolves the asset data for the given asset identifier.
   fn resolve(&self, asset_id: &AssetId) -> impl Future<Output = Option<&AssetData>>;
-
-  /// Mutably resolves the asset data for the given asset identifier.
-  fn resolve_mut(&self, asset_id: &AssetId) -> impl Future<Output = Option<&mut AssetData>>;
-}
-
-impl<T> Default for AssetRef<T> {
-  fn default() -> Self {
-    Self {
-      asset_id: AssetId::None,
-      _marker: std::marker::PhantomData,
-    }
-  }
 }
 
 impl<T> AssetRef<T> {
@@ -75,24 +66,11 @@ impl<T> AssetRef<T> {
     }
   }
 
-  /// Determines whether the asset reference is valid.
-  pub fn is_valid(&self) -> bool {
-    !matches!(self.asset_id, AssetId::None)
-  }
-
   /// Attempts to get a reference to the asset data.
   pub async fn get(&self, server: &impl AssetServer) -> Option<&T> {
     server.resolve(&self.asset_id).await.map(|data| unsafe {
       // TODO: find a way to do this without unsafe
       &*(data as *const AssetData as *const T)
-    })
-  }
-
-  /// Attempts to get a mutable reference to the asset data.
-  pub async fn get_mut(&mut self, server: &impl AssetServer) -> Option<&mut T> {
-    server.resolve_mut(&self.asset_id).await.map(|data| unsafe {
-      // TODO: find a way to do this without unsafe
-      &mut *(data as *mut AssetData as *mut T)
     })
   }
 }
@@ -107,11 +85,7 @@ mod tests {
 
   impl AssetServer for AssetDatabase {
     async fn resolve(&self, _asset_id: &AssetId) -> Option<&AssetData> {
-      None
-    }
-
-    async fn resolve_mut(&self, _asset_id: &AssetId) -> Option<&mut AssetData> {
-      None
+      todo!()
     }
   }
 

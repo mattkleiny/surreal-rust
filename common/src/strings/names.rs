@@ -80,7 +80,7 @@ impl Display for StringName {
 }
 
 /// An internal global pool of interned strings.
-#[derive(Singleton)]
+#[derive(Default, Singleton)]
 struct StringNamePool {
   strings_by_id: RwLock<Arena<StringId, StringPoolEntry>>,
 }
@@ -89,14 +89,6 @@ struct StringNamePool {
 struct StringPoolEntry {
   string: String,
   reference_count: usize,
-}
-
-impl Default for StringNamePool {
-  fn default() -> Self {
-    Self {
-      strings_by_id: RwLock::new(Arena::default()),
-    }
-  }
 }
 
 impl StringNamePool {
@@ -129,7 +121,9 @@ impl StringNamePool {
     drop(entries);
 
     // insert the string into the map
-    self.strings_by_id.write().unwrap().insert(StringPoolEntry {
+    let mut entries = self.strings_by_id.write().unwrap();
+
+    entries.insert(StringPoolEntry {
       string: value.to_owned(),
       reference_count: 1,
     })
