@@ -1,5 +1,3 @@
-//! Animation support for Surreal
-
 use common::{AssetRef, FastHashMap, StringName, TimeSpan, Vec2};
 
 use crate::{Color, Texture};
@@ -35,18 +33,23 @@ pub struct AnimationTransition<T> {
 }
 
 /// A single clip of animation data.
+#[derive(Default)]
 pub struct AnimationClip {
   duration: TimeSpan,
   tracks: Vec<AnimationTrack>,
 }
 
+/// Data for a single animation track.
+pub type AnimationTrackData<T> = Vec<AnimationKeyFrame<T>>;
+
 /// A single track of animation data.
+#[derive(Clone)]
 pub enum AnimationTrack {
-  Position { keyframes: Vec<AnimationKeyFrame<Vec2>> },
-  Rotation { keyframes: Vec<AnimationKeyFrame<f32>> },
-  Scale { keyframes: Vec<AnimationKeyFrame<Vec2>> },
-  Color { keyframes: Vec<AnimationKeyFrame<Color>> },
-  Texture { keyframes: Vec<AnimationKeyFrame<AssetRef<Texture>>> },
+  Position(AnimationTrackData<Vec2>),
+  Rotation(AnimationTrackData<f32>),
+  Scale(AnimationTrackData<Vec2>),
+  Color(AnimationTrackData<Color>),
+  Texture(AnimationTrackData<AssetRef<Texture>>),
 }
 
 /// A single keyframe of animation data.
@@ -96,7 +99,7 @@ impl<T> AnimationTree<T> {
         state.time_elapsed = TimeSpan::ZERO;
       }
 
-      // evaluate transitions
+      // evaluate all transitions each tick
       for transition in &state.transitions {
         let AnimationTransition { condition, target } = transition;
 
@@ -116,63 +119,71 @@ mod tests {
   use super::*;
 
   /// Parameters for the animation state machine.
+  #[derive(Default)]
   struct AnimationParams {
     pub is_walking: bool,
-    pub is_running: bool,
-    pub is_falling: bool,
+    pub is_jumping: bool,
   }
 
   #[test]
   fn it_should_support_basic_animations() {
-    let mut tree = AnimationTree::new(AnimationParams {
-      is_walking: false,
-      is_running: false,
-      is_falling: false,
-    });
+    let mut tree = AnimationTree::new(AnimationParams::default());
 
     tree.add_state(AnimationState {
       name: "idle".to_string_name(),
       clip: AnimationClip {
         duration: TimeSpan::from_seconds(1.0),
-        tracks: vec![AnimationTrack::Color {
-          keyframes: vec![
+        tracks: vec![
+          AnimationTrack::Position(vec![
             AnimationKeyFrame {
               time: 0.0,
-              value: Color::WHITE,
+              value: Vec2::ZERO,
             },
             AnimationKeyFrame {
               time: 1.0,
-              value: Color::RED,
+              value: Vec2::ZERO,
             },
-          ],
-        }],
-      },
-      transitions: vec![AnimationTransition {
-        target: "walk".to_string_name(),
-        condition: Box::new(|_, p| p.is_walking),
-      }],
-      time_elapsed: TimeSpan::ZERO,
-      speed: 1.0,
-    });
-
-    tree.add_state(AnimationState {
-      name: "walk".to_string_name(),
-      clip: AnimationClip {
-        duration: TimeSpan::from_seconds(1.0),
-        tracks: vec![AnimationTrack::Color {
-          keyframes: vec![
+          ]),
+          AnimationTrack::Color(vec![
             AnimationKeyFrame {
               time: 0.0,
-              value: Color::WHITE,
-            },
-            AnimationKeyFrame {
-              time: 1.0,
               value: Color::BLACK,
             },
-          ],
-        }],
+            AnimationKeyFrame {
+              time: 1.0,
+              value: Color::WHITE,
+            },
+          ]),
+          AnimationTrack::Texture(vec![
+            AnimationKeyFrame {
+              time: 0.0,
+              value: AssetRef::from_name("player_walk_0"),
+            },
+            AnimationKeyFrame {
+              time: 0.25,
+              value: AssetRef::from_name("player_idle_1"),
+            },
+            AnimationKeyFrame {
+              time: 0.5,
+              value: AssetRef::from_name("player_idle_2"),
+            },
+            AnimationKeyFrame {
+              time: 0.75,
+              value: AssetRef::from_name("player_idle_3"),
+            },
+          ]),
+        ],
       },
-      transitions: vec![],
+      transitions: vec![
+        AnimationTransition {
+          target: "walk".to_string_name(),
+          condition: Box::new(|_, p| p.is_walking),
+        },
+        AnimationTransition {
+          target: "jump".to_string_name(),
+          condition: Box::new(|_, p| p.is_jumping),
+        },
+      ],
       time_elapsed: TimeSpan::ZERO,
       speed: 1.0,
     });

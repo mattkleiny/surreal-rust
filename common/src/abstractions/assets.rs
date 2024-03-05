@@ -38,7 +38,7 @@ enum AssetData {
 /// A server capable of loading and unloading assets.
 pub trait AssetServer {
   /// Resolves the asset data for the given asset identifier.
-  fn resolve(&self, asset_id: &AssetId) -> impl Future<Output = Option<&AssetData>>;
+  fn resolve(&self, id: &AssetId) -> impl Future<Output = Option<&AssetData>>;
 }
 
 impl<T> AssetRef<T> {
@@ -84,7 +84,7 @@ mod tests {
   struct AssetDatabase {}
 
   impl AssetServer for AssetDatabase {
-    async fn resolve(&self, _asset_id: &AssetId) -> Option<&AssetData> {
+    async fn resolve(&self, _id: &AssetId) -> Option<&AssetData> {
       todo!()
     }
   }

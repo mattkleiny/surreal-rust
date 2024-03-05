@@ -4,22 +4,28 @@ use super::*;
 pub trait Space {
   /// The cardinality of the vector space.
   const CARDINALITY: usize;
+
+  type Vector: Vector<Scalar = Self::Scalar>;
+  type Scalar: Scalar;
 }
 
 macro_rules! impl_space {
-  ($name:ident, $cardinality:expr, $comment:literal) => {
+  ($name:ident, $cardinality:expr, $vector:ty, $scalar:ty, $comment:literal) => {
     #[doc = $comment]
     pub struct $name;
 
     impl Space for $name {
       const CARDINALITY: usize = $cardinality;
+
+      type Vector = $vector;
+      type Scalar = $scalar;
     }
   };
 }
 
-impl_space!(R2, 2, "The 2-dimensional vector space.");
-impl_space!(R3, 3, "The 3-dimensional vector space.");
-impl_space!(R4, 4, "The 4-dimensional vector space.");
+impl_space!(R2, 2, Vec2, f32, "The 2-dimensional vector space.");
+impl_space!(R3, 3, Vec3, f32, "The 3-dimensional vector space.");
+impl_space!(R4, 4, Vec4, f32, "The 4-dimensional vector space.");
 
 /// Represents a vector in some vector space.
 pub trait Vector:
