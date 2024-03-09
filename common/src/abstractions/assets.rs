@@ -22,6 +22,7 @@ pub struct AssetRef<T> {
 /// If the asset is not loaded, the asset identifier will be `None`, and
 /// attempting to de-reference the asset reference will panic.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum AssetId {
   Name(StringName),
   Path(VirtualPath),
@@ -33,6 +34,20 @@ enum AssetData {
   Unloaded,
   Pending,
   Loaded(Box<dyn std::any::Any>),
+}
+
+#[cfg(feature = "serde")]
+impl<T> serde::Serialize for AssetRef<T> {
+  fn serialize<S: serde::Serializer>(&self, _serializer: S) -> Result<S::Ok, S::Error> {
+    todo!()
+  }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::Deserialize<'de> for AssetRef<T> {
+  fn deserialize<D: serde::Deserializer<'de>>(_deserializer: D) -> Result<Self, D::Error> {
+    todo!()
+  }
 }
 
 /// A server capable of loading and unloading assets.

@@ -1,6 +1,29 @@
+#![allow(unused_imports)]
+
 use common::{AssetRef, FastHashMap, StringName, TimeSpan, Vec2};
 
 use crate::{Color, Texture};
+
+/// A persistent representation of an AnimationTree.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct AnimationTreeDescriptor<T> {
+  state: T,
+  clips: Vec<AnimationStateDescriptor>,
+}
+
+/// A persistent representation of a single AnimationState.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct AnimationStateDescriptor {
+  name: String,
+  clip: AnimationClipDescriptor,
+  speed: f32,
+}
+
+/// A persistent representation of a single AnimationClip.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct AnimationClipDescriptor {
+  duration_in_seconds: f32,
+}
 
 /// An animation tree that can be used to drive animation state changes.
 ///
@@ -9,7 +32,7 @@ use crate::{Color, Texture};
 /// nodes are the animation states that are being dynamically selected.
 #[derive(Default)]
 pub struct AnimationTree<T = ()> {
-  parameters: T,
+  state: T,
   nodes: FastHashMap<StringName, AnimationState<T>>,
   current: Option<StringName>,
 }
@@ -39,21 +62,23 @@ pub struct AnimationClip {
   tracks: Vec<AnimationTrack>,
 }
 
-/// Data for a single animation track.
-pub type AnimationTrackData<T> = Vec<AnimationKeyFrame<T>>;
-
 /// A single track of animation data.
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum AnimationTrack {
   Position(AnimationTrackData<Vec2>),
   Rotation(AnimationTrackData<f32>),
   Scale(AnimationTrackData<Vec2>),
   Color(AnimationTrackData<Color>),
-  Texture(AnimationTrackData<AssetRef<Texture>>),
+  // Texture(AnimationTrackData<AssetRef<Texture>>),
 }
+
+/// Data for a single animation track.
+pub type AnimationTrackData<T> = Vec<AnimationKeyFrame<T>>;
 
 /// A single keyframe of animation data.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AnimationKeyFrame<T> {
   time: f32,
   value: T,
@@ -61,9 +86,9 @@ pub struct AnimationKeyFrame<T> {
 
 impl<T> AnimationTree<T> {
   /// Creates a new animation tree.
-  pub fn new(parameters: T) -> Self {
+  pub fn new(state: T) -> Self {
     AnimationTree {
-      parameters,
+      state,
       current: None,
       nodes: FastHashMap::default(),
     }
@@ -89,6 +114,42 @@ impl<T> AnimationTree<T> {
     self.current = Some(name);
   }
 
+  /// Gets the state of the animation tree.
+  pub fn state(&self) -> &T {
+    &self.state
+  }
+
+  /// Sets the state of the animation tree.
+  pub fn set_state(&mut self, state: T) {
+    self.state = state;
+  }
+
+  /// Applies a function to the state of the animation tree.
+  pub fn modify_state(&mut self, body: impl FnOnce(&mut T)) {
+    body(&mut self.state);
+  }
+
+  /// Builds a descriptor from this animation tree.
+  pub fn to_descriptor(&self) -> AnimationTreeDescriptor<T>
+  where
+    T: Clone,
+  {
+    AnimationTreeDescriptor {
+      state: self.state.clone(),
+      clips: self
+        .nodes
+        .values()
+        .map(|it| AnimationStateDescriptor {
+          name: it.name.to_string(),
+          speed: it.speed,
+          clip: AnimationClipDescriptor {
+            duration_in_seconds: it.clip.duration.total_seconds(),
+          },
+        })
+        .collect(),
+    }
+  }
+
   /// Updates the animation tree.
   pub fn update(&mut self, delta_time: f32) {
     if let Some(state) = self.current.and_then(|it| self.nodes.get_mut(&it)) {
@@ -103,7 +164,7 @@ impl<T> AnimationTree<T> {
       for transition in &state.transitions {
         let AnimationTransition { condition, target } = transition;
 
-        if condition(state, &self.parameters) {
+        if condition(state, &self.state) {
           self.current = Some(target.clone());
           break;
         }
@@ -119,7 +180,7 @@ mod tests {
   use super::*;
 
   /// Parameters for the animation state machine.
-  #[derive(Default)]
+  #[derive(Default, Clone)]
   struct AnimationParams {
     pub is_walking: bool,
     pub is_jumping: bool,
@@ -154,22 +215,52 @@ mod tests {
               value: Color::WHITE,
             },
           ]),
-          AnimationTrack::Texture(vec![
+        ],
+      },
+      transitions: vec![
+        AnimationTransition {
+          target: "walk".to_string_name(),
+          condition: Box::new(|_, p| p.is_walking),
+        },
+        AnimationTransition {
+          target: "jump".to_string_name(),
+          condition: Box::new(|_, p| p.is_jumping),
+        },
+      ],
+      time_elapsed: TimeSpan::ZERO,
+      speed: 1.0,
+    });
+
+    tree.update(0.5);
+  }
+
+  #[test]
+  fn it_should_serialize_and_deserialize_from_disk() {
+    let mut tree = AnimationTree::new(AnimationParams::default());
+
+    tree.add_state(AnimationState {
+      name: "idle".to_string_name(),
+      clip: AnimationClip {
+        duration: TimeSpan::from_seconds(1.0),
+        tracks: vec![
+          AnimationTrack::Position(vec![
             AnimationKeyFrame {
               time: 0.0,
-              value: AssetRef::from_name("player_walk_0"),
+              value: Vec2::ZERO,
             },
             AnimationKeyFrame {
-              time: 0.25,
-              value: AssetRef::from_name("player_idle_1"),
+              time: 1.0,
+              value: Vec2::ZERO,
+            },
+          ]),
+          AnimationTrack::Color(vec![
+            AnimationKeyFrame {
+              time: 0.0,
+              value: Color::BLACK,
             },
             AnimationKeyFrame {
-              time: 0.5,
-              value: AssetRef::from_name("player_idle_2"),
-            },
-            AnimationKeyFrame {
-              time: 0.75,
-              value: AssetRef::from_name("player_idle_3"),
+              time: 1.0,
+              value: Color::WHITE,
             },
           ]),
         ],
@@ -188,6 +279,7 @@ mod tests {
       speed: 1.0,
     });
 
-    tree.update(0.5);
+    let descriptor = tree.to_descriptor();
+    let binary = descriptor.to_binary();
   }
 }
