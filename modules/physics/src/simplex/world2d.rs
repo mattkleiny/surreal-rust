@@ -231,11 +231,29 @@ impl PhysicsWorld2D for SimplexWorld2D {
   }
 
   fn collider_create_circle(&self, kind: ColliderKind, initial_position: Vec2, radius: f32) -> ColliderId {
-    todo!()
+    let mut colliders = self.colliders.write().unwrap();
+
+    colliders.insert(Collider {
+      position: initial_position,
+      rotation: 0.0,
+      scale: Vec2::ONE,
+      shape: ColliderShape::Sphere { radius },
+      kind,
+      bodies: FastHashSet::default(),
+    })
   }
 
   fn collider_create_rectangle(&self, kind: ColliderKind, initial_position: Vec2, size: Vec2) -> ColliderId {
-    todo!()
+    let mut colliders = self.colliders.write().unwrap();
+
+    colliders.insert(Collider {
+      position: initial_position,
+      rotation: 0.0,
+      scale: Vec2::ONE,
+      shape: ColliderShape::Box { size },
+      kind,
+      bodies: FastHashSet::default(),
+    })
   }
 
   fn collider_create_triangle_mesh(
@@ -245,7 +263,19 @@ impl PhysicsWorld2D for SimplexWorld2D {
     vertices: &[Vec2],
     indices: &[u32],
   ) -> ColliderId {
-    todo!()
+    let mut colliders = self.colliders.write().unwrap();
+
+    colliders.insert(Collider {
+      position: initial_position,
+      rotation: 0.0,
+      scale: Vec2::ONE,
+      shape: ColliderShape::TriangleMesh {
+        vertices: vertices.to_vec(),
+        indices: indices.to_vec(),
+      },
+      kind,
+      bodies: FastHashSet::default(),
+    })
   }
 
   fn collider_create_height_field(
@@ -255,15 +285,33 @@ impl PhysicsWorld2D for SimplexWorld2D {
     size: Vec2,
     heights: &[f32],
   ) -> ColliderId {
-    todo!()
+    let mut colliders = self.colliders.write().unwrap();
+
+    colliders.insert(Collider {
+      position: initial_position,
+      rotation: 0.0,
+      scale: Vec2::ONE,
+      shape: ColliderShape::HeightField {
+        size,
+        heights: heights.to_vec(),
+      },
+      kind,
+      bodies: FastHashSet::default(),
+    })
   }
 
-  fn collider_get_kind(&self, collider: ColliderId) -> ColliderKind {
-    todo!()
+  fn collider_get_kind(&self, collider: ColliderId) -> Option<ColliderKind> {
+    let colliders = self.colliders.read().unwrap();
+
+    colliders.get(collider).map(|collider| collider.kind)
   }
 
   fn collider_set_position(&self, collider: ColliderId, position: Vec2) {
-    todo!()
+    let mut colliders = self.colliders.write().unwrap();
+
+    if let Some(collider) = colliders.get_mut(collider) {
+      collider.position = position;
+    }
   }
 
   fn collider_get_position(&self, collider: ColliderId) -> Vec2 {

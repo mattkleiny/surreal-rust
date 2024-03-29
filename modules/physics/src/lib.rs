@@ -93,7 +93,7 @@ pub trait PhysicsWorld2D: PhysicsWorld {
   fn collider_create_rectangle(&self, kind: ColliderKind, initial_position: Vec2, size: Vec2) -> ColliderId;
   fn collider_create_triangle_mesh(&self, kind: ColliderKind, initial_position: Vec2, vertices: &[Vec2], indices: &[u32]) -> ColliderId;
   fn collider_create_height_field(&self, kind: ColliderKind, initial_position: Vec2, size: Vec2, heights: &[f32]) -> ColliderId;
-  fn collider_get_kind(&self, collider: ColliderId) -> ColliderKind;
+  fn collider_get_kind(&self, collider: ColliderId) -> Option<ColliderKind>;
   fn collider_set_position(&self, collider: ColliderId, position: Vec2);
   fn collider_get_position(&self, collider: ColliderId) -> Vec2;
   fn collider_set_rotation(&self, collider: ColliderId, rotation: f32);
