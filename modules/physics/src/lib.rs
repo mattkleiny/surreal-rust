@@ -4,7 +4,7 @@
 
 use common::{Quat, Vec2, Vec3};
 
-mod internal;
+mod simplex;
 
 common::impl_arena_index!(ColliderId, "Identifies a collider.");
 common::impl_arena_index!(BodyId, "Identifies a physics body.");
@@ -13,9 +13,9 @@ common::impl_arena_index!(EffectorId, "Identifies an effector.");
 common::impl_server!(PhysicsEngine, PhysicsBackend);
 
 impl PhysicsEngine {
-  /// Creates a new [`PhysicsEngine`] with the internal backend.
-  pub fn internal() -> Self {
-    Self::new(internal::InternalPhysicsBackend::default())
+  /// Creates a new [`PhysicsEngine`] with the simplex backend.
+  pub fn simplex() -> Self {
+    Self::new(simplex::SimplexPhysicsBackend::default())
   }
 }
 

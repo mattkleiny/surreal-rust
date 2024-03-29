@@ -8,26 +8,26 @@
 use core::str;
 use std::{cell::RefCell, rc::Rc};
 
+use bitflags::bitflags;
+
+use common::*;
 pub use lang::*;
 pub use templates::*;
 
-mod templates;
-
-use bitflags::bitflags;
-use common::*;
-
 use super::*;
+
+mod templates;
 
 pub mod lang {
   pub use glsl::*;
   pub use shady::*;
   pub use visual::*;
 
+  use super::*;
+
   mod glsl;
   mod shady;
   mod visual;
-
-  use super::*;
 
   /// An environment used to parse and compile shader programs.
   #[derive(Default)]

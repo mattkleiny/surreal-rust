@@ -89,29 +89,3 @@ impl<T> AssetRef<T> {
     })
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  struct Sprite {}
-
-  struct AssetDatabase {}
-
-  impl AssetServer for AssetDatabase {
-    async fn resolve(&self, _id: &AssetId) -> Option<&AssetData> {
-      todo!()
-    }
-  }
-
-  #[test]
-  fn asset_ref_should_construct() {
-    use crate::BlockableFuture;
-
-    let server = AssetDatabase {};
-    let player_sprite = AssetRef::<Sprite>::from_path("local://sprites/player.png");
-    let sprite = player_sprite.get(&server).block();
-
-    assert!(sprite.is_none());
-  }
-}

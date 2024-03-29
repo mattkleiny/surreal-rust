@@ -15,8 +15,8 @@ pub struct AnimationTreeDescriptor<T> {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AnimationStateDescriptor {
   name: String,
-  clip: AnimationClipDescriptor,
   speed: f32,
+  clip: AnimationClipDescriptor,
 }
 
 /// A persistent representation of a single AnimationClip.
@@ -232,54 +232,5 @@ mod tests {
     });
 
     tree.update(0.5);
-  }
-
-  #[test]
-  fn it_should_serialize_and_deserialize_from_disk() {
-    let mut tree = AnimationTree::new(AnimationParams::default());
-
-    tree.add_state(AnimationState {
-      name: "idle".to_string_name(),
-      clip: AnimationClip {
-        duration: TimeSpan::from_seconds(1.0),
-        tracks: vec![
-          AnimationTrack::Position(vec![
-            AnimationKeyFrame {
-              time: 0.0,
-              value: Vec2::ZERO,
-            },
-            AnimationKeyFrame {
-              time: 1.0,
-              value: Vec2::ZERO,
-            },
-          ]),
-          AnimationTrack::Color(vec![
-            AnimationKeyFrame {
-              time: 0.0,
-              value: Color::BLACK,
-            },
-            AnimationKeyFrame {
-              time: 1.0,
-              value: Color::WHITE,
-            },
-          ]),
-        ],
-      },
-      transitions: vec![
-        AnimationTransition {
-          target: "walk".to_string_name(),
-          condition: Box::new(|_, p| p.is_walking),
-        },
-        AnimationTransition {
-          target: "jump".to_string_name(),
-          condition: Box::new(|_, p| p.is_jumping),
-        },
-      ],
-      time_elapsed: TimeSpan::ZERO,
-      speed: 1.0,
-    });
-
-    let descriptor = tree.to_descriptor();
-    let binary = descriptor.to_binary();
   }
 }

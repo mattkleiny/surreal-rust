@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Formatter};
 
 use bitflags::bitflags;
+
 use common::{Camera, FastHashMap, FromRandom, Frustum};
 use graphics::{RenderFrame, RenderObject, RenderScene, VisibleObjectSet};
 
