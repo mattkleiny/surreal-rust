@@ -1,6 +1,6 @@
 use std::sync::RwLock;
 
-use common::{Arena, FastHashSet, vec2};
+use common::{Arena, FastHashSet, QuadTree, Rectangle, vec2};
 
 use super::*;
 
@@ -51,6 +51,9 @@ enum ColliderShape {
   HeightField { size: Vec2, heights: Vec<f32> },
 }
 
+/// A single collision event in the 2d world.
+enum CollisionEvent {}
+
 /// An effector in the 2d physics world.
 struct Effector {
   position: Vec2,
@@ -75,12 +78,25 @@ impl Default for Settings {
   }
 }
 
+impl Collider {
+  fn compute_bounding_rectangle(&self) -> Rectangle {
+    todo!()
+  }
+}
+
 impl PhysicsWorld for SimplexWorld2D {
   fn step(&self, delta_time: f32) {
     let settings = self.settings.read().unwrap();
     let gravity = settings.gravity;
 
     self.integrate_bodies(delta_time, gravity);
+
+    let quadtree = self.broadphase_collision_detection();
+    let events = self.narrowphase_collision_detection(quadtree);
+
+    for event in events {
+      todo!()
+    }
   }
 
   fn reset(&self) {
@@ -99,6 +115,27 @@ impl SimplexWorld2D {
       body.velocity += gravity * delta_time;
       body.position += body.velocity;
     }
+  }
+
+  fn broadphase_collision_detection(&self) -> QuadTree<BodyId> {
+    let bodies = self.bodies.read().unwrap();
+    let colliders = self.colliders.read().unwrap();
+
+    let mut quadtree = QuadTree::default();
+
+    for (body_id, body) in bodies.enumerate() {
+      for collider in body.colliders.iter().flat_map(|id| colliders.get(*id)) {
+        let bounding_rectangle = collider.compute_bounding_rectangle();
+
+        quadtree.insert(body_id, bounding_rectangle)
+      }
+    }
+
+    quadtree
+  }
+
+  fn narrowphase_collision_detection(&self, quadtree: QuadTree<BodyId>) -> Vec<CollisionEvent> {
+    todo!()
   }
 }
 

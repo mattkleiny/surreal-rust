@@ -11,17 +11,6 @@
 //!   alightweight, stack-based, virtual machine with a simple instruction set.
 //!   The runtime is designed to be easy to embed in other applications, and is
 //!   not tied to any specific language.
-//!
-//! # Example
-//!
-//! ```rust
-//! use surreal_scripting::*;
-//!
-//! let mut vm = VirtualMachine::new();
-//! let result = vm.run::<BASIC>("RETURN 3.14159 + 2.71828").unwrap();
-//!
-//! assert_eq!(result, common::Variant::F64(5.85987));
-//! ```
 
 pub use lang::*;
 pub use runtime::*;
