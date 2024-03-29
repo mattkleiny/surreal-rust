@@ -60,6 +60,7 @@ struct Effector {
   rotation: f32,
   scale: Vec2,
   kind: EffectorKind,
+  colliders: FastHashSet<ColliderId>,
 }
 
 /// The shape of a 2d effector.
@@ -79,6 +80,10 @@ impl Default for Settings {
 }
 
 impl Collider {
+  /// Computes the bounding rectangle for a collider.
+  ///
+  /// This is used for broadphase collision detection; the
+  /// rectangle is the best fit for the collider shape.
   fn compute_bounding_rectangle(&self) -> Rectangle {
     todo!()
   }
@@ -87,16 +92,17 @@ impl Collider {
 impl PhysicsWorld for SimplexWorld2D {
   fn step(&self, delta_time: f32) {
     let settings = self.settings.read().unwrap();
-    let gravity = settings.gravity;
 
-    self.integrate_bodies(delta_time, gravity);
+    self.integrate_bodies(delta_time, &settings);
 
-    let quadtree = self.broadphase_collision_detection();
-    let events = self.narrowphase_collision_detection(quadtree);
+    let collisions = self.broadphase_collision_detection();
+    let effectors = self.broadphase_effector_detection();
 
-    for event in events {
-      todo!()
+    for event in self.detect_collisions(collisions) {
+      self.integrate_collisions(event);
     }
+
+    self.integrate_effectors(delta_time, &settings, effectors);
   }
 
   fn reset(&self) {
@@ -107,35 +113,59 @@ impl PhysicsWorld for SimplexWorld2D {
 }
 
 impl SimplexWorld2D {
-  /// Integrates all bodies in the world.
-  fn integrate_bodies(&self, delta_time: f32, gravity: Vec2) {
+  fn integrate_bodies(&self, delta_time: f32, settings: &Settings) {
     let mut bodies = self.bodies.write().unwrap();
 
     for body in bodies.iter_mut() {
-      body.velocity += gravity * delta_time;
+      body.velocity += settings.gravity * delta_time;
       body.position += body.velocity;
     }
   }
 
+  fn integrate_effectors(&self, delta_time: f32, settings: &Settings, effectors: QuadTree<EffectorId>) {
+    todo!()
+  }
+
+  fn detect_collisions(&self, bodies: QuadTree<BodyId>) -> Vec<CollisionEvent> {
+    todo!()
+  }
+
+  fn integrate_collisions(&self, event: CollisionEvent) {
+    todo!()
+  }
+
   fn broadphase_collision_detection(&self) -> QuadTree<BodyId> {
+    let mut results = QuadTree::default();
+
     let bodies = self.bodies.read().unwrap();
     let colliders = self.colliders.read().unwrap();
-
-    let mut quadtree = QuadTree::default();
 
     for (body_id, body) in bodies.enumerate() {
       for collider in body.colliders.iter().flat_map(|id| colliders.get(*id)) {
         let bounding_rectangle = collider.compute_bounding_rectangle();
 
-        quadtree.insert(body_id, bounding_rectangle)
+        results.insert(body_id, bounding_rectangle)
       }
     }
 
-    quadtree
+    results
   }
 
-  fn narrowphase_collision_detection(&self, quadtree: QuadTree<BodyId>) -> Vec<CollisionEvent> {
-    todo!()
+  fn broadphase_effector_detection(&self) -> QuadTree<EffectorId> {
+    let mut results = QuadTree::default();
+
+    let effectors = self.effectors.read().unwrap();
+    let colliders = self.colliders.read().unwrap();
+
+    for (effector_id, effector) in effectors.enumerate() {
+      for collider in effector.colliders.iter().flat_map(|id| colliders.get(*id)) {
+        let bounding_rectangle = collider.compute_bounding_rectangle();
+
+        results.insert(effector_id, bounding_rectangle);
+      }
+    }
+
+    results
   }
 }
 

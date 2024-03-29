@@ -19,7 +19,7 @@ impl PhysicsEngine {
   }
 }
 
-/// Possible kinds of rigidbodies.
+/// Possible kinds of physics bodies.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BodyKind {
   Static,
