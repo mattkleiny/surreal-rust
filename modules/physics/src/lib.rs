@@ -50,10 +50,7 @@ pub enum EffectorKind {
 /// world. It is responsible for updating the position and orientation of
 /// physical objects, and for detecting collisions between objects.
 pub trait PhysicsBackend {
-  /// Creates a new 2d physics world.
   fn create_world_2d(&self) -> Box<dyn PhysicsWorld2D>;
-
-  /// Creates a new 3d physics world.
   fn create_world_3d(&self) -> Box<dyn PhysicsWorld3D>;
 }
 
@@ -62,10 +59,7 @@ pub trait PhysicsBackend {
 /// This trait is implemented by physics worlds, which are responsible for
 /// simulating the physics of the game world.
 pub trait PhysicsWorld {
-  /// Updates the physics world by a given time step.
   fn step(&self, delta_time: f32);
-
-  /// Resets the physics world back to an empty state.
   fn reset(&self);
 }
 

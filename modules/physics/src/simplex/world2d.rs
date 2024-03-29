@@ -145,11 +145,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
   fn body_get_position(&self, body: BodyId) -> Vec2 {
     let bodies = self.bodies.read().unwrap();
 
-    if let Some(body) = bodies.get(body) {
-      body.position
-    } else {
-      Vec2::ZERO
-    }
+    bodies.get(body).map_or(Vec2::ZERO, |it| it.position)
   }
 
   fn body_set_rotation(&self, body: BodyId, rotation: f32) {
@@ -163,11 +159,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
   fn body_get_rotation(&self, body: BodyId) -> f32 {
     let bodies = self.bodies.read().unwrap();
 
-    if let Some(body) = bodies.get(body) {
-      body.rotation
-    } else {
-      0.0
-    }
+    bodies.get(body).map_or(0., |it| it.rotation)
   }
 
   fn body_set_scale(&self, body: BodyId, scale: Vec2) {
@@ -181,11 +173,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
   fn body_get_scale(&self, body: BodyId) -> Vec2 {
     let bodies = self.bodies.read().unwrap();
 
-    if let Some(body) = bodies.get(body) {
-      body.scale
-    } else {
-      Vec2::ONE
-    }
+    bodies.get(body).map_or(Vec2::ONE, |it| it.scale)
   }
 
   fn body_set_velocity(&self, body: BodyId, velocity: Vec2) {
@@ -199,11 +187,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
   fn body_get_velocity(&self, body: BodyId) -> Vec2 {
     let bodies = self.bodies.read().unwrap();
 
-    if let Some(body) = bodies.get(body) {
-      body.velocity
-    } else {
-      Vec2::ZERO
-    }
+    bodies.get(body).map_or(Vec2::ZERO, |it| it.velocity)
   }
 
   fn body_set_angular_velocity(&self, body: BodyId, velocity: Vec2) {
@@ -217,11 +201,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
   fn body_get_angular_velocity(&self, body: BodyId) -> Vec2 {
     let bodies = self.bodies.read().unwrap();
 
-    if let Some(body) = bodies.get(body) {
-      body.angular_velocity
-    } else {
-      Vec2::ZERO
-    }
+    bodies.get(body).map_or(Vec2::ZERO, |it| it.angular_velocity)
   }
 
   fn body_delete(&self, body: BodyId) {
@@ -315,27 +295,48 @@ impl PhysicsWorld2D for SimplexWorld2D {
   }
 
   fn collider_get_position(&self, collider: ColliderId) -> Vec2 {
-    todo!()
+    let colliders = self.colliders.read().unwrap();
+
+    colliders.get(collider).map_or(Vec2::ZERO, |it| it.position)
   }
 
   fn collider_set_rotation(&self, collider: ColliderId, rotation: f32) {
-    todo!()
+    let mut colliders = self.colliders.write().unwrap();
+
+    if let Some(collider) = colliders.get_mut(collider) {
+      collider.rotation = rotation;
+    }
   }
 
   fn collider_get_rotation(&self, collider: ColliderId) -> f32 {
-    todo!()
+    let colliders = self.colliders.read().unwrap();
+
+    colliders.get(collider).map_or(0., |it| it.rotation)
   }
 
   fn collider_set_scale(&self, collider: ColliderId, scale: Vec2) {
-    todo!()
+    let mut colliders = self.colliders.write().unwrap();
+
+    if let Some(collider) = colliders.get_mut(collider) {
+      collider.scale = scale;
+    }
   }
 
   fn collider_get_scale(&self, collider: ColliderId) -> Vec2 {
-    todo!()
+    let colliders = self.colliders.read().unwrap();
+
+    colliders.get(collider).map_or(Vec2::ONE, |it| it.scale)
   }
 
   fn collider_delete(&self, collider: ColliderId) {
-    todo!()
+    let mut colliders = self.colliders.write().unwrap();
+    let mut bodies = self.bodies.write().unwrap();
+
+    for body in bodies.iter_mut() {
+      body.colliders.remove(&collider);
+    }
+
+    colliders.remove(collider);
   }
 
   fn effector_create_sphere(&self, kind: EffectorKind, initial_position: Vec2, radius: f32) -> EffectorId {
@@ -404,5 +405,38 @@ impl PhysicsWorld2D for SimplexWorld2D {
 
   fn effector_delete(&self, effector: EffectorId) {
     todo!()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn it_should_read_and_write_position() {
+    let world = SimplexWorld2D::default();
+    let body_id = world.body_create(BodyKind::Kinematic, Vec2::ZERO);
+
+    world.body_set_position(body_id, vec2(1., 2.));
+
+    assert_eq!(world.body_get_position(body_id), vec2(1., 2.));
+
+    world.body_delete(body_id);
+
+    assert_eq!(world.body_get_position(body_id), Vec2::ZERO);
+  }
+
+  #[test]
+  fn it_should_read_and_write_velocity() {
+    let world = SimplexWorld2D::default();
+    let body_id = world.body_create(BodyKind::Kinematic, Vec2::ZERO);
+
+    world.body_set_velocity(body_id, vec2(1., 2.));
+
+    assert_eq!(world.body_get_velocity(body_id), vec2(1., 2.));
+
+    world.body_delete(body_id);
+
+    assert_eq!(world.body_get_velocity(body_id), Vec2::ZERO);
   }
 }
