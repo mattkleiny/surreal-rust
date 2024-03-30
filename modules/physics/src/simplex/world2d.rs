@@ -141,11 +141,13 @@ impl SimplexWorld2D {
     let colliders = self.colliders.read().unwrap();
 
     for (body_id, body) in bodies.enumerate() {
-      for collider in body.colliders.iter().flat_map(|id| colliders.get(*id)) {
-        let bounding_rectangle = collider.compute_bounding_rectangle();
+      let mut bounding_rectangle = Rectangle::default();
 
-        results.insert(body_id, bounding_rectangle)
+      for collider in body.colliders.iter().flat_map(|id| colliders.get(*id)) {
+        bounding_rectangle.extend(&collider.compute_bounding_rectangle());
       }
+
+      results.insert(body_id, bounding_rectangle)
     }
 
     results
@@ -158,11 +160,13 @@ impl SimplexWorld2D {
     let colliders = self.colliders.read().unwrap();
 
     for (effector_id, effector) in effectors.enumerate() {
-      for collider in effector.colliders.iter().flat_map(|id| colliders.get(*id)) {
-        let bounding_rectangle = collider.compute_bounding_rectangle();
+      let mut bounding_rectangle = Rectangle::default();
 
-        results.insert(effector_id, bounding_rectangle);
+      for collider in effector.colliders.iter().flat_map(|id| colliders.get(*id)) {
+        bounding_rectangle.extend(&collider.compute_bounding_rectangle());
       }
+
+      results.insert(effector_id, bounding_rectangle)
     }
 
     results
