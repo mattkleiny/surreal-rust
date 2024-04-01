@@ -257,6 +257,16 @@ impl Texture {
       )
       .expect("Failed to write texture data");
   }
+
+  /// Blits this texture to the display.
+  pub fn blit_to_display(&self) {
+    let state = self.state.borrow();
+
+    state
+      .graphics
+      .texture_blit_to_display(state.id)
+      .expect("Failed to blit texture to display");
+  }
 }
 
 impl Drop for TextureState {

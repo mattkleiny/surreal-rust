@@ -383,6 +383,10 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  fn texture_blit_to_display(&self, texture: TextureId) -> Result<(), TextureError> {
+    todo!()
+  }
+
   fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError> {
     unsafe {
       gl::DeleteTextures(1, &texture.into());

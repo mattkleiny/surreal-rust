@@ -59,7 +59,9 @@ struct Effector {
   position: Vec2,
   rotation: f32,
   scale: Vec2,
+  strength: f32,
   kind: EffectorKind,
+  shape: EffectorShape,
   colliders: FastHashSet<ColliderId>,
 }
 
@@ -122,16 +124,29 @@ impl SimplexWorld2D {
     }
   }
 
-  fn integrate_effectors(&self, delta_time: f32, settings: &Settings, effectors: QuadTree<EffectorId>) {
+  fn detect_collisions(&self, body_tree: QuadTree<BodyId>) -> Vec<CollisionEvent> {
     todo!()
   }
 
-  fn detect_collisions(&self, bodies: QuadTree<BodyId>) -> Vec<CollisionEvent> {
+  fn integrate_collisions(&self, collision_event: CollisionEvent) {
     todo!()
   }
 
-  fn integrate_collisions(&self, event: CollisionEvent) {
-    todo!()
+  fn integrate_effectors(&self, delta_time: f32, _settings: &Settings, effector_tree: QuadTree<EffectorId>) {
+    let mut bodies = self.bodies.write().unwrap();
+    let effectors = self.effectors.write().unwrap();
+
+    for body in bodies.iter_mut() {
+      for (effector_id, effector) in effectors.enumerate() {
+        if effector_tree.contains_in_bounds(effector_id, body.position) {
+          let direction = effector.position - body.position;
+          let distance = direction.length();
+          let strength = effector.strength / distance.powi(2);
+
+          body.velocity += direction.normalize() * strength * delta_time;
+        }
+      }
+    }
   }
 
   fn broadphase_collision_detection(&self) -> QuadTree<BodyId> {
@@ -411,11 +426,31 @@ impl PhysicsWorld2D for SimplexWorld2D {
   }
 
   fn effector_create_sphere(&self, kind: EffectorKind, initial_position: Vec2, radius: f32) -> EffectorId {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.insert(Effector {
+      position: initial_position,
+      rotation: 0.0,
+      scale: Vec2::ONE,
+      strength: 1.0,
+      kind,
+      shape: EffectorShape::Sphere { radius },
+      colliders: FastHashSet::default(),
+    })
   }
 
   fn effector_create_box(&self, kind: EffectorKind, initial_position: Vec2, size: Vec2) -> EffectorId {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.insert(Effector {
+      position: initial_position,
+      rotation: 0.0,
+      scale: Vec2::ONE,
+      strength: 1.0,
+      kind,
+      shape: EffectorShape::Box { size },
+      colliders: FastHashSet::default(),
+    })
   }
 
   fn effector_create_capsule(
@@ -425,7 +460,17 @@ impl PhysicsWorld2D for SimplexWorld2D {
     radius: f32,
     height: f32,
   ) -> EffectorId {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.insert(Effector {
+      position: initial_position,
+      rotation: 0.0,
+      scale: Vec2::ONE,
+      strength: 1.0,
+      kind,
+      shape: EffectorShape::Capsule { radius, height },
+      colliders: FastHashSet::default(),
+    })
   }
 
   fn effector_create_cylinder(
@@ -435,47 +480,85 @@ impl PhysicsWorld2D for SimplexWorld2D {
     radius: f32,
     height: f32,
   ) -> EffectorId {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.insert(Effector {
+      position: initial_position,
+      rotation: 0.0,
+      scale: Vec2::ONE,
+      strength: 1.0,
+      kind,
+      shape: EffectorShape::Cylinder { radius, height },
+      colliders: FastHashSet::default(),
+    })
   }
 
   fn effector_get_kind(&self, effector: EffectorId) -> EffectorKind {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    effectors.get(effector).map_or(EffectorKind::Gravity, |it| it.kind)
   }
 
   fn effector_set_position(&self, effector: EffectorId, position: Vec2) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    if let Some(effector) = effectors.get_mut(effector) {
+      effector.position = position;
+    }
   }
 
   fn effector_get_position(&self, effector: EffectorId) -> Vec2 {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    effectors.get(effector).map_or(Vec2::ZERO, |it| it.position)
   }
 
   fn effector_set_rotation(&self, effector: EffectorId, rotation: f32) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    if let Some(effector) = effectors.get_mut(effector) {
+      effector.rotation = rotation;
+    }
   }
 
   fn effector_get_rotation(&self, effector: EffectorId) -> f32 {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    effectors.get(effector).map_or(0., |it| it.rotation)
   }
 
   fn effector_set_scale(&self, effector: EffectorId, scale: Vec2) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    if let Some(effector) = effectors.get_mut(effector) {
+      effector.scale = scale;
+    }
   }
 
   fn effector_get_scale(&self, effector: EffectorId) -> Vec2 {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    effectors.get(effector).map_or(Vec2::ONE, |it| it.scale)
   }
 
   fn effector_set_strength(&self, effector: EffectorId, strength: f32) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    if let Some(effector) = effectors.get_mut(effector) {
+      effector.strength = strength;
+    }
   }
 
   fn effector_get_strength(&self, effector: EffectorId) -> f32 {
-    todo!()
+    let effectors = self.effectors.read().unwrap();
+
+    effectors.get(effector).map_or(0., |it| it.strength)
   }
 
   fn effector_delete(&self, effector: EffectorId) {
-    todo!()
+    let mut effectors = self.effectors.write().unwrap();
+
+    effectors.remove(effector);
   }
 }
 

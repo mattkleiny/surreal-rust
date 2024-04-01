@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use glam::Vec2;
+
 use crate::maths::Rectangle;
 
 const THRESHOLD: usize = 16; // the maximum number of values in a leaf node
@@ -71,6 +73,15 @@ impl<T> QuadTree<T> {
     T: PartialEq,
   {
     self.iter().any(|(v, _)| v == &value)
+  }
+
+  /// Determines if the [`QuadTree`] contains the given value within the given
+  /// bounds.
+  pub fn contains_in_bounds(&self, value: T, position: Vec2) -> bool
+  where
+    T: PartialEq,
+  {
+    todo!()
   }
 
   /// Calculates the total bounds of the [`QuadTree`] by visiting all it's nodes
