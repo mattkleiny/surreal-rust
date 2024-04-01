@@ -2,9 +2,10 @@
 
 use std::ffi::CString;
 
-use common::FastHashSet;
 pub use sdl2_sys as sys;
 use sys::{SDL_KeyCode, SDL_Keycode};
+
+use common::FastHashSet;
 
 /// Represents an error that can occur when creating a window.
 #[derive(Debug)]
@@ -165,6 +166,11 @@ impl Window {
     unsafe {
       SDL_GL_SwapWindow(self.window);
     }
+  }
+
+  /// Gets the raw underlying SDL2 window handle.
+  pub fn get_sdl_window(&self) -> *mut sdl2_sys::SDL_Window {
+    self.window
   }
 }
 
