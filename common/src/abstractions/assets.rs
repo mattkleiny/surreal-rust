@@ -30,6 +30,7 @@ pub enum AssetId {
 }
 
 /// Internal asset data.
+#[allow(dead_code)]
 enum AssetData {
   Unloaded,
   Pending,

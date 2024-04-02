@@ -17,6 +17,6 @@ impl PhysicsBackend for SimplexPhysicsBackend {
   }
 
   fn create_world_3d(&self) -> Box<dyn PhysicsWorld3D> {
-    todo!()
+    Box::<world3d::SimplexWorld3D>::default()
   }
 }

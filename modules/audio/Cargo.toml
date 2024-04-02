@@ -6,3 +6,8 @@ edition.workspace = true
 
 [dependencies]
 common = { package = "surreal-common", path = "../../common" }
+oal-sys = "0.0.2"
+
+[build-dependencies]
+cmake = "0.1.50"
+bindgen = "0.69.4"

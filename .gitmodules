@@ -1,0 +1,3 @@
+[submodule "modules/audio/openal"]
+	path = modules/audio/openal
+	url = git@github.com:kcat/openal-soft.git

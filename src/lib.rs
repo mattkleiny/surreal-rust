@@ -13,31 +13,21 @@
 
 #![no_std]
 
-#[cfg(feature = "ai")]
-pub extern crate ai;
 #[cfg(feature = "assets")]
 pub extern crate assets;
 #[cfg(feature = "audio")]
 pub extern crate audio;
 pub extern crate common;
-#[cfg(feature = "ecs")]
-pub extern crate ecs;
 #[cfg(feature = "editor")]
 pub extern crate editor;
 #[cfg(feature = "graphics")]
 pub extern crate graphics;
 #[cfg(feature = "input")]
 pub extern crate input;
-#[cfg(feature = "networking")]
-pub extern crate networking;
 #[cfg(feature = "physics")]
 pub extern crate physics;
-#[cfg(feature = "scene")]
-pub extern crate scene;
 #[cfg(feature = "scripting")]
 pub extern crate scripting;
-#[cfg(feature = "ui")]
-pub extern crate ui;
 
 pub mod backends {
   #[cfg(feature = "sdl")]

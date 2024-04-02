@@ -1,8 +1,0 @@
-[package]
-name = "surreal-ai"
-description = "AI components for Surreal"
-authors.workspace = true
-edition.workspace = true
-
-[dependencies]
-common = { package = "surreal-common", path = "../../common" }

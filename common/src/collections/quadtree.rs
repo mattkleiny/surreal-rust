@@ -77,7 +77,7 @@ impl<T> QuadTree<T> {
 
   /// Determines if the [`QuadTree`] contains the given value within the given
   /// bounds.
-  pub fn contains_in_bounds(&self, value: T, position: Vec2) -> bool
+  pub fn contains_in_bounds(&self, _value: T, _position: Vec2) -> bool
   where
     T: PartialEq,
   {
