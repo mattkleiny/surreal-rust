@@ -1,8 +1,8 @@
 //! Asset management for Surreal.
 
-use std::any::Any;
+use std::any::{Any, TypeId};
 
-use common::{Arena, FastHashMap, ToVirtualPath};
+use common::{Arena, FastHashMap, FileSystemError, ToVirtualPath};
 pub use exporters::*;
 pub use importers::*;
 
@@ -32,12 +32,16 @@ common::impl_arena_index!(AssetId, "Identifies an asset in an asset database.");
 #[derive(Default)]
 pub struct AssetDatabase {
   // core asset storage
-  _assets: Arena<AssetId, AssetState>,
+  assets: Arena<AssetId, AssetState>,
 
   // lookup tables
   _assets_by_path: FastHashMap<String, AssetId>,
   _assets_by_key: FastHashMap<String, AssetId>,
   _assets_by_guid: FastHashMap<String, AssetId>,
+
+  // importers/exporters
+  importers: Vec<Box<dyn UntypedAssetImporter>>,
+  exporters: Vec<Box<dyn UntypedAssetExporter>>,
 }
 
 /// A possible error when working with the asset database.
@@ -45,6 +49,29 @@ pub struct AssetDatabase {
 pub enum AssetDatabaseError {
   InvalidPath,
   InvalidVersion,
+  NoImporterFound,
+  NoExporterFound,
+  FileSystemError(FileSystemError),
+  FailedToImport(AssetImportError),
+  FailedToExport(AssetExportError),
+}
+
+impl From<FileSystemError> for AssetDatabaseError {
+  fn from(error: FileSystemError) -> Self {
+    Self::FileSystemError(error)
+  }
+}
+
+impl From<AssetImportError> for AssetDatabaseError {
+  fn from(error: AssetImportError) -> Self {
+    Self::FailedToImport(error)
+  }
+}
+
+impl From<AssetExportError> for AssetDatabaseError {
+  fn from(error: AssetExportError) -> Self {
+    Self::FailedToExport(error)
+  }
 }
 
 /// Represents the internal state of an asset.
@@ -56,15 +83,54 @@ pub enum AssetState {
 
 impl AssetDatabase {
   /// Opens the asset database at the given path.
-  pub fn open(path: impl ToVirtualPath) -> Result<Self, AssetDatabaseError> {
-    let _path = path.to_virtual_path();
+  pub fn open(_path: impl ToVirtualPath) -> Result<Self, AssetDatabaseError> {
+    // TODO: make this actually open the database
+    Ok(Self::default())
+  }
 
-    todo!()
+  /// Adds an importer to the database.
+  pub fn add_importer(&mut self, importer: impl UntypedAssetImporter + 'static) {
+    self.importers.push(Box::new(importer));
+  }
+
+  /// Adds an exporter to the database.
+  pub fn add_exporter(&mut self, exporter: impl UntypedAssetExporter + 'static) {
+    self.exporters.push(Box::new(exporter));
   }
 
   /// Gets an asset from the database, or loads it from the file system.
-  pub fn load<'a, A>(&self, _path: impl ToVirtualPath) -> Asset<A> {
-    todo!()
+  pub fn load<A: 'static>(&mut self, path: impl ToVirtualPath) -> Result<Asset<A>, AssetDatabaseError> {
+    let path = path.to_virtual_path();
+
+    for importer in &self.importers {
+      if importer.can_import(TypeId::of::<A>(), path.clone()) {
+        let mut stream = path.open_input_stream()?;
+
+        let asset = importer.import(&mut stream)?;
+        let asset_id = self.assets.insert(AssetState::Loaded(asset));
+
+        return Ok(Asset::from_id(asset_id));
+      }
+    }
+
+    Err(AssetDatabaseError::NoImporterFound)
+  }
+
+  /// Exports an asset to the file system.
+  pub fn export<A: 'static>(&mut self, asset: &A, path: impl ToVirtualPath) -> Result<(), AssetDatabaseError> {
+    let path = path.to_virtual_path();
+
+    for exporter in &self.exporters {
+      if exporter.can_export(TypeId::of::<A>(), path.clone()) {
+        let mut stream = path.open_output_stream()?;
+
+        exporter.export(asset, &mut stream)?;
+
+        return Ok(());
+      }
+    }
+
+    Err(AssetDatabaseError::NoExporterFound)
   }
 }
 
@@ -78,13 +144,17 @@ impl AssetDatabase {
 ///
 /// This struct is a 'thin' wrapper around the asset, and is cheap to copy.
 pub struct Asset<A> {
-  _id: AssetId,
-  _kind: std::marker::PhantomData<A>,
+  id: AssetId,
+  kind: std::marker::PhantomData<A>,
 }
 
-impl<A> Default for Asset<A> {
-  fn default() -> Self {
-    todo!()
+impl<A> Asset<A> {
+  /// Creates a new asset reference from an asset ID.
+  pub const fn from_id(id: AssetId) -> Self {
+    Self {
+      id,
+      kind: std::marker::PhantomData,
+    }
   }
 }
 

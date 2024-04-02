@@ -124,11 +124,11 @@ impl SimplexWorld2D {
     }
   }
 
-  fn detect_collisions(&self, body_tree: QuadTree<BodyId>) -> Vec<CollisionEvent> {
+  fn detect_collisions(&self, _body_tree: QuadTree<BodyId>) -> Vec<CollisionEvent> {
     todo!()
   }
 
-  fn integrate_collisions(&self, collision_event: CollisionEvent) {
+  fn integrate_collisions(&self, _collision_event: CollisionEvent) {
     todo!()
   }
 

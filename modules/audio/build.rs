@@ -24,7 +24,6 @@ fn main() {
     .build();
 
   println!("cargo:rustc-link-search={}", build_dir.join("build").display());
-
   println!(
     "cargo:rustc-link-search={}",
     build_dir.join("build").join("Release").display()

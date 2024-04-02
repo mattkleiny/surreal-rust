@@ -383,7 +383,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  fn texture_blit_to_display(&self, texture: TextureId) -> Result<(), TextureError> {
+  fn texture_blit_to_display(&self, _texture: TextureId) -> Result<(), TextureError> {
     todo!()
   }
 
