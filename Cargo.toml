@@ -33,7 +33,6 @@ editor = { package = "surreal-editor", path = "./editor", optional = true }
 sdl = { package = "surreal-backend-sdl", path = "./backends/sdl", optional = true }
 
 # modules
-assets = { package = "surreal-assets", path = "./modules/assets", optional = true }
 audio = { package = "surreal-audio", path = "./modules/audio", optional = true }
 graphics = { package = "surreal-graphics", path = "./modules/graphics", optional = true }
 input = { package = "surreal-input", path = "./modules/input", optional = true }

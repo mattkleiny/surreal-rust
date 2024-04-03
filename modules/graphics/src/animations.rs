@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-use common::{AssetRef, FastHashMap, StringName, TimeSpan, Vec2};
+use common::{Asset, FastHashMap, StringName, TimeSpan, Vec2};
 
 use crate::{Color, Texture};
 
@@ -70,7 +70,7 @@ pub enum AnimationTrack {
   Rotation(AnimationTrackData<f32>),
   Scale(AnimationTrackData<Vec2>),
   Color(AnimationTrackData<Color>),
-  // Texture(AnimationTrackData<AssetRef<Texture>>),
+  Texture(AnimationTrackData<Asset<Texture>>),
 }
 
 /// Data for a single animation track.
@@ -165,7 +165,7 @@ impl<T> AnimationTree<T> {
         let AnimationTransition { condition, target } = transition;
 
         if condition(state, &self.state) {
-          self.current = Some(target.clone());
+          self.current = Some(*target);
           break;
         }
       }

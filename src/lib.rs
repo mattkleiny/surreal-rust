@@ -13,8 +13,6 @@
 
 #![no_std]
 
-#[cfg(feature = "assets")]
-pub extern crate assets;
 #[cfg(feature = "audio")]
 pub extern crate audio;
 pub extern crate common;

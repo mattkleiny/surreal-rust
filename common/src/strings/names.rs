@@ -8,6 +8,7 @@ use crate::{Arena, Singleton};
 crate::impl_arena_index!(StringId, "Identifies a string in a string pool.");
 
 /// Represents an interned string that can be used as a name.
+#[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct StringName(StringId);
 
