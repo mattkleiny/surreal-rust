@@ -1,5 +1,7 @@
 //! The OpenAL backend implementation for the audio subsystem.
 
+use common::profiling;
+
 use super::*;
 
 /// A OpenAL-based [`AudioBackend`] implementation.
@@ -20,11 +22,58 @@ impl Drop for OpenALAudioBackend {
 
 #[allow(unused_variables)]
 impl AudioBackend for OpenALAudioBackend {
-  fn new_audio_device(&self) -> Box<dyn AudioDevice> {
+  #[profiling]
+  fn clip_create(&self) -> Result<ClipId, ClipError> {
     todo!()
   }
 
-  fn new_audio_recorder(&self) -> Box<dyn AudioRecorder> {
+  #[profiling]
+  fn clip_write_data(&self, clip: ClipId, data: *const u8, length: usize) -> Result<(), ClipError> {
+    todo!()
+  }
+
+  #[profiling]
+  fn clip_delete(&self, clip: ClipId) -> Result<(), ClipError> {
+    todo!()
+  }
+
+  #[profiling]
+  fn source_create(&self) -> Result<SourceId, SourceError> {
+    todo!()
+  }
+
+  #[profiling]
+  fn source_is_playing(&self, source: SourceId) -> bool {
+    todo!()
+  }
+
+  #[profiling]
+  fn source_get_volume(&self, source: SourceId) -> f32 {
+    todo!()
+  }
+
+  #[profiling]
+  fn source_set_volume(&self, source: SourceId, volume: f32) {
+    todo!()
+  }
+
+  #[profiling]
+  fn source_get_clip(&self, source: SourceId) -> Option<ClipId> {
+    todo!()
+  }
+
+  #[profiling]
+  fn source_set_clip(&self, source: SourceId, clip: ClipId) {
+    todo!()
+  }
+
+  #[profiling]
+  fn source_play(&self, source: SourceId) {
+    todo!()
+  }
+
+  #[profiling]
+  fn source_delete(&self, source: SourceId) -> Result<(), SourceError> {
     todo!()
   }
 }

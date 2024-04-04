@@ -15,7 +15,7 @@ impl<F: Future> BlockableFuture for F {
   fn block(self) -> Self::Output {
     let mut boxed = Box::pin(self);
     let waker = std::task::Waker::noop();
-    let mut context = std::task::Context::from_waker(&waker);
+    let mut context = std::task::Context::from_waker(waker);
 
     loop {
       if let std::task::Poll::Ready(value) = boxed.as_mut().poll(&mut context) {

@@ -59,25 +59,11 @@ pub mod frames {
   //! Frame rate telemetry.
   use super::*;
 
-  pub struct FramesPerSecond {
-    pub frames: u32,
-  }
-
-  pub struct FrameTime {
-    pub time: std::time::Duration,
-  }
-
-  pub struct FrameTimeAverage {
-    pub time: std::time::Duration,
-  }
-
-  pub struct FrameTimeMinimum {
-    pub time: std::time::Duration,
-  }
-
-  pub struct FrameTimeMaximum {
-    pub time: std::time::Duration,
-  }
+  pub struct FramesPerSecond(pub u32);
+  pub struct FrameTime(pub std::time::Duration);
+  pub struct FrameTimeAverage(pub std::time::Duration);
+  pub struct FrameTimeMinimum(pub std::time::Duration);
+  pub struct FrameTimeMaximum(pub std::time::Duration);
 
   impl_telemetry!(FramesPerSecond, "frames_per_second");
   impl_telemetry!(FrameTime, "frame_time");
@@ -99,10 +85,10 @@ mod tests {
       println!("telemetry: {}", telemetry.name());
     });
 
-    recorder.record(&frames::FramesPerSecond { frames: 60 });
-    recorder.record(&frames::FramesPerSecond { frames: 60 });
-    recorder.record(&frames::FramesPerSecond { frames: 60 });
-    recorder.record(&frames::FramesPerSecond { frames: 59 });
-    recorder.record(&frames::FramesPerSecond { frames: 60 });
+    recorder.record(&frames::FramesPerSecond(60));
+    recorder.record(&frames::FramesPerSecond(60));
+    recorder.record(&frames::FramesPerSecond(60));
+    recorder.record(&frames::FramesPerSecond(59));
+    recorder.record(&frames::FramesPerSecond(60));
   }
 }

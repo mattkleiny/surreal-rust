@@ -1,18 +1,59 @@
+use std::sync::atomic::{AtomicU64, Ordering};
+
 use super::*;
 
 /// A headless [`AudioBackend`] implementation.
 ///
 /// This backend does nothing (no-ops) and can be used for testing/etc.
 #[derive(Default)]
-pub struct HeadlessAudioBackend {}
+pub struct HeadlessAudioBackend {
+  next_clip_id: AtomicU64,
+  next_source_id: AtomicU64,
+}
 
 #[allow(unused_variables)]
 impl AudioBackend for HeadlessAudioBackend {
-  fn new_audio_device(&self) -> Box<dyn AudioDevice> {
-    todo!()
+  fn clip_create(&self) -> Result<ClipId, ClipError> {
+    Ok(ClipId(self.next_clip_id.fetch_add(1, Ordering::Relaxed)))
   }
 
-  fn new_audio_recorder(&self) -> Box<dyn AudioRecorder> {
-    todo!()
+  fn clip_write_data(&self, clip: ClipId, data: *const u8, length: usize) -> Result<(), ClipError> {
+    Ok(())
+  }
+
+  fn clip_delete(&self, clip: ClipId) -> Result<(), ClipError> {
+    Ok(())
+  }
+
+  fn source_create(&self) -> Result<SourceId, SourceError> {
+    Ok(SourceId(self.next_source_id.fetch_add(1, Ordering::Relaxed)))
+  }
+
+  fn source_is_playing(&self, source: SourceId) -> bool {
+    false
+  }
+
+  fn source_get_volume(&self, source: SourceId) -> f32 {
+    1.
+  }
+
+  fn source_set_volume(&self, source: SourceId, volume: f32) {
+    // no-op
+  }
+
+  fn source_get_clip(&self, source: SourceId) -> Option<ClipId> {
+    None
+  }
+
+  fn source_set_clip(&self, source: SourceId, clip: ClipId) {
+    // no-op
+  }
+
+  fn source_play(&self, source: SourceId) {
+    // no-op
+  }
+
+  fn source_delete(&self, source: SourceId) -> Result<(), SourceError> {
+    Ok(())
   }
 }

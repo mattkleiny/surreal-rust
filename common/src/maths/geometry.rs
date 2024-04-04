@@ -2,11 +2,9 @@
 
 pub use csg::*;
 
-mod csg;
-
-// TODO: implement geometry helpers like ear cutting and triangulation
-
 use super::{DVec2, DVec3, Vec2, Vec3, Vector};
+
+mod csg;
 
 /// A triangle in a vector space V.
 #[repr(C)]

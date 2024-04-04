@@ -41,16 +41,8 @@ pub enum SourceError {
 /// This is a high-level abstraction that makes use of 'opaque' handles to hide
 /// away implementation details. The server is intended to be a low-level
 /// implementation abstraction.
-pub trait AudioBackend {
-  fn new_audio_device(&self) -> Box<dyn AudioDevice>;
-  fn new_audio_recorder(&self) -> Box<dyn AudioRecorder>;
-}
-
-/// Represents an audio device.
-///
-/// A device is capable of playing audio clips via audio sources.
 #[rustfmt::skip]
-pub trait AudioDevice {
+pub trait AudioBackend {
   // clips
   fn clip_create(&self) -> Result<ClipId, ClipError>;
   fn clip_write_data(&self, clip: ClipId, data: *const u8, length: usize) -> Result<(), ClipError>;
@@ -66,8 +58,3 @@ pub trait AudioDevice {
   fn source_play(&self, source: SourceId);
   fn source_delete(&self, source: SourceId) -> Result<(), SourceError>;
 }
-
-/// Represents an audio recorder.
-///
-/// A recorder is capable of recording audio from the host.
-pub trait AudioRecorder {}
