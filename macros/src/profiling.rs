@@ -1,4 +1,5 @@
 use proc_macro::TokenStream;
+
 use quote::quote;
 use syn::{parse_macro_input, parse_quote};
 
@@ -10,7 +11,7 @@ pub fn impl_profiling(item: TokenStream) -> TokenStream {
 
   // rewrite the function to wrap the block in a profiling scope
   function.block = Box::new(parse_quote! {{
-    diagnostics::profile_function!(#name);
+    common::profile_function!(#name);
     #block
   }});
 

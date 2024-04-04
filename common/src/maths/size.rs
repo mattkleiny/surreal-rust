@@ -8,7 +8,7 @@ use crate::{FromBinary, ToBinary};
 
 /// A canonical representation of size, with simple conversions between units.
 #[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Default, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Size(usize);
 

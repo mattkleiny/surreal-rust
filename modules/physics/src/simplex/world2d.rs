@@ -1,6 +1,6 @@
 use std::sync::RwLock;
 
-use common::{Arena, FastHashSet, QuadTree, Rectangle, vec2};
+use common::{Arena, FastHashSet, profiling, QuadTree, Rectangle, vec2};
 
 use super::*;
 
@@ -115,6 +115,7 @@ impl PhysicsWorld for SimplexWorld2D {
 }
 
 impl SimplexWorld2D {
+  #[profiling]
   fn integrate_bodies(&self, delta_time: f32, settings: &Settings) {
     let mut bodies = self.bodies.write().unwrap();
 
@@ -124,14 +125,17 @@ impl SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn detect_collisions(&self, _body_tree: QuadTree<BodyId>) -> Vec<CollisionEvent> {
     todo!()
   }
 
+  #[profiling]
   fn integrate_collisions(&self, _collision_event: CollisionEvent) {
     todo!()
   }
 
+  #[profiling]
   fn integrate_effectors(&self, delta_time: f32, _settings: &Settings, effector_tree: QuadTree<EffectorId>) {
     let mut bodies = self.bodies.write().unwrap();
     let effectors = self.effectors.write().unwrap();
@@ -149,6 +153,7 @@ impl SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn broadphase_collision_detection(&self) -> QuadTree<BodyId> {
     let mut results = QuadTree::default();
 
@@ -168,6 +173,7 @@ impl SimplexWorld2D {
     results
   }
 
+  #[profiling]
   fn broadphase_effector_detection(&self) -> QuadTree<EffectorId> {
     let mut results = QuadTree::default();
 
@@ -190,6 +196,7 @@ impl SimplexWorld2D {
 
 #[allow(unused_variables)]
 impl PhysicsWorld2D for SimplexWorld2D {
+  #[profiling]
   fn body_create(&self, kind: BodyKind, initial_position: Vec2) -> BodyId {
     let mut bodies = self.bodies.write().unwrap();
 
@@ -204,6 +211,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     })
   }
 
+  #[profiling]
   fn body_add_collider(&self, body: BodyId, collider: ColliderId) {
     let mut bodies = self.bodies.write().unwrap();
 
@@ -212,6 +220,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn body_remove_collider(&self, body: BodyId, collider: ColliderId) {
     let mut bodies = self.bodies.write().unwrap();
 
@@ -220,6 +229,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn body_set_position(&self, body: BodyId, position: Vec2) {
     let mut bodies = self.bodies.write().unwrap();
 
@@ -228,12 +238,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn body_get_position(&self, body: BodyId) -> Vec2 {
     let bodies = self.bodies.read().unwrap();
 
     bodies.get(body).map_or(Vec2::ZERO, |it| it.position)
   }
 
+  #[profiling]
   fn body_set_rotation(&self, body: BodyId, rotation: f32) {
     let mut bodies = self.bodies.write().unwrap();
 
@@ -242,12 +254,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn body_get_rotation(&self, body: BodyId) -> f32 {
     let bodies = self.bodies.read().unwrap();
 
     bodies.get(body).map_or(0., |it| it.rotation)
   }
 
+  #[profiling]
   fn body_set_scale(&self, body: BodyId, scale: Vec2) {
     let mut bodies = self.bodies.write().unwrap();
 
@@ -256,12 +270,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn body_get_scale(&self, body: BodyId) -> Vec2 {
     let bodies = self.bodies.read().unwrap();
 
     bodies.get(body).map_or(Vec2::ONE, |it| it.scale)
   }
 
+  #[profiling]
   fn body_set_velocity(&self, body: BodyId, velocity: Vec2) {
     let mut bodies = self.bodies.write().unwrap();
 
@@ -270,12 +286,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn body_get_velocity(&self, body: BodyId) -> Vec2 {
     let bodies = self.bodies.read().unwrap();
 
     bodies.get(body).map_or(Vec2::ZERO, |it| it.velocity)
   }
 
+  #[profiling]
   fn body_set_angular_velocity(&self, body: BodyId, velocity: Vec2) {
     let mut bodies = self.bodies.write().unwrap();
 
@@ -284,18 +302,21 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn body_get_angular_velocity(&self, body: BodyId) -> Vec2 {
     let bodies = self.bodies.read().unwrap();
 
     bodies.get(body).map_or(Vec2::ZERO, |it| it.angular_velocity)
   }
 
+  #[profiling]
   fn body_delete(&self, body: BodyId) {
     let mut bodies = self.bodies.write().unwrap();
 
     bodies.remove(body);
   }
 
+  #[profiling]
   fn collider_create_circle(&self, kind: ColliderKind, initial_position: Vec2, radius: f32) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
@@ -309,6 +330,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     })
   }
 
+  #[profiling]
   fn collider_create_rectangle(&self, kind: ColliderKind, initial_position: Vec2, size: Vec2) -> ColliderId {
     let mut colliders = self.colliders.write().unwrap();
 
@@ -322,6 +344,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     })
   }
 
+  #[profiling]
   fn collider_create_triangle_mesh(
     &self,
     kind: ColliderKind,
@@ -344,6 +367,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     })
   }
 
+  #[profiling]
   fn collider_create_height_field(
     &self,
     kind: ColliderKind,
@@ -366,12 +390,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     })
   }
 
+  #[profiling]
   fn collider_get_kind(&self, collider: ColliderId) -> Option<ColliderKind> {
     let colliders = self.colliders.read().unwrap();
 
     colliders.get(collider).map(|collider| collider.kind)
   }
 
+  #[profiling]
   fn collider_set_position(&self, collider: ColliderId, position: Vec2) {
     let mut colliders = self.colliders.write().unwrap();
 
@@ -380,12 +406,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn collider_get_position(&self, collider: ColliderId) -> Vec2 {
     let colliders = self.colliders.read().unwrap();
 
     colliders.get(collider).map_or(Vec2::ZERO, |it| it.position)
   }
 
+  #[profiling]
   fn collider_set_rotation(&self, collider: ColliderId, rotation: f32) {
     let mut colliders = self.colliders.write().unwrap();
 
@@ -394,12 +422,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn collider_get_rotation(&self, collider: ColliderId) -> f32 {
     let colliders = self.colliders.read().unwrap();
 
     colliders.get(collider).map_or(0., |it| it.rotation)
   }
 
+  #[profiling]
   fn collider_set_scale(&self, collider: ColliderId, scale: Vec2) {
     let mut colliders = self.colliders.write().unwrap();
 
@@ -408,12 +438,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn collider_get_scale(&self, collider: ColliderId) -> Vec2 {
     let colliders = self.colliders.read().unwrap();
 
     colliders.get(collider).map_or(Vec2::ONE, |it| it.scale)
   }
 
+  #[profiling]
   fn collider_delete(&self, collider: ColliderId) {
     let mut colliders = self.colliders.write().unwrap();
     let mut bodies = self.bodies.write().unwrap();
@@ -425,6 +457,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     colliders.remove(collider);
   }
 
+  #[profiling]
   fn effector_create_sphere(&self, kind: EffectorKind, initial_position: Vec2, radius: f32) -> EffectorId {
     let mut effectors = self.effectors.write().unwrap();
 
@@ -439,6 +472,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     })
   }
 
+  #[profiling]
   fn effector_create_box(&self, kind: EffectorKind, initial_position: Vec2, size: Vec2) -> EffectorId {
     let mut effectors = self.effectors.write().unwrap();
 
@@ -453,6 +487,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     })
   }
 
+  #[profiling]
   fn effector_create_capsule(
     &self,
     kind: EffectorKind,
@@ -473,6 +508,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
     })
   }
 
+  #[profiling]
   fn effector_create_cylinder(
     &self,
     kind: EffectorKind,
@@ -493,12 +529,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     })
   }
 
+  #[profiling]
   fn effector_get_kind(&self, effector: EffectorId) -> EffectorKind {
     let effectors = self.effectors.read().unwrap();
 
     effectors.get(effector).map_or(EffectorKind::Gravity, |it| it.kind)
   }
 
+  #[profiling]
   fn effector_set_position(&self, effector: EffectorId, position: Vec2) {
     let mut effectors = self.effectors.write().unwrap();
 
@@ -507,12 +545,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn effector_get_position(&self, effector: EffectorId) -> Vec2 {
     let effectors = self.effectors.read().unwrap();
 
     effectors.get(effector).map_or(Vec2::ZERO, |it| it.position)
   }
 
+  #[profiling]
   fn effector_set_rotation(&self, effector: EffectorId, rotation: f32) {
     let mut effectors = self.effectors.write().unwrap();
 
@@ -521,12 +561,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn effector_get_rotation(&self, effector: EffectorId) -> f32 {
     let effectors = self.effectors.read().unwrap();
 
     effectors.get(effector).map_or(0., |it| it.rotation)
   }
 
+  #[profiling]
   fn effector_set_scale(&self, effector: EffectorId, scale: Vec2) {
     let mut effectors = self.effectors.write().unwrap();
 
@@ -535,12 +577,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn effector_get_scale(&self, effector: EffectorId) -> Vec2 {
     let effectors = self.effectors.read().unwrap();
 
     effectors.get(effector).map_or(Vec2::ONE, |it| it.scale)
   }
 
+  #[profiling]
   fn effector_set_strength(&self, effector: EffectorId, strength: f32) {
     let mut effectors = self.effectors.write().unwrap();
 
@@ -549,12 +593,14 @@ impl PhysicsWorld2D for SimplexWorld2D {
     }
   }
 
+  #[profiling]
   fn effector_get_strength(&self, effector: EffectorId) -> f32 {
     let effectors = self.effectors.read().unwrap();
 
     effectors.get(effector).map_or(0., |it| it.strength)
   }
 
+  #[profiling]
   fn effector_delete(&self, effector: EffectorId) {
     let mut effectors = self.effectors.write().unwrap();
 

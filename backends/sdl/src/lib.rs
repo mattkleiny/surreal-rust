@@ -199,7 +199,9 @@ impl common::Clipboard for Window {
   }
 
   fn set_clipboard(&mut self, _text: String) {
-    todo!()
+    unsafe {
+      sdl2_sys::SDL_SetClipboardText(CString::new(_text).unwrap().as_ptr());
+    }
   }
 }
 

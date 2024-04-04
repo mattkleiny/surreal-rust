@@ -3,7 +3,6 @@
 use proc_macro::TokenStream;
 
 mod binary;
-mod component;
 mod profiling;
 mod reflect;
 mod singleton;
@@ -13,12 +12,6 @@ mod vertex;
 #[proc_macro_derive(Binary)]
 pub fn derive_binary(input: TokenStream) -> TokenStream {
   binary::impl_binary(input)
-}
-
-/// Derives the `Component` trait for a type.
-#[proc_macro_derive(Component)]
-pub fn derive_component(input: TokenStream) -> TokenStream {
-  component::impl_component(input)
 }
 
 /// Implements the Singleton pattern for a type.

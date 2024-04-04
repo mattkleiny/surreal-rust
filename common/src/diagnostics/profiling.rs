@@ -26,7 +26,7 @@ macro_rules! profile_scope {
 #[macro_export]
 macro_rules! profile_function {
   ($name:expr) => {
-    todo!();
+    // TODO: implement me
   };
 }
 

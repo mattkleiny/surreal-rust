@@ -6,7 +6,7 @@ use std::{
   ffi::{c_void, CString},
 };
 
-use common::{Rectangle, Size, UVec2};
+use common::{profiling, Rectangle, Size, UVec2};
 
 use super::*;
 
@@ -42,14 +42,17 @@ impl OpenGLGraphicsBackend {
 }
 
 impl GraphicsBackend for OpenGLGraphicsBackend {
+  #[profiling]
   fn begin_frame(&self) {
     // no-op
   }
 
+  #[profiling]
   fn end_frame(&self) {
     // no-op
   }
 
+  #[profiling]
   fn clear_color_buffer(&self, color: Color) {
     unsafe {
       gl::ClearColor(color.r, color.g, color.b, color.a);
@@ -57,12 +60,14 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn clear_depth_buffer(&self, _depth: f32) {
     unsafe {
       gl::Clear(gl::DEPTH_BUFFER_BIT);
     }
   }
 
+  #[profiling]
   fn viewport_size(&self) -> (usize, usize) {
     unsafe {
       let mut size = [0i32; 4];
@@ -72,6 +77,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn set_viewport_size(&self, size: UVec2) {
     if size.x > 0 && size.y > 0 {
       unsafe {
@@ -80,6 +86,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn set_blend_state(&self, blend_state: BlendState) {
     fn convert_blend_factor(factor: BlendFactor) -> u32 {
       match factor {
@@ -112,6 +119,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn set_culling_mode(&self, culling_mode: CullingMode) {
     unsafe {
       match culling_mode {
@@ -132,6 +140,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn set_scissor_mode(&self, scissor_mode: ScissorMode) {
     unsafe {
       match scissor_mode {
@@ -151,6 +160,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn buffer_create(&self) -> Result<BufferId, BufferError> {
     unsafe {
       let mut id: u32 = 0;
@@ -161,6 +171,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn buffer_read_data(
     &self,
     buffer: BufferId,
@@ -183,6 +194,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn buffer_write_data(
     &self,
     buffer: BufferId,
@@ -209,6 +221,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError> {
     unsafe {
       gl::DeleteBuffers(1, &buffer.into());
@@ -217,6 +230,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError> {
     unsafe {
       let mut id: u32 = 0;
@@ -232,6 +246,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError> {
     unsafe {
       let min_filter = match sampler.minify_filter {
@@ -260,6 +275,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn texture_initialize(
     &self,
     texture: TextureId,
@@ -287,6 +303,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn texture_read_data(
     &self,
     texture: TextureId,
@@ -312,6 +329,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn texture_write_data(
     &self,
     texture: TextureId,
@@ -355,6 +373,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn texture_write_sub_data(
     &self,
     texture: TextureId,
@@ -383,10 +402,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn texture_blit_to_display(&self, _texture: TextureId) -> Result<(), TextureError> {
     todo!()
   }
 
+  #[profiling]
   fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError> {
     unsafe {
       gl::DeleteTextures(1, &texture.into());
@@ -395,10 +416,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn shader_create(&self) -> Result<ShaderId, ShaderError> {
     Ok(ShaderId::from(unsafe { gl::CreateProgram() }))
   }
 
+  #[profiling]
   #[allow(clippy::uninit_vec)]
   fn shader_link(&self, shader: ShaderId, shaders: &[ShaderKernel]) -> Result<(), ShaderError> {
     unsafe {
@@ -478,10 +501,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     Ok(())
   }
 
+  #[profiling]
   fn shader_metadata(&self, _shader: ShaderId) -> Result<ShaderFlags, ShaderError> {
     todo!()
   }
 
+  #[profiling]
   fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize> {
     unsafe {
       let shader = shader.into();
@@ -495,6 +520,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
     unsafe {
       let shader_id = shader.into();
@@ -626,6 +652,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError> {
     unsafe {
       gl::UseProgram(shader.into());
@@ -634,6 +661,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError> {
     unsafe {
       gl::DeleteProgram(shader.into());
@@ -642,6 +670,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn mesh_create(
     &self,
     vertex_buffer: BufferId,
@@ -703,6 +732,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn mesh_draw(
     &self,
     mesh: MeshId,
@@ -731,6 +761,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError> {
     unsafe {
       gl::DeleteVertexArrays(1, &mesh.into());
@@ -739,6 +770,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn target_create(
     &self,
     color_attachment: TextureId,
@@ -788,6 +820,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn target_activate(&self, target: TargetId) -> Result<(), TargetError> {
     unsafe {
       gl::BindFramebuffer(gl::FRAMEBUFFER, target.into());
@@ -796,6 +829,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn target_set_default(&self) -> Result<(), TargetError> {
     unsafe {
       gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
@@ -804,6 +838,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn target_blit_to_active(
     &self,
     target: TargetId,
@@ -841,6 +876,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
+  #[profiling]
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {
     unsafe {
       gl::DeleteFramebuffers(1, &target.into());

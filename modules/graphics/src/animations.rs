@@ -1,4 +1,4 @@
-#![allow(unused_imports)]
+//! Animation support.
 
 use common::{Asset, FastHashMap, StringName, TimeSpan, Vec2};
 
