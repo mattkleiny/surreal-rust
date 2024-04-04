@@ -129,7 +129,6 @@ pub trait GraphicsBackend {
   fn texture_read_data(&self, texture: TextureId, length: usize, pixel_format: TextureFormat, pixels: *mut u8, mip_level: usize) -> Result<(), TextureError>;
   fn texture_write_data(&self, texture: TextureId, width: u32, height: u32, pixels: *const u8, internal_format: TextureFormat, pixel_format: TextureFormat, mip_level: usize) -> Result<(), TextureError>;
   fn texture_write_sub_data(&self, texture: TextureId, region: &common::Rectangle, pixels: *const u8, pixel_format: TextureFormat, mip_level: usize) -> Result<(), TextureError>;
-  fn texture_blit_to_display(&self, texture: TextureId,) -> Result<(), TextureError>;
   fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError>;
 
   // shaders

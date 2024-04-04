@@ -15,7 +15,6 @@ use super::*;
 /// This type implemented by the host application and is used to provide the
 /// graphics backend with access to the host's OpenGL functions.
 pub trait OpenGLHost {
-  /// Gets the address of an OpenGL function.
   fn get_proc_address(&self, name: &str) -> *const c_void;
 }
 
@@ -400,11 +399,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
       Ok(())
     }
-  }
-
-  #[profiling]
-  fn texture_blit_to_display(&self, _texture: TextureId) -> Result<(), TextureError> {
-    todo!()
   }
 
   #[profiling]
@@ -838,7 +832,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn target_blit_to_active(
     &self,
     target: TargetId,

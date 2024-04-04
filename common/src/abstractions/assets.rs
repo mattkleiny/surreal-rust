@@ -8,7 +8,7 @@ use std::{
 pub use exporters::*;
 pub use importers::*;
 
-use crate::{FastHashMap, FileSystemError, Guid, StreamError, StringName, ToVirtualPath, VirtualPath};
+use crate::{FastHashMap, FileSystemError, Guid, impl_from_error, StreamError, StringName, ToVirtualPath, VirtualPath};
 
 /// Represents a reference to an asset that can either be loaded or unloaded.
 ///

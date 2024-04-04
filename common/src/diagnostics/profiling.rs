@@ -1,4 +1,4 @@
-pub use macros::profile as profiling;
+pub use macros::profiling as profiling;
 
 /// A sink for profiling output.
 pub trait Profiler {}
@@ -7,7 +7,15 @@ pub trait Profiler {}
 #[macro_export]
 macro_rules! profile_frame_start {
   () => {
-    todo!();
+    // TODO: implement me
+  };
+}
+
+/// Notifies the profiler that a frame has ended.
+#[macro_export]
+macro_rules! profile_frame_end {
+  () => {
+    // TODO: implement me
   };
 }
 
@@ -18,22 +26,17 @@ macro_rules! profile_scope {
     // TODO: implement me
   };
   ($name:expr, $args:expr) => {
-    // TODO: implement me
+    $crate::profile_scope!(concat!($name, "(", stringify!($args), ")"));
   };
 }
 
-/// Notifies the profiler that a function has started.
+/// Notifies the profiler that a function is executing.
 #[macro_export]
 macro_rules! profile_function {
   ($name:expr) => {
-    // TODO: implement me
+    $crate::profile_scope!($name);
   };
-}
-
-/// Notifies the profiler that a frame has ended.
-#[macro_export]
-macro_rules! profile_frame_end {
-  () => {
-    todo!();
+  ($name:expr, $args:expr) => {
+    $crate::profile_scope!($name, $args);
   };
 }

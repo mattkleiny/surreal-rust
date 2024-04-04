@@ -28,7 +28,7 @@ pub fn derive_reflect(input: TokenStream) -> TokenStream {
 
 /// Instruments a function with profiling code.
 #[proc_macro_attribute]
-pub fn profile(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn profiling(_attr: TokenStream, item: TokenStream) -> TokenStream {
   profiling::impl_profiling(item)
 }
 

@@ -52,7 +52,16 @@ enum ColliderShape {
 }
 
 /// A single collision event in the 2d world.
-enum CollisionEvent {}
+struct CollisionEvent {
+  source_body: BodyId,
+  source_collider: ColliderId,
+  target_body: BodyId,
+  target_collider: ColliderId,
+  position: Vec2,
+  normal: Vec2,
+  penetration: f32,
+  kind: ColliderKind,
+}
 
 /// An effector in the 2d physics world.
 struct Effector {

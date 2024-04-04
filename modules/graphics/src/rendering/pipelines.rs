@@ -1,6 +1,7 @@
 //! Render pipeline abstractions.
 
-use common::Camera;
+use common::{Camera, profile_frame_end, profile_frame_start};
+use macros::profiling;
 
 use super::*;
 
@@ -60,7 +61,10 @@ pub struct MultiPassPipeline {
 }
 
 impl RenderPipeline for MultiPassPipeline {
+  #[profiling]
   fn render(&mut self, scene: &dyn RenderScene, delta_time: f32) {
+    profile_frame_start!();
+
     let mut frame = RenderFrame {
       delta_time,
       queue: &mut self.queue,
@@ -91,6 +95,8 @@ impl RenderPipeline for MultiPassPipeline {
     for pass in &self.passes {
       pass.end_frame(scene, &mut frame);
     }
+
+    profile_frame_end!();
   }
 }
 

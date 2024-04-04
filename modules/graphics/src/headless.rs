@@ -149,10 +149,6 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     Ok(())
   }
 
-  fn texture_blit_to_display(&self, texture: TextureId) -> Result<(), TextureError> {
-    Ok(())
-  }
-
   fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError> {
     Ok(())
   }
@@ -234,6 +230,7 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
   ) -> Result<(), TargetError> {
     Ok(())
   }
+
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {
     Ok(())
   }

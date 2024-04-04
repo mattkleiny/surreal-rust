@@ -2,7 +2,7 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use common::{uvec2, Rectangle, UVec2};
+use common::{Rectangle, uvec2, UVec2};
 
 use super::*;
 
@@ -260,12 +260,7 @@ impl Texture {
 
   /// Blits this texture to the display.
   pub fn blit_to_display(&self) {
-    let state = self.state.borrow();
-
-    state
-      .graphics
-      .texture_blit_to_display(state.id)
-      .expect("Failed to blit texture to display");
+    todo!()
   }
 }
 
