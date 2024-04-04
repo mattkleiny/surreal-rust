@@ -37,11 +37,10 @@ pub enum AssetId {
   Guid(Guid),
 }
 
-/// Internal asset data.
-#[allow(dead_code)]
-enum AssetData {
+/// Represents the internal state of an asset.
+pub enum AssetState {
   Unloaded,
-  Pending,
+  Orphaned,
   Loaded(Box<dyn Any>),
 }
 
@@ -72,10 +71,7 @@ impl<T> Asset<T> {
 
   /// Attempts to get a reference to the asset data.
   pub async fn get(&self, server: &impl AssetServer) -> Option<&T> {
-    server.resolve(&self.asset_id).await.map(|data| unsafe {
-      // TODO: find a way to do this without unsafe
-      &*(data as *const AssetData as *const T)
-    })
+    server.resolve(&self.asset_id).await.map(|_data| todo!())
   }
 }
 
@@ -96,7 +92,7 @@ impl<'de, T> serde::Deserialize<'de> for Asset<T> {
 /// A server capable of loading and unloading assets.
 pub trait AssetServer {
   /// Resolves the asset data for the given asset identifier.
-  fn resolve(&self, id: &AssetId) -> impl Future<Output = Option<&AssetData>>;
+  fn resolve(&self, id: &AssetId) -> impl Future<Output = Option<&AssetState>>;
 }
 
 /// A database for managing assets.
@@ -162,13 +158,6 @@ impl From<AssetExportError> for AssetDatabaseError {
   }
 }
 
-/// Represents the internal state of an asset.
-pub enum AssetState {
-  Unloaded,
-  Orphaned,
-  Loaded(Box<dyn Any>),
-}
-
 impl AssetDatabase {
   /// Opens the asset database at the given path.
   pub fn open(_path: impl ToVirtualPath) -> Result<Self, AssetDatabaseError> {
@@ -177,13 +166,13 @@ impl AssetDatabase {
   }
 
   /// Adds an importer to the database.
-  pub fn add_importer(&mut self, importer: impl UntypedAssetImporter + 'static) {
-    self.importers.push(Box::new(importer));
+  pub fn add_importer(&mut self, importer: Box<dyn UntypedAssetImporter>) {
+    self.importers.push(importer);
   }
 
   /// Adds an exporter to the database.
-  pub fn add_exporter(&mut self, exporter: impl UntypedAssetExporter + 'static) {
-    self.exporters.push(Box::new(exporter));
+  pub fn add_exporter(&mut self, exporter: Box<dyn UntypedAssetExporter>) {
+    self.exporters.push(exporter);
   }
 
   /// Gets an asset from the database, or loads it from the file system.

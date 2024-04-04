@@ -1,14 +1,11 @@
 use surreal_common::{AssetDatabase, AssetImporter, AssetImportError, InputStream};
 
-fn build_database() -> AssetDatabase {
-  let mut database = AssetDatabase::open("assets").unwrap();
-  database.add_importer(AsepriteFileImporter);
-  database
-}
-
 #[test]
 pub fn it_should_load_an_aseprite_file_and_export_it() {
-  let mut database = build_database();
+  let mut database = AssetDatabase::open("assets").unwrap();
+
+  database.add_importer(Box::new(AsepriteFileImporter));
+
   let _aseprite_file = database.load::<AsepriteFile>("assets/test.ase").unwrap();
 }
 

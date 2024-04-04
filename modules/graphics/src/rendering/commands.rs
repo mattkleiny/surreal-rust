@@ -146,6 +146,8 @@ impl RenderQueue {
     let mut commands = self.commands.lock().unwrap();
 
     for command in commands.drain(..) {
+      common::profile_scope!("RenderCommand::{:?}", command.type_name());
+
       match command {
         RenderCommand::SetRenderTarget { target_id } => {
           graphics.target_activate(target_id)?;

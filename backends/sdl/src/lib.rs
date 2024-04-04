@@ -98,7 +98,7 @@ impl Window {
 
       // set the window icon
       if let Some(icon) = &settings.icon {
-        window.set_window_icon(&icon);
+        window.set_window_icon(icon);
       }
 
       Ok(window)
@@ -195,12 +195,16 @@ impl input::MouseDevice for Window {}
 
 impl common::Clipboard for Window {
   fn get_clipboard(&self) -> Option<String> {
-    unsafe { CString::from_raw(sdl2_sys::SDL_GetClipboardText()).into_string().ok() }
+    unsafe {
+      let string = CString::from_raw(sdl2_sys::SDL_GetClipboardText());
+      string.into_string().ok()
+    }
   }
 
-  fn set_clipboard(&mut self, _text: String) {
+  fn set_clipboard(&mut self, text: String) {
     unsafe {
-      sdl2_sys::SDL_SetClipboardText(CString::new(_text).unwrap().as_ptr());
+      let string = CString::new(text).unwrap();
+      sdl2_sys::SDL_SetClipboardText(string.as_ptr());
     }
   }
 }

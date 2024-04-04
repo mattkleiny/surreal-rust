@@ -15,10 +15,10 @@ macro_rules! profile_frame_start {
 #[macro_export]
 macro_rules! profile_scope {
   ($name:expr) => {
-    todo!();
+    // TODO: implement me
   };
   ($name:expr, $args:expr) => {
-    todo!();
+    // TODO: implement me
   };
 }
 

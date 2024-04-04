@@ -1,6 +1,5 @@
 /// Represents a scene that can be loaded by the engine.
 pub trait Scene {
-  // listeners
   fn add_listener(&mut self, listener: Box<dyn SceneListener>);
   fn remove_listener(&mut self, listener: Box<dyn SceneListener>);
 }
