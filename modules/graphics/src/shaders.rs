@@ -21,13 +21,11 @@ mod templates;
 pub mod lang {
   pub use glsl::*;
   pub use shady::*;
-  pub use visual::*;
 
   use super::*;
 
   mod glsl;
   mod shady;
-  mod visual;
 
   /// An environment used to parse and compile shader programs.
   #[derive(Default)]

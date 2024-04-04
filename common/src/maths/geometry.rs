@@ -1,10 +1,6 @@
 //! Helpers for working with geometry
 
-pub use csg::*;
-
 use super::{DVec2, DVec3, Vec2, Vec3, Vector};
-
-mod csg;
 
 /// A triangle in a vector space V.
 #[repr(C)]

@@ -77,9 +77,3 @@ impl AudioBackend for OpenALAudioBackend {
     todo!()
   }
 }
-
-mod sys {
-  //! The OpenAL bindings.
-  #![allow(clippy::all, warnings, unused)]
-  include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-}

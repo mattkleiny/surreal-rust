@@ -4,27 +4,6 @@ use common::{Asset, FastHashMap, StringName, TimeSpan, Vec2};
 
 use crate::{Color, Texture};
 
-/// A persistent representation of an AnimationTree.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AnimationTreeDescriptor<T> {
-  state: T,
-  clips: Vec<AnimationStateDescriptor>,
-}
-
-/// A persistent representation of a single AnimationState.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AnimationStateDescriptor {
-  name: String,
-  speed: f32,
-  clip: AnimationClipDescriptor,
-}
-
-/// A persistent representation of a single AnimationClip.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AnimationClipDescriptor {
-  duration_in_seconds: f32,
-}
-
 /// An animation tree that can be used to drive animation state changes.
 ///
 /// The animation tree is a directed acyclic graph (DAG) where each node is an
@@ -64,7 +43,6 @@ pub struct AnimationClip {
 
 /// A single track of animation data.
 #[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum AnimationTrack {
   Position(AnimationTrackData<Vec2>),
   Rotation(AnimationTrackData<f32>),
@@ -127,27 +105,6 @@ impl<T> AnimationTree<T> {
   /// Applies a function to the state of the animation tree.
   pub fn modify_state(&mut self, body: impl FnOnce(&mut T)) {
     body(&mut self.state);
-  }
-
-  /// Builds a descriptor from this animation tree.
-  pub fn to_descriptor(&self) -> AnimationTreeDescriptor<T>
-  where
-    T: Clone,
-  {
-    AnimationTreeDescriptor {
-      state: self.state.clone(),
-      clips: self
-        .nodes
-        .values()
-        .map(|it| AnimationStateDescriptor {
-          name: it.name.to_string(),
-          speed: it.speed,
-          clip: AnimationClipDescriptor {
-            duration_in_seconds: it.clip.duration.total_seconds(),
-          },
-        })
-        .collect(),
-    }
   }
 
   /// Updates the animation tree.

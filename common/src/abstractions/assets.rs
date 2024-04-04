@@ -20,6 +20,7 @@ use crate::{FastHashMap, FileSystemError, Guid, StreamError, StringName, ToVirtu
 /// de-referenced. This will either return a reference to the asset data if the
 /// asset is loaded, or panic if the asset is not loaded.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Asset<T> {
   asset_id: AssetId,
   _marker: std::marker::PhantomData<T>,
@@ -72,20 +73,6 @@ impl<T> Asset<T> {
   /// Attempts to get a reference to the asset data.
   pub async fn get(&self, server: &impl AssetServer) -> Option<&T> {
     server.resolve(&self.asset_id).await.map(|_data| todo!())
-  }
-}
-
-#[cfg(feature = "serde")]
-impl<T> serde::Serialize for Asset<T> {
-  fn serialize<S: serde::Serializer>(&self, _serializer: S) -> Result<S::Ok, S::Error> {
-    todo!()
-  }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, T> serde::Deserialize<'de> for Asset<T> {
-  fn deserialize<D: serde::Deserializer<'de>>(_deserializer: D) -> Result<Self, D::Error> {
-    todo!()
   }
 }
 

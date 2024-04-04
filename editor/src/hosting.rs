@@ -6,13 +6,13 @@ pub struct EditorConfig {
 
 /// Possible hosting models for the editor.
 pub enum HostingModel {
-  InProcess,
-  OutOfProcess,
+  InProcess { entry_point: fn() -> () },
+  OutOfProcess { host: String, port: u16 },
 }
 
 pub fn start_editor(config: EditorConfig) {
   match config.hosting_mode {
-    HostingModel::InProcess => todo!(),
-    HostingModel::OutOfProcess => todo!(),
+    HostingModel::InProcess { .. } => todo!(),
+    HostingModel::OutOfProcess { .. } => todo!(),
   }
 }
