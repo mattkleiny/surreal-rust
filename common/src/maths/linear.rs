@@ -2,11 +2,11 @@
 
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
+pub use glam::*;
+
 pub use aabb::*;
 pub use bsp::*;
-pub use fields::*;
 pub use frustum::*;
-pub use glam::*;
 pub use planes::*;
 pub use rays::*;
 pub use scalars::*;
@@ -17,7 +17,6 @@ use super::*;
 
 mod aabb;
 mod bsp;
-mod fields;
 mod frustum;
 mod planes;
 mod rays;

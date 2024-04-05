@@ -15,11 +15,6 @@ pub trait SDF {
 
   /// Computes the distance to the shape at the given point.
   fn distance_to(&self, point: Self::Vector) -> <Self::Vector as Vector>::Scalar;
-
-  /// Converts this signed distance field into an evaluated field structure.
-  fn to_field(&self, _size: Self::Vector, _step: Self::Vector) -> Field<Self::Vector> {
-    todo!()
-  }
 }
 
 impl SDF for Circle {

@@ -4,10 +4,10 @@ use super::*;
 
 /// A 3d physics world.
 #[derive(Default)]
-pub struct SimplexWorld3D {}
+pub struct HomebakedWorld3D {}
 
 #[allow(unused_variables)]
-impl PhysicsWorld for SimplexWorld3D {
+impl PhysicsWorld for HomebakedWorld3D {
   #[profiling]
   fn step(&self, delta_time: f32) {
     todo!()
@@ -20,7 +20,7 @@ impl PhysicsWorld for SimplexWorld3D {
 }
 
 #[allow(unused_variables)]
-impl PhysicsWorld3D for SimplexWorld3D {
+impl PhysicsWorld3D for HomebakedWorld3D {
   #[profiling]
   fn body_create(&self, kind: BodyKind, initial_position: Vec3) -> BodyId {
     todo!()

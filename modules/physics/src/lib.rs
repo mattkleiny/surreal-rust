@@ -4,18 +4,20 @@
 
 use common::{Quat, Vec2, Vec3};
 
-mod simplex;
+mod homebaked;
 
 common::impl_arena_index!(ColliderId, "Identifies a collider.");
 common::impl_arena_index!(BodyId, "Identifies a physics body.");
 common::impl_arena_index!(EffectorId, "Identifies an effector.");
+common::impl_arena_index!(JointId, "Identifies a joint.");
+common::impl_arena_index!(MaterialId, "Identifies a physics material.");
 
 common::impl_server!(PhysicsEngine, PhysicsBackend);
 
 impl PhysicsEngine {
-  /// Creates a new [`PhysicsEngine`] with the simplex backend.
-  pub fn simplex() -> Self {
-    Self::new(simplex::SimplexPhysicsBackend::default())
+  /// Creates a new [`PhysicsEngine`] with the home-baked backend.
+  pub fn homebaked() -> Self {
+    Self::new(homebaked::HomebakedPhysicsBackend::default())
   }
 }
 
@@ -46,9 +48,9 @@ pub enum EffectorKind {
 /// This trait is implemented by physics backends, which are responsible for
 /// simulating the physics of the game world.
 ///
-/// The physics backend is responsible for simulating the physics of the game
-/// world. It is responsible for updating the position and orientation of
-/// physical objects, and for detecting collisions between objects.
+/// The physics world abstraction is split into two traits, [`PhysicsWorld2D`]
+/// and [`PhysicsWorld3D`], which represent 2D and 3D physics worlds, each of
+/// which have their own APIs for creating and manipulating physics objects.
 pub trait PhysicsBackend {
   fn create_world_2d(&self) -> Box<dyn PhysicsWorld2D>;
   fn create_world_3d(&self) -> Box<dyn PhysicsWorld3D>;
@@ -58,6 +60,11 @@ pub trait PhysicsBackend {
 ///
 /// This trait is implemented by physics worlds, which are responsible for
 /// simulating the physics of the game world.
+///
+/// A world needs to be created and updated by calling the `step` method with
+/// the time since the last frame. The physics engine will then simulate the
+/// physics of the world for that amount of time and integrate the results in
+/// the physics objects.
 pub trait PhysicsWorld {
   fn step(&self, delta_time: f32);
   fn reset(&self);
@@ -66,6 +73,10 @@ pub trait PhysicsWorld {
 /// A world of 2D physics.
 #[rustfmt::skip]
 pub trait PhysicsWorld2D: PhysicsWorld {
+  // settings
+  fn set_gravity(&self, gravity: Vec2);
+  fn get_gravity(&self) -> Vec2;
+
   // bodies
   fn body_create(&self, kind: BodyKind, initial_position: Vec2) -> BodyId;
   fn body_add_collider(&self, body: BodyId, collider: ColliderId);
@@ -80,6 +91,8 @@ pub trait PhysicsWorld2D: PhysicsWorld {
   fn body_get_velocity(&self, body: BodyId) -> Vec2;
   fn body_set_angular_velocity(&self, body: BodyId, velocity: Vec2);
   fn body_get_angular_velocity(&self, body: BodyId) -> Vec2;
+  fn body_set_material(&self, body: BodyId, material: Option<MaterialId>);
+  fn body_get_material(&self, body: BodyId) -> Option<MaterialId>;
   fn body_delete(&self, body: BodyId);
 
   // colliders
@@ -111,6 +124,23 @@ pub trait PhysicsWorld2D: PhysicsWorld {
   fn effector_set_strength(&self, effector: EffectorId, strength: f32);
   fn effector_get_strength(&self, effector: EffectorId) -> f32;
   fn effector_delete(&self, effector: EffectorId);
+
+  // joints
+  fn joint_create(&self) -> JointId;
+  fn joint_attach(&self, joint: JointId, body_a: BodyId, body_b: BodyId);
+  fn joint_detach(&self, joint: JointId);
+  fn joint_get_bodies(&self, joint: JointId) -> (BodyId, BodyId);
+  fn joint_set_anchor(&self, joint: JointId, anchor: Vec2);
+  fn joint_get_anchor(&self, joint: JointId) -> Vec2;
+  fn joint_delete(&self, joint: JointId);
+
+  // materials
+  fn material_create(&self) -> MaterialId;
+  fn material_set_friction(&self, material: MaterialId, friction: f32);
+  fn material_get_friction(&self, material: MaterialId) -> f32;
+  fn material_set_restitution(&self, material: MaterialId, restitution: f32);
+  fn material_get_restitution(&self, material: MaterialId) -> f32;
+  fn material_delete(&self, material: MaterialId);
 }
 
 /// A world of 3D physics.

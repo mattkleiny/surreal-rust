@@ -6,11 +6,13 @@ use super::*;
 
 /// A 2d physics world.
 #[derive(Default)]
-pub struct SimplexWorld2D {
+pub struct HomebakedWorld2D {
   settings: RwLock<Settings>,
   bodies: RwLock<Arena<BodyId, Body>>,
   colliders: RwLock<Arena<ColliderId, Collider>>,
   effectors: RwLock<Arena<EffectorId, Effector>>,
+  joints: RwLock<Arena<JointId, Joint>>,
+  materials: RwLock<Arena<MaterialId, Material>>,
 }
 
 /// Internal settings for a physics world.
@@ -27,6 +29,7 @@ struct Body {
   angular_velocity: Vec2,
   kind: BodyKind,
   colliders: FastHashSet<ColliderId>,
+  material: Option<MaterialId>,
 }
 
 /// A collider in the 2d physics world.
@@ -82,6 +85,19 @@ enum EffectorShape {
   Cylinder { radius: f32, height: f32 },
 }
 
+/// A joint in the 2d physics world.
+struct Joint {
+  body_a: Option<BodyId>,
+  body_b: Option<BodyId>,
+  anchor: Vec2,
+}
+
+/// A physics material for a 2d body.
+struct Material {
+  friction: f32,
+  restitution: f32,
+}
+
 impl Default for Settings {
   fn default() -> Self {
     Self {
@@ -100,7 +116,7 @@ impl Collider {
   }
 }
 
-impl PhysicsWorld for SimplexWorld2D {
+impl PhysicsWorld for HomebakedWorld2D {
   fn step(&self, delta_time: f32) {
     let settings = self.settings.read().unwrap();
 
@@ -123,7 +139,7 @@ impl PhysicsWorld for SimplexWorld2D {
   }
 }
 
-impl SimplexWorld2D {
+impl HomebakedWorld2D {
   #[profiling]
   fn integrate_bodies(&self, delta_time: f32, settings: &Settings) {
     let mut bodies = self.bodies.write().unwrap();
@@ -204,7 +220,21 @@ impl SimplexWorld2D {
 }
 
 #[allow(unused_variables)]
-impl PhysicsWorld2D for SimplexWorld2D {
+impl PhysicsWorld2D for HomebakedWorld2D {
+  #[profiling]
+  fn set_gravity(&self, gravity: Vec2) {
+    let mut settings = self.settings.write().unwrap();
+
+    settings.gravity = gravity;
+  }
+
+  #[profiling]
+  fn get_gravity(&self) -> Vec2 {
+    let settings = self.settings.read().unwrap();
+
+    settings.gravity
+  }
+
   #[profiling]
   fn body_create(&self, kind: BodyKind, initial_position: Vec2) -> BodyId {
     let mut bodies = self.bodies.write().unwrap();
@@ -217,6 +247,7 @@ impl PhysicsWorld2D for SimplexWorld2D {
       angular_velocity: Vec2::ZERO,
       kind,
       colliders: FastHashSet::default(),
+      material: None,
     })
   }
 
@@ -316,6 +347,22 @@ impl PhysicsWorld2D for SimplexWorld2D {
     let bodies = self.bodies.read().unwrap();
 
     bodies.get(body).map_or(Vec2::ZERO, |it| it.angular_velocity)
+  }
+
+  #[profiling]
+  fn body_set_material(&self, body: BodyId, material: Option<MaterialId>) {
+    let mut bodies = self.bodies.write().unwrap();
+
+    if let Some(body) = bodies.get_mut(body) {
+      body.material = material;
+    }
+  }
+
+  #[profiling]
+  fn body_get_material(&self, body: BodyId) -> Option<MaterialId> {
+    let bodies = self.bodies.read().unwrap();
+
+    bodies.get(body).and_then(|it| it.material)
   }
 
   #[profiling]
@@ -615,6 +662,119 @@ impl PhysicsWorld2D for SimplexWorld2D {
 
     effectors.remove(effector);
   }
+
+  #[profiling]
+  fn joint_create(&self) -> JointId {
+    let mut joints = self.joints.write().unwrap();
+    let settings = self.settings.read().unwrap();
+
+    joints.insert(Joint {
+      body_a: None,
+      body_b: None,
+      anchor: Vec2::ZERO,
+    })
+  }
+
+  #[profiling]
+  fn joint_attach(&self, joint: JointId, body_a: BodyId, body_b: BodyId) {
+    let mut joints = self.joints.write().unwrap();
+
+    if let Some(joint) = joints.get_mut(joint) {
+      joint.body_a = Some(body_a);
+      joint.body_b = Some(body_b);
+    }
+  }
+
+  #[profiling]
+  fn joint_detach(&self, joint: JointId) {
+    let mut joints = self.joints.write().unwrap();
+
+    if let Some(joint) = joints.get_mut(joint) {
+      joint.body_a = None;
+      joint.body_b = None;
+    }
+  }
+
+  #[profiling]
+  fn joint_get_bodies(&self, joint: JointId) -> (BodyId, BodyId) {
+    let joints = self.joints.read().unwrap();
+
+    joints.get(joint).map_or((BodyId::default(), BodyId::default()), |it| {
+      (it.body_a.unwrap_or_default(), it.body_b.unwrap_or_default())
+    })
+  }
+
+  #[profiling]
+  fn joint_set_anchor(&self, joint: JointId, anchor: Vec2) {
+    let mut joints = self.joints.write().unwrap();
+
+    if let Some(joint) = joints.get_mut(joint) {
+      joint.anchor = anchor;
+    }
+  }
+
+  #[profiling]
+  fn joint_get_anchor(&self, joint: JointId) -> Vec2 {
+    let joints = self.joints.read().unwrap();
+
+    joints.get(joint).map_or(Vec2::ZERO, |it| it.anchor)
+  }
+
+  #[profiling]
+  fn joint_delete(&self, joint: JointId) {
+    let mut joints = self.joints.write().unwrap();
+
+    joints.remove(joint);
+  }
+
+  #[profiling]
+  fn material_create(&self) -> MaterialId {
+    let mut materials = self.materials.write().unwrap();
+
+    materials.insert(Material {
+      friction: 0.5,
+      restitution: 0.5,
+    })
+  }
+
+  #[profiling]
+  fn material_set_friction(&self, material: MaterialId, friction: f32) {
+    let mut materials = self.materials.write().unwrap();
+
+    if let Some(material) = materials.get_mut(material) {
+      material.friction = friction;
+    }
+  }
+
+  #[profiling]
+  fn material_get_friction(&self, material: MaterialId) -> f32 {
+    let materials = self.materials.read().unwrap();
+
+    materials.get(material).map_or(0.5, |it| it.friction)
+  }
+
+  #[profiling]
+  fn material_set_restitution(&self, material: MaterialId, restitution: f32) {
+    let mut materials = self.materials.write().unwrap();
+
+    if let Some(material) = materials.get_mut(material) {
+      material.restitution = restitution;
+    }
+  }
+
+  #[profiling]
+  fn material_get_restitution(&self, material: MaterialId) -> f32 {
+    let materials = self.materials.read().unwrap();
+
+    materials.get(material).map_or(0.5, |it| it.restitution)
+  }
+
+  #[profiling]
+  fn material_delete(&self, material: MaterialId) {
+    let mut materials = self.materials.write().unwrap();
+
+    materials.remove(material);
+  }
 }
 
 #[cfg(test)]
@@ -623,7 +783,7 @@ mod tests {
 
   #[test]
   fn it_should_read_and_write_position() {
-    let world = SimplexWorld2D::default();
+    let world = HomebakedWorld2D::default();
     let body_id = world.body_create(BodyKind::Kinematic, Vec2::ZERO);
 
     world.body_set_position(body_id, vec2(1., 2.));
@@ -637,7 +797,7 @@ mod tests {
 
   #[test]
   fn it_should_read_and_write_velocity() {
-    let world = SimplexWorld2D::default();
+    let world = HomebakedWorld2D::default();
     let body_id = world.body_create(BodyKind::Kinematic, Vec2::ZERO);
 
     world.body_set_velocity(body_id, vec2(1., 2.));
@@ -647,5 +807,18 @@ mod tests {
     world.body_delete(body_id);
 
     assert_eq!(world.body_get_velocity(body_id), Vec2::ZERO);
+  }
+
+  #[test]
+  fn it_should_create_a_simple_joint() {
+    let world = HomebakedWorld2D::default();
+    let body1 = world.body_create(BodyKind::Kinematic, Vec2::ZERO);
+    let body2 = world.body_create(BodyKind::Kinematic, Vec2::ZERO);
+
+    let joint = world.joint_create();
+
+    world.joint_attach(joint, body1, body2);
+
+    assert_eq!(world.joint_get_bodies(joint), (body1, body2));
   }
 }

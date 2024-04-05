@@ -1,5 +1,6 @@
-use super::*;
 use crate::reinterpret_cast;
+
+use super::*;
 
 /// A frustum in 3-space.
 #[repr(C)]
@@ -109,16 +110,22 @@ impl Frustum {
   }
 
   /// Converts this frustum to an array of planes.
+  ///
+  /// The order is Near, Far, Left, Right, Top, Bottom.
   pub fn into_array(self) -> [Plane; 6] {
     [self.near, self.far, self.left, self.right, self.top, self.bottom]
   }
 
   /// Converts this frustum to an array of planes.
+  ///
+  /// The order is Near, Far, Left, Right, Top, Bottom.
   pub fn to_array(&self) -> [Plane; 6] {
     [self.near, self.far, self.left, self.right, self.top, self.bottom]
   }
 
   /// Converts this frustum to a slice of planes.
+  ///
+  /// The order is Near, Far, Left, Right, Top, Bottom.
   pub fn as_slice(&self) -> &[Plane; 6] {
     unsafe { reinterpret_cast(self) }
   }
