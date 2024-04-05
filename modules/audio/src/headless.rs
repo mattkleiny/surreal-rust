@@ -29,28 +29,28 @@ impl AudioBackend for HeadlessAudioBackend {
     Ok(SourceId(self.next_source_id.fetch_add(1, Ordering::Relaxed)))
   }
 
-  fn source_is_playing(&self, source: SourceId) -> bool {
-    false
+  fn source_is_playing(&self, source: SourceId) -> Option<bool> {
+    None
   }
 
-  fn source_get_volume(&self, source: SourceId) -> f32 {
-    1.
+  fn source_get_volume(&self, source: SourceId) -> Option<f32> {
+    None
   }
 
-  fn source_set_volume(&self, source: SourceId, volume: f32) {
-    // no-op
+  fn source_set_volume(&self, source: SourceId, volume: f32) -> Result<(), SourceError> {
+    Ok(())
   }
 
   fn source_get_clip(&self, source: SourceId) -> Option<ClipId> {
     None
   }
 
-  fn source_set_clip(&self, source: SourceId, clip: ClipId) {
-    // no-op
+  fn source_set_clip(&self, source: SourceId, clip: ClipId) -> Result<(), SourceError> {
+    Ok(())
   }
 
-  fn source_play(&self, source: SourceId) {
-    // no-op
+  fn source_play(&self, source: SourceId) -> Result<(), SourceError> {
+    Ok(())
   }
 
   fn source_delete(&self, source: SourceId) -> Result<(), SourceError> {

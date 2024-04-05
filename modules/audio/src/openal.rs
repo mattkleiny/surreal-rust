@@ -43,17 +43,17 @@ impl AudioBackend for OpenALAudioBackend {
   }
 
   #[profiling]
-  fn source_is_playing(&self, source: SourceId) -> bool {
+  fn source_is_playing(&self, source: SourceId) -> Option<bool> {
     todo!()
   }
 
   #[profiling]
-  fn source_get_volume(&self, source: SourceId) -> f32 {
+  fn source_get_volume(&self, source: SourceId) -> Option<f32> {
     todo!()
   }
 
   #[profiling]
-  fn source_set_volume(&self, source: SourceId, volume: f32) {
+  fn source_set_volume(&self, source: SourceId, volume: f32) -> Result<(), SourceError> {
     todo!()
   }
 
@@ -63,12 +63,12 @@ impl AudioBackend for OpenALAudioBackend {
   }
 
   #[profiling]
-  fn source_set_clip(&self, source: SourceId, clip: ClipId) {
+  fn source_set_clip(&self, source: SourceId, clip: ClipId) -> Result<(), SourceError> {
     todo!()
   }
 
   #[profiling]
-  fn source_play(&self, source: SourceId) {
+  fn source_play(&self, source: SourceId) -> Result<(), SourceError> {
     todo!()
   }
 

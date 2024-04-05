@@ -1,5 +1,7 @@
 use crate::unsafe_mutable_alias;
 
+// TODO: implement a free list and next_free option on the arena
+
 /// Represents a safe index into an [`Arena`].
 ///
 /// This is a 64-bit integer that is split into two parts:
