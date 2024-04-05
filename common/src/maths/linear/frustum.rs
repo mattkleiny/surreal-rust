@@ -1,6 +1,5 @@
-use crate::reinterpret_cast;
-
 use super::*;
+use crate::reinterpret_cast;
 
 /// A frustum in 3-space.
 #[repr(C)]

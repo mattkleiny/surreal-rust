@@ -5,7 +5,7 @@ use std::io::{BufRead, Seek, Write};
 pub enum StreamError {
   UnexpectedEof,
   UnexpectedEncoding,
-  FailedToDeserialize
+  FailedToDeserialize,
 }
 
 impl From<std::io::Error> for StreamError {

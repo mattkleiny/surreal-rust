@@ -1,4 +1,4 @@
-pub use macros::profiling as profiling;
+pub use macros::profiling;
 
 /// A sink for profiling output.
 pub trait Profiler {}

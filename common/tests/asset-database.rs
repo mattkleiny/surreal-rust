@@ -1,4 +1,4 @@
-use surreal_common::{AssetDatabase, AssetImporter, AssetImportError, InputStream};
+use surreal_common::{AssetDatabase, AssetImportError, AssetImporter, InputStream};
 
 #[test]
 pub fn it_should_load_an_aseprite_file_and_export_it() {

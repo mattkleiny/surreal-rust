@@ -2,10 +2,9 @@
 
 use std::ffi::CString;
 
+use common::FastHashSet;
 pub use sdl2_sys as sys;
 use sys::{SDL_KeyCode, SDL_Keycode};
-
-use common::FastHashSet;
 
 /// Represents an error that can occur when creating a window.
 #[derive(Debug)]

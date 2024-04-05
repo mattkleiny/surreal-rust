@@ -4,7 +4,10 @@
 
 use common::Vec2;
 
+mod colliders;
 mod homebaked;
+
+pub use colliders::*;
 
 common::impl_arena_index!(ColliderId, "Identifies a collider.");
 common::impl_arena_index!(BodyId, "Identifies a physics body.");

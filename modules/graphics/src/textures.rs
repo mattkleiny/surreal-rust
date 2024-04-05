@@ -2,7 +2,7 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use common::{Rectangle, uvec2, UVec2};
+use common::{uvec2, Rectangle, UVec2};
 
 use super::*;
 

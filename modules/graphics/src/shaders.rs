@@ -9,7 +9,6 @@ use core::str;
 use std::{cell::RefCell, rc::Rc};
 
 use bitflags::bitflags;
-
 use common::*;
 pub use lang::*;
 pub use templates::*;

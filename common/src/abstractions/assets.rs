@@ -217,9 +217,8 @@ pub struct AssetBundle {}
 pub trait AssetBundleCodec {}
 
 mod exporters {
-  use crate::OutputStream;
-
   use super::*;
+  use crate::OutputStream;
 
   /// An error that can occur when exporting an asset.
   #[derive(Debug)]
@@ -272,9 +271,8 @@ mod exporters {
 }
 
 mod importers {
-  use crate::InputStream;
-
   use super::*;
+  use crate::InputStream;
 
   /// An error that can occur when exporting an asset.
   #[derive(Debug)]

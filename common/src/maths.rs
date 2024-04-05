@@ -12,8 +12,8 @@ pub use paths::*;
 pub use random::*;
 pub use ranges::*;
 pub use rectangles::*;
-pub use size::*;
 pub use shapes::*;
+pub use size::*;
 pub use splines::*;
 pub use time::*;
 

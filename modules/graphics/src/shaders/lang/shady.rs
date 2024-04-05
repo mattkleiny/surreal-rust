@@ -35,7 +35,7 @@ mod compiler {
   //!
   //! This compiler will transpile Shady code into GLSL code that can be used
   //! with the graphics engine.
-  use super::{*, parser::*};
+  use super::{parser::*, *};
 
   /// Compiles the given Shady module into a list of [`ShaderKernel`]s.
   pub fn compile(module: Module) -> Result<Vec<ShaderKernel>, ShaderError> {

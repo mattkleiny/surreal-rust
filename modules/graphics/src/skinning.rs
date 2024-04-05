@@ -284,7 +284,7 @@ pub struct SkinVertex {
 
 #[cfg(test)]
 mod tests {
-  use common::{ToStringName, vec3};
+  use common::{vec3, ToStringName};
 
   use super::*;
 

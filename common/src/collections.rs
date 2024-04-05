@@ -5,8 +5,6 @@ use std::{
   hash::BuildHasherDefault,
 };
 
-pub use smallvec::{smallvec, SmallVec};
-
 pub use anymap::*;
 pub use arena::*;
 pub use graphs::*;
@@ -15,6 +13,7 @@ pub use multimap::*;
 pub use priorityqueue::*;
 pub use quadtree::*;
 pub use ringbuffer::*;
+pub use smallvec::{smallvec, SmallVec};
 pub use spatialhash::*;
 
 mod anymap;

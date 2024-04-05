@@ -1,6 +1,6 @@
 //! Render pipeline abstractions.
 
-use common::{Camera, profile_frame_end, profile_frame_start};
+use common::{profile_frame_end, profile_frame_start, Camera};
 use macros::profiling;
 
 use super::*;

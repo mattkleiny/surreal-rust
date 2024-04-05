@@ -5,9 +5,8 @@ use std::sync::RwLock;
 pub use local::*;
 pub use memory::*;
 
-use crate::{Singleton, StringName, ToStringName};
-
 use super::{InputStream, OutputStream};
+use crate::{Singleton, StringName, ToStringName};
 
 mod local;
 mod memory;
