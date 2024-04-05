@@ -4,10 +4,18 @@
 
 use common::Vec2;
 
+mod bodies;
 mod colliders;
-mod homebaked;
+mod effectors;
+mod internal;
+mod joints;
+mod materials;
 
+pub use bodies::*;
 pub use colliders::*;
+pub use effectors::*;
+pub use joints::*;
+pub use materials::*;
 
 common::impl_arena_index!(ColliderId, "Identifies a collider.");
 common::impl_arena_index!(BodyId, "Identifies a physics body.");
@@ -20,7 +28,7 @@ common::impl_server!(PhysicsEngine, PhysicsBackend);
 impl PhysicsEngine {
   /// Creates a new [`PhysicsEngine`] with the home-baked backend.
   pub fn homebaked() -> Self {
-    Self::new(homebaked::HomebakedPhysicsBackend::default())
+    Self::new(internal::InternalPhysicsBackend::default())
   }
 }
 
@@ -114,6 +122,8 @@ pub trait PhysicsWorld2D: PhysicsWorld {
   fn body_create(&self, kind: BodyKind, initial_position: Vec2) -> Result<BodyId, BodyError>;
   fn body_add_collider(&self, body: BodyId, collider: ColliderId) -> Result<(), BodyError>;
   fn body_remove_collider(&self, body: BodyId, collider: ColliderId) -> Result<(), BodyError>;
+  fn body_set_kind(&self, body: BodyId, kind: BodyKind) -> Result<(), BodyError>;
+  fn body_get_kind(&self, body: BodyId) -> Option<BodyKind>;
   fn body_set_position(&self, body: BodyId, position: Vec2) -> Result<(), BodyError>;
   fn body_get_position(&self, body: BodyId) -> Option<Vec2>;
   fn body_set_rotation(&self, body: BodyId, rotation: f32) -> Result<(), BodyError>;

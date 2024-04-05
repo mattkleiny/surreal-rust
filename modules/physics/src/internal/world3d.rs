@@ -4,10 +4,10 @@ use super::*;
 
 /// A 3d physics world.
 #[derive(Default)]
-pub struct HomebakedWorld3D {}
+pub struct InternalPhysicsWorld3D {}
 
 #[allow(unused_variables)]
-impl PhysicsWorld for HomebakedWorld3D {
+impl PhysicsWorld for InternalPhysicsWorld3D {
   #[profiling]
   fn step(&self, delta_time: f32) {
     todo!()
@@ -20,4 +20,4 @@ impl PhysicsWorld for HomebakedWorld3D {
 }
 
 #[allow(unused_variables)]
-impl PhysicsWorld3D for HomebakedWorld3D {}
+impl PhysicsWorld3D for InternalPhysicsWorld3D {}

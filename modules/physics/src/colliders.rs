@@ -1,56 +1,45 @@
 use super::*;
 
 pub struct Collider2D<'w> {
-  collider_id: ColliderId,
+  id: ColliderId,
   world: &'w dyn PhysicsWorld2D,
 }
 
+pub enum ColliderShape {
+  Circle(f32),
+  Rectangle(Vec2),
+}
+
 impl<'w> Collider2D<'w> {
-  pub fn new_rectangle(world: &'w dyn PhysicsWorld2D) -> Self {
-    Collider2D {
-      world,
-      collider_id: world
-        .collider_create_rectangle(ColliderKind::Solid, Vec2::ZERO, Vec2::ONE)
-        .unwrap(),
+  pub fn new(world: &'w dyn PhysicsWorld2D, shape: ColliderShape) -> Self {
+    let id = match shape {
+      ColliderShape::Circle(radius) => world.collider_create_circle(ColliderKind::Solid, Vec2::ZERO, radius),
+      ColliderShape::Rectangle(_) => todo!(),
     }
+    .unwrap();
+
+    Self { id, world }
   }
 
-  pub fn new_circle(world: &'w dyn PhysicsWorld2D) -> Self {
-    Collider2D {
-      world,
-      collider_id: world
-        .collider_create_circle(ColliderKind::Solid, Vec2::ZERO, 1.0)
-        .unwrap(),
-    }
+  pub fn id(&self) -> ColliderId {
+    self.id
+  }
+
+  pub fn world(&self) -> &dyn PhysicsWorld2D {
+    self.world
   }
 
   pub fn position(&self) -> Vec2 {
-    self.world.collider_get_position(self.collider_id).unwrap()
+    self.world.collider_get_position(self.id).unwrap_or_default()
   }
 
   pub fn set_position(&self, position: Vec2) {
-    self.world.collider_set_position(self.collider_id, position).unwrap();
-  }
-
-  pub fn rotation(&self) -> f32 {
-    self.world.collider_get_rotation(self.collider_id).unwrap()
-  }
-
-  pub fn set_rotation(&self, rotation: f32) {
-    self.world.collider_set_rotation(self.collider_id, rotation).unwrap();
-  }
-
-  pub fn scale(&self) -> Vec2 {
-    self.world.collider_get_scale(self.collider_id).unwrap()
-  }
-
-  pub fn set_scale(&self, scale: Vec2) {
-    self.world.collider_set_scale(self.collider_id, scale).unwrap();
+    self.world.collider_set_position(self.id, position).unwrap();
   }
 }
 
 impl<'w> Drop for Collider2D<'w> {
   fn drop(&mut self) {
-    self.world.collider_delete(self.collider_id).unwrap();
+    self.world.collider_delete(self.id).unwrap();
   }
 }

@@ -6,7 +6,7 @@ use super::*;
 
 /// A 2d physics world.
 #[derive(Default)]
-pub struct HomebakedWorld2D {
+pub struct InternalPhysicsWorld2D {
   settings: RwLock<Settings>,
   bodies: RwLock<Arena<BodyId, Body>>,
   colliders: RwLock<Arena<ColliderId, Collider>>,
@@ -116,7 +116,7 @@ impl Collider {
   }
 }
 
-impl PhysicsWorld for HomebakedWorld2D {
+impl PhysicsWorld for InternalPhysicsWorld2D {
   fn step(&self, delta_time: f32) {
     let settings = self.settings.read().unwrap();
 
@@ -139,7 +139,7 @@ impl PhysicsWorld for HomebakedWorld2D {
   }
 }
 
-impl HomebakedWorld2D {
+impl InternalPhysicsWorld2D {
   #[profiling]
   fn integrate_bodies(&self, delta_time: f32, settings: &Settings) {
     let mut bodies = self.bodies.write().unwrap();
@@ -220,7 +220,7 @@ impl HomebakedWorld2D {
 }
 
 #[allow(unused_variables)]
-impl PhysicsWorld2D for HomebakedWorld2D {
+impl PhysicsWorld2D for InternalPhysicsWorld2D {
   #[profiling]
   fn set_gravity(&self, gravity: Vec2) {
     let mut settings = self.settings.write().unwrap();
@@ -275,6 +275,25 @@ impl PhysicsWorld2D for HomebakedWorld2D {
     } else {
       Err(BodyError::InvalidId(body))
     }
+  }
+
+  #[profiling]
+  fn body_set_kind(&self, body: BodyId, kind: BodyKind) -> Result<(), BodyError> {
+    let mut bodies = self.bodies.write().unwrap();
+
+    if let Some(body) = bodies.get_mut(body) {
+      body.kind = kind;
+      Ok(())
+    } else {
+      Err(BodyError::InvalidId(body))
+    }
+  }
+
+  #[profiling]
+  fn body_get_kind(&self, body: BodyId) -> Option<BodyKind> {
+    let bodies = self.bodies.read().unwrap();
+
+    bodies.get(body).map(|it| it.kind)
   }
 
   #[profiling]
@@ -907,7 +926,7 @@ mod tests {
 
   #[test]
   fn it_should_read_and_write_position() {
-    let world = HomebakedWorld2D::default();
+    let world = InternalPhysicsWorld2D::default();
     let body_id = world.body_create(BodyKind::Kinematic, Vec2::ZERO).unwrap();
 
     world.body_set_position(body_id, vec2(1., 2.)).unwrap();
@@ -921,7 +940,7 @@ mod tests {
 
   #[test]
   fn it_should_read_and_write_velocity() {
-    let world = HomebakedWorld2D::default();
+    let world = InternalPhysicsWorld2D::default();
     let body_id = world.body_create(BodyKind::Kinematic, Vec2::ZERO).unwrap();
 
     world.body_set_velocity(body_id, vec2(1., 2.)).unwrap();
@@ -935,7 +954,7 @@ mod tests {
 
   #[test]
   fn it_should_create_a_simple_joint() {
-    let world = HomebakedWorld2D::default();
+    let world = InternalPhysicsWorld2D::default();
 
     let body1 = world.body_create(BodyKind::Kinematic, Vec2::ZERO).unwrap();
     let body2 = world.body_create(BodyKind::Kinematic, Vec2::ZERO).unwrap();
