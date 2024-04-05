@@ -2,7 +2,11 @@
 
 #![allow(dead_code)]
 
-use common::Vec2;
+pub use bodies::*;
+pub use colliders::*;
+pub use effectors::*;
+pub use joints::*;
+pub use materials::*;
 
 mod bodies;
 mod colliders;
@@ -11,11 +15,7 @@ mod internal;
 mod joints;
 mod materials;
 
-pub use bodies::*;
-pub use colliders::*;
-pub use effectors::*;
-pub use joints::*;
-pub use materials::*;
+use common::Vec2;
 
 common::impl_arena_index!(ColliderId, "Identifies a collider.");
 common::impl_arena_index!(BodyId, "Identifies a physics body.");

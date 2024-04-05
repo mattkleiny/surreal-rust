@@ -1,10 +1,14 @@
 //! Audio engine for Surreal.
 
+pub use clips::*;
 pub use sampling::*;
+pub use sources::*;
 
+mod clips;
 mod headless;
 mod openal;
 mod sampling;
+mod sources;
 
 common::impl_arena_index!(ClipId, "Identifies an Audio Clip.");
 common::impl_arena_index!(SourceId, "Identifies an Audio Source.");
