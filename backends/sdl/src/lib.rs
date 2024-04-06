@@ -23,7 +23,7 @@ pub struct Window {
 
 /// Settings for a window.
 pub struct WindowSettings {
-  pub title: &'static str,
+  pub title: String,
   pub width: u32,
   pub height: u32,
   pub vsync_enabled: bool,
@@ -33,7 +33,7 @@ pub struct WindowSettings {
 impl Default for WindowSettings {
   fn default() -> Self {
     Self {
-      title: "Surreal",
+      title: "Surreal".to_string(),
       width: 1024,
       height: 768,
       vsync_enabled: true,

@@ -1,0 +1,9 @@
+[package]
+name = "flappy-bird"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+surreal = { path = "../../", features = ["graphics", "sdl"] }
+hecs = "0.10.4"
