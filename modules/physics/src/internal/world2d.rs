@@ -44,12 +44,8 @@ struct Collider {
 
 /// A shape for a 2d collider.
 enum ColliderShape {
-  Sphere { radius: f32 },
-  Box { size: Vec2 },
-  Capsule { radius: f32, height: f32 },
-  Cylinder { radius: f32, height: f32 },
-  Cone { radius: f32, height: f32 },
-  ConvexHull { vertices: Vec<Vec2> },
+  Circle { radius: f32 },
+  Rectangle { size: Vec2 },
   TriangleMesh { vertices: Vec<Vec2>, indices: Vec<u32> },
   HeightField { size: Vec2, heights: Vec<f32> },
 }
@@ -434,7 +430,7 @@ impl PhysicsWorld2D for InternalPhysicsWorld2D {
       position: initial_position,
       rotation: 0.0,
       scale: Vec2::ONE,
-      shape: ColliderShape::Sphere { radius },
+      shape: ColliderShape::Circle { radius },
       kind,
       bodies: FastHashSet::default(),
     });
@@ -455,7 +451,7 @@ impl PhysicsWorld2D for InternalPhysicsWorld2D {
       position: initial_position,
       rotation: 0.0,
       scale: Vec2::ONE,
-      shape: ColliderShape::Box { size },
+      shape: ColliderShape::Rectangle { size },
       kind,
       bodies: FastHashSet::default(),
     });
