@@ -2,7 +2,7 @@ use surreal::{backends::sdl::*, common::*, graphics::*, input::*};
 
 fn main() {
   let mut window = Window::new(WindowSettings {
-    title: "Hello World!",
+    title: "Hello World!".to_string(),
     ..Default::default()
   })
   .expect("Failed to create window");

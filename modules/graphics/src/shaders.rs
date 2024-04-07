@@ -431,7 +431,7 @@ impl TextureBindingSet {
   /// Allocates a texture slot for the given texture.
   ///
   /// If the texture is already bound, it will return the existing slot.
-  /// Otherwise the first empty slot will be used.
+  /// Otherwise, the first empty slot will be used.
   ///
   /// If we've allocated all texture slots, `None` will be returned.
   pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {

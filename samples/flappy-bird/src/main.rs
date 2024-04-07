@@ -1,4 +1,4 @@
-//! A simple example of a Flappy Bird game using surreal and hecs.
+//! A simple Flappy Bird game using Surreal.
 
 use hecs::World;
 use surreal::{

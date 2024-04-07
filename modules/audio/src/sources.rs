@@ -29,7 +29,7 @@ impl AudioSource {
     self.engine.source_set_volume(self.id, volume).unwrap();
   }
 
-  pub fn play(&self, clip: &AudioClip) {
+  pub fn play(&mut self, clip: &AudioClip) {
     self.engine.source_set_clip(self.id, clip.id()).unwrap();
     self.engine.source_play(self.id).unwrap()
   }

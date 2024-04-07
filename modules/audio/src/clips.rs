@@ -17,7 +17,7 @@ impl AudioClip {
     self.id
   }
 
-  pub fn write_data(&self, data: &[u8]) {
+  pub fn write_data(&mut self, data: &[u8]) {
     self.engine.clip_write_data(self.id, data.as_ptr(), data.len()).unwrap();
   }
 }

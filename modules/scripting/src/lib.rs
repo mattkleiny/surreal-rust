@@ -7,8 +7,8 @@
 //!   is general enough to support multiple paradigms; it is not tied to any
 //!   specific language.
 //!
-//! * The `runtime` module is responsible for executing the scripts. It is
-//!   alightweight, stack-based, virtual machine with a simple instruction set.
+//! * The `runtime` module is responsible for executing the scripts. It is a
+//!   lightweight, stack-based, virtual machine with a simple instruction set.
 //!   The runtime is designed to be easy to embed in other applications, and is
 //!   not tied to any specific language.
 

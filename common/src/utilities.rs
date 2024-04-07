@@ -20,6 +20,20 @@ pub trait Singleton {
   fn instance() -> &'static Self;
 }
 
+/// Creates a singleton instance of the given type.
+#[macro_export]
+macro_rules! impl_singleton {
+  ($name:ty) => {
+    impl crate::utilities::Singleton for $name {
+      fn instance() -> &'static Self {
+        static INSTANCE: std::sync::LazyLock<$name> = std::sync::LazyLock::new(|| <$name>::default());
+
+        std::ops::Deref::deref(&INSTANCE)
+      }
+    }
+  };
+}
+
 /// Reinterprets the given reference as a reference to a different type.
 ///
 /// # Safety
