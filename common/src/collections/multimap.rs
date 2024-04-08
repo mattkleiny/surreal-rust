@@ -1,11 +1,11 @@
 use std::{
   collections::HashMap,
-  hash::{Hash, RandomState},
+  hash::{BuildHasher, Hash, RandomState},
 };
 
 /// A simple [`HashMap`]  with multiple values per key.
 ///
-/// A multi-map is a hash map that can contain multiple values per key. It's a
+/// A multimap is a hash map that can contain multiple values per key. It's a
 /// thin wrapper around a [`HashMap`] that provides some convenience methods for
 /// accessing items in the map.
 ///
@@ -16,19 +16,36 @@ use std::{
 /// The default MultiMap uses the same hashing algorithm as [`HashMap`], but
 /// you can specify a different algorithm if you wish. A [`FastHashMap`] exists
 /// to provide a faster hashing algorithm, but it's not as secure.
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct MultiMap<K, V, S = RandomState> {
   entries: HashMap<K, Vec<V>, S>,
 }
 
-impl<K: Eq + Hash, V> MultiMap<K, V> {
-  /// Creates a new multi-map.
+impl<K, V, S> Default for MultiMap<K, V, S>
+where
+  S: Default,
+{
+  /// Creates a new empty multimap with the default hasher.
+  fn default() -> Self {
+    Self {
+      entries: HashMap::default(),
+    }
+  }
+}
+
+impl<K: Eq + Hash, V> MultiMap<K, V, RandomState> {
+  /// Creates a new empty multimap.
   pub fn new() -> Self {
     Self {
       entries: HashMap::new(),
     }
   }
+}
 
+impl<K: Eq + Hash, V, S> MultiMap<K, V, S>
+where
+  S: BuildHasher,
+{
   /// Determines if the map is empty.
   #[inline]
   pub fn is_empty(&self) -> bool {

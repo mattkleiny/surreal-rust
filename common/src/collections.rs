@@ -33,7 +33,7 @@ pub type FastHashSet<K> = HashSet<K, BuildHasherDefault<rustc_hash::FxHasher>>;
 pub type FastHashMap<K, V> = HashMap<K, V, BuildHasherDefault<rustc_hash::FxHasher>>;
 
 /// A faster multimap that is not resilient to DoS attacks.
-pub type FastMultiMap<K, V> = MultiMap<K, V, FastHashMap<K, BuildHasherDefault<rustc_hash::FxHasher>>>;
+pub type FastMultiMap<K, V> = MultiMap<K, V, BuildHasherDefault<rustc_hash::FxHasher>>;
 
 /// A faster any-map that is not resilient to DoS attacks.
 pub type FastAnyMap = AnyMap<BuildHasherDefault<rustc_hash::FxHasher>>;

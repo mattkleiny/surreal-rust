@@ -27,6 +27,9 @@ pub trait ArenaIndex {
 /// [`ArenaIndex`], and can be used as a key in the [`Arena`] structure.
 #[macro_export]
 macro_rules! impl_arena_index {
+  ($name:ident) => {
+    $crate::impl_arena_index!($name, "");
+  };
   ($name:ident, $comment:literal) => {
     #[doc = $comment]
     #[repr(transparent)]
