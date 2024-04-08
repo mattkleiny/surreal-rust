@@ -66,6 +66,7 @@ pub enum BufferError {
 #[derive(Debug)]
 pub enum TextureError {
   InvalidId(TextureId),
+  InvalidImage(ImageError),
 }
 
 /// A possible error when interacting with shaders.

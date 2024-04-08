@@ -80,7 +80,7 @@ impl ShaderLanguage for GLSL {
     let version = match environment.version {
       OpenGLVersion::Glsl300 => "300 core",
       OpenGLVersion::Glsl330 => "330 core",
-      OpenGLVersion::Glsl400 => "400 core2",
+      OpenGLVersion::Glsl400 => "400 core",
       OpenGLVersion::Glsl410 => "410 core",
       OpenGLVersion::Glsl420 => "420 core",
       OpenGLVersion::Glsl430 => "430 core",

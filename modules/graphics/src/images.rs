@@ -1,5 +1,7 @@
 //! Image loading and manipulation.
 
+use common::FileSystemError;
+
 use super::*;
 
 // common image types
@@ -9,7 +11,7 @@ pub type Color32Image = image::ImageBuffer<Color32, Vec<u8>>;
 /// An error that occurred while loading an image.
 #[derive(Debug)]
 pub enum ImageError {
-  IoError,
+  IoError(FileSystemError),
   ImageError(image::ImageError),
 }
 
@@ -24,7 +26,7 @@ pub trait Image {
     Self: Sized + FromDynamicImage,
   {
     let path = path.to_virtual_path();
-    let stream = path.open_input_stream().map_err(|_| ImageError::IoError)?;
+    let stream = path.open_input_stream().map_err(|error| ImageError::IoError(error))?;
 
     Self::from_stream(stream)
   }
@@ -220,7 +222,6 @@ impl_pixel!(Color32, "RGBA");
 
 /// Converts the given [`image::DynamicImage`] into the given image type.
 pub trait FromDynamicImage {
-  /// The image type to convert to.
   fn from_dynamic_image(image: image::DynamicImage) -> Self;
 }
 

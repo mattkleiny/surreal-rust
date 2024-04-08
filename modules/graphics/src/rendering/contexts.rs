@@ -22,7 +22,7 @@ pub trait RenderContext: Any + Send + Sync {
 
 /// A manager for [`RenderContext`]s.
 ///
-/// A [`RenderContext`] encodes all of the required details and lifecycle for
+/// A [`RenderContext`] encodes all the required details and lifecycle for
 /// textures, materials, render targets, shaders, necessary in a single
 /// invocation of some rendering state.
 pub struct Renderer {

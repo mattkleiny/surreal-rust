@@ -2,7 +2,7 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use common::{uvec2, Rectangle, UVec2};
+use common::{uvec2, Rectangle, ToVirtualPath, UVec2};
 
 use super::*;
 
@@ -83,6 +83,13 @@ impl Texture {
   /// Creates a new blank texture on the GPU with default options.
   pub fn new(graphics: &GraphicsEngine) -> Result<Self, TextureError> {
     Self::with_options(graphics, &TextureOptions::default())
+  }
+
+  /// Loads a texture from the given path.
+  pub fn from_path(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> Result<Self, TextureError> {
+    let image = ColorImage::from_path(path).map_err(|error| TextureError::InvalidImage(error))?;
+
+    Self::from_image(graphics, &image)
   }
 
   /// Loads a texture from the given image.
@@ -279,6 +286,26 @@ pub struct TextureRegion {
 }
 
 impl TextureRegion {
+  pub fn new(texture: &Texture) -> Self {
+    Self {
+      texture: texture.clone(),
+      offset: uvec2(0, 0),
+      size: uvec2(texture.width(), texture.height()),
+    }
+  }
+
+  /// Sets the offset of the texture region.
+  pub fn with_offset(mut self, offset: UVec2) -> Self {
+    self.offset = offset;
+    self
+  }
+
+  /// Sets the size of the texture region.
+  pub fn with_size(mut self, size: UVec2) -> Self {
+    self.size = size;
+    self
+  }
+
   /// Calculates the UV rectangle for the given texture region.
   pub fn calculate_uv(&self) -> Rectangle {
     let left = self.offset.x as f32 / self.texture.width() as f32;

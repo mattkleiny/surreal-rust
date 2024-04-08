@@ -5,5 +5,5 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-surreal = { path = "../../", features = ["graphics", "sdl"] }
+surreal = { path = "../../", features = ["graphics", "input", "sdl"] }
 hecs = "0.10.4"

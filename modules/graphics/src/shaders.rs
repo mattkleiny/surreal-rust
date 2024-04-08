@@ -313,7 +313,7 @@ impl_uniform!(Color as Color);
 impl_uniform!(Color32 as Color32);
 
 /// Allow for the conversion of a slice of values into a shader uniform array,
-/// provided all of the values can be individually converted into a uniform.
+/// provided all the values can be individually converted into a uniform.
 impl<U> From<&[U]> for ShaderUniform
 where
   for<'a> &'a U: Into<ShaderUniform>,

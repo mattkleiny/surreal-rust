@@ -114,6 +114,11 @@ pub struct VirtualPath {
 }
 
 impl VirtualPath {
+  /// Creates a new [`VirtualPath`] from a raw string.
+  pub fn new(raw: impl AsRef<str>) -> Self {
+    raw.as_ref().to_virtual_path()
+  }
+
   /// The scheme of the path.
   pub fn scheme(&self) -> &StringName {
     &self.scheme

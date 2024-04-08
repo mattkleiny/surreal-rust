@@ -1,3 +1,6 @@
+#[cfg(feature = "shaderlib")]
+pub use embedded::*;
+
 use super::*;
 
 /// A templated shader program that can be used to generate new
@@ -36,7 +39,8 @@ macro_rules! include_shader {
 // Embedded shader code.
 #[rustfmt::skip]
 #[allow(dead_code)]
-pub(crate) mod embedded {
+#[cfg(feature = "shaderlib")]
+mod embedded {
   use super::*;
 
   pub const SHADER_CANVAS_STANDARD: ShaderTemplate<GLSL> = include_shader!("./embedded/canvas-standard.glsl");
