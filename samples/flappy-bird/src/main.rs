@@ -27,7 +27,10 @@ fn main() {
   let mut queue = RenderQueue::new();
   let mut game = Game::new(&graphics);
 
-  material.set_uniform("u_projectionView", Mat4::IDENTITY);
+  material.set_uniform(
+    "u_projectionView",
+    Mat4::orthographic_rh_gl(0.0, 800.0, 0.0, 600.0, -1.0, 1.0),
+  );
 
   game.initialize();
 
