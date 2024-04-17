@@ -93,6 +93,12 @@ pub enum TargetError {
   FailedToBuildAttachments,
 }
 
+/// A memory barrier for synchronising memory access in a shader.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum MemoryBarrier {
+  ImageAccess,
+}
+
 /// An abstraction on top of the underlying graphics API.
 ///
 /// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
@@ -139,6 +145,8 @@ pub trait GraphicsBackend {
   fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize>;
   fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError>;
   fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError>;
+  fn shader_dispatch_compute(&self, shader: ShaderId, x: u32, y: u32, z: u32) -> Result<(), ShaderError>;
+  fn shader_memory_barrier(&self, barrier: MemoryBarrier) -> Result<(), ShaderError>;
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError>;
 
   // meshes

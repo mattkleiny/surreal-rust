@@ -161,7 +161,7 @@ impl Texture {
     self.state.borrow().height
   }
 
-  /// Sets the the texture's options on the GPU.
+  /// Sets the texture's options on the GPU.
   pub fn set_options(&mut self, options: TextureOptions) {
     let mut state = self.state.borrow_mut();
 
@@ -249,7 +249,7 @@ impl Texture {
       .expect("Failed to write texture data");
   }
 
-  /// Uploads a sub-section of pixel data to the texture.
+  /// Uploads a subsection of pixel data to the texture.
   pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle, pixels: &[T]) {
     let state = self.state.borrow();
 
@@ -263,11 +263,6 @@ impl Texture {
         0, // mip level
       )
       .expect("Failed to write texture data");
-  }
-
-  /// Blits this texture to the display.
-  pub fn blit_to_display(&self) {
-    todo!()
   }
 }
 
@@ -317,7 +312,7 @@ impl TextureRegion {
   }
 }
 
-/// An atlas of textures, which is a sub-division of a texture into a smaller
+/// An atlas of textures, which is a subdivision of a texture into a smaller
 /// grid of [`TextureRegion`]s.
 #[derive(Clone)]
 pub struct TextureAtlas {

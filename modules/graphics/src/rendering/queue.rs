@@ -53,6 +53,13 @@ enum RenderCommand {
     vertex_count: usize,
     index_count: usize,
   },
+  /// Dispatches a compute shader for execution.
+  DispatchCompute {
+    shader_id: ShaderId,
+    group_count: (u32, u32, u32),
+  },
+  /// Issues a memory barrier, which can be used to synchronize memory access.
+  MemoryBarrier { barrier: MemoryBarrier },
   /// Blits the given render target to the active render target.
   BlitRenderTargetToActive { target_id: TargetId, filter: TextureFilter },
 }
@@ -134,6 +141,19 @@ impl RenderQueue {
     });
   }
 
+  /// Dispatches a compute shader for execution.
+  pub fn dispatch_compute(&mut self, shader: &ShaderProgram, group_count: (u32, u32, u32)) {
+    self.enqueue(RenderCommand::DispatchCompute {
+      shader_id: shader.id(),
+      group_count,
+    });
+  }
+
+  /// Issues a memory barrier, which can be used to synchronize memory access.
+  pub fn memory_barrier(&mut self, barrier: MemoryBarrier) {
+    self.enqueue(RenderCommand::MemoryBarrier { barrier });
+  }
+
   /// Clears all [`RenderCommand`] from the queue.
   pub fn clear(&mut self) {
     let mut commands = self.commands.lock().unwrap();
@@ -199,6 +219,15 @@ impl RenderQueue {
           uniform,
         } => {
           graphics.shader_set_uniform(shader_id, location, &uniform)?;
+        }
+        RenderCommand::DispatchCompute {
+          shader_id,
+          group_count: (x, y, z),
+        } => {
+          graphics.shader_dispatch_compute(shader_id, x, y, z)?;
+        }
+        RenderCommand::MemoryBarrier { barrier } => {
+          graphics.shader_memory_barrier(barrier)?;
         }
         RenderCommand::DrawMesh {
           mesh_id,

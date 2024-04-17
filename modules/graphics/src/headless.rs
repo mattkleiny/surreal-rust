@@ -177,6 +177,14 @@ impl GraphicsBackend for HeadlessGraphicsBackend {
     Ok(())
   }
 
+  fn shader_dispatch_compute(&self, shader: ShaderId, x: u32, y: u32, z: u32) -> Result<(), ShaderError> {
+    Ok(())
+  }
+
+  fn shader_memory_barrier(&self, barrier: MemoryBarrier) -> Result<(), ShaderError> {
+    Ok(())
+  }
+
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError> {
     Ok(())
   }

@@ -960,4 +960,16 @@ mod tests {
 
     assert_eq!(world.joint_get_bodies(joint), Some((body1, body2)));
   }
+
+  #[test]
+  fn it_should_create_a_simple_material() {
+    let world = InternalPhysicsWorld2D::default();
+
+    let material = world.material_create().unwrap();
+    let body = world.body_create(BodyKind::Kinematic, Vec2::ZERO).unwrap();
+
+    world.body_set_material(body, Some(material)).unwrap();
+
+    assert_eq!(world.body_get_material(body), Some(material));
+  }
 }

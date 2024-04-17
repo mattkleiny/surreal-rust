@@ -656,6 +656,27 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
   }
 
   #[profiling]
+  fn shader_dispatch_compute(&self, shader: ShaderId, x: u32, y: u32, z: u32) -> Result<(), ShaderError> {
+    unsafe {
+      gl::UseProgram(shader.into());
+      gl::DispatchCompute(x, y, z);
+
+      Ok(())
+    }
+  }
+
+  #[profiling]
+  fn shader_memory_barrier(&self, barrier: MemoryBarrier) -> Result<(), ShaderError> {
+    unsafe {
+      gl::MemoryBarrier(match barrier {
+        MemoryBarrier::ImageAccess => gl::SHADER_IMAGE_ACCESS_BARRIER_BIT,
+      });
+
+      Ok(())
+    }
+  }
+
+  #[profiling]
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError> {
     unsafe {
       gl::DeleteProgram(shader.into());
