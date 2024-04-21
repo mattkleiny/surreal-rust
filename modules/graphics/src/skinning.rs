@@ -115,7 +115,7 @@ impl Skeleton {
     &mut self.bones
   }
 
-  /// Updates all of the inverse bind matrices for this skeleton.
+  /// Updates all the inverse bind matrices for this skeleton.
   ///
   /// Use this to after a change to the skeleton's bone transforms, to ensure
   /// that the inverse bind matrices are up to date.
@@ -153,7 +153,7 @@ impl Default for BoneKeyFrame {
 /// A single animation for a [`SkinnedMesh`].
 #[derive(Default, Debug, Clone)]
 pub struct Animation {
-  /// The name of the animationn.
+  /// The name of the animation.
   pub name: String,
   /// The total duration of this animation.
   pub duration: TimeSpan,

@@ -1,5 +1,4 @@
 use bitflags::bitflags;
-use common::Frustum;
 
 use super::*;
 
@@ -9,18 +8,25 @@ use super::*;
 /// camera, and can be used to optimize rendering by only rendering the objects
 /// that are visible to the camera.
 pub struct VisibleObjectSet<'a> {
-  /// The frustum of the camera that was used to cull the objects.
-  pub frustum: Frustum,
   /// The objects that are visible to the camera.
-  pub objects: Vec<VisibleObject<'a>>,
+  objects: Vec<VisibleObject<'a>>,
 }
 
 impl<'a> VisibleObjectSet<'a> {
   /// An empty set of objects.
-  pub const EMPTY: VisibleObjectSet<'static> = VisibleObjectSet {
-    frustum: Frustum::EMPTY,
-    objects: Vec::new(),
-  };
+  pub const EMPTY: VisibleObjectSet<'static> = VisibleObjectSet { objects: Vec::new() };
+
+  /// Creates a new set of visible objects from the given objects.
+  pub fn new(mut objects: Vec<VisibleObject<'a>>) -> Self {
+    objects.sort_by(|a, b| {
+      let a = MaterialSortingKey::for_material(a.material);
+      let b = MaterialSortingKey::for_material(b.material);
+
+      a.cmp(&b)
+    });
+
+    Self { objects }
+  }
 }
 
 /// Represents an object that is visible to a camera.

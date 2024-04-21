@@ -127,64 +127,6 @@ impl RenderPipeline for MultiPassPipeline {
   }
 }
 
-/// A [`RenderPipeline`] that executes a [`RenderGraph`] of passes.
-pub struct GraphPipeline {
-  graph: RenderGraph,
-  renderer: Renderer,
-  queue: RenderQueue,
-}
-
-impl GraphPipeline {
-  /// Creates a new [`GraphPipeline`] with the given render graph.
-  pub fn new(graphics: &GraphicsEngine, graph: RenderGraph) -> Self {
-    Self {
-      graph,
-      renderer: Renderer::new(graphics),
-      queue: RenderQueue::new(),
-    }
-  }
-}
-
-impl RenderPipeline for GraphPipeline {
-  #[profiling]
-  fn render(&mut self, scene: &dyn RenderScene, delta_time: f32) {
-    profile_frame_start!();
-
-    let mut frame = RenderFrame {
-      delta_time,
-      queue: &mut self.queue,
-      renderer: &mut self.renderer,
-    };
-
-    // begin the frame
-    for node in self.graph.iter_mut() {
-      node.begin_frame(scene, &mut frame);
-    }
-
-    // render each camera
-    for camera in scene.cameras() {
-      for node in self.graph.iter_mut() {
-        node.begin_camera(scene, camera, &mut frame);
-      }
-
-      for node in self.graph.iter_mut() {
-        node.render_camera(scene, camera, &mut frame);
-      }
-
-      for node in self.graph.iter_mut() {
-        node.end_camera(scene, camera, &mut frame);
-      }
-    }
-
-    // finalize the frame
-    for node in self.graph.iter_mut() {
-      node.end_frame(scene, &mut frame);
-    }
-
-    profile_frame_end!();
-  }
-}
-
 pub mod forward {
   use super::*;
 

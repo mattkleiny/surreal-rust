@@ -3,10 +3,10 @@
 use hecs::World;
 use surreal::{
   backends::sdl::{Window, WindowSettings},
-  common::{vec2, DeltaClock, FastHashMap, Mat4, StringName, Vec2},
+  common::{vec2, Camera, DeltaClock, FastHashMap, Mat4, StringName, Vec2},
   graphics::{
-    Color, Color32, GraphicsEngine, Material, RenderQueue, SpriteBatch, SpriteOptions, Texture, TextureRegion,
-    SHADER_SPRITE_STANDARD,
+    Color, Color32, GraphicsEngine, Material, RenderQueue, RenderScene, SpriteBatch, SpriteOptions, Texture,
+    TextureRegion, VisibleObject, VisibleObjectSet, SHADER_SPRITE_STANDARD,
   },
   input::{KeyboardDevice, VirtualKey},
 };
