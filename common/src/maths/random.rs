@@ -137,7 +137,10 @@ impl FromRandom for Uuid {
 }
 
 /// Generates fixed-length arrays of `T` where `T` itself is [`FromRandom`]
-impl<T: FromRandom + Sized + Default + Copy, const L: usize> FromRandom for [T; L] {
+impl<T, const L: usize> FromRandom for [T; L]
+where
+  T: FromRandom + Default + Copy,
+{
   fn from_random(random: &mut Random) -> Self {
     let mut result = [T::default(); L];
 

@@ -53,7 +53,7 @@ pub mod lang {
   }
 }
 
-/// The nominal max number of texture units that might be be bound in the GPU
+/// The nominal max number of texture units that might be bound in the GPU
 /// for a single shader program.
 ///
 /// This is a hint for sizing arrays and other data structures.

@@ -77,7 +77,7 @@ macro_rules! impl_ping_pong {
     impl PingPong for $type {
       #[inline(always)]
       fn ping_pong(&self) -> Self {
-        self.sin() * 2.0 - 1.0
+        (self.sin() + 1.0) / 2.0
       }
     }
   };

@@ -28,7 +28,7 @@ uniform uint u_palette_width;
 
 vec4 sample_palette(vec4 color) {
   uint index = uint(color.r * 255.0) + uint(color.g * 255.0) * 256u;
-  vec2 uv = vec2(index / (float) u_palette_width, 0.5);
+  vec2 uv = vec2(index / float(u_palette_width), 0.5);
 
   return texture(u_palette_tex, uv);
 }
