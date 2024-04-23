@@ -1,7 +1,5 @@
 // Implements a sprite shader with per-vertex tint.
 
-#version 330 core
-
 #shader_type vertex
 
 uniform mat4 u_projection_view;

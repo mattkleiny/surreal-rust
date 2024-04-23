@@ -1,7 +1,4 @@
 //! Sprite management and rendering.
-//!
-//! Sprites are very common in projects, so this is a dedicated batch to
-//! support.
 
 use common::{vec2, Angle, Mat2, Vec2};
 

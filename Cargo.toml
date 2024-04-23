@@ -41,4 +41,8 @@ scripting = { package = "surreal-scripting", path = "./modules/scripting", optio
 
 [[example]]
 name = "hello-world"
-required-features = ["sdl", "graphics", "input"]
+required-features = ["sdl", "graphics"]
+
+[[example]]
+name = "sprites"
+required-features = ["sdl", "graphics"]

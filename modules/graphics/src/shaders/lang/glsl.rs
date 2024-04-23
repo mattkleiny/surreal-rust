@@ -5,18 +5,9 @@ use super::*;
 /// Possible versions of OpenGL that can be targeted by a shader program.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum OpenGLVersion {
-  Glsl300,
   Glsl330,
-  Glsl400,
   Glsl410,
   Glsl420,
-  Glsl430,
-  Glsl440,
-  Glsl450,
-  Glsl460,
-  Glsl470,
-  Glsl480,
-  Glsl500,
 }
 
 /// The OpenGL environment for a shader program.
@@ -28,7 +19,7 @@ pub struct OpenGLEnvironment {
 impl Default for OpenGLEnvironment {
   fn default() -> Self {
     Self {
-      version: OpenGLVersion::Glsl330,
+      version: OpenGLVersion::Glsl410,
       constants: vec![ShaderConstant {
         name: "MAX_TEXTURES".to_string(),
         value: ShaderUniform::U32(MAX_TEXTURE_UNITS as u32),
@@ -78,22 +69,13 @@ impl ShaderLanguage for GLSL {
 
     // add the GLSL version directive
     let version = match environment.version {
-      OpenGLVersion::Glsl300 => "300 core",
       OpenGLVersion::Glsl330 => "330 core",
-      OpenGLVersion::Glsl400 => "400 core",
       OpenGLVersion::Glsl410 => "410 core",
       OpenGLVersion::Glsl420 => "420 core",
-      OpenGLVersion::Glsl430 => "430 core",
-      OpenGLVersion::Glsl440 => "440 core",
-      OpenGLVersion::Glsl450 => "450 core",
-      OpenGLVersion::Glsl460 => "460 core",
-      OpenGLVersion::Glsl470 => "470 core",
-      OpenGLVersion::Glsl480 => "480 core",
-      OpenGLVersion::Glsl500 => "500 core",
     };
 
     shared_code
-      .write_str(&format!("#version {}\n\n", version))
+      .write_str(&format!("#version {}\n", version))
       .map_err(|_| ShaderError::CompileError("Failed to write version".to_string()))?;
 
     for line in source_code.lines() {

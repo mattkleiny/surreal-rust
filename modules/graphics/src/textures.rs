@@ -177,7 +177,7 @@ impl Texture {
   ///
   /// This is only necessary if the texture requires sizing information prior to
   /// access from the GPU.
-  pub fn initialize(&self, width: u32, height: u32, format: TextureFormat) {
+  fn initialize(&self, width: u32, height: u32, format: TextureFormat) {
     let mut state = self.state.borrow_mut();
 
     state.width = width;
@@ -187,6 +187,11 @@ impl Texture {
       .graphics
       .texture_initialize(state.id, width, height, format)
       .expect("Failed to initialize texture");
+  }
+
+  /// Returns a [`TextureRegion`] that represents the entire texture.
+  pub fn to_region(&self) -> TextureRegion {
+    TextureRegion::new(self)
   }
 
   /// Resizes the texture in-place.

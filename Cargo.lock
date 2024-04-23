@@ -244,6 +244,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "openal-sys"
+version = "1.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b521c35ac1eed54f0c97f88739aa61d29991ceff3b626af62d33607dbb47e01f"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "png"
 version = "0.17.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -405,6 +414,7 @@ dependencies = [
 name = "surreal-audio"
 version = "0.0.0"
 dependencies = [
+ "openal-sys",
  "surreal-common",
 ]
 

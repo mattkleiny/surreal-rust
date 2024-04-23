@@ -40,7 +40,7 @@ pub trait PathFindingGrid<T: Copy + Hash + Eq = IVec2> {
     let mut neighbours = NeighbourList::new();
 
     while let Some(current) = frontier.pop() {
-      // dont search too far afield
+      // don't search too far afield
       if cost_so_far.len() >= MAXIMUM_STEPS {
         return None;
       }

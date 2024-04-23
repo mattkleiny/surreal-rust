@@ -97,7 +97,7 @@ impl Frustum {
   }
 
   /// Determines whether the given AABB is contained within this frustum.
-  pub fn contains_aabb(&self, aabb: AABB) -> bool {
+  pub fn contains_aabb(&self, aabb: &AABB) -> bool {
     self.contains_point(aabb.min)
       && self.contains_point(aabb.max)
       && self.contains_point(vec3(aabb.min.x, aabb.min.y, aabb.max.z))
@@ -127,22 +127,5 @@ impl Frustum {
   /// The order is Near, Far, Left, Right, Top, Bottom.
   pub fn as_slice(&self) -> &[Plane; 6] {
     unsafe { reinterpret_cast(self) }
-  }
-
-  /// Determines whether the given values is contained within this frustum.
-  pub fn contains(&self, value: &impl FrustumCullable) -> bool {
-    value.is_inside_frustum(self)
-  }
-}
-
-/// A trait for objects that can be frustum culled.
-pub trait FrustumCullable {
-  /// Determines whether this object is inside the given frustum.
-  fn is_inside(&self, frustum: &Frustum) -> bool;
-}
-
-impl FrustumCullable for AABB {
-  fn is_inside(&self, _frustum: &Frustum) -> bool {
-    todo!()
   }
 }

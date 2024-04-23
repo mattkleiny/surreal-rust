@@ -1,7 +1,5 @@
 // This is a simple shader that enables skeletal animation.
 
-#version 330
-
 #shader_type vertex
 
 uniform mat4 u_model_view_projection;
@@ -19,9 +17,9 @@ varying vec3 v_normal;
 void main() {
   // blend the bone matrices
   mat4 boneMatrix = u_bone_matrices[a_bone_indices.x] * a_bone_weights.x +
-    u_bone_matrices[a_bone_indices.y] * a_bone_weights.y +
-    u_bone_matrices[a_bone_indices.z] * a_bone_weights.z +
-    u_bone_matrices[a_bone_indices.w] * a_bone_weights.w;
+  u_bone_matrices[a_bone_indices.y] * a_bone_weights.y +
+  u_bone_matrices[a_bone_indices.z] * a_bone_weights.z +
+  u_bone_matrices[a_bone_indices.w] * a_bone_weights.w;
 
   vec4 position = boneMatrix * vec4(a_position, 1.0);
   vec4 normal = boneMatrix * vec4(a_normal, 0.0);

@@ -497,7 +497,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
   #[profiling]
   fn shader_metadata(&self, _shader: ShaderId) -> Result<ShaderFlags, ShaderError> {
-    todo!()
+    Ok(ShaderFlags::empty()) // TODO: implement me
   }
 
   #[profiling]

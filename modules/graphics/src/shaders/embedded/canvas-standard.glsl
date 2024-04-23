@@ -1,7 +1,5 @@
 // Implements a simple shader for screen-space canvas rendering.
 
-#version 330 core
-
 #shader_type vertex
 
 uniform vec2 u_viewport_size;

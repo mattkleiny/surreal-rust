@@ -1,4 +1,4 @@
-use surreal::{backends::sdl::*, common::*, graphics::*, input::*};
+use surreal::{backends::sdl::*, common::*, graphics::*};
 
 fn main() {
   let mut window = Window::new(WindowSettings {
@@ -21,9 +21,5 @@ fn main() {
 
     graphics.clear_color_buffer(Color::lerp(color1, color2, total_time.ping_pong()));
     window.present();
-
-    if window.is_key_down(VirtualKey::Escape) {
-      break;
-    }
   }
 }

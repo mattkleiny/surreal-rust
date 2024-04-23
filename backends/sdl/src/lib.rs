@@ -1,9 +1,16 @@
 //! SDL bindings for Surreal.
 
-use std::ffi::CString;
+use std::ffi::{c_int, CString};
 
 use common::FastHashSet;
 pub use sdl2_sys as sys;
+use sdl2_sys::{
+  SDL_GLattr::{
+    SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_MAJOR_VERSION, SDL_GL_CONTEXT_MINOR_VERSION, SDL_GL_CONTEXT_PROFILE_MASK,
+  },
+  SDL_GLcontextFlag::SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG,
+  SDL_GLprofile::SDL_GL_CONTEXT_PROFILE_CORE,
+};
 use sys::{SDL_KeyCode, SDL_Keycode};
 
 /// Represents an error that can occur when creating a window.
@@ -71,6 +78,11 @@ impl Window {
       if window.is_null() {
         return Err(WindowError::FailedToCreateWindow);
       }
+
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG as c_int);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE as c_int);
 
       // create the OpenGL context
       let gl_context = SDL_GL_CreateContext(window);

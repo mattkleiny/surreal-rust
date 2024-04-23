@@ -1,7 +1,5 @@
 // Implements a sprite shader that supports multiple texture per batch.
 
-#version 330 core
-
 #shader_type vertex
 
 uniform mat4 u_projection_view;

@@ -40,7 +40,6 @@ mod lang {
     /// Parses the file at the given path.
     fn parse_path(path: impl common::ToVirtualPath) -> Result<ast::Module, ParserError> {
       let path = path.to_virtual_path();
-
       let mut stream = path.open_input_stream().map_err(|_| ParserError::FailedToReadStream)?;
 
       Self::parse_stream(&mut stream)

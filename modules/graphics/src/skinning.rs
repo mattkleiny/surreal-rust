@@ -105,12 +105,12 @@ impl Skeleton {
     self.bones.get_mut(index)
   }
 
-  /// Borrows all of the bones in this skeleton.
+  /// Borrows all the bones in this skeleton.
   pub fn bones(&self) -> &[Bone] {
     &self.bones
   }
 
-  /// Mutably borrows all of the bones in this skeleton.
+  /// Mutably borrows all the bones in this skeleton.
   pub fn bones_mut(&mut self) -> &mut [Bone] {
     &mut self.bones
   }
@@ -118,7 +118,7 @@ impl Skeleton {
   /// Updates all the inverse bind matrices for this skeleton.
   ///
   /// Use this to after a change to the skeleton's bone transforms, to ensure
-  /// that the inverse bind matrices are up to date.
+  /// that the inverse bind matrices are up-to-date.
   pub fn update_bind_matrices(&mut self) {
     let bones = self.bones.clone(); // TODO: remove this clone; might need some unsafe code
 
@@ -214,7 +214,7 @@ impl Animation {
 pub struct Skin {
   /// The skeleton of this skin.
   pub skeleton: Skeleton,
-  /// All of the animations for this skin.
+  /// All the animations for this skin.
   pub animations: Vec<Animation>,
 }
 

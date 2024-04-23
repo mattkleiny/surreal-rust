@@ -28,6 +28,17 @@ impl<S: ShaderLanguage> ShaderTemplate<S> {
   }
 }
 
+impl Material {
+  /// Creates a new material from the given shader template.
+  pub fn from_template<S: ShaderLanguage>(
+    graphics: &GraphicsEngine,
+    template: &ShaderTemplate<S>,
+  ) -> Result<Self, ShaderError> {
+    let program = template.to_program(graphics)?;
+    Ok(Material::new(&graphics, &program))
+  }
+}
+
 /// Loads a shader template from the given path.
 #[macro_export]
 macro_rules! include_shader {
@@ -42,6 +53,8 @@ macro_rules! include_shader {
 #[cfg(feature = "shaderlib")]
 mod embedded {
   use super::*;
+
+  pub const PROJECTION_VIEW: ShaderUniformKey<&Mat4> = ShaderUniformKey::new("u_projection_view");
 
   pub const SHADER_CANVAS_STANDARD: ShaderTemplate<GLSL> = include_shader!("./embedded/canvas-standard.glsl");
   pub const SHADER_MESH_SKINNED: ShaderTemplate<GLSL> = include_shader!("./embedded/mesh-skinned.glsl");
