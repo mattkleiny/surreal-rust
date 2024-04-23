@@ -128,4 +128,21 @@ impl Frustum {
   pub fn as_slice(&self) -> &[Plane; 6] {
     unsafe { reinterpret_cast(self) }
   }
+
+  /// Determines whether the given values is contained within this frustum.
+  pub fn contains(&self, value: &impl FrustumCullable) -> bool {
+    value.is_inside_frustum(self)
+  }
+}
+
+/// A trait for objects that can be frustum culled.
+pub trait FrustumCullable {
+  /// Determines whether this object is inside the given frustum.
+  fn is_inside(&self, frustum: &Frustum) -> bool;
+}
+
+impl FrustumCullable for AABB {
+  fn is_inside(&self, _frustum: &Frustum) -> bool {
+    todo!()
+  }
 }
