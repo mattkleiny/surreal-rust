@@ -18,11 +18,11 @@ pub struct AnimationTree<T = ()> {
 
 /// A single animation state in an animation tree.
 pub struct AnimationState<T> {
-  name: StringName,
-  clip: AnimationClip,
-  transitions: Vec<AnimationTransition<T>>,
-  time_elapsed: TimeSpan,
-  speed: f32,
+  pub name: StringName,
+  pub clip: AnimationClip,
+  pub transitions: Vec<AnimationTransition<T>>,
+  pub time_elapsed: TimeSpan,
+  pub speed: f32,
 }
 
 /// A condition that must be met for a transition to occur.
@@ -30,15 +30,15 @@ type Condition<T> = Box<dyn Fn(&AnimationState<T>, &T) -> bool>;
 
 /// A transition between two animation states.
 pub struct AnimationTransition<T> {
-  target: StringName,
-  condition: Condition<T>,
+  pub target: StringName,
+  pub condition: Condition<T>,
 }
 
 /// A single clip of animation data.
 #[derive(Default)]
 pub struct AnimationClip {
-  duration: TimeSpan,
-  tracks: Vec<AnimationTrack>,
+  pub duration: TimeSpan,
+  pub tracks: Vec<AnimationTrack>,
 }
 
 /// A single track of animation data.
@@ -58,8 +58,8 @@ pub type AnimationTrackData<T> = Vec<AnimationKeyFrame<T>>;
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AnimationKeyFrame<T> {
-  time: f32,
-  value: T,
+  pub time: f32,
+  pub value: T,
 }
 
 impl<T> AnimationTree<T> {
