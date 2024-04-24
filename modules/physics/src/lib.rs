@@ -17,11 +17,11 @@ mod materials;
 
 use common::Vec2;
 
-common::impl_arena_index!(ColliderId, "Identifies a collider.");
-common::impl_arena_index!(BodyId, "Identifies a physics body.");
-common::impl_arena_index!(EffectorId, "Identifies an effector.");
-common::impl_arena_index!(JointId, "Identifies a joint.");
-common::impl_arena_index!(MaterialId, "Identifies a physics material.");
+common::impl_arena_index!(pub ColliderId, "Identifies a collider.");
+common::impl_arena_index!(pub BodyId, "Identifies a physics body.");
+common::impl_arena_index!(pub EffectorId, "Identifies an effector.");
+common::impl_arena_index!(pub JointId, "Identifies a joint.");
+common::impl_arena_index!(pub MaterialId, "Identifies a physics material.");
 
 common::impl_server!(PhysicsEngine, PhysicsBackend);
 

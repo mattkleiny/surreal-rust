@@ -8,7 +8,7 @@ use std::{
 pub use exporters::*;
 pub use importers::*;
 
-use crate::{FastHashMap, FileSystemError, Guid, StreamError, StringName, ToVirtualPath, VirtualPath};
+use crate::{FastHashMap, FileSystemError, Guid, InputStream, StreamError, StringName, ToVirtualPath, VirtualPath};
 
 /// Represents a reference to an asset that can either be loaded or unloaded.
 ///
@@ -272,7 +272,6 @@ mod exporters {
 
 mod importers {
   use super::*;
-  use crate::InputStream;
 
   /// An error that can occur when exporting an asset.
   #[derive(Debug)]
@@ -303,13 +302,13 @@ mod importers {
     }
 
     /// Imports an asset from the given stream.
-    fn import(&self, data: &mut dyn InputStream) -> Result<Self::Asset, AssetImportError>;
+    fn import(&self, stream: &mut dyn InputStream) -> Result<Self::Asset, AssetImportError>;
   }
 
   /// A trait for importing assets without knowing the asset type.
   pub trait UntypedAssetImporter: Send + Sync + 'static {
     fn can_import(&self, asset_type: TypeId, path: VirtualPath) -> bool;
-    fn import(&self, data: &mut dyn InputStream) -> Result<Box<dyn Any>, AssetImportError>;
+    fn import(&self, stream: &mut dyn InputStream) -> Result<Box<dyn Any>, AssetImportError>;
   }
 
   /// Allow any typed asset importer to be used as an untyped asset importer.
@@ -318,8 +317,8 @@ mod importers {
       asset_type == TypeId::of::<A>() && self.can_import(path)
     }
 
-    fn import(&self, data: &mut dyn InputStream) -> Result<Box<dyn Any>, AssetImportError> {
-      Ok(Box::new(self.import(data)?))
+    fn import(&self, stream: &mut dyn InputStream) -> Result<Box<dyn Any>, AssetImportError> {
+      Ok(Box::new(self.import(stream)?))
     }
   }
 }

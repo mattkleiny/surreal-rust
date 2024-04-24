@@ -6,6 +6,7 @@
 pub use animations::*;
 pub use buffers::*;
 pub use colors::*;
+pub use fonts::*;
 pub use geometry::*;
 pub use images::*;
 pub use materials::*;
@@ -21,6 +22,7 @@ pub use textures::*;
 mod animations;
 mod buffers;
 mod colors;
+mod fonts;
 mod geometry;
 mod headless;
 mod images;
@@ -34,11 +36,11 @@ mod sprites;
 mod targets;
 mod textures;
 
-common::impl_arena_index!(BufferId, "Identifies a graphics buffer.");
-common::impl_arena_index!(TextureId, "Identifies a texture.");
-common::impl_arena_index!(ShaderId, "Identifies a shader program.");
-common::impl_arena_index!(MeshId, "Identifies a mesh.");
-common::impl_arena_index!(TargetId, "Identifies a render target.");
+common::impl_arena_index!(pub BufferId, "Identifies a graphics buffer.");
+common::impl_arena_index!(pub TextureId, "Identifies a texture.");
+common::impl_arena_index!(pub ShaderId, "Identifies a shader program.");
+common::impl_arena_index!(pub MeshId, "Identifies a mesh.");
+common::impl_arena_index!(pub TargetId, "Identifies a render target.");
 
 common::impl_server!(GraphicsEngine, GraphicsBackend);
 

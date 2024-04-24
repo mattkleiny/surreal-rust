@@ -10,8 +10,8 @@ mod openal;
 mod sampling;
 mod sources;
 
-common::impl_arena_index!(ClipId, "Identifies an Audio Clip.");
-common::impl_arena_index!(SourceId, "Identifies an Audio Source.");
+common::impl_arena_index!(pub ClipId, "Identifies an Audio Clip.");
+common::impl_arena_index!(pub SourceId, "Identifies an Audio Source.");
 
 common::impl_server!(AudioEngine, AudioBackend);
 

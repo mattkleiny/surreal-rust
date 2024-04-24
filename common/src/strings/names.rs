@@ -94,7 +94,7 @@ impl<'de> serde::Deserialize<'de> for StringName {
   }
 }
 
-/// An internal global pool of interned strings.
+/// An internal global pool of strings.
 #[derive(Default, Singleton)]
 struct StringNamePool {
   strings_by_id: RwLock<Arena<StringId, StringPoolEntry>>,

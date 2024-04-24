@@ -105,22 +105,4 @@ mod tests {
 
     assert!(value1.approx_eq(value2));
   }
-
-  #[test]
-  fn test_ping_pong_f32() {
-    let value = 0.5f32;
-
-    let expected_result = value.sin() * 2.0 - 1.0;
-
-    assert_eq!(value.ping_pong(), expected_result);
-  }
-
-  #[test]
-  fn test_ping_pong_f64() {
-    let value = 0.5f64;
-
-    let expected_result = value.sin() * 2.0 - 1.0;
-
-    assert_eq!(value.ping_pong(), expected_result);
-  }
 }

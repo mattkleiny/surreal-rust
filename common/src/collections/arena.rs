@@ -373,15 +373,16 @@ impl<K: ArenaIndex, V> FromIterator<V> for Arena<K, V> {
 /// [`ArenaIndex`], and can be used as a key in the [`Arena`] structure.
 #[macro_export]
 macro_rules! impl_arena_index {
-  ($name:ident) => {
-    $crate::impl_arena_index!($name, "");
+  ($visibility:vis $name:ident) => {
+    $crate::impl_arena_index!($visibility, $name, "");
   };
-  ($name:ident, $comment:literal) => {
+  ($visibility:vis $name:ident, $comment:literal) => {
     #[doc = $comment]
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
-    pub struct $name(u64);
+    $visibility struct $name(u64);
 
+    #[allow(dead_code)]
     impl $name {
       /// A sentinel value representing an empty index.
       pub const NONE: Self = Self(0);
