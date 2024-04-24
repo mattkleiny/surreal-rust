@@ -1,8 +1,0 @@
-[package]
-name = "surreal-scripting"
-description = "A scripting engine for Surreal"
-authors.workspace = true
-edition.workspace = true
-
-[dependencies]
-common = { package = "surreal-common", path = "../../common" }

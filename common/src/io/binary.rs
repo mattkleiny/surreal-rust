@@ -1,5 +1,3 @@
-pub use macros::Binary;
-
 /// Allows a type to be converted to a byte slice.
 pub trait ToBinary {
   /// Converts the type to a byte slice.

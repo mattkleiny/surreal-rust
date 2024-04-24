@@ -5,12 +5,8 @@
 //! know about the `scene` module, but graphics components can be present in a
 //! scene.
 
-pub use assets::*;
-pub use clipboard::*;
-pub use scenes::*;
+pub use os::*;
 pub use variant::*;
 
-mod assets;
-mod clipboard;
-mod scenes;
+mod os;
 mod variant;

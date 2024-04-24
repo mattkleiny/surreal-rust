@@ -22,10 +22,6 @@ pub extern crate editor;
 pub extern crate graphics;
 #[cfg(feature = "input")]
 pub extern crate input;
-#[cfg(feature = "physics")]
-pub extern crate physics;
-#[cfg(feature = "scripting")]
-pub extern crate scripting;
 
 pub mod backends {
   #[cfg(feature = "sdl")]

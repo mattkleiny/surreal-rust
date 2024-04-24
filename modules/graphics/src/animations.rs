@@ -1,8 +1,8 @@
 //! Animation support.
 
-use common::{Asset, FastHashMap, StringName, TimeSpan, Vec2};
+use common::{FastHashMap, StringName, TimeSpan, Vec2};
 
-use crate::{Color, Texture};
+use crate::Color;
 
 /// An animation tree that can be used to drive animation state changes.
 ///
@@ -48,7 +48,6 @@ pub enum AnimationTrack {
   Rotation(AnimationTrackData<f32>),
   Scale(AnimationTrackData<Vec2>),
   Color(AnimationTrackData<Color>),
-  Texture(AnimationTrackData<Asset<Texture>>),
 }
 
 /// Data for a single animation track.

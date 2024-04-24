@@ -2,17 +2,10 @@
 
 use proc_macro::TokenStream;
 
-mod binary;
 mod profiling;
 mod reflect;
 mod singleton;
 mod vertex;
-
-/// Derives the `FromBinary` and `ToBinary` traits for a type.
-#[proc_macro_derive(Binary)]
-pub fn derive_binary(input: TokenStream) -> TokenStream {
-  binary::impl_binary(input)
-}
 
 /// Implements the Singleton pattern for a type.
 #[proc_macro_derive(Singleton)]

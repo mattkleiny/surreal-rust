@@ -406,8 +406,6 @@ dependencies = [
  "surreal-editor",
  "surreal-graphics",
  "surreal-input",
- "surreal-physics",
- "surreal-scripting",
 ]
 
 [[package]]
@@ -486,20 +484,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.107",
-]
-
-[[package]]
-name = "surreal-physics"
-version = "0.0.0"
-dependencies = [
- "surreal-common",
-]
-
-[[package]]
-name = "surreal-scripting"
-version = "0.0.0"
-dependencies = [
- "surreal-common",
 ]
 
 [[package]]
