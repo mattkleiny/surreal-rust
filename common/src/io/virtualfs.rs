@@ -11,34 +11,6 @@ use crate::{Singleton, StringName, ToStringName};
 mod local;
 mod memory;
 
-/// Allows a type to be imported from a VFS stream.
-pub trait FromStream: Sized {
-  /// Imports the type from a stream.
-  fn from_stream(stream: &mut dyn InputStream) -> Result<Self, FileSystemError>;
-
-  /// Imports the type from a path.
-  fn from_path(path: impl ToVirtualPath) -> Result<Self, FileSystemError> {
-    let path = path.to_virtual_path();
-    let mut stream = path.open_input_stream()?;
-
-    Self::from_stream(&mut stream)
-  }
-}
-
-/// Allows a type to be exported to a VFS stream.
-pub trait ToStream: Sized {
-  /// Exports the type to a stream.
-  fn to_stream(&self, stream: &mut dyn OutputStream) -> Result<(), FileSystemError>;
-
-  /// Exports the type to a path.
-  fn to_path(&self, path: impl ToVirtualPath) -> Result<(), FileSystemError> {
-    let path = path.to_virtual_path();
-    let mut stream = path.open_output_stream()?;
-
-    self.to_stream(&mut stream)
-  }
-}
-
 /// A potential error that can occur when interacting with a [`FileSystem`].
 #[derive(Debug)]
 pub enum FileSystemError {

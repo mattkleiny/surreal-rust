@@ -15,7 +15,7 @@ pub struct ShaderTemplate<S: ShaderLanguage> {
 
 impl<S: ShaderLanguage> ShaderTemplate<S> {
   /// Loads a shader template from the given raw shader code.
-  pub const fn load(code: &'static str) -> Self {
+  pub const fn new(code: &'static str) -> Self {
     ShaderTemplate {
       code,
       _phantom: std::marker::PhantomData,
@@ -43,7 +43,7 @@ impl Material {
 #[macro_export]
 macro_rules! include_shader {
   ($path:expr) => {
-    ShaderTemplate::load(include_str!($path))
+    ShaderTemplate::new(include_str!($path))
   };
 }
 

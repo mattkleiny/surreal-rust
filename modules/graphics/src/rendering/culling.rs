@@ -1,6 +1,27 @@
-use bitflags::bitflags;
-
 use super::*;
+
+/// A key that can be used to uniquely identify the kind of material.
+///
+/// This is used to sort materials into batches for efficient rendering,
+/// minimizing state changes between draw calls.
+#[repr(transparent)]
+#[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+pub struct MaterialSortingKey(u64);
+
+bitflags::bitflags! {
+  /// Flags that indicate the required state of the graphics pipeline for a material.
+  #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+  pub struct MaterialFlags: u32 {
+    const ALPHA_BLENDING = 0b00000001;
+    const ALPHA_TESTING = 0b00000010;
+    const BACKFACE_CULLING = 0b00000100;
+    const DEPTH_TESTING = 0b00001000;
+    const DEPTH_WRITING = 0b00010000;
+    const SCISSOR_TESTING = 0b00100000;
+    const STENCIL_TESTING = 0b01000000;
+    const WIREFRAME = 0b10000000;
+  }
+}
 
 /// A set of visible objects that can be rendered in a scene.
 ///
@@ -10,6 +31,20 @@ use super::*;
 pub struct VisibleObjectSet<'a> {
   /// The objects that are visible to the camera.
   objects: Vec<VisibleObject<'a>>,
+}
+
+/// Represents an object that is visible to a camera.
+///
+/// This is a reference to an object in a scene, along with the material that
+/// should be used to render it.
+///
+/// This is used to sort objects into batches for efficient rendering,
+/// minimizing state changes between draw calls.
+pub struct VisibleObject<'a> {
+  /// The object itself.
+  pub object: &'a dyn RenderObject,
+  /// The material of the object.
+  pub material: &'a Material,
 }
 
 impl<'a> VisibleObjectSet<'a> {
@@ -27,46 +62,7 @@ impl<'a> VisibleObjectSet<'a> {
 
     Self { objects }
   }
-}
 
-/// Represents an object that is visible to a camera.
-///
-/// This is a reference to an object in a scene, along with the material that
-/// should be used to render it.
-///
-/// This is used to sort objects into batches for efficient rendering,
-/// minimizing state changes between draw calls.
-pub struct VisibleObject<'a> {
-  /// The object itself.
-  pub object: &'a dyn RenderObject,
-  /// The material of the object.
-  pub material: &'a Material,
-}
-
-/// A key that can be used to uniquely identify the kind of material.
-///
-/// This is used to sort materials into batches for efficient rendering,
-/// minimizing state changes between draw calls.
-#[repr(transparent)]
-#[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
-pub struct MaterialSortingKey(u64);
-
-bitflags! {
-  /// Flags that indicate the required state of the graphics pipeline for a material.
-  #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
-  pub struct MaterialFlags: u32 {
-    const ALPHA_BLENDING = 0b00000001;
-    const ALPHA_TESTING = 0b00000010;
-    const BACKFACE_CULLING = 0b00000100;
-    const DEPTH_TESTING = 0b00001000;
-    const DEPTH_WRITING = 0b00010000;
-    const SCISSOR_TESTING = 0b00100000;
-    const STENCIL_TESTING = 0b01000000;
-    const WIREFRAME = 0b10000000;
-  }
-}
-
-impl<'a> VisibleObjectSet<'a> {
   /// Groups the objects by material sorting key.
   ///
   /// The flags parameter can be used to filter the materials that are included

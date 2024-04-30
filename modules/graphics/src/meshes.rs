@@ -168,7 +168,7 @@ impl<V: Vertex> Mesh<V> {
   }
 
   /// Constructs a new mesh from the [`MeshBrush`].
-  pub fn from_brush(graphics: &GraphicsEngine, brush: &impl MeshBrush<V>) -> Self {
+  pub fn from_brush(graphics: &GraphicsEngine, brush: &dyn MeshBrush<V>) -> Self {
     let mut builder = MeshBuilder::new();
 
     brush.build(&mut builder);
