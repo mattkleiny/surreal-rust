@@ -4,8 +4,6 @@ use std::any::{Any, TypeId};
 
 use common::{reinterpret_cast_mut, FastHashMap};
 
-use super::*;
-
 /// A context for rendering operations.
 ///
 /// A context contains the state useful for a particular kind of rendering
@@ -14,10 +12,10 @@ use super::*;
 /// dropped.
 #[allow(unused_variables)]
 pub trait RenderContext: Any + Send + Sync {
-  fn on_begin_with(&mut self, graphics: &GraphicsEngine) {}
-  fn on_end_with(&mut self, graphics: &GraphicsEngine) {}
-  fn on_begin_frame(&mut self, graphics: &GraphicsEngine) {}
-  fn on_end_frame(&mut self, graphics: &GraphicsEngine) {}
+  fn on_begin_with(&mut self) {}
+  fn on_end_with(&mut self) {}
+  fn on_begin_frame(&mut self) {}
+  fn on_end_frame(&mut self) {}
 }
 
 /// A manager for [`RenderContext`]s.
@@ -26,22 +24,15 @@ pub trait RenderContext: Any + Send + Sync {
 /// textures, materials, render targets, shaders, necessary in a single
 /// invocation of some rendering state.
 pub struct Renderer {
-  graphics: GraphicsEngine,
   contexts: FastHashMap<TypeId, Box<dyn RenderContext>>,
 }
 
 impl Renderer {
   /// Creates a new render manager.
-  pub fn new(graphics: &GraphicsEngine) -> Self {
+  pub fn new() -> Self {
     Self {
-      graphics: graphics.clone(),
       contexts: FastHashMap::default(),
     }
-  }
-
-  /// Gets the underlying [`GraphicsEngine`] of the manager.
-  pub fn graphics(&self) -> &GraphicsEngine {
-    &self.graphics
   }
 
   /// Configures the manager with the given [`RenderContext`].
@@ -55,14 +46,14 @@ impl Renderer {
   /// Begins a new frame.
   pub fn begin_frame(&mut self) {
     for context in self.contexts.values_mut() {
-      context.on_begin_frame(&self.graphics);
+      context.on_begin_frame();
     }
   }
 
   /// Ends the current frame.
   pub fn end_frame(&mut self) {
     for context in self.contexts.values_mut() {
-      context.on_end_frame(&self.graphics);
+      context.on_end_frame();
     }
   }
 
@@ -73,11 +64,11 @@ impl Renderer {
   /// confusing if the context is required.
   pub fn with<C: RenderContext>(&mut self, body: impl FnOnce(&mut C)) {
     if let Some(context) = self.contexts.get_mut(&TypeId::of::<C>()) {
-      context.on_begin_with(&self.graphics);
+      context.on_begin_with();
 
-      body(unsafe { reinterpret_cast_mut(context) as &mut Box<C> });
+      body(unsafe { reinterpret_cast_mut(context) });
 
-      context.on_end_with(&self.graphics);
+      context.on_end_with();
     }
   }
 

@@ -8,8 +8,8 @@
 #![feature(associated_type_defaults)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(type_alias_impl_trait)]
-#![feature(lazy_cell)]
 #![feature(noop_waker)]
+#![feature(ptr_as_ref_unchecked)]
 
 pub use abstractions::*;
 pub use collections::*;

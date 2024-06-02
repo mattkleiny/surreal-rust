@@ -1,6 +1,7 @@
 //! Audio engine for Surreal.
 
 pub use clips::*;
+pub use openal::*;
 pub use sampling::*;
 pub use sources::*;
 
@@ -13,18 +14,12 @@ mod sources;
 common::impl_arena_index!(pub ClipId, "Identifies an Audio Clip.");
 common::impl_arena_index!(pub SourceId, "Identifies an Audio Source.");
 
-common::impl_server!(AudioEngine, AudioBackend);
+common::impl_server!(AudioServer, AudioBackend, headless::HeadlessAudioBackend);
 
-impl AudioEngine {
-  /// Creates a new [`AudioEngine`] with a no-op, headless backend.
-  pub fn headless() -> Self {
-    Self::new(headless::HeadlessAudioBackend::default())
-  }
-
-  /// Creates a new [`AudioEngine`] with a OpenAL backend.
-  pub fn openal() -> Self {
-    Self::new(openal::OpenALAudioBackend::new())
-  }
+/// Gets the audio server instance.
+#[inline(always)]
+pub fn audio() -> &'static dyn AudioBackend {
+  AudioServer::instance()
 }
 
 /// A possible error when interacting with clips.

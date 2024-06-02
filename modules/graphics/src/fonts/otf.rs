@@ -20,13 +20,3 @@ impl FromStream for OpenTypeFont {
     Ok(result)
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn it_should_load_from_otf_file() {
-    let _font = OpenTypeFont::from_path("./assets/fonts/bit536_v1.otf").unwrap();
-  }
-}

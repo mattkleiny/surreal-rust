@@ -374,7 +374,7 @@ impl<K: ArenaIndex, V> FromIterator<V> for Arena<K, V> {
 #[macro_export]
 macro_rules! impl_arena_index {
   ($visibility:vis $name:ident) => {
-    $crate::impl_arena_index!($visibility, $name, "");
+    $crate::impl_arena_index!($visibility $name, "");
   };
   ($visibility:vis $name:ident, $comment:literal) => {
     #[doc = $comment]

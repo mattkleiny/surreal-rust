@@ -2,11 +2,10 @@
 
 use std::{
   cell::RefCell,
-  collections::HashMap,
   ffi::{c_void, CString},
 };
 
-use common::{profiling, Rectangle, Size, UVec2};
+use common::{profiling, FastHashMap, Rectangle, Size, UVec2};
 
 use super::*;
 
@@ -26,7 +25,13 @@ pub struct OpenGLGraphicsBackend {
 /// Interior mutable state for the backend.
 #[derive(Default)]
 struct BackendState {
-  sampler_cache: HashMap<TextureSampler, u32>,
+  sampler_cache: FastHashMap<TextureSampler, u32>,
+  shader_metadata: FastHashMap<ShaderId, ShaderMetadata>,
+}
+
+/// Internal metadata for a shader.
+struct ShaderMetadata {
+  flags: ShaderFlags,
 }
 
 impl OpenGLGraphicsBackend {
@@ -486,6 +491,8 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
         return Err(ShaderError::CompileError(String::from_utf8(info_log).unwrap()));
       }
 
+      // TODO: parse the shader kernels for metadata
+
       // delete the kernels now that we've linked
       for shader_id in shader_ids {
         gl::DeleteShader(shader_id);
@@ -496,8 +503,14 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
   }
 
   #[profiling]
-  fn shader_metadata(&self, _shader: ShaderId) -> Result<ShaderFlags, ShaderError> {
-    Ok(ShaderFlags::empty()) // TODO: implement me
+  fn shader_metadata(&self, shader: ShaderId) -> Result<ShaderFlags, ShaderError> {
+    let state = self.state.borrow();
+
+    state
+      .shader_metadata
+      .get(&shader)
+      .map(|metadata| metadata.flags)
+      .ok_or(ShaderError::InvalidId(shader))
   }
 
   #[profiling]

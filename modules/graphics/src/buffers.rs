@@ -32,7 +32,6 @@ pub struct Buffer<T> {
 /// The internal state for a buffer.
 struct BufferState {
   id: BufferId,
-  graphics: GraphicsEngine,
   kind: BufferKind,
   usage: BufferUsage,
   length: usize,
@@ -40,11 +39,10 @@ struct BufferState {
 
 impl<T> Buffer<T> {
   /// Constructs a new empty buffer on the GPU.
-  pub fn new(graphics: &GraphicsEngine, kind: BufferKind, usage: BufferUsage) -> Result<Self, BufferError> {
+  pub fn new(kind: BufferKind, usage: BufferUsage) -> Result<Self, BufferError> {
     Ok(Self {
       state: Rc::new(RefCell::new(BufferState {
-        id: graphics.buffer_create()?,
-        graphics: graphics.clone(),
+        id: graphics().buffer_create()?,
         kind,
         usage,
         length: 0,
@@ -79,8 +77,7 @@ impl<T> Buffer<T> {
     unsafe {
       buffer.set_len(length);
 
-      state
-        .graphics
+      graphics()
         .buffer_read_data(
           state.id,
           0, // offset
@@ -99,8 +96,7 @@ impl<T> Buffer<T> {
 
     state.length = data.len();
 
-    state
-      .graphics
+    graphics()
       .buffer_write_data(
         state.id,
         state.usage,
@@ -114,6 +110,6 @@ impl<T> Buffer<T> {
 
 impl Drop for BufferState {
   fn drop(&mut self) {
-    self.graphics.buffer_delete(self.id).expect("Failed to delete buffer")
+    graphics().buffer_delete(self.id).expect("Failed to delete buffer")
   }
 }

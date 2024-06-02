@@ -33,18 +33,18 @@ pub struct GLSL;
 
 impl ShaderProgram {
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
-  pub fn from_glsl(graphics: &GraphicsEngine, code: &str) -> Result<Self, ShaderError> {
-    Self::from_code::<GLSL>(graphics, code)
+  pub fn from_glsl(code: &str) -> Result<Self, ShaderError> {
+    Self::from_code::<GLSL>(code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path<'a>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> Result<Self, ShaderError> {
-    Self::from_path::<GLSL>(graphics, path)
+  pub fn from_glsl_path<'a>(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
+    Self::from_path::<GLSL>(path)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL stream.
-  pub fn from_glsl_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
-    Self::from_stream::<GLSL>(graphics, stream)
+  pub fn from_glsl_stream(stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
+    Self::from_stream::<GLSL>(stream)
   }
 }
 

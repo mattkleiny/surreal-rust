@@ -28,7 +28,7 @@ pub trait Type: Reflect {
   fn value(&self) -> &dyn Any;
 }
 
-/// Blanket implementation of `PrimitiveType` for all copyable types
+/// Blanket implementation of `Type` for all basic types
 impl<T: Reflect> Type for T {
   #[inline(always)]
   fn value(&self) -> &dyn Any {
@@ -47,18 +47,13 @@ pub trait StructType: Type {
   }
 
   /// Gets the value of the field with the given name.
-  fn get_value<T: 'static>(&self, name: &str) -> Option<&T> {
-    self.field(name).and_then(|field| unsafe {
-      let value = {
-        let ptr = self as *const Self as *const u8;
-        let ptr = ptr.add(field.offset);
-        let ptr = ptr as *const dyn Any;
+  fn get_value<T: 'static>(&self, _name: &str) -> Option<&T> {
+    todo!()
+  }
 
-        &*ptr
-      };
-
-      value.downcast_ref::<T>()
-    })
+  /// Sets the value of the field with the given name.
+  fn set_value<T: 'static>(&mut self, _name: &str, _value: T) {
+    todo!()
   }
 }
 
@@ -130,32 +125,4 @@ mod tests {
     assert_eq!(fields[1].name, "value");
     assert_eq!(fields[1].kind, "u32");
   }
-
-  // #[test]
-  // fn test_struct_fields_should_be_readable() {
-  //   let value = TestStruct {
-  //     name: "Test".to_string(),
-  //     value: 42,
-  //   };
-
-  //   let name = value.get_value("name");
-  //   let value = value.get_value("value");
-
-  //   assert_eq!(name, Some(&"Test".to_string()));
-  //   assert_eq!(value, Some(&42));
-  // }
-
-  // #[test]
-  // fn test_struct_fields_should_be_writable() {
-  //   let mut value = TestStruct {
-  //     name: "Test".to_string(),
-  //     value: 42,
-  //   };
-
-  //   value.set_property("name", "Test2".to_string());
-  //   value.set_property("value", 43);
-
-  //   assert_eq!(value.name, "Test2".to_string());
-  //   assert_eq!(value.value, 43);
-  // }
 }

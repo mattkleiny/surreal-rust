@@ -28,8 +28,8 @@ pub struct RenderTextureDescriptor {
 
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
-  pub fn to_texture(&self, graphics: &GraphicsEngine) -> Result<Texture, TextureError> {
-    Texture::with_options_and_size(graphics, &self.options, self.width, self.height, self.options.format)
+  pub fn to_texture(&self) -> Result<Texture, TextureError> {
+    Texture::with_options_and_size(&self.options, self.width, self.height, self.options.format)
   }
 }
 
@@ -43,7 +43,6 @@ pub struct RenderTarget {
 /// The inner state of a [`RenderTarget`].
 struct RenderTargetState {
   id: TargetId,
-  graphics: GraphicsEngine,
   color_attachment: Texture,
   depth_attachment: Option<Texture>,
   stencil_attachment: Option<Texture>,
@@ -51,30 +50,29 @@ struct RenderTargetState {
 
 impl RenderTarget {
   /// Creates a new [`RenderTarget`] on the GPU with the given attachments.
-  pub fn new(graphics: &GraphicsEngine, descriptor: &RenderTargetDescriptor) -> Result<Self, TargetError> {
-    let color_attachment = descriptor
+  pub fn new(target_descriptor: &RenderTargetDescriptor) -> Result<Self, TargetError> {
+    let color_attachment = target_descriptor
       .color_attachment
-      .to_texture(graphics)
+      .to_texture()
       .map_err(|_| TargetError::FailedToBuildAttachments)?;
 
-    let depth_attachment = descriptor
+    let depth_attachment = target_descriptor
       .depth_attachment
       .as_ref()
-      .and_then(|it| it.to_texture(graphics).ok());
+      .and_then(|it| it.to_texture().ok());
 
-    let stencil_attachment = descriptor
+    let stencil_attachment = target_descriptor
       .stencil_attachment
       .as_ref()
-      .and_then(|it| it.to_texture(graphics).ok());
+      .and_then(|it| it.to_texture().ok());
 
     Ok(Self {
       state: Rc::new(RefCell::new(RenderTargetState {
-        id: graphics.target_create(
+        id: graphics().target_create(
           color_attachment.id(),
           depth_attachment.as_ref().map(|it| it.id()),
           stencil_attachment.as_ref().map(|it| it.id()),
         )?,
-        graphics: graphics.clone(),
         color_attachment,
         depth_attachment,
         stencil_attachment,
@@ -112,18 +110,14 @@ impl RenderTarget {
   pub fn activate(&self) {
     let state = self.state.borrow();
 
-    state
-      .graphics
+    graphics()
       .target_activate(state.id)
       .expect("Failed to activate render target");
   }
 
   /// Deactivates the [`RenderTarget`].
   pub fn deactivate(&self) {
-    let state = self.state.borrow();
-
-    state
-      .graphics
+    graphics()
       .target_set_default()
       .expect("Failed to deactivate render target");
   }
@@ -131,9 +125,8 @@ impl RenderTarget {
   /// Blits this render target to the active target.
   pub fn blit_to_active(&self, filter: TextureFilter) {
     let state = self.state.borrow();
-    let graphics = &state.graphics;
 
-    graphics
+    graphics()
       .target_blit_to_active(state.id, None, None, filter)
       .expect("Failed to blit render target to display");
   }
@@ -141,8 +134,7 @@ impl RenderTarget {
 
 impl Drop for RenderTargetState {
   fn drop(&mut self) {
-    self
-      .graphics
+    graphics()
       .target_delete(self.id)
       .expect("Failed to delete render target");
   }

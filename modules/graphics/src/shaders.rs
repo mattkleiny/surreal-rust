@@ -93,18 +93,16 @@ pub struct ShaderProgram {
 /// The internal state for a [`ShaderProgram`] .
 struct ShaderProgramState {
   id: ShaderId,
-  graphics: GraphicsEngine,
   location_cache: FastHashMap<String, Option<usize>>,
   flags: ShaderFlags,
 }
 
 impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
-  pub fn new(graphics: &GraphicsEngine) -> Result<Self, ShaderError> {
+  pub fn new() -> Result<Self, ShaderError> {
     Ok(Self {
       state: Rc::new(RefCell::new(ShaderProgramState {
-        id: graphics.shader_create()?,
-        graphics: graphics.clone(),
+        id: graphics().shader_create()?,
         location_cache: FastHashMap::default(),
         flags: ShaderFlags::empty(),
       })),
@@ -112,29 +110,23 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_path<S: ShaderLanguage>(
-    graphics: &GraphicsEngine,
-    path: impl ToVirtualPath,
-  ) -> Result<Self, ShaderError> {
+  pub fn from_path<S: ShaderLanguage>(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream().map_err(|_| ShaderError::FailedToLoad)?;
 
-    Self::from_stream::<S>(graphics, &mut stream)
+    Self::from_stream::<S>(&mut stream)
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_stream<S: ShaderLanguage>(
-    graphics: &GraphicsEngine,
-    stream: &mut dyn InputStream,
-  ) -> Result<Self, ShaderError> {
+  pub fn from_stream<S: ShaderLanguage>(stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
     let code = stream.to_string().map_err(|_| ShaderError::FailedToLoad)?;
 
-    Self::from_code::<S>(graphics, &code)
+    Self::from_code::<S>(&code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shader code.
-  pub fn from_code<S: ShaderLanguage>(graphics: &GraphicsEngine, code: &str) -> Result<Self, ShaderError> {
-    let program = Self::new(graphics)?;
+  pub fn from_code<S: ShaderLanguage>(code: &str) -> Result<Self, ShaderError> {
+    let program = Self::new()?;
 
     program.load_code::<S>(code)?;
 
@@ -142,8 +134,8 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given [`ShaderKernel`]s.
-  pub fn from_kernels(graphics: &GraphicsEngine, kernels: &[ShaderKernel]) -> Result<Self, ShaderError> {
-    let program = Self::new(graphics)?;
+  pub fn from_kernels(kernels: &[ShaderKernel]) -> Result<Self, ShaderError> {
+    let program = Self::new()?;
 
     program.load_kernels(kernels)?;
 
@@ -172,8 +164,7 @@ impl ShaderProgram {
     drop(state);
 
     let mut state = self.state.borrow_mut();
-    let graphics = &state.graphics;
-    let location = graphics.shader_uniform_location(state.id, name);
+    let location = graphics().shader_uniform_location(state.id, name);
 
     state.location_cache.insert(name.to_string(), location);
 
@@ -184,9 +175,8 @@ impl ShaderProgram {
   pub fn set_uniform(&self, name: &str, value: &ShaderUniform) {
     if let Some(location) = self.get_uniform_location(name) {
       let state = self.state.borrow();
-      let graphics = &state.graphics;
 
-      graphics
+      graphics()
         .shader_set_uniform(state.id, location, value)
         .expect("Failed to set uniform");
     }
@@ -228,10 +218,10 @@ impl ShaderProgram {
   /// Reloads the [`ShaderProgram`] from the given shader code.
   pub fn load_kernels(&self, kernels: &[ShaderKernel]) -> Result<(), ShaderError> {
     let mut state = self.state.borrow_mut();
-    let graphics = &state.graphics;
+    let server = graphics();
 
-    graphics.shader_link(state.id, kernels)?;
-    state.flags = graphics.shader_metadata(state.id)?;
+    server.shader_link(state.id, kernels)?;
+    state.flags = server.shader_metadata(state.id)?;
 
     Ok(())
   }
@@ -239,8 +229,7 @@ impl ShaderProgram {
 
 impl Drop for ShaderProgramState {
   fn drop(&mut self) {
-    self
-      .graphics
+    graphics()
       .shader_delete(self.id)
       .expect("Failed to delete shader program");
   }
@@ -379,7 +368,7 @@ impl ShaderUniformSet {
     self.uniforms.insert(key, uniform);
   }
 
-  /// Applies all of the uniforms to the given shader program.
+  /// Applies all the uniforms to the given shader program.
   pub fn apply_to_shader(&self, shader: &ShaderProgram) {
     for (name, uniform) in &self.uniforms {
       shader.set_uniform(name, uniform);

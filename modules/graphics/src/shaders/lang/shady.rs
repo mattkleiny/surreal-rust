@@ -5,18 +5,18 @@ pub struct Shady;
 
 impl ShaderProgram {
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code.
-  pub fn from_shady(graphics: &GraphicsEngine, code: &str) -> Result<Self, ShaderError> {
-    Self::from_code::<Shady>(graphics, code)
+  pub fn from_shady(code: &str) -> Result<Self, ShaderError> {
+    Self::from_code::<Shady>(code)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shady shader code file.
-  pub fn from_shady_path<'a>(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> Result<Self, ShaderError> {
-    Self::from_path::<Shady>(graphics, path)
+  pub fn from_shady_path<'a>(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
+    Self::from_path::<Shady>(path)
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shady stream.
-  pub fn from_shady_stream(graphics: &GraphicsEngine, stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
-    Self::from_stream::<Shady>(graphics, stream)
+  pub fn from_shady_stream(stream: &mut dyn InputStream) -> Result<Self, ShaderError> {
+    Self::from_stream::<Shady>(stream)
   }
 }
 

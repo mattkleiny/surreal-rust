@@ -23,6 +23,13 @@ pub trait InputListener {
   fn on_event(&mut self, event: &InputEvent);
 }
 
+/// Allows a closure to be used as an input listener.
+impl<F: FnMut(&InputEvent)> InputListener for F {
+  fn on_event(&mut self, event: &InputEvent) {
+    self(event);
+  }
+}
+
 /// Multiplexes events to multiple listeners.
 pub struct InputMultiplexer {
   listeners: Vec<Box<dyn InputListener>>,

@@ -73,7 +73,6 @@ pub struct Texture {
 
 struct TextureState {
   id: TextureId,
-  graphics: GraphicsEngine,
   options: TextureOptions,
   width: u32,
   height: u32,
@@ -81,20 +80,20 @@ struct TextureState {
 
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new(graphics: &GraphicsEngine) -> Result<Self, TextureError> {
-    Self::with_options(graphics, &TextureOptions::default())
+  pub fn new() -> Result<Self, TextureError> {
+    Self::with_options(&TextureOptions::default())
   }
 
   /// Loads a texture from the given path.
-  pub fn from_path(graphics: &GraphicsEngine, path: impl ToVirtualPath) -> Result<Self, TextureError> {
+  pub fn from_path(path: impl ToVirtualPath) -> Result<Self, TextureError> {
     let image = ColorImage::from_path(path).map_err(|error| TextureError::InvalidImage(error))?;
 
-    Self::from_image(graphics, &image)
+    Self::from_image(&image)
   }
 
   /// Loads a texture from the given image.
-  pub fn from_image<T: Texel>(graphics: &GraphicsEngine, image: &impl Image<Pixel = T>) -> Result<Self, TextureError> {
-    let texture = Self::new(graphics)?;
+  pub fn from_image<T: Texel>(image: &impl Image<Pixel = T>) -> Result<Self, TextureError> {
+    let texture = Self::new()?;
 
     texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
     texture.write_pixels(image.width(), image.height(), image.as_slice());
@@ -103,13 +102,8 @@ impl Texture {
   }
 
   /// Builds a new colored texture of the given size.
-  pub fn from_color<T: Texel>(
-    graphics: &GraphicsEngine,
-    width: u32,
-    height: u32,
-    color: T,
-  ) -> Result<Self, TextureError> {
-    let texture = Self::new(graphics)?;
+  pub fn from_color<T: Texel>(width: u32, height: u32, color: T) -> Result<Self, TextureError> {
+    let texture = Self::new()?;
     let colors = vec![color; width as usize * height as usize];
 
     texture.write_pixels(width, height, &colors);
@@ -117,33 +111,30 @@ impl Texture {
     Ok(texture)
   }
 
-  /// Creates a new blank texture on the GPU with the given options.
-  pub fn with_options(graphics: &GraphicsEngine, options: &TextureOptions) -> Result<Self, TextureError> {
-    Ok(Self {
-      state: Rc::new(RefCell::new(TextureState {
-        id: graphics.texture_create(&options.sampler)?,
-        graphics: graphics.clone(),
-        options: options.clone(),
-        width: 0,
-        height: 0,
-      })),
-    })
-  }
-
-  /// Creates a new blank texture on the GPU with the given options and initial
-  /// size.
+  /// Creates a new blank texture on the GPU with the given options and size.
   pub fn with_options_and_size(
-    graphics: &GraphicsEngine,
     options: &TextureOptions,
     width: u32,
     height: u32,
     format: TextureFormat,
   ) -> Result<Self, TextureError> {
-    let texture = Self::with_options(graphics, options)?;
+    let texture = Self::with_options(options)?;
 
     texture.initialize(width, height, format);
 
     Ok(texture)
+  }
+
+  /// Creates a new blank texture on the GPU with the given options.
+  pub fn with_options(options: &TextureOptions) -> Result<Self, TextureError> {
+    Ok(Self {
+      state: Rc::new(RefCell::new(TextureState {
+        id: graphics().texture_create(&options.sampler)?,
+        options: options.clone(),
+        width: 0,
+        height: 0,
+      })),
+    })
   }
 
   /// Returns the [`TextureId`] of the underlying texture.
@@ -167,8 +158,7 @@ impl Texture {
 
     state.options = options;
 
-    state
-      .graphics
+    graphics()
       .texture_set_options(state.id, &state.options.sampler)
       .expect("Failed to set texture options");
   }
@@ -183,8 +173,7 @@ impl Texture {
     state.width = width;
     state.height = height;
 
-    state
-      .graphics
+    graphics()
       .texture_initialize(state.id, width, height, format)
       .expect("Failed to initialize texture");
   }
@@ -215,8 +204,7 @@ impl Texture {
     unsafe {
       buffer.set_len(size);
 
-      state
-        .graphics
+      graphics()
         .texture_read_data(
           state.id,
           size * std::mem::size_of::<T>(),
@@ -237,8 +225,7 @@ impl Texture {
     state.width = width;
     state.height = height;
 
-    state
-      .graphics
+    graphics()
       .texture_write_data(
         state.id,
         width,
@@ -258,8 +245,7 @@ impl Texture {
   pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle, pixels: &[T]) {
     let state = self.state.borrow();
 
-    state
-      .graphics
+    graphics()
       .texture_write_sub_data(
         state.id,
         region,
@@ -273,7 +259,7 @@ impl Texture {
 
 impl Drop for TextureState {
   fn drop(&mut self) {
-    self.graphics.texture_delete(self.id).expect("Failed to delete texture");
+    graphics().texture_delete(self.id).expect("Failed to delete texture");
   }
 }
 
@@ -398,10 +384,8 @@ mod tests {
 
   #[test]
   fn test_create_texture_from_image() {
-    let graphics = GraphicsEngine::headless();
     let image = ColorImage::new(128, 128);
-
-    let texture = Texture::from_image(&graphics, &image).unwrap();
+    let texture = Texture::from_image(&image).unwrap();
 
     assert_eq!(texture.width(), 128);
     assert_eq!(texture.height(), 128);

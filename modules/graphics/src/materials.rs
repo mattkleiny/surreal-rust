@@ -54,7 +54,6 @@ pub enum ScissorMode {
 /// pipeline state needed.
 #[derive(Clone)]
 pub struct Material {
-  graphics: GraphicsEngine,
   shader: ShaderProgram,
   uniforms: ShaderUniformSet,
   blend_state: BlendState,
@@ -64,9 +63,8 @@ pub struct Material {
 
 impl Material {
   /// Constructs a new material for the given [`ShaderProgram`].
-  pub fn new(graphics: &GraphicsEngine, shader: &ShaderProgram) -> Self {
+  pub fn new(shader: &ShaderProgram) -> Self {
     Self {
-      graphics: graphics.clone(),
       shader: shader.clone(),
       uniforms: ShaderUniformSet::default(),
       blend_state: BlendState::Disabled,
@@ -173,22 +171,25 @@ impl Material {
 
   /// Binds this material to the graphics server.
   pub fn bind(&self) {
-    self.graphics.set_blend_state(self.blend_state);
-    self.graphics.set_culling_mode(self.culling_mode);
-    self.graphics.set_scissor_mode(self.scissor_mode);
+    let graphics = graphics();
+
+    graphics.set_blend_state(self.blend_state);
+    graphics.set_culling_mode(self.culling_mode);
+    graphics.set_scissor_mode(self.scissor_mode);
 
     self.uniforms.apply_to_shader(&self.shader);
 
-    self
-      .graphics
+    graphics
       .shader_activate(self.shader.id())
       .expect("Failed to activate shader");
   }
 
   /// Unbinds this material from the graphics server.
   pub fn unbind(&self) {
-    self.graphics.set_blend_state(BlendState::Disabled);
-    self.graphics.set_culling_mode(CullingMode::Disabled);
-    self.graphics.set_scissor_mode(ScissorMode::Disabled);
+    let graphics = graphics();
+
+    graphics.set_blend_state(BlendState::Disabled);
+    graphics.set_culling_mode(CullingMode::Disabled);
+    graphics.set_scissor_mode(ScissorMode::Disabled);
   }
 }

@@ -72,9 +72,9 @@ pub struct MultiPassPipeline {
 
 impl MultiPassPipeline {
   /// Creates a new [`MultiPassPipeline`] with the given passes.
-  pub fn new(graphics: &GraphicsEngine) -> Self {
+  pub fn new() -> Self {
     Self {
-      renderer: Renderer::new(graphics),
+      renderer: Renderer::new(),
       queue: RenderQueue::default(),
       passes: Vec::default(),
     }
@@ -162,21 +162,19 @@ pub mod forward {
 
   impl MultiPassPipeline {
     /// Builds a new [`MultiPassPipeline`] for forward rendering.
-    pub fn new_forward_pipeline(graphics: &GraphicsEngine) -> Self {
-      MultiPassPipeline::new(graphics)
-        .with_pass(DepthPass {})
-        .with_pass(ColorPass {
-          color_target: RenderTarget::new(graphics, &RenderTargetDescriptor {
-            color_attachment: RenderTextureDescriptor {
-              width: 1920,
-              height: 1080,
-              options: TextureOptions::default(),
-            },
-            depth_attachment: None,
-            stencil_attachment: None,
-          })
-          .unwrap(),
+    pub fn new_forward_pipeline() -> Self {
+      MultiPassPipeline::new().with_pass(DepthPass {}).with_pass(ColorPass {
+        color_target: RenderTarget::new(&RenderTargetDescriptor {
+          color_attachment: RenderTextureDescriptor {
+            width: 1920,
+            height: 1080,
+            options: TextureOptions::default(),
+          },
+          depth_attachment: None,
+          stencil_attachment: None,
         })
+        .unwrap(),
+      })
     }
   }
 }

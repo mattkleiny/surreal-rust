@@ -56,20 +56,20 @@ struct SpriteVertex {
 
 impl SpriteBatch {
   /// Constructs a new [`SpriteBatch`] with a default capacity.
-  pub fn new(graphics: &GraphicsEngine) -> Result<Self, MeshError> {
-    Self::with_capacity(graphics, DEFAULT_SPRITE_COUNT)
+  pub fn new() -> Result<Self, MeshError> {
+    Self::with_capacity(DEFAULT_SPRITE_COUNT)
   }
 
   /// Creates a new [`SpriteBatch`] with the given expected capacity.
   ///
   /// This will pre-allocate buffers to minimize reallocation costs.
-  pub fn with_capacity(graphics: &GraphicsEngine, sprite_count: usize) -> Result<Self, MeshError> {
+  pub fn with_capacity(sprite_count: usize) -> Result<Self, MeshError> {
     // build standard quad indices ahead-of-time
     let vertices = Vec::with_capacity(sprite_count * 4);
     let indices = build_quad_indices(sprite_count);
 
     // create mesh, upload quad indices immediately
-    let mut mesh = Mesh::new(graphics, BufferUsage::Dynamic)?;
+    let mut mesh = Mesh::new(BufferUsage::Dynamic)?;
 
     mesh.with_buffers(|_, buffer| {
       buffer.write_data(&indices);
@@ -207,20 +207,20 @@ struct MultiSpriteVertex {
 
 impl MultiSpriteBatch {
   /// Constructs a new [`MultiSpriteBatch`] with a default capacity.
-  pub fn new(graphics: &GraphicsEngine) -> Result<Self, MeshError> {
-    Self::with_capacity(graphics, DEFAULT_SPRITE_COUNT)
+  pub fn new() -> Result<Self, MeshError> {
+    Self::with_capacity(DEFAULT_SPRITE_COUNT)
   }
 
   /// Creates a new [`MultiSpriteBatch`] with the given expected capacity.
   ///
   /// This will pre-allocate buffers to minimize reallocation costs.
-  pub fn with_capacity(graphics: &GraphicsEngine, sprite_count: usize) -> Result<Self, MeshError> {
+  pub fn with_capacity(sprite_count: usize) -> Result<Self, MeshError> {
     // build standard quad indices ahead-of-time
     let vertices = Vec::with_capacity(sprite_count * 4);
     let indices = build_quad_indices(sprite_count);
 
     // create mesh, upload quad indices immediately
-    let mut mesh = Mesh::new(graphics, BufferUsage::Dynamic)?;
+    let mut mesh = Mesh::new(BufferUsage::Dynamic)?;
 
     mesh.with_buffers(|_, buffer| {
       buffer.write_data(&indices);

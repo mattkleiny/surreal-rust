@@ -11,7 +11,7 @@ pub use geometry::*;
 pub use images::*;
 pub use materials::*;
 pub use meshes::*;
-pub use opengl::OpenGLHost;
+pub use opengl::*;
 pub use rendering::*;
 pub use shaders::*;
 pub use sprites::*;
@@ -40,18 +40,12 @@ common::impl_arena_index!(pub ShaderId, "Identifies a shader program.");
 common::impl_arena_index!(pub MeshId, "Identifies a mesh.");
 common::impl_arena_index!(pub TargetId, "Identifies a render target.");
 
-common::impl_server!(GraphicsEngine, GraphicsBackend);
+common::impl_server!(GraphicsServer, GraphicsBackend, headless::HeadlessGraphicsBackend);
 
-impl GraphicsEngine {
-  /// Creates a new [`GraphicsEngine`] with a no-op, headless backend.
-  pub fn headless() -> Self {
-    Self::new(headless::HeadlessGraphicsBackend::default())
-  }
-
-  /// Creates a new [`GraphicsEngine`] with an OpenGL backend.
-  pub fn opengl(host: &dyn OpenGLHost) -> Self {
-    Self::new(opengl::OpenGLGraphicsBackend::new(host))
-  }
+/// Gets the graphics server instance.
+#[inline(always)]
+pub fn graphics() -> &'static dyn GraphicsBackend {
+  GraphicsServer::instance()
 }
 
 /// A possible error when interacting with buffers.

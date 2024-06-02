@@ -23,19 +23,16 @@ impl<S: ShaderLanguage> ShaderTemplate<S> {
   }
 
   /// Converts the template into a shader program.
-  pub fn to_program(&self, graphics: &GraphicsEngine) -> Result<ShaderProgram, ShaderError> {
-    ShaderProgram::from_code::<S>(graphics, self.code)
+  pub fn to_program(&self) -> Result<ShaderProgram, ShaderError> {
+    ShaderProgram::from_code::<S>(self.code)
   }
 }
 
 impl Material {
   /// Creates a new material from the given shader template.
-  pub fn from_template<S: ShaderLanguage>(
-    graphics: &GraphicsEngine,
-    template: &ShaderTemplate<S>,
-  ) -> Result<Self, ShaderError> {
-    let program = template.to_program(graphics)?;
-    Ok(Material::new(&graphics, &program))
+  pub fn from_template<S: ShaderLanguage>(template: &ShaderTemplate<S>) -> Result<Self, ShaderError> {
+    let program = template.to_program()?;
+    Ok(Material::new(&program))
   }
 }
 

@@ -21,7 +21,7 @@ pub fn impl_reflect(input: TokenStream) -> TokenStream {
         quote! {
           name: stringify!(#field_name),
           kind: stringify!(#field_type),
-          offset: 0, /* std::mem::offset_of!(#ident, #field_name) */
+          offset: std::mem::offset_of!(#ident, #field_name)
         }
       });
 
