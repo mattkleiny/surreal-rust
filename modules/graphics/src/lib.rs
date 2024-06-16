@@ -40,7 +40,7 @@ common::impl_arena_index!(pub ShaderId, "Identifies a shader program.");
 common::impl_arena_index!(pub MeshId, "Identifies a mesh.");
 common::impl_arena_index!(pub TargetId, "Identifies a render target.");
 
-common::impl_server!(GraphicsServer, GraphicsBackend, headless::HeadlessGraphicsBackend);
+common::impl_server!(GraphicsServer by GraphicsBackend default headless::HeadlessGraphicsBackend);
 
 /// Gets the graphics server instance.
 #[inline(always)]

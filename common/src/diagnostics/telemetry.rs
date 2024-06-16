@@ -78,7 +78,7 @@ mod tests {
 
   #[test]
   fn test_basic_recorder_operations() {
-    let recorder = &mut TelemetryRecorder::default();
+    let mut recorder = TelemetryRecorder::default();
 
     recorder.add_listener(|telemetry: &dyn Telemetry| {
       assert_eq!(telemetry.name(), "frames_per_second");

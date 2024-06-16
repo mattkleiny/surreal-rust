@@ -61,7 +61,7 @@ pub unsafe fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
 /// Implements a new server type for the given backend.
 #[macro_export]
 macro_rules! impl_server {
-  ($type:ident, $backend:ident, $default:ty) => {
+  ($type:ident by $backend:ident default $default:ty) => {
     /// A wrapper for the core implementation.
     pub struct $type {
       backend: core::cell::UnsafeCell<Box<dyn $backend>>,

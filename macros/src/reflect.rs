@@ -7,7 +7,7 @@ pub fn impl_reflect(input: TokenStream) -> TokenStream {
   let ident = &input.ident;
 
   let output = match input.data {
-    // expand structs into reflectable types
+    // expand structs into reflect-able types
     syn::Data::Struct(ref struct_info) => {
       let fields = match &struct_info.fields {
         syn::Fields::Named(fields) => fields.named.iter(),

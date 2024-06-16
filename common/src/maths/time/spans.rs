@@ -5,8 +5,6 @@ use std::{
   time::Duration,
 };
 
-use crate::{FromBinary, ToBinary};
-
 /// A representation of a span of time.
 #[derive(Default, Copy, Clone, Debug, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -153,20 +151,6 @@ impl Display for TimeSpan {
       _ if self.total_seconds() > 1. => write!(formatter, "{} seconds", self.total_seconds()),
       _ => write!(formatter, "{} milliseconds", self.total_millis()),
     }
-  }
-}
-
-impl ToBinary for TimeSpan {
-  #[inline]
-  fn to_binary(&self) -> Vec<u8> {
-    self.seconds.to_binary()
-  }
-}
-
-impl FromBinary for TimeSpan {
-  #[inline]
-  fn from_binary(bytes: &[u8]) -> Self {
-    Self::from_seconds(f32::from_binary(bytes))
   }
 }
 

@@ -7,10 +7,10 @@ edition.workspace = true
 macros = { package = "surreal-macros", path = "../macros" }
 
 # core dependencies
-glam = { version = "0.25.0", features = ["serde"] }
+glam = { version = "0.28.0", features = ["serde"] }
 rustc-hash = "1.1.0"
 smallvec = "1.8"
-uuid = { version = "1.2.2", features = ["serde"] }
+uuid = { version = "1.8.0", features = ["serde"] }
 
 # serde and friends
 serde = { workspace = true, features = ["derive"], optional = true }
