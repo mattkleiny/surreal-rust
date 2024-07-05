@@ -480,6 +480,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "surreal-scripting"
+version = "0.0.0"
+dependencies = [
+ "surreal-common",
+]
+
+[[package]]
 name = "syn"
 version = "1.0.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"
