@@ -403,7 +403,7 @@ impl<P: Pixel> ColorPalette<P> {
     Ok(Self::from_vec(colors))
   }
 
-  /// Is the palette empt?
+  /// Is the palette empty?
   pub fn is_empty(&self) -> bool {
     self.colors.is_empty()
   }

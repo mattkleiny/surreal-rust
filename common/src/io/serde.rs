@@ -1,4 +1,4 @@
-use super::ToVirtualPath;
+use super::*;
 
 /// Represents an error that occurred while serializing or deserializing.
 #[derive(Debug)]
@@ -11,7 +11,7 @@ pub enum SerializationError {
 ///
 /// Implementors of this trait will gain access to basic
 /// serialization formats for free via convenience methods.
-pub trait Serializable: serde::Serialize + Sized {
+pub trait Serializable: ::serde::Serialize + Sized {
   /// Serializes the object to a byte array.
   #[cfg(feature = "binary")]
   fn to_binary(&self) -> Result<Vec<u8>, SerializationError> {
@@ -173,7 +173,7 @@ pub trait Serializable: serde::Serialize + Sized {
 ///
 /// Implementors of this trait will gain access to basic
 /// deserialization formats for free via convenience methods.
-pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
+pub trait Deserializable: for<'de> ::serde::Deserialize<'de> + Sized {
   /// Deserializes the object from a byte array.
   #[cfg(feature = "binary")]
   fn from_binary(raw: &[u8]) -> Result<Self, SerializationError> {
@@ -330,7 +330,7 @@ pub trait Deserializable: for<'de> serde::Deserialize<'de> + Sized {
 }
 
 /// Blanket implementation of all [`Serializable`] types.
-impl<T> Serializable for T where T: serde::Serialize {}
+impl<T> Serializable for T where T: ::serde::Serialize {}
 
 /// Blanket implementation of all [`Deserializable`] types.
-impl<T> Deserializable for T where T: for<'de> serde::Deserialize<'de> {}
+impl<T> Deserializable for T where T: for<'de> ::serde::Deserialize<'de> {}

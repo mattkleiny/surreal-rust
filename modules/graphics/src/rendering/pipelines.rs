@@ -163,7 +163,8 @@ pub mod forward {
   impl MultiPassPipeline {
     /// Builds a new [`MultiPassPipeline`] for forward rendering.
     pub fn new_forward_pipeline() -> Self {
-      MultiPassPipeline::new().with_pass(DepthPass {}).with_pass(ColorPass {
+      let depth_pass = DepthPass {};
+      let color_pass = ColorPass {
         color_target: RenderTarget::new(&RenderTargetDescriptor {
           color_attachment: RenderTextureDescriptor {
             width: 1920,
@@ -174,7 +175,9 @@ pub mod forward {
           stencil_attachment: None,
         })
         .unwrap(),
-      })
+      };
+
+      MultiPassPipeline::new().with_pass(depth_pass).with_pass(color_pass)
     }
   }
 }

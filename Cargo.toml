@@ -18,6 +18,11 @@ opt-level = 3
 
 [features]
 default = []
+serde = ["common/serde", "graphics/serde"]
+serializer-json = ["common/json"]
+serializer-ron = ["common/ron"]
+serializer-xml = ["common/xml"]
+serializer-yaml = ["common/yaml"]
 
 [workspace.dependencies]
 # shared dependencies

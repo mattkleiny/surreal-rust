@@ -9,9 +9,9 @@ pub use culling::*;
 pub use pipelines::*;
 pub use queue::*;
 
+use super::*;
+
 mod contexts;
 mod culling;
 mod pipelines;
 mod queue;
-
-use super::*;

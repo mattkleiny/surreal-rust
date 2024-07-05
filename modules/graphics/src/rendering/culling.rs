@@ -23,6 +23,24 @@ bitflags::bitflags! {
   }
 }
 
+impl MaterialSortingKey {
+  /// Gets the sorting key for the given material.
+  ///
+  /// A sorting key is defined as a 64-bit integer, where the first 32 bits
+  /// represent the flags that indicate the required state of the graphics
+  /// pipeline, and the last 32 bits represent the ID of the shader that should
+  /// be used to render the material.
+  pub fn for_material(material: &Material) -> Self {
+    let shader = material.shader();
+    let flags = material.flags();
+
+    let flags = u64::from(flags.bits());
+    let shader = u64::from(shader.id());
+
+    Self(flags << 32 | shader)
+  }
+}
+
 /// A set of visible objects that can be rendered in a scene.
 ///
 /// This is a subset of the objects in a scene that are visible to a specific
@@ -79,23 +97,5 @@ impl<'a> VisibleObjectSet<'a> {
       })
       .filter(move |it| flags.contains(it[0].material.flags()))
       .map(|it| (it[0].material, it))
-  }
-}
-
-impl MaterialSortingKey {
-  /// Gets the sorting key for the given material.
-  ///
-  /// A sorting key is defined as a 64-bit integer, where the first 32 bits
-  /// represent the flags that indicate the required state of the graphics
-  /// pipeline, and the last 32 bits represent the ID of the shader that should
-  /// be used to render the material.
-  pub fn for_material(material: &Material) -> Self {
-    let shader = material.shader();
-    let flags = material.flags();
-
-    let flags = u64::from(flags.bits());
-    let shader = u64::from(shader.id());
-
-    Self(flags << 32 | shader)
   }
 }

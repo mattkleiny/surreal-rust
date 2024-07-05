@@ -32,6 +32,7 @@ impl Material {
   /// Creates a new material from the given shader template.
   pub fn from_template<S: ShaderLanguage>(template: &ShaderTemplate<S>) -> Result<Self, ShaderError> {
     let program = template.to_program()?;
+
     Ok(Material::new(&program))
   }
 }
