@@ -399,6 +399,7 @@ dependencies = [
  "surreal-editor",
  "surreal-graphics",
  "surreal-input",
+ "surreal-scripting",
 ]
 
 [[package]]
