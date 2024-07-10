@@ -1,17 +1,17 @@
 //! Animation support.
 
-use common::{FastHashMap, StringName, TimeSpan, Vec2};
+use common::{FastHashMap, Identity, Lerp, Quat, StringName, TimeSpan, Vec2, Vec3};
 
-use crate::Color;
+use crate::{Color, Color32};
 
 /// An animation tree that can be used to drive animation state changes.
 ///
 /// The animation tree is a directed acyclic graph (DAG) where each node is an
 /// animation state. The root node is the current animation state, and the leaf
 /// nodes are the animation states that are being dynamically selected.
-#[derive(Default)]
 pub struct AnimationTree<T = ()> {
-  state: T,
+  pub state: T,
+
   nodes: FastHashMap<StringName, AnimationState<T>>,
   current: Option<StringName>,
 }
@@ -26,12 +26,12 @@ pub struct AnimationState<T> {
 }
 
 /// A condition that must be met for a transition to occur.
-type Condition<T> = Box<dyn Fn(&AnimationState<T>, &T) -> bool>;
+type AnimationCondition<T> = Box<dyn Fn(&AnimationState<T>, &T) -> bool>;
 
 /// A transition between two animation states.
 pub struct AnimationTransition<T> {
   pub target: StringName,
-  pub condition: Condition<T>,
+  pub condition: AnimationCondition<T>,
 }
 
 /// A single clip of animation data.
@@ -44,10 +44,12 @@ pub struct AnimationClip {
 /// A single track of animation data.
 #[derive(Clone)]
 pub enum AnimationTrack {
-  Position(AnimationTrackData<Vec2>),
-  Rotation(AnimationTrackData<f32>),
-  Scale(AnimationTrackData<Vec2>),
+  Scalar(AnimationTrackData<f32>),
+  Vec2(AnimationTrackData<Vec2>),
+  Vec3(AnimationTrackData<Vec3>),
+  Quat(AnimationTrackData<Quat>),
   Color(AnimationTrackData<Color>),
+  Color32(AnimationTrackData<Color32>),
 }
 
 /// Data for a single animation track.
@@ -116,6 +118,18 @@ impl<T> AnimationTree<T> {
         state.time_elapsed = TimeSpan::ZERO;
       }
 
+      // evaluate all tracks and apply them to the state
+      for track in &state.clip.tracks {
+        match track {
+          AnimationTrack::Scalar(_) => {}
+          AnimationTrack::Vec2(_) => {}
+          AnimationTrack::Vec3(_) => {}
+          AnimationTrack::Quat(_) => {}
+          AnimationTrack::Color(_) => {}
+          AnimationTrack::Color32(_) => {}
+        }
+      }
+
       // evaluate all transitions each tick
       for transition in &state.transitions {
         let AnimationTransition { condition, target } = transition;
@@ -127,6 +141,24 @@ impl<T> AnimationTree<T> {
       }
     }
   }
+}
+
+/// Evaluates the final value of the given keyframes by interpolation.
+fn evaluate_keyframes<T: Identity + Lerp + Copy>(time: f32, keyframes: &[AnimationKeyFrame<T>]) -> T {
+  for i in 0..keyframes.len() {
+    let keyframe = &keyframes[i];
+
+    if keyframe.time >= time {
+      let prev = &keyframes[i - 1];
+      let next = keyframe;
+
+      let t = (time - prev.time) / (next.time - prev.time);
+
+      return T::lerp(prev.value, next.value, t);
+    }
+  }
+
+  T::ZERO
 }
 
 #[cfg(test)]
@@ -143,6 +175,30 @@ mod tests {
   }
 
   #[test]
+  fn it_should_evaluate_track_data() {
+    let keyframes = vec![
+      AnimationKeyFrame {
+        time: 0.0,
+        value: Vec2::ZERO,
+      },
+      AnimationKeyFrame {
+        time: 1.0,
+        value: Vec2::ONE,
+      },
+      AnimationKeyFrame {
+        time: 2.0,
+        value: Vec2::ZERO,
+      },
+    ];
+
+    println!("{:?}", evaluate_keyframes(0.5, &keyframes));
+    println!("{:?}", evaluate_keyframes(1.0, &keyframes));
+    println!("{:?}", evaluate_keyframes(1.5, &keyframes));
+    println!("{:?}", evaluate_keyframes(2.0, &keyframes));
+    println!("{:?}", evaluate_keyframes(2.5, &keyframes));
+  }
+
+  #[test]
   fn it_should_support_basic_animations() {
     let mut tree = AnimationTree::new(AnimationParams::default());
 
@@ -151,7 +207,7 @@ mod tests {
       clip: AnimationClip {
         duration: TimeSpan::from_seconds(1.0),
         tracks: vec![
-          AnimationTrack::Position(vec![
+          AnimationTrack::Vec2(vec![
             AnimationKeyFrame {
               time: 0.0,
               value: Vec2::ZERO,

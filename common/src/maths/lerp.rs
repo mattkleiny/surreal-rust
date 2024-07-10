@@ -1,4 +1,4 @@
-use super::Scalar;
+use super::{Quat, Scalar, Vec2, Vec3};
 
 /// Allows linear interpolation of arbitrary values.
 pub trait Lerp {
@@ -12,6 +12,34 @@ impl<T: Scalar> Lerp for T {
     let b = b.to_f32();
 
     T::from_f32(a + t * (b - a))
+  }
+}
+
+impl Lerp for Vec2 {
+  #[inline(always)]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    let x = f32::lerp(a.x, b.x, t);
+    let y = f32::lerp(a.y, b.y, t);
+
+    Self::new(x, y)
+  }
+}
+
+impl Lerp for Vec3 {
+  #[inline(always)]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    let x = f32::lerp(a.x, b.x, t);
+    let y = f32::lerp(a.y, b.y, t);
+    let z = f32::lerp(a.z, b.z, t);
+
+    Self::new(x, y, z)
+  }
+}
+
+impl Lerp for Quat {
+  #[inline(always)]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    a.slerp(b, t)
   }
 }
 

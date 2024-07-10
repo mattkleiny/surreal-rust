@@ -19,7 +19,7 @@ impl IntervalTimer {
 
   pub fn tick(&mut self, delta_time: f32) -> bool {
     self.time_elapsed += delta_time;
-    self.time_elapsed >= self.interval.total_seconds()
+    self.time_elapsed >= self.interval.as_seconds()
   }
 
   pub fn reset(&mut self) {

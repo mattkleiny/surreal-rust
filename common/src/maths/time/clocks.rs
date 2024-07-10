@@ -32,7 +32,7 @@ impl DeltaClock {
     let delta_time = current_time - self.last_time;
 
     self.last_time = current_time;
-    self.last_delta_time = delta_time.total_seconds().min(self.max_delta_time);
+    self.last_delta_time = delta_time.as_seconds().min(self.max_delta_time);
 
     self.last_delta_time
   }
@@ -47,6 +47,6 @@ impl DeltaClock {
   pub fn total_time(&self) -> f32 {
     let now = TimeStamp::now();
 
-    (now - self.start_time).total_seconds()
+    (now - self.start_time).as_seconds()
   }
 }

@@ -29,16 +29,3 @@ impl<F: FnMut(&InputEvent)> InputListener for F {
     self(event);
   }
 }
-
-/// Multiplexes events to multiple listeners.
-pub struct InputMultiplexer {
-  listeners: Vec<Box<dyn InputListener>>,
-}
-
-impl InputListener for InputMultiplexer {
-  fn on_event(&mut self, event: &InputEvent) {
-    for listener in &mut self.listeners {
-      listener.on_event(event);
-    }
-  }
-}

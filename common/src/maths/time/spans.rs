@@ -46,28 +46,28 @@ impl TimeSpan {
   }
 
   #[inline]
-  pub fn total_millis(&self) -> f32 {
-    self.total_seconds() * 1000.
+  pub fn as_millis(&self) -> f32 {
+    self.as_seconds() * 1000.
   }
 
   #[inline]
-  pub fn total_seconds(&self) -> f32 {
+  pub fn as_seconds(&self) -> f32 {
     self.seconds
   }
 
   #[inline]
-  pub fn total_minutes(&self) -> f32 {
-    self.total_seconds() / 60.
+  pub fn as_minutes(&self) -> f32 {
+    self.as_seconds() / 60.
   }
 
   #[inline]
-  pub fn total_hours(&self) -> f32 {
-    self.total_minutes() / 60.
+  pub fn as_hours(&self) -> f32 {
+    self.as_minutes() / 60.
   }
 
   #[inline]
-  pub fn total_days(&self) -> f32 {
-    self.total_hours() / 24.
+  pub fn as_days(&self) -> f32 {
+    self.as_hours() / 24.
   }
 }
 
@@ -145,11 +145,11 @@ impl From<TimeSpan> for Duration {
 impl Display for TimeSpan {
   fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
-      _ if self.total_days() > 1. => write!(formatter, "{} days", self.total_days()),
-      _ if self.total_hours() > 1. => write!(formatter, "{} hours", self.total_hours()),
-      _ if self.total_minutes() > 1. => write!(formatter, "{} minutes", self.total_minutes()),
-      _ if self.total_seconds() > 1. => write!(formatter, "{} seconds", self.total_seconds()),
-      _ => write!(formatter, "{} milliseconds", self.total_millis()),
+      _ if self.as_days() > 1. => write!(formatter, "{} days", self.as_days()),
+      _ if self.as_hours() > 1. => write!(formatter, "{} hours", self.as_hours()),
+      _ if self.as_minutes() > 1. => write!(formatter, "{} minutes", self.as_minutes()),
+      _ if self.as_seconds() > 1. => write!(formatter, "{} seconds", self.as_seconds()),
+      _ => write!(formatter, "{} milliseconds", self.as_millis()),
     }
   }
 }
@@ -216,28 +216,28 @@ mod tests {
   fn test_time_span_from_millis() {
     let time_span = TimeSpan::from_millis(100.0);
 
-    assert_eq!(time_span.total_millis(), 100.0);
+    assert_eq!(time_span.as_millis(), 100.0);
   }
 
   #[test]
   fn test_time_span_from_seconds() {
     let time_span = TimeSpan::from_seconds(2.5);
 
-    assert_eq!(time_span.total_millis(), 2500.0);
+    assert_eq!(time_span.as_millis(), 2500.0);
   }
 
   #[test]
   fn test_time_span_from_minutes() {
     let time_span = TimeSpan::from_minutes(1.5);
 
-    assert_eq!(time_span.total_millis(), 90000.0);
+    assert_eq!(time_span.as_millis(), 90000.0);
   }
 
   #[test]
   fn test_time_span_from_hours() {
     let time_span = TimeSpan::from_hours(0.5);
 
-    assert_eq!(time_span.total_millis(), 1800000.0);
+    assert_eq!(time_span.as_millis(), 1800000.0);
   }
 
   #[test]
@@ -245,6 +245,6 @@ mod tests {
     let value: u8 = 10;
     let time_span = value.milliseconds();
 
-    assert_eq!(time_span.total_millis(), 10.0);
+    assert_eq!(time_span.as_millis(), 10.0);
   }
 }

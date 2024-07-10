@@ -34,19 +34,14 @@ bitflags = "2.1.0"
 common = { package = "surreal-common", path = "./common" }
 editor = { package = "surreal-editor", path = "./editor", optional = true }
 
-# backends
+# framework
 sdl = { package = "surreal-backend-sdl", path = "./backends/sdl", optional = true }
 
 # modules
 audio = { package = "surreal-audio", path = "./modules/audio", optional = true }
 graphics = { package = "surreal-graphics", path = "./modules/graphics", optional = true }
 input = { package = "surreal-input", path = "./modules/input", optional = true }
-scripting = { package = "surreal-scripting", path = "./modules/scripting", optional = true }
 
 [[example]]
 name = "hello-world"
-required-features = ["sdl", "graphics"]
-
-[[example]]
-name = "sprites"
 required-features = ["sdl", "graphics"]

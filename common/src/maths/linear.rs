@@ -18,3 +18,11 @@ mod planes;
 mod rays;
 mod scalars;
 mod vectors;
+
+/// Represents a numerical space with identity constants
+pub trait Identity {
+  const ZERO: Self;
+  const ONE: Self;
+  const MIN: Self;
+  const MAX: Self;
+}

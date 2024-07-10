@@ -32,6 +32,7 @@ pub trait Vector:
   Copy
   + Clone
   + Default
+  + Identity
   + Add<Output = Self>
   + AddAssign
   + Add<Self::Scalar, Output = Self>
@@ -46,11 +47,6 @@ pub trait Vector:
   + DivAssign<Self::Scalar>
   + Sized
 {
-  const ZERO: Self;
-  const ONE: Self;
-  const MIN: Self;
-  const MAX: Self;
-
   /// The type of the space that this vector is in.
   type Space: Space;
 
@@ -60,12 +56,14 @@ pub trait Vector:
 
 macro_rules! impl_vector {
   ($name:ident, $space:ident, $scalar:ident) => {
-    impl Vector for $name {
+    impl Identity for $name {
       const ZERO: Self = Self::splat($scalar::ZERO);
       const ONE: Self = Self::splat($scalar::ONE);
       const MIN: Self = Self::splat($scalar::MIN);
       const MAX: Self = Self::splat($scalar::MAX);
+    }
 
+    impl Vector for $name {
       type Space = $space;
       type Scalar = $scalar;
     }

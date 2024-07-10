@@ -1,9 +1,12 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
+use crate::Identity;
+
 /// Represents a scalar type that allows standard equality and arithmetic.
 pub trait Scalar:
   Copy
   + Default
+  + Identity
   + PartialOrd
   + PartialEq
   + Add<Output = Self>
@@ -16,11 +19,6 @@ pub trait Scalar:
   + DivAssign
   + Sized
 {
-  const ZERO: Self;
-  const ONE: Self;
-  const MIN: Self;
-  const MAX: Self;
-
   /// Converts a value from a 32-bit floating point number.
   fn from_f32(value: f32) -> Self;
 
@@ -33,13 +31,15 @@ pub trait Scalar:
 
 /// Implements the numeric traits for standard purpose a numeric type.
 macro_rules! impl_scalar {
-  ($type:ty) => {
-    impl Scalar for $type {
+  ($name:ty) => {
+    impl Identity for $name {
       const ZERO: Self = 0 as Self;
       const ONE: Self = 1 as Self;
-      const MIN: Self = <$type>::MIN;
-      const MAX: Self = <$type>::MAX;
+      const MIN: Self = <$name>::MIN;
+      const MAX: Self = <$name>::MAX;
+    }
 
+    impl Scalar for $name {
       #[inline(always)]
       fn from_f32(value: f32) -> Self {
         value as Self
