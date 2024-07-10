@@ -1,0 +1,13 @@
+[package]
+name = "surreal-scripting"
+description = "Scripting engine for Surreal"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+common = { package = "surreal-common", path = "../common" }
+
+[features]
+wren = []
+lua = []

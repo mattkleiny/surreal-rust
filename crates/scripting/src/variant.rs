@@ -1,7 +1,4 @@
-use crate::{
-  maths::{Quat, Vec2, Vec3, Vec4},
-  strings::StringName,
-};
+use common::{Quat, StringName, Vec2, Vec3, Vec4};
 
 /// A type that can hold varying different values.
 ///

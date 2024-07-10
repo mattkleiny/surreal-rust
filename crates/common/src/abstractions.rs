@@ -6,7 +6,5 @@
 //! scene.
 
 pub use os::*;
-pub use variant::*;
 
 mod os;
-mod variant;

@@ -26,7 +26,6 @@ pub struct Project {
 
 /// Top-level details for a [`Project`].
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ProjectDetails {
   pub name: String,
   pub path: String,

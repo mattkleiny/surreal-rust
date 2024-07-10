@@ -1,6 +1,6 @@
 //! Animation support.
 
-use common::{FastHashMap, Identity, Lerp, Quat, StringName, TimeSpan, Vec2, Vec3};
+use common::{FastHashMap, Lerp, Quat, StringName, TimeSpan, Vec2, Vec3};
 
 use crate::{Color, Color32};
 
@@ -160,7 +160,7 @@ impl<T> AnimationTree<T> {
 }
 
 /// Evaluates the final value of the given keyframes by interpolation.
-fn evaluate_keyframes<T: Identity + Lerp + Copy>(time: f32, keyframes: &[AnimationKeyFrame<T>]) -> T {
+fn evaluate_keyframes<T: Default + Lerp + Copy>(time: f32, keyframes: &[AnimationKeyFrame<T>]) -> T {
   for i in 0..keyframes.len() {
     let keyframe = &keyframes[i];
 
@@ -174,7 +174,7 @@ fn evaluate_keyframes<T: Identity + Lerp + Copy>(time: f32, keyframes: &[Animati
     }
   }
 
-  T::ZERO
+  T::default()
 }
 
 #[cfg(test)]
