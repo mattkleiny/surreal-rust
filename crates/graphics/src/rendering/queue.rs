@@ -164,22 +164,23 @@ impl RenderQueue {
   /// Flushes all [`RenderCommand`]s in the queue to the given renderer.
   pub fn flush(&mut self) -> Result<(), RenderQueueError> {
     let mut commands = self.commands.lock().unwrap();
+    let graphics = graphics();
 
     for command in commands.drain(..) {
       common::profile_scope!("RenderCommand::{:?}", command.type_name());
 
       match command {
         RenderCommand::SetRenderTarget { target_id } => {
-          graphics().target_activate(target_id)?;
+          graphics.target_activate(target_id)?;
         }
         RenderCommand::SetRenderTargetToDisplay => {
-          graphics().target_set_default()?;
+          graphics.target_set_default()?;
         }
         RenderCommand::ClearColorBuffer { color } => {
-          graphics().clear_color_buffer(color);
+          graphics.clear_color_buffer(color);
         }
         RenderCommand::ClearDepthBuffer { depth } => {
-          graphics().clear_depth_buffer(depth);
+          graphics.clear_depth_buffer(depth);
         }
         RenderCommand::SetShader {
           shader_id,
@@ -188,46 +189,46 @@ impl RenderQueue {
           culling_mode,
           scissor_mode,
         } => {
-          graphics().set_blend_state(blend_state);
-          graphics().set_culling_mode(culling_mode);
-          graphics().set_scissor_mode(scissor_mode);
+          graphics.set_blend_state(blend_state);
+          graphics.set_culling_mode(culling_mode);
+          graphics.set_scissor_mode(scissor_mode);
 
           for (key, uniform) in uniforms.iter() {
-            let location = graphics()
+            let location = graphics
               .shader_uniform_location(shader_id, key)
               .ok_or(ShaderError::InvalidUniform)?;
 
-            graphics().shader_set_uniform(shader_id, location, uniform)?;
+            graphics.shader_set_uniform(shader_id, location, uniform)?;
           }
 
-          graphics().shader_activate(shader_id)?;
+          graphics.shader_activate(shader_id)?;
         }
         RenderCommand::SetUniformByKey {
           shader_id,
           key,
           uniform,
         } => {
-          let location = graphics()
+          let location = graphics
             .shader_uniform_location(shader_id, &key)
             .ok_or(ShaderError::InvalidUniform)?;
 
-          graphics().shader_set_uniform(shader_id, location, &uniform)?;
+          graphics.shader_set_uniform(shader_id, location, &uniform)?;
         }
         RenderCommand::SetUniformByLocation {
           shader_id,
           location,
           uniform,
         } => {
-          graphics().shader_set_uniform(shader_id, location, &uniform)?;
+          graphics.shader_set_uniform(shader_id, location, &uniform)?;
         }
         RenderCommand::DispatchCompute {
           shader_id,
           group_count: (x, y, z),
         } => {
-          graphics().shader_dispatch_compute(shader_id, x, y, z)?;
+          graphics.shader_dispatch_compute(shader_id, x, y, z)?;
         }
         RenderCommand::MemoryBarrier { barrier } => {
-          graphics().shader_memory_barrier(barrier)?;
+          graphics.shader_memory_barrier(barrier)?;
         }
         RenderCommand::DrawMesh {
           mesh_id,
@@ -235,10 +236,10 @@ impl RenderQueue {
           vertex_count,
           index_count,
         } => {
-          graphics().mesh_draw(mesh_id, topology, vertex_count, index_count)?;
+          graphics.mesh_draw(mesh_id, topology, vertex_count, index_count)?;
         }
         RenderCommand::BlitRenderTargetToActive { target_id, filter } => {
-          graphics().target_blit_to_active(target_id, None, None, filter)?;
+          graphics.target_blit_to_active(target_id, None, None, filter)?;
         }
       }
     }
@@ -261,9 +262,11 @@ mod tests {
   #[test]
   fn test_basic_commands() {
     let mut queue = RenderQueue::default();
+    let mesh = Mesh::create_circle(1.0, 16);
 
     queue.set_render_target_to_display();
     queue.clear_color_buffer(Color::BLACK);
+    queue.draw_mesh(&mesh, PrimitiveTopology::Triangles);
 
     queue.flush().unwrap();
   }

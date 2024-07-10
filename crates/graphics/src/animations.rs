@@ -4,6 +4,34 @@ use common::{FastHashMap, Identity, Lerp, Quat, StringName, TimeSpan, Vec2, Vec3
 
 use crate::{Color, Color32};
 
+/// Represents a type that can be animated by an animation tree.
+pub trait Animatable<V> {
+  /// Applies the given value to the animatable type.
+  fn apply(&mut self, track: AnimationTrack, time: f32);
+}
+
+impl Animatable<Vec2> for Vec2 {
+  fn apply(&mut self, track: AnimationTrack, time: f32) {
+    match track {
+      AnimationTrack::Vec2(data) => {
+        *self = evaluate_keyframes(time, &data);
+      }
+      _ => {}
+    }
+  }
+}
+
+impl Animatable<Vec3> for Vec3 {
+  fn apply(&mut self, track: AnimationTrack, time: f32) {
+    match track {
+      AnimationTrack::Vec3(data) => {
+        *self = evaluate_keyframes(time, &data);
+      }
+      _ => {}
+    }
+  }
+}
+
 /// An animation tree that can be used to drive animation state changes.
 ///
 /// The animation tree is a directed acyclic graph (DAG) where each node is an
@@ -116,18 +144,6 @@ impl<T> AnimationTree<T> {
       // loop the animation if it's finished
       if state.time_elapsed > state.clip.duration {
         state.time_elapsed = TimeSpan::ZERO;
-      }
-
-      // evaluate all tracks and apply them to the state
-      for track in &state.clip.tracks {
-        match track {
-          AnimationTrack::Scalar(_) => {}
-          AnimationTrack::Vec2(_) => {}
-          AnimationTrack::Vec3(_) => {}
-          AnimationTrack::Quat(_) => {}
-          AnimationTrack::Color(_) => {}
-          AnimationTrack::Color32(_) => {}
-        }
       }
 
       // evaluate all transitions each tick

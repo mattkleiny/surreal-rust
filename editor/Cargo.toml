@@ -7,10 +7,10 @@ version.workspace = true
 
 [dependencies]
 # core dependencies
-common = { package = "surreal-common", path = "../common" }
-audio = { package = "surreal-audio", path = "../modules/audio" }
-graphics = { package = "surreal-graphics", path = "../modules/graphics" }
-input = { package = "surreal-input", path = "../modules/input" }
+common = { package = "surreal-common", path = "../crates/common" }
+audio = { package = "surreal-audio", path = "../crates/audio" }
+graphics = { package = "surreal-graphics", path = "../crates/graphics" }
+input = { package = "surreal-input", path = "../crates/input" }
 sdl = { package = "surreal-backend-sdl", path = "../backends/sdl" }
 
 # third-party dependencies

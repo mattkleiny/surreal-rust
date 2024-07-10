@@ -59,7 +59,7 @@ mod tests {
 
   #[test]
   fn test_read_file_from_disk() {
-    let path = "local://../assets/fonts/bitboy8_v1.otf".to_virtual_path();
+    let path = "local://../../assets/fonts/bitboy8_v1.otf".to_virtual_path();
     let bytes = path.read_all_bytes().unwrap();
 
     assert!(!bytes.is_empty());

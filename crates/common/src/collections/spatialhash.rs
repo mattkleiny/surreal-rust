@@ -17,7 +17,7 @@ pub enum SpatialShape {
 
 impl SpatialShape {
   /// Determines if this shape intersects the given other shape
-  pub fn intersects(&self, other: &SpatialShape) -> bool {
+  pub fn intersects(&self, _other: &SpatialShape) -> bool {
     todo!()
   }
 }

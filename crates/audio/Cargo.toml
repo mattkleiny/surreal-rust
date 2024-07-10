@@ -5,5 +5,5 @@ authors.workspace = true
 edition.workspace = true
 
 [dependencies]
-common = { package = "surreal-common", path = "../../common" }
+common = { package = "surreal-common", path = "../common" }
 openal-sys = "1.16.0"
