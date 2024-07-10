@@ -9,5 +9,6 @@ version.workspace = true
 common = { package = "surreal-common", path = "../common" }
 
 [features]
+basic = []
 wren = []
 lua = []

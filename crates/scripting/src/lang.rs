@@ -1,15 +1,19 @@
 //! Scripting language abstractions
 
-use common::ToVirtualPath;
-#[cfg(feature = "lua")]
-pub use lua::*;
-#[cfg(feature = "wren")]
-pub use wren::*;
+use common::{Singleton, ToVirtualPath};
 
+use super::*;
+
+#[cfg(feature = "basic")]
+pub mod basic;
 #[cfg(feature = "lua")]
-mod lua;
+pub mod lua;
 #[cfg(feature = "wren")]
-mod wren;
+pub mod wren;
+
+/// The shared virtual machine for all scripts
+#[derive(Singleton, Default)]
+struct ScriptVirtualMachine {}
 
 /// Represents a scripting language
 pub trait ScriptLanguage {
@@ -22,7 +26,30 @@ pub struct Script {
   module: ast::Module,
 }
 
+impl Script {
+  /// Loads a script from the given path
+  pub fn from_path<L: ScriptLanguage>(path: impl ToVirtualPath) -> Result<Self, ScriptError> {
+    L::load(path)
+  }
+
+  /// Executes the script
+  pub fn execute(&self) {
+    todo!()
+  }
+
+  /// Evaluates the script with the given arguments
+  pub fn evaluate(&self, _arguments: &[Variant]) -> Vec<Variant> {
+    todo!()
+  }
+
+  /// Calls the given top-level function with the given arguments
+  pub fn call(&self, _name: &str, _arguments: &[Variant]) -> Vec<Variant> {
+    todo!()
+  }
+}
+
 /// Represents an error that occurred while parsing a script
+#[derive(Debug, Eq, PartialEq)]
 pub enum ScriptError {
   NotFound,
   ParseError,
@@ -31,7 +58,10 @@ pub enum ScriptError {
 mod ast {
   //! The internal AST representation of a script
 
-  pub struct Module {}
+  pub struct Module {
+    pub name: String,
+  }
+
   pub enum Statement {}
   pub enum Expression {}
   pub enum Literal {}
