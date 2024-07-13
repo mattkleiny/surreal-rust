@@ -301,43 +301,13 @@ impl TextureRegion {
 
     Rectangle::from_corner_points(left, top, right, bottom)
   }
-}
 
-/// An atlas of textures, which is a subdivision of a texture into a smaller
-/// grid of [`TextureRegion`]s.
-#[derive(Clone)]
-pub struct TextureAtlas {
-  texture: Texture,
-  width: u32,
-  height: u32,
-}
-
-impl TextureAtlas {
-  /// Creates a new texture atlas from the given texture.
-  pub fn new(width: u32, height: u32, texture: &Texture) -> Self {
+  /// Slices the texture region into a smaller region.
+  pub fn slice(&self, x: u32, y: u32, width: u32, height: u32) -> Self {
     Self {
-      texture: texture.clone(),
-      width,
-      height,
-    }
-  }
-
-  /// The width of the atlas, in sub-regions.
-  pub fn width(&self) -> u32 {
-    self.texture.width() / self.width
-  }
-
-  /// The height of the atlas, in sub-regions.
-  pub fn height(&self) -> u32 {
-    self.texture.width() / self.height
-  }
-
-  /// Gets a sub-region of the texture atlas at the given position.
-  pub fn slice(&self, x: u32, y: u32) -> TextureRegion {
-    TextureRegion {
       texture: self.texture.clone(),
-      offset: uvec2(x * self.width, y * self.height),
-      size: uvec2(self.width, self.height),
+      offset: uvec2(self.offset.x + x, self.offset.y + y),
+      size: uvec2(width, height),
     }
   }
 }

@@ -4,9 +4,6 @@ use super::*;
 
 /// A templated shader program that can be used to generate new
 /// [`ShaderProgram`] instances at runtime.
-///
-/// Compilation will be performed on all calls to [`to_program`], so it is
-/// recommended to cache the result if possible.
 pub struct ShaderTemplate<S: ShaderLanguage> {
   code: &'static str,
   _phantom: std::marker::PhantomData<S>,

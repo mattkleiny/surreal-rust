@@ -5,8 +5,10 @@
 //! know about the `scene` module, but graphics components can be present in a
 //! scene.
 
+pub use assets::*;
 pub use os::*;
 pub use variant::*;
 
+mod assets;
 mod os;
 mod variant;

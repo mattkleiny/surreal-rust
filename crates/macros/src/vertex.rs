@@ -5,10 +5,10 @@ use syn::{parse_macro_input, spanned::Spanned, Attribute, Data, DeriveInput, Fie
 pub fn impl_vertex_trait(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
   let descriptors = parse_struct(&input.data);
-  let name = &input.ident;
+  let ident = &input.ident;
 
   let expanded = quote! {
-    impl Vertex for #name {
+    impl Vertex for #ident {
       const DESCRIPTORS: &'static [VertexDescriptor] = &[
         #(#descriptors),*
       ];
@@ -26,7 +26,7 @@ fn parse_struct(data: &Data) -> Vec<proc_macro2::TokenStream> {
         .named
         .iter()
         .map(|field| {
-          let (count, kind, normalize) = parse_vertex_attributes(&field.attrs);
+          let (count, kind, normalize) = parse_fields(&field.attrs);
 
           quote_spanned! { field.span() =>
             VertexDescriptor {
@@ -45,8 +45,8 @@ fn parse_struct(data: &Data) -> Vec<proc_macro2::TokenStream> {
   }
 }
 
-/// Parses the `#[vertex]` attribute on a field.
-fn parse_vertex_attributes(attributes: &Vec<Attribute>) -> (usize, proc_macro2::TokenStream, bool) {
+/// Parses the `#[vertex]` attributes on a field.
+fn parse_fields(attributes: &Vec<Attribute>) -> (usize, proc_macro2::TokenStream, bool) {
   let mut count = None;
   let mut kind = None;
   let mut normalize = false;

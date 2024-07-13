@@ -4,12 +4,12 @@ use syn::{parse_macro_input, DeriveInput};
 
 pub fn impl_singleton(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
-  let name = &input.ident;
+  let ident = &input.ident;
 
   let expanded = quote! {
-    impl Singleton for #name {
+    impl Singleton for #ident {
       fn instance() -> &'static Self {
-        static INSTANCE: std::sync::LazyLock<#name> = std::sync::LazyLock::new(|| #name::default());
+        static INSTANCE: std::sync::LazyLock<#ident> = std::sync::LazyLock::new(|| #ident::default());
 
         std::ops::Deref::deref(&INSTANCE)
       }

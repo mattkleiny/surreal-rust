@@ -10,48 +10,15 @@ use std::{cell::RefCell, rc::Rc};
 
 use bitflags::bitflags;
 use common::*;
-pub use lang::*;
-pub use templates::*;
 
 use super::*;
 
+mod lang;
 mod templates;
 
-pub mod lang {
-  pub use glsl::*;
-  pub use shady::*;
-
-  use super::*;
-
-  mod glsl;
-  mod shady;
-
-  /// An environment used to parse and compile shader programs.
-  #[derive(Default)]
-  pub struct ShaderEnvironment {
-    pub constants: Vec<ShaderConstant>,
-  }
-
-  impl ShaderEnvironment {
-    /// An empty shader environment.
-    pub const EMPTY: Self = Self { constants: Vec::new() };
-  }
-
-  /// A constant value that can be used in a shader.
-  pub struct ShaderConstant {
-    pub name: String,
-    pub value: ShaderUniform,
-  }
-
-  /// Represents a language for [`ShaderKernel`]s.
-  pub trait ShaderLanguage {
-    /// The environment type used to parse and compile shader programs.
-    type Environment: Default = ShaderEnvironment;
-
-    /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-    fn parse_kernels(source_code: &str) -> Result<Vec<ShaderKernel>, ShaderError>;
-  }
-}
+pub use lang::*;
+pub use macros::ToShaderUniformSet;
+pub use templates::*;
 
 /// The nominal max number of texture units that might be bound in the GPU
 /// for a single shader program.
@@ -393,6 +360,12 @@ impl<'a> IntoIterator for &'a ShaderUniformSet {
   }
 }
 
+/// Allows a type to be converted into a [`ShaderUniform`] set.
+pub trait ToShaderUniformSet {
+  /// Applies the type to the given [`ShaderUniformSet`].
+  fn apply_to(&self, set: &mut ShaderUniformSet);
+}
+
 /// Keeps texture assignments uniquely associated with slot indices.
 ///
 /// This is useful for tracking unique texture assignments across multiple
@@ -431,13 +404,27 @@ impl TextureBindingSet {
     self.slots.fill(None);
   }
 
+  /// Returns an iterator over all texture IDs in the set.
+  pub fn iter(&self) -> impl Iterator<Item = &TextureId> {
+    self.slots.iter().filter_map(|slot| slot.as_ref())
+  }
+
   /// Returns a vector of all texture IDs in the set.
   pub fn to_vec(&self) -> Vec<TextureId> {
     self.iter().copied().collect()
   }
 
   /// Returns an iterator over all texture IDs in the set.
-  pub fn iter(&self) -> impl Iterator<Item = &TextureId> {
-    self.slots.iter().filter_map(|slot| slot.as_ref())
+  pub fn into_vec(self) -> Vec<TextureId> {
+    self.slots.into_iter().filter_map(|slot| slot).collect()
+  }
+}
+
+impl<'a> IntoIterator for &'a TextureBindingSet {
+  type Item = &'a TextureId;
+  type IntoIter = impl Iterator<Item = Self::Item>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
   }
 }

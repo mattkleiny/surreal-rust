@@ -2,32 +2,6 @@ use std::fmt::Write;
 
 use super::*;
 
-/// Possible versions of OpenGL that can be targeted by a shader program.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub enum OpenGLVersion {
-  Glsl330,
-  Glsl410,
-  Glsl420,
-}
-
-/// The OpenGL environment for a shader program.
-pub struct OpenGLEnvironment {
-  pub version: OpenGLVersion,
-  pub constants: Vec<ShaderConstant>,
-}
-
-impl Default for OpenGLEnvironment {
-  fn default() -> Self {
-    Self {
-      version: OpenGLVersion::Glsl410,
-      constants: vec![ShaderConstant {
-        name: "MAX_TEXTURES".to_string(),
-        value: ShaderUniform::U32(MAX_TEXTURE_UNITS as u32),
-      }],
-    }
-  }
-}
-
 /// The OpenGL [`ShaderLanguage`] implementation.
 pub struct GLSL;
 
@@ -49,8 +23,6 @@ impl ShaderProgram {
 }
 
 impl ShaderLanguage for GLSL {
-  type Environment = OpenGLEnvironment;
-
   /// Parses the given raw GLSL source and performs some basic pre-processing.
   ///
   /// Allows for the following basic transformations:

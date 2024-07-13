@@ -4,6 +4,8 @@ use common::FileSystemError;
 
 use super::*;
 
+// TODO: refactor this module
+
 // common image types
 pub type ColorImage = image::ImageBuffer<Color, Vec<f32>>;
 pub type Color32Image = image::ImageBuffer<Color32, Vec<u8>>;

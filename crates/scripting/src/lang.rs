@@ -1,6 +1,6 @@
 //! Scripting language abstractions
 
-use common::{Singleton, ToVirtualPath};
+use common::{ToVirtualPath, Variant};
 
 #[cfg(feature = "basic")]
 pub mod basic;
@@ -10,10 +10,6 @@ pub mod lisp;
 pub mod lua;
 #[cfg(feature = "wren")]
 pub mod wren;
-
-/// The shared virtual machine for all scripts
-#[derive(Singleton, Default)]
-struct ScriptVirtualMachine {}
 
 /// Represents a scripting language
 pub trait ScriptLanguage {

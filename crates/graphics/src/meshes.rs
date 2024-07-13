@@ -61,13 +61,13 @@ impl VertexKind {
   /// Returns the size of this element type, in bytes.
   pub const fn size(&self) -> Size {
     Size::from_bytes(match self {
-      VertexKind::U8 => std::mem::size_of::<u8>(),
-      VertexKind::U16 => std::mem::size_of::<u16>(),
-      VertexKind::U32 => std::mem::size_of::<u32>(),
-      VertexKind::I16 => std::mem::size_of::<i16>(),
-      VertexKind::I32 => std::mem::size_of::<i32>(),
-      VertexKind::F32 => std::mem::size_of::<f32>(),
-      VertexKind::F64 => std::mem::size_of::<f64>(),
+      VertexKind::U8 => size_of::<u8>(),
+      VertexKind::U16 => size_of::<u16>(),
+      VertexKind::U32 => size_of::<u32>(),
+      VertexKind::I16 => size_of::<i16>(),
+      VertexKind::I32 => size_of::<i32>(),
+      VertexKind::F32 => size_of::<f32>(),
+      VertexKind::F64 => size_of::<f64>(),
     })
   }
 }
