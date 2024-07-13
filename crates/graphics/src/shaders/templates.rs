@@ -1,4 +1,3 @@
-#[cfg(feature = "shaderlib")]
 pub use embedded::*;
 
 use super::*;
@@ -26,14 +25,17 @@ impl<S: ShaderLanguage> ShaderTemplate<S> {
   pub fn to_program(&self) -> Result<ShaderProgram, ShaderError> {
     ShaderProgram::from_code::<S>(self.code)
   }
+
+  /// Converts the template into a material.
+  pub fn to_material(&self) -> Result<Material, ShaderError> {
+    Material::from_template(self)
+  }
 }
 
 impl Material {
   /// Creates a new material from the given shader template.
   pub fn from_template<S: ShaderLanguage>(template: &ShaderTemplate<S>) -> Result<Self, ShaderError> {
-    let program = template.to_program()?;
-
-    Ok(Material::new(&program))
+    Ok(Material::from_program(&template.to_program()?))
   }
 }
 
@@ -45,11 +47,11 @@ macro_rules! include_shader {
   };
 }
 
-// Embedded shader code.
 #[rustfmt::skip]
 #[allow(dead_code)]
-#[cfg(feature = "shaderlib")]
 mod embedded {
+  //! Embedded shader code library.
+
   use super::*;
 
   pub const PROJECTION_VIEW: ShaderUniformKey<&Mat4> = ShaderUniformKey::new("u_projection_view");
@@ -58,6 +60,4 @@ mod embedded {
   pub const SHADER_MESH_SKINNED: ShaderTemplate<GLSL> = include_shader!("./embedded/mesh-skinned.glsl");
   pub const SHADER_SPRITE_STANDARD: ShaderTemplate<GLSL> = include_shader!("./embedded/sprite-standard.glsl");
   pub const SHADER_SPRITE_STANDARD_PALETTE: ShaderTemplate<GLSL> = include_shader!("./embedded/sprite-standard-palette.glsl");
-  pub const SHADER_SPRITE_MULTITEX: ShaderTemplate<GLSL> = include_shader!("./embedded/sprite-multitex.glsl");
-  pub const SHADER_SPRITE_MULTITEX_PALETTE: ShaderTemplate<GLSL> = include_shader!("./embedded/sprite-multitex-palette.glsl");
 }

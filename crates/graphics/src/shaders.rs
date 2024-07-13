@@ -49,7 +49,7 @@ pub mod lang {
     type Environment: Default = ShaderEnvironment;
 
     /// Parses the given raw source code into one or more [`ShaderKernel`]s.
-    fn parse_kernels(source_code: &str, environment: &Self::Environment) -> Result<Vec<ShaderKernel>, ShaderError>;
+    fn parse_kernels(source_code: &str) -> Result<Vec<ShaderKernel>, ShaderError>;
   }
 }
 
@@ -94,7 +94,6 @@ pub struct ShaderProgram {
 struct ShaderProgramState {
   id: ShaderId,
   location_cache: FastHashMap<String, Option<usize>>,
-  flags: ShaderFlags,
 }
 
 impl ShaderProgram {
@@ -104,7 +103,6 @@ impl ShaderProgram {
       state: Rc::new(RefCell::new(ShaderProgramState {
         id: graphics().shader_create()?,
         location_cache: FastHashMap::default(),
-        flags: ShaderFlags::empty(),
       })),
     })
   }
@@ -145,11 +143,6 @@ impl ShaderProgram {
   /// Returns the [`ShaderId`] of the underlying program.
   pub fn id(&self) -> ShaderId {
     self.state.borrow().id
-  }
-
-  /// Returns the [`ShaderFlags`] for the underlying program.
-  pub fn flags(&self) -> ShaderFlags {
-    self.state.borrow().flags
   }
 
   /// Retrieves the binding location of the given shader uniform in the
@@ -207,21 +200,14 @@ impl ShaderProgram {
 
   /// Reloads the [`ShaderProgram`] from the given shader code.
   pub fn load_code<S: ShaderLanguage>(&self, text: &str) -> Result<(), ShaderError> {
-    // TODO: allow for shader environment to be passed in
-    let shaders = S::parse_kernels(text, &S::Environment::default())?;
-
-    self.load_kernels(&shaders)?;
+    self.load_kernels(&S::parse_kernels(text)?)?;
 
     Ok(())
   }
 
   /// Reloads the [`ShaderProgram`] from the given shader code.
   pub fn load_kernels(&self, kernels: &[ShaderKernel]) -> Result<(), ShaderError> {
-    let mut state = self.state.borrow_mut();
-    let server = graphics();
-
-    server.shader_link(state.id, kernels)?;
-    state.flags = server.shader_metadata(state.id)?;
+    graphics().shader_link(self.id(), kernels)?;
 
     Ok(())
   }

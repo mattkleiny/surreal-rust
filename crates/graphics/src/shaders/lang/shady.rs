@@ -22,7 +22,7 @@ impl ShaderProgram {
 
 impl ShaderLanguage for Shady {
   /// Parses the given raw Shady source and compiles it shader kernels.
-  fn parse_kernels(source_code: &str, _environment: &ShaderEnvironment) -> Result<Vec<ShaderKernel>, ShaderError> {
+  fn parse_kernels(source_code: &str) -> Result<Vec<ShaderKernel>, ShaderError> {
     let module = parser::parse(source_code)?;
     let kernels = compiler::compile(module)?;
 

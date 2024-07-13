@@ -19,14 +19,14 @@ pub enum BlendState {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum BlendFactor {
   One,
-  SrcAlpha,
-  SrcColor,
-  DstAlpha,
-  DstColor,
-  OneMinusSrcAlpha,
-  OneMinusSrcColor,
-  OneMinusDstAlpha,
-  OneMinusDstColor,
+  SourceAlpha,
+  SourceColor,
+  DestinationAlpha,
+  DestinationColor,
+  OneMinusSourceAlpha,
+  OneMinusSourceColor,
+  OneMinusDestinationAlpha,
+  OneMinusDestinationColor,
 }
 
 /// Culling modes for materials.
@@ -63,7 +63,7 @@ pub struct Material {
 
 impl Material {
   /// Constructs a new material for the given [`ShaderProgram`].
-  pub fn new(shader: &ShaderProgram) -> Self {
+  pub fn from_program(shader: &ShaderProgram) -> Self {
     Self {
       shader: shader.clone(),
       uniforms: ShaderUniformSet::default(),
@@ -82,9 +82,6 @@ impl Material {
   pub fn flags(&self) -> MaterialFlags {
     let mut flags = MaterialFlags::empty();
 
-    let shader = &self.shader;
-    let metadata = shader.flags();
-
     if self.blend_state() != BlendState::Disabled {
       flags.insert(MaterialFlags::ALPHA_BLENDING);
     }
@@ -95,18 +92,6 @@ impl Material {
 
     if self.scissor_mode() != ScissorMode::Disabled {
       flags.insert(MaterialFlags::SCISSOR_TESTING);
-    }
-
-    if metadata.contains(ShaderFlags::ALPHA_TESTING) {
-      flags.insert(MaterialFlags::ALPHA_TESTING);
-    }
-
-    if metadata.contains(ShaderFlags::DEPTH_TESTING) {
-      flags.insert(MaterialFlags::DEPTH_TESTING);
-    }
-
-    if metadata.contains(ShaderFlags::DEPTH_WRITING) {
-      flags.insert(MaterialFlags::DEPTH_WRITING);
     }
 
     flags

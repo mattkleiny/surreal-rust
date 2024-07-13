@@ -26,12 +26,6 @@ pub struct OpenGLGraphicsBackend {
 #[derive(Default)]
 struct BackendState {
   sampler_cache: FastHashMap<TextureSampler, u32>,
-  shader_metadata: FastHashMap<ShaderId, ShaderMetadata>,
-}
-
-/// Internal metadata for a shader.
-struct ShaderMetadata {
-  flags: ShaderFlags,
 }
 
 impl OpenGLGraphicsBackend {
@@ -95,14 +89,14 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     fn convert_blend_factor(factor: BlendFactor) -> u32 {
       match factor {
         BlendFactor::One => gl::ONE,
-        BlendFactor::SrcAlpha => gl::SRC_ALPHA,
-        BlendFactor::SrcColor => gl::SRC_COLOR,
-        BlendFactor::DstAlpha => gl::DST_ALPHA,
-        BlendFactor::DstColor => gl::DST_COLOR,
-        BlendFactor::OneMinusSrcAlpha => gl::ONE_MINUS_SRC_ALPHA,
-        BlendFactor::OneMinusSrcColor => gl::ONE_MINUS_SRC_COLOR,
-        BlendFactor::OneMinusDstAlpha => gl::ONE_MINUS_DST_ALPHA,
-        BlendFactor::OneMinusDstColor => gl::ONE_MINUS_DST_COLOR,
+        BlendFactor::SourceAlpha => gl::SRC_ALPHA,
+        BlendFactor::SourceColor => gl::SRC_COLOR,
+        BlendFactor::DestinationAlpha => gl::DST_ALPHA,
+        BlendFactor::DestinationColor => gl::DST_COLOR,
+        BlendFactor::OneMinusSourceAlpha => gl::ONE_MINUS_SRC_ALPHA,
+        BlendFactor::OneMinusSourceColor => gl::ONE_MINUS_SRC_COLOR,
+        BlendFactor::OneMinusDestinationAlpha => gl::ONE_MINUS_DST_ALPHA,
+        BlendFactor::OneMinusDestinationColor => gl::ONE_MINUS_DST_COLOR,
       }
     }
 
@@ -500,17 +494,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
 
     Ok(())
-  }
-
-  #[profiling]
-  fn shader_metadata(&self, shader: ShaderId) -> Result<ShaderFlags, ShaderError> {
-    let state = self.state.borrow();
-
-    state
-      .shader_metadata
-      .get(&shader)
-      .map(|metadata| metadata.flags)
-      .ok_or(ShaderError::InvalidId(shader))
   }
 
   #[profiling]
