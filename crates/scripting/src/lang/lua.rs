@@ -1,4 +1,4 @@
-//! Lua support for Surreal
+//! Lua language support for Surreal
 
 use super::*;
 

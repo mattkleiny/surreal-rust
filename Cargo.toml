@@ -26,6 +26,7 @@ serializer-yaml = ["common/yaml"]
 lang-basic = ["scripting/basic"]
 lang-wren = ["scripting/wren"]
 lang-lua = ["scripting/lua"]
+lang-lisp = ["scripting/lisp"]
 
 [workspace.dependencies]
 # shared dependencies

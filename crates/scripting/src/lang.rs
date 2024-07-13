@@ -2,10 +2,10 @@
 
 use common::{Singleton, ToVirtualPath};
 
-use super::*;
-
 #[cfg(feature = "basic")]
 pub mod basic;
+#[cfg(feature = "lisp")]
+pub mod lisp;
 #[cfg(feature = "lua")]
 pub mod lua;
 #[cfg(feature = "wren")]

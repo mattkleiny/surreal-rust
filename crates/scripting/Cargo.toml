@@ -12,3 +12,4 @@ common = { package = "surreal-common", path = "../common" }
 basic = []
 wren = []
 lua = []
+lisp = []

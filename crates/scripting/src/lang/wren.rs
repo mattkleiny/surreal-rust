@@ -1,4 +1,4 @@
-//! Wren support for surreal
+//! Wren language support for surreal
 
 use super::*;
 
