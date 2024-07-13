@@ -128,6 +128,8 @@ impl RenderPipeline for MultiPassPipeline {
 }
 
 pub mod forward {
+  use common::Color;
+
   use super::*;
 
   /// A [`RenderPass`] that renders all objects in the scene to a depth target.

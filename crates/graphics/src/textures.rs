@@ -2,7 +2,7 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use common::{uvec2, Rectangle, ToVirtualPath, UVec2};
+use common::{uvec2, Color, Color32, Pixel, Rectangle, ToVirtualPath, UVec2};
 
 use super::*;
 
@@ -86,13 +86,13 @@ impl Texture {
 
   /// Loads a texture from the given path.
   pub fn from_path(path: impl ToVirtualPath) -> Result<Self, TextureError> {
-    let image = ColorImage::from_path(path).map_err(|error| TextureError::InvalidImage(error))?;
+    let image = Image::<Color32>::from_path(path).map_err(|error| TextureError::InvalidImage(error))?;
 
     Self::from_image(&image)
   }
 
   /// Loads a texture from the given image.
-  pub fn from_image<T: Texel>(image: &impl Image<Pixel = T>) -> Result<Self, TextureError> {
+  pub fn from_image<T: Pixel + Texel>(image: &Image<T>) -> Result<Self, TextureError> {
     let texture = Self::new()?;
 
     texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
@@ -354,7 +354,7 @@ mod tests {
 
   #[test]
   fn test_create_texture_from_image() {
-    let image = ColorImage::new(128, 128);
+    let image = Image::<Color32>::new(128, 128);
     let texture = Texture::from_image(&image).unwrap();
 
     assert_eq!(texture.width(), 128);

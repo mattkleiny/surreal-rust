@@ -5,7 +5,7 @@
 
 use std::sync::{Arc, Mutex};
 
-use common::{vec2, Size, Vec2, Vec3};
+use common::{vec2, Color32, Size, Vec2, Vec3};
 pub use macros::Vertex;
 
 use super::*;

@@ -2,6 +2,7 @@
 
 pub use angles::*;
 pub use cameras::*;
+pub use colors::*;
 pub use curves::*;
 pub use geometry::*;
 pub use hex::*;
@@ -19,6 +20,7 @@ pub use time::*;
 
 mod angles;
 mod cameras;
+mod colors;
 mod curves;
 mod geometry;
 mod hex;

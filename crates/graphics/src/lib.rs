@@ -2,13 +2,15 @@
 
 #![feature(associated_type_defaults)]
 #![feature(impl_trait_in_assoc_type)]
+#![feature(allocator_api)]
 
 pub use animations::*;
 pub use buffers::*;
-pub use colors::*;
+use common::Color;
 pub use fonts::*;
 pub use geometry::*;
 pub use images::*;
+pub use lighting::*;
 pub use materials::*;
 pub use meshes::*;
 pub use opengl::*;
@@ -20,11 +22,11 @@ pub use textures::*;
 
 mod animations;
 mod buffers;
-mod colors;
 mod fonts;
 mod geometry;
 mod headless;
 mod images;
+mod lighting;
 mod materials;
 mod meshes;
 mod opengl;

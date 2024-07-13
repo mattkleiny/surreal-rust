@@ -6,7 +6,8 @@
 
 use std::ops::{Div, Index, Mul};
 
-use common::{ApproxEq, FromRandom, Lerp, Random, Scalar, ToVirtualPath};
+use super::*;
+use crate::ToVirtualPath;
 
 /// Represents a type of pixel.
 pub trait Pixel: Copy + Default {
@@ -88,10 +89,10 @@ impl PartialEq for Color {
 impl Lerp for Color {
   fn lerp(a: Color, b: Color, t: f32) -> Self {
     Color::rgba(
-      f32::lerp(a.r, b.r, t),
-      f32::lerp(a.g, b.g, t),
-      f32::lerp(a.b, b.b, t),
-      f32::lerp(a.a, b.a, t),
+      <f32 as Lerp>::lerp(a.r, b.r, t),
+      <f32 as Lerp>::lerp(a.g, b.g, t),
+      <f32 as Lerp>::lerp(a.b, b.b, t),
+      <f32 as Lerp>::lerp(a.a, b.a, t),
     )
   }
 }

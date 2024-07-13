@@ -14,12 +14,6 @@ pub enum AssetError {
 /// Represents an asset that can be loaded and used by the engine
 pub trait Asset {}
 
-/// An entry in the asset manager
-enum AssetEntry {
-  Unloaded,
-  Loaded(Box<dyn Asset>),
-}
-
 /// A manager for assets
 #[derive(Default)]
 pub struct AssetManager {}

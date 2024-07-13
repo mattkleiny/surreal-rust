@@ -1,6 +1,6 @@
 //! Sprite management and rendering.
 
-use common::{vec2, Angle, Mat2, Vec2};
+use common::{vec2, Angle, Color32, Mat2, Vec2};
 
 use super::*;
 

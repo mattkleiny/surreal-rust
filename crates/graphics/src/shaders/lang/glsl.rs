@@ -137,11 +137,11 @@ mod tests {
     assert_eq!(result.len(), 2);
 
     assert_eq!(result[0].kind, ShaderKind::Vertex);
-    assert!(result[0].code.trim().starts_with("#version 420 core"));
+    assert!(result[0].code.trim().starts_with("#version 330 core"));
     assert!(result[0].code.contains("gl_Position"));
 
     assert_eq!(result[1].kind, ShaderKind::Fragment);
-    assert!(result[1].code.trim().starts_with("#version 420 core"));
+    assert!(result[1].code.trim().starts_with("#version 330 core"));
     assert!(result[1].code.contains("gl_FragColor"));
 
     println!("{result:#?}");

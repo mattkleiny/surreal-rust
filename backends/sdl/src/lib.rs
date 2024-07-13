@@ -3,6 +3,7 @@
 use std::ffi::{c_int, CString};
 
 use common::FastHashSet;
+use graphics::Image;
 pub use sdl2_sys as sys;
 use sdl2_sys::{
   SDL_GLattr::{
@@ -34,7 +35,7 @@ pub struct WindowSettings {
   pub width: u32,
   pub height: u32,
   pub vsync_enabled: bool,
-  pub icon: Option<graphics::Color32Image>,
+  pub icon: Option<Image>,
 }
 
 impl Default for WindowSettings {
@@ -117,7 +118,7 @@ impl Window {
   }
 
   /// Sets the window icon.
-  pub fn set_window_icon(&self, icon: &graphics::Color32Image) {
+  pub fn set_window_icon(&self, icon: &Image) {
     use sdl2_sys::*;
 
     unsafe {

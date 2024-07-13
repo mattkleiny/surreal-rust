@@ -2,7 +2,7 @@
 
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use common::{Rectangle, UVec2};
+use common::{Color, Rectangle, UVec2};
 
 use super::*;
 

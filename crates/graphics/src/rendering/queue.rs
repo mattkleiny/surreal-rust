@@ -1,5 +1,7 @@
 use std::sync::Mutex;
 
+use common::Color;
+
 use super::*;
 
 /// A thread-safe queue of [`RenderCommand`]s.

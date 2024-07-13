@@ -5,7 +5,7 @@ use std::{
   ffi::{c_void, CString},
 };
 
-use common::{profiling, FastHashMap, Rectangle, Size, UVec2};
+use common::{profiling, Color, FastHashMap, Rectangle, Size, UVec2};
 
 use super::*;
 
