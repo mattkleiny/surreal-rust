@@ -50,5 +50,9 @@ name = "sprites"
 required-features = ["sdl", "graphics"]
 
 [[example]]
+name = "hello-script"
+required-features = ["sdl", "graphics", "lang-javascript"]
+
+[[example]]
 name = "hello-world"
 required-features = ["sdl", "graphics"]

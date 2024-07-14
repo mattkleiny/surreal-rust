@@ -1,7 +1,11 @@
+use std::{marker::PhantomData, panic::RefUnwindSafe};
+
+use common::Variant;
+
 use super::*;
 
 /// A callback that can be called from a script.
-pub trait ScriptCallback<R> {
+pub trait ScriptCallback<R>: RefUnwindSafe {
   /// Calls the callback with the given arguments.
   fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError>;
 }
@@ -34,7 +38,7 @@ macro_rules! impl_callback {
       where
           $( $arg: FromScriptValue, )*
           R: ToScriptValue,
-          F: Fn( $( $arg, )*  ) -> R,
+          F: Fn( $( $arg, )*  ) -> R + RefUnwindSafe,
       {
         fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
           if args.len() != $len {
@@ -59,3 +63,15 @@ impl_callback![
     4: (A1, A2, A3, A4,),
     5: (A1, A2, A3, A4, A5,),
 ];
+
+/// Allows calling a function with no arguments.
+impl<F> ScriptCallback<PhantomData<&F>> for F
+where
+  F: Fn() + RefUnwindSafe,
+{
+  fn call(&self, _args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
+    self();
+
+    Ok(ScriptValue::from(Variant::Null))
+  }
+}

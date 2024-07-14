@@ -26,5 +26,5 @@ pub trait ScriptRuntime {
   fn eval_as<R: FromScriptValue>(&self, code: &str) -> Result<R, ScriptError>;
 
   /// Adds a callback that can be called from scripts.
-  fn add_callback<R>(&mut self, name: &str, callback: impl ScriptCallback<R> + 'static);
+  fn add_callback<F>(&mut self, name: &str, callback: impl ScriptCallback<F> + 'static);
 }

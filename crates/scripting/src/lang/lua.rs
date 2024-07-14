@@ -38,7 +38,7 @@ impl ScriptRuntime for LuaScriptRuntime {
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
-  fn add_callback<R>(&mut self, _name: &str, _callback: impl ScriptCallback<R> + 'static) {
+  fn add_callback<F>(&mut self, _name: &str, _callback: impl ScriptCallback<F> + 'static) {
     todo!()
   }
 }

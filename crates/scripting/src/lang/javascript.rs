@@ -1,7 +1,7 @@
 //! Javascript scripting language support.
 
 use common::Variant;
-use quick_js::{Context, JsValue};
+use quick_js::{Arguments, Context, JsValue};
 
 use super::*;
 
@@ -35,8 +35,26 @@ impl ScriptRuntime for JavascriptRuntime {
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
-  fn add_callback<R>(&mut self, _name: &str, _callback: impl ScriptCallback<R> + 'static) {
-    todo!()
+  fn add_callback<F>(&mut self, name: &str, callback: impl ScriptCallback<F> + 'static) {
+    self
+      .context
+      .add_callback(name, move |args: Arguments| {
+        // convert arguments
+        let args = args
+          .into_vec()
+          .iter()
+          .map(|it| it.to_script_value())
+          .collect::<Vec<_>>();
+
+        // convert result
+        let result = callback
+          .call(&args)
+          .map(|it| JsValue::from_script_value(&it))
+          .map_err(|it| format!("{:?}", it));
+
+        result
+      })
+      .unwrap();
   }
 }
 
@@ -113,8 +131,11 @@ mod tests {
 
   #[test]
   fn test_basic_javascript_evaluation() {
-    let runtime = JavascriptRuntime::new();
-    let result = runtime.eval("1 + 2").unwrap();
+    let mut runtime = JavascriptRuntime::new();
+
+    runtime.add_callback("add", |x: i32, y: i32| x + y);
+
+    let result = runtime.eval("add(1, 2)").unwrap();
 
     assert_eq!(result, ScriptValue(Variant::I32(3)));
   }
