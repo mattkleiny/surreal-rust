@@ -1,4 +1,4 @@
-use crate::{Quat, StringName, Vec2, Vec3, Vec4};
+use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 
 /// A type that can hold varying different values.
 ///
@@ -26,6 +26,8 @@ pub enum Variant {
   Vec3(Vec3),
   Vec4(Vec4),
   Quat(Quat),
+  Color(Color),
+  Color32(Color32),
 }
 
 /// Allows for a type to be converted to a [`Variant`].
@@ -95,6 +97,8 @@ impl_variant!(Vec2, Vec2);
 impl_variant!(Vec3, Vec3);
 impl_variant!(Vec4, Vec4);
 impl_variant!(Quat, Quat);
+impl_variant!(Color, Color);
+impl_variant!(Color32, Color32);
 
 #[cfg(test)]
 mod tests {
