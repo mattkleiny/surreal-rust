@@ -9,33 +9,12 @@ use super::*;
 pub struct RenderFrame<'a> {
   pub delta_time: f32,
   pub queue: &'a mut RenderQueue,
-  pub renderer: &'a mut Renderer,
-}
-
-impl<'a> RenderFrame<'a> {
-  /// Draws the object visible to the given camera.
-  pub fn draw_camera(&mut self, scene: &dyn RenderScene, camera: &dyn Camera) {
-    // find all objects visible to the camera
-    let visible_objects = scene.cull_visible_objects(camera);
-
-    // render each object, minimizing state changes by material
-    for (material, group) in visible_objects.group_by_material(MaterialFlags::all()) {
-      self.queue.set_material(material);
-
-      for entry in group {
-        entry.object.render(self);
-      }
-    }
-  }
 }
 
 /// Represents a scene that can be rendered by a [`RenderPipeline`].
 pub trait RenderScene {
   /// Gets the cameras that should be used to render this scene.
   fn cameras(&self) -> Vec<&dyn Camera>;
-
-  /// Gets the objects that should be rendered by the given camera.
-  fn cull_visible_objects(&self, camera: &dyn Camera) -> VisibleObjectSet;
 }
 
 /// Represents an object capable of being rendered.
@@ -65,7 +44,6 @@ pub trait RenderPass {
 
 /// A [`RenderPipeline`] that executes many [`RenderPass`]es in order.
 pub struct MultiPassPipeline {
-  renderer: Renderer,
   queue: RenderQueue,
   passes: Vec<Box<dyn RenderPass>>,
 }
@@ -74,7 +52,6 @@ impl MultiPassPipeline {
   /// Creates a new [`MultiPassPipeline`] with the given passes.
   pub fn new() -> Self {
     Self {
-      renderer: Renderer::new(),
       queue: RenderQueue::default(),
       passes: Vec::default(),
     }
@@ -95,7 +72,6 @@ impl RenderPipeline for MultiPassPipeline {
     let mut frame = RenderFrame {
       delta_time,
       queue: &mut self.queue,
-      renderer: &mut self.renderer,
     };
 
     // begin the frame
@@ -136,9 +112,9 @@ pub mod forward {
   struct DepthPass {}
 
   impl RenderPass for DepthPass {
-    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
+    fn render_camera(&self, _scene: &dyn RenderScene, _camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
       frame.queue.clear_color_buffer(Color::BLACK);
-      frame.draw_camera(scene, camera);
+      // TODO: render depth
     }
   }
 
@@ -152,9 +128,9 @@ pub mod forward {
       frame.queue.set_render_target(&self.color_target);
     }
 
-    fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
+    fn render_camera(&self, _scene: &dyn RenderScene, _camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
       frame.queue.clear_color_buffer(Color::BLACK);
-      frame.draw_camera(scene, camera);
+      // TODO: render color
     }
 
     fn end_frame(&self, _scene: &dyn RenderScene, frame: &mut RenderFrame<'_>) {

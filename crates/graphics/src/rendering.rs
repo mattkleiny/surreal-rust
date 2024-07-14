@@ -4,14 +4,12 @@
 //! complex render pipelines than using the 'material', 'mesh', 'render targets'
 //! etc. do alone.
 
-pub use contexts::*;
 pub use culling::*;
 pub use pipelines::*;
 pub use queue::*;
 
 use super::*;
 
-mod contexts;
 mod culling;
 mod pipelines;
 mod queue;

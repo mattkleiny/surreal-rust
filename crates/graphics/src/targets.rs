@@ -4,8 +4,6 @@
 //! and form the basis of more complex render pipelines (deferred pipelines,
 //! post-processing, etc.).
 
-use std::{cell::RefCell, rc::Rc};
-
 use super::*;
 use crate::internal::GraphicsCell;
 
@@ -27,7 +25,28 @@ pub struct RenderTextureDescriptor {
   pub options: TextureOptions,
 }
 
+impl RenderTargetDescriptor {
+  /// Creates a new descriptor with the given size.
+  pub fn with_size(&self, width: u32, height: u32) -> Self {
+    Self {
+      color_attachment: self.color_attachment.with_size(width, height),
+      depth_attachment: self.depth_attachment.as_ref().map(|it| it.with_size(width, height)),
+      stencil_attachment: self.stencil_attachment.as_ref().map(|it| it.with_size(width, height)),
+      ..self.clone()
+    }
+  }
+}
+
 impl RenderTextureDescriptor {
+  /// Creates a new descriptor with the given size.
+  pub fn with_size(&self, width: u32, height: u32) -> Self {
+    Self {
+      width,
+      height,
+      ..self.clone()
+    }
+  }
+
   /// Converts this descriptor to a new [`Texture`].
   pub fn to_texture(&self) -> Result<Texture, TextureError> {
     Texture::new(self.width, self.height, &self.options)
