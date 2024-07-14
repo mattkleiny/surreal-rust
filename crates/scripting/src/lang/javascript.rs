@@ -31,15 +31,11 @@ impl ScriptRuntime for JavascriptRuntime {
     self
       .context
       .eval(code)
-      .map(|it| R::from_script_value(it.to_script_value()))
+      .map(|it| R::from_script_value(&it.to_script_value()))
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
-  fn add_callback<R: ToScriptValue + FromScriptValue>(
-    &mut self,
-    _name: &str,
-    _callback: impl ScriptCallback<R> + 'static,
-  ) -> Result<(), ScriptError> {
+  fn add_callback<R>(&mut self, _name: &str, _callback: impl ScriptCallback<R> + 'static) {
     todo!()
   }
 }
@@ -61,21 +57,21 @@ impl ToScriptValue for JsValue {
 }
 
 impl FromScriptValue for JsValue {
-  fn from_script_value(value: ScriptValue) -> Self {
-    match value.into_variant() {
+  fn from_script_value(value: &ScriptValue) -> Self {
+    match value.as_variant() {
       Variant::Null => JsValue::Null,
-      Variant::Bool(value) => JsValue::Bool(value),
-      Variant::U8(value) => JsValue::Int(value as i32),
-      Variant::U16(value) => JsValue::Int(value as i32),
-      Variant::U32(value) => JsValue::Int(value as i32),
-      Variant::U64(value) => JsValue::Int(value as i32),
-      Variant::I8(value) => JsValue::Int(value as i32),
-      Variant::I16(value) => JsValue::Int(value as i32),
-      Variant::I32(value) => JsValue::Int(value),
-      Variant::I64(value) => JsValue::Int(value as i32),
-      Variant::F32(value) => JsValue::Float(value as f64),
-      Variant::F64(value) => JsValue::Float(value),
-      Variant::String(value) => JsValue::String(value),
+      Variant::Bool(value) => JsValue::Bool(*value),
+      Variant::U8(value) => JsValue::Int(*value as i32),
+      Variant::U16(value) => JsValue::Int(*value as i32),
+      Variant::U32(value) => JsValue::Int(*value as i32),
+      Variant::U64(value) => JsValue::Int(*value as i32),
+      Variant::I8(value) => JsValue::Int(*value as i32),
+      Variant::I16(value) => JsValue::Int(*value as i32),
+      Variant::I32(value) => JsValue::Int(*value),
+      Variant::I64(value) => JsValue::Int(*value as i32),
+      Variant::F32(value) => JsValue::Float(*value as f64),
+      Variant::F64(value) => JsValue::Float(*value),
+      Variant::String(value) => JsValue::String(value.clone()),
       Variant::StringName(value) => JsValue::String(value.to_string()),
       Variant::Vec2(value) => JsValue::Array(vec![JsValue::Float(value.x as f64), JsValue::Float(value.y as f64)]),
       Variant::Vec3(value) => JsValue::Array(vec![

@@ -34,15 +34,11 @@ impl ScriptRuntime for LuaScriptRuntime {
       .lua
       .load(code)
       .eval()
-      .map(|it| R::from_script_value(it))
+      .map(|it| R::from_script_value(&it))
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
-  fn add_callback<R: ToScriptValue + FromScriptValue>(
-    &mut self,
-    _name: &str,
-    _callback: impl ScriptCallback<R> + 'static,
-  ) -> Result<(), ScriptError> {
+  fn add_callback<R>(&mut self, _name: &str, _callback: impl ScriptCallback<R> + 'static) {
     todo!()
   }
 }

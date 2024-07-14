@@ -52,7 +52,7 @@ pub trait ToScriptValue {
 /// A type that can be converted from a [`ScriptValue`].
 pub trait FromScriptValue {
   /// Converts a [`ScriptValue`] into the type.
-  fn from_script_value(value: ScriptValue) -> Self;
+  fn from_script_value(value: &ScriptValue) -> Self;
 }
 
 macro_rules! impl_script_value {
@@ -66,9 +66,9 @@ macro_rules! impl_script_value {
 
     impl FromScriptValue for $type {
       #[inline]
-      fn from_script_value(value: ScriptValue) -> Self {
-        match value.0 {
-          Variant::$kind(value) => value,
+      fn from_script_value(value: &ScriptValue) -> Self {
+        match &value.0 {
+          Variant::$kind(value) => value.clone(),
           _ => panic!("ScriptValue is not convertible"),
         }
       }
@@ -103,7 +103,7 @@ mod tests {
   #[test]
   fn test_script_value_conversion() {
     let value = true.to_script_value();
-    let result = bool::from_script_value(value);
+    let result = bool::from_script_value(&value);
 
     assert_eq!(result, true);
   }
