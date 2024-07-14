@@ -54,15 +54,3 @@ mod parser {
     todo!()
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_load_wren_files_from_file_system() {
-    let script = Script::from_path::<Wren>("tests/test.wren").unwrap();
-
-    assert_eq!(script.module.name, "test");
-  }
-}

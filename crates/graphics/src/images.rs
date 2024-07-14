@@ -1,12 +1,12 @@
 //! Image loading and manipulation.
 
-use common::{Color32, FileSystemError, Pixel, ToVirtualPath};
+use common::{Color32, FileSystemError, InputStream, Pixel, ToVirtualPath};
 
 /// An error that occurred while loading an image.
 #[derive(Debug)]
 pub enum ImageError {
   IoError(FileSystemError),
-  ImageError(image::ImageError),
+  ParseError(image::ImageError),
 }
 
 /// An image.
@@ -24,26 +24,26 @@ impl<P: Pixel> Image<P> {
     Self { width, height, pixels }
   }
 
-  /// Loads an image from the path.
+  /// Loads an image from the given path.
   pub fn from_path(path: impl ToVirtualPath) -> Result<Self, ImageError> {
     let path = path.to_virtual_path();
-    let stream = path.open_input_stream().map_err(|error| ImageError::IoError(error))?;
+    let mut stream = path.open_input_stream().map_err(|error| ImageError::IoError(error))?;
 
-    Self::from_stream(stream)
+    Self::from_stream(&mut stream)
   }
 
   /// Loads an image from the given stream.
-  pub fn from_stream(stream: impl common::InputStream) -> Result<Self, ImageError> {
-    Ok(Self::from_dynamic_image(
-      image::load(stream, image::ImageFormat::Png).map_err(|it| ImageError::ImageError(it))?,
-    ))
+  pub fn from_stream(stream: &mut dyn InputStream) -> Result<Self, ImageError> {
+    let dynamic_image = image::load(stream, image::ImageFormat::Png).map_err(|it| ImageError::ParseError(it))?;
+
+    Ok(Self::from_dynamic_image(dynamic_image))
   }
 
   /// Loads an image from the given slice of bytes.
   pub fn from_slice(slice: &[u8]) -> Result<Self, ImageError> {
-    Ok(Self::from_dynamic_image(
-      image::load_from_memory(slice).map_err(|it| ImageError::ImageError(it))?,
-    ))
+    let dynamic_image = image::load_from_memory(slice).map_err(|it| ImageError::ParseError(it))?;
+
+    Ok(Self::from_dynamic_image(dynamic_image))
   }
 
   /// Loads an image from the given [`image::DynamicImage`].
@@ -52,7 +52,7 @@ impl<P: Pixel> Image<P> {
     let height = image.height();
     let pixels = image.to_rgba8().into_raw();
 
-    // reinterpret the pixels as the pixel type
+    // reinterpret the pixels as our desired pixel type
     let pixels = unsafe {
       let (pointer, length, capacity, _) = pixels.into_raw_parts_with_alloc();
 
@@ -77,12 +77,30 @@ impl<P: Pixel> Image<P> {
   /// Gets the pixel at the given coordinates.
   #[inline]
   pub fn get_pixel(&self, x: u32, y: u32) -> P {
+    if x < self.width && y < self.height {
+      self.pixels[(self.width + x * y) as usize]
+    } else {
+      P::default()
+    }
+  }
+
+  /// Gets the pixel at the given coordinates without bounds checking.
+  #[inline]
+  pub unsafe fn get_pixel_unchecked(&self, x: u32, y: u32) -> P {
     self.pixels[(self.width + x * y) as usize]
   }
 
   /// Sets the pixel at the given coordinates.
   #[inline]
   pub fn set_pixel(&mut self, x: u32, y: u32, pixel: P) {
+    if x < self.width && y < self.height {
+      self.pixels[(self.width + x * y) as usize] = pixel;
+    }
+  }
+
+  /// Sets the pixel at the given coordinates without bounds checking.
+  #[inline]
+  pub unsafe fn set_pixel_unchecked(&mut self, x: u32, y: u32, pixel: P) {
     self.pixels[(self.width + x * y) as usize] = pixel;
   }
 
@@ -102,6 +120,12 @@ impl<P: Pixel> Image<P> {
   #[inline]
   pub fn as_ptr(&self) -> *const P {
     self.pixels.as_ptr()
+  }
+
+  /// Returns a mutable pointer to the pixels.
+  #[inline]
+  pub fn as_mut_ptr(&mut self) -> *mut P {
+    self.pixels.as_mut_ptr()
   }
 }
 

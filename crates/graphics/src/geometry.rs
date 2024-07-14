@@ -1,6 +1,6 @@
 //! Geometry batching for common shapes and polygon rendering.
 
-use common::{vec2, Color32, Rectangle, Vec2};
+use common::{vec2, Circle, Color32, Line, Rectangle, Vec2};
 
 use super::*;
 
@@ -40,6 +40,11 @@ impl GeometryBatch {
   pub fn begin(&mut self, material: &Material) {
     self.material = Some(material.clone());
     self.vertices.clear();
+  }
+
+  /// Draws a shape in the batch.
+  pub fn draw_brush(&mut self, brush: &impl GeometryBrush) {
+    brush.draw(self);
   }
 
   /// Draws a triangle in the batch.
@@ -166,5 +171,29 @@ impl GeometryBatch {
 
     self.vertices.clear();
     self.indices.clear();
+  }
+}
+
+/// Allows a type to be converted into a geometry and drawn in a batch.
+pub trait GeometryBrush {
+  /// Draws the geometry into the given batch.
+  fn draw(&self, batch: &mut GeometryBatch);
+}
+
+impl GeometryBrush for Line {
+  fn draw(&self, _batch: &mut GeometryBatch) {
+    todo!()
+  }
+}
+
+impl GeometryBrush for Rectangle {
+  fn draw(&self, batch: &mut GeometryBatch) {
+    batch.draw_rectangle(*self, Color32::WHITE);
+  }
+}
+
+impl GeometryBrush for Circle {
+  fn draw(&self, batch: &mut GeometryBatch) {
+    batch.draw_circle(self.center, self.radius, 32, Color32::WHITE);
   }
 }

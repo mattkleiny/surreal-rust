@@ -1,10 +1,9 @@
 //! Texture management and loading.
 
-use std::{cell::RefCell, rc::Rc};
-
 use common::{uvec2, Color, Color32, Pixel, Rectangle, ToVirtualPath, UVec2};
 
 use super::*;
+use crate::internal::GraphicsCell;
 
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -68,7 +67,7 @@ impl Default for TextureOptions {
 /// A texture is a set of pixel data that has been uploaded to the GPU.
 #[derive(Clone)]
 pub struct Texture {
-  state: Rc<RefCell<TextureState>>,
+  state: GraphicsCell<TextureState>,
 }
 
 struct TextureState {
@@ -80,8 +79,19 @@ struct TextureState {
 
 impl Texture {
   /// Creates a new blank texture on the GPU with default options.
-  pub fn new() -> Result<Self, TextureError> {
-    Self::with_options(&TextureOptions::default())
+  pub fn new(width: u32, height: u32, options: &TextureOptions) -> Result<Self, TextureError> {
+    let texture = Self {
+      state: GraphicsCell::new(TextureState {
+        id: graphics().texture_create(&options.sampler)?,
+        options: options.clone(),
+        width,
+        height,
+      }),
+    };
+
+    texture.initialize(width, height, options.format);
+
+    Ok(texture)
   }
 
   /// Loads a texture from the given path.
@@ -93,9 +103,8 @@ impl Texture {
 
   /// Loads a texture from the given image.
   pub fn from_image<T: Pixel + Texel>(image: &Image<T>) -> Result<Self, TextureError> {
-    let texture = Self::new()?;
+    let texture = Self::new(image.width(), image.height(), &TextureOptions::default())?;
 
-    texture.initialize(image.width(), image.height(), TextureFormat::RGBA8);
     texture.write_pixels(image.width(), image.height(), image.as_slice());
 
     Ok(texture)
@@ -103,7 +112,11 @@ impl Texture {
 
   /// Builds a new colored texture of the given size.
   pub fn from_color<T: Texel>(width: u32, height: u32, color: T) -> Result<Self, TextureError> {
-    let texture = Self::new()?;
+    let texture = Self::new(width, height, &TextureOptions {
+      format: T::FORMAT,
+      ..TextureOptions::default()
+    })?;
+
     let colors = vec![color; width as usize * height as usize];
 
     texture.write_pixels(width, height, &colors);
@@ -111,50 +124,29 @@ impl Texture {
     Ok(texture)
   }
 
-  /// Creates a new blank texture on the GPU with the given options and size.
-  pub fn with_options_and_size(
-    options: &TextureOptions,
-    width: u32,
-    height: u32,
-    format: TextureFormat,
-  ) -> Result<Self, TextureError> {
-    let texture = Self::with_options(options)?;
-
-    texture.initialize(width, height, format);
-
-    Ok(texture)
-  }
-
-  /// Creates a new blank texture on the GPU with the given options.
-  pub fn with_options(options: &TextureOptions) -> Result<Self, TextureError> {
-    Ok(Self {
-      state: Rc::new(RefCell::new(TextureState {
-        id: graphics().texture_create(&options.sampler)?,
-        options: options.clone(),
-        width: 0,
-        height: 0,
-      })),
-    })
-  }
-
   /// Returns the [`TextureId`] of the underlying texture.
   pub fn id(&self) -> TextureId {
-    self.state.borrow().id
+    self.state.read().id
   }
 
   /// Returns the width of the texture.
   pub fn width(&self) -> u32 {
-    self.state.borrow().width
+    self.state.read().width
   }
 
   /// Returns the width of the texture.
   pub fn height(&self) -> u32 {
-    self.state.borrow().height
+    self.state.read().height
+  }
+
+  /// Returns the texture's format.
+  pub fn format(&self) -> TextureFormat {
+    self.state.read().options.format
   }
 
   /// Sets the texture's options on the GPU.
   pub fn set_options(&mut self, options: TextureOptions) {
-    let mut state = self.state.borrow_mut();
+    let mut state = self.state.write();
 
     state.options = options;
 
@@ -168,7 +160,7 @@ impl Texture {
   /// This is only necessary if the texture requires sizing information prior to
   /// access from the GPU.
   fn initialize(&self, width: u32, height: u32, format: TextureFormat) {
-    let mut state = self.state.borrow_mut();
+    let mut state = self.state.write();
 
     state.width = width;
     state.height = height;
@@ -188,15 +180,13 @@ impl Texture {
   /// Note that this will discard the contents of the texture and fill it with
   /// the default value.
   pub fn resize(&mut self, width: u32, height: u32) {
-    let format = self.state.borrow().options.format;
-
-    self.initialize(width, height, format);
+    self.initialize(width, height, self.format());
   }
 
   /// Downloads pixel data from the texture.
   #[allow(clippy::uninit_vec)]
   pub fn read_pixels<T: Texel>(&self) -> Vec<T> {
-    let state = self.state.borrow();
+    let state = self.state.read();
 
     let size = state.width as usize * state.height as usize;
     let mut buffer = Vec::<T>::with_capacity(size);
@@ -207,7 +197,7 @@ impl Texture {
       graphics()
         .texture_read_data(
           state.id,
-          size * std::mem::size_of::<T>(),
+          size * size_of::<T>(),
           T::FORMAT,
           buffer.as_mut_ptr() as *mut u8,
           0, // mip level
@@ -220,7 +210,7 @@ impl Texture {
 
   /// Uploads pixel data to the texture.
   pub fn write_pixels<T: Texel>(&self, width: u32, height: u32, pixels: &[T]) {
-    let mut state = self.state.borrow_mut();
+    let mut state = self.state.write();
 
     state.width = width;
     state.height = height;
@@ -243,7 +233,7 @@ impl Texture {
 
   /// Uploads a subsection of pixel data to the texture.
   pub fn write_sub_pixels<T: Texel>(&self, region: &Rectangle, pixels: &[T]) {
-    let state = self.state.borrow();
+    let state = self.state.read();
 
     graphics()
       .texture_write_sub_data(
@@ -359,5 +349,26 @@ mod tests {
 
     assert_eq!(texture.width(), 128);
     assert_eq!(texture.height(), 128);
+  }
+
+  #[test]
+  fn test_conversion_to_texture_region() {
+    let texture = Texture::new(16, 16, &TextureOptions::default()).unwrap();
+    let region = texture.to_region();
+
+    assert_eq!(region.offset, uvec2(0, 0));
+    assert_eq!(region.size, uvec2(16, 16));
+  }
+
+  #[test]
+  fn test_texture_region_uv_calculation() {
+    let texture = Texture::new(16, 16, &TextureOptions::default()).unwrap();
+    let region = texture.to_region().with_offset(uvec2(4, 4)).with_size(uvec2(8, 8));
+    let uv = region.calculate_uv();
+
+    assert_eq!(uv.left(), 0.25);
+    assert_eq!(uv.top(), 0.25);
+    assert_eq!(uv.right(), 0.75);
+    assert_eq!(uv.bottom(), 0.75);
   }
 }

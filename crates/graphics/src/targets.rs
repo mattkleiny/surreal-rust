@@ -7,6 +7,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use super::*;
+use crate::internal::GraphicsCell;
 
 /// Describes how to build a [`RenderTarget`].
 ///
@@ -29,15 +30,14 @@ pub struct RenderTextureDescriptor {
 impl RenderTextureDescriptor {
   /// Converts this descriptor to a new [`Texture`].
   pub fn to_texture(&self) -> Result<Texture, TextureError> {
-    Texture::with_options_and_size(&self.options, self.width, self.height, self.options.format)
+    Texture::new(self.width, self.height, &self.options)
   }
 }
 
-/// A render target is a collection of one or more buffers that can be rendered
-/// to.
+/// A render target is a collection of one or more buffers that rendered.
 #[derive(Clone)]
 pub struct RenderTarget {
-  state: Rc<RefCell<RenderTargetState>>,
+  state: GraphicsCell<RenderTargetState>,
 }
 
 /// The inner state of a [`RenderTarget`].
@@ -67,7 +67,7 @@ impl RenderTarget {
       .and_then(|it| it.to_texture().ok());
 
     Ok(Self {
-      state: Rc::new(RefCell::new(RenderTargetState {
+      state: GraphicsCell::new(RenderTargetState {
         id: graphics().target_create(
           color_attachment.id(),
           depth_attachment.as_ref().map(|it| it.id()),
@@ -76,42 +76,34 @@ impl RenderTarget {
         color_attachment,
         depth_attachment,
         stencil_attachment,
-      })),
+      }),
     })
   }
 
   /// Retrieves the [`TargetId`] of the underlying render target.
   pub fn id(&self) -> TargetId {
-    self.state.borrow().id
+    self.state.read().id
   }
 
   /// Retrieves the color attachment for the target.
   pub fn color_attachment(&self) -> Texture {
-    let state = self.state.borrow();
-
-    state.color_attachment.clone()
+    self.state.read().color_attachment.clone()
   }
 
   /// Retrieves the depth attachment for the target.
   pub fn depth_attachment(&self) -> Option<Texture> {
-    let state = self.state.borrow();
-
-    state.depth_attachment.clone()
+    self.state.read().depth_attachment.clone()
   }
 
   /// Retrieves the stencil attachment for the target.
   pub fn stencil_attachment(&self) -> Option<Texture> {
-    let state = self.state.borrow();
-
-    state.stencil_attachment.clone()
+    self.state.read().stencil_attachment.clone()
   }
 
   /// Activates the [`RenderTarget`].
   pub fn activate(&self) {
-    let state = self.state.borrow();
-
     graphics()
-      .target_activate(state.id)
+      .target_activate(self.id())
       .expect("Failed to activate render target");
   }
 
@@ -124,10 +116,8 @@ impl RenderTarget {
 
   /// Blits this render target to the active target.
   pub fn blit_to_active(&self, filter: TextureFilter) {
-    let state = self.state.borrow();
-
     graphics()
-      .target_blit_to_active(state.id, None, None, filter)
+      .target_blit_to_active(self.id(), None, None, filter)
       .expect("Failed to blit render target to display");
   }
 }

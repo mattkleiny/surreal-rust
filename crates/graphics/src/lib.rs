@@ -6,7 +6,6 @@
 
 pub use animations::*;
 pub use buffers::*;
-use common::Color;
 pub use fonts::*;
 pub use geometry::*;
 pub use images::*;
@@ -26,6 +25,7 @@ mod fonts;
 mod geometry;
 mod headless;
 mod images;
+mod internal;
 mod lighting;
 mod materials;
 mod meshes;
@@ -109,7 +109,7 @@ pub trait GraphicsBackend {
   fn end_frame(&self);
 
   // clear targets
-  fn clear_color_buffer(&self, color: Color);
+  fn clear_color_buffer(&self, color: common::Color);
   fn clear_depth_buffer(&self, depth: f32);
 
   // intrinsics

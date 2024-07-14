@@ -5,13 +5,11 @@
 //!
 //! For higher-level shader control see the material module instead.
 
-use core::str;
-use std::{cell::RefCell, rc::Rc};
-
 use bitflags::bitflags;
 use common::*;
 
 use super::*;
+use crate::internal::GraphicsCell;
 
 mod lang;
 mod templates;
@@ -54,7 +52,7 @@ pub struct ShaderKernel {
 /// Represents a single compiled shader program.
 #[derive(Clone)]
 pub struct ShaderProgram {
-  state: Rc<RefCell<ShaderProgramState>>,
+  state: GraphicsCell<ShaderProgramState>,
 }
 
 /// The internal state for a [`ShaderProgram`] .
@@ -67,10 +65,10 @@ impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
   pub fn new() -> Result<Self, ShaderError> {
     Ok(Self {
-      state: Rc::new(RefCell::new(ShaderProgramState {
+      state: GraphicsCell::new(ShaderProgramState {
         id: graphics().shader_create()?,
         location_cache: FastHashMap::default(),
-      })),
+      }),
     })
   }
 
@@ -109,13 +107,13 @@ impl ShaderProgram {
 
   /// Returns the [`ShaderId`] of the underlying program.
   pub fn id(&self) -> ShaderId {
-    self.state.borrow().id
+    self.state.read().id
   }
 
   /// Retrieves the binding location of the given shader uniform in the
   /// underlying program.
   pub fn get_uniform_location(&self, name: &str) -> Option<usize> {
-    let state = self.state.borrow();
+    let state = self.state.read();
 
     if let Some(location) = state.location_cache.get(name) {
       return location.to_owned();
@@ -123,7 +121,7 @@ impl ShaderProgram {
 
     drop(state);
 
-    let mut state = self.state.borrow_mut();
+    let mut state = self.state.write();
     let location = graphics().shader_uniform_location(state.id, name);
 
     state.location_cache.insert(name.to_string(), location);
@@ -134,7 +132,7 @@ impl ShaderProgram {
   /// Sets the given uniform value in the underlying program.
   pub fn set_uniform(&self, name: &str, value: &ShaderUniform) {
     if let Some(location) = self.get_uniform_location(name) {
-      let state = self.state.borrow();
+      let state = self.state.read();
 
       graphics()
         .shader_set_uniform(state.id, location, value)
