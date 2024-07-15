@@ -4,30 +4,46 @@ use crate::{FileSystemError, ToVirtualPath};
 
 /// Allows a type to be imported from a VFS stream.
 pub trait FromStream: Sized {
-  /// Imports the type from a stream.
-  fn from_stream(stream: &mut dyn InputStream) -> Result<Self, FileSystemError>;
-
   /// Imports the type from a path.
-  fn from_path(path: impl ToVirtualPath) -> Result<Self, FileSystemError> {
+  fn from_path(path: impl ToVirtualPath) -> Result<Self, StreamError> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream()?;
 
     Self::from_stream(&mut stream)
   }
+
+  /// Imports the type from a byte array.
+  fn from_bytes(bytes: &[u8]) -> Result<Self, StreamError> {
+    let mut stream = std::io::Cursor::new(bytes);
+
+    Self::from_stream(&mut stream)
+  }
+
+  /// Imports the type from a stream.
+  fn from_stream(stream: &mut dyn InputStream) -> Result<Self, StreamError>;
 }
 
 /// Allows a type to be exported to a VFS stream.
 pub trait ToStream: Sized {
-  /// Exports the type to a stream.
-  fn to_stream(&self, stream: &mut dyn OutputStream) -> Result<(), FileSystemError>;
-
   /// Exports the type to a path.
-  fn to_path(&self, path: impl ToVirtualPath) -> Result<(), FileSystemError> {
+  fn to_path(&self, path: impl ToVirtualPath) -> Result<(), StreamError> {
     let path = path.to_virtual_path();
     let mut stream = path.open_output_stream()?;
 
     self.to_stream(&mut stream)
   }
+
+  /// Exports the type to a byte array.
+  fn to_bytes(&self) -> Result<Vec<u8>, StreamError> {
+    let mut stream = std::io::Cursor::new(Vec::new());
+
+    self.to_stream(&mut stream)?;
+
+    Ok(stream.into_inner())
+  }
+
+  /// Exports the type to a stream.
+  fn to_stream(&self, stream: &mut dyn OutputStream) -> Result<(), StreamError>;
 }
 
 /// Represents an error that occurred while reading or writing to a stream.
@@ -35,7 +51,7 @@ pub trait ToStream: Sized {
 pub enum StreamError {
   UnexpectedEof,
   UnexpectedEncoding,
-  FailedToDeserialize,
+  GeneralFailure,
 }
 
 impl From<std::io::Error> for StreamError {
@@ -49,6 +65,13 @@ impl From<std::string::FromUtf8Error> for StreamError {
   #[inline]
   fn from(_: std::string::FromUtf8Error) -> Self {
     Self::UnexpectedEof
+  }
+}
+
+impl From<FileSystemError> for StreamError {
+  #[inline]
+  fn from(_: FileSystemError) -> Self {
+    Self::GeneralFailure
   }
 }
 
@@ -70,8 +93,8 @@ pub trait InputStream: Seek + BufRead {
   fn read_f64(&mut self) -> Result<f64, StreamError>;
   fn read_string(&mut self) -> Result<String, StreamError>;
   fn read_bytes(&mut self, amount: usize) -> Result<Vec<u8>, StreamError>;
-  fn to_buffer(&mut self) -> Result<Vec<u8>, StreamError>;
-  fn to_string(&mut self) -> Result<String, StreamError>;
+  fn to_buffer(self) -> Result<Vec<u8>, StreamError>;
+  fn to_string(self) -> Result<String, StreamError>;
 }
 
 macro_rules! impl_read {
@@ -113,7 +136,7 @@ impl<T: BufRead + Seek> InputStream for T {
 
   #[inline]
   fn read_usize(&mut self) -> Result<usize, StreamError> {
-    impl_read!(self, std::mem::size_of::<usize>(), usize)
+    impl_read!(self, size_of::<usize>(), usize)
   }
 
   #[inline]
@@ -143,7 +166,7 @@ impl<T: BufRead + Seek> InputStream for T {
 
   #[inline]
   fn read_isize(&mut self) -> Result<isize, StreamError> {
-    impl_read!(self, std::mem::size_of::<isize>(), isize)
+    impl_read!(self, size_of::<isize>(), isize)
   }
 
   #[inline]
@@ -173,7 +196,7 @@ impl<T: BufRead + Seek> InputStream for T {
     Ok(buffer)
   }
 
-  fn to_buffer(&mut self) -> Result<Vec<u8>, StreamError> {
+  fn to_buffer(mut self) -> Result<Vec<u8>, StreamError> {
     let mut buffer = Vec::new();
 
     self.read_to_end(&mut buffer)?;
@@ -181,7 +204,7 @@ impl<T: BufRead + Seek> InputStream for T {
     Ok(buffer)
   }
 
-  fn to_string(&mut self) -> Result<String, StreamError> {
+  fn to_string(mut self) -> Result<String, StreamError> {
     let mut buffer = String::new();
 
     self.read_to_string(&mut buffer)?;

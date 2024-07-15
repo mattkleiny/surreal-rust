@@ -11,27 +11,6 @@ use crate::{Singleton, StringName, ToStringName};
 mod local;
 mod memory;
 
-/// A potential error that can occur when interacting with a [`FileSystem`].
-#[derive(Debug)]
-pub enum FileSystemError {
-  GeneralError(std::io::Error),
-  StreamError(super::StreamError),
-}
-
-impl From<std::io::Error> for FileSystemError {
-  #[inline]
-  fn from(error: std::io::Error) -> Self {
-    Self::GeneralError(error)
-  }
-}
-
-impl From<super::StreamError> for FileSystemError {
-  #[inline]
-  fn from(error: super::StreamError) -> Self {
-    Self::StreamError(error)
-  }
-}
-
 /// Represents a type capable of acting as a file system.
 ///
 /// File systems are resolved from the scheme used in [`VirtualPath`]s, and
@@ -187,17 +166,14 @@ impl VirtualPath {
 
   /// Attempts to read all bytes from the given path.
   pub fn read_all_bytes(&self) -> Result<Vec<u8>, FileSystemError> {
-    let mut buffer = Vec::new();
-    let mut stream = self.open_input_stream()?;
+    let stream = self.open_input_stream()?;
 
-    stream.read_to_end(&mut buffer)?;
-
-    Ok(buffer)
+    Ok(stream.to_buffer()?)
   }
 
   /// Attempts to read all text from the given path.
   pub fn read_all_text(&self) -> Result<String, FileSystemError> {
-    let mut stream = self.open_input_stream()?;
+    let stream = self.open_input_stream()?;
 
     Ok(stream.to_string()?)
   }
@@ -248,6 +224,27 @@ impl Into<VirtualPath> for String {
   #[inline]
   fn into(self) -> VirtualPath {
     self.as_str().to_virtual_path()
+  }
+}
+
+/// A potential error that can occur when interacting with a [`FileSystem`].
+#[derive(Debug)]
+pub enum FileSystemError {
+  GeneralError(std::io::Error),
+  StreamError(super::StreamError),
+}
+
+impl From<std::io::Error> for FileSystemError {
+  #[inline]
+  fn from(error: std::io::Error) -> Self {
+    Self::GeneralError(error)
+  }
+}
+
+impl From<super::StreamError> for FileSystemError {
+  #[inline]
+  fn from(error: super::StreamError) -> Self {
+    Self::StreamError(error)
   }
 }
 
