@@ -7,7 +7,7 @@ use super::*;
 /// A callback that can be called from a script.
 pub trait ScriptCallback<R>: RefUnwindSafe {
   /// Calls the callback with the given arguments.
-  fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError>;
+  fn call(&self, args: &[Variant]) -> Result<Variant, ScriptError>;
 }
 
 /// Implements the `ScriptCallback` trait for functions with up to 5 arguments.
@@ -20,7 +20,7 @@ macro_rules! impl_callback {
     {
       let mut iter = $args.into_iter();
 
-      $self($($arg::from_script_value(iter.next().unwrap()),)*)
+      $self($($arg::from_script_variant(iter.next().unwrap()),)*)
     }
   };
 
@@ -36,11 +36,11 @@ macro_rules! impl_callback {
           &F,
       )>> for F
       where
-          $( $arg: FromScriptValue, )*
-          R: ToScriptValue,
+          $( $arg: FromScriptVariant, )*
+          R: ToScriptVariant,
           F: Fn( $( $arg, )*  ) -> R + RefUnwindSafe,
       {
-        fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
+        fn call(&self, args: &[Variant]) -> Result<Variant, ScriptError> {
           if args.len() != $len {
             return Err(ScriptError::ExecutionError(format!("Invalid argument count: Expected {}, got {}", $len, args.len())));
           }
@@ -48,7 +48,7 @@ macro_rules! impl_callback {
           // recursive
           let result = impl_callback!(@call $len self args $($arg),* );
 
-          Ok(result.to_script_value())
+          Ok(result.to_script_variant())
         }
       }
     )*
@@ -69,9 +69,9 @@ impl<F> ScriptCallback<PhantomData<&F>> for F
 where
   F: Fn() + RefUnwindSafe,
 {
-  fn call(&self, _args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
+  fn call(&self, _args: &[Variant]) -> Result<Variant, ScriptError> {
     self();
 
-    Ok(ScriptValue::from(Variant::Null))
+    Ok(Variant::from(Variant::Null))
   }
 }

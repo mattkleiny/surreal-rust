@@ -1,7 +1,7 @@
 //! Lua scripting language support
 
 use common::Variant;
-use mlua::{FromLua, Lua, StdLib, Value};
+use mlua::{Lua, StdLib};
 
 use super::*;
 
@@ -21,43 +21,16 @@ impl LuaScriptRuntime {
 }
 
 impl ScriptRuntime for LuaScriptRuntime {
-  fn eval(&self, code: &str) -> Result<ScriptValue, ScriptError> {
-    self
-      .lua
-      .load(code)
-      .eval()
-      .map_err(|it| ScriptError::ExecutionError(it.to_string()))
+  fn eval(&self, _code: &str) -> Result<Variant, ScriptError> {
+    todo!()
   }
 
-  fn eval_as<R: FromScriptValue>(&self, code: &str) -> Result<R, ScriptError> {
-    self
-      .lua
-      .load(code)
-      .eval()
-      .map(|it| R::from_script_value(&it))
-      .map_err(|it| ScriptError::ExecutionError(it.to_string()))
+  fn eval_as<R: FromScriptVariant>(&self, _code: &str) -> Result<R, ScriptError> {
+    todo!()
   }
 
   fn add_callback<F>(&mut self, _name: &str, _callback: impl ScriptCallback<F> + 'static) {
     todo!()
-  }
-}
-
-impl<'lua> FromLua<'lua> for ScriptValue {
-  fn from_lua(value: Value<'lua>, _lua: &'lua Lua) -> mlua::Result<Self> {
-    Ok(match value {
-      Value::Nil => ScriptValue::from(Variant::Null),
-      Value::Boolean(value) => ScriptValue::from(Variant::Bool(value)),
-      Value::LightUserData(_) => todo!("LightUserData conversion not implemented"),
-      Value::Integer(value) => ScriptValue::from(Variant::I32(value as i32)),
-      Value::Number(value) => ScriptValue::from(Variant::F64(value)),
-      Value::String(value) => ScriptValue::from(Variant::String(value.to_str()?.to_string())),
-      Value::Table(_) => todo!("Table conversion not implemented"),
-      Value::Function(_) => todo!("Function conversion not implemented"),
-      Value::Thread(_) => todo!("Thread conversion not implemented"),
-      Value::UserData(_) => todo!("UserData conversion not implemented"),
-      Value::Error(_) => todo!("Error conversion not implemented"),
-    })
   }
 }
 
@@ -71,6 +44,6 @@ mod tests {
 
     let result = runtime.eval("return 42").unwrap();
 
-    assert_eq!(result, ScriptValue::from(Variant::I32(42)));
+    assert_eq!(result, Variant::I32(42));
   }
 }

@@ -1,75 +1,32 @@
 use common::{Color, Color32, Quat, StringName, Variant, Vec2, Vec3, Vec4};
 
-/// A value that can be passed to and from a scripting language.
-///
-/// This is a new-type pattern over [`Variant`] to allow simple interop with
-/// many different scripting language vendor crates.
-#[repr(transparent)]
-#[derive(Clone, Debug, PartialEq)]
-pub struct ScriptValue(pub Variant);
-
-impl ScriptValue {
-  /// Creates a new `ScriptValue` from a `Variant`.
-  pub const fn new(variant: Variant) -> Self {
-    Self(variant)
-  }
-
-  /// Returns a reference to the inner `Variant` value.
-  #[inline]
-  pub fn as_variant(&self) -> &Variant {
-    &self.0
-  }
-
-  /// Returns the inner `Variant` value.
-  #[inline]
-  pub fn into_variant(self) -> Variant {
-    self.0
-  }
+/// A local type that can be converted to a [`Variant`].
+pub trait ToScriptVariant {
+  /// Converts the type into a [`Variant`].
+  fn to_script_variant(&self) -> Variant;
 }
 
-/// Allow conversion from [`Variant`].
-impl From<Variant> for ScriptValue {
-  #[inline]
-  fn from(variant: Variant) -> Self {
-    Self(variant)
-  }
-}
-
-/// Allow conversion into [`Variant`].
-impl From<ScriptValue> for Variant {
-  #[inline]
-  fn from(value: ScriptValue) -> Self {
-    value.0
-  }
-}
-
-/// A type that can be converted to a [`ScriptValue`].
-pub trait ToScriptValue {
-  /// Converts the type into a [`ScriptValue`].
-  fn to_script_value(&self) -> ScriptValue;
-}
-
-/// A type that can be converted from a [`ScriptValue`].
-pub trait FromScriptValue {
-  /// Converts a [`ScriptValue`] into the type.
-  fn from_script_value(value: &ScriptValue) -> Self;
+/// A type that can be converted from a [`Variant`].
+pub trait FromScriptVariant {
+  /// Converts a [`Variant`] into the type.
+  fn from_script_variant(value: &Variant) -> Self;
 }
 
 macro_rules! impl_script_value {
   ($type:ty, $kind:ident) => {
-    impl ToScriptValue for $type {
+    impl ToScriptVariant for $type {
       #[inline]
-      fn to_script_value(&self) -> ScriptValue {
-        ScriptValue(Variant::from(self.clone()))
+      fn to_script_variant(&self) -> Variant {
+        Variant::from(self.clone())
       }
     }
 
-    impl FromScriptValue for $type {
+    impl FromScriptVariant for $type {
       #[inline]
-      fn from_script_value(value: &ScriptValue) -> Self {
-        match &value.0 {
+      fn from_script_variant(value: &Variant) -> Self {
+        match &value {
           Variant::$kind(value) => value.clone(),
-          _ => panic!("ScriptValue is not convertible"),
+          _ => panic!("Variant is not convertible"),
         }
       }
     }
@@ -102,8 +59,8 @@ mod tests {
 
   #[test]
   fn test_script_value_conversion() {
-    let value = true.to_script_value();
-    let result = bool::from_script_value(&value);
+    let value = true.to_script_variant();
+    let result = bool::from_script_variant(&value);
 
     assert_eq!(result, true);
   }

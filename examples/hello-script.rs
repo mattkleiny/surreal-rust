@@ -18,7 +18,7 @@ fn main() {
   });
 
   while window.update() {
-    runtime.eval("clear_screen(1, 0, 1)").unwrap();
+    runtime.eval("clear_screen(1, 0, 1);").unwrap();
     window.present();
   }
 }
