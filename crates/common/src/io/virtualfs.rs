@@ -86,7 +86,6 @@ impl FileSystemManager {
 /// `zip://Assets.zip/Textures/Texture01.png`, or something more exotic like a
 /// packed storage scheme `packed://Assets.pak/Textures/Texture01.png`.
 #[derive(Clone, Hash, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct VirtualPath {
   scheme: StringName,
   location: String,

@@ -18,18 +18,13 @@ opt-level = 3
 
 [features]
 default = []
-serde = ["common/serde", "graphics/serde"]
-serde-json = ["common/json"]
-serde-ron = ["common/ron"]
-serde-xml = ["common/xml"]
-serde-yaml = ["common/yaml"]
 lang-lua = ["scripting/lua"]
 lang-javascript = ["scripting/javascript"]
 
 [workspace.dependencies]
 # shared dependencies
-serde = { version = "1.0.159", features = ["derive"] }
 bitflags = "2.1.0"
+nanoserde = "0.1.37"
 
 [dependencies]
 # core

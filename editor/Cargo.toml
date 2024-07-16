@@ -12,6 +12,3 @@ audio = { package = "surreal-audio", path = "../crates/audio" }
 graphics = { package = "surreal-graphics", path = "../crates/graphics" }
 input = { package = "surreal-input", path = "../crates/input" }
 sdl = { package = "surreal-backend-sdl", path = "../backends/sdl" }
-
-# third-party dependencies
-serde = { version = "1.0.159", features = ["derive"], optional = true }

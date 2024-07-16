@@ -23,17 +23,3 @@ impl Sub for TimeStamp {
     TimeSpan::from(self.0.duration_since(rhs.0))
   }
 }
-
-#[cfg(feature = "serde")]
-impl serde::Serialize for TimeStamp {
-  fn serialize<S: serde::Serializer>(&self, _serializer: S) -> Result<S::Ok, S::Error> {
-    todo!()
-  }
-}
-
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for TimeStamp {
-  fn deserialize<D: serde::Deserializer<'de>>(_deserializer: D) -> Result<Self, D::Error> {
-    todo!()
-  }
-}

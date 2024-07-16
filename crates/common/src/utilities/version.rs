@@ -60,40 +60,6 @@ impl Display for Version {
   }
 }
 
-#[cfg(feature = "serde")]
-impl serde::Serialize for Version {
-  fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-    serializer.serialize_str(&format!("{}.{}.{}", self.major, self.minor, self.patch))
-  }
-}
-
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for Version {
-  fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-    struct Visitor;
-
-    impl<'de> serde::de::Visitor<'de> for Visitor {
-      type Value = Version;
-
-      fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        formatter.write_str("a version string")
-      }
-
-      fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
-        let mut parts = value.split('.');
-
-        let major = parts.next().unwrap().parse::<u16>().unwrap();
-        let minor = parts.next().unwrap().parse::<u16>().unwrap();
-        let patch = parts.next().unwrap().parse::<u16>().unwrap();
-
-        Ok(Self::Value { major, minor, patch })
-      }
-    }
-
-    deserializer.deserialize_str(Visitor)
-  }
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;

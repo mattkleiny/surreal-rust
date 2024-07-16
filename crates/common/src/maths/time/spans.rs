@@ -7,7 +7,6 @@ use std::{
 
 /// A representation of a span of time.
 #[derive(Default, Copy, Clone, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TimeSpan {
   seconds: f32,
 }

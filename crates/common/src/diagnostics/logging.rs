@@ -1,10 +1,10 @@
 use std::fmt::Display;
 
 pub use console::*;
+use nanoserde::{SerBin, SerJson};
 
 /// A level for log messages.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, SerBin, SerJson)]
 pub enum LogLevel {
   Trace,
   Debug,
@@ -14,8 +14,7 @@ pub enum LogLevel {
 }
 
 /// An event that is logged.
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, SerBin, SerJson)]
 pub struct LogEvent {
   pub level: LogLevel,
   pub message: String,

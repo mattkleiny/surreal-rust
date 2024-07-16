@@ -80,20 +80,6 @@ impl Display for StringName {
   }
 }
 
-#[cfg(feature = "serde")]
-impl serde::Serialize for StringName {
-  fn serialize<S: serde::Serializer>(&self, _serializer: S) -> Result<S::Ok, S::Error> {
-    todo!()
-  }
-}
-
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for StringName {
-  fn deserialize<D: serde::Deserializer<'de>>(_deserializer: D) -> Result<Self, D::Error> {
-    todo!()
-  }
-}
-
 /// An internal global pool of strings.
 #[derive(Default, Singleton)]
 struct StringNamePool {

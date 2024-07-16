@@ -62,7 +62,6 @@ pub enum AnimationTrack {
 
 /// A single keyframe of animation data.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AnimationKeyFrame<T> {
   pub time: f32,
   pub value: T,

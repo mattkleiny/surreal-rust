@@ -4,7 +4,6 @@ use crate::reinterpret_cast;
 /// A frustum in 3-space.
 #[repr(C)]
 #[derive(Default, Clone, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Frustum {
   pub near: Plane,
   pub far: Plane,

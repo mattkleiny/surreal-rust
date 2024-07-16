@@ -5,5 +5,4 @@ pub trait Document {}
 
 /// A document describing a scene in the project.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SceneDocument {}

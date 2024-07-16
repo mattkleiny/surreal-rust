@@ -7,7 +7,6 @@ edition.workspace = true
 [dependencies]
 common = { package = "surreal-common", path = "../common" }
 macros = { package = "surreal-macros", path = "../macros" }
-serde = { workspace = true, optional = true }
 bitflags = { workspace = true }
 image = { version = "0.25.1", default-features = false, features = ["png"] }
 gl = "0.14.0"

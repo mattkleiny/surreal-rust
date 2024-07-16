@@ -7,7 +7,6 @@ use crate::TimeStamp;
 
 /// An event that can be sent to a diagnostic listener.
 #[derive(Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum DiagnosticEvent {
   Log {
     level: super::LogLevel,

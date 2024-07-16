@@ -2,7 +2,6 @@ use super::*;
 
 /// A bounded rectangle in 2 dimensions formed from the two corner points.
 #[derive(Default, Copy, Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Rectangle {
   pub min: Vec2,
   pub max: Vec2,

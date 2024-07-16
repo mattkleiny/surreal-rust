@@ -7,7 +7,6 @@ pub const fn range<T: Scalar>(min: T, max: T) -> Range<T> {
 
 /// An inclusive range that spans the given (min, max) values.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Range<T> {
   pub min: T,
   pub max: T,
