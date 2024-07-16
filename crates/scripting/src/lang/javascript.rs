@@ -1,4 +1,4 @@
-//! Javascript scripting language support.
+//! JavaScript scripting language support.
 
 use common::Variant;
 use quick_js::{Arguments, Context, JsValue};

@@ -1,7 +1,7 @@
 //! Lua scripting language support
 
 use common::Variant;
-use mlua::{FromLua, Lua, StdLib, Value};
+use mlua::{FromLua, Function, IntoLua, Lua, StdLib, Value};
 
 use super::*;
 
@@ -29,8 +29,11 @@ impl ScriptRuntime for LuaScriptRuntime {
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
-  fn add_callback<F>(&mut self, _name: &str, _callback: impl ScriptCallback<F> + 'static) {
-    todo!()
+  fn add_callback<F>(&mut self, name: &str, _callback: impl ScriptCallback<F> + 'static) {
+    let globals = self.lua.globals();
+    let function = Function::wrap_mut(|_lua, (x, y): (i32, i32)| Ok(x + y));
+
+    globals.set(name, function).unwrap();
   }
 }
 
@@ -58,10 +61,12 @@ mod tests {
 
   #[test]
   fn test_basic_lua_evaluation() {
-    let runtime = LuaScriptRuntime::new();
+    let mut runtime = LuaScriptRuntime::new();
 
-    let result = runtime.eval("return 42").unwrap();
+    runtime.add_callback("add", |x: i32, y: i32| x + y);
 
-    assert_eq!(result, ScriptValue::from(Variant::I32(42)));
+    let result = runtime.eval("return add(42, 32)").unwrap();
+
+    assert_eq!(result, ScriptValue::from(Variant::I32(74)));
   }
 }
