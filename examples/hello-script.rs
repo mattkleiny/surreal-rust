@@ -9,7 +9,7 @@ fn main() {
 
   GraphicsServer::install(OpenGLGraphicsBackend::new(&window));
 
-  let mut runtime = JavascriptRuntime::new();
+  let mut runtime = JavaScriptRuntime::new();
 
   runtime.add_callback("clear_screen", |r: f32, g: f32, b: f32| {
     graphics().clear_color_buffer(Color::rgb(r, g, b));
@@ -18,7 +18,7 @@ fn main() {
   });
 
   while window.update() {
-    runtime.eval("clear_screen(1, 0, 1);").unwrap();
+    runtime.eval("clear_screen(1, 0, 1)").unwrap();
     window.present();
   }
 }

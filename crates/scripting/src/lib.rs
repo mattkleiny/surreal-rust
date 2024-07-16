@@ -8,8 +8,6 @@ mod callbacks;
 mod lang;
 mod values;
 
-use common::Variant;
-
 /// An error that can occur during script execution.
 #[derive(Debug)]
 pub enum ScriptError {
@@ -22,10 +20,10 @@ pub enum ScriptError {
 /// Represents a runtime that allows script execution.
 pub trait ScriptRuntime {
   /// Evaluates the given code and returns the result.
-  fn eval(&self, code: &str) -> Result<Variant, ScriptError>;
+  fn eval(&self, code: &str) -> Result<ScriptValue, ScriptError>;
 
   /// Evaluates the given code and returns the result as the specified type.
-  fn eval_as<R: FromScriptVariant>(&self, code: &str) -> Result<R, ScriptError>;
+  fn eval_as<R: FromScriptValue>(&self, code: &str) -> Result<R, ScriptError>;
 
   /// Adds a callback that can be called from scripts.
   fn add_callback<F>(&mut self, name: &str, callback: impl ScriptCallback<F> + 'static);

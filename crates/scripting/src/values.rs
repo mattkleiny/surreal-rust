@@ -1,32 +1,70 @@
 use common::{Color, Color32, Quat, StringName, Variant, Vec2, Vec3, Vec4};
 
-/// A local type that can be converted to a [`Variant`].
-pub trait ToScriptVariant {
-  /// Converts the type into a [`Variant`].
-  fn to_script_variant(&self) -> Variant;
+/// A value that can be passed to and from a scripting language.
+///
+/// This is a new-type pattern over [`Variant`] to allow simple interop with
+/// many different scripting language vendor crates.
+#[repr(transparent)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct ScriptValue(Variant);
+
+/// A type that can be converted to a [`ScriptValue`].
+pub trait ToScriptValue {
+  /// Converts the type into a [`ScriptValue`].
+  fn to_script_value(&self) -> ScriptValue;
 }
 
-/// A type that can be converted from a [`Variant`].
-pub trait FromScriptVariant {
-  /// Converts a [`Variant`] into the type.
-  fn from_script_variant(value: &Variant) -> Self;
+/// A type that can be converted from a [`ScriptValue`].
+pub trait FromScriptValue {
+  /// Converts a [`ScriptValue`] into the type.
+  fn from_script_value(value: &ScriptValue) -> Self;
+}
+
+impl ScriptValue {
+  /// Returns a reference to the inner `Variant` value.
+  #[inline]
+  pub fn as_variant(&self) -> &Variant {
+    &self.0
+  }
+
+  /// Returns the inner `Variant` value.
+  #[inline]
+  pub fn into_variant(self) -> Variant {
+    self.0
+  }
+}
+
+/// Allow conversion from [`Variant`].
+impl From<Variant> for ScriptValue {
+  #[inline]
+  fn from(variant: Variant) -> Self {
+    Self(variant)
+  }
+}
+
+/// Allow conversion into [`Variant`].
+impl From<ScriptValue> for Variant {
+  #[inline]
+  fn from(value: ScriptValue) -> Self {
+    value.0
+  }
 }
 
 macro_rules! impl_script_value {
-  ($type:ty, $kind:ident) => {
-    impl ToScriptVariant for $type {
+  ($type:ty, $($arg:ident),*) => {
+    impl ToScriptValue for $type {
       #[inline]
-      fn to_script_variant(&self) -> Variant {
-        Variant::from(self.clone())
+      fn to_script_value(&self) -> ScriptValue {
+        ScriptValue(Variant::from(self.clone()))
       }
     }
 
-    impl FromScriptVariant for $type {
+    impl FromScriptValue for $type {
       #[inline]
-      fn from_script_variant(value: &Variant) -> Self {
-        match &value {
-          Variant::$kind(value) => value.clone(),
-          _ => panic!("Variant is not convertible"),
+      fn from_script_value(value: &ScriptValue) -> Self {
+        match &value.0 {
+          $(Variant::$arg(value) => value.clone() as $type,)*
+          _ => panic!("Invalid type conversion"),
         }
       }
     }
@@ -34,16 +72,16 @@ macro_rules! impl_script_value {
 }
 
 impl_script_value!(bool, Bool);
-impl_script_value!(u8, U8);
-impl_script_value!(u16, U16);
-impl_script_value!(u32, U32);
-impl_script_value!(u64, U64);
-impl_script_value!(i8, I8);
-impl_script_value!(i16, I16);
-impl_script_value!(i32, I32);
-impl_script_value!(i64, I64);
-impl_script_value!(f32, F32);
-impl_script_value!(f64, F64);
+impl_script_value!(u8, U8, U16, U32, U64, I8, I16, I32, I64);
+impl_script_value!(u16, U8, U16, U32, U64, I8, I16, I32, I64);
+impl_script_value!(u32, U8, U16, U32, U64, I8, I16, I32, I64);
+impl_script_value!(u64, U8, U16, U32, U64, I8, I16, I32, I64);
+impl_script_value!(i8, U8, U16, U32, U64, I8, I16, I32, I64);
+impl_script_value!(i16, U8, U16, U32, U64, I8, I16, I32, I64);
+impl_script_value!(i32, U8, U16, U32, U64, I8, I16, I32, I64);
+impl_script_value!(i64, U8, U16, U32, U64, I8, I16, I32, I64);
+impl_script_value!(f32, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
+impl_script_value!(f64, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
 impl_script_value!(String, String);
 impl_script_value!(StringName, StringName);
 impl_script_value!(Vec2, Vec2);
@@ -59,9 +97,17 @@ mod tests {
 
   #[test]
   fn test_script_value_conversion() {
-    let value = true.to_script_variant();
-    let result = bool::from_script_variant(&value);
+    let value = true.to_script_value();
+    let result = bool::from_script_value(&value);
 
     assert_eq!(result, true);
+  }
+
+  #[test]
+  fn test_script_value_coercion() {
+    let value = 1.0f32.to_script_value();
+    let result = f64::from_script_value(&value);
+
+    assert_eq!(result, 1.0);
   }
 }

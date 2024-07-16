@@ -6,11 +6,11 @@ use quick_js::{Arguments, Context, JsValue};
 use super::*;
 
 /// A runtime for executing Javascript scripts.
-pub struct JavascriptRuntime {
+pub struct JavaScriptRuntime {
   context: Context,
 }
 
-impl JavascriptRuntime {
+impl JavaScriptRuntime {
   pub fn new() -> Self {
     Self {
       context: Context::new().unwrap(),
@@ -18,20 +18,20 @@ impl JavascriptRuntime {
   }
 }
 
-impl ScriptRuntime for JavascriptRuntime {
-  fn eval(&self, code: &str) -> Result<Variant, ScriptError> {
+impl ScriptRuntime for JavaScriptRuntime {
+  fn eval(&self, code: &str) -> Result<ScriptValue, ScriptError> {
     self
       .context
       .eval(code)
-      .map(|it| it.to_script_variant())
+      .map(|it| it.to_script_value())
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
-  fn eval_as<R: FromScriptVariant>(&self, code: &str) -> Result<R, ScriptError> {
+  fn eval_as<R: FromScriptValue>(&self, code: &str) -> Result<R, ScriptError> {
     self
       .context
       .eval(code)
-      .map(|it| R::from_script_variant(&it.to_script_variant()))
+      .map(|it| R::from_script_value(&it.to_script_value()))
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
@@ -43,13 +43,13 @@ impl ScriptRuntime for JavascriptRuntime {
         let args = args
           .into_vec()
           .iter()
-          .map(|it| it.to_script_variant())
+          .map(|it| it.to_script_value())
           .collect::<Vec<_>>();
 
         // convert result
         let result = callback
           .call(&args)
-          .map(|it| JsValue::from_script_variant(&it))
+          .map(|it| JsValue::from_script_value(&it))
           .map_err(|it| format!("{:?}", it));
 
         result
@@ -58,15 +58,15 @@ impl ScriptRuntime for JavascriptRuntime {
   }
 }
 
-impl ToScriptVariant for JsValue {
-  fn to_script_variant(&self) -> Variant {
+impl ToScriptValue for JsValue {
+  fn to_script_value(&self) -> ScriptValue {
     match self {
-      JsValue::Undefined => Variant::Null,
-      JsValue::Null => Variant::Null,
-      JsValue::Bool(value) => Variant::Bool(*value),
-      JsValue::Int(value) => Variant::I32(*value),
-      JsValue::Float(value) => Variant::F64(*value),
-      JsValue::String(value) => Variant::String(value.clone()),
+      JsValue::Undefined => ScriptValue::from(Variant::Null),
+      JsValue::Null => ScriptValue::from(Variant::Null),
+      JsValue::Bool(value) => ScriptValue::from(Variant::Bool(*value)),
+      JsValue::Int(value) => ScriptValue::from(Variant::I32(*value)),
+      JsValue::Float(value) => ScriptValue::from(Variant::F64(*value)),
+      JsValue::String(value) => ScriptValue::from(Variant::String(value.clone())),
       JsValue::Array(_) => todo!("Array conversion not implemented"),
       JsValue::Object(_) => todo!("Object conversion not implemented"),
       _ => panic!("Unsupported JsValue type"),
@@ -74,9 +74,9 @@ impl ToScriptVariant for JsValue {
   }
 }
 
-impl FromScriptVariant for JsValue {
-  fn from_script_variant(value: &Variant) -> Self {
-    match value {
+impl FromScriptValue for JsValue {
+  fn from_script_value(value: &ScriptValue) -> Self {
+    match value.as_variant() {
       Variant::Null => JsValue::Null,
       Variant::Bool(value) => JsValue::Bool(*value),
       Variant::U8(value) => JsValue::Int(*value as i32),
@@ -131,12 +131,12 @@ mod tests {
 
   #[test]
   fn test_basic_javascript_evaluation() {
-    let mut runtime = JavascriptRuntime::new();
+    let mut runtime = JavaScriptRuntime::new();
 
     runtime.add_callback("add", |x: i32, y: i32| x + y);
 
-    let result = runtime.eval("add(1, 2)").unwrap();
+    let result = runtime.eval("add(32.0, 42)").unwrap();
 
-    assert_eq!(result, Variant::I32(3));
+    assert_eq!(result, ScriptValue::from(Variant::I32(74)));
   }
 }
