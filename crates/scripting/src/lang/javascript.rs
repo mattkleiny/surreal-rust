@@ -27,14 +27,6 @@ impl ScriptRuntime for JavaScriptRuntime {
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
-  fn eval_as<R: FromScriptValue>(&self, code: &str) -> Result<R, ScriptError> {
-    self
-      .context
-      .eval(code)
-      .map(|it| R::from_script_value(&it.to_script_value()))
-      .map_err(|it| ScriptError::ExecutionError(it.to_string()))
-  }
-
   fn add_callback<F>(&mut self, name: &str, callback: impl ScriptCallback<F> + 'static) {
     self
       .context
@@ -121,6 +113,7 @@ impl FromScriptValue for JsValue {
         JsValue::Int(value.b as i32),
         JsValue::Int(value.a as i32),
       ]),
+      Variant::Callable(_) => panic!("Callables not yet supported!"),
     }
   }
 }

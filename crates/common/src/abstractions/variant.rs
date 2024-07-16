@@ -28,7 +28,11 @@ pub enum Variant {
   Quat(Quat),
   Color(Color),
   Color32(Color32),
+  Callable(Callable),
 }
+
+/// A function that can be called.
+pub type Callable = fn(&[Variant]) -> Variant;
 
 /// Allows for a type to be converted to a [`Variant`].
 pub trait ToVariant {

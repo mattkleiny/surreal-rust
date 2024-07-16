@@ -29,15 +29,6 @@ impl ScriptRuntime for LuaScriptRuntime {
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
-  fn eval_as<R: FromScriptValue>(&self, code: &str) -> Result<R, ScriptError> {
-    self
-      .lua
-      .load(code)
-      .eval()
-      .map(|it| R::from_script_value(&it))
-      .map_err(|it| ScriptError::ExecutionError(it.to_string()))
-  }
-
   fn add_callback<F>(&mut self, _name: &str, _callback: impl ScriptCallback<F> + 'static) {
     todo!()
   }
