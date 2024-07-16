@@ -15,7 +15,6 @@ mod lang;
 mod templates;
 
 pub use lang::*;
-pub use macros::ToShaderUniformSet;
 pub use templates::*;
 
 /// The nominal max number of texture units that might be bound in the GPU

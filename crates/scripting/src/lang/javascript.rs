@@ -23,7 +23,7 @@ impl ScriptRuntime for JavaScriptRuntime {
     self
       .context
       .eval(code)
-      .map(|it| it.to_script_value())
+      .map(|it| it.into())
       .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
@@ -32,16 +32,12 @@ impl ScriptRuntime for JavaScriptRuntime {
       .context
       .add_callback(name, move |args: Arguments| {
         // convert arguments
-        let args = args
-          .into_vec()
-          .iter()
-          .map(|it| it.to_script_value())
-          .collect::<Vec<_>>();
+        let args = args.into_vec().iter().map(|it| it.clone().into()).collect::<Vec<_>>();
 
         // convert result
         let result = callback
           .call(&args)
-          .map(|it| JsValue::from_script_value(&it))
+          .map(|it| JsValue::from(it))
           .map_err(|it| format!("{:?}", it));
 
         result
@@ -50,27 +46,31 @@ impl ScriptRuntime for JavaScriptRuntime {
   }
 }
 
-impl ToScriptValue for JsValue {
-  fn to_script_value(&self) -> ScriptValue {
-    match self {
-      JsValue::Undefined => ScriptValue::from(Variant::Null),
-      JsValue::Null => ScriptValue::from(Variant::Null),
-      JsValue::Bool(value) => ScriptValue::from(Variant::Bool(*value)),
-      JsValue::Int(value) => ScriptValue::from(Variant::I32(*value)),
-      JsValue::Float(value) => ScriptValue::from(Variant::F64(*value)),
-      JsValue::String(value) => ScriptValue::from(Variant::String(value.clone())),
+impl From<JsValue> for ScriptValue {
+  fn from(value: JsValue) -> Self {
+    match value {
+      JsValue::Undefined => ScriptValue::new(Variant::Null),
+      JsValue::Null => ScriptValue::new(Variant::Null),
+      JsValue::Bool(value) => ScriptValue::new(Variant::Bool(value)),
+      JsValue::Int(value) => ScriptValue::new(Variant::I32(value)),
+      JsValue::Float(value) => ScriptValue::new(Variant::F64(value)),
+      JsValue::String(value) => ScriptValue::new(Variant::String(value.clone())),
       JsValue::Array(_) => todo!("Array conversion not implemented"),
       JsValue::Object(_) => todo!("Object conversion not implemented"),
-      _ => panic!("Unsupported JsValue type"),
+      _ => panic!(
+        "Unsupported
+JsValue type"
+      ),
     }
   }
 }
 
-impl FromScriptValue for JsValue {
-  fn from_script_value(value: &ScriptValue) -> Self {
+impl From<ScriptValue> for JsValue {
+  fn from(value: ScriptValue) -> Self {
     match value.as_variant() {
       Variant::Null => JsValue::Null,
       Variant::Bool(value) => JsValue::Bool(*value),
+      Variant::Char(value) => JsValue::String(value.to_string()),
       Variant::U8(value) => JsValue::Int(*value as i32),
       Variant::U16(value) => JsValue::Int(*value as i32),
       Variant::U32(value) => JsValue::Int(*value as i32),
@@ -113,7 +113,6 @@ impl FromScriptValue for JsValue {
         JsValue::Int(value.b as i32),
         JsValue::Int(value.a as i32),
       ]),
-      Variant::Callable(_) => panic!("Callables not yet supported!"),
     }
   }
 }
@@ -130,6 +129,6 @@ mod tests {
 
     let result = runtime.eval("add(32.0, 42)").unwrap();
 
-    assert_eq!(result, ScriptValue::from(Variant::I32(74)));
+    assert_eq!(result, ScriptValue::new(Variant::I32(74)));
   }
 }

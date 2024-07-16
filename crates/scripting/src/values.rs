@@ -1,4 +1,4 @@
-use common::{Color, Color32, Quat, StringName, Variant, Vec2, Vec3, Vec4};
+use common::{FromVariant, ToVariant, Variant};
 
 /// A value that can be passed to and from a scripting language.
 ///
@@ -21,6 +21,12 @@ pub trait FromScriptValue {
 }
 
 impl ScriptValue {
+  /// Creates a new `ScriptValue` from a `Variant` value.
+  #[inline]
+  pub const fn new(value: Variant) -> Self {
+    Self(value)
+  }
+
   /// Returns a reference to the inner `Variant` value.
   #[inline]
   pub fn as_variant(&self) -> &Variant {
@@ -34,62 +40,19 @@ impl ScriptValue {
   }
 }
 
-/// Allow conversion from [`Variant`].
-impl From<Variant> for ScriptValue {
+impl<V: FromVariant> FromScriptValue for V {
   #[inline]
-  fn from(variant: Variant) -> Self {
-    Self(variant)
+  fn from_script_value(value: &ScriptValue) -> Self {
+    V::from_variant(value.0.clone())
   }
 }
 
-/// Allow conversion into [`Variant`].
-impl From<ScriptValue> for Variant {
+impl<V: ToVariant> ToScriptValue for V {
   #[inline]
-  fn from(value: ScriptValue) -> Self {
-    value.0
+  fn to_script_value(&self) -> ScriptValue {
+    ScriptValue(self.to_variant())
   }
 }
-
-macro_rules! impl_script_value {
-  ($type:ty, $($arg:ident),*) => {
-    impl ToScriptValue for $type {
-      #[inline]
-      fn to_script_value(&self) -> ScriptValue {
-        ScriptValue(Variant::from(self.clone()))
-      }
-    }
-
-    impl FromScriptValue for $type {
-      #[inline]
-      fn from_script_value(value: &ScriptValue) -> Self {
-        match &value.0 {
-          $(Variant::$arg(value) => value.clone() as $type,)*
-          _ => panic!("Invalid type conversion"),
-        }
-      }
-    }
-  };
-}
-
-impl_script_value!(bool, Bool);
-impl_script_value!(u8, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(u16, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(u32, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(u64, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(i8, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(i16, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(i32, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(i64, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(f32, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(f64, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
-impl_script_value!(String, String);
-impl_script_value!(StringName, StringName);
-impl_script_value!(Vec2, Vec2);
-impl_script_value!(Vec3, Vec3);
-impl_script_value!(Vec4, Vec4);
-impl_script_value!(Quat, Quat);
-impl_script_value!(Color, Color);
-impl_script_value!(Color32, Color32);
 
 #[cfg(test)]
 mod tests {

@@ -36,6 +36,8 @@ mod sprites;
 mod targets;
 mod textures;
 
+pub use macros::{ToShaderUniformSet, Vertex};
+
 common::impl_arena_index!(pub BufferId, "Identifies a graphics buffer.");
 common::impl_arena_index!(pub TextureId, "Identifies a texture.");
 common::impl_arena_index!(pub ShaderId, "Identifies a shader program.");

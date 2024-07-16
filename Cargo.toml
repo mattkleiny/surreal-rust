@@ -24,7 +24,6 @@ lang-javascript = ["scripting/javascript"]
 [workspace.dependencies]
 # shared dependencies
 bitflags = "2.1.0"
-nanoserde = "0.1.37"
 
 [dependencies]
 # core

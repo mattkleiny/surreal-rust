@@ -40,12 +40,12 @@ impl ScriptRuntime for LuaScriptRuntime {
 impl<'lua> FromLua<'lua> for ScriptValue {
   fn from_lua(value: Value<'lua>, _lua: &'lua Lua) -> mlua::Result<Self> {
     Ok(match value {
-      Value::Nil => ScriptValue::from(Variant::Null),
-      Value::Boolean(value) => ScriptValue::from(Variant::Bool(value)),
+      Value::Nil => ScriptValue::new(Variant::Null),
+      Value::Boolean(value) => ScriptValue::new(Variant::Bool(value)),
       Value::LightUserData(_) => todo!("LightUserData conversion not implemented"),
-      Value::Integer(value) => ScriptValue::from(Variant::I32(value as i32)),
-      Value::Number(value) => ScriptValue::from(Variant::F64(value)),
-      Value::String(value) => ScriptValue::from(Variant::String(value.to_str()?.to_string())),
+      Value::Integer(value) => ScriptValue::new(Variant::I32(value as i32)),
+      Value::Number(value) => ScriptValue::new(Variant::F64(value)),
+      Value::String(value) => ScriptValue::new(Variant::String(value.to_str()?.to_string())),
       Value::Table(_) => todo!("Table conversion not implemented"),
       Value::Function(_) => todo!("Function conversion not implemented"),
       Value::Thread(_) => todo!("Thread conversion not implemented"),
@@ -67,6 +67,6 @@ mod tests {
 
     let result = runtime.eval("return add(42, 32)").unwrap();
 
-    assert_eq!(result, ScriptValue::from(Variant::I32(74)));
+    assert_eq!(result, ScriptValue::new(Variant::I32(74)));
   }
 }

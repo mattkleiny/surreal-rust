@@ -12,8 +12,6 @@ mod reflect;
 mod settings;
 mod version;
 
-pub use macros::{Reflect, Singleton};
-
 /// Represents a type that can be used as a singleton.
 pub trait Singleton {
   /// Returns the singleton instance of this type.

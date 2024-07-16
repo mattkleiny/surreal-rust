@@ -10,6 +10,7 @@ use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 pub enum Variant {
   Null,
   Bool(bool),
+  Char(char),
   U8(u8),
   U16(u16),
   U32(u32),
@@ -28,11 +29,7 @@ pub enum Variant {
   Quat(Quat),
   Color(Color),
   Color32(Color32),
-  Callable(Callable),
 }
-
-/// A function that can be called.
-pub type Callable = fn(&[Variant]) -> Variant;
 
 /// Allows for a type to be converted to a [`Variant`].
 pub trait ToVariant {
@@ -64,6 +61,22 @@ impl<T: From<Variant>> FromVariant for T {
 
 /// Allows conversion to/from a `Variant` for a given type.
 macro_rules! impl_variant {
+  ((), $kind:ident) => {
+    impl From<()> for Variant {
+      #[inline]
+      fn from(_: ()) -> Self {
+        Variant::$kind
+      }
+    }
+
+    impl From<Variant> for () {
+      #[inline]
+      fn from(_: Variant) -> Self {
+        ()
+      }
+    }
+  };
+
   ($type:ty, $kind:ident) => {
     impl From<$type> for Variant {
       #[inline]
@@ -82,19 +95,41 @@ macro_rules! impl_variant {
       }
     }
   };
+
+  ($type:ty, $kind:ident, $($kinds:ident),*) => {
+    impl From<$type> for Variant {
+      #[inline]
+      fn from(value: $type) -> Self {
+        Self::$kind(value)
+      }
+    }
+
+    impl From<Variant> for $type {
+      #[inline]
+      fn from(value: Variant) -> Self {
+        match value {
+          Variant::$kind(value) => value,
+          $(Variant::$kinds(value) => value as $type,)*
+          _ => panic!("Invalid type conversion"),
+        }
+      }
+    }
+  }
 }
 
+impl_variant!((), Null);
 impl_variant!(bool, Bool);
+impl_variant!(char, Char);
 impl_variant!(u8, U8);
-impl_variant!(u16, U16);
-impl_variant!(u32, U32);
-impl_variant!(u64, U64);
+impl_variant!(u16, U16, U8, I8);
+impl_variant!(u32, U32, U8, U16, I8, I16, F32);
+impl_variant!(u64, U64, U8, U16, U32, I8, I16, I32, F32, F64);
 impl_variant!(i8, I8);
-impl_variant!(i16, I16);
-impl_variant!(i32, I32);
-impl_variant!(i64, I64);
-impl_variant!(f32, F32);
-impl_variant!(f64, F64);
+impl_variant!(i16, I16, I8);
+impl_variant!(i32, I32, I8, I16, U8, U16, U32, F32);
+impl_variant!(i64, I64, I8, I16, I32, U8, U16, U32, F32, F64);
+impl_variant!(f32, F32, I8, I16, I32, I64, U8, U16, U32, U64);
+impl_variant!(f64, F64, I8, I16, I32, I64, U8, U16, U32, U64);
 impl_variant!(String, String);
 impl_variant!(StringName, StringName);
 impl_variant!(Vec2, Vec2);

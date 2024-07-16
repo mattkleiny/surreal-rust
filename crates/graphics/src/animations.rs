@@ -1,6 +1,6 @@
 //! Animation support.
 
-use common::{Buffer, Color, Color32, FastHashMap, Lerp, Quat, StringName, TimeSpan, Vec2, Vec3};
+use common::{Color, Color32, FastHashMap, Lerp, Quat, StringName, TimeSpan, Vec2, Vec3};
 
 /// Represents a type that can be animated by an animation tree.
 pub trait Animatable<V> {
