@@ -229,7 +229,7 @@ pub trait Deserializable: for<'de> ::serde::Deserialize<'de> + Sized {
   /// Deserializes from the given `ron` file.
   #[cfg(feature = "ron")]
   fn from_ron_file(path: impl ToVirtualPath) -> Result<Self, SerializationError> {
-    let mut stream = path
+    let stream = path
       .to_virtual_path()
       .open_input_stream()
       .map_err(|_| SerializationError::FailedToDeserialize)?;
@@ -260,7 +260,7 @@ pub trait Deserializable: for<'de> ::serde::Deserialize<'de> + Sized {
   /// Deserializes from the given `toml` file.
   #[cfg(feature = "toml")]
   fn from_toml_file(path: impl ToVirtualPath) -> Result<Self, SerializationError> {
-    let mut stream = path
+    let stream = path
       .to_virtual_path()
       .open_input_stream()
       .map_err(|_| SerializationError::FailedToDeserialize)?;

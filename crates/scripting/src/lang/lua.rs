@@ -21,11 +21,15 @@ impl LuaScriptRuntime {
 }
 
 impl ScriptRuntime for LuaScriptRuntime {
-  fn eval(&self, _code: &str) -> Result<Variant, ScriptError> {
-    todo!()
+  fn eval(&self, code: &str) -> Result<Variant, ScriptError> {
+    self
+      .lua
+      .load(code)
+      .eval()
+      .map_err(|it| ScriptError::ExecutionError(it.to_string()))
   }
 
-  fn eval_as<R: FromScriptVariant>(&self, _code: &str) -> Result<R, ScriptError> {
+  fn eval_as<R: FromScriptValue>(&self, _code: &str) -> Result<R, ScriptError> {
     todo!()
   }
 

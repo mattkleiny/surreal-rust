@@ -1,6 +1,6 @@
 //! Asset management for the engine
 
-use crate::{FileSystemError, FromStream, ToVirtualPath};
+use crate::{FromStream, ToVirtualPath};
 
 /// Represents an asset that can be loaded and used by the engine
 pub trait Asset {}

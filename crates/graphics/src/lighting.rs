@@ -49,8 +49,8 @@ impl LightPass {
 }
 
 impl RenderPass for LightPass {
-  fn render_camera(&self, scene: &dyn RenderScene, camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
-    let frustum = camera.frustum();
+  fn render_camera(&self, _scene: &dyn RenderScene, camera: &dyn Camera, _frame: &mut RenderFrame<'_>) {
+    let _frustum = camera.frustum();
 
     // TODO: render lights
   }
