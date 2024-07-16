@@ -1,7 +1,7 @@
 //! Lua scripting language support
 
 use common::Variant;
-use mlua::{FromLua, Function, IntoLua, Lua, StdLib, Value};
+use mlua::{FromLua, Function, Lua, StdLib, Value};
 
 use super::*;
 

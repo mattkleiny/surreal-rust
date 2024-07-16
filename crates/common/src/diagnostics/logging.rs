@@ -13,18 +13,6 @@ pub enum LogLevel {
   Error,
 }
 
-impl Display for LogLevel {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    match self {
-      LogLevel::Trace => write!(f, "TRACE"),
-      LogLevel::Debug => write!(f, "DEBUG"),
-      LogLevel::Info => write!(f, "INFO"),
-      LogLevel::Warn => write!(f, "WARN"),
-      LogLevel::Error => write!(f, "ERROR"),
-    }
-  }
-}
-
 /// An event that is logged.
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -67,38 +55,49 @@ pub trait Log {
   }
 }
 
+impl Display for LogLevel {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      LogLevel::Trace => write!(f, "TRACE"),
+      LogLevel::Debug => write!(f, "DEBUG"),
+      LogLevel::Info => write!(f, "INFO"),
+      LogLevel::Warn => write!(f, "WARN"),
+      LogLevel::Error => write!(f, "ERROR"),
+    }
+  }
+}
+
 /// Writes a trace message to the log.
 #[macro_export]
 macro_rules! trace {
-  ($($arg:tt)*) => {};
+  ($message:expr, $($arg:tt)*) => {};
 }
 
 /// Writes a debug message to the log.
 #[macro_export]
 macro_rules! debug {
-  ($($arg:tt)*) => {};
+  ($message:expr, $($arg:tt)*) => {};
 }
 
 /// Writes an info message to the log.
 #[macro_export]
 macro_rules! info {
-  ($($arg:tt)*) => {};
+  ($message:expr, $($arg:tt)*) => {};
 }
 
 /// Writes a warning message to the log.
 #[macro_export]
 macro_rules! warn {
-  ($($arg:tt)*) => {};
+  ($message:expr, $($arg:tt)*) => {};
 }
 
 /// Writes an error message to the log.
 #[macro_export]
 macro_rules! error {
-  ($($arg:tt)*) => {};
+  ($message:expr, $($arg:tt)*) => {};
 }
 
 mod console {
-  //! A console log sink.
   use std::borrow::Cow;
 
   use super::*;

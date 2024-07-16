@@ -1,33 +1,11 @@
 //! Animation support.
 
-use common::{Color, Color32, FastHashMap, Lerp, Quat, StringName, TimeSpan, Vec2, Vec3};
+use common::{Buffer, Color, Color32, FastHashMap, Lerp, Quat, StringName, TimeSpan, Vec2, Vec3};
 
 /// Represents a type that can be animated by an animation tree.
 pub trait Animatable<V> {
   /// Applies the given value to the animatable type.
   fn apply(&mut self, track: AnimationTrack, time: f32);
-}
-
-impl Animatable<Vec2> for Vec2 {
-  fn apply(&mut self, track: AnimationTrack, time: f32) {
-    match track {
-      AnimationTrack::Vec2(data) => {
-        *self = evaluate_keyframes(time, &data);
-      }
-      _ => {}
-    }
-  }
-}
-
-impl Animatable<Vec3> for Vec3 {
-  fn apply(&mut self, track: AnimationTrack, time: f32) {
-    match track {
-      AnimationTrack::Vec3(data) => {
-        *self = evaluate_keyframes(time, &data);
-      }
-      _ => {}
-    }
-  }
 }
 
 /// An animation tree that can be used to drive animation state changes.
@@ -36,6 +14,7 @@ impl Animatable<Vec3> for Vec3 {
 /// animation state. The root node is the current animation state, and the leaf
 /// nodes are the animation states that are being dynamically selected.
 pub struct AnimationTree<T = ()> {
+  /// The state used to drive the animation tree.
   pub state: T,
 
   nodes: FastHashMap<StringName, AnimationState<T>>,
@@ -67,6 +46,9 @@ pub struct AnimationClip {
   pub tracks: Vec<AnimationTrack>,
 }
 
+/// Data for a single animation track.
+pub type AnimationTrackData<T> = Vec<AnimationKeyFrame<T>>;
+
 /// A single track of animation data.
 #[derive(Clone)]
 pub enum AnimationTrack {
@@ -77,9 +59,6 @@ pub enum AnimationTrack {
   Color(AnimationTrackData<Color>),
   Color32(AnimationTrackData<Color32>),
 }
-
-/// Data for a single animation track.
-pub type AnimationTrackData<T> = Vec<AnimationKeyFrame<T>>;
 
 /// A single keyframe of animation data.
 #[derive(Clone, Debug)]

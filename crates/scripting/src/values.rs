@@ -72,14 +72,14 @@ macro_rules! impl_script_value {
 }
 
 impl_script_value!(bool, Bool);
-impl_script_value!(u8, U8, U16, U32, U64, I8, I16, I32, I64);
-impl_script_value!(u16, U8, U16, U32, U64, I8, I16, I32, I64);
-impl_script_value!(u32, U8, U16, U32, U64, I8, I16, I32, I64);
-impl_script_value!(u64, U8, U16, U32, U64, I8, I16, I32, I64);
-impl_script_value!(i8, U8, U16, U32, U64, I8, I16, I32, I64);
-impl_script_value!(i16, U8, U16, U32, U64, I8, I16, I32, I64);
-impl_script_value!(i32, U8, U16, U32, U64, I8, I16, I32, I64);
-impl_script_value!(i64, U8, U16, U32, U64, I8, I16, I32, I64);
+impl_script_value!(u8, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
+impl_script_value!(u16, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
+impl_script_value!(u32, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
+impl_script_value!(u64, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
+impl_script_value!(i8, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
+impl_script_value!(i16, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
+impl_script_value!(i32, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
+impl_script_value!(i64, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
 impl_script_value!(f32, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
 impl_script_value!(f64, U8, U16, U32, U64, I8, I16, I32, I64, F32, F64);
 impl_script_value!(String, String);
@@ -106,8 +106,8 @@ mod tests {
   #[test]
   fn test_script_value_coercion() {
     let value = 1.0f32.to_script_value();
-    let result = f64::from_script_value(&value);
+    let result = i32::from_script_value(&value);
 
-    assert_eq!(result, 1.0);
+    assert_eq!(result, 1);
   }
 }

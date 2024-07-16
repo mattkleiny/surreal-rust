@@ -240,6 +240,10 @@ fn from_scancode(scan_code: SDL_Keycode) -> Option<input::VirtualKey> {
 
   match unsafe { std::mem::transmute(scan_code) } {
     SDL_KeyCode::SDLK_ESCAPE => Some(Escape),
+    SDL_KeyCode::SDLK_UP => Some(ArrowKey(input::ArrowKey::Up)),
+    SDL_KeyCode::SDLK_DOWN => Some(ArrowKey(input::ArrowKey::Down)),
+    SDL_KeyCode::SDLK_LEFT => Some(ArrowKey(input::ArrowKey::Left)),
+    SDL_KeyCode::SDLK_RIGHT => Some(ArrowKey(input::ArrowKey::Right)),
     _ => None,
   }
 }

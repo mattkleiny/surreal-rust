@@ -32,16 +32,16 @@ impl<P: Pixel> Image<P> {
     Self::from_stream(&mut stream)
   }
 
-  /// Loads an image from the given stream.
-  pub fn from_stream(stream: &mut dyn InputStream) -> Result<Self, ImageError> {
-    let dynamic_image = image::load(stream, image::ImageFormat::Png).map_err(|it| ImageError::ParseError(it))?;
+  /// Loads an image from the given slice of bytes.
+  pub fn from_bytes(slice: &[u8]) -> Result<Self, ImageError> {
+    let dynamic_image = image::load_from_memory(slice).map_err(|it| ImageError::ParseError(it))?;
 
     Ok(Self::from_dynamic_image(dynamic_image))
   }
 
-  /// Loads an image from the given slice of bytes.
-  pub fn from_slice(slice: &[u8]) -> Result<Self, ImageError> {
-    let dynamic_image = image::load_from_memory(slice).map_err(|it| ImageError::ParseError(it))?;
+  /// Loads an image from the given stream.
+  pub fn from_stream(stream: &mut dyn InputStream) -> Result<Self, ImageError> {
+    let dynamic_image = image::load(stream, image::ImageFormat::Png).map_err(|it| ImageError::ParseError(it))?;
 
     Ok(Self::from_dynamic_image(dynamic_image))
   }
