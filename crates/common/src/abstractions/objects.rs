@@ -1,15 +1,94 @@
 use std::{
-  fmt::Debug,
+  any::Any,
+  fmt::{Debug, Formatter},
+  hash::{Hash, Hasher},
   ops::{Deref, DerefMut},
   sync::Mutex,
 };
+
+use macros::Trace;
 
 use crate::{impl_arena_index, Arena, Singleton};
 
 impl_arena_index!(ObjectIndex, "An index of an object in the garbage collector");
 
-/// A reference to a garbage-collected object.
-pub struct GC<T: Trace + 'static> {
+/// Represents a garbage-collected object with a potentially reified type.
+pub struct Object<T: ?Sized = dyn Any> {
+  entry: GC<ObjectEntry>,
+  _phantom: std::marker::PhantomData<T>,
+}
+
+/// The internal entry for an object in the garbage collector.
+///
+/// This is used to track the object's reference count, and to allow for
+/// garbage collection of the object when it is no longer referenced.
+#[derive(Trace)]
+struct ObjectEntry {
+  is_marked: bool,
+  reference: *const [u8],
+}
+
+impl<T: 'static> Object<T> {
+  /// Creates a new object with the given value.
+  pub fn new(_value: T) -> Self {
+    todo!()
+  }
+
+  #[inline(always)]
+  pub fn cast<U: ?Sized>(self) -> Object<U> {
+    Object {
+      entry: self.entry,
+      _phantom: std::marker::PhantomData,
+    }
+  }
+}
+
+impl<T: ?Sized> Clone for Object<T> {
+  fn clone(&self) -> Self {
+    Self {
+      entry: self.entry.clone(),
+      _phantom: std::marker::PhantomData,
+    }
+  }
+}
+
+impl<T: ?Sized> PartialEq for Object<T> {
+  fn eq(&self, other: &Self) -> bool {
+    self.entry.as_ptr() == other.entry.as_ptr()
+  }
+}
+
+impl<T: ?Sized> Hash for Object<T> {
+  fn hash<H: Hasher>(&self, state: &mut H) {
+    self.entry.as_ptr().hash(state);
+  }
+}
+
+impl<T: ?Sized> Deref for Object<T> {
+  type Target = T;
+
+  fn deref(&self) -> &Self::Target {
+    todo!()
+  }
+}
+
+impl<T: ?Sized> DerefMut for Object<T> {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    todo!()
+  }
+}
+
+impl<T: ?Sized> Debug for Object<T> {
+  /// Formats the object as a pointer to the object.
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(formatter, "Object({:p})", self.entry.as_ptr())
+  }
+}
+
+/// A smart pointer to a garbage-collected object.
+///
+/// The object is automatically deallocated when the last reference is dropped.
+pub struct GC<T: Trace> {
   index: ObjectIndex,
   _phantom: std::marker::PhantomData<T>,
 }
@@ -22,7 +101,9 @@ impl<T: Trace + 'static> GC<T> {
       _phantom: std::marker::PhantomData,
     }
   }
+}
 
+impl<T: Trace> GC<T> {
   /// Returns a reference to the inner value.
   pub fn as_ref(&self) -> &T {
     GarbageCollector::instance().get(self.index).unwrap()
@@ -55,13 +136,13 @@ impl<T: Trace> Clone for GC<T> {
   }
 }
 
-impl<T: Trace + Debug + 'static> Debug for GC<T> {
-  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<T: Trace + Debug> Debug for GC<T> {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     self.as_ref().fmt(formatter)
   }
 }
 
-impl<T: Trace + 'static> Deref for GC<T> {
+impl<T: Trace> Deref for GC<T> {
   type Target = T;
 
   fn deref(&self) -> &Self::Target {
@@ -69,44 +150,40 @@ impl<T: Trace + 'static> Deref for GC<T> {
   }
 }
 
-impl<T: Trace + 'static> DerefMut for GC<T> {
+impl<T: Trace> DerefMut for GC<T> {
   fn deref_mut(&mut self) -> &mut Self::Target {
     self.as_mut()
   }
 }
 
-impl<T: Trace + 'static> Drop for GC<T> {
+impl<T: Trace> Drop for GC<T> {
   fn drop(&mut self) {
     GarbageCollector::instance().decrement_reference(self.index);
   }
 }
 
-/// A garbage-collected object.
-///
-/// This trait is used to mark objects that are managed by a garbage collector.
-///
-/// The garbage collector will automatically free memory when the object is no
-/// longer reachable.
-///
-/// In order to reference an object outside the garbage collector, use a GC<T>
-/// smart pointer.
-pub trait Object {}
-
 /// A trait for objects that can be traced by the garbage collector.
+///
+/// This trait is used to mark objects as reachable by the garbage collector.
+/// When an object is traced, the garbage collector will mark the object as
+/// reachable, and will recursively trace any other objects that the object
+/// references.
 pub unsafe trait Trace {
   /// Traces the object, marking all reachable objects.
-  fn trace(&self, gc: &mut GarbageCollector);
+  fn trace(&self, context: &mut TraceContext);
 }
 
-/// Blanket implementation of the [`Object`] trait all traceable types.
-impl<T: Trace> Object for T {}
+/// Context for tracing objects using [`Trace`].
+pub struct TraceContext {
+  // TODO: implement me
+}
 
 /// Implements the [`Trace`] trait for a type that does not contain any cycles.
 macro_rules! impl_empty_trace {
   ($type:ty) => {
     unsafe impl Trace for $type {
       #[inline(always)]
-      fn trace(&self, _gc: &mut GarbageCollector) {
+      fn trace(&self, _: &mut TraceContext) {
         // no-op
       }
     }
@@ -120,19 +197,23 @@ impl_empty_trace!(u8);
 impl_empty_trace!(u16);
 impl_empty_trace!(u32);
 impl_empty_trace!(u64);
+impl_empty_trace!(usize);
 impl_empty_trace!(i8);
 impl_empty_trace!(i16);
 impl_empty_trace!(i32);
 impl_empty_trace!(i64);
+impl_empty_trace!(isize);
 impl_empty_trace!(f32);
 impl_empty_trace!(f64);
+impl_empty_trace!(*const [u8]);
+impl_empty_trace!(*const dyn Any);
 
 /// A simple mark-sweep garbage collector.
 ///
 /// This garbage collector uses a simple mark-sweep algorithm to free memory.
 /// It is not optimized for performance, but is simple to implement.
 #[derive(Singleton, Default)]
-pub struct GarbageCollector {
+struct GarbageCollector {
   entries: Mutex<Arena<ObjectIndex, GarbageCollectorEntry>>,
 }
 
@@ -148,7 +229,7 @@ unsafe impl Sync for GarbageCollector {}
 
 impl GarbageCollector {
   /// Allocates a new object in the garbage collector.
-  fn allocate<T: Trace + 'static>(&self, value: T) -> ObjectIndex {
+  pub fn allocate<T: Trace + 'static>(&self, value: T) -> ObjectIndex {
     let mut entries = self.entries.lock().unwrap();
     let allocation = Box::leak(Box::new(value));
 
@@ -159,7 +240,7 @@ impl GarbageCollector {
   }
 
   /// Increments the reference count of an object.
-  fn increment_reference(&self, index: ObjectIndex) {
+  pub fn increment_reference(&self, index: ObjectIndex) {
     let mut entries = self.entries.lock().unwrap();
     let entry = entries.get_mut(index).unwrap();
 
@@ -170,7 +251,7 @@ impl GarbageCollector {
   ///
   /// If the reference count reaches zero, the object is removed from the
   /// garbage collector.
-  fn decrement_reference(&self, index: ObjectIndex) {
+  pub fn decrement_reference(&self, index: ObjectIndex) {
     let mut entries = self.entries.lock().unwrap();
     let entry = entries.get_mut(index).unwrap();
 
@@ -182,7 +263,7 @@ impl GarbageCollector {
   }
 
   /// Dereferences an object index to a reference.
-  fn get<T: Trace + 'static>(&self, index: ObjectIndex) -> Option<&T> {
+  pub fn get<T: Trace>(&self, index: ObjectIndex) -> Option<&T> {
     let entries = self.entries.lock().unwrap();
     let entry = entries.get(index)?;
 
@@ -190,7 +271,7 @@ impl GarbageCollector {
   }
 
   /// Dereferences an object index to a mutable reference.
-  fn get_mut<T: Trace + 'static>(&self, index: ObjectIndex) -> Option<&mut T> {
+  pub fn get_mut<T: Trace>(&self, index: ObjectIndex) -> Option<&mut T> {
     let entries = self.entries.lock().unwrap();
     let entry = entries.get(index)?;
 
@@ -200,20 +281,24 @@ impl GarbageCollector {
 
 #[cfg(test)]
 mod tests {
-  use macros::Object;
+  use macros::Trace;
 
   use super::*;
 
-  #[derive(Object, Debug)]
-  pub struct TestObject {
-    value: u32,
+  #[derive(Trace, Debug)]
+  pub struct TestStruct {
+    value_1: u32,
+    value_2: f32,
   }
 
   #[test]
-  fn test_basic_object_allocation_and_free() {
-    let instance = GC::new(TestObject { value: 100u32 });
+  fn test_allocation_and_free() {
+    let instance = GC::new(TestStruct {
+      value_1: 100,
+      value_2: std::f32::consts::PI,
+    });
 
-    assert_eq!(instance.value, 100u32);
+    assert_eq!(instance.value_1, 100u32);
 
     drop(instance);
 
@@ -223,15 +308,16 @@ mod tests {
   }
 
   #[test]
-  fn test_object_allocation_and_clone() {
-    let instance1 = GC::new(TestObject { value: 100u32 });
+  fn test_allocation_and_clone() {
+    let instance1 = GC::new(TestStruct {
+      value_1: 100,
+      value_2: std::f32::consts::PI,
+    });
     let mut instance2 = instance1.clone();
 
-    assert_eq!(instance1.value, 100u32);
-
-    instance2.value = 200u32;
-
-    assert_eq!(instance1.value, 200u32);
+    assert_eq!(instance1.value_1, 100u32);
+    instance2.value_1 = 200u32;
+    assert_eq!(instance1.value_1, 200u32);
 
     drop(instance1);
 

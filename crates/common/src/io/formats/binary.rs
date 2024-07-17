@@ -189,6 +189,9 @@ impl FileFormat for BinaryFileFormat {
             stream.write_u8(value.b)?;
             stream.write_u8(value.a)?;
           }
+          Variant::Object(_value) => {
+            todo!("Object serialization is not yet supported");
+          }
         }
       }
       Chunk::Sequence(sequence) => {

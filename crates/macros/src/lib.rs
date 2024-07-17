@@ -40,10 +40,10 @@ pub fn derive_singleton(input: TokenStream) -> TokenStream {
   singleton::impl_singleton(input)
 }
 
-/// Derives the `Object` trait for a type.
-#[proc_macro_derive(Object)]
-pub fn derive_object(input: TokenStream) -> TokenStream {
-  objects::impl_object(input)
+/// Derives the `Trace` trait for a type.
+#[proc_macro_derive(Trace)]
+pub fn derive_trace(input: TokenStream) -> TokenStream {
+  objects::impl_trace(input)
 }
 
 /// Derives the `ToShaderUniformSet` trait for a type.

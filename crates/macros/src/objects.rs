@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
-pub fn impl_object(input: TokenStream) -> TokenStream {
+pub fn impl_trace(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
   let ident = &input.ident;
 
@@ -16,9 +16,9 @@ pub fn impl_object(input: TokenStream) -> TokenStream {
 
   let expanded = quote! {
     unsafe impl Trace for #ident {
-      fn trace(&self, _gc: &mut GarbageCollector) {
+      fn trace(&self, context: &mut TraceContext) {
         #(
-          self.#fields.trace(_gc);
+          self.#fields.trace(context);
         )*
       }
     }

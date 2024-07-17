@@ -113,6 +113,9 @@ impl From<ScriptValue> for JsValue {
         JsValue::Int(value.b as i32),
         JsValue::Int(value.a as i32),
       ]),
+      Variant::Object(_value) => {
+        todo!("Object conversion not implemented")
+      }
     }
   }
 }
