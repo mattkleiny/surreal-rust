@@ -129,23 +129,6 @@ impl StringNamePool {
       reference_count: 1,
     })
   }
-
-  /// Decrements the reference count for the given ID.
-  ///
-  /// If the reference count reaches zero, the string is removed from the pool.
-  /// Otherwise, the reference count is decremented.
-  #[allow(dead_code)] // TODO: consider if this should be used
-  pub fn decrement(&self, id: StringId) {
-    let mut entries = self.strings_by_id.write().unwrap();
-
-    if let Some(entry) = entries.get_mut(id) {
-      entry.reference_count -= 1;
-
-      if entry.reference_count == 0 {
-        entries.remove(id);
-      }
-    }
-  }
 }
 
 #[cfg(test)]

@@ -26,7 +26,7 @@ pub trait PathFindingGrid<T: Copy + Hash + Eq = IVec2> {
   /// Gets the potential neighbours around the given point.
   fn get_neighbours(&self, center: T, results: &mut NeighbourList<T>);
 
-  /// Locates a path using A* from from the given start point to the given goal.
+  /// Locates a path using A* from the given start point to the given goal.
   fn find_path(&self, start: T, goal: T, heuristic: Heuristic<T>) -> Option<VecDeque<T>> {
     let mut frontier = PriorityQueue::new();
     let mut came_from = FastHashMap::default();

@@ -8,68 +8,34 @@ pub struct JsonFileFormat {
 
 impl FileFormat for JsonFileFormat {
   fn read_chunk(&mut self, _stream: &mut dyn InputStream) -> Result<Chunk, StreamError> {
-    todo!("implement state machine for json deserialization")
+    todo!()
   }
 
   fn write_chunk(&mut self, stream: &mut dyn OutputStream, chunk: &Chunk) -> Result<(), StreamError> {
     match chunk {
       Chunk::Variant(variant) => match variant {
-        Variant::Null => {
-          stream.write_string("null")?;
-        }
-        Variant::Bool(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::Char(value) => {
-          stream.write_string(&format!("\"{}\"", value))?;
-        }
-        Variant::U8(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::U16(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::U32(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::U64(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::I8(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::I16(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::I32(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::I64(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::F32(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::F64(value) => {
-          stream.write_string(&value.to_string())?;
-        }
-        Variant::String(value) => {
-          stream.write_string(&format!("\"{}\"", value))?;
-        }
-        Variant::StringName(value) => {
-          stream.write_string(&format!("\"{}\"", value))?;
-        }
-        Variant::Vec2(value) => {
-          stream.write_string(&format!("[{}, {}]", value.x, value.y))?;
-        }
-        Variant::Vec3(value) => {
-          stream.write_string(&format!("[{}, {}, {}]", value.x, value.y, value.z))?;
-        }
+        Variant::Null => stream.write_string("null")?,
+        Variant::Bool(value) => stream.write_string(&value.to_string())?,
+        Variant::Char(value) => stream.write_string(&format!("\"{}\"", value))?,
+        Variant::U8(value) => stream.write_string(&value.to_string())?,
+        Variant::U16(value) => stream.write_string(&value.to_string())?,
+        Variant::U32(value) => stream.write_string(&value.to_string())?,
+        Variant::U64(value) => stream.write_string(&value.to_string())?,
+        Variant::I8(value) => stream.write_string(&value.to_string())?,
+        Variant::I16(value) => stream.write_string(&value.to_string())?,
+        Variant::I32(value) => stream.write_string(&value.to_string())?,
+        Variant::I64(value) => stream.write_string(&value.to_string())?,
+        Variant::F32(value) => stream.write_string(&value.to_string())?,
+        Variant::F64(value) => stream.write_string(&value.to_string())?,
+        Variant::String(value) => stream.write_string(&format!("\"{}\"", value))?,
+        Variant::StringName(value) => stream.write_string(&format!("\"{}\"", value))?,
+        Variant::Vec2(value) => stream.write_string(&format!("[{}, {}]", value.x, value.y))?,
+        Variant::Vec3(value) => stream.write_string(&format!("[{}, {}, {}]", value.x, value.y, value.z))?,
         Variant::Vec4(value) => {
-          stream.write_string(&format!("[{}, {}, {}, {}]", value.x, value.y, value.z, value.w))?;
+          stream.write_string(&format!("[{}, {}, {}, {}]", value.x, value.y, value.z, value.w))?
         }
         Variant::Quat(value) => {
-          stream.write_string(&format!("[{}, {}, {}, {}]", value.x, value.y, value.z, value.w))?;
+          stream.write_string(&format!("[{}, {}, {}, {}]", value.x, value.y, value.z, value.w))?
         }
         Variant::Color(value) => {
           stream.write_string(&format!("[{}, {}, {}, {}]", value.r, value.g, value.b, value.a))?;
@@ -120,6 +86,63 @@ impl FileFormat for JsonFileFormat {
     }
 
     Ok(())
+  }
+}
+
+mod parser {
+  use super::*;
+
+  /// A parser for reading data from a JSON stream.
+  pub struct JsonParser<'a> {
+    stream: &'a mut dyn InputStream,
+    state: JsonState,
+  }
+
+  impl<'a> JsonParser<'a> {
+    /// Creates a new JSON parser for the given input stream.
+    pub fn new(stream: &'a mut dyn InputStream) -> Self {
+      Self {
+        stream,
+        state: JsonState::Start,
+      }
+    }
+
+    /// Reads the next token from the JSON stream.
+    pub fn next_token(&mut self) -> Result<JsonToken, StreamError> {
+      todo!()
+    }
+  }
+
+  /// A token in the JSON stream.
+  #[derive(Debug, PartialEq)]
+  pub enum JsonToken {
+    ObjectStart,
+    ObjectEnd,
+    ArrayStart,
+    ArrayEnd,
+    String(String),
+    Number(f64),
+    Boolean(bool),
+    Null,
+  }
+
+  /// Current state of the JSON parser.
+  #[derive(Default, Debug, Eq, PartialEq, Hash)]
+  enum JsonState {
+    #[default]
+    Start,
+    ObjectStart,
+    ObjectKey,
+    ObjectValue,
+    ObjectEnd,
+    ArrayStart,
+    ArrayValue,
+    ArrayEnd,
+    String,
+    Number,
+    Boolean,
+    Null,
+    End,
   }
 }
 
