@@ -6,10 +6,27 @@ pub fn impl_serialize(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
   let ident = &input.ident;
 
+  let fields = match input.data {
+    syn::Data::Struct(ref data) => match data.fields {
+      syn::Fields::Named(ref fields) => fields.named.iter().map(|f| &f.ident),
+      _ => unimplemented!(),
+    },
+    _ => unimplemented!(),
+  };
+
   let expanded = quote! {
     impl Serialize for #ident {
       fn serialize(&self) -> Chunk {
-        todo!()
+        let mut fields = FastHashMap::default();
+
+        #(
+          fields.insert(
+            stringify!(#fields).to_string(),
+            self.#fields.serialize()
+          );
+        )*
+
+        Chunk::Map(fields)
       }
     }
   };
@@ -20,6 +37,14 @@ pub fn impl_serialize(input: TokenStream) -> TokenStream {
 pub fn impl_deserialize(input: TokenStream) -> TokenStream {
   let input = parse_macro_input!(input as DeriveInput);
   let ident = &input.ident;
+
+  let _fields = match input.data {
+    syn::Data::Struct(ref data) => match data.fields {
+      syn::Fields::Named(ref fields) => fields.named.iter().map(|f| &f.ident),
+      _ => unimplemented!(),
+    },
+    _ => unimplemented!(),
+  };
 
   let expanded = quote! {
     impl Deserialize for #ident {

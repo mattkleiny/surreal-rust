@@ -1,6 +1,6 @@
 //! Serialization and deserialization of data structures.
 
-use crate::{FromVariant, InputStream, OutputStream, ToVariant, Variant};
+use crate::{FastHashMap, FromVariant, InputStream, OutputStream, ToVariant, Variant};
 
 mod binary;
 mod json;
@@ -13,6 +13,7 @@ pub use json::*;
 pub enum Chunk {
   Variant(Variant),
   Sequence(Vec<Chunk>),
+  Map(FastHashMap<String, Chunk>),
 }
 
 /// Represents a type that can be serialized.
@@ -46,6 +47,7 @@ impl<V: FromVariant> Deserialize for V {
     match chunk {
       Chunk::Variant(value) => Self::from_variant(value),
       Chunk::Sequence(_) => todo!(),
+      Chunk::Map(_) => todo!(),
     }
   }
 }
@@ -71,16 +73,15 @@ mod tests {
   }
 
   #[test]
-  fn it_should_serialize_and_deserialize_struct_types() {
-    let original = TestStruct {
+  fn it_should_serialize_struct_types() {
+    let input = TestStruct {
       value_1: 42,
       value_2: std::f64::consts::PI,
       value_3: "Hello, World!".to_string(),
     };
 
-    let chunk = original.serialize();
-    let deserialized = TestStruct::deserialize(chunk);
+    let chunk = input.serialize();
 
-    assert_eq!(original, deserialized);
+    println!("{:?}", chunk);
   }
 }

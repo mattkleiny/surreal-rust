@@ -1,4 +1,5 @@
 /// A buffer of data stored with an accessible heap-allocated lifetime.
+#[repr(transparent)]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Buffer<T> {
   data: Box<[T]>,

@@ -29,4 +29,5 @@ mod maths;
 mod strings;
 mod utilities;
 
+// Re-export macros for use in other crates.
 pub use macros::{profiling, Deserialize, Reflect, Serialize, Singleton};

@@ -229,14 +229,15 @@ impl Into<VirtualPath> for String {
 /// A potential error that can occur when interacting with a [`FileSystem`].
 #[derive(Debug)]
 pub enum FileSystemError {
-  GeneralError(std::io::Error),
+  NotFound,
+  IoError(std::io::Error),
   StreamError(super::StreamError),
 }
 
 impl From<std::io::Error> for FileSystemError {
   #[inline]
   fn from(error: std::io::Error) -> Self {
-    Self::GeneralError(error)
+    Self::IoError(error)
   }
 }
 
