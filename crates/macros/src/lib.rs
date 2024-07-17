@@ -4,26 +4,39 @@ use proc_macro::TokenStream;
 
 mod profiling;
 mod reflect;
+mod serial;
 mod singleton;
 mod uniforms;
 mod vertex;
-
-/// Implements the Singleton pattern for a type.
-#[proc_macro_derive(Singleton)]
-pub fn derive_singleton(input: TokenStream) -> TokenStream {
-  singleton::impl_singleton(input)
-}
-
-/// Implements the `Reflect` trait for a type.
-#[proc_macro_derive(Reflect)]
-pub fn derive_reflect(input: TokenStream) -> TokenStream {
-  reflect::impl_reflect(input)
-}
 
 /// Instruments a function with profiling code.
 #[proc_macro_attribute]
 pub fn profiling(_attr: TokenStream, item: TokenStream) -> TokenStream {
   profiling::impl_profiling(item)
+}
+
+/// Derives the `Reflect` trait for a type.
+#[proc_macro_derive(Reflect)]
+pub fn derive_reflect(input: TokenStream) -> TokenStream {
+  reflect::impl_reflect(input)
+}
+
+/// Derives the `Serialize` trait for a type.
+#[proc_macro_derive(Serialize)]
+pub fn derive_serialize(input: TokenStream) -> TokenStream {
+  serial::impl_serialize(input)
+}
+
+/// Derives the `Deserialize` trait for a type.
+#[proc_macro_derive(Deserialize)]
+pub fn derive_deserialize(input: TokenStream) -> TokenStream {
+  serial::impl_deserialize(input)
+}
+
+/// Derives the `Singleton` trait for a type.
+#[proc_macro_derive(Singleton)]
+pub fn derive_singleton(input: TokenStream) -> TokenStream {
+  singleton::impl_singleton(input)
 }
 
 /// Derives the `ToShaderUniformSet` trait for a type.

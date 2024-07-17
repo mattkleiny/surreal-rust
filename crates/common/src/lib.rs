@@ -29,4 +29,4 @@ mod maths;
 mod strings;
 mod utilities;
 
-pub use macros::{profiling, Reflect, Singleton};
+pub use macros::{profiling, Deserialize, Reflect, Serialize, Singleton};
