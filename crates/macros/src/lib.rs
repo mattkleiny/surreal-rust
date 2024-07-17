@@ -2,6 +2,7 @@
 
 use proc_macro::TokenStream;
 
+mod objects;
 mod profiling;
 mod reflect;
 mod serial;
@@ -37,6 +38,12 @@ pub fn derive_deserialize(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(Singleton)]
 pub fn derive_singleton(input: TokenStream) -> TokenStream {
   singleton::impl_singleton(input)
+}
+
+/// Derives the `Object` trait for a type.
+#[proc_macro_derive(Object)]
+pub fn derive_object(input: TokenStream) -> TokenStream {
+  objects::impl_object(input)
 }
 
 /// Derives the `ToShaderUniformSet` trait for a type.

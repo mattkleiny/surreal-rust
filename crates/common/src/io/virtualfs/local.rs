@@ -1,5 +1,3 @@
-//! The local [`FileSystem`] implementation.
-
 use std::{fs::OpenOptions, path::PathBuf};
 
 use super::*;

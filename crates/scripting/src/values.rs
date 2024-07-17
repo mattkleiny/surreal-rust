@@ -40,6 +40,7 @@ impl ScriptValue {
   }
 }
 
+/// Allow any variant type as a script value.
 impl<V: FromVariant> FromScriptValue for V {
   #[inline]
   fn from_script_value(value: &ScriptValue) -> Self {
@@ -47,6 +48,7 @@ impl<V: FromVariant> FromScriptValue for V {
   }
 }
 
+/// Allow any script value as a variant type.
 impl<V: ToVariant> ToScriptValue for V {
   #[inline]
   fn to_script_value(&self) -> ScriptValue {

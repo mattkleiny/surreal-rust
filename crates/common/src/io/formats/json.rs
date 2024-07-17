@@ -1,5 +1,3 @@
-//! JSON serialization format.
-
 use super::*;
 
 /// A file format for working with JSON.

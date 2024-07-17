@@ -1,5 +1,3 @@
-//! A virtual file system with paths and common operations.
-
 use std::sync::RwLock;
 
 pub use local::*;

@@ -5,7 +5,6 @@ use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 /// This is an abstraction over the different primitive types that are often
 /// shuffled around in the engine. It allows for a more generic API that can
 /// handle any type of value.
-#[repr(C)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Variant {
   Null,
@@ -147,5 +146,12 @@ mod tests {
   fn test_variant_conversion() {
     assert_eq!(true.to_variant(), Variant::Bool(true));
     assert_eq!(u8::from_variant(Variant::U8(10)), 10);
+  }
+
+  #[test]
+  fn test_variant_coercion() {
+    assert_eq!(u16::from_variant(Variant::U8(10)), 10);
+    assert_eq!(u32::from_variant(Variant::U8(10)), 10);
+    assert_eq!(f64::from_variant(Variant::U8(10)), 10.0f64);
   }
 }

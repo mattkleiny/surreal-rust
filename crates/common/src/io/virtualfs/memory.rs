@@ -1,5 +1,3 @@
-//! An in-memory [`FileSystem`] implementation.
-
 use std::io::{Read, Seek, SeekFrom, Write};
 
 use super::*;

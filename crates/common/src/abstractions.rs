@@ -6,9 +6,11 @@
 //! scene.
 
 pub use assets::*;
+pub use objects::*;
 pub use os::*;
 pub use variant::*;
 
 mod assets;
+mod objects;
 mod os;
 mod variant;

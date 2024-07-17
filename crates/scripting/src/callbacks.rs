@@ -1,7 +1,5 @@
 use std::{marker::PhantomData, panic::RefUnwindSafe};
 
-use common::Variant;
-
 use super::*;
 
 /// A callback that can be called from a script.
@@ -10,18 +8,14 @@ pub trait ScriptCallback<R>: RefUnwindSafe {
   fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError>;
 }
 
-// TODO: refactor these into macros?
-
-impl<F> ScriptCallback<()> for F
-where
-  F: Fn() + RefUnwindSafe,
-{
-  fn call(&self, _args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
-    self();
-
-    Ok(ScriptValue::new(Variant::Null))
-  }
-}
+// Blanket callback implementation for Rust functions and closures.
+//
+// All implementations follow a pattern of converting the arguments to the
+// expected types, calling the function, and converting the result back to a
+// `ScriptValue`.
+//
+// We use a PhantomData tuple to specify the expected argument types and
+// constrain unique implementations of the generic type.
 
 impl<R, F> ScriptCallback<PhantomData<()>> for F
 where

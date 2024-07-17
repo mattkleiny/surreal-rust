@@ -55,8 +55,9 @@ macro_rules! impl_telemetry {
   };
 }
 
-pub mod frames {
-  //! Frame rate telemetry.
+#[cfg(test)]
+#[allow(dead_code)]
+mod tests {
   use super::*;
 
   pub struct FramesPerSecond(pub u32);
@@ -70,11 +71,6 @@ pub mod frames {
   impl_telemetry!(FrameTimeAverage, "frame_time_average");
   impl_telemetry!(FrameTimeMinimum, "frame_time_minimum");
   impl_telemetry!(FrameTimeMaximum, "frame_time_maximum");
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
 
   #[test]
   fn test_basic_recorder_operations() {
@@ -85,10 +81,10 @@ mod tests {
       println!("telemetry: {}", telemetry.name());
     });
 
-    recorder.record(&frames::FramesPerSecond(60));
-    recorder.record(&frames::FramesPerSecond(60));
-    recorder.record(&frames::FramesPerSecond(60));
-    recorder.record(&frames::FramesPerSecond(59));
-    recorder.record(&frames::FramesPerSecond(60));
+    recorder.record(&FramesPerSecond(60));
+    recorder.record(&FramesPerSecond(60));
+    recorder.record(&FramesPerSecond(60));
+    recorder.record(&FramesPerSecond(59));
+    recorder.record(&FramesPerSecond(60));
   }
 }

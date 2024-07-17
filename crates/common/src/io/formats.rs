@@ -1,5 +1,3 @@
-//! Serialization and deserialization of data structures.
-
 use crate::{FastHashMap, FromVariant, InputStream, OutputStream, StreamError, ToVariant, ToVirtualPath, Variant};
 
 mod binary;
@@ -51,7 +49,7 @@ pub trait Serialize: Sized {
     let mut format = F::default();
     let mut stream = std::io::Cursor::new(Vec::new());
 
-    format.write(&mut stream, self)?;
+    format.write_chunk(&mut stream, &self.serialize())?;
 
     Ok(stream.into_inner())
   }
@@ -61,7 +59,7 @@ pub trait Serialize: Sized {
     let mut format = F::default();
     let mut stream = std::io::Cursor::new(Vec::new());
 
-    format.write(&mut stream, self)?;
+    format.write_chunk(&mut stream, &self.serialize())?;
 
     Ok(String::from_utf8(stream.into_inner())?)
   }
@@ -72,7 +70,7 @@ pub trait Serialize: Sized {
     let mut format = F::default();
     let mut stream = path.open_output_stream()?;
 
-    format.write(&mut stream, self)
+    format.write_chunk(&mut stream, &self.serialize())
   }
 }
 
@@ -111,7 +109,7 @@ pub trait Deserialize: Sized {
     let mut format = F::default();
     let mut stream = std::io::Cursor::new(data);
 
-    Ok(format.read(&mut stream)?)
+    format.read_chunk(&mut stream).map(|chunk| Self::deserialize(&chunk))
   }
 
   /// Deserializes the type from a string with a specific format.
@@ -119,7 +117,7 @@ pub trait Deserialize: Sized {
     let mut format = F::default();
     let mut stream = std::io::Cursor::new(data.as_bytes());
 
-    Ok(format.read(&mut stream)?)
+    format.read_chunk(&mut stream).map(|chunk| Self::deserialize(&chunk))
   }
 
   /// Deserializes the type from a path with a specific format.
@@ -128,28 +126,16 @@ pub trait Deserialize: Sized {
     let mut format = F::default();
     let mut stream = path.open_input_stream()?;
 
-    Ok(format.read(&mut stream)?)
+    format.read_chunk(&mut stream).map(|chunk| Self::deserialize(&chunk))
   }
 }
 
 /// A format for reading/writing data.
 pub trait FileFormat {
-  /// Reads a value from the stream.
-  #[inline]
-  fn read<V: Deserialize>(&mut self, stream: &mut dyn InputStream) -> Result<V, StreamError> {
-    self.read_chunk(stream).map(|chunk| V::deserialize(&chunk))
-  }
-
-  /// Writes a value to the stream.
-  #[inline]
-  fn write<V: Serialize>(&mut self, stream: &mut dyn OutputStream, value: &V) -> Result<(), StreamError> {
-    self.write_chunk(stream, &value.serialize())
-  }
-
-  /// Reads a [`Chunk`] from a stream.
+  /// Reads a chunk from the stream.
   fn read_chunk(&mut self, stream: &mut dyn InputStream) -> Result<Chunk, StreamError>;
 
-  /// Writes a [`Chunk`] to a stream.
+  /// Writes a chunk to the stream.
   fn write_chunk(&mut self, stream: &mut dyn OutputStream, chunk: &Chunk) -> Result<(), StreamError>;
 }
 

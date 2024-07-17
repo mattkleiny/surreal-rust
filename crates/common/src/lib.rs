@@ -10,6 +10,7 @@
 #![feature(type_alias_impl_trait)]
 #![feature(noop_waker)]
 #![feature(ptr_as_ref_unchecked)]
+#![feature(box_into_inner)]
 
 pub use abstractions::*;
 pub use collections::*;
@@ -30,4 +31,4 @@ mod strings;
 mod utilities;
 
 // Re-export macros for use in other crates.
-pub use macros::{profiling, Deserialize, Reflect, Serialize, Singleton};
+pub use macros::{profiling, Deserialize, Object, Reflect, Serialize, Singleton};

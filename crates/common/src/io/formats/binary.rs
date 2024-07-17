@@ -1,5 +1,3 @@
-//! Binary serialization format.
-
 use super::*;
 use crate::{Color, Color32, Quat, StreamError, StringName, Vec2, Vec3, Vec4};
 
