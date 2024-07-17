@@ -48,8 +48,21 @@ pub fn impl_deserialize(input: TokenStream) -> TokenStream {
 
   let expanded = quote! {
     impl Deserialize for #ident {
-      fn deserialize(chunk: Chunk) -> Self {
-        todo!()
+      fn deserialize(chunk: &Chunk) -> Self {
+        match chunk {
+          Chunk::Map(fields) => {
+            let mut instance = Self::default();
+
+            #(
+              if let Some(chunk) = fields.get(stringify!(#_fields)) {
+                instance.#_fields = Deserialize::deserialize(chunk);
+              }
+            )*
+
+            instance
+          }
+          _ => todo!(),
+        }
       }
     }
   };

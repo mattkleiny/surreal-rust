@@ -50,7 +50,7 @@ pub trait ToStream: Sized {
 #[derive(Debug)]
 pub enum StreamError {
   UnexpectedEof,
-  UnexpectedEncoding,
+  InvalidData,
   GeneralFailure,
 }
 
@@ -77,6 +77,20 @@ impl From<FileSystemError> for StreamError {
 
 /// A stream for reading from some [`VirtualPath`].
 pub trait InputStream: Seek + BufRead {
+  /// Skips any whitespace characters in the stream.
+  fn skip_whitespace(&mut self) -> Result<(), StreamError> {
+    loop {
+      match self.fill_buf()?.first() {
+        Some(byte) if byte.is_ascii_whitespace() => {
+          self.consume(1);
+        }
+        _ => break,
+      }
+    }
+
+    Ok(())
+  }
+
   fn read_u8(&mut self) -> Result<u8, StreamError>;
   fn read_u16(&mut self) -> Result<u16, StreamError>;
   fn read_u32(&mut self) -> Result<u32, StreamError>;
