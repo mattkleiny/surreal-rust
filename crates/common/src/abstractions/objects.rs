@@ -34,6 +34,7 @@ impl<T: 'static> Object<T> {
     todo!()
   }
 
+  /// Casts the object to a different type.
   #[inline(always)]
   pub fn cast<U: ?Sized>(self) -> Object<U> {
     Object {

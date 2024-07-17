@@ -33,6 +33,16 @@ impl<T: Scalar> Range<T> {
   }
 }
 
+impl<T: Lerp> Lerp for Range<T> {
+  #[inline]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    Self {
+      min: T::lerp(a.min, b.min, t),
+      max: T::lerp(a.max, b.max, t),
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -73,5 +83,16 @@ mod tests {
 
     assert_eq!(-2, range.clamp(-100));
     assert_eq!(5, range.clamp(100));
+  }
+
+  #[test]
+  fn test_range_should_be_interpolatable() {
+    let range1 = range(0.0, 10.0);
+    let range2 = range(10.0, 20.0);
+
+    let interpolated = Range::lerp(range1, range2, 0.5);
+
+    assert_eq!(5.0, interpolated.min);
+    assert_eq!(15.0, interpolated.max);
   }
 }

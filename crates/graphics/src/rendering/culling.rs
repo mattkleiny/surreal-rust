@@ -17,7 +17,7 @@ pub trait CullableObject {
 /// Represents a scene that can be culled.
 pub trait CullableScene {
   /// Culls the objects that are visible to the given camera.
-  fn cull_visible_objects<T>(&self, camera: &dyn Camera) -> VisibleObjectSet<T>;
+  fn cull_visible_objects<T: CullableObject>(&self, camera: &dyn Camera) -> VisibleObjectSet<T>;
 }
 
 /// A set of visible objects that can be rendered in a scene.
@@ -52,14 +52,9 @@ bitflags::bitflags! {
   /// Flags that indicate the required state of the graphics pipeline for a material.
   #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
   pub struct MaterialFlags: u32 {
-    const ALPHA_BLENDING = 0b00000001;
-    const ALPHA_TESTING = 0b00000010;
-    const BACKFACE_CULLING = 0b00000100;
-    const DEPTH_TESTING = 0b00001000;
-    const DEPTH_WRITING = 0b00010000;
-    const SCISSOR_TESTING = 0b00100000;
-    const STENCIL_TESTING = 0b01000000;
-    const WIREFRAME = 0b10000000;
+    const ALPHA_TESTING = 0b00000001;
+    const DEPTH_TESTING = 0b00000010;
+    const STENCIL_TESTING = 0b00000100;
   }
 }
 

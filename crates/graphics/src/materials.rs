@@ -83,15 +83,7 @@ impl Material {
     let mut flags = MaterialFlags::empty();
 
     if self.blend_state() != BlendState::Disabled {
-      flags.insert(MaterialFlags::ALPHA_BLENDING);
-    }
-
-    if self.culling_mode() != CullingMode::Disabled {
-      flags.insert(MaterialFlags::BACKFACE_CULLING);
-    }
-
-    if self.scissor_mode() != ScissorMode::Disabled {
-      flags.insert(MaterialFlags::SCISSOR_TESTING);
+      flags.insert(MaterialFlags::ALPHA_TESTING);
     }
 
     flags

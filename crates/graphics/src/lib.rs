@@ -37,6 +37,7 @@ mod targets;
 mod textures;
 
 // Re-export macros for use in other crates.
+pub(crate) use internal::GraphicsCell;
 pub use macros::{ToShaderUniformSet, Vertex};
 
 common::impl_arena_index!(pub BufferId, "Identifies a graphics buffer.");

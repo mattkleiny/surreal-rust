@@ -47,10 +47,9 @@ macro_rules! include_shader {
 #[rustfmt::skip]
 #[allow(dead_code)]
 mod embedded {
-  //! Embedded shader code library.
-
   use super::*;
 
+  /// A shader uniform key for the projection-view matrix.
   pub const PROJECTION_VIEW: ShaderUniformKey<&Mat4> = ShaderUniformKey::new("u_projection_view");
 
   pub const SHADER_CANVAS_STANDARD: ShaderTemplate<GLSL> = include_shader!("./embedded/canvas-standard.glsl");

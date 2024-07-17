@@ -3,7 +3,6 @@
 use common::{uvec2, Color, Color32, Pixel, Rectangle, ToVirtualPath, UVec2};
 
 use super::*;
-use crate::internal::GraphicsCell;
 
 /// Different supported texture formats.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]

@@ -67,6 +67,12 @@ macro_rules! impl_vector {
       type Space = $space;
       type Scalar = $scalar;
     }
+
+    impl FromRandom for $name {
+      fn from_random(random: &mut Random) -> Self {
+        Self::splat($scalar::from_random(random))
+      }
+    }
   };
 }
 

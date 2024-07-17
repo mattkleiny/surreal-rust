@@ -9,7 +9,6 @@ use bitflags::bitflags;
 use common::*;
 
 use super::*;
-use crate::internal::GraphicsCell;
 
 mod lang;
 mod templates;

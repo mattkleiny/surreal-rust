@@ -49,7 +49,7 @@ pub trait ToStream: Sized {
 /// Represents an error that occurred while reading or writing to a stream.
 #[derive(Debug)]
 pub enum StreamError {
-  UnexpectedEof,
+  EndOfStream,
   InvalidData,
   GeneralFailure,
 }
@@ -57,14 +57,14 @@ pub enum StreamError {
 impl From<std::io::Error> for StreamError {
   #[inline]
   fn from(_: std::io::Error) -> Self {
-    Self::UnexpectedEof
+    Self::EndOfStream
   }
 }
 
 impl From<std::string::FromUtf8Error> for StreamError {
   #[inline]
   fn from(_: std::string::FromUtf8Error) -> Self {
-    Self::UnexpectedEof
+    Self::EndOfStream
   }
 }
 
@@ -92,6 +92,7 @@ pub trait InputStream: Seek + BufRead {
   }
 
   fn read_u8(&mut self) -> Result<u8, StreamError>;
+  fn read_char(&mut self) -> Result<char, StreamError>;
   fn read_u16(&mut self) -> Result<u16, StreamError>;
   fn read_u32(&mut self) -> Result<u32, StreamError>;
   fn read_u64(&mut self) -> Result<u64, StreamError>;
@@ -126,6 +127,10 @@ impl<T: BufRead + Seek> InputStream for T {
   #[inline]
   fn read_u8(&mut self) -> Result<u8, StreamError> {
     impl_read!(self, 1, u8)
+  }
+
+  fn read_char(&mut self) -> Result<char, StreamError> {
+    impl_read!(self, 1, u8).map(|value| value as char)
   }
 
   #[inline]

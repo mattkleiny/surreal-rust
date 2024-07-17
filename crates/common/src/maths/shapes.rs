@@ -1,6 +1,9 @@
 //! Commonly used shape definitions in 2 and 3 space.
 
-use crate::maths::{vec3, Vec2, Vec3};
+use crate::{
+  maths::{vec3, Vec2, Vec3},
+  Lerp,
+};
 
 /// A sphere in 2-space.
 #[derive(Clone, Debug)]
@@ -14,6 +17,16 @@ impl Default for Circle {
     Self {
       radius: 1.0,
       center: Vec2::ZERO,
+    }
+  }
+}
+
+impl Lerp for Circle {
+  #[inline]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    Self {
+      radius: f32::lerp(a.radius, b.radius, t),
+      center: Vec2::lerp(a.center, b.center, t),
     }
   }
 }
@@ -34,20 +47,21 @@ impl Default for Sphere {
   }
 }
 
+impl Lerp for Sphere {
+  #[inline]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    Self {
+      radius: f32::lerp(a.radius, b.radius, t),
+      center: Vec3::lerp(a.center, b.center, t),
+    }
+  }
+}
+
 /// A cube in 3-space.
 #[derive(Clone, Debug)]
 pub struct Cube {
   pub size: Vec3,
   pub center: Vec3,
-}
-
-impl Default for Cube {
-  fn default() -> Self {
-    Self {
-      size: vec3(1.0, 1.0, 1.0),
-      center: Vec3::ZERO,
-    }
-  }
 }
 
 impl Cube {
@@ -61,6 +75,25 @@ impl Cube {
   #[inline]
   pub fn max(&self) -> Vec3 {
     self.center + self.size / 2.0
+  }
+}
+
+impl Default for Cube {
+  fn default() -> Self {
+    Self {
+      size: vec3(1.0, 1.0, 1.0),
+      center: Vec3::ZERO,
+    }
+  }
+}
+
+impl Lerp for Cube {
+  #[inline]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    Self {
+      size: Vec3::lerp(a.size, b.size, t),
+      center: Vec3::lerp(a.center, b.center, t),
+    }
   }
 }
 
@@ -82,6 +115,17 @@ impl Default for Cylinder {
   }
 }
 
+impl Lerp for Cylinder {
+  #[inline]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    Self {
+      radius: f32::lerp(a.radius, b.radius, t),
+      height: f32::lerp(a.height, b.height, t),
+      center: Vec3::lerp(a.center, b.center, t),
+    }
+  }
+}
+
 /// A trapezoidal prism in 3-space.
 #[derive(Clone, Debug)]
 pub struct Trapezoid {
@@ -94,6 +138,16 @@ impl Default for Trapezoid {
     Self {
       size: vec3(1.0, 1.0, 1.0),
       center: Vec3::ZERO,
+    }
+  }
+}
+
+impl Lerp for Trapezoid {
+  #[inline]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    Self {
+      size: Vec3::lerp(a.size, b.size, t),
+      center: Vec3::lerp(a.center, b.center, t),
     }
   }
 }

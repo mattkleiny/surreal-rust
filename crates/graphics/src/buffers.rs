@@ -5,7 +5,6 @@
 //! shaders.
 
 use super::*;
-use crate::internal::GraphicsCell;
 
 /// The different kinds of buffer we support.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

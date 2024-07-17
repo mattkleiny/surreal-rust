@@ -2,10 +2,10 @@
 
 use proc_macro::TokenStream;
 
+mod formats;
 mod objects;
 mod profiling;
 mod reflect;
-mod serial;
 mod singleton;
 mod uniforms;
 mod vertex;
@@ -25,13 +25,13 @@ pub fn derive_reflect(input: TokenStream) -> TokenStream {
 /// Derives the `Serialize` trait for a type.
 #[proc_macro_derive(Serialize)]
 pub fn derive_serialize(input: TokenStream) -> TokenStream {
-  serial::impl_serialize(input)
+  formats::impl_serialize(input)
 }
 
 /// Derives the `Deserialize` trait for a type.
 #[proc_macro_derive(Deserialize)]
 pub fn derive_deserialize(input: TokenStream) -> TokenStream {
-  serial::impl_deserialize(input)
+  formats::impl_deserialize(input)
 }
 
 /// Derives the `Singleton` trait for a type.

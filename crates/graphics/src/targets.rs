@@ -5,7 +5,6 @@
 //! post-processing, etc.).
 
 use super::*;
-use crate::internal::GraphicsCell;
 
 /// Describes how to build a [`RenderTarget`].
 ///

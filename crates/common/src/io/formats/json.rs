@@ -7,7 +7,9 @@ pub struct JsonFileFormat {
 }
 
 impl FileFormat for JsonFileFormat {
-  fn read_chunk(&mut self, _stream: &mut dyn InputStream) -> Result<Chunk, StreamError> {
+  fn read_chunk(&mut self, stream: &mut dyn InputStream) -> Result<Chunk, StreamError> {
+    let _parser = parser::JsonParser::new(stream);
+
     todo!()
   }
 
@@ -92,6 +94,38 @@ impl FileFormat for JsonFileFormat {
 mod parser {
   use super::*;
 
+  /// A token in the JSON stream.
+  #[derive(Debug, PartialEq)]
+  pub enum JsonToken {
+    ObjectStart,
+    ObjectEnd,
+    ArrayStart,
+    ArrayEnd,
+    String(String),
+    Number(f64),
+    Boolean(bool),
+    Null,
+  }
+
+  /// Current state of the JSON parser.
+  #[derive(Default, Copy, Clone, Debug, Eq, PartialEq, Hash)]
+  pub enum JsonState {
+    #[default]
+    Start,
+    ObjectStart,
+    ObjectKey,
+    ObjectValue,
+    ObjectEnd,
+    ArrayStart,
+    ArrayValue,
+    ArrayEnd,
+    String,
+    Number,
+    Boolean,
+    Null,
+    End,
+  }
+
   /// A parser for reading data from a JSON stream.
   pub struct JsonParser<'a> {
     stream: &'a mut dyn InputStream,
@@ -107,42 +141,37 @@ mod parser {
       }
     }
 
+    /// Returns the current state of the JSON parser.
+    pub fn state(&self) -> JsonState {
+      self.state
+    }
+
     /// Reads the next token from the JSON stream.
     pub fn next_token(&mut self) -> Result<JsonToken, StreamError> {
-      todo!()
+      self.stream.skip_whitespace()?;
+
+      while let Ok(next) = self.stream.read_char() {
+        match next {
+          '{' => return Ok(JsonToken::ObjectStart),
+          '}' => return Ok(JsonToken::ObjectEnd),
+          '[' => return Ok(JsonToken::ArrayStart),
+          ']' => return Ok(JsonToken::ArrayEnd),
+          '"' => {
+            let mut string = String::new();
+
+            while let Ok(next) = self.stream.read_char() {
+              match next {
+                '"' => return Ok(JsonToken::String(string)),
+                _ => string.push(next),
+              }
+            }
+          }
+          _ => {}
+        }
+      }
+
+      Err(StreamError::EndOfStream)
     }
-  }
-
-  /// A token in the JSON stream.
-  #[derive(Debug, PartialEq)]
-  pub enum JsonToken {
-    ObjectStart,
-    ObjectEnd,
-    ArrayStart,
-    ArrayEnd,
-    String(String),
-    Number(f64),
-    Boolean(bool),
-    Null,
-  }
-
-  /// Current state of the JSON parser.
-  #[derive(Default, Debug, Eq, PartialEq, Hash)]
-  enum JsonState {
-    #[default]
-    Start,
-    ObjectStart,
-    ObjectKey,
-    ObjectValue,
-    ObjectEnd,
-    ArrayStart,
-    ArrayValue,
-    ArrayEnd,
-    String,
-    Number,
-    Boolean,
-    Null,
-    End,
   }
 }
 

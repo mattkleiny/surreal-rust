@@ -182,6 +182,26 @@ impl Rectangle {
   }
 }
 
+impl Lerp for Rectangle {
+  #[inline]
+  fn lerp(a: Self, b: Self, t: f32) -> Self {
+    Self {
+      min: Vec2::lerp(a.min, b.min, t),
+      max: Vec2::lerp(a.max, b.max, t),
+    }
+  }
+}
+
+impl FromRandom for Rectangle {
+  #[inline]
+  fn from_random(random: &mut Random) -> Self {
+    let min = Vec2::from_random(random);
+    let max = Vec2::from_random(random);
+
+    Self::new(min.min(max), min.max(max))
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -248,5 +268,23 @@ mod tests {
     assert_eq!(quadrants[1], Rectangle::from_corner_points(1., 0., 2., 1.));
     assert_eq!(quadrants[2], Rectangle::from_corner_points(0., 1., 1., 2.));
     assert_eq!(quadrants[3], Rectangle::from_corner_points(1., 1., 2., 2.));
+  }
+
+  #[test]
+  fn test_rectangle_lerp() {
+    let a = Rectangle::from_corner_points(0., 0., 1., 1.);
+    let b = Rectangle::from_corner_points(1., 1., 2., 2.);
+
+    let result = Rectangle::lerp(a, b, 0.5);
+
+    assert_eq!(result, Rectangle::from_corner_points(0.5, 0.5, 1.5, 1.5));
+  }
+
+  #[test]
+  fn test_rectangle_from_random() {
+    let value = Rectangle::random();
+
+    assert!(value.min.x <= value.max.x);
+    assert!(value.min.y <= value.max.y);
   }
 }

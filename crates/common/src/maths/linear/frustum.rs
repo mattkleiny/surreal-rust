@@ -1,5 +1,4 @@
 use super::*;
-use crate::reinterpret_cast;
 
 /// A frustum in 3-space.
 #[repr(C)]
@@ -125,6 +124,6 @@ impl Frustum {
   ///
   /// The order is Near, Far, Left, Right, Top, Bottom.
   pub fn as_slice(&self) -> &[Plane; 6] {
-    unsafe { reinterpret_cast(self) }
+    unsafe { crate::reinterpret_cast(self) }
   }
 }
