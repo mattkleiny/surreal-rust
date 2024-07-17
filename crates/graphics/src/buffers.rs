@@ -65,7 +65,7 @@ impl<T> Buffer<T> {
   }
 
   /// Reads all data from the buffer.
-  #[allow(clippy::uninit_vec)] // immediately fill the buffer from the gpu
+  #[allow(clippy::uninit_vec)]
   pub fn read_data(&self) -> Vec<T> {
     let state = self.state.read();
     let length = state.length;

@@ -107,17 +107,13 @@ impl VirtualPath {
 
   /// Returns the file extension of the path.
   pub fn extension(&self) -> &str {
-    if let Some(extension) = self.location.split('.').last() {
-      extension
-    } else {
-      ""
-    }
+    self.location.split('.').last().unwrap_or_default()
   }
 
   /// Returns a new path with a different file extension appended.
   pub fn append_extension(&self, new_extension: &str) -> Self {
     Self {
-      scheme: self.scheme.clone(),
+      scheme: self.scheme,
       location: format!("{:}.{:}", self.location, new_extension),
     }
   }
@@ -125,7 +121,7 @@ impl VirtualPath {
   /// Returns a new path with a different file extension.
   pub fn change_extension(&self, new_extension: &str) -> Self {
     Self {
-      scheme: self.scheme.clone(),
+      scheme: self.scheme,
       location: self.location.replace(self.extension(), new_extension),
     }
   }
@@ -141,7 +137,7 @@ impl VirtualPath {
     path.push_str(relative);
 
     Self {
-      scheme: self.scheme.clone(),
+      scheme: self.scheme,
       location: path,
     }
   }
@@ -153,12 +149,12 @@ impl VirtualPath {
 
   /// Opens a reader for the given path.
   pub fn open_input_stream(&self) -> Result<Box<dyn InputStream>, FileSystemError> {
-    FileSystemManager::with_filesystem(self, |file_system| Ok(file_system.open_read(self)?))
+    FileSystemManager::with_filesystem(self, |file_system| file_system.open_read(self))
   }
 
   /// Opens a writer for the given path.
   pub fn open_output_stream(&self) -> Result<Box<dyn OutputStream>, FileSystemError> {
-    FileSystemManager::with_filesystem(self, |file_system| Ok(file_system.open_write(self)?))
+    FileSystemManager::with_filesystem(self, |file_system| file_system.open_write(self))
   }
 
   /// Attempts to read all bytes from the given path.
@@ -209,18 +205,18 @@ impl<R: AsRef<str>> ToVirtualPath for R {
 }
 
 /// Allow string references to be converted into [`VirtualPath`] instances.
-impl Into<VirtualPath> for &str {
+impl From<&str> for VirtualPath {
   #[inline]
-  fn into(self) -> VirtualPath {
-    self.to_virtual_path()
+  fn from(value: &str) -> Self {
+    VirtualPath::new(value)
   }
 }
 
 /// Allow string references to be converted into [`VirtualPath`] instances.
-impl Into<VirtualPath> for String {
+impl From<String> for VirtualPath {
   #[inline]
-  fn into(self) -> VirtualPath {
-    self.as_str().to_virtual_path()
+  fn from(value: String) -> Self {
+    VirtualPath::new(&value)
   }
 }
 

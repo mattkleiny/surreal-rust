@@ -92,7 +92,7 @@ macro_rules! impl_server {
 #[macro_export]
 macro_rules! impl_singleton {
   ($name:ty) => {
-    impl crate::utilities::Singleton for $name {
+    impl $crate::utilities::Singleton for $name {
       fn instance() -> &'static Self {
         static INSTANCE: std::sync::LazyLock<$name> = std::sync::LazyLock::new(|| <$name>::default());
 

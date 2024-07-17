@@ -31,12 +31,12 @@ impl<N, W: Scalar> Default for Graph<N, W> {
 impl<N, W: Scalar> Graph<N, W> {
   /// Gets a reference to the node with the given id.
   pub fn node(&self, node: GraphNodeId) -> Option<&N> {
-    self.nodes.get(node.into())
+    self.nodes.get(node)
   }
 
   /// Gets a mutable reference to the node with the given id.
   pub fn node_mut(&mut self, node: GraphNodeId) -> Option<&mut N> {
-    self.nodes.get_mut(node.into())
+    self.nodes.get_mut(node)
   }
 
   /// Iterates over the nodes in the graph.

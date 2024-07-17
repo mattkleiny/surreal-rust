@@ -104,7 +104,7 @@ impl Seek for MemoryFileStream {
         self.position = self.length + offset as usize;
       }
       SeekFrom::Current(offset) => {
-        self.position = self.position + offset as usize;
+        self.position += offset as usize;
       }
     }
 

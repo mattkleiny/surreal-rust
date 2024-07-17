@@ -91,6 +91,7 @@ impl FileFormat for JsonFileFormat {
   }
 }
 
+#[allow(dead_code)]
 mod parser {
   use super::*;
 

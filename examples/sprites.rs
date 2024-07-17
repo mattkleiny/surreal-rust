@@ -9,9 +9,10 @@ fn main() {
 
   GraphicsServer::install(OpenGLGraphicsBackend::new(&window));
 
-  let mut batch = SpriteBatch::new().expect("Failed to create sprite batch");
-  let texture = Texture::from_path("assets/sprites/bunny.png").expect("Failed to load texture");
-  let mut material = SHADER_SPRITE_STANDARD.to_material().expect("Failed to load material");
+  let mut batch = SpriteBatch::new().unwrap();
+  let texture = Texture::from_path("assets/sprites/bunny.png").unwrap();
+
+  let mut material = SHADER_SPRITE_STANDARD.to_material().unwrap();
 
   material.set_blend_state(BlendState::Enabled {
     source: BlendFactor::SourceAlpha,

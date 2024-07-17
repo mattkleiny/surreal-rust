@@ -158,7 +158,7 @@ impl<T> SpatialHashMap<T> {
       fn next(&mut self) -> Option<Self::Item> {
         while let Some(index) = self.indices.pop() {
           if let Some(entry) = self.values.get_mut(index) {
-            return Some(unsafe { unsafe_mutable_alias(&mut entry.value) });
+            return Some(unsafe { unsafe_mutable_alias(&entry.value) });
           }
         }
 
@@ -171,7 +171,7 @@ impl<T> SpatialHashMap<T> {
       .lookup
       .values()
       .flat_map(|contents| contents.iter())
-      .map(|it| *it)
+      .copied()
       .collect();
 
     Iter {

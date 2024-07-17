@@ -72,7 +72,7 @@ macro_rules! impl_variant {
     impl From<Variant> for () {
       #[inline]
       fn from(_: Variant) -> Self {
-        ()
+        // no-op
       }
     }
   };

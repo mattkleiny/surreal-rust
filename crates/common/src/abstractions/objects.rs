@@ -105,16 +105,6 @@ impl<T: Trace + 'static> GC<T> {
 }
 
 impl<T: Trace> GC<T> {
-  /// Returns a reference to the inner value.
-  pub fn as_ref(&self) -> &T {
-    GarbageCollector::instance().get(self.index).unwrap()
-  }
-
-  /// Returns a mutable reference to the inner value.
-  pub fn as_mut(&mut self) -> &mut T {
-    GarbageCollector::instance().get_mut(self.index).unwrap()
-  }
-
   /// Returns a raw pointer to the inner value.
   pub fn as_ptr(&self) -> *const T {
     self.as_ref() as *const T
@@ -140,6 +130,18 @@ impl<T: Trace> Clone for GC<T> {
 impl<T: Trace + Debug> Debug for GC<T> {
   fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     self.as_ref().fmt(formatter)
+  }
+}
+
+impl<T: Trace> AsRef<T> for GC<T> {
+  fn as_ref(&self) -> &T {
+    GarbageCollector::instance().get(self.index).unwrap()
+  }
+}
+
+impl<T: Trace> AsMut<T> for GC<T> {
+  fn as_mut(&mut self) -> &mut T {
+    GarbageCollector::instance().get_mut(self.index).unwrap()
   }
 }
 
@@ -169,6 +171,12 @@ impl<T: Trace> Drop for GC<T> {
 /// When an object is traced, the garbage collector will mark the object as
 /// reachable, and will recursively trace any other objects that the object
 /// references.
+///
+/// # Safety
+///
+/// This trait is unsafe because for incorrectly defined manual implementations,
+/// it's possible to leak memory. Rely on the derive macro for this trait where
+/// possible.
 pub unsafe trait Trace {
   /// Traces the object, marking all reachable objects.
   fn trace(&self, context: &mut TraceContext);

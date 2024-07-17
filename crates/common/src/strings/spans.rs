@@ -37,12 +37,6 @@ impl<'a> StringSpan<'a> {
     &self.string[self.start..self.end]
   }
 
-  /// Returns the span as a string.
-  #[inline]
-  pub fn to_string(&self) -> String {
-    self.as_str().to_string()
-  }
-
   /// Slices the span.
   #[inline]
   pub fn slice(&self, start: usize, end: usize) -> Self {
@@ -94,7 +88,7 @@ impl<'a> From<&'a String> for StringSpan<'a> {
   }
 }
 
-impl<'a> PartialEq<&str> for StringSpan<'_> {
+impl PartialEq<&str> for StringSpan<'_> {
   #[inline]
   fn eq(&self, other: &&str) -> bool {
     self.as_str() == *other
