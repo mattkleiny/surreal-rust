@@ -2,15 +2,18 @@
 
 #![allow(clippy::new_without_default)]
 
+pub use buffers::*;
 pub use clips::*;
 pub use sampling::*;
 pub use sources::*;
 
+mod buffers;
 mod clips;
 mod headless;
 mod sampling;
 mod sources;
 
+common::impl_arena_index!(pub BufferId, "Identifies an Audio Buffer.");
 common::impl_arena_index!(pub ClipId, "Identifies an Audio Clip.");
 common::impl_arena_index!(pub SourceId, "Identifies an Audio Source.");
 
@@ -20,6 +23,13 @@ common::impl_server!(AudioServer by AudioBackend default headless::HeadlessAudio
 #[inline(always)]
 pub fn audio() -> &'static dyn AudioBackend {
   AudioServer::instance()
+}
+
+/// A possible error when interacting with buffers.
+#[derive(Debug)]
+pub enum BufferError {
+  InvalidId(BufferId),
+  FailedToCreate,
 }
 
 /// A possible error when interacting with clips.
@@ -44,9 +54,13 @@ pub enum SourceError {
 /// implementation abstraction.
 #[rustfmt::skip]
 pub trait AudioBackend {
+  // buffers
+  fn buffer_create(&self) -> Result<BufferId, BufferError>;
+  fn buffer_write_data(&self, buffer: BufferId, sample_rate: AudioSampleRate, data: &[u8]) -> Result<(), BufferError>;
+  fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError>;
+
   // clips
   fn clip_create(&self) -> Result<ClipId, ClipError>;
-  fn clip_write_data(&self, clip: ClipId, data: *const u8, length: usize) -> Result<(), ClipError>;
   fn clip_delete(&self, clip: ClipId) -> Result<(), ClipError>;
 
   // sources

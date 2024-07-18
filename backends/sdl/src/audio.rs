@@ -1,9 +1,10 @@
 // Audio backend for SDL2
 
-use std::ffi::{c_int, c_uint};
-
 pub use audio::*;
-use openal_sys::{alBufferData, alDeleteSources, alGenSources, alGetSourcei, ALCcontext, ALCdevice};
+use openal_sys::{
+  alBufferData, alDeleteSources, alGenBuffers, alGenSources, alGetSourcei, alSource3f, alSourcef, alSourcei,
+  ALCcontext, ALCdevice, ALint, ALuint,
+};
 
 /// An audio backend for SDL2.
 pub struct SdlAudioBackend {
@@ -31,9 +32,50 @@ impl Drop for SdlAudioBackend {
 
 #[allow(unused_variables)]
 impl AudioBackend for SdlAudioBackend {
+  fn buffer_create(&self) -> Result<BufferId, BufferError> {
+    unsafe {
+      let mut buffer: ALuint = 0;
+
+      alGenBuffers(1, &mut buffer as *mut _);
+
+      if buffer == 0 {
+        return Err(BufferError::FailedToCreate);
+      }
+
+      Ok(BufferId::from(buffer as u32))
+    }
+  }
+
+  fn buffer_write_data(&self, buffer: BufferId, sampler_rate: AudioSampleRate, data: &[u8]) -> Result<(), BufferError> {
+    unsafe {
+      let buffer = buffer.into();
+
+      alBufferData(
+        buffer,
+        openal_sys::AL_FORMAT_MONO16,
+        data.as_ptr() as *const _,
+        data.len() as i32,
+        44100,
+      );
+
+      Ok(())
+    }
+  }
+
+  fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError> {
+    unsafe {
+      let buffer = buffer.into();
+
+      alDeleteSources(1, &buffer as *const _);
+
+      Ok(())
+    }
+  }
+
   fn clip_create(&self) -> Result<ClipId, ClipError> {
     unsafe {
-      let mut clip: c_uint = 0;
+      let mut clip: ALuint = 0;
+
       alGenSources(1, &mut clip as *mut _);
 
       if clip == 0 {
@@ -41,22 +83,6 @@ impl AudioBackend for SdlAudioBackend {
       }
 
       Ok(ClipId::from(clip as u32))
-    }
-  }
-
-  fn clip_write_data(&self, clip: ClipId, data: *const u8, length: usize) -> Result<(), ClipError> {
-    unsafe {
-      let clip = clip.into();
-
-      alBufferData(
-        clip,
-        openal_sys::AL_FORMAT_MONO16,
-        data as *const _,
-        length as i32,
-        44100,
-      );
-
-      Ok(())
     }
   }
 
@@ -72,8 +98,14 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_create(&self) -> Result<SourceId, SourceError> {
     unsafe {
-      let mut source: c_uint = 0;
+      let mut source: ALuint = 0;
+
       alGenSources(1, &mut source as *mut _);
+      alSourcef(source, openal_sys::AL_GAIN, 1.0);
+      alSourcef(source, openal_sys::AL_PITCH, 1.0);
+      alSource3f(source, openal_sys::AL_POSITION, 0.0, 0.0, 0.0);
+      alSource3f(source, openal_sys::AL_VELOCITY, 0.0, 0.0, 0.0);
+      alSourcei(source, openal_sys::AL_LOOPING, openal_sys::AL_FALSE as ALint);
 
       if source == 0 {
         return Err(SourceError::FailedToCreate);
@@ -86,7 +118,7 @@ impl AudioBackend for SdlAudioBackend {
   fn source_is_playing(&self, source: SourceId) -> Option<bool> {
     unsafe {
       let source = source.into();
-      let mut state: c_int = 0;
+      let mut state: ALint = 0;
 
       alGetSourcei(source, openal_sys::AL_SOURCE_STATE, &mut state as *mut _);
 
@@ -112,7 +144,7 @@ impl AudioBackend for SdlAudioBackend {
     unsafe {
       let source = source.into();
 
-      openal_sys::alSourcef(source, openal_sys::AL_GAIN, volume);
+      alSourcef(source, openal_sys::AL_GAIN, volume);
 
       Ok(())
     }
@@ -121,7 +153,7 @@ impl AudioBackend for SdlAudioBackend {
   fn source_get_clip(&self, source: SourceId) -> Option<ClipId> {
     unsafe {
       let source = source.into();
-      let mut buffer: c_int = 0;
+      let mut buffer: ALint = 0;
 
       alGetSourcei(source, openal_sys::AL_BUFFER, &mut buffer as *mut _);
 
@@ -134,7 +166,7 @@ impl AudioBackend for SdlAudioBackend {
       let source = source.into();
       let clip = clip.into();
 
-      openal_sys::alSourcei(source, openal_sys::AL_BUFFER, clip);
+      alSourcei(source, openal_sys::AL_BUFFER, clip);
 
       Ok(())
     }

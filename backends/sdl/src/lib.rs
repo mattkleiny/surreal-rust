@@ -2,7 +2,6 @@
 
 use std::ffi::{c_int, CString};
 
-use common::FastHashSet;
 use sdl2_sys::{
   SDL_GLattr::{
     SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_MAJOR_VERSION, SDL_GL_CONTEXT_MINOR_VERSION, SDL_GL_CONTEXT_PROFILE_MASK,
@@ -28,7 +27,8 @@ pub enum WindowError {
 pub struct Window {
   window: *mut sdl2_sys::SDL_Window,
   gl_context: sdl2_sys::SDL_GLContext,
-  keyboard_state: FastHashSet<input::VirtualKey>,
+  keyboard_device: input::SdlKeyboardDevice,
+  mouse_device: input::SdlMouseDevice,
 }
 
 /// Settings for a window.
@@ -107,7 +107,8 @@ impl Window {
       let window = Self {
         window,
         gl_context,
-        keyboard_state: FastHashSet::default(),
+        keyboard_device: input::SdlKeyboardDevice::default(),
+        mouse_device: input::SdlMouseDevice::default(),
       };
 
       // set the window icon
@@ -161,19 +162,29 @@ impl Window {
 
         if event.type_ == SDL_EventType::SDL_KEYDOWN as u32 {
           if let Some(virtual_key) = from_scancode(event.key.keysym.sym) {
-            self.keyboard_state.insert(virtual_key);
+            self.keyboard_device.keyboard_state.insert(virtual_key);
           }
         }
 
         if event.type_ == SDL_EventType::SDL_KEYUP as u32 {
           if let Some(virtual_key) = from_scancode(event.key.keysym.sym) {
-            self.keyboard_state.remove(&virtual_key);
+            self.keyboard_device.keyboard_state.remove(&virtual_key);
           }
         }
       }
 
       running
     }
+  }
+
+  /// Gets the keyboard device.
+  pub fn keyboard(&self) -> &dyn input::KeyboardDevice {
+    &self.keyboard_device
+  }
+
+  /// Gets the mouse device.
+  pub fn mouse(&self) -> &dyn input::MouseDevice {
+    &self.mouse_device
   }
 
   /// Presents the window to the display.
@@ -190,18 +201,6 @@ impl Window {
     self.window
   }
 }
-
-impl input::KeyboardDevice for Window {
-  fn is_key_down(&self, key: input::VirtualKey) -> bool {
-    self.keyboard_state.contains(&key)
-  }
-
-  fn is_key_up(&self, key: input::VirtualKey) -> bool {
-    !self.keyboard_state.contains(&key)
-  }
-}
-
-impl input::MouseDevice for Window {}
 
 impl common::Clipboard for Window {
   fn get_clipboard(&self) -> Option<String> {

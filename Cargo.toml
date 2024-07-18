@@ -49,4 +49,4 @@ required-features = ["sdl", "graphics", "lang-javascript"]
 
 [[example]]
 name = "hello-world"
-required-features = ["sdl", "graphics"]
+required-features = ["sdl", "graphics", "audio"]

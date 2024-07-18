@@ -7,18 +7,27 @@ use super::*;
 /// This backend does nothing (no-ops) and can be used for testing/etc.
 #[derive(Default)]
 pub struct HeadlessAudioBackend {
+  next_buffer_id: AtomicU64,
   next_clip_id: AtomicU64,
   next_source_id: AtomicU64,
 }
 
 #[allow(unused_variables)]
 impl AudioBackend for HeadlessAudioBackend {
-  fn clip_create(&self) -> Result<ClipId, ClipError> {
-    Ok(ClipId(self.next_clip_id.fetch_add(1, Ordering::Relaxed)))
+  fn buffer_create(&self) -> Result<BufferId, BufferError> {
+    Ok(BufferId(self.next_buffer_id.fetch_add(1, Ordering::Relaxed)))
   }
 
-  fn clip_write_data(&self, clip: ClipId, data: *const u8, length: usize) -> Result<(), ClipError> {
+  fn buffer_write_data(&self, buffer: BufferId, sample_rate: AudioSampleRate, data: &[u8]) -> Result<(), BufferError> {
     Ok(())
+  }
+
+  fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError> {
+    Ok(())
+  }
+
+  fn clip_create(&self) -> Result<ClipId, ClipError> {
+    Ok(ClipId(self.next_clip_id.fetch_add(1, Ordering::Relaxed)))
   }
 
   fn clip_delete(&self, clip: ClipId) -> Result<(), ClipError> {
