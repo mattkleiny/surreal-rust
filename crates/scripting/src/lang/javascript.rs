@@ -35,12 +35,10 @@ impl ScriptRuntime for JavaScriptRuntime {
         let args = args.into_vec().iter().map(|it| it.clone().into()).collect::<Vec<_>>();
 
         // convert result
-        let result = callback
+        callback
           .call(&args)
-          .map(|it| JsValue::from(it))
-          .map_err(|it| format!("{:?}", it));
-
-        result
+          .map(JsValue::from)
+          .map_err(|it| format!("{:?}", it))
       })
       .unwrap();
   }

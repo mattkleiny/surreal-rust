@@ -238,7 +238,7 @@ impl Drop for Window {
 fn from_scancode(scan_code: SDL_Keycode) -> Option<input::VirtualKey> {
   use input::VirtualKey::*;
 
-  match unsafe { std::mem::transmute(scan_code) } {
+  match unsafe { std::mem::transmute::<SDL_Keycode, SDL_KeyCode>(scan_code) } {
     SDL_KeyCode::SDLK_ESCAPE => Some(Escape),
     SDL_KeyCode::SDLK_UP => Some(ArrowKey(input::ArrowKey::Up)),
     SDL_KeyCode::SDLK_DOWN => Some(ArrowKey(input::ArrowKey::Down)),

@@ -31,7 +31,6 @@ impl RenderTargetDescriptor {
       color_attachment: self.color_attachment.with_size(width, height),
       depth_attachment: self.depth_attachment.as_ref().map(|it| it.with_size(width, height)),
       stencil_attachment: self.stencil_attachment.as_ref().map(|it| it.with_size(width, height)),
-      ..self.clone()
     }
   }
 }

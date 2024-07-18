@@ -1,5 +1,7 @@
 //! Audio engine for Surreal.
 
+#![allow(clippy::new_without_default)]
+
 pub use clips::*;
 pub use openal::*;
 pub use sampling::*;

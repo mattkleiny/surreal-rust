@@ -12,7 +12,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path<'a>(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
+  pub fn from_glsl_path(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
     Self::from_path::<GLSL>(path)
   }
 
@@ -41,7 +41,7 @@ impl ShaderLanguage for GLSL {
 
     // add the GLSL version directive
     shared_code
-      .write_str(&"#version 330 core\n")
+      .write_str("#version 330 core\n")
       .map_err(|_| ShaderError::CompileError("Failed to write version".to_string()))?;
 
     for line in source_code.lines() {

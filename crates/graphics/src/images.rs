@@ -27,21 +27,21 @@ impl<P: Pixel> Image<P> {
   /// Loads an image from the given path.
   pub fn from_path(path: impl ToVirtualPath) -> Result<Self, ImageError> {
     let path = path.to_virtual_path();
-    let mut stream = path.open_input_stream().map_err(|error| ImageError::IoError(error))?;
+    let mut stream = path.open_input_stream().map_err(ImageError::IoError)?;
 
     Self::from_stream(&mut stream)
   }
 
   /// Loads an image from the given slice of bytes.
   pub fn from_bytes(slice: &[u8]) -> Result<Self, ImageError> {
-    let dynamic_image = image::load_from_memory(slice).map_err(|it| ImageError::ParseError(it))?;
+    let dynamic_image = image::load_from_memory(slice).map_err(ImageError::ParseError)?;
 
     Ok(Self::from_dynamic_image(dynamic_image))
   }
 
   /// Loads an image from the given stream.
   pub fn from_stream(stream: &mut dyn InputStream) -> Result<Self, ImageError> {
-    let dynamic_image = image::load(stream, image::ImageFormat::Png).map_err(|it| ImageError::ParseError(it))?;
+    let dynamic_image = image::load(stream, image::ImageFormat::Png).map_err(ImageError::ParseError)?;
 
     Ok(Self::from_dynamic_image(dynamic_image))
   }
@@ -85,6 +85,9 @@ impl<P: Pixel> Image<P> {
   }
 
   /// Gets the pixel at the given coordinates without bounds checking.
+  ///
+  /// # Safety
+  /// The caller must ensure that the coordinates are within bounds.
   #[inline]
   pub unsafe fn get_pixel_unchecked(&self, x: u32, y: u32) -> P {
     self.pixels[(self.width + x * y) as usize]
@@ -99,6 +102,9 @@ impl<P: Pixel> Image<P> {
   }
 
   /// Sets the pixel at the given coordinates without bounds checking.
+  ///
+  /// # Safety
+  /// The caller must ensure that the coordinates are within bounds.
   #[inline]
   pub unsafe fn set_pixel_unchecked(&mut self, x: u32, y: u32, pixel: P) {
     self.pixels[(self.width + x * y) as usize] = pixel;

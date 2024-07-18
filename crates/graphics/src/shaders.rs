@@ -412,7 +412,7 @@ impl TextureBindingSet {
 
   /// Returns an iterator over all texture IDs in the set.
   pub fn into_vec(self) -> Vec<TextureId> {
-    self.slots.into_iter().filter_map(|slot| slot).collect()
+    self.slots.into_iter().flatten().collect()
   }
 }
 

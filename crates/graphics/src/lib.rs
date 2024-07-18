@@ -3,6 +3,7 @@
 #![feature(associated_type_defaults)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(allocator_api)]
+#![allow(clippy::new_without_default)]
 
 pub use animations::*;
 pub use buffers::*;

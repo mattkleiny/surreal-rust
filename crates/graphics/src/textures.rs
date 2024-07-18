@@ -95,7 +95,7 @@ impl Texture {
 
   /// Loads a texture from the given path.
   pub fn from_path(path: impl ToVirtualPath) -> Result<Self, TextureError> {
-    let image = Image::<Color32>::from_path(path).map_err(|error| TextureError::InvalidImage(error))?;
+    let image = Image::<Color32>::from_path(path).map_err(TextureError::InvalidImage)?;
 
     Self::from_image(&image)
   }

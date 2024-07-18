@@ -10,7 +10,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw shady shader code file.
-  pub fn from_shady_path<'a>(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
+  pub fn from_shady_path(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
     Self::from_path::<Shady>(path)
   }
 
@@ -135,9 +135,9 @@ mod compiler {
     fn compile(&self, builder: &mut StringBuilder) -> Result<Self::Output, ShaderError> {
       match self {
         Expression::Literal(literal) => match literal {
-          Literal::Integer(value) => builder.push(&value.to_string()),
-          Literal::Float(value) => builder.push(&value.to_string()),
-          Literal::Boolean(value) => builder.push(&value.to_string()),
+          Literal::Integer(value) => builder.push(value.to_string()),
+          Literal::Float(value) => builder.push(value.to_string()),
+          Literal::Boolean(value) => builder.push(value.to_string()),
         },
         Expression::Identifier(name) => builder.push(name),
         Expression::Binary(left, operator, right) => {
