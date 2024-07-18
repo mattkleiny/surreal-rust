@@ -28,7 +28,6 @@ pub enum Variant {
   Quat(Quat),
   Color(Color),
   Color32(Color32),
-  Object(Object),
 }
 
 /// Allows for a type to be converted to a [`Variant`].
