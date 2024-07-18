@@ -168,10 +168,12 @@ mod parser {
 
       while let Ok(next) = self.stream.read_char() {
         match next {
+          // control characters
           '{' => return Ok(JsonToken::ObjectStart),
           '}' => return Ok(JsonToken::ObjectEnd),
           '[' => return Ok(JsonToken::ArrayStart),
           ']' => return Ok(JsonToken::ArrayEnd),
+          // strings
           '"' => {
             let mut string = String::new();
 
@@ -182,11 +184,68 @@ mod parser {
               }
             }
           }
+          // numbers
+          '0'..='9' => {
+            let mut number = next.to_string();
+
+            while let Ok(next) = self.stream.read_char() {
+              match next {
+                '0'..='9' | '.' | 'e' | 'E' | '+' | '-' => number.push(next),
+                _ => {
+                  self.stream.seek_relative(-1)?; // unread the character
+
+                  return Ok(JsonToken::Number(number.parse().unwrap()));
+                }
+              }
+            }
+
+            return Ok(JsonToken::Number(number.parse().unwrap()));
+          }
+          // identifier
           _ => {}
         }
       }
 
       Err(StreamError::EndOfStream)
+    }
+  }
+
+  #[cfg(test)]
+  mod tests {
+    use super::*;
+
+    #[test]
+    fn parser_should_read_control_characters() {
+      let code = r#"{}[]"#;
+      let mut stream = std::io::Cursor::new(code.as_bytes());
+      let mut parser = JsonStreamReader::new(&mut stream);
+
+      assert_eq!(parser.next_token().unwrap(), JsonToken::ObjectStart);
+      assert_eq!(parser.next_token().unwrap(), JsonToken::ObjectEnd);
+
+      assert_eq!(parser.next_token().unwrap(), JsonToken::ArrayStart);
+      assert_eq!(parser.next_token().unwrap(), JsonToken::ArrayEnd);
+    }
+
+    #[test]
+    fn parser_should_read_strings() {
+      let code = r#""Hello, World!""#;
+      let mut stream = std::io::Cursor::new(code.as_bytes());
+      let mut parser = JsonStreamReader::new(&mut stream);
+
+      assert_eq!(
+        parser.next_token().unwrap(),
+        JsonToken::String("Hello, World!".to_string())
+      );
+    }
+
+    #[test]
+    fn parser_should_read_numbers() {
+      let code = r#"42"#;
+      let mut stream = std::io::Cursor::new(code.as_bytes());
+      let mut parser = JsonStreamReader::new(&mut stream);
+
+      assert_eq!(parser.next_token().unwrap(), JsonToken::Number(42.0));
     }
   }
 }
