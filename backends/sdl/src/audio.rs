@@ -6,6 +6,8 @@ use openal_sys::{
   ALCcontext, ALCdevice, ALint, ALuint,
 };
 
+// TODO: finish implementing me
+
 /// An audio backend for SDL2.
 pub struct SdlAudioBackend {
   device: *mut ALCdevice,

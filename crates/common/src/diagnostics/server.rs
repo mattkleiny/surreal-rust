@@ -75,10 +75,3 @@ mod universal {
     }
   }
 }
-
-#[cfg(target_os = "windows")]
-mod windows {
-  //! Windows-specific implementation details for the diagnostic server.
-
-  // TODO: implement named pipe support
-}

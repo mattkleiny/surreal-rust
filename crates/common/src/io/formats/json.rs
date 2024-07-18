@@ -1,4 +1,5 @@
 use super::*;
+use crate::io::formats::json::parser::JsonToken;
 
 /// A file format for working with JSON.
 #[derive(Default)]
@@ -8,7 +9,21 @@ pub struct JsonFileFormat {
 
 impl FileFormat for JsonFileFormat {
   fn read_chunk(&mut self, stream: &mut dyn InputStream) -> Result<Chunk, StreamError> {
-    let _parser = parser::JsonParser::new(stream);
+    let mut reader = parser::JsonStreamReader::new(stream);
+
+    while let Ok(token) = reader.next_token() {
+      // TODO: do something with the token
+      match token {
+        JsonToken::ObjectStart => {}
+        JsonToken::ObjectEnd => {}
+        JsonToken::ArrayStart => {}
+        JsonToken::ArrayEnd => {}
+        JsonToken::String(_) => {}
+        JsonToken::Number(_) => {}
+        JsonToken::Boolean(_) => {}
+        JsonToken::Null => {}
+      }
+    }
 
     todo!()
   }
@@ -125,12 +140,15 @@ mod parser {
   }
 
   /// A parser for reading data from a JSON stream.
-  pub struct JsonParser<'a> {
+  ///
+  /// This is a high-performance JSON parser that reads data from a stream in a
+  /// forward-only fashion, one token at a time.
+  pub struct JsonStreamReader<'a> {
     stream: &'a mut dyn InputStream,
     state: JsonState,
   }
 
-  impl<'a> JsonParser<'a> {
+  impl<'a> JsonStreamReader<'a> {
     /// Creates a new JSON parser for the given input stream.
     pub fn new(stream: &'a mut dyn InputStream) -> Self {
       Self {

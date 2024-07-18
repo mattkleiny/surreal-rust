@@ -158,12 +158,12 @@ mod tests {
     buffer.push(3);
     buffer.push(4);
 
-    let results: Vec<&u32> = buffer.iter().collect();
+    let mut iter = buffer.iter();
 
-    assert_eq!(*results[0], 4);
-    assert_eq!(*results[1], 3);
-    assert_eq!(*results[2], 2);
-    assert_eq!(*results[3], 1);
+    assert_eq!(iter.next(), Some(&4));
+    assert_eq!(iter.next(), Some(&3));
+    assert_eq!(iter.next(), Some(&2));
+    assert_eq!(iter.next(), Some(&1));
   }
 
   #[test]

@@ -9,9 +9,9 @@ pub fn impl_serialize(input: TokenStream) -> TokenStream {
   let fields = match input.data {
     syn::Data::Struct(ref data) => match data.fields {
       syn::Fields::Named(ref fields) => fields.named.iter().map(|f| &f.ident),
-      _ => unimplemented!(),
+      _ => todo!(),
     },
-    _ => unimplemented!(),
+    _ => todo!(),
   };
 
   let expanded = quote! {

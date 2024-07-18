@@ -451,8 +451,6 @@ impl GraphicsBackend for SdlGraphicsBackend {
         return Err(ShaderError::CompileError(String::from_utf8(info_log).unwrap()));
       }
 
-      // TODO: parse the shader kernels for metadata
-
       // delete the kernels now that we've linked
       for shader_id in shader_ids {
         gl::DeleteShader(shader_id);
@@ -594,9 +592,6 @@ impl GraphicsBackend for SdlGraphicsBackend {
             entries.len() as i32,
             texture_ids.as_ptr() as *const _,
           );
-        }
-        ShaderUniform::Array(_entries) => {
-          todo!()
         }
       };
 

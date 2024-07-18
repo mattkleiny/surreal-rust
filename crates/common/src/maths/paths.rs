@@ -80,7 +80,6 @@ pub trait PathFindingGrid<T: Copy + Hash + Eq = IVec2> {
 
           let priority = new_cost + heuristic(neighbour, &goal);
 
-          // TODO: allow floating point priorities?
           frontier.push(*neighbour, priority.ceil() as usize);
         }
       }

@@ -1,4 +1,4 @@
-use surreal::{audio::*, backends::sdl::*, common::*, graphics::*};
+use surreal::{backends::sdl::*, common::*, graphics::*};
 
 fn main() {
   let mut window = Window::new(WindowSettings {
@@ -12,11 +12,6 @@ fn main() {
 
   let color1 = Color::random();
   let color2 = Color::random();
-
-  let mut source = AudioSource::new();
-  let clip = AudioClip::from_wav_path("assets/audio/test-sound-1.wav").unwrap();
-
-  source.play(&clip);
 
   while window.update() {
     let delta_time = clock.tick();
