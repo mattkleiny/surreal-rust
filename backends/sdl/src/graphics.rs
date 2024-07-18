@@ -549,7 +549,6 @@ impl GraphicsBackend for SdlGraphicsBackend {
           gl::ProgramUniform1i(shader_id, location as i32, *slot as i32);
 
           if let Some(sampler) = sampler {
-            // build and cache sampler settings based on hash of options
             let mut sampler_cache = self.sampler_cache.write().unwrap();
 
             let sampler_id = sampler_cache.entry(*sampler).or_insert_with(|| {
