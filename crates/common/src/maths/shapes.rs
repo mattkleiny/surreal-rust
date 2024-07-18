@@ -151,3 +151,25 @@ impl Lerp for Trapezoid {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_circle_lerp() {
+    let a = Circle {
+      radius: 1.0,
+      center: Vec2::new(1.0, 1.0),
+    };
+
+    let b = Circle {
+      radius: 2.0,
+      center: Vec2::new(2.0, 2.0),
+    };
+
+    let c = Circle::lerp(a, b, 0.5);
+
+    assert_eq!(c.radius, 1.5);
+  }
+}

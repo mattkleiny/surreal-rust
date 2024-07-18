@@ -45,9 +45,6 @@ impl FileFormat for JsonFileFormat {
         Variant::Color32(value) => {
           stream.write_string(&format!("[{}, {}, {}, {}]", value.r, value.g, value.b, value.a))?;
         }
-        Variant::Object(_value) => {
-          todo!("Object serialization is not yet supported");
-        }
       },
       Chunk::Sequence(sequence) => {
         stream.write_string("[")?;

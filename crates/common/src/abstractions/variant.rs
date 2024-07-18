@@ -1,4 +1,4 @@
-use crate::{Color, Color32, Object, Quat, StringName, Vec2, Vec3, Vec4};
+use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 
 /// A type that can hold varying different values.
 ///
