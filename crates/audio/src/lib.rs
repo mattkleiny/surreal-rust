@@ -26,6 +26,7 @@ pub fn audio() -> &'static dyn AudioBackend {
 #[derive(Debug)]
 pub enum ClipError {
   InvalidId(ClipId),
+  FailedToCreate,
   NullPointer,
 }
 
@@ -33,6 +34,7 @@ pub enum ClipError {
 #[derive(Debug)]
 pub enum SourceError {
   InvalidId(SourceId),
+  FailedToCreate,
 }
 
 /// Represents a backend implementation for the underlying audio API.

@@ -9,5 +9,8 @@ common = { package = "surreal-common", path = "../../crates/common" }
 audio = { package = "surreal-audio", path = "../../crates/audio" }
 graphics = { package = "surreal-graphics", path = "../../crates/graphics" }
 input = { package = "surreal-input", path = "../../crates/input" }
+
+# platform dependencies
 sdl2-sys = { version = "0.36.0", features = ["bundled"] }
+openal-sys = "1.16.0"
 gl = "0.14.0"

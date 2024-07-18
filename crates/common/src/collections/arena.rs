@@ -354,19 +354,6 @@ impl<'a, K: ArenaIndex, V> IntoIterator for &'a mut Arena<K, V> {
   }
 }
 
-/// Allows an arena to be created from an iterator.
-impl<K: ArenaIndex, V> FromIterator<V> for Arena<K, V> {
-  fn from_iter<T: IntoIterator<Item = V>>(iter: T) -> Self {
-    let mut result = Self::default();
-
-    for item in iter {
-      result.insert(item);
-    }
-
-    result
-  }
-}
-
 /// Creates a new, opaque arena index type.
 ///
 /// The type is implicitly convertible to and from [`u64`], [`u32`], and
@@ -405,10 +392,31 @@ macro_rules! impl_arena_index {
       }
     }
 
+    impl From<u64> for $name {
+      #[inline(always)]
+      fn from(packed: u64) -> Self {
+        Self(packed)
+      }
+    }
+
+    impl From<i64> for $name {
+      #[inline(always)]
+      fn from(packed: i64) -> Self {
+        Self(packed as u64)
+      }
+    }
+
     impl From<u32> for $name {
       #[inline]
       fn from(value: u32) -> Self {
         <Self as $crate::ArenaIndex>::from_parts(value, 0)
+      }
+    }
+
+    impl From<i32> for $name {
+      #[inline]
+      fn from(value: i32) -> Self {
+        <Self as $crate::ArenaIndex>::from_parts(value as u32, 0)
       }
     }
 
@@ -419,10 +427,10 @@ macro_rules! impl_arena_index {
       }
     }
 
-    impl From<u64> for $name {
+    impl From<$name> for i32 {
       #[inline(always)]
-      fn from(packed: u64) -> Self {
-        Self(packed)
+      fn from(value: $name) -> Self {
+        value.0 as i32
       }
     }
 
@@ -433,6 +441,13 @@ macro_rules! impl_arena_index {
       }
     }
 
+    impl From<$name> for i64 {
+      #[inline(always)]
+      fn from(value: $name) -> Self {
+        value.0 as i64
+      }
+    }
+
     impl $crate::FromRandom for $name {
       #[inline]
       fn from_random(random: &mut $crate::Random) -> Self {
@@ -440,6 +455,19 @@ macro_rules! impl_arena_index {
       }
     }
   };
+}
+
+/// Allows an arena to be created from an iterator.
+impl<K: ArenaIndex, V> FromIterator<V> for Arena<K, V> {
+  fn from_iter<T: IntoIterator<Item = V>>(iter: T) -> Self {
+    let mut result = Self::default();
+
+    for item in iter {
+      result.insert(item);
+    }
+
+    result
+  }
 }
 
 #[cfg(test)]
