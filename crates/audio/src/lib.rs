@@ -3,13 +3,11 @@
 #![allow(clippy::new_without_default)]
 
 pub use clips::*;
-pub use openal::*;
 pub use sampling::*;
 pub use sources::*;
 
 mod clips;
 mod headless;
-mod openal;
 mod sampling;
 mod sources;
 

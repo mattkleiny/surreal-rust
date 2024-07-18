@@ -10,3 +10,4 @@ audio = { package = "surreal-audio", path = "../../crates/audio" }
 graphics = { package = "surreal-graphics", path = "../../crates/graphics" }
 input = { package = "surreal-input", path = "../../crates/input" }
 sdl2-sys = { version = "0.36.0", features = ["bundled"] }
+gl = "0.14.0"

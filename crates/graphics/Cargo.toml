@@ -9,4 +9,3 @@ common = { package = "surreal-common", path = "../common" }
 macros = { package = "surreal-macros", path = "../macros" }
 bitflags = { workspace = true }
 image = { version = "0.25.1", default-features = false, features = ["png"] }
-gl = "0.14.0"

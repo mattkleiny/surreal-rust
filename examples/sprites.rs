@@ -7,11 +7,7 @@ fn main() {
   })
   .expect("Failed to build main window");
 
-  GraphicsServer::install(OpenGLGraphicsBackend::new(&window));
-
   let mut batch = SpriteBatch::new().unwrap();
-  let texture = Texture::from_path("assets/sprites/bunny.png").unwrap();
-
   let mut material = SHADER_SPRITE_STANDARD.to_material().unwrap();
 
   material.set_blend_state(BlendState::Enabled {
@@ -23,6 +19,8 @@ fn main() {
     PROJECTION_VIEW,
     &Mat4::orthographic_lh(0.0, 1024.0, 768.0, 0.0, -1.0, 1.0),
   );
+
+  let texture = Texture::from_path("assets/sprites/bunny.png").unwrap();
 
   while window.update() {
     graphics().clear_color_buffer(Color::WHITE);

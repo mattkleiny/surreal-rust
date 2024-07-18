@@ -1,5 +1,7 @@
 //! The main editor binary for the Surreal Project.
 
+#![allow(dead_code)]
+
 use surreal_editor::*;
 
 mod windows;

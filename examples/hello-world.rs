@@ -7,8 +7,6 @@ fn main() {
   })
   .expect("Failed to create window");
 
-  GraphicsServer::install(OpenGLGraphicsBackend::new(&window));
-
   let mut clock = DeltaClock::default();
   let mut total_time = 0.0;
 

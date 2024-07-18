@@ -7,8 +7,6 @@ fn main() {
   })
   .expect("Failed to create window");
 
-  GraphicsServer::install(OpenGLGraphicsBackend::new(&window));
-
   let mut runtime = JavaScriptRuntime::new();
 
   runtime.add_callback("clear_screen", |r: f32, g: f32, b: f32| {

@@ -1,25 +1,18 @@
-//! The OpenAL backend implementation for the audio subsystem.
+// Audio backend for SDL2
 
-use super::*;
+pub use audio::*;
 
-/// A OpenAL-based [`AudioBackend`] implementation.
-pub struct OpenALAudioBackend {}
+/// An audio backend for SDL2.
+pub struct SdlAudioBackend {}
 
-impl OpenALAudioBackend {
-  /// Creates a new OpenAL graphics backend.
+impl SdlAudioBackend {
   pub fn new() -> Self {
-    todo!()
-  }
-}
-
-impl Drop for OpenALAudioBackend {
-  fn drop(&mut self) {
-    todo!()
+    Self {}
   }
 }
 
 #[allow(unused_variables)]
-impl AudioBackend for OpenALAudioBackend {
+impl AudioBackend for SdlAudioBackend {
   fn clip_create(&self) -> Result<ClipId, ClipError> {
     todo!()
   }

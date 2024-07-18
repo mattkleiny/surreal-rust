@@ -3,16 +3,18 @@
 use std::ffi::{c_int, CString};
 
 use common::FastHashSet;
-use graphics::Image;
-pub use sdl2_sys as sys;
 use sdl2_sys::{
   SDL_GLattr::{
     SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_MAJOR_VERSION, SDL_GL_CONTEXT_MINOR_VERSION, SDL_GL_CONTEXT_PROFILE_MASK,
   },
   SDL_GLcontextFlag::SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG,
   SDL_GLprofile::SDL_GL_CONTEXT_PROFILE_CORE,
+  SDL_KeyCode, SDL_Keycode,
 };
-use sys::{SDL_KeyCode, SDL_Keycode};
+
+mod audio;
+mod graphics;
+mod input;
 
 /// Represents an error that can occur when creating a window.
 #[derive(Debug)]
@@ -35,7 +37,7 @@ pub struct WindowSettings {
   pub width: u32,
   pub height: u32,
   pub vsync_enabled: bool,
-  pub icon: Option<Image>,
+  pub icon: Option<graphics::Image>,
 }
 
 impl Default for WindowSettings {
@@ -113,12 +115,15 @@ impl Window {
         window.set_window_icon(icon);
       }
 
+      audio::AudioServer::install(audio::SdlAudioBackend::new());
+      graphics::GraphicsServer::install(graphics::SdlGraphicsBackend::new());
+
       Ok(window)
     }
   }
 
   /// Sets the window icon.
-  pub fn set_window_icon(&self, icon: &Image) {
+  pub fn set_window_icon(&self, icon: &graphics::Image) {
     use sdl2_sys::*;
 
     unsafe {
@@ -183,13 +188,6 @@ impl Window {
   /// Gets the raw underlying SDL2 window handle.
   pub fn get_sdl_window(&self) -> *mut sdl2_sys::SDL_Window {
     self.window
-  }
-}
-
-impl graphics::OpenGLHost for Window {
-  fn get_proc_address(&self, name: &str) -> *const std::ffi::c_void {
-    let name = CString::new(name).unwrap();
-    unsafe { sdl2_sys::SDL_GL_GetProcAddress(name.as_ptr() as *const _) as *const _ }
   }
 }
 

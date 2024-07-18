@@ -1,56 +1,41 @@
-//! The OpenGL backend implementation for the graphics subsystem.
+//! Graphics backend for SDL2.
 
 use std::{
-  cell::RefCell,
   ffi::{c_void, CString},
+  sync::RwLock,
 };
 
-use common::{profiling, Color, FastHashMap, Rectangle, Size, UVec2};
+use common::{Color, FastHashMap, Rectangle, Size, UVec2};
+pub use graphics::*;
 
-use super::*;
-
-/// An abstraction over the host capable of running OpenGL.
-///
-/// This type implemented by the host application and is used to provide the
-/// graphics backend with access to the host's OpenGL functions.
-pub trait OpenGLHost {
-  fn get_proc_address(&self, name: &str) -> *const c_void;
+/// A graphics backend for SDL2.
+pub struct SdlGraphicsBackend {
+  sampler_cache: RwLock<FastHashMap<TextureSampler, u32>>,
 }
 
-/// An OpenGL [`GraphicsBackend`] implementation.
-pub struct OpenGLGraphicsBackend {
-  state: RefCell<BackendState>,
-}
-
-/// Interior mutable state for the backend.
-#[derive(Default)]
-struct BackendState {
-  sampler_cache: FastHashMap<TextureSampler, u32>,
-}
-
-impl OpenGLGraphicsBackend {
+impl SdlGraphicsBackend {
   /// Creates a new OpenGL graphics backend.
-  pub fn new(host: &dyn OpenGLHost) -> Self {
-    gl::load_with(|symbol| host.get_proc_address(symbol));
+  pub fn new() -> Self {
+    gl::load_with(|symbol| unsafe {
+      let name = CString::new(symbol).unwrap();
+      sdl2_sys::SDL_GL_GetProcAddress(name.as_ptr() as *const _) as *const _
+    });
 
     Self {
-      state: RefCell::new(BackendState::default()),
+      sampler_cache: RwLock::new(FastHashMap::default()),
     }
   }
 }
 
-impl GraphicsBackend for OpenGLGraphicsBackend {
-  #[profiling]
+impl GraphicsBackend for SdlGraphicsBackend {
   fn begin_frame(&self) {
     // no-op
   }
 
-  #[profiling]
   fn end_frame(&self) {
     // no-op
   }
 
-  #[profiling]
   fn clear_color_buffer(&self, color: Color) {
     unsafe {
       gl::ClearColor(color.r, color.g, color.b, color.a);
@@ -58,14 +43,12 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn clear_depth_buffer(&self, _depth: f32) {
     unsafe {
       gl::Clear(gl::DEPTH_BUFFER_BIT);
     }
   }
 
-  #[profiling]
   fn viewport_size(&self) -> (usize, usize) {
     unsafe {
       let mut size = [0i32; 4];
@@ -75,7 +58,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn set_viewport_size(&self, size: UVec2) {
     if size.x > 0 && size.y > 0 {
       unsafe {
@@ -84,7 +66,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn set_blend_state(&self, blend_state: BlendState) {
     fn convert_blend_factor(factor: BlendFactor) -> u32 {
       match factor {
@@ -117,7 +98,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn set_culling_mode(&self, culling_mode: CullingMode) {
     unsafe {
       match culling_mode {
@@ -138,7 +118,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn set_scissor_mode(&self, scissor_mode: ScissorMode) {
     unsafe {
       match scissor_mode {
@@ -158,7 +137,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn buffer_create(&self) -> Result<BufferId, BufferError> {
     unsafe {
       let mut id: u32 = 0;
@@ -169,7 +147,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn buffer_read_data(
     &self,
     buffer: BufferId,
@@ -192,7 +169,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn buffer_write_data(
     &self,
     buffer: BufferId,
@@ -219,7 +195,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn buffer_delete(&self, buffer: BufferId) -> Result<(), BufferError> {
     unsafe {
       gl::DeleteBuffers(1, &buffer.into());
@@ -228,7 +203,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn texture_create(&self, sampler: &TextureSampler) -> Result<TextureId, TextureError> {
     unsafe {
       let mut id: u32 = 0;
@@ -244,7 +218,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn texture_set_options(&self, texture: TextureId, sampler: &TextureSampler) -> Result<(), TextureError> {
     unsafe {
       let min_filter = match sampler.minify_filter {
@@ -273,7 +246,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn texture_initialize(
     &self,
     texture: TextureId,
@@ -301,7 +273,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn texture_read_data(
     &self,
     texture: TextureId,
@@ -327,7 +298,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn texture_write_data(
     &self,
     texture: TextureId,
@@ -371,7 +341,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn texture_write_sub_data(
     &self,
     texture: TextureId,
@@ -400,7 +369,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn texture_delete(&self, texture: TextureId) -> Result<(), TextureError> {
     unsafe {
       gl::DeleteTextures(1, &texture.into());
@@ -409,12 +377,10 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn shader_create(&self) -> Result<ShaderId, ShaderError> {
     Ok(ShaderId::from(unsafe { gl::CreateProgram() }))
   }
 
-  #[profiling]
   #[allow(clippy::uninit_vec)]
   fn shader_link(&self, shader: ShaderId, shaders: &[ShaderKernel]) -> Result<(), ShaderError> {
     unsafe {
@@ -496,7 +462,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     Ok(())
   }
 
-  #[profiling]
   fn shader_uniform_location(&self, shader: ShaderId, name: &str) -> Option<usize> {
     unsafe {
       let shader = shader.into();
@@ -510,7 +475,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn shader_set_uniform(&self, shader: ShaderId, location: usize, value: &ShaderUniform) -> Result<(), ShaderError> {
     unsafe {
       let shader_id = shader.into();
@@ -586,8 +550,7 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
 
           if let Some(sampler) = sampler {
             // build and cache sampler settings based on hash of options
-            let mut internal_state = self.state.borrow_mut();
-            let sampler_cache = &mut internal_state.sampler_cache;
+            let mut sampler_cache = self.sampler_cache.write().unwrap();
 
             let sampler_id = sampler_cache.entry(*sampler).or_insert_with(|| {
               let mut sampler_id = 0;
@@ -642,7 +605,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn shader_activate(&self, shader: ShaderId) -> Result<(), ShaderError> {
     unsafe {
       gl::UseProgram(shader.into());
@@ -651,7 +613,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn shader_dispatch_compute(&self, shader: ShaderId, x: u32, y: u32, z: u32) -> Result<(), ShaderError> {
     unsafe {
       gl::UseProgram(shader.into());
@@ -661,7 +622,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn shader_memory_barrier(&self, barrier: MemoryBarrier) -> Result<(), ShaderError> {
     unsafe {
       gl::MemoryBarrier(match barrier {
@@ -672,7 +632,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn shader_delete(&self, shader: ShaderId) -> Result<(), ShaderError> {
     unsafe {
       gl::DeleteProgram(shader.into());
@@ -681,7 +640,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn mesh_create(
     &self,
     vertex_buffer: BufferId,
@@ -743,7 +701,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn mesh_draw(
     &self,
     mesh: MeshId,
@@ -772,7 +729,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn mesh_delete(&self, mesh: MeshId) -> Result<(), MeshError> {
     unsafe {
       gl::DeleteVertexArrays(1, &mesh.into());
@@ -781,7 +737,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn target_create(
     &self,
     color_attachment: TextureId,
@@ -831,7 +786,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn target_activate(&self, target: TargetId) -> Result<(), TargetError> {
     unsafe {
       gl::BindFramebuffer(gl::FRAMEBUFFER, target.into());
@@ -840,7 +794,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn target_set_default(&self) -> Result<(), TargetError> {
     unsafe {
       gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
@@ -886,7 +839,6 @@ impl GraphicsBackend for OpenGLGraphicsBackend {
     }
   }
 
-  #[profiling]
   fn target_delete(&self, target: TargetId) -> Result<(), TargetError> {
     unsafe {
       gl::DeleteFramebuffers(1, &target.into());
