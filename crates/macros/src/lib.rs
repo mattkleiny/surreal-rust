@@ -2,6 +2,7 @@
 
 use proc_macro::TokenStream;
 
+mod assets;
 mod formats;
 mod objects;
 mod profiling;
@@ -14,6 +15,12 @@ mod vertex;
 #[proc_macro_attribute]
 pub fn profiling(_attr: TokenStream, item: TokenStream) -> TokenStream {
   profiling::impl_profiling(item)
+}
+
+/// Derives the `Asset` trait for a type.
+#[proc_macro_derive(Asset)]
+pub fn derive_asset(input: TokenStream) -> TokenStream {
+  assets::impl_asset(input)
 }
 
 /// Derives the `Reflect` trait for a type.

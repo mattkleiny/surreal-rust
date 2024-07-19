@@ -31,4 +31,4 @@ mod strings;
 mod utilities;
 
 // Re-export macros for use in other crates.
-pub use macros::{profiling, Deserialize, Reflect, Serialize, Singleton, Trace};
+pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};
