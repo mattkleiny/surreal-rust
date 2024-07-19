@@ -1,12 +1,11 @@
 // Audio backend for SDL2
 
 pub use audio::*;
+use common::Vec3;
 use openal_sys::{
-  alBufferData, alDeleteSources, alGenBuffers, alGenSources, alGetSourcei, alSource3f, alSourcef, alSourcei,
-  ALCcontext, ALCdevice, ALint, ALuint,
+  alBufferData, alDeleteSources, alGenBuffers, alGenSources, alGetSourcef, alGetSourcefv, alGetSourcei, alSource3f,
+  alSourcePlay, alSourcef, alSourcei, ALCcontext, ALCdevice, ALboolean, ALfloat, ALint, ALuint,
 };
-
-// TODO: finish implementing me
 
 /// An audio backend for SDL2.
 pub struct SdlAudioBackend {
@@ -50,10 +49,8 @@ impl AudioBackend for SdlAudioBackend {
 
   fn buffer_write_data(&self, buffer: BufferId, sampler_rate: AudioSampleRate, data: &[u8]) -> Result<(), BufferError> {
     unsafe {
-      let buffer = buffer.into();
-
       alBufferData(
-        buffer,
+        buffer.into(),
         openal_sys::AL_FORMAT_MONO16,
         data.as_ptr() as *const _,
         data.len() as i32,
@@ -103,6 +100,7 @@ impl AudioBackend for SdlAudioBackend {
       let mut source: ALuint = 0;
 
       alGenSources(1, &mut source as *mut _);
+
       alSourcef(source, openal_sys::AL_GAIN, 1.0);
       alSourcef(source, openal_sys::AL_PITCH, 1.0);
       alSource3f(source, openal_sys::AL_POSITION, 0.0, 0.0, 0.0);
@@ -119,10 +117,9 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_is_playing(&self, source: SourceId) -> Option<bool> {
     unsafe {
-      let source = source.into();
       let mut state: ALint = 0;
 
-      alGetSourcei(source, openal_sys::AL_SOURCE_STATE, &mut state as *mut _);
+      alGetSourcei(source.into(), openal_sys::AL_SOURCE_STATE, &mut state as *mut _);
 
       match state {
         openal_sys::AL_PLAYING => Some(true),
@@ -131,22 +128,112 @@ impl AudioBackend for SdlAudioBackend {
     }
   }
 
-  fn source_get_volume(&self, source: SourceId) -> Option<f32> {
+  fn source_get_gain(&self, source: SourceId) -> Option<f32> {
     unsafe {
-      let source = source.into();
-      let mut volume: i32 = 0;
+      let mut gain = 0.0f32;
 
-      alGetSourcei(source, openal_sys::AL_GAIN, &mut volume as *mut _);
+      alGetSourcef(source.into(), openal_sys::AL_GAIN, &mut gain as *mut _);
 
-      Some(volume as f32)
+      Some(gain)
     }
   }
 
-  fn source_set_volume(&self, source: SourceId, volume: f32) -> Result<(), SourceError> {
+  fn source_set_gain(&self, source: SourceId, gain: f32) -> Result<(), SourceError> {
     unsafe {
-      let source = source.into();
+      alSourcef(source.into(), openal_sys::AL_GAIN, gain);
 
-      alSourcef(source, openal_sys::AL_GAIN, volume);
+      Ok(())
+    }
+  }
+
+  fn source_get_pitch(&self, source: SourceId) -> Option<f32> {
+    unsafe {
+      let mut pitch = 0.0f32;
+
+      alGetSourcef(source.into(), openal_sys::AL_PITCH, &mut pitch as *mut _);
+
+      Some(pitch)
+    }
+  }
+
+  fn source_set_pitch(&self, source: SourceId, pitch: f32) -> Result<(), SourceError> {
+    unsafe {
+      alSourcef(source.into(), openal_sys::AL_PITCH, pitch);
+
+      Ok(())
+    }
+  }
+
+  fn source_get_position(&self, source: SourceId) -> Option<Vec3> {
+    unsafe {
+      let mut position = Vec3::ZERO;
+
+      alGetSourcefv(source.into(), openal_sys::AL_POSITION, &mut position.x as *mut ALfloat);
+
+      Some(position)
+    }
+  }
+
+  fn source_set_position(&self, source: SourceId, position: Vec3) -> Result<(), SourceError> {
+    unsafe {
+      alSource3f(
+        source.into(),
+        openal_sys::AL_POSITION,
+        position.x,
+        position.y,
+        position.z,
+      );
+
+      Ok(())
+    }
+  }
+
+  fn source_set_velocity(&self, source: SourceId, velocity: Vec3) -> Result<(), SourceError> {
+    unsafe {
+      alSource3f(
+        source.into(),
+        openal_sys::AL_VELOCITY,
+        velocity.x,
+        velocity.y,
+        velocity.z,
+      );
+
+      Ok(())
+    }
+  }
+
+  fn source_get_velocity(&self, source: SourceId) -> Option<Vec3> {
+    unsafe {
+      let mut velocity = Vec3::ZERO;
+
+      alGetSourcefv(source.into(), openal_sys::AL_VELOCITY, &mut velocity.x as *mut ALfloat);
+
+      Some(velocity)
+    }
+  }
+
+  fn source_is_looping(&self, source: SourceId) -> Option<bool> {
+    unsafe {
+      let mut looping: ALint = 0;
+
+      alGetSourcei(source.into(), openal_sys::AL_LOOPING, &mut looping as *mut _);
+
+      match looping as ALboolean {
+        openal_sys::AL_TRUE => Some(true),
+        _ => Some(false),
+      }
+    }
+  }
+
+  fn source_set_looping(&self, source: SourceId, looping: bool) -> Result<(), SourceError> {
+    unsafe {
+      let looping = if looping {
+        openal_sys::AL_TRUE
+      } else {
+        openal_sys::AL_FALSE
+      };
+
+      alSourcei(source.into(), openal_sys::AL_LOOPING, looping as ALint);
 
       Ok(())
     }
@@ -154,10 +241,9 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_get_clip(&self, source: SourceId) -> Option<ClipId> {
     unsafe {
-      let source = source.into();
       let mut buffer: ALint = 0;
 
-      alGetSourcei(source, openal_sys::AL_BUFFER, &mut buffer as *mut _);
+      alGetSourcei(source.into(), openal_sys::AL_BUFFER, &mut buffer as *mut _);
 
       Some(ClipId::from(buffer as u32))
     }
@@ -165,10 +251,9 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_set_clip(&self, source: SourceId, clip: ClipId) -> Result<(), SourceError> {
     unsafe {
-      let source = source.into();
       let clip = clip.into();
 
-      alSourcei(source, openal_sys::AL_BUFFER, clip);
+      alSourcei(source.into(), openal_sys::AL_BUFFER, clip);
 
       Ok(())
     }
@@ -176,9 +261,7 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_play(&self, source: SourceId) -> Result<(), SourceError> {
     unsafe {
-      let source = source.into();
-
-      openal_sys::alSourcePlay(source);
+      alSourcePlay(source.into());
 
       Ok(())
     }

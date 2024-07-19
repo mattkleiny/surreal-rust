@@ -4,6 +4,7 @@
 
 pub use buffers::*;
 pub use clips::*;
+use common::Vec3;
 pub use sampling::*;
 pub use sources::*;
 
@@ -66,8 +67,16 @@ pub trait AudioBackend {
   // sources
   fn source_create(&self) -> Result<SourceId, SourceError>;
   fn source_is_playing(&self, source: SourceId) -> Option<bool>;
-  fn source_get_volume(&self, source: SourceId) -> Option<f32>;
-  fn source_set_volume(&self, source: SourceId, volume: f32) -> Result<(), SourceError>;
+  fn source_get_gain(&self, source: SourceId) -> Option<f32>;
+  fn source_set_gain(&self, source: SourceId, gain: f32) -> Result<(), SourceError>;
+  fn source_get_pitch(&self, source: SourceId) -> Option<f32>;
+  fn source_set_pitch(&self, source: SourceId, pitch: f32) -> Result<(), SourceError>;
+  fn source_get_position(&self, source: SourceId) -> Option<Vec3>;
+  fn source_set_position(&self, source: SourceId, position: Vec3) -> Result<(), SourceError>;
+  fn source_set_velocity(&self, source: SourceId, velocity: Vec3) -> Result<(), SourceError>;
+  fn source_get_velocity(&self, source: SourceId) -> Option<Vec3>;
+  fn source_is_looping(&self, source: SourceId) -> Option<bool>;
+  fn source_set_looping(&self, source: SourceId, looping: bool) -> Result<(), SourceError>;
   fn source_get_clip(&self, source: SourceId) -> Option<ClipId>;
   fn source_set_clip(&self, source: SourceId, clip: ClipId) -> Result<(), SourceError>;
   fn source_play(&self, source: SourceId) -> Result<(), SourceError>;

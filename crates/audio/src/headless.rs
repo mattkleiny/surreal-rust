@@ -42,11 +42,43 @@ impl AudioBackend for HeadlessAudioBackend {
     None
   }
 
-  fn source_get_volume(&self, source: SourceId) -> Option<f32> {
-    None
+  fn source_get_gain(&self, source: SourceId) -> Option<f32> {
+    Some(1.0f32)
   }
 
-  fn source_set_volume(&self, source: SourceId, volume: f32) -> Result<(), SourceError> {
+  fn source_set_gain(&self, source: SourceId, gain: f32) -> Result<(), SourceError> {
+    Ok(())
+  }
+
+  fn source_get_pitch(&self, source: SourceId) -> Option<f32> {
+    Some(1.0f32)
+  }
+
+  fn source_set_pitch(&self, source: SourceId, pitch: f32) -> Result<(), SourceError> {
+    Ok(())
+  }
+
+  fn source_get_position(&self, source: SourceId) -> Option<Vec3> {
+    Some(Vec3::ZERO)
+  }
+
+  fn source_set_position(&self, source: SourceId, position: Vec3) -> Result<(), SourceError> {
+    Ok(())
+  }
+
+  fn source_set_velocity(&self, source: SourceId, velocity: Vec3) -> Result<(), SourceError> {
+    Ok(())
+  }
+
+  fn source_get_velocity(&self, source: SourceId) -> Option<Vec3> {
+    Some(Vec3::ZERO)
+  }
+
+  fn source_is_looping(&self, source: SourceId) -> Option<bool> {
+    Some(false)
+  }
+
+  fn source_set_looping(&self, source: SourceId, looping: bool) -> Result<(), SourceError> {
     Ok(())
   }
 
