@@ -4,7 +4,6 @@
 
 pub use buffers::*;
 pub use clips::*;
-use common::Vec3;
 pub use sampling::*;
 pub use sources::*;
 
@@ -13,6 +12,8 @@ mod clips;
 mod headless;
 mod sampling;
 mod sources;
+
+use common::Vec3;
 
 common::impl_arena_index!(pub BufferId, "Identifies an Audio Buffer.");
 common::impl_arena_index!(pub ClipId, "Identifies an Audio Clip.");

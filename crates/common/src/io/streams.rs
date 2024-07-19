@@ -2,39 +2,51 @@ use std::io::{BufRead, Seek, Write};
 
 use crate::{FileSystemError, ToVirtualPath};
 
+/// Represents an error that occurred while reading or writing to a stream.
+#[derive(Debug)]
+pub enum StreamError {
+  EndOfStream,
+  InvalidData,
+  GeneralFailure,
+}
+
 /// Allows a type to be imported from a VFS stream.
 pub trait FromStream: Sized {
+  type Error: From<StreamError> = StreamError;
+
   /// Imports the type from a path.
-  fn from_path(path: impl ToVirtualPath) -> Result<Self, StreamError> {
+  fn from_path(path: impl ToVirtualPath) -> Result<Self, Self::Error> {
     let path = path.to_virtual_path();
-    let mut stream = path.open_input_stream()?;
+    let mut stream = path.open_input_stream().map_err(|_| StreamError::GeneralFailure)?;
 
     Self::from_stream(&mut stream)
   }
 
   /// Imports the type from a byte array.
-  fn from_bytes(bytes: &[u8]) -> Result<Self, StreamError> {
+  fn from_bytes(bytes: &[u8]) -> Result<Self, Self::Error> {
     let mut stream = std::io::Cursor::new(bytes);
 
     Self::from_stream(&mut stream)
   }
 
   /// Imports the type from a stream.
-  fn from_stream(stream: &mut dyn InputStream) -> Result<Self, StreamError>;
+  fn from_stream(stream: &mut dyn InputStream) -> Result<Self, Self::Error>;
 }
 
 /// Allows a type to be exported to a VFS stream.
 pub trait ToStream: Sized {
+  type Error: From<StreamError> = StreamError;
+
   /// Exports the type to a path.
-  fn to_path(&self, path: impl ToVirtualPath) -> Result<(), StreamError> {
+  fn to_path(&self, path: impl ToVirtualPath) -> Result<(), Self::Error> {
     let path = path.to_virtual_path();
-    let mut stream = path.open_output_stream()?;
+    let mut stream = path.open_output_stream().map_err(|_| StreamError::GeneralFailure)?;
 
     self.to_stream(&mut stream)
   }
 
   /// Exports the type to a byte array.
-  fn to_bytes(&self) -> Result<Vec<u8>, StreamError> {
+  fn to_bytes(&self) -> Result<Vec<u8>, Self::Error> {
     let mut stream = std::io::Cursor::new(Vec::new());
 
     self.to_stream(&mut stream)?;
@@ -43,15 +55,7 @@ pub trait ToStream: Sized {
   }
 
   /// Exports the type to a stream.
-  fn to_stream(&self, stream: &mut dyn OutputStream) -> Result<(), StreamError>;
-}
-
-/// Represents an error that occurred while reading or writing to a stream.
-#[derive(Debug)]
-pub enum StreamError {
-  EndOfStream,
-  InvalidData,
-  GeneralFailure,
+  fn to_stream(&self, stream: &mut dyn OutputStream) -> Result<(), Self::Error>;
 }
 
 impl From<std::io::Error> for StreamError {
@@ -91,7 +95,13 @@ pub trait InputStream: Seek + BufRead {
     Ok(())
   }
 
-  fn peek_char(&mut self) -> Result<char, StreamError>;
+  /// Skips the given amount of bytes in the stream.
+  fn skip_bytes(&mut self, amount: usize) -> Result<(), StreamError> {
+    self.consume(amount);
+
+    Ok(())
+  }
+
   fn read_u8(&mut self) -> Result<u8, StreamError>;
   fn read_char(&mut self) -> Result<char, StreamError>;
   fn read_u16(&mut self) -> Result<u16, StreamError>;
@@ -125,15 +135,6 @@ macro_rules! impl_read {
 
 /// Blanket implementation of [`InputStream`].
 impl<T: BufRead + Seek> InputStream for T {
-  #[inline]
-  fn peek_char(&mut self) -> Result<char, StreamError> {
-    let result = self.read_char()?;
-
-    self.seek_relative(-1)?;
-
-    Ok(result)
-  }
-
   #[inline]
   fn read_u8(&mut self) -> Result<u8, StreamError> {
     impl_read!(self, 1, u8)
