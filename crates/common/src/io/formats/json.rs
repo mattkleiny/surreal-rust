@@ -184,6 +184,21 @@ mod parser {
               }
             }
           }
+          't' => {
+            self.stream.read_char()?; // read 'r'
+            self.stream.read_char()?; // read 'u'
+            self.stream.read_char()?; // read 'e'
+
+            return Ok(JsonToken::Boolean(true));
+          }
+          'f' => {
+            self.stream.read_char()?; // read 'a'
+            self.stream.read_char()?; // read 'l'
+            self.stream.read_char()?; // read 's'
+            self.stream.read_char()?; // read 'e'
+
+            return Ok(JsonToken::Boolean(false));
+          }
           // numbers
           '0'..='9' => {
             let mut number = next.to_string();
@@ -225,6 +240,17 @@ mod parser {
 
       assert_eq!(parser.next_token().unwrap(), JsonToken::ArrayStart);
       assert_eq!(parser.next_token().unwrap(), JsonToken::ArrayEnd);
+    }
+
+    #[test]
+    fn parse_should_read_booleans() {
+      let code = r#"true false"#;
+
+      let mut stream = std::io::Cursor::new(code.as_bytes());
+      let mut parser = JsonStreamReader::new(&mut stream);
+
+      assert_eq!(parser.next_token().unwrap(), JsonToken::Boolean(true));
+      assert_eq!(parser.next_token().unwrap(), JsonToken::Boolean(false));
     }
 
     #[test]

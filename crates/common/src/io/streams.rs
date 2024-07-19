@@ -91,6 +91,7 @@ pub trait InputStream: Seek + BufRead {
     Ok(())
   }
 
+  fn peek_char(&mut self) -> Result<char, StreamError>;
   fn read_u8(&mut self) -> Result<u8, StreamError>;
   fn read_char(&mut self) -> Result<char, StreamError>;
   fn read_u16(&mut self) -> Result<u16, StreamError>;
@@ -125,10 +126,20 @@ macro_rules! impl_read {
 /// Blanket implementation of [`InputStream`].
 impl<T: BufRead + Seek> InputStream for T {
   #[inline]
+  fn peek_char(&mut self) -> Result<char, StreamError> {
+    let result = self.read_char()?;
+
+    self.seek_relative(-1)?;
+
+    Ok(result)
+  }
+
+  #[inline]
   fn read_u8(&mut self) -> Result<u8, StreamError> {
     impl_read!(self, 1, u8)
   }
 
+  #[inline]
   fn read_char(&mut self) -> Result<char, StreamError> {
     impl_read!(self, 1, u8).map(|value| value as char)
   }
