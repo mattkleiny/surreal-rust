@@ -9,7 +9,7 @@ use std::any::Any;
 use crate::StringName;
 
 /// Allows reflecting over arbitrary types.
-pub trait Reflect: Any + Send + Sync {
+pub trait Reflect: Any {
   /// Gets the name of this type.
   fn type_name(&self) -> StringName {
     let name = std::any::type_name::<Self>();
@@ -20,7 +20,7 @@ pub trait Reflect: Any + Send + Sync {
 }
 
 /// Blanket implementation of `Reflect` for all types.
-impl<T: Any + Send + Sync> Reflect for T {}
+impl<T: Any> Reflect for T {}
 
 /// Allows reflecting over a primitive type.
 pub trait Type: Reflect {
@@ -39,22 +39,15 @@ impl<T: Reflect> Type for T {
 /// Allows reflecting over a struct type.
 pub trait StructType: Type {
   /// Gets the fields of this struct.
-  fn fields(&self) -> &[FieldInfo];
+  fn fields() -> &'static [FieldInfo];
 
   /// Gets the field with the given name.
-  fn field(&self, name: &str) -> Option<&FieldInfo> {
-    self.fields().iter().find(|field| field.name == name)
+  fn field(name: &str) -> Option<&FieldInfo> {
+    Self::fields().iter().find(|field| field.name == name)
   }
 
-  /// Gets the value of the field with the given name.
-  fn get_value<T: 'static>(&self, _name: &str) -> Option<&T> {
-    todo!()
-  }
-
-  /// Sets the value of the field with the given name.
-  fn set_value<T: 'static>(&mut self, _name: &str, _value: T) {
-    todo!()
-  }
+  fn get_field(&self, _name: &str) -> Option<&dyn Type>;
+  fn set_field(&mut self, _name: &str, _value: &dyn Type);
 }
 
 /// Description of a field in a struct.
@@ -64,8 +57,6 @@ pub struct FieldInfo {
   pub name: &'static str,
   /// The type of the field.
   pub kind: &'static str,
-  /// The offset of the field in the struct.
-  pub offset: usize,
 }
 
 /// Allows reflecting over an enum type.
@@ -110,12 +101,7 @@ mod tests {
 
   #[test]
   fn test_struct_fields_should_be_queryable() {
-    let value = TestStruct {
-      name: "Test".to_string(),
-      value: 42,
-    };
-
-    let fields = value.fields();
+    let fields = TestStruct::fields();
 
     assert_eq!(fields.len(), 2);
 

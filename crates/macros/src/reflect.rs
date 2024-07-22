@@ -21,7 +21,6 @@ pub fn impl_reflect(input: TokenStream) -> TokenStream {
         quote! {
           name: stringify!(#field_name),
           kind: stringify!(#field_type),
-          offset: std::mem::offset_of!(#ident, #field_name)
         }
       });
 
@@ -29,13 +28,20 @@ pub fn impl_reflect(input: TokenStream) -> TokenStream {
 
       quote! {
         impl StructType for #ident {
-          #[inline]
-          fn fields(&self) -> &[FieldInfo] {
+          fn fields() -> &'static [FieldInfo] {
             static FIELDS: [FieldInfo; #length] = [
               #(FieldInfo { #fields },)*
             ];
 
             &FIELDS
+          }
+
+          fn get_field(&self, name: &str) -> Option<&dyn Type> {
+            todo!()
+          }
+
+          fn set_field(&mut self, name: &str, value: &dyn Type) {
+            todo!()
           }
         }
       }
