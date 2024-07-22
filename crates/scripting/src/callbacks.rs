@@ -1,28 +1,30 @@
 use std::{marker::PhantomData, panic::RefUnwindSafe};
 
+use common::{FromVariant, ToVariant, Variant};
+
 use super::*;
 
 /// A callback that can be called from a script.
 pub trait ScriptCallback<R>: RefUnwindSafe {
   /// Calls the callback with the given arguments.
-  fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError>;
+  fn call(&self, args: &[Variant]) -> Result<Variant, ScriptError>;
 }
 
 // Blanket callback implementation for Rust functions and closures.
 //
 // All implementations follow a pattern of converting the arguments to the
 // expected types, calling the function, and converting the result back to a
-// `ScriptValue`.
+// `Variant`.
 //
 // We use a PhantomData tuple to specify the expected argument types and
 // constrain unique implementations of the generic type.
 
 impl<R, F> ScriptCallback<PhantomData<()>> for F
 where
-  R: ToScriptValue,
+  R: ToVariant,
   F: Fn() -> R + RefUnwindSafe,
 {
-  fn call(&self, _args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
+  fn call(&self, _args: &[Variant]) -> Result<Variant, ScriptError> {
     let result = self();
 
     Ok(result.to_script_value())
@@ -31,11 +33,11 @@ where
 
 impl<A1, R, F> ScriptCallback<(PhantomData<A1>, R)> for F
 where
-  A1: FromScriptValue,
-  R: ToScriptValue,
+  A1: FromVariant,
+  R: ToVariant,
   F: Fn(A1) -> R + RefUnwindSafe,
 {
-  fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
+  fn call(&self, args: &[Variant]) -> Result<Variant, ScriptError> {
     if args.len() != 1 {
       return Err(ScriptError::ExecutionError(format!(
         "Invalid argument count: Expected 1, got {}",
@@ -53,12 +55,12 @@ where
 
 impl<A1, A2, R, F> ScriptCallback<(PhantomData<A1>, PhantomData<A2>, R)> for F
 where
-  A1: FromScriptValue,
-  A2: FromScriptValue,
-  R: ToScriptValue,
+  A1: FromVariant,
+  A2: FromVariant,
+  R: ToVariant,
   F: Fn(A1, A2) -> R + RefUnwindSafe,
 {
-  fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
+  fn call(&self, args: &[Variant]) -> Result<Variant, ScriptError> {
     if args.len() != 2 {
       return Err(ScriptError::ExecutionError(format!(
         "Invalid argument count: Expected 2, got {}",
@@ -77,13 +79,13 @@ where
 
 impl<A1, A2, A3, R, F> ScriptCallback<(PhantomData<A1>, PhantomData<A2>, PhantomData<A3>, R)> for F
 where
-  A1: FromScriptValue,
-  A2: FromScriptValue,
-  A3: FromScriptValue,
-  R: ToScriptValue,
+  A1: FromVariant,
+  A2: FromVariant,
+  A3: FromVariant,
+  R: ToVariant,
   F: Fn(A1, A2, A3) -> R + RefUnwindSafe,
 {
-  fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
+  fn call(&self, args: &[Variant]) -> Result<Variant, ScriptError> {
     if args.len() != 3 {
       return Err(ScriptError::ExecutionError(format!(
         "Invalid argument count: Expected 3, got {}",
@@ -103,14 +105,14 @@ where
 
 impl<A1, A2, A3, A4, R, F> ScriptCallback<(PhantomData<A1>, PhantomData<A2>, PhantomData<A3>, PhantomData<A4>, R)> for F
 where
-  A1: FromScriptValue,
-  A2: FromScriptValue,
-  A3: FromScriptValue,
-  A4: FromScriptValue,
-  R: ToScriptValue,
+  A1: FromVariant,
+  A2: FromVariant,
+  A3: FromVariant,
+  A4: FromVariant,
+  R: ToVariant,
   F: Fn(A1, A2, A3, A4) -> R + RefUnwindSafe,
 {
-  fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, ScriptError> {
+  fn call(&self, args: &[Variant]) -> Result<Variant, ScriptError> {
     if args.len() != 4 {
       return Err(ScriptError::ExecutionError(format!(
         "Invalid argument count: Expected 4, got {}",

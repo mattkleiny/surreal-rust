@@ -3,8 +3,6 @@
 //! Meshes abstract over vertex and index data on the GPU as well, and
 //! provide utilities for constructing data from pieces.
 
-use std::sync::{Arc, Mutex};
-
 use common::{vec2, Color32, Size, Vec2, Vec3};
 
 use super::*;
@@ -123,7 +121,7 @@ impl Vertex3 {
 /// for rendering at any time, provided a valid [`Material`] is available.
 #[derive(Clone)]
 pub struct Mesh<V> {
-  state: Arc<Mutex<MeshState<V>>>,
+  state: GraphicsCell<MeshState<V>>,
 }
 
 /// The internal state for a mesh.
@@ -147,11 +145,11 @@ impl<V: Vertex> Mesh<V> {
     let indices = Buffer::new(BufferKind::Index, usage).map_err(|_| MeshError::FailedToCreate)?;
 
     Ok(Self {
-      state: Arc::new(Mutex::new(MeshState {
+      state: GraphicsCell::new(MeshState {
         id: graphics().mesh_create(vertices.id(), indices.id(), V::DESCRIPTORS)?,
         vertices,
         indices,
-      })),
+      }),
     })
   }
 
@@ -180,31 +178,31 @@ impl<V: Vertex> Mesh<V> {
 
   /// Returns the identifier of this mesh.
   pub fn id(&self) -> MeshId {
-    self.state.lock().unwrap().id
+    self.state.read().id
   }
 
   /// Returns the number of vertices in the mesh.
   pub fn vertices(&self) -> usize {
-    self.state.lock().unwrap().vertices.len()
+    self.state.read().vertices.len()
   }
 
   /// Returns the number of indices in the mesh.
   pub fn indices(&self) -> usize {
-    self.state.lock().unwrap().indices.len()
+    self.state.read().indices.len()
   }
 
   /// Draws this mesh with the given material and topology.
   pub fn draw(&self, material: &Material, topology: PrimitiveTopology) {
-    let state = self.state.lock().unwrap();
+    let state = self.state.read();
 
     self.draw_sub(material, topology, state.vertices.len(), state.indices.len());
   }
 
   /// Draws a sub mesh of this mesh with the given material and topology.
   pub fn draw_sub(&self, material: &Material, topology: PrimitiveTopology, vertex_count: usize, index_count: usize) {
-    material.bind();
+    let state = self.state.read();
 
-    let state = self.state.lock().unwrap();
+    material.bind();
 
     graphics()
       .mesh_draw(state.id, topology, vertex_count, index_count)
@@ -215,7 +213,7 @@ impl<V: Vertex> Mesh<V> {
 
   /// Acquires mutable write access the mesh buffers.
   pub fn with_buffers(&mut self, body: impl FnOnce(&mut Buffer<V>, &mut Buffer<Index>)) {
-    let state = &mut self.state.lock().unwrap();
+    let state = &mut self.state.write();
     let (vertices, indices) = state.borrow_buffers_mut();
 
     body(vertices, indices);
