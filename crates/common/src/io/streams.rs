@@ -1,6 +1,6 @@
 use std::io::{BufRead, Seek, Write};
 
-use crate::{FileSystemError, ToVirtualPath};
+use crate::{Compressor, Decompressor, FileSystemError, ToVirtualPath};
 
 /// Represents an error that occurred while reading or writing to a stream.
 #[derive(Debug)]
@@ -100,6 +100,13 @@ pub trait InputStream: Seek + BufRead {
     self.consume(amount);
 
     Ok(())
+  }
+
+  /// Reads a compressed buffer from the stream and decompresses it.
+  fn read_decompress(&mut self, length: usize, algorithm: &dyn Decompressor) -> Result<Vec<u8>, StreamError> {
+    let compressed = self.read_bytes(length)?;
+
+    Ok(algorithm.decompress(&compressed)?)
   }
 
   fn read_u8(&mut self) -> Result<u8, StreamError>;
@@ -211,7 +218,7 @@ impl<T: BufRead + Seek> InputStream for T {
   }
 
   fn read_string(&mut self) -> Result<String, StreamError> {
-    let length = self.read_usize()?;
+    let length = self.read_u16()? as usize;
     let mut buffer = vec![0; length];
 
     self.read_exact(&mut buffer)?;
@@ -246,6 +253,15 @@ impl<T: BufRead + Seek> InputStream for T {
 
 /// A stream for writing to some [`VirtualPath`].
 pub trait OutputStream: Seek + Write {
+  /// Writes a compressed buffer to the stream.
+  fn write_compress(&mut self, data: &[u8], algorithm: &dyn Compressor) -> Result<(), StreamError> {
+    let compressed = algorithm.compress(data)?;
+
+    self.write_bytes(&compressed)?;
+
+    Ok(())
+  }
+
   fn write_u8(&mut self, value: u8) -> Result<(), StreamError>;
   fn write_u16(&mut self, value: u16) -> Result<(), StreamError>;
   fn write_u32(&mut self, value: u32) -> Result<(), StreamError>;
@@ -347,7 +363,7 @@ impl<T: Write + Seek> OutputStream for T {
   }
 
   fn write_string(&mut self, value: &str) -> Result<(), StreamError> {
-    self.write_usize(value.len())?;
+    self.write_u16(value.len() as u16)?;
     self.write_bytes(value.as_bytes())?;
 
     Ok(())
@@ -357,5 +373,51 @@ impl<T: Write + Seek> OutputStream for T {
     self.write_all(value)?;
 
     Ok(())
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  macro_rules! impl_read_write_test {
+    ($name:ident, $read:tt, $write:tt, $value:expr) => {
+      #[test]
+      pub fn $name() {
+        let buffer = vec![0x00; 64];
+        let mut cursor = std::io::Cursor::new(buffer);
+
+        cursor.$write($value).unwrap();
+        cursor.set_position(0);
+
+        assert_eq!(cursor.$read().unwrap(), $value);
+      }
+    };
+  }
+
+  impl_read_write_test!(it_should_read_write_u8, read_u8, write_u8, 0xFF);
+  impl_read_write_test!(it_should_read_write_u16, read_u16, write_u16, 0xFFFF);
+  impl_read_write_test!(it_should_read_write_u32, read_u32, write_u32, 0xFFFFFFFF);
+  impl_read_write_test!(it_should_read_write_u64, read_u64, write_u64, 0xFFFFFFFFFFFFFFFF);
+  impl_read_write_test!(it_should_read_write_usize, read_usize, write_usize, usize::MAX);
+  impl_read_write_test!(it_should_read_write_i8, read_i8, write_i8, -1);
+  impl_read_write_test!(it_should_read_write_i16, read_i16, write_i16, -1);
+  impl_read_write_test!(it_should_read_write_i32, read_i32, write_i32, -1);
+  impl_read_write_test!(it_should_read_write_i64, read_i64, write_i64, -1);
+  impl_read_write_test!(it_should_read_write_isize, read_isize, write_isize, isize::MIN);
+  impl_read_write_test!(it_should_read_write_f32, read_f32, write_f32, -1.0);
+  impl_read_write_test!(it_should_read_write_f64, read_f64, write_f64, -1.0);
+  impl_read_write_test!(it_should_read_write_string, read_string, write_string, "Hello, world!");
+
+  #[test]
+  fn it_should_compress_and_decompress() {
+    let mut cursor = std::io::Cursor::new(vec![0x00; 64]);
+
+    cursor.write_compress(b"Hello, world!", &crate::Deflate).unwrap();
+    cursor.set_position(0);
+
+    let decompressed = cursor.read_decompress(64, &crate::Deflate).unwrap();
+
+    assert_eq!(decompressed, b"Hello, world!");
   }
 }

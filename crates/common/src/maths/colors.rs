@@ -135,6 +135,23 @@ impl Color32 {
   pub const fn rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
     Self { r, g, b, a }
   }
+
+  /// Creates a new color from a packed 32-bit integer.
+  #[inline(always)]
+  pub const fn from_packed(value: u32) -> Self {
+    Self::rgba(
+      ((value >> 24) & 0xFF) as u8,
+      ((value >> 16) & 0xFF) as u8,
+      ((value >> 8) & 0xFF) as u8,
+      (value & 0xFF) as u8,
+    )
+  }
+
+  /// Converts this color to a packed 32-bit integer.
+  #[inline(always)]
+  pub const fn to_packed(&self) -> u32 {
+    ((self.r as u32) << 24) | ((self.g as u32) << 16) | ((self.b as u32) << 8) | (self.a as u32)
+  }
 }
 
 impl Pixel for Color32 {
