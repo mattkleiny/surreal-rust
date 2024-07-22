@@ -17,9 +17,7 @@ members = ["crates/*", "backends/*"]
 opt-level = 3
 
 [features]
-default = []
-lang-lua = ["scripting/lua"]
-lang-javascript = ["scripting/javascript"]
+default = ["audio", "graphics", "input", "scripting"]
 
 [workspace.dependencies]
 # shared dependencies
@@ -41,12 +39,9 @@ scripting = { package = "surreal-scripting", path = "./crates/scripting", option
 
 [[example]]
 name = "sprites"
-required-features = ["sdl", "graphics"]
-
-[[example]]
-name = "hello-script"
-required-features = ["sdl", "graphics", "lang-javascript"]
+required-features = ["sdl"]
 
 [[example]]
 name = "hello-world"
-required-features = ["sdl", "graphics"]
+required-features = ["sdl"]
+
