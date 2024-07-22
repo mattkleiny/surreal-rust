@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use common::Color;
+use common::{Color, Reflect};
 
 use super::*;
 

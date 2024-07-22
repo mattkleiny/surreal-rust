@@ -10,7 +10,7 @@ pub fn impl_profiling(item: TokenStream) -> TokenStream {
 
   // rewrite the function to wrap the block in a profiling scope
   function.block = Box::new(parse_quote! {{
-    common::profile_function!(#ident);
+    common::profile_function!(stringify!(#ident));
     #block
   }});
 

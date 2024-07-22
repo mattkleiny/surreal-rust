@@ -2,15 +2,12 @@
 
 pub use audio::*;
 use common::Vec3;
-use openal_sys::{
-  alBufferData, alDeleteSources, alGenBuffers, alGenSources, alGetSourcef, alGetSourcefv, alGetSourcei, alSource3f,
-  alSourcePlay, alSourcef, alSourcei, ALCcontext, ALCdevice, ALboolean, ALfloat, ALint, ALuint,
-};
+use openal_sys as al;
 
 /// An audio backend for SDL2.
 pub struct SdlAudioBackend {
-  device: *mut ALCdevice,
-  context: *mut ALCcontext,
+  device: *mut al::ALCdevice,
+  context: *mut al::ALCcontext,
 }
 
 impl SdlAudioBackend {
@@ -35,9 +32,9 @@ impl Drop for SdlAudioBackend {
 impl AudioBackend for SdlAudioBackend {
   fn buffer_create(&self) -> Result<BufferId, BufferError> {
     unsafe {
-      let mut buffer: ALuint = 0;
+      let mut buffer: al::ALuint = 0;
 
-      alGenBuffers(1, &mut buffer as *mut _);
+      al::alGenBuffers(1, &mut buffer as *mut _);
 
       if buffer == 0 {
         return Err(BufferError::FailedToCreate);
@@ -49,7 +46,7 @@ impl AudioBackend for SdlAudioBackend {
 
   fn buffer_write_data(&self, buffer: BufferId, sampler_rate: AudioSampleRate, data: &[u8]) -> Result<(), BufferError> {
     unsafe {
-      alBufferData(
+      al::alBufferData(
         buffer.into(),
         openal_sys::AL_FORMAT_MONO16,
         data.as_ptr() as *const _,
@@ -65,7 +62,7 @@ impl AudioBackend for SdlAudioBackend {
     unsafe {
       let buffer = buffer.into();
 
-      alDeleteSources(1, &buffer as *const _);
+      al::alDeleteSources(1, &buffer as *const _);
 
       Ok(())
     }
@@ -73,9 +70,9 @@ impl AudioBackend for SdlAudioBackend {
 
   fn clip_create(&self) -> Result<ClipId, ClipError> {
     unsafe {
-      let mut clip: ALuint = 0;
+      let mut clip: al::ALuint = 0;
 
-      alGenSources(1, &mut clip as *mut _);
+      al::alGenSources(1, &mut clip as *mut _);
 
       if clip == 0 {
         return Err(ClipError::FailedToCreate);
@@ -89,7 +86,7 @@ impl AudioBackend for SdlAudioBackend {
     unsafe {
       let clip = clip.into();
 
-      alDeleteSources(1, &clip as *const _);
+      al::alDeleteSources(1, &clip as *const _);
 
       Ok(())
     }
@@ -97,15 +94,15 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_create(&self) -> Result<SourceId, SourceError> {
     unsafe {
-      let mut source: ALuint = 0;
+      let mut source: al::ALuint = 0;
 
-      alGenSources(1, &mut source as *mut _);
+      al::alGenSources(1, &mut source as *mut _);
 
-      alSourcef(source, openal_sys::AL_GAIN, 1.0);
-      alSourcef(source, openal_sys::AL_PITCH, 1.0);
-      alSource3f(source, openal_sys::AL_POSITION, 0.0, 0.0, 0.0);
-      alSource3f(source, openal_sys::AL_VELOCITY, 0.0, 0.0, 0.0);
-      alSourcei(source, openal_sys::AL_LOOPING, openal_sys::AL_FALSE as ALint);
+      al::alSourcef(source, openal_sys::AL_GAIN, 1.0);
+      al::alSourcef(source, openal_sys::AL_PITCH, 1.0);
+      al::alSource3f(source, openal_sys::AL_POSITION, 0.0, 0.0, 0.0);
+      al::alSource3f(source, openal_sys::AL_VELOCITY, 0.0, 0.0, 0.0);
+      al::alSourcei(source, openal_sys::AL_LOOPING, openal_sys::AL_FALSE as al::ALint);
 
       if source == 0 {
         return Err(SourceError::FailedToCreate);
@@ -117,9 +114,9 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_is_playing(&self, source: SourceId) -> Option<bool> {
     unsafe {
-      let mut state: ALint = 0;
+      let mut state: al::ALint = 0;
 
-      alGetSourcei(source.into(), openal_sys::AL_SOURCE_STATE, &mut state as *mut _);
+      al::alGetSourcei(source.into(), openal_sys::AL_SOURCE_STATE, &mut state as *mut _);
 
       match state {
         openal_sys::AL_PLAYING => Some(true),
@@ -132,7 +129,7 @@ impl AudioBackend for SdlAudioBackend {
     unsafe {
       let mut gain = 0.0f32;
 
-      alGetSourcef(source.into(), openal_sys::AL_GAIN, &mut gain as *mut _);
+      al::alGetSourcef(source.into(), openal_sys::AL_GAIN, &mut gain as *mut _);
 
       Some(gain)
     }
@@ -140,7 +137,7 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_set_gain(&self, source: SourceId, gain: f32) -> Result<(), SourceError> {
     unsafe {
-      alSourcef(source.into(), openal_sys::AL_GAIN, gain);
+      al::alSourcef(source.into(), openal_sys::AL_GAIN, gain);
 
       Ok(())
     }
@@ -150,7 +147,7 @@ impl AudioBackend for SdlAudioBackend {
     unsafe {
       let mut pitch = 0.0f32;
 
-      alGetSourcef(source.into(), openal_sys::AL_PITCH, &mut pitch as *mut _);
+      al::alGetSourcef(source.into(), openal_sys::AL_PITCH, &mut pitch as *mut _);
 
       Some(pitch)
     }
@@ -158,7 +155,7 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_set_pitch(&self, source: SourceId, pitch: f32) -> Result<(), SourceError> {
     unsafe {
-      alSourcef(source.into(), openal_sys::AL_PITCH, pitch);
+      al::alSourcef(source.into(), openal_sys::AL_PITCH, pitch);
 
       Ok(())
     }
@@ -168,7 +165,11 @@ impl AudioBackend for SdlAudioBackend {
     unsafe {
       let mut position = Vec3::ZERO;
 
-      alGetSourcefv(source.into(), openal_sys::AL_POSITION, &mut position.x as *mut ALfloat);
+      al::alGetSourcefv(
+        source.into(),
+        openal_sys::AL_POSITION,
+        &mut position.x as *mut al::ALfloat,
+      );
 
       Some(position)
     }
@@ -176,7 +177,7 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_set_position(&self, source: SourceId, position: Vec3) -> Result<(), SourceError> {
     unsafe {
-      alSource3f(
+      al::alSource3f(
         source.into(),
         openal_sys::AL_POSITION,
         position.x,
@@ -190,7 +191,7 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_set_velocity(&self, source: SourceId, velocity: Vec3) -> Result<(), SourceError> {
     unsafe {
-      alSource3f(
+      al::alSource3f(
         source.into(),
         openal_sys::AL_VELOCITY,
         velocity.x,
@@ -206,7 +207,11 @@ impl AudioBackend for SdlAudioBackend {
     unsafe {
       let mut velocity = Vec3::ZERO;
 
-      alGetSourcefv(source.into(), openal_sys::AL_VELOCITY, &mut velocity.x as *mut ALfloat);
+      al::alGetSourcefv(
+        source.into(),
+        openal_sys::AL_VELOCITY,
+        &mut velocity.x as *mut al::ALfloat,
+      );
 
       Some(velocity)
     }
@@ -214,11 +219,11 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_is_looping(&self, source: SourceId) -> Option<bool> {
     unsafe {
-      let mut looping: ALint = 0;
+      let mut looping: al::ALint = 0;
 
-      alGetSourcei(source.into(), openal_sys::AL_LOOPING, &mut looping as *mut _);
+      al::alGetSourcei(source.into(), openal_sys::AL_LOOPING, &mut looping as *mut _);
 
-      match looping as ALboolean {
+      match looping as al::ALboolean {
         openal_sys::AL_TRUE => Some(true),
         _ => Some(false),
       }
@@ -233,7 +238,7 @@ impl AudioBackend for SdlAudioBackend {
         openal_sys::AL_FALSE
       };
 
-      alSourcei(source.into(), openal_sys::AL_LOOPING, looping as ALint);
+      al::alSourcei(source.into(), openal_sys::AL_LOOPING, looping as al::ALint);
 
       Ok(())
     }
@@ -241,9 +246,9 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_get_clip(&self, source: SourceId) -> Option<ClipId> {
     unsafe {
-      let mut buffer: ALint = 0;
+      let mut buffer: al::ALint = 0;
 
-      alGetSourcei(source.into(), openal_sys::AL_BUFFER, &mut buffer as *mut _);
+      al::alGetSourcei(source.into(), openal_sys::AL_BUFFER, &mut buffer as *mut _);
 
       Some(ClipId::from(buffer as u32))
     }
@@ -253,7 +258,7 @@ impl AudioBackend for SdlAudioBackend {
     unsafe {
       let clip = clip.into();
 
-      alSourcei(source.into(), openal_sys::AL_BUFFER, clip);
+      al::alSourcei(source.into(), openal_sys::AL_BUFFER, clip);
 
       Ok(())
     }
@@ -261,7 +266,7 @@ impl AudioBackend for SdlAudioBackend {
 
   fn source_play(&self, source: SourceId) -> Result<(), SourceError> {
     unsafe {
-      alSourcePlay(source.into());
+      al::alSourcePlay(source.into());
 
       Ok(())
     }
@@ -271,7 +276,7 @@ impl AudioBackend for SdlAudioBackend {
     unsafe {
       let source = source.into();
 
-      alDeleteSources(1, &source as *const _);
+      al::alDeleteSources(1, &source as *const _);
 
       Ok(())
     }

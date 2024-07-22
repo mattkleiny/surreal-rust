@@ -20,21 +20,23 @@ macro_rules! profile_frame_end {
 /// Notifies the profiler that a scope has started.
 #[macro_export]
 macro_rules! profile_scope {
-  ($name:expr) => {
+  ($($arg:tt)*) => {
     // TODO: implement me
-  };
-  ($name:expr, $args:expr) => {
-    $crate::profile_scope!(concat!($name, "(", stringify!($args), ")"));
   };
 }
 
 /// Notifies the profiler that a function is executing.
 #[macro_export]
 macro_rules! profile_function {
-  ($name:expr) => {
-    $crate::profile_scope!($name);
+  ($($arg:tt)*) => {
+    $crate::profile_scope!($($arg)*);
   };
-  ($name:expr, $args:expr) => {
-    $crate::profile_scope!($name, $args);
-  };
+}
+
+#[cfg(test)]
+mod tests {
+  #[test]
+  fn test() {
+    profile_function!("{}", "test");
+  }
 }
