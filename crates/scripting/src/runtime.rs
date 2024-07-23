@@ -9,9 +9,9 @@ mod machine;
 pub enum Opcode {
   NoOp,
   Return,
-  Constant(TableIndex),
+  Constant(u16),
   Unary(crate::ast::UnaryOp),
   Binary(crate::ast::BinaryOp),
-  Literal(crate::ast::Literal),
+  Literal(common::Variant),
   Print,
 }

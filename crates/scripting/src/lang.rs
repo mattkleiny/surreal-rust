@@ -6,6 +6,8 @@ pub mod wren;
 pub mod ast {
   //! A shared high-level abstract syntax tree for the scripting runtime
 
+  use common::Variant;
+
   /// A block of [`Statement`]s.
   #[derive(Debug, Clone)]
   pub struct Block(pub Vec<Statement>);
@@ -21,7 +23,7 @@ pub mod ast {
   /// An expression.
   #[derive(Debug, Clone)]
   pub enum Expression {
-    Literal(Literal),
+    Literal(Variant),
     Binary(Box<Expression>, BinaryOp, Box<Expression>),
     Unary(UnaryOp, Box<Expression>),
   }

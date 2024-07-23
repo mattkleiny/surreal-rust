@@ -89,13 +89,7 @@ impl VirtualMachine {
         self.push(constant.clone())?;
       }
       Opcode::Literal(value) => {
-        let value = match value {
-          Literal::Integer(value) => value.to_variant(),
-          Literal::Float(value) => value.to_variant(),
-          Literal::String(value) => value.to_variant(),
-        };
-
-        self.push(value)?;
+        self.push(value.clone())?;
       }
       Opcode::Unary(operator) => match operator {
         UnaryOp::Negate => {
@@ -175,11 +169,11 @@ impl VirtualMachine {
 }
 
 /// An index into a [`Table`].
-pub type TableIndex = u16;
+type TableIndex = u16;
 
 /// A table of [`V`] for the virtual machine.
 #[repr(transparent)]
-pub struct Table<V> {
+struct Table<V> {
   values: Vec<V>,
 }
 
@@ -229,7 +223,7 @@ mod tests {
     let instructions = [
       Opcode::Constant(vm.constants.add(Variant::from(42i64))),
       Opcode::Unary(UnaryOp::Negate),
-      Opcode::Literal(Literal::Integer(42)),
+      Opcode::Literal(Variant::I64(42)),
       Opcode::Binary(BinaryOp::Add),
       Opcode::Return,
       Opcode::Print,

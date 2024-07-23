@@ -252,7 +252,7 @@ impl Drop for TextureState {
   }
 }
 
-/// Represents a sub-region of a [`Texture`]`.
+/// Represents a sub-region of a [`Texture`].
 #[derive(Clone)]
 pub struct TextureRegion {
   pub texture: Texture,

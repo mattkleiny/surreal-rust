@@ -65,23 +65,23 @@ impl Compiler {
 
 #[cfg(test)]
 mod tests {
-  use common::Variant;
+  use common::{ToVariant, Variant};
 
   use super::*;
 
   #[test]
   fn test_compile_basic_program() {
     let statements = vec![Statement::Return(Expression::Binary(
-      Box::new(Expression::Literal(Literal::Integer(1))),
+      Box::new(Expression::Literal(Variant::I64(1))),
       BinaryOp::Add,
-      Box::new(Expression::Literal(Literal::Integer(2))),
+      Box::new(Expression::Literal(Variant::I64(2))),
     ))];
 
     let instructions = compile(&statements).unwrap();
 
     assert_eq!(instructions, vec![
-      Opcode::Literal(Literal::Integer(1)),
-      Opcode::Literal(Literal::Integer(2)),
+      Opcode::Literal(Variant::I64(1)),
+      Opcode::Literal(Variant::I64(2)),
       Opcode::Binary(BinaryOp::Add),
       Opcode::Return,
     ]);
@@ -90,9 +90,9 @@ mod tests {
   #[test]
   fn test_execute_basic_program() {
     let statements = vec![Statement::Return(Expression::Binary(
-      Box::new(Expression::Literal(Literal::Integer(1))),
+      Box::new(Expression::Literal(Variant::I64(1))),
       BinaryOp::Add,
-      Box::new(Expression::Literal(Literal::Integer(2))),
+      Box::new(Expression::Literal(Variant::I64(2))),
     ))];
 
     let instructions = compile(&statements).unwrap();
