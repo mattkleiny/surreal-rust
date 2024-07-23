@@ -1,7 +1,7 @@
-use common::{ToVariant, Variant};
+use common::Variant;
 
 use super::*;
-use crate::ast::{BinaryOp, Literal, UnaryOp};
+use crate::ast::{BinaryOp, UnaryOp};
 
 /// A possible error that can occur during virtual machine execution.
 #[derive(Debug)]

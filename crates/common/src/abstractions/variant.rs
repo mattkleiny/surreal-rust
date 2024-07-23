@@ -2,6 +2,8 @@ use std::ops::Neg;
 
 use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 
+// TODO: take a stab at NaN stuffing?
+
 /// Allows for a type to be converted to a [`Variant`].
 pub trait ToVariant {
   /// Converts the type into a [`Variant`].
@@ -47,6 +49,39 @@ pub enum VariantKind {
   Color,
   Color32,
 }
+
+/// A trait that allows for a type to be packed into a single f64.
+pub trait PackedF64: Sized {
+  fn to_packed_f64(&self) -> f64;
+  fn from_packed_f64(value: f64) -> Self;
+}
+
+macro_rules! impl_packed {
+  ($type:ty) => {
+    impl PackedF64 for $type {
+      #[inline]
+      fn to_packed_f64(&self) -> f64 {
+        *self as f64
+      }
+
+      #[inline]
+      fn from_packed_f64(value: f64) -> Self {
+        value as $type
+      }
+    }
+  };
+}
+
+impl_packed!(u8);
+impl_packed!(u16);
+impl_packed!(u32);
+impl_packed!(u64);
+impl_packed!(i8);
+impl_packed!(i16);
+impl_packed!(i32);
+impl_packed!(i64);
+impl_packed!(f32);
+impl_packed!(f64);
 
 /// A type that can hold varying different values.
 ///
@@ -372,5 +407,15 @@ mod tests {
     assert_eq!(a.sub(&b).unwrap(), Variant::U32(10));
     assert_eq!(a.mul(&b).unwrap(), Variant::U32(600));
     assert_eq!(a.div(&b).unwrap(), Variant::U32(1));
+  }
+
+  #[test]
+  fn test_packed_f64_conversion() {
+    let a = 10u8;
+    let b = a.to_packed_f64();
+
+    assert_eq!(a, u8::from_packed_f64(b));
+
+    println!("{}", b);
   }
 }

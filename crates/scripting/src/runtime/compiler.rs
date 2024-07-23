@@ -65,7 +65,7 @@ impl Compiler {
 
 #[cfg(test)]
 mod tests {
-  use common::{ToVariant, Variant};
+  use common::Variant;
 
   use super::*;
 
