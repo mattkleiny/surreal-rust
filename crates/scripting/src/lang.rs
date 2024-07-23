@@ -1,11 +1,11 @@
 //! Scripting language abstractions
 
-pub mod basic;
-pub mod lisp;
 pub mod wren;
 
-mod ast {
+pub mod ast {
   //! A shared high-level abstract syntax tree for the scripting runtime
+
+  pub struct Block(pub Vec<Statement>);
 
   pub enum Statement {
     Expression(Expression),
