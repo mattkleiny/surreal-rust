@@ -405,6 +405,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "surreal-scenes"
+version = "0.0.0"
+dependencies = [
+ "surreal-audio",
+ "surreal-common",
+ "surreal-graphics",
+ "surreal-input",
+ "surreal-scripting",
+]
+
+[[package]]
 name = "surreal-scripting"
 version = "0.1.0"
 dependencies = [

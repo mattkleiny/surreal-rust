@@ -1,0 +1,12 @@
+[package]
+name = "surreal-scenes"
+description = "Scene graph for Surreal"
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+common = { package = "surreal-common", path = "../common" }
+graphics = { package = "surreal-graphics", path = "../graphics" }
+audio = { package = "surreal-audio", path = "../audio" }
+input = { package = "surreal-input", path = "../input" }
+scripting = { package = "surreal-scripting", path = "../scripting" }

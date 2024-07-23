@@ -18,7 +18,6 @@ pub use concurrency::*;
 pub use diagnostics::*;
 pub use io::*;
 pub use maths::*;
-pub use scenes::*;
 pub use strings::*;
 pub use utilities::*;
 
@@ -28,7 +27,6 @@ mod concurrency;
 mod diagnostics;
 mod io;
 mod maths;
-mod scenes;
 mod strings;
 mod utilities;
 
