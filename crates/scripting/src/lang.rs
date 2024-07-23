@@ -6,7 +6,7 @@ pub mod wren;
 pub mod ast {
   //! A shared high-level abstract syntax tree for the scripting runtime
 
-  /// A block of statements
+  /// A block of [`Statement`]s.
   #[derive(Debug, Clone)]
   pub struct Block(pub Vec<Statement>);
 
@@ -27,7 +27,7 @@ pub mod ast {
   }
 
   /// A literal value.
-  #[derive(Debug, Clone)]
+  #[derive(Debug, Clone, PartialEq)]
   pub enum Literal {
     Integer(i64),
     Float(f64),
@@ -35,13 +35,13 @@ pub mod ast {
   }
 
   /// Operators for unary expressions.
-  #[derive(Debug, Clone)]
+  #[derive(Debug, Copy, Clone, Eq, PartialEq)]
   pub enum UnaryOp {
     Negate,
   }
 
   /// Operators for binary expressions.
-  #[derive(Debug, Clone)]
+  #[derive(Debug, Copy, Clone, Eq, PartialEq)]
   pub enum BinaryOp {
     Add,
     Subtract,
