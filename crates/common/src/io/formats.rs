@@ -156,6 +156,22 @@ impl<V: FromVariant> Deserialize for V {
   }
 }
 
+impl<V: Serialize> Serialize for Vec<V> {
+  fn serialize(&self) -> Chunk {
+    Chunk::Sequence(self.iter().map(Serialize::serialize).collect())
+  }
+}
+
+impl<V: Deserialize> Deserialize for Vec<V> {
+  fn deserialize(chunk: &Chunk) -> Self {
+    match chunk {
+      Chunk::Variant(_) => panic!("Unable to deserialize variant into a sequence"),
+      Chunk::Sequence(values) => values.iter().map(Deserialize::deserialize).collect(),
+      Chunk::Map(_) => panic!("Unable to deserialize map into a sequence"),
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use macros::{Deserialize, Serialize};

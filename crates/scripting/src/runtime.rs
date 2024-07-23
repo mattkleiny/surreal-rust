@@ -28,9 +28,10 @@ impl Default for VirtualMachineConfig {
 /// A bytecode-interpreting Virtual Machine.
 #[derive(Default)]
 pub struct VirtualMachine {
-  config: VirtualMachineConfig,
-  constants: Table<Variant>,
   stack: Vec<Variant>,
+  constants: Table<Variant>,
+  locals: Table<Variant>,
+  config: VirtualMachineConfig,
 }
 
 /// A bytecode instruction for the virtual machine.
@@ -39,8 +40,10 @@ pub enum Instruction {
   NoOp,
   Return,
   Constant(TableIndex),
+  Local(TableIndex),
   Unary(UnaryOp),
   Binary(BinaryOp),
+  Print,
 }
 
 /// An index into a [`Table`].
@@ -56,17 +59,11 @@ impl VirtualMachine {
   /// Creates a new virtual machine with the given configuration.
   pub fn new(config: VirtualMachineConfig) -> Self {
     VirtualMachine {
-      constants: Table::default(),
       stack: Vec::with_capacity(config.max_stack_size),
+      constants: Table::default(),
+      locals: Table::default(),
       config,
     }
-  }
-
-  /// Gets the constant at the given index.
-  pub fn get_constant(&self, index: TableIndex) -> Result<&Variant, VirtualMachineError> {
-    let value = self.constants.get(index);
-
-    value.ok_or(VirtualMachineError::InvalidConstantIndex(index))
   }
 
   /// Pushes a value onto the stack.
@@ -84,30 +81,43 @@ impl VirtualMachine {
     self.stack.pop().ok_or(VirtualMachineError::StackUnderflow)
   }
 
-  /// Executes the given [`Instruction`].
-  pub fn execute(&mut self, instructions: &[Instruction]) -> Result<(), VirtualMachineError> {
+  /// Executes the given [`Instruction`]s.
+  pub fn execute(&mut self, instructions: &[Instruction]) -> Result<Option<Variant>, VirtualMachineError> {
     for instruction in instructions {
-      self.interpret(instruction)?;
+      if let Some(result) = self.interpret(instruction)? {
+        return Ok(Some(result));
+      }
     }
 
-    Ok(())
+    Ok(None)
   }
 
   /// Interpret the given [`Instruction`].
-  fn interpret(&mut self, instruction: &Instruction) -> Result<(), VirtualMachineError> {
+  fn interpret(&mut self, instruction: &Instruction) -> Result<Option<Variant>, VirtualMachineError> {
     match instruction {
       Instruction::NoOp => {}
-      Instruction::Return => {}
+      Instruction::Return => {
+        if let Ok(value) = self.pop() {
+          return Ok(Some(value));
+        }
+
+        return Ok(None);
+      }
       Instruction::Constant(index) => {
         let constant = self.get_constant(*index)?;
 
         self.push(constant.clone())?;
       }
+      Instruction::Local(index) => {
+        let value = self.get_local(*index)?;
+
+        self.push(value.clone())?;
+      }
       Instruction::Unary(operator) => match operator {
         UnaryOp::Negate => {
           let value = self.pop()?;
 
-          let result = value.negate().map_err(|_| VirtualMachineError::InvalidInstruction)?;
+          let result = value.neg().map_err(|_| VirtualMachineError::InvalidInstruction)?;
 
           self.push(result)?;
         }
@@ -155,9 +165,28 @@ impl VirtualMachine {
         BinaryOp::And => todo!(),
         BinaryOp::Or => todo!(),
       },
+      Instruction::Print => {
+        let value = self.pop()?;
+
+        println!("{:?}", value);
+      }
     }
 
-    Ok(())
+    Ok(None)
+  }
+
+  /// Gets the constant value at the given index.
+  fn get_constant(&self, index: TableIndex) -> Result<&Variant, VirtualMachineError> {
+    let value = self.constants.get(index);
+
+    value.ok_or(VirtualMachineError::InvalidConstantIndex(index))
+  }
+
+  /// Gets the local value at the given index.
+  fn get_local(&self, index: TableIndex) -> Result<&Variant, VirtualMachineError> {
+    let value = self.locals.get(index);
+
+    value.ok_or(VirtualMachineError::InvalidValueIndex(index))
   }
 }
 
@@ -205,12 +234,16 @@ mod tests {
     let mut vm = VirtualMachine::default();
 
     let instructions = [
-      // don't wrap
       Instruction::Constant(vm.constants.add(Variant::from(42))),
       Instruction::Unary(UnaryOp::Negate),
+      Instruction::Local(vm.locals.add(Variant::from(42))),
+      Instruction::Binary(BinaryOp::Add),
       Instruction::Return,
+      Instruction::Print,
     ];
 
-    vm.execute(&instructions).unwrap();
+    let result = vm.execute(&instructions).unwrap().unwrap();
+
+    assert_eq!(result, Variant::from(0));
   }
 }

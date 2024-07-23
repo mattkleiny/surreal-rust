@@ -1,3 +1,5 @@
+use std::ops::Neg;
+
 use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 
 /// Allows for a type to be converted to a [`Variant`].
@@ -141,17 +143,17 @@ impl Variant {
   }
 
   /// Negates the value of the variant, if possible.
-  pub fn negate(&self) -> Result<Self, VariantError> {
+  pub fn neg(&self) -> Result<Self, VariantError> {
     match self {
       Variant::Bool(value) => Ok(Variant::Bool(!value)),
-      Variant::U8(value) => Ok(Variant::U8(!value)),
-      Variant::U16(value) => Ok(Variant::U16(!value)),
-      Variant::U32(value) => Ok(Variant::U32(!value)),
-      Variant::U64(value) => Ok(Variant::U64(!value)),
-      Variant::I8(value) => Ok(Variant::I8(!value)),
-      Variant::I16(value) => Ok(Variant::I16(!value)),
-      Variant::I32(value) => Ok(Variant::I32(!value)),
-      Variant::I64(value) => Ok(Variant::I64(!value)),
+      Variant::I8(value) => Ok(Variant::I8(value.neg())),
+      Variant::I16(value) => Ok(Variant::I16(value.neg())),
+      Variant::I32(value) => Ok(Variant::I32(value.neg())),
+      Variant::I64(value) => Ok(Variant::I64(value.neg())),
+      Variant::Vec2(value) => Ok(Variant::Vec2(value.neg())),
+      Variant::Vec3(value) => Ok(Variant::Vec3(value.neg())),
+      Variant::Vec4(value) => Ok(Variant::Vec4(value.neg())),
+      Variant::Quat(value) => Ok(Variant::Quat(value.neg())),
       _ => Err(VariantError::InvalidNegation),
     }
   }

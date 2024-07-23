@@ -1,5 +1,6 @@
 //! Scripting language abstractions
 
+pub mod lox;
 pub mod wren;
 
 pub mod ast {
