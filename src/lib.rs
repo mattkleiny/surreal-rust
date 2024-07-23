@@ -7,7 +7,7 @@
 //! don't want to overdo it).
 //!
 //! The engine is built on top of a number of core libraries, which are all
-//! available as separate crates. This root project can be added as a
+//! available as separate core. This root project can be added as a
 //! dependency, and features enabled/disabled to toggle the set of requirements
 //! needed for any particular project.
 

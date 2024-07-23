@@ -11,7 +11,7 @@ edition = "2021"
 version = "0.1.0"
 
 [workspace]
-members = ["crates/*", "backends/*"]
+members = ["core/*", "backends/*"]
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -25,17 +25,17 @@ bitflags = "2.1.0"
 
 [dependencies]
 # core
-common = { package = "surreal-common", path = "./crates/common" }
+common = { package = "surreal-common", path = "./core/common" }
 editor = { package = "surreal-editor", path = "./editor", optional = true }
 
 # backends
 sdl = { package = "surreal-backend-sdl", path = "./backends/sdl", optional = true }
 
-# crates
-audio = { package = "surreal-audio", path = "./crates/audio", optional = true }
-graphics = { package = "surreal-graphics", path = "./crates/graphics", optional = true }
-input = { package = "surreal-input", path = "./crates/input", optional = true }
-scripting = { package = "surreal-scripting", path = "./crates/scripting", optional = true }
+# core
+audio = { package = "surreal-audio", path = "./core/audio", optional = true }
+graphics = { package = "surreal-graphics", path = "./core/graphics", optional = true }
+input = { package = "surreal-input", path = "./core/input", optional = true }
+scripting = { package = "surreal-scripting", path = "./core/scripting", optional = true }
 
 [[example]]
 name = "sprites"

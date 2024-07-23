@@ -33,7 +33,7 @@ mod sprites;
 mod targets;
 mod textures;
 
-// Re-export macros for use in other crates.
+// Re-export macros for use in other core.
 pub(crate) use internal::GraphicsCell;
 pub use macros::{ToShaderUniformSet, Vertex};
 
