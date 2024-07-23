@@ -24,8 +24,8 @@ pub trait Vertex: Clone {
   const DESCRIPTORS: &'static [VertexDescriptor];
 }
 
-/// Describes a kind of index.
-pub type Index = u32;
+/// An index into a mesh buffer.
+pub type MeshIndex = u32;
 
 /// Describes a single vertex field in a [`Vertex`] type.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -128,12 +128,12 @@ pub struct Mesh<V> {
 struct MeshState<V> {
   id: MeshId,
   vertices: Buffer<V>,
-  indices: Buffer<Index>,
+  indices: Buffer<MeshIndex>,
 }
 
 impl<V> MeshState<V> {
   /// Borrows the underlying graphics buffers from the state at the same time.
-  pub fn borrow_buffers_mut(&mut self) -> (&mut Buffer<V>, &mut Buffer<Index>) {
+  pub fn borrow_buffers_mut(&mut self) -> (&mut Buffer<V>, &mut Buffer<MeshIndex>) {
     (&mut self.vertices, &mut self.indices)
   }
 }
@@ -212,7 +212,7 @@ impl<V: Vertex> Mesh<V> {
   }
 
   /// Acquires mutable write access the mesh buffers.
-  pub fn with_buffers(&mut self, body: impl FnOnce(&mut Buffer<V>, &mut Buffer<Index>)) {
+  pub fn with_buffers(&mut self, body: impl FnOnce(&mut Buffer<V>, &mut Buffer<MeshIndex>)) {
     let state = &mut self.state.write();
     let (vertices, indices) = state.borrow_buffers_mut();
 
@@ -230,7 +230,7 @@ impl<V> Drop for MeshState<V> {
 #[derive(Default)]
 pub struct MeshBuilder<V> {
   vertices: Vec<V>,
-  indices: Vec<Index>,
+  indices: Vec<MeshIndex>,
 }
 
 impl<V: Vertex> MeshBuilder<V> {
@@ -243,8 +243,8 @@ impl<V: Vertex> MeshBuilder<V> {
   }
 
   /// Returns the number of vertices in the mesh.
-  pub fn vertex_count(&self) -> Index {
-    self.vertices.len() as Index
+  pub fn vertex_count(&self) -> MeshIndex {
+    self.vertices.len() as MeshIndex
   }
 
   /// Returns the number of indices in the mesh.

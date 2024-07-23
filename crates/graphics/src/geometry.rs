@@ -11,7 +11,7 @@ use super::*;
 pub struct GeometryBatch {
   mesh: Mesh<GeometryVertex>,
   vertices: Vec<GeometryVertex>,
-  indices: Vec<Index>,
+  indices: Vec<MeshIndex>,
   material: Option<Material>,
 }
 
@@ -49,7 +49,7 @@ impl GeometryBatch {
 
   /// Draws a triangle in the batch.
   pub fn draw_triangle(&mut self, a: Vec2, b: Vec2, c: Vec2, color: Color32) {
-    let base_offset = self.vertices.len() as Index;
+    let base_offset = self.vertices.len() as MeshIndex;
 
     self.vertices.push(GeometryVertex { position: a, color });
     self.vertices.push(GeometryVertex { position: b, color });
@@ -66,7 +66,7 @@ impl GeometryBatch {
       return;
     }
 
-    let base_offset = self.vertices.len() as Index;
+    let base_offset = self.vertices.len() as MeshIndex;
 
     self.vertices.push(GeometryVertex {
       position: points[0],
@@ -74,7 +74,7 @@ impl GeometryBatch {
     });
 
     for i in 1..points.len() - 1 {
-      let offset = self.vertices.len() as Index;
+      let offset = self.vertices.len() as MeshIndex;
 
       self.vertices.push(GeometryVertex {
         position: points[i],
@@ -94,7 +94,7 @@ impl GeometryBatch {
 
   /// Draws a rectangle in the batch.
   pub fn draw_rectangle(&mut self, rectangle: Rectangle, color: Color32) {
-    let base_offset = self.vertices.len() as Index;
+    let base_offset = self.vertices.len() as MeshIndex;
 
     self.vertices.push(GeometryVertex {
       position: rectangle.bottom_left(),
