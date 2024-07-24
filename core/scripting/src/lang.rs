@@ -3,7 +3,7 @@
 pub mod lox;
 pub mod wren;
 
-pub mod ast {
+pub(crate) mod ast {
   //! A shared high-level abstract syntax tree for the scripting runtime
 
   use common::Variant;

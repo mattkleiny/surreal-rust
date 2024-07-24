@@ -188,7 +188,7 @@ impl<T: Scalar> Default for RandomVariable<T> {
   }
 }
 
-impl<T: Lerp + Copy> RandomVariable<T> {
+impl<T: Copy + Lerp> RandomVariable<T> {
   // Samples a value from the variable at the given t.
   pub fn sample(&self, t: f32) -> T {
     use Distribution::*;
@@ -204,29 +204,6 @@ impl<T: Lerp + Copy> RandomVariable<T> {
     };
 
     T::lerp(self.low, self.high, x)
-  }
-}
-
-/// A trait for rolling a value from a [`RandomVariable`].
-pub trait Rollable: Sized {
-  /// Rolls a random value using the given [`Random`] number generator.
-  fn roll_next(variable: &RandomVariable<Self>, random: &mut Random) -> Self;
-
-  /// Rolls a random value.
-  fn roll(variable: &RandomVariable<Self>) -> Self {
-    THREAD_LOCAL_RANDOM.with(|random| {
-      let mut random = random.borrow_mut();
-
-      Self::roll_next(variable, &mut random)
-    })
-  }
-}
-
-/// Allows rolling a random value from a [`RandomVariable`].
-impl<T: Lerp + Copy> Rollable for T {
-  #[inline]
-  fn roll_next(variable: &RandomVariable<Self>, random: &mut Random) -> Self {
-    variable.sample(random.next_f64() as f32)
   }
 }
 

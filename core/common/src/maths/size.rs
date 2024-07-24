@@ -190,7 +190,7 @@ mod tests {
   #[test]
   fn test_sum() {
     let sizes = vec![Size::from_gigabytes(1.), Size::from_megabytes(512.)];
-    let total_size = Size::sum(sizes.into_iter());
+    let total_size: Size = sizes.into_iter().sum();
 
     assert_eq!(total_size.as_bytes(), Size::from_gigabytes(1.5).as_bytes());
   }

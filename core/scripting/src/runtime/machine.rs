@@ -1,9 +1,11 @@
 use common::Variant;
 
-use super::*;
-use crate::ast::{BinaryOp, UnaryOp};
+use crate::{
+  lang::ast::{BinaryOp, UnaryOp},
+  runtime::Opcode,
+};
 
-/// A possible error that can occur during virtual machine execution.
+/// A possible error that can occur during [`VirtualMachine`] execution.
 #[derive(Debug)]
 pub enum VirtualMachineError {
   InvalidModule(String),
@@ -16,6 +18,7 @@ pub enum VirtualMachineError {
 }
 
 /// Configuration for the [`VirtualMachine`].
+#[derive(Debug)]
 pub struct VirtualMachineConfig {
   pub max_stack_size: usize,
 }
@@ -27,6 +30,18 @@ impl Default for VirtualMachineConfig {
 }
 
 /// A bytecode-interpreting Virtual Machine.
+///
+/// This virtual machine is stack-based and uses a simple instruction set. All
+/// languages in the scripting runtime are compiled to this instruction set,
+/// with an attempt to provide capabilities across all languages using a unified
+/// bytecode.
+///
+/// The virtual machine is lightweight, and can be used for a variety of
+/// purposes, including small DSLs, scripting languages, and more.
+///
+/// The primary means of value interop is done via [`Variant`]s, which permit
+/// a wide range of core types to be used in the virtual machine (and scripting
+/// languages) efficiently.
 #[derive(Default)]
 pub struct VirtualMachine {
   stack: Vec<Variant>,
@@ -73,6 +88,9 @@ impl VirtualMachine {
   }
 
   /// Interpret the given [`Opcode`].
+  ///
+  /// Certain instructions may return a value, such as `Return`. If a value is
+  /// returned, it will be passed in the `Option` result.
   fn interpret(&mut self, instruction: &Opcode) -> Result<Option<Variant>, VirtualMachineError> {
     match instruction {
       Opcode::NoOp => {}
@@ -171,7 +189,7 @@ impl VirtualMachine {
 /// An index into a [`Table`].
 type TableIndex = u16;
 
-/// A table of [`V`] for the virtual machine.
+/// A simple 'table' of [`V`] for the virtual machine.
 #[repr(transparent)]
 struct Table<V> {
   values: Vec<V>,

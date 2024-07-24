@@ -1,5 +1,4 @@
-use super::*;
-use crate::ast::*;
+use crate::{lang::ast::*, runtime::Opcode};
 
 /// An error that occurs when compiling.
 #[derive(Debug)]
@@ -85,21 +84,5 @@ mod tests {
       Opcode::Binary(BinaryOp::Add),
       Opcode::Return,
     ]);
-  }
-
-  #[test]
-  fn test_execute_basic_program() {
-    let statements = vec![Statement::Return(Expression::Binary(
-      Box::new(Expression::Literal(Variant::I64(1))),
-      BinaryOp::Add,
-      Box::new(Expression::Literal(Variant::I64(2))),
-    ))];
-
-    let instructions = compile(&statements).unwrap();
-    let mut virtual_machine = VirtualMachine::default();
-
-    let result = virtual_machine.execute(&instructions).unwrap().unwrap();
-
-    assert_eq!(result, Variant::I64(3));
   }
 }

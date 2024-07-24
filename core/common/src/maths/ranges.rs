@@ -13,20 +13,24 @@ pub struct Range<T> {
 }
 
 impl<T: Scalar> Range<T> {
+  /// Creates a new range with the given min and max values.
   pub const fn new(min: T, max: T) -> Self {
     Self { min, max }
   }
 
+  /// Computes the delta between the min and max values.
   #[inline]
   pub fn delta(&self) -> T {
     self.max - self.min
   }
 
+  /// Determines if the given value is within the range.
   #[inline]
   pub fn contains(&self, other: T) -> bool {
     other >= self.min && other <= self.max
   }
 
+  /// Clamps the given value to the range.
   #[inline]
   pub fn clamp(&self, value: T) -> T {
     value.clamp(self.min, self.max)

@@ -1,17 +1,15 @@
-pub use compiler::*;
-pub use machine::*;
-
 mod compiler;
+mod isolates;
 mod machine;
 
 /// A bytecode instruction for the virtual machine.
 #[derive(Debug, PartialEq)]
-pub enum Opcode {
+enum Opcode {
   NoOp,
   Return,
   Constant(u16),
-  Unary(crate::ast::UnaryOp),
-  Binary(crate::ast::BinaryOp),
+  Unary(crate::lang::ast::UnaryOp),
+  Binary(crate::lang::ast::BinaryOp),
   Literal(common::Variant),
   Print,
 }

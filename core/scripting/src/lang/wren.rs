@@ -1,6 +1,6 @@
 //! The Wren language
 
-use super::ast::*;
+use crate::lang::ast::*;
 
 #[derive(Debug)]
 pub enum ParseError {

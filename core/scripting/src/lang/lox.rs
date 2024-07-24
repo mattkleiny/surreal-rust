@@ -1,6 +1,6 @@
 //! The Lox language
 
-use super::ast::*;
+use crate::lang::ast::*;
 
 pub enum ParseError {
   UnexpectedToken,
