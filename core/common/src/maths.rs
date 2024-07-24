@@ -17,6 +17,7 @@ pub use shapes::*;
 pub use size::*;
 pub use splines::*;
 pub use time::*;
+pub use weights::*;
 
 mod angles;
 mod cameras;
@@ -35,6 +36,7 @@ mod shapes;
 mod size;
 mod splines;
 mod time;
+mod weights;
 
 /// A globally unique identifier.
 pub type Guid = uuid::Uuid;

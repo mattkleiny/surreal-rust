@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 
 use crate::Identity;
 
@@ -17,6 +17,8 @@ pub trait Scalar:
   + MulAssign
   + Div<Output = Self>
   + DivAssign
+  + Rem<Output = Self>
+  + RemAssign
   + Sized
 {
   /// Converts a value from a 32-bit floating point number.

@@ -95,6 +95,11 @@ impl<T> AssetRef<T> {
       _marker: std::marker::PhantomData,
     }
   }
+
+  /// Resolves the asset from the asset manager.
+  pub fn resolve(&self) -> Result<T, AssetError> {
+    todo!()
+  }
 }
 
 impl<T> Debug for AssetRef<T> {

@@ -51,6 +51,11 @@ impl Random {
 
     f64::from_bits((1 << (b - 2)) - (1 << f) + (self.next_u64() >> (b - f))) - 1.0
   }
+
+  /// Generates a random number between the given range.
+  pub fn next_range<T: FromRandom + Scalar>(&mut self, range: std::ops::Range<T>) -> T {
+    range.start + (self.next::<T>() % (range.end - range.start))
+  }
 }
 
 thread_local! {
