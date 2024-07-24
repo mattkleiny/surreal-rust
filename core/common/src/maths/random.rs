@@ -36,6 +36,11 @@ impl Random {
     T::from_random(self)
   }
 
+  /// Generates a random [`Scalar`] between the given range.
+  pub fn next_range<T: FromRandom + Scalar>(&mut self, range: std::ops::Range<T>) -> T {
+    range.start + (self.next::<T>() % (range.end - range.start))
+  }
+
   /// Generates a random u64 number between 0 and u64::MAX, inclusive.
   pub fn next_u64(&mut self) -> u64 {
     self.state = self.state.wrapping_add(0xA0761D6478BD642F);
@@ -50,11 +55,6 @@ impl Random {
     let f = f64::MANTISSA_DIGITS - 1;
 
     f64::from_bits((1 << (b - 2)) - (1 << f) + (self.next_u64() >> (b - f))) - 1.0
-  }
-
-  /// Generates a random number between the given range.
-  pub fn next_range<T: FromRandom + Scalar>(&mut self, range: std::ops::Range<T>) -> T {
-    range.start + (self.next::<T>() % (range.end - range.start))
   }
 }
 
