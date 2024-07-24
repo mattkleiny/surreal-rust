@@ -115,7 +115,7 @@ impl<T> QuadTree<T> {
   ///
   /// If the [`QuadTree`] is empty, the value will be inserted into the root
   /// node. Otherwise, the value will be inserted into the appropriate quadrant
-  /// of the [`QuadTree`], sub-dividing the tree if necessary into smaller
+  /// of the [`QuadTree`], subdividing the tree if necessary into smaller
   /// quadrants.
   pub fn insert(&mut self, value: T, bounds: Rectangle)
   where

@@ -54,6 +54,16 @@ impl<N, W: Scalar> Graph<N, W> {
     self.nodes.remove(node)
   }
 
+  /// Adds a new edge to the graph.
+  pub fn add_edge(&mut self, from: GraphNodeId, to: GraphNodeId, weight: W) {
+    self.edges.push(GraphEdge { from, to, weight });
+  }
+
+  /// Removes an edge from the graph.
+  pub fn remove_edge(&mut self, from: GraphNodeId, to: GraphNodeId) {
+    self.edges.retain(|edge| edge.from != from || edge.to != to);
+  }
+
   /// Iterates over the edges in the graph.
   pub fn edges(&self) -> impl Iterator<Item = &GraphEdge<W>> {
     self.edges.iter()
@@ -67,16 +77,6 @@ impl<N, W: Scalar> Graph<N, W> {
   /// Iterates over the edges that end at the given node.
   pub fn edges_to(&self, node: GraphNodeId) -> impl Iterator<Item = &GraphEdge<W>> {
     self.edges.iter().filter(move |edge| edge.to == node)
-  }
-
-  /// Adds a new edge to the graph.
-  pub fn add_edge(&mut self, from: GraphNodeId, to: GraphNodeId, weight: W) {
-    self.edges.push(GraphEdge { from, to, weight });
-  }
-
-  /// Removes an edge from the graph.
-  pub fn remove_edge(&mut self, from: GraphNodeId, to: GraphNodeId) {
-    self.edges.retain(|edge| edge.from != from || edge.to != to);
   }
 }
 

@@ -2,9 +2,7 @@
 
 use std::fmt::{Debug, Formatter};
 
-use macros::Asset;
-
-use crate::{Guid, StringName, ToVirtualPath, VirtualPath};
+use crate::{Color, Color32, Graph, GraphNodeId, Guid, Quat, StringName, ToVirtualPath, Vec2, Vec3, Vec4, VirtualPath};
 
 /// An error that can occur when loading an asset
 #[derive(Debug)]
@@ -15,47 +13,33 @@ pub enum AssetError {
 }
 
 /// A context for resolving [`Asset`]s.
-pub struct AssetContext {}
+pub struct AssetContext {
+  /// The current asset being loaded.
+  current_node: GraphNodeId,
+  /// The graph of dependencies from the root asset being loaded.
+  ///
+  /// N.B: Some or portions of this graph might already be resolved, depending
+  /// on the order of loading.
+  dependencies: Graph<AssetId>,
+}
+
+impl AssetContext {
+  /// Builds a new asset context from a root asset ID.
+  fn from_asset_id(asset_id: AssetId) -> Self {
+    let mut dependencies = Graph::default();
+    let current_node = dependencies.add_node(asset_id);
+
+    Self {
+      current_node,
+      dependencies,
+    }
+  }
+}
 
 /// Represents an asset that can be loaded and resolved.
 pub trait Asset {
   /// Resolves the dependencies of the asset.
   fn resolve_dependencies(&self, context: &mut AssetContext);
-}
-
-// TODO: remove this once derive macro is more sophisticated
-macro_rules! impl_empty_asset {
-  ($type:ty) => {
-    impl Asset for $type {
-      #[inline(always)]
-      fn resolve_dependencies(&self, _context: &mut AssetContext) {
-        // no-op
-      }
-    }
-  };
-}
-
-impl_empty_asset!(());
-impl_empty_asset!(bool);
-impl_empty_asset!(u8);
-impl_empty_asset!(u16);
-impl_empty_asset!(u32);
-impl_empty_asset!(u64);
-impl_empty_asset!(i8);
-impl_empty_asset!(i16);
-impl_empty_asset!(i32);
-impl_empty_asset!(i64);
-impl_empty_asset!(f32);
-impl_empty_asset!(f64);
-impl_empty_asset!(String);
-impl_empty_asset!(StringName);
-impl_empty_asset!(Guid);
-impl_empty_asset!(VirtualPath);
-
-impl<T> Asset for AssetRef<T> {
-  fn resolve_dependencies(&self, _context: &mut AssetContext) {
-    todo!()
-  }
 }
 
 /// Represents an asset on the virtual file system.
@@ -65,9 +49,20 @@ pub struct AssetRef<T> {
   _marker: std::marker::PhantomData<T>,
 }
 
+impl<T> Default for AssetRef<T> {
+  fn default() -> Self {
+    Self {
+      id: AssetId::None,
+      _marker: std::marker::PhantomData,
+    }
+  }
+}
+
 /// Possible means of identifying an asset.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Default, Clone, Debug, Eq, PartialEq, Hash)]
 enum AssetId {
+  #[default]
+  None,
   Id(Guid),
   Key(String),
   Path(VirtualPath),
@@ -108,9 +103,65 @@ impl<T> Debug for AssetRef<T> {
   }
 }
 
-#[derive(Asset)]
-pub struct TestAsset {
-  pub id: Guid,
-  pub name: String,
-  pub example: AssetRef<TestAsset>,
+impl<T> Asset for AssetRef<T> {
+  fn resolve_dependencies(&self, context: &mut AssetContext) {
+    let node = context.dependencies.add_node(self.id.clone());
+
+    context.dependencies.add_edge(context.current_node, node, 1.0);
+  }
+}
+
+// TODO: remove this once derive macro is more sophisticated?
+macro_rules! impl_empty_asset {
+  ($type:ty) => {
+    impl Asset for $type {
+      #[inline(always)]
+      fn resolve_dependencies(&self, _context: &mut AssetContext) {
+        // no-op
+      }
+    }
+  };
+}
+
+impl_empty_asset!(());
+impl_empty_asset!(bool);
+impl_empty_asset!(u8);
+impl_empty_asset!(u16);
+impl_empty_asset!(u32);
+impl_empty_asset!(u64);
+impl_empty_asset!(i8);
+impl_empty_asset!(i16);
+impl_empty_asset!(i32);
+impl_empty_asset!(i64);
+impl_empty_asset!(f32);
+impl_empty_asset!(f64);
+impl_empty_asset!(Vec2);
+impl_empty_asset!(Vec3);
+impl_empty_asset!(Vec4);
+impl_empty_asset!(Quat);
+impl_empty_asset!(String);
+impl_empty_asset!(StringName);
+impl_empty_asset!(Guid);
+impl_empty_asset!(VirtualPath);
+impl_empty_asset!(Color);
+impl_empty_asset!(Color32);
+
+#[cfg(test)]
+mod tests {
+  use macros::Asset;
+
+  use super::*;
+  use crate::Color;
+
+  #[derive(Asset)]
+  pub struct Item {
+    pub id: Guid,
+    pub name: String,
+    pub effect: AssetRef<Effect>,
+  }
+
+  #[derive(Asset)]
+  pub struct Effect {
+    pub color: Color,
+  }
 }
