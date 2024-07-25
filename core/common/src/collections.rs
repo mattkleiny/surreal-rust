@@ -7,6 +7,7 @@ use std::{
 
 pub use anymap::*;
 pub use arena::*;
+pub use array::*;
 pub use graphs::*;
 pub use grid::*;
 pub use multimap::*;
@@ -18,6 +19,7 @@ pub use spatialhash::*;
 
 mod anymap;
 mod arena;
+mod array;
 mod graphs;
 mod grid;
 mod multimap;
@@ -26,17 +28,20 @@ mod quadtree;
 mod ringbuffer;
 mod spatialhash;
 
+/// A faster hasher that is not resilient to DoS attacks.
+type FastHasher = BuildHasherDefault<rustc_hash::FxHasher>;
+
 /// A faster hash set that is not resilient to DoS attacks.
-pub type FastHashSet<K> = HashSet<K, BuildHasherDefault<rustc_hash::FxHasher>>;
+pub type FastHashSet<K> = HashSet<K, FastHasher>;
 
 /// A faster hash map that is not resilient to DoS attacks.
-pub type FastHashMap<K, V> = HashMap<K, V, BuildHasherDefault<rustc_hash::FxHasher>>;
+pub type FastHashMap<K, V> = HashMap<K, V, FastHasher>;
 
 /// A faster multimap that is not resilient to DoS attacks.
-pub type FastMultiMap<K, V> = MultiMap<K, V, BuildHasherDefault<rustc_hash::FxHasher>>;
+pub type FastMultiMap<K, V> = MultiMap<K, V, FastHasher>;
 
 /// A faster any-map that is not resilient to DoS attacks.
-pub type FastAnyMap = AnyMap<BuildHasherDefault<rustc_hash::FxHasher>>;
+pub type FastAnyMap = AnyMap<FastHasher>;
 
 /// A faster spatial hash grid that is not resilient to DoS attacks.
-pub type FastSpatialHashMap<T> = SpatialHashMap<T, BuildHasherDefault<rustc_hash::FxHasher>>;
+pub type FastSpatialHashMap<T> = SpatialHashMap<T, FastHasher>;

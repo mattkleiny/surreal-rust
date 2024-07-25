@@ -19,22 +19,14 @@ pub trait Reflect: Any {
   }
 }
 
+/// Allows reflecting over a primitive type.
+pub trait Type: Reflect {}
+
 /// Blanket implementation of `Reflect` for all types.
 impl<T: Any> Reflect for T {}
 
-/// Allows reflecting over a primitive type.
-pub trait Type: Reflect {
-  /// Gets the value of this type.
-  fn value(&self) -> &dyn Any;
-}
-
 /// Blanket implementation of `Type` for all basic types
-impl<T: Reflect> Type for T {
-  #[inline(always)]
-  fn value(&self) -> &dyn Any {
-    self
-  }
-}
+impl<T: Reflect> Type for T {}
 
 /// Allows reflecting over a struct type.
 pub trait StructType: Type {

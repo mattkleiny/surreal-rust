@@ -11,6 +11,7 @@
 #![feature(noop_waker)]
 #![feature(ptr_as_ref_unchecked)]
 #![feature(box_into_inner)]
+#![feature(allocator_api)]
 
 pub use abstractions::*;
 pub use collections::*;
