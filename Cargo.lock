@@ -330,6 +330,7 @@ dependencies = [
  "surreal-editor",
  "surreal-graphics",
  "surreal-input",
+ "surreal-scenes",
  "surreal-scripting",
 ]
 

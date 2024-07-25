@@ -113,7 +113,7 @@ impl VirtualMachine {
         UnaryOp::Negate => {
           let value = self.pop()?;
 
-          let result = value.neg().map_err(|_| VirtualMachineError::InvalidInstruction)?;
+          let result = (-value).map_err(|_| VirtualMachineError::InvalidInstruction)?;
 
           self.push(result)?;
         }
@@ -123,7 +123,7 @@ impl VirtualMachine {
           let a = self.pop()?;
           let b = self.pop()?;
 
-          let result = a.add(&b).map_err(|_| VirtualMachineError::InvalidInstruction)?;
+          let result = (a + b).map_err(|_| VirtualMachineError::InvalidInstruction)?;
 
           self.push(result)?;
         }
@@ -131,7 +131,7 @@ impl VirtualMachine {
           let a = self.pop()?;
           let b = self.pop()?;
 
-          let result = a.sub(&b).map_err(|_| VirtualMachineError::InvalidInstruction)?;
+          let result = (a - b).map_err(|_| VirtualMachineError::InvalidInstruction)?;
 
           self.push(result)?;
         }
@@ -139,7 +139,7 @@ impl VirtualMachine {
           let a = self.pop()?;
           let b = self.pop()?;
 
-          let result = a.mul(&b).map_err(|_| VirtualMachineError::InvalidInstruction)?;
+          let result = (a * b).map_err(|_| VirtualMachineError::InvalidInstruction)?;
 
           self.push(result)?;
         }
@@ -147,17 +147,66 @@ impl VirtualMachine {
           let a = self.pop()?;
           let b = self.pop()?;
 
-          let result = a.div(&b).map_err(|_| VirtualMachineError::InvalidInstruction)?;
+          let result = (a / b).map_err(|_| VirtualMachineError::InvalidInstruction)?;
 
           self.push(result)?;
         }
-        BinaryOp::Modulo => todo!(),
-        BinaryOp::Equal => todo!(),
-        BinaryOp::NotEqual => todo!(),
-        BinaryOp::LessThan => todo!(),
-        BinaryOp::LessThanOrEqual => todo!(),
-        BinaryOp::GreaterThan => todo!(),
-        BinaryOp::GreaterThanOrEqual => todo!(),
+        BinaryOp::Modulo => {
+          let a = self.pop()?;
+          let b = self.pop()?;
+
+          let result = (a % b).map_err(|_| VirtualMachineError::InvalidInstruction)?;
+
+          self.push(result)?;
+        }
+        BinaryOp::Equal => {
+          let a = self.pop()?;
+          let b = self.pop()?;
+
+          let result = a == b;
+
+          self.push(Variant::Bool(result))?;
+        }
+        BinaryOp::NotEqual => {
+          let a = self.pop()?;
+          let b = self.pop()?;
+
+          let result = a != b;
+
+          self.push(Variant::Bool(result))?;
+        }
+        BinaryOp::LessThan => {
+          let a = self.pop()?;
+          let b = self.pop()?;
+
+          let result = a < b;
+
+          self.push(Variant::Bool(result))?;
+        }
+        BinaryOp::LessThanOrEqual => {
+          let a = self.pop()?;
+          let b = self.pop()?;
+
+          let result = a <= b;
+
+          self.push(Variant::Bool(result))?;
+        }
+        BinaryOp::GreaterThan => {
+          let a = self.pop()?;
+          let b = self.pop()?;
+
+          let result = a > b;
+
+          self.push(Variant::Bool(result))?;
+        }
+        BinaryOp::GreaterThanOrEqual => {
+          let a = self.pop()?;
+          let b = self.pop()?;
+
+          let result = a >= b;
+
+          self.push(Variant::Bool(result))?;
+        }
         BinaryOp::And => todo!(),
         BinaryOp::Or => todo!(),
       },

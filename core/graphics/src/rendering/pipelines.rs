@@ -17,12 +17,6 @@ pub trait RenderScene {
   fn cameras(&self) -> Vec<&dyn Camera>;
 }
 
-/// Represents an object capable of being rendered.
-pub trait RenderObject {
-  /// Renders the object to the given [`Renderer`].
-  fn render(&self, frame: &mut RenderFrame<'_>);
-}
-
 /// Represents a pipeline capable of rendering a scene.
 ///
 /// A pipeline is a collection of passes that are executed in order to render a

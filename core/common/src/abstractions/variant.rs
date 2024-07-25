@@ -1,4 +1,4 @@
-use std::ops::Neg;
+use std::cmp::Ordering;
 
 use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 
@@ -143,9 +143,12 @@ impl Variant {
   pub fn is_string(&self) -> bool {
     matches!(self.kind(), VariantKind::String | VariantKind::StringName)
   }
+}
 
-  /// Negates the value of the variant, if possible.
-  pub fn neg(&self) -> Result<Self, VariantError> {
+impl std::ops::Neg for Variant {
+  type Output = Result<Self, VariantError>;
+
+  fn neg(self) -> Self::Output {
     match self {
       Variant::Bool(value) => Ok(Variant::Bool(!value)),
       Variant::I8(value) => Ok(Variant::I8(value.neg())),
@@ -159,9 +162,12 @@ impl Variant {
       _ => Err(VariantError::InvalidNegation),
     }
   }
+}
 
-  /// Attempts to add two variants together.
-  pub fn add(&self, rhs: &Self) -> Result<Self, VariantError> {
+impl std::ops::Add for Variant {
+  type Output = Result<Self, VariantError>;
+
+  fn add(self, rhs: Self) -> Self::Output {
     match (self, rhs) {
       (Variant::U8(a), Variant::U8(b)) => Ok(Variant::U8(a + b)),
       (Variant::U16(a), Variant::U16(b)) => Ok(Variant::U16(a + b)),
@@ -173,18 +179,21 @@ impl Variant {
       (Variant::I64(a), Variant::I64(b)) => Ok(Variant::I64(a + b)),
       (Variant::F32(a), Variant::F32(b)) => Ok(Variant::F32(a + b)),
       (Variant::F64(a), Variant::F64(b)) => Ok(Variant::F64(a + b)),
-      (Variant::Vec2(a), Variant::Vec2(b)) => Ok(Variant::Vec2(*a + *b)),
-      (Variant::Vec3(a), Variant::Vec3(b)) => Ok(Variant::Vec3(*a + *b)),
-      (Variant::Vec4(a), Variant::Vec4(b)) => Ok(Variant::Vec4(*a + *b)),
-      (Variant::Quat(a), Variant::Quat(b)) => Ok(Variant::Quat(*a + *b)),
-      (Variant::Color(a), Variant::Color(b)) => Ok(Variant::Color(*a + *b)),
-      (Variant::Color32(a), Variant::Color32(b)) => Ok(Variant::Color32(*a + *b)),
+      (Variant::Vec2(a), Variant::Vec2(b)) => Ok(Variant::Vec2(a + b)),
+      (Variant::Vec3(a), Variant::Vec3(b)) => Ok(Variant::Vec3(a + b)),
+      (Variant::Vec4(a), Variant::Vec4(b)) => Ok(Variant::Vec4(a + b)),
+      (Variant::Quat(a), Variant::Quat(b)) => Ok(Variant::Quat(a + b)),
+      (Variant::Color(a), Variant::Color(b)) => Ok(Variant::Color(a + b)),
+      (Variant::Color32(a), Variant::Color32(b)) => Ok(Variant::Color32(a + b)),
       _ => Err(VariantError::NonArithmetic),
     }
   }
+}
 
-  /// Attempts to subtract two variants.
-  pub fn sub(&self, rhs: &Self) -> Result<Self, VariantError> {
+impl std::ops::Sub for Variant {
+  type Output = Result<Self, VariantError>;
+
+  fn sub(self, rhs: Self) -> Self::Output {
     match (self, rhs) {
       (Variant::U8(a), Variant::U8(b)) => Ok(Variant::U8(a - b)),
       (Variant::U16(a), Variant::U16(b)) => Ok(Variant::U16(a - b)),
@@ -196,18 +205,21 @@ impl Variant {
       (Variant::I64(a), Variant::I64(b)) => Ok(Variant::I64(a - b)),
       (Variant::F32(a), Variant::F32(b)) => Ok(Variant::F32(a - b)),
       (Variant::F64(a), Variant::F64(b)) => Ok(Variant::F64(a - b)),
-      (Variant::Vec2(a), Variant::Vec2(b)) => Ok(Variant::Vec2(*a - *b)),
-      (Variant::Vec3(a), Variant::Vec3(b)) => Ok(Variant::Vec3(*a - *b)),
-      (Variant::Vec4(a), Variant::Vec4(b)) => Ok(Variant::Vec4(*a - *b)),
-      (Variant::Quat(a), Variant::Quat(b)) => Ok(Variant::Quat(*a - *b)),
-      (Variant::Color(a), Variant::Color(b)) => Ok(Variant::Color(*a - *b)),
-      (Variant::Color32(a), Variant::Color32(b)) => Ok(Variant::Color32(*a - *b)),
+      (Variant::Vec2(a), Variant::Vec2(b)) => Ok(Variant::Vec2(a - b)),
+      (Variant::Vec3(a), Variant::Vec3(b)) => Ok(Variant::Vec3(a - b)),
+      (Variant::Vec4(a), Variant::Vec4(b)) => Ok(Variant::Vec4(a - b)),
+      (Variant::Quat(a), Variant::Quat(b)) => Ok(Variant::Quat(a - b)),
+      (Variant::Color(a), Variant::Color(b)) => Ok(Variant::Color(a - b)),
+      (Variant::Color32(a), Variant::Color32(b)) => Ok(Variant::Color32(a - b)),
       _ => Err(VariantError::NonArithmetic),
     }
   }
+}
 
-  /// Attempts to multiply two variants.
-  pub fn mul(&self, rhs: &Self) -> Result<Self, VariantError> {
+impl std::ops::Mul for Variant {
+  type Output = Result<Self, VariantError>;
+
+  fn mul(self, rhs: Self) -> Self::Output {
     match (self, rhs) {
       (Variant::U8(a), Variant::U8(b)) => Ok(Variant::U8(a * b)),
       (Variant::U16(a), Variant::U16(b)) => Ok(Variant::U16(a * b)),
@@ -219,18 +231,21 @@ impl Variant {
       (Variant::I64(a), Variant::I64(b)) => Ok(Variant::I64(a * b)),
       (Variant::F32(a), Variant::F32(b)) => Ok(Variant::F32(a * b)),
       (Variant::F64(a), Variant::F64(b)) => Ok(Variant::F64(a * b)),
-      (Variant::Vec2(a), Variant::Vec2(b)) => Ok(Variant::Vec2(*a * *b)),
-      (Variant::Vec3(a), Variant::Vec3(b)) => Ok(Variant::Vec3(*a * *b)),
-      (Variant::Vec4(a), Variant::Vec4(b)) => Ok(Variant::Vec4(*a * *b)),
-      (Variant::Quat(a), Variant::Quat(b)) => Ok(Variant::Quat(*a * *b)),
-      (Variant::Color(a), Variant::Color(b)) => Ok(Variant::Color(*a * *b)),
-      (Variant::Color32(a), Variant::Color32(b)) => Ok(Variant::Color32(*a * *b)),
+      (Variant::Vec2(a), Variant::Vec2(b)) => Ok(Variant::Vec2(a * b)),
+      (Variant::Vec3(a), Variant::Vec3(b)) => Ok(Variant::Vec3(a * b)),
+      (Variant::Vec4(a), Variant::Vec4(b)) => Ok(Variant::Vec4(a * b)),
+      (Variant::Quat(a), Variant::Quat(b)) => Ok(Variant::Quat(a * b)),
+      (Variant::Color(a), Variant::Color(b)) => Ok(Variant::Color(a * b)),
+      (Variant::Color32(a), Variant::Color32(b)) => Ok(Variant::Color32(a * b)),
       _ => Err(VariantError::NonArithmetic),
     }
   }
+}
 
-  /// Attempts to divide two variants.
-  pub fn div(&self, rhs: &Self) -> Result<Self, VariantError> {
+impl std::ops::Div for Variant {
+  type Output = Result<Self, VariantError>;
+
+  fn div(self, rhs: Self) -> Self::Output {
     match (self, rhs) {
       (Variant::U8(a), Variant::U8(b)) => Ok(Variant::U8(a / b)),
       (Variant::U16(a), Variant::U16(b)) => Ok(Variant::U16(a / b)),
@@ -242,12 +257,44 @@ impl Variant {
       (Variant::I64(a), Variant::I64(b)) => Ok(Variant::I64(a / b)),
       (Variant::F32(a), Variant::F32(b)) => Ok(Variant::F32(a / b)),
       (Variant::F64(a), Variant::F64(b)) => Ok(Variant::F64(a / b)),
-      (Variant::Vec2(a), Variant::Vec2(b)) => Ok(Variant::Vec2(*a / *b)),
-      (Variant::Vec3(a), Variant::Vec3(b)) => Ok(Variant::Vec3(*a / *b)),
-      (Variant::Vec4(a), Variant::Vec4(b)) => Ok(Variant::Vec4(*a / *b)),
-      (Variant::Color(a), Variant::Color(b)) => Ok(Variant::Color(*a / *b)),
-      (Variant::Color32(a), Variant::Color32(b)) => Ok(Variant::Color32(*a / *b)),
       _ => Err(VariantError::NonArithmetic),
+    }
+  }
+}
+
+impl std::ops::Rem for Variant {
+  type Output = Result<Self, VariantError>;
+
+  fn rem(self, rhs: Self) -> Self::Output {
+    match (self, rhs) {
+      (Variant::U8(a), Variant::U8(b)) => Ok(Variant::U8(a % b)),
+      (Variant::U16(a), Variant::U16(b)) => Ok(Variant::U16(a % b)),
+      (Variant::U32(a), Variant::U32(b)) => Ok(Variant::U32(a % b)),
+      (Variant::U64(a), Variant::U64(b)) => Ok(Variant::U64(a % b)),
+      (Variant::I8(a), Variant::I8(b)) => Ok(Variant::I8(a % b)),
+      (Variant::I16(a), Variant::I16(b)) => Ok(Variant::I16(a % b)),
+      (Variant::I32(a), Variant::I32(b)) => Ok(Variant::I32(a % b)),
+      (Variant::I64(a), Variant::I64(b)) => Ok(Variant::I64(a % b)),
+      _ => Err(VariantError::NonArithmetic),
+    }
+  }
+}
+
+/// Specialized ordering for variant types.
+impl PartialOrd for Variant {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    match (self, other) {
+      (Variant::U8(a), Variant::U8(b)) => a.partial_cmp(b),
+      (Variant::U16(a), Variant::U16(b)) => a.partial_cmp(b),
+      (Variant::U32(a), Variant::U32(b)) => a.partial_cmp(b),
+      (Variant::U64(a), Variant::U64(b)) => a.partial_cmp(b),
+      (Variant::I8(a), Variant::I8(b)) => a.partial_cmp(b),
+      (Variant::I16(a), Variant::I16(b)) => a.partial_cmp(b),
+      (Variant::I32(a), Variant::I32(b)) => a.partial_cmp(b),
+      (Variant::I64(a), Variant::I64(b)) => a.partial_cmp(b),
+      (Variant::F32(a), Variant::F32(b)) => a.partial_cmp(b),
+      (Variant::F64(a), Variant::F64(b)) => a.partial_cmp(b),
+      _ => None,
     }
   }
 }
@@ -377,9 +424,10 @@ mod tests {
     let a = Variant::U32(30);
     let b = Variant::U32(20);
 
-    assert_eq!(a.add(&b).unwrap(), Variant::U32(50));
-    assert_eq!(a.sub(&b).unwrap(), Variant::U32(10));
-    assert_eq!(a.mul(&b).unwrap(), Variant::U32(600));
-    assert_eq!(a.div(&b).unwrap(), Variant::U32(1));
+    assert_eq!((a.clone() + b.clone()).unwrap(), Variant::U32(50));
+    assert_eq!((a.clone() - b.clone()).unwrap(), Variant::U32(10));
+    assert_eq!((a.clone() * b.clone()).unwrap(), Variant::U32(600));
+    assert_eq!((a.clone() / b.clone()).unwrap(), Variant::U32(1));
+    assert_eq!((a.clone() % b.clone()).unwrap(), Variant::U32(10));
   }
 }
