@@ -1,5 +1,3 @@
-//! Memory management tools.
-
 use std::{
   alloc::{AllocError, Allocator, Layout},
   ptr::NonNull,

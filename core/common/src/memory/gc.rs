@@ -1,100 +1,28 @@
+//! A lightweight Garbage Collector for simplified global allocations.
+
 use std::{
   any::Any,
   fmt::{Debug, Formatter},
-  hash::{Hash, Hasher},
+  hash::Hash,
   ops::{Deref, DerefMut},
   sync::Mutex,
 };
-
-use macros::Trace;
 
 use crate::{impl_arena_index, Arena, Singleton};
 
 impl_arena_index!(ObjectIndex, "An index of an object in the garbage collector");
 
-/// Represents a garbage-collected object with a potentially reified type.
-pub struct Object<T: ?Sized = dyn Any> {
-  entry: GC<ObjectEntry>,
-  _phantom: std::marker::PhantomData<T>,
-}
-
-/// The internal entry for an object in the garbage collector.
-///
-/// This is used to track the object's reference count, and to allow for
-/// garbage collection of the object when it is no longer referenced.
-#[derive(Trace)]
-struct ObjectEntry {
-  is_marked: bool,
-  reference: *const [u8],
-}
-
-impl<T: 'static> Object<T> {
-  /// Creates a new object with the given value.
-  pub fn new(_value: T) -> Self {
-    todo!()
-  }
-
-  /// Casts the object to a different type.
-  #[inline(always)]
-  pub fn cast<U: ?Sized>(self) -> Object<U> {
-    Object {
-      entry: self.entry,
-      _phantom: std::marker::PhantomData,
-    }
-  }
-}
-
-impl<T: ?Sized> Clone for Object<T> {
-  fn clone(&self) -> Self {
-    Self {
-      entry: self.entry.clone(),
-      _phantom: std::marker::PhantomData,
-    }
-  }
-}
-
-impl<T: ?Sized> PartialEq for Object<T> {
-  fn eq(&self, other: &Self) -> bool {
-    self.entry.as_ptr() == other.entry.as_ptr()
-  }
-}
-
-impl<T: ?Sized> Hash for Object<T> {
-  fn hash<H: Hasher>(&self, state: &mut H) {
-    self.entry.as_ptr().hash(state);
-  }
-}
-
-impl<T: ?Sized> Deref for Object<T> {
-  type Target = T;
-
-  fn deref(&self) -> &Self::Target {
-    todo!()
-  }
-}
-
-impl<T: ?Sized> DerefMut for Object<T> {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    todo!()
-  }
-}
-
-impl<T: ?Sized> Debug for Object<T> {
-  /// Formats the object as a pointer to the object.
-  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(formatter, "Object({:p})", self.entry.as_ptr())
-  }
-}
-
 /// A smart pointer to a garbage-collected object.
 ///
-/// The object is automatically deallocated when the last reference is dropped.
+/// Types that are lifted to the garbage collector should be traceable and
+/// implement the [`Trace`] trait. This allows the garbage collector to mark
+/// objects as reachable and free memory when they are no longer in use.
 pub struct GC<T: Trace> {
   index: ObjectIndex,
   _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T: Trace + 'static> GC<T> {
+impl<T: 'static + Trace> GC<T> {
   /// Creates a new garbage-collected object.
   pub fn new(value: T) -> Self {
     Self {
@@ -182,7 +110,7 @@ pub unsafe trait Trace {
   fn trace(&self, context: &mut TraceContext);
 }
 
-/// Context for tracing objects using [`Trace`].
+/// Context for tracing object lifetimes in the Garbage Collector.
 pub struct TraceContext {
   // TODO: implement me
 }
