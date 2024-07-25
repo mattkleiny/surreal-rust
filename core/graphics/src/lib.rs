@@ -54,6 +54,7 @@ pub fn graphics() -> &'static dyn GraphicsBackend {
 /// A possible error when interacting with buffers.
 #[derive(Debug)]
 pub enum BufferError {
+  CreationFailed,
   InvalidId(BufferId),
   BufferTooSmall,
   NullPointer,

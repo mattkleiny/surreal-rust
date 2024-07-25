@@ -143,6 +143,10 @@ impl GraphicsBackend for SdlGraphicsBackend {
 
       gl::GenBuffers(1, &mut id);
 
+      if id == 0 {
+        return Err(BufferError::CreationFailed);
+      }
+
       Ok(BufferId::from(id))
     }
   }

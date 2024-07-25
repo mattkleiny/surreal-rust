@@ -23,6 +23,17 @@ impl<T> WeightedSet<T> {
     Self { entries: Vec::new() }
   }
 
+  /// Creates a weighted set from a vec of entries.
+  pub fn from_vec(vec: Vec<(T, f64)>) -> Self {
+    let mut entries = Vec::new();
+
+    for (item, weight) in vec.into_iter() {
+      entries.push(WeightedSetEntry { item, weight })
+    }
+
+    Self { entries }
+  }
+
   /// True if the set is empty.
   pub fn is_empty(&self) -> bool {
     self.entries.is_empty()
