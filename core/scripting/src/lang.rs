@@ -6,7 +6,7 @@ pub mod wren;
 pub(crate) mod ast {
   //! A shared high-level abstract syntax tree for the scripting runtime
 
-  use common::Variant;
+  use common::{ToVariant, Variant};
 
   /// A block of [`Statement`]s.
   #[derive(Debug, Clone)]
@@ -34,6 +34,17 @@ pub(crate) mod ast {
     Integer(i64),
     Float(f64),
     String(String),
+  }
+
+  impl ToVariant for Literal {
+    #[inline]
+    fn to_variant(&self) -> Variant {
+      match self {
+        Literal::Integer(value) => value.to_variant(),
+        Literal::Float(value) => value.to_variant(),
+        Literal::String(value) => value.to_variant(),
+      }
+    }
   }
 
   /// Operators for unary expressions.

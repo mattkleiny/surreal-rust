@@ -8,7 +8,6 @@ use crate::{
 /// A possible error that can occur during [`VirtualMachine`] execution.
 #[derive(Debug)]
 pub enum VirtualMachineError {
-  InvalidModule(String),
   InvalidInstruction,
   InvalidConstantIndex(TableIndex),
   InvalidValueIndex(TableIndex),
@@ -102,9 +101,7 @@ impl VirtualMachine {
         return Ok(None);
       }
       Opcode::Constant(index) => {
-        let constant = self.get_constant(*index)?;
-
-        self.push(constant.clone())?;
+        self.push(self.get_constant(*index)?.clone())?;
       }
       Opcode::Literal(value) => {
         self.push(value.clone())?;

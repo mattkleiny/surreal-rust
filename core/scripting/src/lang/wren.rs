@@ -1,5 +1,7 @@
 //! The Wren language
 
+use common::ToVariant;
+
 use crate::lang::ast::*;
 
 #[derive(Debug)]
@@ -35,8 +37,6 @@ enum Operator {
   LessThanOrEqual,
   GreaterThan,
   GreaterThanOrEqual,
-  And,
-  Or,
 }
 
 enum Keyword {
@@ -51,11 +51,27 @@ enum Keyword {
 
 /// Parses a string of Wren code into an AST [`Block`].
 pub fn parse(code: &str) -> Result<Block, ParseError> {
-  let mut tokens = tokenise(code);
+  let mut parser = Parser::from_code(code);
+  let expression = parser.parse_expression()?;
 
-  while let Some(token) = tokens.pop() {}
+  Ok(Block(vec![Statement::Expression(expression)]))
+}
 
-  todo!()
+/// A parser for Wren code.
+struct Parser {
+  tokens: Vec<Token>,
+}
+
+impl Parser {
+  /// Creates a new parser from a list of tokens.
+  fn from_code(code: &str) -> Self {
+    Self { tokens: tokenise(code) }
+  }
+
+  /// Parses an expression from the parser.
+  fn parse_expression(&mut self) -> Result<Expression, ParseError> {
+    todo!()
+  }
 }
 
 /// Tokenises a string of Wren code into a list of [`Token`]s.
@@ -83,6 +99,14 @@ fn tokenise(code: &str) -> Vec<Token> {
           continue;
         }
         None => Token::Operator(Operator::Divide),
+      },
+      '<' => match characters.next_if_eq(&(position + 1, '=')) {
+        Some(_) => Token::Operator(Operator::LessThanOrEqual),
+        None => Token::Operator(Operator::LessThan),
+      },
+      '>' => match characters.next_if_eq(&(position + 1, '=')) {
+        Some(_) => Token::Operator(Operator::GreaterThanOrEqual),
+        None => Token::Operator(Operator::GreaterThan),
       },
       '+' => Token::Operator(Operator::Add),
       '-' => Token::Operator(Operator::Subtract),
