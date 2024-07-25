@@ -1,5 +1,3 @@
-use std::sync::Mutex;
-
 use common::Color;
 
 use super::*;
@@ -14,7 +12,7 @@ use super::*;
 /// the renderer to be abstracted away from the scene graph itself.
 #[derive(Default)]
 pub struct RenderQueue {
-  commands: Mutex<Vec<RenderCommand>>,
+  commands: Vec<RenderCommand>,
 }
 
 /// A single command for a [`RenderQueue`] to execute.
@@ -158,14 +156,12 @@ impl RenderQueue {
 
   /// Clears all [`RenderCommand`] from the queue.
   pub fn clear(&mut self) {
-    let mut commands = self.commands.lock().unwrap();
-
-    commands.clear();
+    self.commands.clear();
   }
 
   /// Flushes all [`RenderCommand`]s in the queue to the given renderer.
   pub fn flush(&mut self) -> Result<(), RenderQueueError> {
-    let mut commands = self.commands.lock().unwrap();
+    let commands = &mut self.commands;
     let graphics = graphics();
 
     for command in commands.drain(..) {
@@ -251,9 +247,7 @@ impl RenderQueue {
 
   /// Enqueues a new [`RenderCommand`].
   fn enqueue(&mut self, command: RenderCommand) {
-    let mut commands = self.commands.lock().unwrap();
-
-    commands.push(command);
+    self.commands.push(command);
   }
 }
 

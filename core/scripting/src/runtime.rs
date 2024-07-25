@@ -1,3 +1,4 @@
+mod callbacks;
 mod compiler;
 mod isolates;
 mod machine;

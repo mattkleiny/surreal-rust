@@ -6,8 +6,9 @@
 use super::*;
 
 /// Blending states for materials.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
 pub enum BlendState {
+  #[default]
   Disabled,
   Enabled {
     source: BlendFactor,
@@ -16,8 +17,9 @@ pub enum BlendState {
 }
 
 /// Blending factors for materials.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
 pub enum BlendFactor {
+  #[default]
   One,
   SourceAlpha,
   SourceColor,
@@ -30,17 +32,19 @@ pub enum BlendFactor {
 }
 
 /// Culling modes for materials.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
 pub enum CullingMode {
   Disabled,
   Front,
+  #[default]
   Back,
   Both,
 }
 
 /// Scissor modes for materials.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ScissorMode {
+  #[default]
   Disabled,
   Enabled {
     left: i32,

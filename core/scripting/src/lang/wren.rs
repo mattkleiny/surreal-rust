@@ -1,7 +1,5 @@
 //! The Wren language
 
-use common::ToVariant;
-
 use crate::lang::ast::*;
 
 #[derive(Debug)]
