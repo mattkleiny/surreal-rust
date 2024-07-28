@@ -34,6 +34,18 @@ impl<T> WeightedSet<T> {
     Self { entries }
   }
 
+  /// Creates a weighted set from an iterator of entries.
+  pub fn from_iter(iter: impl IntoIterator<Item = (T, f64)>) -> Self {
+    let mut iter = iter.into_iter();
+    let mut entries = Vec::new();
+
+    while let Some((item, weight)) = iter.next() {
+      entries.push(WeightedSetEntry { item, weight });
+    }
+
+    Self { entries }
+  }
+
   /// True if the set is empty.
   pub fn is_empty(&self) -> bool {
     self.entries.is_empty()
