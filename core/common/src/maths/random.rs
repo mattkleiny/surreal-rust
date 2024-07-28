@@ -24,6 +24,11 @@ impl Random {
     Random { state: seed }
   }
 
+  /// Calls a function with the default thread-local random
+  pub fn with_thread_local<R>(body: impl FnOnce(&mut Random) -> R) -> R {
+    THREAD_LOCAL_RANDOM.with(|random| body(&mut random.borrow_mut()))
+  }
+
   /// Constructs a random generator with a random seed.
   #[inline]
   pub fn with_thread_local_seed() -> Self {
