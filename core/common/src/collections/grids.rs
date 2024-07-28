@@ -173,13 +173,71 @@ pub struct SparseGrid<T> {
   entries: BTreeMap<usize, T>,
 }
 
+/// A type that contains a position in 2-space.
+pub trait Positioned {
+  fn x(&self) -> i32;
+  fn y(&self) -> i32;
+}
+
 impl<T> SparseGrid<T> {
+  /// The number of entries in the grid.
   pub fn len(&self) -> usize {
     self.entries.len()
   }
 
+  /// Is the grid empty of items?
   pub fn is_empty(&self) -> bool {
     self.entries.is_empty()
+  }
+
+  /// Calculates the width of the grid.
+  pub fn width(&self) -> u32
+  where
+    T: Positioned,
+  {
+    self.size().0
+  }
+
+  /// Calculates the height of the grid.
+  pub fn height(&self) -> u32
+  where
+    T: Positioned,
+  {
+    self.size().1
+  }
+
+  /// Calculates the size of the grid.
+  pub fn size(&self) -> (u32, u32)
+  where
+    T: Positioned,
+  {
+    let mut min_x = 0;
+    let mut max_x = 0;
+    let mut min_y = 0;
+    let mut max_y = 0;
+
+    for entry in self.entries.values() {
+      let x = entry.x();
+      let y = entry.y();
+
+      if x < min_x {
+        min_x = x;
+      }
+
+      if x > max_x {
+        max_x = x;
+      }
+
+      if y < min_y {
+        min_y = y;
+      }
+
+      if y > max_y {
+        max_y = y;
+      }
+    }
+
+    ((max_x - min_x) as u32, (max_y - min_y) as u32)
   }
 
   /// Sets the value at the given position.
