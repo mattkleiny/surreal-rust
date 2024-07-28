@@ -111,9 +111,9 @@ pub mod heuristics {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::collections::Grid;
+  use crate::collections::DenseGrid;
 
-  impl PathFindingGrid for Grid<bool> {
+  impl PathFindingGrid for DenseGrid<bool> {
     fn get_neighbours(&self, center: IVec2, results: &mut NeighbourList<IVec2>) {
       for neighbour in center.von_neighbours() {
         if self.is_valid(neighbour.x, neighbour.y) {
@@ -129,7 +129,7 @@ mod tests {
 
   #[test]
   fn test_find_path() {
-    let mut grid = Grid::new(4, 4);
+    let mut grid = DenseGrid::new(4, 4);
 
     grid.fill(true);
 

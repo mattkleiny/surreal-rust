@@ -41,7 +41,7 @@ impl Plane {
   }
 
   /// Creates a new plane from a vector4.
-  pub fn from_vector4(vector: Vec4) -> Self {
+  pub fn from_vec4(vector: Vec4) -> Self {
     Self {
       normal: Vec3::new(vector.x, vector.y, vector.z),
       distance: vector.w,

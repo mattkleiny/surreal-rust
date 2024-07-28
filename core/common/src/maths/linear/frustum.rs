@@ -50,12 +50,12 @@ impl Frustum {
   /// Creates a new frustum from a projection-view matrix.
   pub fn from_projection_view(projection_view: Mat4) -> Self {
     Frustum {
-      near: Plane::from_vector4(projection_view.row(2) + projection_view.row(3)),
-      far: Plane::from_vector4(projection_view.row(3) - projection_view.row(2)),
-      left: Plane::from_vector4(projection_view.row(3) + projection_view.row(0)),
-      right: Plane::from_vector4(projection_view.row(3) - projection_view.row(0)),
-      top: Plane::from_vector4(projection_view.row(3) - projection_view.row(1)),
-      bottom: Plane::from_vector4(projection_view.row(3) + projection_view.row(1)),
+      near: Plane::from_vec4(projection_view.row(2) + projection_view.row(3)),
+      far: Plane::from_vec4(projection_view.row(3) - projection_view.row(2)),
+      left: Plane::from_vec4(projection_view.row(3) + projection_view.row(0)),
+      right: Plane::from_vec4(projection_view.row(3) - projection_view.row(0)),
+      top: Plane::from_vec4(projection_view.row(3) - projection_view.row(1)),
+      bottom: Plane::from_vec4(projection_view.row(3) + projection_view.row(1)),
     }
   }
 

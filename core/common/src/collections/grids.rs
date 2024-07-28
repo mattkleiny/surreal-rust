@@ -1,14 +1,13 @@
+use std::collections::BTreeMap;
+
 /// A simple 2d grid of [`T`]s.
-///
-/// A grid is a 2d array of items. It's a thin wrapper around a [`Vec`] that
-/// provides some convenience methods for accessing items in the grid.
 #[derive(Clone, Debug)]
-pub struct Grid<T> {
+pub struct DenseGrid<T> {
   stride: usize,
   items: Vec<T>,
 }
 
-impl<T> Grid<T> {
+impl<T> DenseGrid<T> {
   /// Creates a new grid with the given dimensions.
   pub fn new(width: usize, height: usize) -> Self
   where
@@ -168,28 +167,85 @@ impl<T> Grid<T> {
   }
 }
 
+/// A sparse grid of [`T`]s.
+#[derive(Default, Clone, Debug)]
+pub struct SparseGrid<T> {
+  entries: BTreeMap<usize, T>,
+}
+
+impl<T> SparseGrid<T> {
+  pub fn len(&self) -> usize {
+    self.entries.len()
+  }
+
+  pub fn is_empty(&self) -> bool {
+    self.entries.is_empty()
+  }
+
+  /// Sets the value at the given position.
+  pub fn set(&mut self, x: i32, y: i32, value: T) {
+    self.entries.insert(xy_hash(x, y), value);
+  }
+
+  /// Sets the value at the given position without checking bounds.
+  pub fn set_unchecked(&mut self, x: i32, y: i32, value: T) {
+    self.entries.insert(xy_hash(x, y), value);
+  }
+
+  /// Gets the value at the given pos
+  pub fn get(&self, x: i32, y: i32) -> Option<&T> {
+    self.entries.get(&xy_hash(x, y))
+  }
+
+  /// Gets the value at the given pos without checking bounds.
+  pub unsafe fn get_unchecked(&self, x: i32, y: i32) -> &T {
+    self.entries.get(&xy_hash(x, y)).unwrap()
+  }
+
+  /// Mutably get the value at the given position.
+  pub fn get_mut(&mut self, x: i32, y: i32) -> Option<&mut T> {
+    self.entries.get_mut(&xy_hash(x, y))
+  }
+
+  /// Mutably gets the value at the given pos without checking bounds.
+  pub fn get_mut_unchecked(&mut self, x: i32, y: i32) -> &mut T {
+    self.entries.get_mut(&xy_hash(x, y)).unwrap()
+  }
+
+  /// Clears the grid.
+  pub fn clear(&mut self) {
+    self.entries.clear();
+  }
+}
+
+/// Gets the hash for the given position.
+#[inline(always)]
+const fn xy_hash(x: i32, y: i32) -> usize {
+  x as usize + y as usize
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
 
   #[test]
-  fn test_get_valid_position() {
-    let mut grid = Grid::new(3, 3);
+  fn test_dense_get_valid_position() {
+    let mut grid = DenseGrid::new(3, 3);
     grid.set(1, 1, 42);
 
     assert_eq!(grid.get(1, 1), Some(&42));
   }
 
   #[test]
-  fn test_get_invalid_position() {
-    let grid = Grid::<usize>::new(3, 3);
+  fn test_dense_get_invalid_position() {
+    let grid = DenseGrid::<usize>::new(3, 3);
 
     assert_eq!(grid.get(4, 4), None);
   }
 
   #[test]
-  fn test_get_unchecked() {
-    let mut grid = Grid::new(3, 3);
+  fn test_dense_get_unchecked() {
+    let mut grid = DenseGrid::new(3, 3);
     grid.set(1, 1, 42);
 
     unsafe {
@@ -199,8 +255,8 @@ mod tests {
 
   #[test]
   #[should_panic]
-  fn test_get_unchecked_out_of_bounds() {
-    let grid = Grid::<usize>::new(3, 3);
+  fn test_dense_get_unchecked_out_of_bounds() {
+    let grid = DenseGrid::<usize>::new(3, 3);
 
     unsafe {
       grid.get_unchecked(4, 4);
@@ -208,24 +264,24 @@ mod tests {
   }
 
   #[test]
-  fn test_set_valid_position() {
-    let mut grid = Grid::new(3, 3);
+  fn test_dense_set_valid_position() {
+    let mut grid = DenseGrid::new(3, 3);
     grid.set(1, 1, 42);
 
     assert_eq!(grid.get(1, 1), Some(&42));
   }
 
   #[test]
-  fn test_set_invalid_position() {
-    let mut grid = Grid::new(3, 3);
+  fn test_dense_set_invalid_position() {
+    let mut grid = DenseGrid::new(3, 3);
     grid.set(4, 4, 42);
 
     assert_eq!(grid.get(4, 4), None);
   }
 
   #[test]
-  fn test_set_unchecked() {
-    let mut grid = Grid::new(3, 3);
+  fn test_dense_set_unchecked() {
+    let mut grid = DenseGrid::new(3, 3);
 
     unsafe {
       grid.set_unchecked(1, 1, 42);
@@ -236,8 +292,8 @@ mod tests {
 
   #[test]
   #[should_panic]
-  fn test_set_unchecked_out_of_bounds() {
-    let mut grid = Grid::new(3, 3);
+  fn test_dense_set_unchecked_out_of_bounds() {
+    let mut grid = DenseGrid::new(3, 3);
 
     unsafe {
       grid.set_unchecked(4, 4, 42);
