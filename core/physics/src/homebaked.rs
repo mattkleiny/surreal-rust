@@ -137,7 +137,7 @@ mod tests {
 
   #[test]
   fn test_basic_physics_world() {
-    let world = DefaultPhysicsBackend.create_world_2d().unwrap();
+    let world = physics().create_world_2d().unwrap();
     let collider_id = world.collider_create().unwrap();
 
     world.tick(0.16);

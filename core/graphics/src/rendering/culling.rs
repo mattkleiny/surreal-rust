@@ -25,18 +25,27 @@ pub trait CullableScene {
 /// This is a subset of the objects in a scene that are visible to a specific
 /// camera, and can be used to optimize rendering by only rendering the objects
 /// that are visible to the camera.
-pub struct VisibleObjectSet<'a, T> {
+pub struct VisibleObjectSet<'a, T: ?Sized> {
   /// The objects that are visible to the camera.
   objects: Vec<&'a T>,
 }
 
-impl<'a, T: 'static> VisibleObjectSet<'a, T> {
+impl<'a, T: ?Sized + 'static> VisibleObjectSet<'a, T> {
   /// An empty set of objects.
   pub const EMPTY: VisibleObjectSet<'static, T> = VisibleObjectSet { objects: Vec::new() };
 
-  /// Creates a new set of visible objects from the given objects.
-  pub fn new(objects: Vec<&'a T>) -> Self {
+  /// Creates a new set of visible objects from the given vec.
+  pub fn from_vec(objects: Vec<&'a T>) -> Self {
     Self { objects }
+  }
+}
+
+impl<'a, T: ?Sized> IntoIterator for &'a VisibleObjectSet<'a, T> {
+  type Item = &'a T;
+  type IntoIter = impl Iterator<Item = Self::Item>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.objects.iter().copied()
   }
 }
 

@@ -11,7 +11,7 @@ common::impl_server!(PhysicsServer by PhysicsBackend default homebaked::DefaultP
 
 /// Gets the physics server instance.
 #[inline(always)]
-pub fn graphics() -> &'static dyn PhysicsBackend {
+pub fn physics() -> &'static dyn PhysicsBackend {
   PhysicsServer::instance()
 }
 
@@ -36,6 +36,9 @@ pub enum BodyError {
   InvalidId(BodyId),
   NullPointer,
 }
+
+pub type PhysicsWorld2D = dyn PhysicsWorld<Vector = Vec2>;
+pub type PhysicsWorld3D = dyn PhysicsWorld<Vector = Vec3>;
 
 /// An abstraction on top of the underlying physics API.
 ///
@@ -65,6 +68,3 @@ pub trait PhysicsWorld {
   fn body_create(&self) -> Result<BodyId, BodyError>;
   fn body_delete(&self, id: BodyId) -> Result<(), BodyError>;
 }
-
-pub type PhysicsWorld2D = dyn PhysicsWorld<Vector = Vec2>;
-pub type PhysicsWorld3D = dyn PhysicsWorld<Vector = Vec3>;
