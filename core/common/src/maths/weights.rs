@@ -1,20 +1,18 @@
 //! Weighted selection of elements.
 
-use glam::f64;
-
 use super::*;
 
 /// A set of weighted elements.
 #[derive(Default, Debug, Clone)]
 pub struct WeightedSet<T> {
-  entries: Vec<WeightedSetEntry<T>>,
+  entries: Vec<Entry<T>>,
 }
 
 /// An entry in a weighted set.
 #[derive(Default, Debug, Clone)]
-struct WeightedSetEntry<T> {
+struct Entry<T> {
   pub item: T,
-  pub weight: f64,
+  pub weight: f32,
 }
 
 impl<T> WeightedSet<T> {
@@ -24,23 +22,23 @@ impl<T> WeightedSet<T> {
   }
 
   /// Creates a weighted set from a vec of entries.
-  pub fn from_vec(vec: Vec<(T, f64)>) -> Self {
+  pub fn from_vec(vec: Vec<(T, f32)>) -> Self {
     let mut entries = Vec::new();
 
     for (item, weight) in vec.into_iter() {
-      entries.push(WeightedSetEntry { item, weight })
+      entries.push(Entry { item, weight })
     }
 
     Self { entries }
   }
 
   /// Creates a weighted set from an iterator of entries.
-  pub fn from_iter(iter: impl IntoIterator<Item = (T, f64)>) -> Self {
+  pub fn from_iter(iter: impl IntoIterator<Item = (T, f32)>) -> Self {
     let mut iter = iter.into_iter();
     let mut entries = Vec::new();
 
     while let Some((item, weight)) = iter.next() {
-      entries.push(WeightedSetEntry { item, weight });
+      entries.push(Entry { item, weight });
     }
 
     Self { entries }
@@ -57,13 +55,13 @@ impl<T> WeightedSet<T> {
   }
 
   /// The total weight of the set.
-  pub fn total_weight(&self) -> f64 {
+  pub fn total_weight(&self) -> f32 {
     self.entries.iter().map(|entry| entry.weight).sum()
   }
 
   /// Adds an item to the set.
-  pub fn add(&mut self, item: T, weight: f64) {
-    self.entries.push(WeightedSetEntry { item, weight });
+  pub fn add(&mut self, item: T, weight: f32) {
+    self.entries.push(Entry { item, weight });
   }
 
   /// Selects a random item from the set.
@@ -74,7 +72,7 @@ impl<T> WeightedSet<T> {
       return None;
     }
 
-    let mut weight = random.next_f64() * total_weight;
+    let mut weight = random.next::<f32>() * total_weight;
 
     for entry in &self.entries {
       weight -= entry.weight;
@@ -95,7 +93,7 @@ impl<T> WeightedSet<T> {
       return None;
     }
 
-    let mut weight = random.next_f64() * total_weight;
+    let mut weight = random.next::<f32>() * total_weight;
 
     for entry in &mut self.entries {
       weight -= entry.weight;
@@ -183,5 +181,12 @@ mod tests {
     assert_eq!(iter.next(), Some(&1));
     assert_eq!(iter.next(), Some(&2));
     assert_eq!(iter.next(), Some(&3));
+  }
+
+  #[test]
+  fn test_weighted_set_from_iterator() {
+    let mut set = WeightedSet::from_iter([(1, 1.0), (2, 2.0), (3, 3.0)]);
+
+    assert_eq!(set.len(), 3);
   }
 }

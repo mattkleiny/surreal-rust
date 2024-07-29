@@ -1,0 +1,8 @@
+[package]
+name = "surreal-physics"
+description = "Phyics engine for Surreal"
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+common = { package = "surreal-common", path = "../common" }

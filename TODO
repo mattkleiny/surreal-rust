@@ -60,6 +60,7 @@ Scripting:
   [ ] Add BASIC implementation and virtual machine, and lots of common operations
   [ ] Consider other languages and ideas
   [ ] Custom scripting language ala GDScript.
+  [ ] Time-travelling debugger with snapshots?
 
 Physics:
   [ ] Basic 2d physics
@@ -71,7 +72,7 @@ Editor:
   [ ] Integrate the editor into VSCode and use it to provide basic scene editing/etc?
     [ ] Define the scene file format, and other data structures as well?
     [ ] Consider visual graph models for state machines, behaviour trees, etc
-    [ ] Consider visual timeline editor for sprite animatinos and events?
+    [ ] Consider visual timeline editor for sprite animations and events?
   [ ] Graph editor for VS Code symlinked into the project folder?
 
 User Interface:
