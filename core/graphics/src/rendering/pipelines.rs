@@ -1,14 +1,17 @@
 //! Render pipeline abstractions.
 
-use common::{profile_frame_end, profile_frame_start};
+use common::{profile_frame_end, profile_frame_start, StackAllocator};
 use macros::profiling;
 
 use super::*;
+
+const FRAME_STACK_SIZE: usize = 1024 * 1024;
 
 /// A frame of rendering.
 pub struct RenderFrame<'a> {
   pub delta_time: f32,
   pub queue: &'a mut RenderQueue,
+  pub allocator: StackAllocator<FRAME_STACK_SIZE>,
 }
 
 impl<'a> RenderFrame<'a> {
@@ -87,6 +90,7 @@ impl RenderPipeline for MultiPassPipeline {
     let mut frame = RenderFrame {
       delta_time,
       queue: &mut self.queue,
+      allocator: StackAllocator::new(),
     };
 
     // begin the frame

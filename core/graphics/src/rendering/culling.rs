@@ -1,4 +1,6 @@
-use common::{Camera, Sphere, AABB};
+use std::alloc::Allocator;
+
+use common::{Array, Camera, Sphere, AABB};
 
 use super::*;
 
@@ -27,16 +29,47 @@ pub trait CullableScene {
 /// that are visible to the camera.
 pub struct VisibleObjectSet<'a, T: ?Sized> {
   /// The objects that are visible to the camera.
-  objects: Vec<&'a T>,
+  array: Array<'a, VisibleObject<'a, T>>,
+}
+
+/// A visible object that can be rendered in a scene.
+struct VisibleObject<'a, T: ?Sized> {
+  object: &'a T,
+  bounds: ObjectBounds,
+  sorting_key: Option<MaterialSortingKey>,
 }
 
 impl<'a, T: ?Sized + 'static> VisibleObjectSet<'a, T> {
-  /// An empty set of objects.
-  pub const EMPTY: VisibleObjectSet<'static, T> = VisibleObjectSet { objects: Vec::new() };
+  /// Creates a new set of visible objects.
+  pub fn new(capacity: usize) -> Self {
+    Self {
+      array: Array::with_capacity(capacity),
+    }
+  }
 
-  /// Creates a new set of visible objects from the given vec.
-  pub fn from_vec(objects: Vec<&'a T>) -> Self {
-    Self { objects }
+  /// Creates a new set of visible objects in the given allocator.
+  pub fn new_in(allocator: &'a dyn Allocator, capacity: usize) -> Self {
+    Self {
+      array: Array::with_capacity_in(allocator, capacity),
+    }
+  }
+
+  /// Creates a new set of visible objects from the iterator in the allocator.
+  pub fn from_iter_in(allocator: &'a dyn Allocator, objects: impl IntoIterator<Item = &'a T>) -> Self {
+    let mut iter = objects.into_iter();
+    let (capacity, _) = iter.size_hint();
+    let mut array = Array::with_capacity_in(allocator, capacity);
+
+    while let Some(object) = iter.next() {
+      array.push(VisibleObject {
+        object,
+        // TODO: calculate bounds?
+        bounds: ObjectBounds::AABB(AABB::default()),
+        sorting_key: None,
+      });
+    }
+
+    Self { array }
   }
 }
 
@@ -45,7 +78,7 @@ impl<'a, T: ?Sized> IntoIterator for &'a VisibleObjectSet<'a, T> {
   type IntoIter = impl Iterator<Item = Self::Item>;
 
   fn into_iter(self) -> Self::IntoIter {
-    self.objects.iter().copied()
+    self.array.iter().map(|it| &it.object).copied()
   }
 }
 
