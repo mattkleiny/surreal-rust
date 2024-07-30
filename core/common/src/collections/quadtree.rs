@@ -448,8 +448,8 @@ impl<T: Debug> Debug for QuadTree<T> {
   }
 }
 
-/// Determines which sub-quadrant index the given bounds are in
-/// relative to it's parent bounds.
+/// Determines which sub-quadrant index the given bounds are in relative to its
+/// parent bounds.
 fn get_quadrant_index(parent_bounds: &Rectangle, value_bounds: &Rectangle) -> usize {
   let half_width = parent_bounds.width() / 2.0;
   let half_height = parent_bounds.height() / 2.0;

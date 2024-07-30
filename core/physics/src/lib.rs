@@ -2,12 +2,12 @@
 
 use common::{Vec2, Vec3, Vector};
 
-mod homebaked;
+mod engine;
 
 common::impl_arena_index!(pub ColliderId, "Identifies a collider.");
 common::impl_arena_index!(pub BodyId, "Identifies a physics body.");
 
-common::impl_server!(PhysicsServer by PhysicsBackend default homebaked::DefaultPhysicsBackend);
+common::impl_server!(PhysicsServer by PhysicsBackend default engine::RustPhysicsBackend);
 
 /// Gets the physics server instance.
 #[inline(always)]
@@ -37,9 +37,6 @@ pub enum BodyError {
   NullPointer,
 }
 
-pub type PhysicsWorld2D = dyn PhysicsWorld<Vector = Vec2>;
-pub type PhysicsWorld3D = dyn PhysicsWorld<Vector = Vec3>;
-
 /// An abstraction on top of the underlying physics API.
 ///
 /// This is a mid-level abstraction that makes use of 'opaque' resource IDs to
@@ -50,6 +47,9 @@ pub trait PhysicsBackend {
   fn create_world_2d(&self) -> Result<Box<PhysicsWorld2D>, WorldError>;
   fn create_world_3d(&self) -> Result<Box<PhysicsWorld3D>, WorldError>;
 }
+
+pub type PhysicsWorld2D = dyn PhysicsWorld<Vector = Vec2>;
+pub type PhysicsWorld3D = dyn PhysicsWorld<Vector = Vec3>;
 
 /// A physics world that contains all the physics bodies and colliders.
 ///
@@ -62,9 +62,15 @@ pub trait PhysicsWorld {
 
   // colliders
   fn collider_create(&self) -> Result<ColliderId, ColliderError>;
+  fn collider_get_position(&self, id: ColliderId) -> Result<Self::Vector, ColliderError>;
+  fn collider_set_position(&self, id: ColliderId, position: Self::Vector) -> Result<(), ColliderError>;
   fn collider_delete(&self, id: ColliderId) -> Result<(), ColliderError>;
 
   // bodies
   fn body_create(&self) -> Result<BodyId, BodyError>;
+  fn body_get_position(&self, id: BodyId) -> Result<Self::Vector, BodyError>;
+  fn body_set_position(&self, id: BodyId, position: Self::Vector) -> Result<(), BodyError>;
+  fn body_get_velocity(&self, id: BodyId) -> Result<Self::Vector, BodyError>;
+  fn body_set_velocity(&self, id: BodyId, velocity: Self::Vector) -> Result<(), BodyError>;
   fn body_delete(&self, id: BodyId) -> Result<(), BodyError>;
 }
