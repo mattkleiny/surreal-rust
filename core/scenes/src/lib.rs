@@ -1,10 +1,24 @@
 pub use canvas::*;
+pub use shared::*;
 pub use spatial::*;
+pub use templates::*;
 
 mod canvas;
+mod shared;
 mod spatial;
+mod templates;
 
-use common::{Guid, ServiceProvider};
+use common::{unsafe_mutable_alias, Guid, ServiceProvider};
+
+/// An event that can be sent to a scene node.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum SceneEvent {
+  Awake,
+  Start,
+  Update,
+  Render,
+  Destroy,
+}
 
 /// A node in the scene graph.
 #[derive(Default)]
@@ -17,17 +31,10 @@ pub struct SceneNode {
 
 /// Context for scene events.
 pub struct SceneContext<'a> {
+  /// A reference to the scene node.
   pub node: &'a SceneNode,
+  /// A service provider for the entire scene.
   pub services: &'a ServiceProvider,
-}
-
-/// An event that can be sent to a scene node.
-pub enum SceneEvent {
-  Awake,
-  Start,
-  Update,
-  Render,
-  Destroy,
 }
 
 /// A component that can be attached to a [`SceneNode`].
@@ -52,7 +59,7 @@ pub trait SceneComponent {
 }
 
 impl SceneNode {
-  /// Create a new scene node.
+  /// Create a new [`SceneNode`].
   pub fn new() -> Self {
     SceneNode {
       id: None,
@@ -62,7 +69,7 @@ impl SceneNode {
     }
   }
 
-  /// Create a new scene node with a specific ID.
+  /// Create a new [`SceneNode`] with a specific ID.
   pub fn with_id(self, node_id: Guid) -> Self {
     SceneNode {
       id: Some(node_id),
@@ -70,7 +77,7 @@ impl SceneNode {
     }
   }
 
-  /// Create a new scene node with a specific name.
+  /// Create a new [`SceneNode`] with a specific name.
   pub fn with_name(self, name: &str) -> Self {
     SceneNode {
       name: Some(name.to_string()),
@@ -78,49 +85,99 @@ impl SceneNode {
     }
   }
 
-  /// Add a component to the scene node.
+  /// Add a component to the [`SceneNode`].
   pub fn with_component(mut self, component: impl SceneComponent + 'static) -> Self {
     self.components.push(Box::new(component));
     self
   }
 
-  /// Adds a new node to the scene graph.
+  /// Adds a child node to the current node.
   pub fn add_child(&mut self, node: SceneNode) {
     self.children.push(node);
   }
 
-  /// Find a child node by its ID.
-  pub fn find_child_by_id(&self, id: Guid) -> Option<&SceneNode> {
-    for child in &self.children {
-      if child.id == Some(id) {
-        return Some(child);
-      }
-
-      if let Some(found) = child.find_child_by_id(id) {
-        return Some(found);
-      }
-    }
-
-    None
+  /// Removes a child node from the current node.
+  pub fn remove_child(&mut self, node: &SceneNode) {
+    self.children.retain(|child| child.id != node.id);
   }
 
-  /// Find a child node by its name.
-  pub fn find_child_by_name(&self, name: &str) -> Option<&SceneNode> {
-    for child in &self.children {
-      if child.name.as_deref() == Some(name) {
-        return Some(child);
-      }
-
-      if let Some(found) = child.find_child_by_name(name) {
-        return Some(found);
-      }
-    }
-
-    None
+  /// Clears all children from the current node.
+  pub fn clear_children(&mut self) {
+    self.children.clear();
   }
 
-  /// Update the scene node.
-  pub fn update(&mut self) {
-    todo!()
+  /// Sends an event to the scene node and all its children.
+  pub fn notify(&mut self, event: SceneEvent, services: &ServiceProvider) {
+    let context = unsafe {
+      SceneContext {
+        node: unsafe_mutable_alias(self),
+        services,
+      }
+    };
+
+    // notify components first
+    for component in self.components.iter_mut() {
+      component.on_event(&context, event);
+    }
+
+    // notify children
+    for child in self.children.iter_mut() {
+      child.notify(event, services);
+    }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use common::FromRandom;
+
+  use super::*;
+
+  #[derive(Default)]
+  struct TestComponent {}
+
+  impl SceneComponent for TestComponent {
+    fn on_awake(&mut self, context: &SceneContext) {
+      println!(
+        "I'm awake! Node id = {:?}, Node name = {:?}",
+        context.node.id, context.node.name
+      );
+    }
+  }
+
+  #[test]
+  fn test_scene_node_construction() {
+    let node = SceneNode::new()
+      .with_id(Guid::random())
+      .with_name("Root")
+      .with_component(TestComponent::default())
+      .with_component(TestComponent::default());
+
+    assert_eq!(node.id.is_some(), true);
+    assert_eq!(node.name.is_some(), true);
+    assert_eq!(node.components.len(), 2);
+  }
+
+  #[test]
+  fn test_scene_node_notification() {
+    let services = ServiceProvider::default();
+
+    let mut root = SceneNode::new()
+      .with_id(Guid::random())
+      .with_name("Root")
+      .with_component(TestComponent::default());
+
+    let child = SceneNode::new()
+      .with_id(Guid::random())
+      .with_name("Child")
+      .with_component(TestComponent::default());
+
+    root.add_child(child);
+
+    root.notify(SceneEvent::Awake, &services);
+    root.notify(SceneEvent::Start, &services);
+    root.notify(SceneEvent::Update, &services);
+    root.notify(SceneEvent::Render, &services);
+    root.notify(SceneEvent::Destroy, &services);
   }
 }
