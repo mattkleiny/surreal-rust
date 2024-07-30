@@ -29,6 +29,7 @@ common = { package = "surreal-common", path = "./core/common" }
 audio = { package = "surreal-audio", path = "./core/audio", optional = true }
 graphics = { package = "surreal-graphics", path = "./core/graphics", optional = true }
 input = { package = "surreal-input", path = "./core/input", optional = true }
+networking = { package = "surreal-networking", path = "./core/networking", optional = true }
 physics = { package = "surreal-physics", path = "./core/physics", optional = true }
 scripting = { package = "surreal-scripting", path = "./core/scripting", optional = true }
 scenes = { package = "surreal-scenes", path = "./core/scenes", optional = true }
