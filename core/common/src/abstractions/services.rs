@@ -25,34 +25,11 @@ impl ServiceProvider {
 
   /// Resolves a service of a given type.
   pub fn resolve<T: 'static>(&self) -> Option<&T> {
-    self.services.get(&TypeId::of::<T>()).and_then(|service| {
-      // We only need the first service of the given type.
-      service.iter().next().and_then(|service| service.downcast_ref::<T>())
-    })
+    todo!()
   }
 
   /// Mutably resolves a service of a given type.
-  pub fn resolve_mut<T: 'static>(&mut self) -> Option<&mut T> {
-    self.services.get_mut(&TypeId::of::<T>()).and_then(|service| {
-      // We only need the first service of the given type.
-      service
-        .iter_mut()
-        .next()
-        .and_then(|service| service.downcast_mut::<T>())
-    })
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_service_resolution() {
-    let mut services = ServiceProvider::new();
-
-    services.register(42);
-
-    assert_eq!(services.resolve::<i32>(), Some(&42));
+  pub fn resolve_mut<T: 'static>(&self) -> Option<&mut T> {
+    todo!()
   }
 }

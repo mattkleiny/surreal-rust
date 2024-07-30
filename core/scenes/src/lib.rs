@@ -4,7 +4,7 @@ pub use spatial::*;
 mod canvas;
 mod spatial;
 
-use common::Guid;
+use common::{Guid, ServiceProvider};
 
 /// A node in the scene graph.
 #[derive(Default)]
@@ -18,6 +18,7 @@ pub struct SceneNode {
 /// Context for scene events.
 pub struct SceneContext<'a> {
   pub node: &'a SceneNode,
+  pub services: &'a ServiceProvider,
 }
 
 /// An event that can be sent to a scene node.
@@ -120,13 +121,6 @@ impl SceneNode {
 
   /// Update the scene node.
   pub fn update(&mut self) {
-    todo!()
-  }
-}
-
-impl<'a> SceneContext<'a> {
-  /// Get a service from the scene context.
-  pub fn resolve<T: ?Sized>(&self) -> Option<&T> {
     todo!()
   }
 }

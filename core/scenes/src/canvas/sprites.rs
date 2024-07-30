@@ -1,4 +1,5 @@
-use graphics::TextureRegion;
+use common::vec2;
+use graphics::{SpriteBatch, SpriteOptions, TextureRegion};
 
 use crate::{SceneComponent, SceneContext};
 
@@ -7,15 +8,13 @@ pub struct SpriteComponent {
   pub region: TextureRegion,
 }
 
-/// A service for rendering sprites.
-pub trait SpriteRenderer {
-  fn render_sprite(&self, region: &TextureRegion);
-}
-
 impl SceneComponent for SpriteComponent {
   fn on_render(&mut self, context: &SceneContext) {
-    if let Some(renderer) = context.resolve::<dyn SpriteRenderer>() {
-      renderer.render_sprite(&self.region);
+    if let Some(batch) = context.services.resolve_mut::<SpriteBatch>() {
+      batch.draw_sprite(&self.region, &SpriteOptions {
+        position: vec2(0., 0.),
+        ..SpriteOptions::default()
+      });
     }
   }
 }
