@@ -1,3 +1,9 @@
+//! A scene graph system for managing game objects and components.
+//!
+//! The scene graph system is a way to organize game objects and components in a
+//! tree-like structure. Each node in the tree can have a name, an ID, and a
+//! list of components attached to it.
+
 pub use canvas::*;
 pub use shared::*;
 pub use spatial::*;
