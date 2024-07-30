@@ -37,6 +37,9 @@ pub trait RenderCamera {
 
 /// Represents an object that can be rendered by a [`RenderPipeline`].
 pub trait RenderObject {
+  /// Gets the material of the object.
+  fn material(&self) -> Option<&Material>;
+
   /// Renders the object to the given [`RenderQueue`].
   fn render(&self, queue: &mut RenderQueue);
 }

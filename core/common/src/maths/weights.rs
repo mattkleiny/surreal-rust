@@ -185,7 +185,7 @@ mod tests {
 
   #[test]
   fn test_weighted_set_from_iterator() {
-    let mut set = WeightedSet::from_iter([(1, 1.0), (2, 2.0), (3, 3.0)]);
+    let set = WeightedSet::from_iter([(1, 1.0), (2, 2.0), (3, 3.0)]);
 
     assert_eq!(set.len(), 3);
   }

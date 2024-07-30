@@ -85,13 +85,23 @@ impl Frustum {
   }
 
   /// Determines whether the given sphere is contained within this frustum.
-  pub fn contains_sphere(&self, sphere: Sphere) -> bool {
+  pub fn contains_sphere(&self, sphere: &Sphere) -> bool {
     self.contains_point(sphere.center + vec3(sphere.radius, 0.0, 0.0))
       && self.contains_point(sphere.center + vec3(-sphere.radius, 0.0, 0.0))
       && self.contains_point(sphere.center + vec3(0.0, sphere.radius, 0.0))
       && self.contains_point(sphere.center + vec3(0.0, -sphere.radius, 0.0))
       && self.contains_point(sphere.center + vec3(0.0, 0.0, sphere.radius))
       && self.contains_point(sphere.center + vec3(0.0, 0.0, -sphere.radius))
+  }
+
+  /// Determines whether the given sphere intersects this frustum.
+  pub fn intersects_sphere(&self, sphere: &Sphere) -> bool {
+    self.near.distance_to_point(sphere.center) <= sphere.radius
+      && self.far.distance_to_point(sphere.center) <= sphere.radius
+      && self.left.distance_to_point(sphere.center) <= sphere.radius
+      && self.right.distance_to_point(sphere.center) <= sphere.radius
+      && self.top.distance_to_point(sphere.center) <= sphere.radius
+      && self.bottom.distance_to_point(sphere.center) <= sphere.radius
   }
 
   /// Determines whether the given AABB is contained within this frustum.
@@ -104,6 +114,23 @@ impl Frustum {
       && self.contains_point(vec3(aabb.max.x, aabb.min.y, aabb.min.z))
       && self.contains_point(vec3(aabb.max.x, aabb.min.y, aabb.max.z))
       && self.contains_point(vec3(aabb.max.x, aabb.max.y, aabb.min.z))
+  }
+
+  /// Determines whether the given AABB intersects this frustum.
+  pub fn intersects_aabb(&self, aabb: &AABB) -> bool {
+    let mut p = 0;
+    let mut n = 0;
+
+    for i in 0..8 {
+      let corner = aabb.corner(i);
+      if self.contains_point(corner) {
+        p += 1;
+      } else {
+        n += 1;
+      }
+    }
+
+    p > 0 && n > 0
   }
 
   /// Converts this frustum to an array of planes.

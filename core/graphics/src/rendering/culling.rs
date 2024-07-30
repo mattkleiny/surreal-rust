@@ -1,14 +1,8 @@
 use std::alloc::Allocator;
 
-use common::{Array, Camera, Sphere, AABB};
+use common::{Array, Camera, Frustum, Sphere, AABB};
 
 use super::*;
-
-/// Possible bounds of an object.
-pub enum ObjectBounds {
-  AABB(AABB),
-  Sphere(Sphere),
-}
 
 /// Represents an object that can be culled from the scene.
 pub trait CullableObject {
@@ -19,7 +13,23 @@ pub trait CullableObject {
 /// Represents a scene that can be culled.
 pub trait CullableScene {
   /// Culls the objects that are visible to the given camera.
-  fn cull_visible_objects<T: CullableObject>(&self, camera: &dyn Camera) -> VisibleObjectSet<T>;
+  fn cull_visible_objects<T>(&self, camera: &dyn Camera) -> VisibleObjectSet<T>;
+}
+
+/// Possible bounds of an object.
+pub enum ObjectBounds {
+  AABB(AABB),
+  Sphere(Sphere),
+}
+
+impl ObjectBounds {
+  /// Determines if the bounds are visible to the given frustum.
+  pub fn is_visible_to_frustum(&self, frustum: &Frustum) -> bool {
+    match self {
+      ObjectBounds::AABB(aabb) => frustum.intersects_aabb(aabb),
+      ObjectBounds::Sphere(sphere) => frustum.intersects_sphere(sphere),
+    }
+  }
 }
 
 /// A set of visible objects that can be rendered in a scene.
@@ -39,34 +49,33 @@ struct VisibleObject<'a, T: ?Sized> {
   sorting_key: Option<MaterialSortingKey>,
 }
 
-impl<'a, T: ?Sized + 'static> VisibleObjectSet<'a, T> {
-  /// Creates a new set of visible objects.
-  pub fn new(capacity: usize) -> Self {
-    Self {
-      array: Array::with_capacity(capacity),
-    }
-  }
-
-  /// Creates a new set of visible objects in the given allocator.
-  pub fn new_in(allocator: &'a dyn Allocator, capacity: usize) -> Self {
-    Self {
-      array: Array::with_capacity_in(allocator, capacity),
-    }
+impl<'a, T: ?Sized + CullableObject + RenderObject + 'static> VisibleObjectSet<'a, T> {
+  /// Creates a new set of visible objects from the iterator.
+  pub fn from_iter(frustum: &Frustum, objects: impl IntoIterator<Item = &'a T>) -> Self {
+    Self::from_iter_in(frustum, &std::alloc::Global, objects)
   }
 
   /// Creates a new set of visible objects from the iterator in the allocator.
-  pub fn from_iter_in(allocator: &'a dyn Allocator, objects: impl IntoIterator<Item = &'a T>) -> Self {
+  pub fn from_iter_in(
+    frustum: &Frustum,
+    allocator: &'a dyn Allocator,
+    objects: impl IntoIterator<Item = &'a T>,
+  ) -> Self {
     let mut iter = objects.into_iter();
     let (capacity, _) = iter.size_hint();
     let mut array = Array::with_capacity_in(allocator, capacity);
 
     while let Some(object) = iter.next() {
-      array.push(VisibleObject {
-        object,
-        // TODO: calculate bounds?
-        bounds: ObjectBounds::AABB(AABB::default()),
-        sorting_key: None,
-      });
+      let bounds = object.compute_bounds();
+
+      // is this object visible to the camera?
+      if bounds.is_visible_to_frustum(frustum) {
+        array.push(VisibleObject {
+          object,
+          bounds,
+          sorting_key: object.material().map(MaterialSortingKey::for_material),
+        });
+      }
     }
 
     Self { array }
@@ -90,16 +99,6 @@ impl<'a, T: ?Sized> IntoIterator for &'a VisibleObjectSet<'a, T> {
 #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
 pub struct MaterialSortingKey(u64);
 
-bitflags::bitflags! {
-  /// Flags that indicate the required state of the graphics pipeline for a material.
-  #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
-  pub struct MaterialFlags: u32 {
-    const ALPHA_TESTING = 0b00000001;
-    const DEPTH_TESTING = 0b00000010;
-    const STENCIL_TESTING = 0b00000100;
-  }
-}
-
 impl MaterialSortingKey {
   /// Gets the sorting key for the given material.
   ///
@@ -115,5 +114,15 @@ impl MaterialSortingKey {
     let shader = u64::from(shader.id());
 
     Self(flags << 32 | shader)
+  }
+}
+
+bitflags::bitflags! {
+  /// Flags that indicate the required state of the graphics pipeline for a material.
+  #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+  pub struct MaterialFlags: u32 {
+    const ALPHA_TESTING = 0b00000001;
+    const DEPTH_TESTING = 0b00000010;
+    const STENCIL_TESTING = 0b00000100;
   }
 }
