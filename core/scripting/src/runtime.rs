@@ -1,7 +1,13 @@
+//! Runtime components for script engine.
+
+pub use callbacks::*;
+pub use values::*;
+
 mod callbacks;
 mod compiler;
 mod isolates;
 mod machine;
+mod values;
 
 /// A bytecode instruction for the virtual machine.
 #[derive(Debug, PartialEq)]

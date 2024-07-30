@@ -1,4 +1,9 @@
 //! Scripting engine for Surreal
 
-pub mod lang;
-pub mod runtime;
+pub use lang::*;
+pub use lua::*;
+pub use runtime::*;
+
+mod lang;
+mod lua;
+mod runtime;
