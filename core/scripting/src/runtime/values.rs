@@ -7,6 +7,11 @@ use common::{Color, Color32, Quat, StringName, Variant, Vec2, Vec3, Vec4};
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ScriptValue(pub Variant);
 
+/// A multi-value variant of `ScriptValue`.
+#[repr(transparent)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub struct ScriptValueMulti(pub Vec<ScriptValue>);
+
 /// Represents a value that can be converted to a [`ScriptValue`].
 pub trait ToScriptValue {
   fn to_script_value(self) -> ScriptValue;

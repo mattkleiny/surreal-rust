@@ -2,9 +2,9 @@
 
 use common::{ToVirtualPath, Variant};
 pub use mlua::prelude::*;
-use mlua::{Error, StdLib, Value};
+use mlua::{Error, MultiValue, StdLib, Value};
 
-use crate::{runtime::ScriptValue, Callback, ToScriptValue};
+use crate::{runtime::ScriptValue, Callback, ScriptValueMulti, ToScriptValue};
 
 /// Possible errors when interacting with Lua.
 #[derive(Debug)]
@@ -80,10 +80,10 @@ impl<'lua> LuaScriptTable<'lua> {
 
   /// Sets a function in the table.
   pub fn set_function<R>(&self, name: &str, callback: impl Callback<R> + 'static) {
-    let body = move |lua, args: String| {
+    let body = move |lua, args: ScriptValueMulti| {
       let result = callback
-        .call(&[args.to_script_value()])
-        .map_err(|_| mlua::Error::RuntimeError("It didn't work".to_string()))?;
+        .call(&args.0)
+        .map_err(|_| Error::RuntimeError("It didn't work".to_string()))?;
 
       Ok(result.into_lua(lua)?)
     };
@@ -140,6 +140,32 @@ impl<'lua> FromLua<'lua> for ScriptValue {
       Value::Error(_) => todo!(),
       _ => todo!(),
     })
+  }
+}
+
+/// Allows a `ScriptValueMulti` to be converted from Lua.
+impl<'lua> FromLuaMulti<'lua> for ScriptValueMulti {
+  fn from_lua_multi(values: LuaMultiValue<'lua>, lua: &'lua Lua) -> LuaResult<Self> {
+    let mut result = Vec::new();
+
+    for value in values {
+      result.push(ScriptValue::from_lua(value, lua)?);
+    }
+
+    Ok(ScriptValueMulti(result))
+  }
+}
+
+/// Allows a `ScriptValueMulti` to be converted to Lua.
+impl<'lua> IntoLuaMulti<'lua> for ScriptValueMulti {
+  fn into_lua_multi(self, lua: &'lua Lua) -> LuaResult<LuaMultiValue<'lua>> {
+    let mut result = Vec::new();
+
+    for value in self.0 {
+      result.push(value.into_lua(lua)?);
+    }
+
+    Ok(LuaMultiValue::from_vec(result))
   }
 }
 
