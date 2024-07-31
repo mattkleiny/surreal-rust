@@ -2,8 +2,6 @@ use std::cmp::Ordering;
 
 use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 
-// TODO: take a stab at tagged pointers for variant types?
-
 /// Allows for a type to be converted to a [`Variant`].
 pub trait ToVariant {
   /// Converts the type into a [`Variant`].

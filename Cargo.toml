@@ -17,7 +17,8 @@ members = ["core/*", "backends/*"]
 opt-level = 3
 
 [features]
-default = ["audio", "graphics", "input", "scripting"]
+default = ["audio", "graphics", "input", "lua"]
+lua = ["common/lua"]
 
 [workspace.dependencies]
 # shared dependencies
@@ -31,7 +32,6 @@ graphics = { package = "surreal-graphics", path = "./core/graphics", optional = 
 input = { package = "surreal-input", path = "./core/input", optional = true }
 networking = { package = "surreal-networking", path = "./core/networking", optional = true }
 physics = { package = "surreal-physics", path = "./core/physics", optional = true }
-scripting = { package = "surreal-scripting", path = "./core/scripting", optional = true }
 scenes = { package = "surreal-scenes", path = "./core/scenes", optional = true }
 
 # editor
