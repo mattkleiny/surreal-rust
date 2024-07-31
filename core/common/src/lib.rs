@@ -18,8 +18,6 @@ pub use collections::*;
 pub use concurrency::*;
 pub use diagnostics::*;
 pub use io::*;
-// Re-export macros for use in other core.
-pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};
 pub use maths::*;
 pub use memory::*;
 pub use strings::*;
@@ -34,6 +32,8 @@ mod maths;
 mod memory;
 mod strings;
 mod utilities;
+
+pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};
 
 #[cfg(feature = "lua")]
 pub mod lua {
@@ -201,6 +201,8 @@ pub mod lua {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
       methods.add_method("length", |_, this, ()| Ok(this.0.length()));
       methods.add_method("length_squared", |_, this, ()| Ok(this.0.length_squared()));
+
+      methods.add_meta_method(MetaMethod::ToString, |_, this, ()| Ok(format!("{:?}", this.0)));
     }
   }
 
@@ -219,6 +221,8 @@ pub mod lua {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
       methods.add_method("length", |_, this, ()| Ok(this.0.length()));
       methods.add_method("length_squared", |_, this, ()| Ok(this.0.length_squared()));
+
+      methods.add_meta_method(MetaMethod::ToString, |_, this, ()| Ok(format!("{:?}", this.0)));
     }
   }
 
@@ -238,6 +242,8 @@ pub mod lua {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
       methods.add_method("length", |_, this, ()| Ok(this.0.length()));
       methods.add_method("length_squared", |_, this, ()| Ok(this.0.length_squared()));
+
+      methods.add_meta_method(MetaMethod::ToString, |_, this, ()| Ok(format!("{:?}", this.0)));
     }
   }
 
@@ -257,6 +263,8 @@ pub mod lua {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
       methods.add_method("length", |_, this, ()| Ok(this.0.length()));
       methods.add_method("length_squared", |_, this, ()| Ok(this.0.length_squared()));
+
+      methods.add_meta_method(MetaMethod::ToString, |_, this, ()| Ok(format!("{:?}", this.0)));
     }
   }
 
@@ -272,6 +280,10 @@ pub mod lua {
       fields.add_field_method_get("b", |_, this| Ok(this.0.b));
       fields.add_field_method_get("a", |_, this| Ok(this.0.a));
     }
+
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+      methods.add_meta_method(MetaMethod::ToString, |_, this, ()| Ok(format!("{:?}", this.0)));
+    }
   }
 
   /// A lightweight [`UserData`] wrapper for [`Color32`].
@@ -285,6 +297,10 @@ pub mod lua {
       fields.add_field_method_get("g", |_, this| Ok(this.0.g));
       fields.add_field_method_get("b", |_, this| Ok(this.0.b));
       fields.add_field_method_get("a", |_, this| Ok(this.0.a));
+    }
+
+    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+      methods.add_meta_method(MetaMethod::ToString, |_, this, ()| Ok(format!("{:?}", this.0)));
     }
   }
 }
