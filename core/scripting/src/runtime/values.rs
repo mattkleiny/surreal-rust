@@ -42,7 +42,7 @@ macro_rules! impl_script_value {
     }
   };
   ($type:ty, $variant:tt) => {
-    impl ToScriptValue for &$type {
+    impl ToScriptValue for $type {
       #[inline]
       fn to_script_value(self) -> ScriptValue {
         ScriptValue(Variant::from(self.clone()))

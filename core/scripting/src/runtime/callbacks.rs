@@ -9,7 +9,7 @@ pub enum CallbackError {
 }
 
 /// A callback that can be called from a script.
-pub trait Callback<R>: RefUnwindSafe {
+pub trait ScriptCallback<R>: RefUnwindSafe {
   /// Calls the callback with the given arguments.
   fn call(&self, args: &[ScriptValue]) -> Result<ScriptValue, CallbackError>;
 }
@@ -23,7 +23,7 @@ pub trait Callback<R>: RefUnwindSafe {
 // We use a PhantomData tuple to specify the expected argument types and
 // constrain unique implementations of the generic type.
 
-impl<R, F> Callback<PhantomData<()>> for F
+impl<R, F> ScriptCallback<PhantomData<()>> for F
 where
   R: ToScriptValue,
   F: Fn() -> R + RefUnwindSafe,
@@ -35,7 +35,7 @@ where
   }
 }
 
-impl<A1, R, F> Callback<(PhantomData<A1>, R)> for F
+impl<A1, R, F> ScriptCallback<(PhantomData<A1>, R)> for F
 where
   A1: FromScriptValue,
   R: ToScriptValue,
@@ -57,7 +57,7 @@ where
   }
 }
 
-impl<A1, A2, R, F> Callback<(PhantomData<A1>, PhantomData<A2>, R)> for F
+impl<A1, A2, R, F> ScriptCallback<(PhantomData<A1>, PhantomData<A2>, R)> for F
 where
   A1: FromScriptValue,
   A2: FromScriptValue,
@@ -81,7 +81,7 @@ where
   }
 }
 
-impl<A1, A2, A3, R, F> Callback<(PhantomData<A1>, PhantomData<A2>, PhantomData<A3>, R)> for F
+impl<A1, A2, A3, R, F> ScriptCallback<(PhantomData<A1>, PhantomData<A2>, PhantomData<A3>, R)> for F
 where
   A1: FromScriptValue,
   A2: FromScriptValue,
@@ -107,7 +107,7 @@ where
   }
 }
 
-impl<A1, A2, A3, A4, R, F> Callback<(PhantomData<A1>, PhantomData<A2>, PhantomData<A3>, PhantomData<A4>, R)> for F
+impl<A1, A2, A3, A4, R, F> ScriptCallback<(PhantomData<A1>, PhantomData<A2>, PhantomData<A3>, PhantomData<A4>, R)> for F
 where
   A1: FromScriptValue,
   A2: FromScriptValue,

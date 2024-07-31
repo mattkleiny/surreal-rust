@@ -4,7 +4,7 @@ use common::{ToVirtualPath, Variant};
 pub use mlua::prelude::*;
 use mlua::{Error, MultiValue, StdLib, Value};
 
-use crate::{runtime::ScriptValue, Callback, ScriptValueMulti, ToScriptValue};
+use crate::{runtime::ScriptValue, ScriptCallback, ScriptValueMulti, ToScriptValue};
 
 /// Possible errors when interacting with Lua.
 #[derive(Debug)]
@@ -28,14 +28,14 @@ impl LuaScriptEngine {
   }
 
   /// Runs the given script.
-  pub fn run(&mut self, script: &str) -> Result<(), LuaError> {
+  pub fn run(&self, script: &str) -> Result<(), LuaError> {
     self.lua.load(script).exec()?;
 
     Ok(())
   }
 
   /// Loads the given script.
-  pub fn load(&mut self, path: impl ToVirtualPath) -> Result<(), LuaError> {
+  pub fn load(&self, path: impl ToVirtualPath) -> Result<(), LuaError> {
     let script = path
       .to_virtual_path()
       .read_all_text()
@@ -79,7 +79,7 @@ impl<'lua> LuaScriptTable<'lua> {
   }
 
   /// Sets a function in the table.
-  pub fn set_function<R>(&self, name: &str, callback: impl Callback<R> + 'static) {
+  pub fn set_function<R>(&self, name: &str, callback: impl ScriptCallback<R> + 'static) {
     let body = move |lua, args: ScriptValueMulti| {
       let result = callback
         .call(&args.0)
@@ -101,16 +101,16 @@ impl<'lua> IntoLua<'lua> for &ScriptValue {
       Variant::Null => Value::Nil,
       Variant::Bool(value) => Value::Boolean(*value),
       Variant::Char(_) => todo!(),
-      Variant::U8(_) => todo!(),
-      Variant::U16(_) => todo!(),
-      Variant::U32(_) => todo!(),
-      Variant::U64(_) => todo!(),
-      Variant::I8(_) => todo!(),
-      Variant::I16(_) => todo!(),
-      Variant::I32(_) => todo!(),
-      Variant::I64(_) => todo!(),
-      Variant::F32(_) => todo!(),
-      Variant::F64(_) => todo!(),
+      Variant::U8(value) => Value::Integer(*value as i64),
+      Variant::U16(value) => Value::Integer(*value as i64),
+      Variant::U32(value) => Value::Integer(*value as i64),
+      Variant::U64(value) => Value::Integer(*value as i64),
+      Variant::I8(value) => Value::Integer(*value as i64),
+      Variant::I16(value) => Value::Integer(*value as i64),
+      Variant::I32(value) => Value::Integer(*value as i64),
+      Variant::I64(value) => Value::Integer(*value as i64),
+      Variant::F32(value) => Value::Number(*value as f64),
+      Variant::F64(value) => Value::Number(*value as f64),
       Variant::String(value) => Value::String(lua.create_string(value)?),
       Variant::StringName(value) => Value::String(lua.create_string(value.to_string())?),
       Variant::Vec2(_) => todo!(),
