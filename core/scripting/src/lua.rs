@@ -21,9 +21,6 @@ pub struct LuaScriptEngine {
 impl LuaScriptEngine {
   /// Creates a new Lua engine.
   pub fn new() -> Result<Self, LuaError> {
-    let lua = Lua::new();
-    lua.load_from_std_lib(StdLib::ALL_SAFE)?;
-
     Ok(Self { lua })
   }
 
