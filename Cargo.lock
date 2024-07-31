@@ -450,6 +450,7 @@ dependencies = [
  "surreal-networking",
  "surreal-physics",
  "surreal-scenes",
+ "surreal-scripting",
 ]
 
 [[package]]
@@ -546,6 +547,13 @@ dependencies = [
  "surreal-common",
  "surreal-graphics",
  "surreal-input",
+]
+
+[[package]]
+name = "surreal-scripting"
+version = "0.1.0"
+dependencies = [
+ "surreal-common",
 ]
 
 [[package]]

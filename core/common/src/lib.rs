@@ -18,6 +18,7 @@ pub use collections::*;
 pub use concurrency::*;
 pub use diagnostics::*;
 pub use io::*;
+pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};
 pub use maths::*;
 pub use memory::*;
 pub use strings::*;
@@ -33,8 +34,6 @@ mod memory;
 mod strings;
 mod utilities;
 
-pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};
-
 #[cfg(feature = "lua")]
 pub mod lua {
   //! Lua support for the engine.
@@ -43,6 +42,9 @@ pub mod lua {
   use crate::{Callback, Color, Color32, Quat, ToStringName, ToVirtualPath, Variant, Vec2, Vec3, Vec4};
 
   /// Lua scripting engine.
+  ///
+  /// This is a lightweight wrapper around the [`Lua`] state that provides
+  /// conveniences for interacting with Lua.
   pub struct LuaScriptEngine {
     lua: Lua,
   }
@@ -90,7 +92,7 @@ pub mod lua {
     }
   }
 
-  /// A wrapper over a lua table for simplified access.
+  /// A wrapper over a [`LuaTable`] for simplified access.
   pub struct LuaScriptTable<'lua> {
     lua: &'lua Lua,
     table: LuaTable<'lua>,
@@ -102,7 +104,12 @@ pub mod lua {
       self.table.get(name)
     }
 
-    /// Gets a table from the table.
+    /// Sets a value in the table.
+    pub fn set<R: IntoLua<'lua>>(&self, name: &str, value: R) -> LuaResult<()> {
+      self.table.set(name, value)
+    }
+
+    /// Gets a sub-table from the table.
     pub fn get_table(&self, name: &str) -> LuaResult<Self> {
       Ok(LuaScriptTable {
         lua: self.lua,
@@ -110,13 +117,8 @@ pub mod lua {
       })
     }
 
-    /// Sets a value in the table.
-    pub fn set<R: IntoLua<'lua>>(&self, name: &str, value: R) -> LuaResult<()> {
-      self.table.set(name, value)
-    }
-
     /// Sets a function in the table.
-    pub fn set_function<R>(&self, name: &str, callback: impl Callback<R> + 'static) {
+    pub fn set_function<R>(&self, name: &str, callback: impl Callback<R> + 'static) -> LuaResult<()> {
       let function_name = name.to_string_name();
       let body = move |lua, args: LuaMultiValue| {
         let args = args
@@ -124,16 +126,17 @@ pub mod lua {
           .map(|value| Variant::from_lua(value, lua))
           .collect::<LuaResult<Vec<_>>>()?;
 
-        let result = callback
-          .call(&args)
-          .map_err(|_| LuaError::RuntimeError(format!("An error occurred calling {}", &function_name)))?;
+        let result = callback.call(&args).map_err(|error| {
+          // make it clear which function caused the error
+          LuaError::RuntimeError(format!("An error occurred calling {}, {:?}", &function_name, error))
+        })?;
 
         Ok(result.into_lua(lua)?)
       };
 
-      let function = self.lua.create_function(body).unwrap();
+      self.table.set(name, self.lua.create_function(body)?)?;
 
-      self.table.set(name, function).unwrap();
+      Ok(())
     }
   }
 
