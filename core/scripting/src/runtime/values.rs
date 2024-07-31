@@ -18,6 +18,24 @@ pub trait FromScriptValue {
 }
 
 macro_rules! impl_script_value {
+  ((), $variant:tt) => {
+    impl ToScriptValue for () {
+      #[inline]
+      fn to_script_value(self) -> ScriptValue {
+        ScriptValue(Variant::$variant)
+      }
+    }
+
+    impl FromScriptValue for () {
+      #[inline]
+      fn from_script_value(value: &ScriptValue) -> Self {
+        match &value.0 {
+          Variant::$variant => (),
+          _ => panic!("Invalid variant"),
+        }
+      }
+    }
+  };
   ($type:ty, $variant:tt) => {
     impl ToScriptValue for &$type {
       #[inline]
@@ -38,6 +56,7 @@ macro_rules! impl_script_value {
   };
 }
 
+impl_script_value!((), Null);
 impl_script_value!(bool, Bool);
 impl_script_value!(u8, U8);
 impl_script_value!(u16, U16);

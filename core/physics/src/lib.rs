@@ -9,6 +9,11 @@ common::impl_arena_index!(pub BodyId, "Identifies a physics body.");
 
 common::impl_server!(PhysicsServer by PhysicsBackend default engine::RustPhysicsBackend);
 
+// Floating point precision used by the physics engine.
+pub type Real = f32;
+pub type Real2 = Vec2;
+pub type Real3 = Vec3;
+
 /// Gets the physics server instance.
 #[inline(always)]
 pub fn physics() -> &'static dyn PhysicsBackend {
@@ -48,8 +53,8 @@ pub trait PhysicsBackend {
   fn create_world_3d(&self) -> Result<Box<PhysicsWorld3D>, WorldError>;
 }
 
-pub type PhysicsWorld2D = dyn PhysicsWorld<Vector = Vec2>;
-pub type PhysicsWorld3D = dyn PhysicsWorld<Vector = Vec3>;
+pub type PhysicsWorld2D = dyn PhysicsWorld<Vector = Real2>;
+pub type PhysicsWorld3D = dyn PhysicsWorld<Vector = Real3>;
 
 /// A physics world that contains all the physics bodies and colliders.
 ///

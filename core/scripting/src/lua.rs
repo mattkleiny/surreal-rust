@@ -4,7 +4,7 @@ use common::{ToVirtualPath, Variant};
 pub use mlua::prelude::*;
 use mlua::{Error, StdLib, Value};
 
-use crate::{runtime::ScriptValue, Callback};
+use crate::{runtime::ScriptValue, Callback, ToScriptValue};
 
 /// Possible errors when interacting with Lua.
 #[derive(Debug)]
@@ -67,14 +67,30 @@ impl<'lua> LuaScriptTable<'lua> {
     self.table.get(name)
   }
 
+  /// Gets a table from the table.
+  pub fn get_table(&self, name: &str) -> Result<Self, mlua::prelude::LuaError> {
+    let table = self.table.get::<_, LuaTable>(name)?;
+    Ok(LuaScriptTable { lua: self.lua, table })
+  }
+
   /// Sets a value in the table.
   pub fn set<R: IntoLua<'lua>>(&self, name: &str, value: R) -> Result<(), mlua::prelude::LuaError> {
     self.table.set(name, value)
   }
 
   /// Sets a function in the table.
-  pub fn set_function<R>(&self, _name: &str, _callback: impl Callback<R> + 'static) {
-    todo!()
+  pub fn set_function<R>(&self, name: &str, callback: impl Callback<R> + 'static) {
+    let body = move |lua, args: String| {
+      let result = callback
+        .call(&[args.to_script_value()])
+        .map_err(|_| mlua::Error::RuntimeError("It didn't work".to_string()))?;
+
+      Ok(result.into_lua(lua)?)
+    };
+
+    let function = self.lua.create_function(body).unwrap();
+
+    self.table.set(name, function).unwrap();
   }
 }
 

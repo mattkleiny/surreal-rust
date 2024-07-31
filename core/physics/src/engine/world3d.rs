@@ -6,7 +6,7 @@ pub struct PhysicsWorld3D {}
 
 #[allow(unused_variables)]
 impl PhysicsWorld for PhysicsWorld3D {
-  type Vector = Vec3;
+  type Vector = Real3;
 
   fn tick(&self, _delta: f32) {
     todo!()

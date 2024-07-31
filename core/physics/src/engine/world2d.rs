@@ -13,7 +13,7 @@ pub struct PhysicsWorld2D {
 
 /// A 2D collider.
 struct Collider {
-  position: Vec2,
+  position: Real2,
   shape: ColliderShape,
 }
 
@@ -25,8 +25,8 @@ enum ColliderShape {
 
 /// A 2D physics body.
 struct Body {
-  position: Vec2,
-  velocity: Vec2,
+  position: Real2,
+  velocity: Real2,
   kind: BodyKind,
 }
 
@@ -37,7 +37,7 @@ enum BodyKind {
 }
 
 impl PhysicsWorld for PhysicsWorld2D {
-  type Vector = Vec2;
+  type Vector = Real2;
 
   fn tick(&self, _delta: f32) {
     // TODO: Implement physics simulation.
@@ -48,7 +48,7 @@ impl PhysicsWorld for PhysicsWorld2D {
 
     Ok(colliders.insert(Collider {
       shape: ColliderShape::Circle { radius: 1.0 },
-      position: Vec2::ZERO,
+      position: Real2::ZERO,
     }))
   }
 
@@ -80,8 +80,8 @@ impl PhysicsWorld for PhysicsWorld2D {
     let mut bodies = self.bodies.write().unwrap();
 
     Ok(bodies.insert(Body {
-      position: Vec2::ZERO,
-      velocity: Vec2::ZERO,
+      position: Real2::ZERO,
+      velocity: Real2::ZERO,
       kind: BodyKind::Dynamic,
     }))
   }
