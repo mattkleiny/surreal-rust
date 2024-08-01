@@ -12,6 +12,8 @@
 #![feature(ptr_as_ref_unchecked)]
 #![feature(box_into_inner)]
 #![feature(allocator_api)]
+#![feature(coerce_unsized)]
+#![feature(unsize)]
 
 pub use abstractions::*;
 pub use collections::*;

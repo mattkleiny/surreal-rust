@@ -1,6 +1,6 @@
-use std::cmp::Ordering;
+use std::{any::Any, cmp::Ordering};
 
-use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
+use crate::{Color, Color32, Pointer, Quat, StringName, Vec2, Vec3, Vec4};
 
 /// An error that can occur when working with variants.
 #[derive(Debug)]
@@ -47,7 +47,7 @@ pub enum VariantKind {
   Quat,
   Color,
   Color32,
-  Enum,
+  UserData,
 }
 
 /// A type that can hold varying different values.
@@ -55,7 +55,7 @@ pub enum VariantKind {
 /// This is an abstraction over the different primitive types that are often
 /// shuffled around in the engine. It allows for a more generic API that can
 /// handle any type of value.
-#[derive(Default, Clone, Debug, PartialEq)]
+#[derive(Default, Debug)]
 pub enum Variant {
   #[default]
   Null,
@@ -79,6 +79,72 @@ pub enum Variant {
   Quat(Quat),
   Color(Color),
   Color32(Color32),
+  UserData(Pointer<dyn Any>),
+}
+
+impl PartialEq for Variant {
+  fn eq(&self, other: &Self) -> bool {
+    match (self, other) {
+      (Variant::Null, Variant::Null) => true,
+      (Variant::Bool(a), Variant::Bool(b)) => a == b,
+      (Variant::Char(a), Variant::Char(b)) => a == b,
+      (Variant::U8(a), Variant::U8(b)) => a == b,
+      (Variant::U16(a), Variant::U16(b)) => a == b,
+      (Variant::U32(a), Variant::U32(b)) => a == b,
+      (Variant::U64(a), Variant::U64(b)) => a == b,
+      (Variant::I8(a), Variant::I8(b)) => a == b,
+      (Variant::I16(a), Variant::I16(b)) => a == b,
+      (Variant::I32(a), Variant::I32(b)) => a == b,
+      (Variant::I64(a), Variant::I64(b)) => a == b,
+      (Variant::F32(a), Variant::F32(b)) => a == b,
+      (Variant::F64(a), Variant::F64(b)) => a == b,
+      (Variant::String(a), Variant::String(b)) => a == b,
+      (Variant::StringName(a), Variant::StringName(b)) => a == b,
+      (Variant::Vec2(a), Variant::Vec2(b)) => a == b,
+      (Variant::Vec3(a), Variant::Vec3(b)) => a == b,
+      (Variant::Vec4(a), Variant::Vec4(b)) => a == b,
+      (Variant::Quat(a), Variant::Quat(b)) => a == b,
+      (Variant::Color(a), Variant::Color(b)) => a == b,
+      (Variant::Color32(a), Variant::Color32(b)) => a == b,
+      (Variant::UserData(a), Variant::UserData(b)) => {
+        // pointer comparison
+        let ptr_a = &**a as *const dyn Any;
+        let ptr_b = &**b as *const dyn Any;
+
+        std::ptr::addr_eq(ptr_a, ptr_b)
+      }
+      _ => false,
+    }
+  }
+}
+
+impl Clone for Variant {
+  fn clone(&self) -> Self {
+    match self {
+      Variant::Null => Variant::Null,
+      Variant::Bool(value) => Variant::Bool(*value),
+      Variant::Char(value) => Variant::Char(*value),
+      Variant::U8(value) => Variant::U8(*value),
+      Variant::U16(value) => Variant::U16(*value),
+      Variant::U32(value) => Variant::U32(*value),
+      Variant::U64(value) => Variant::U64(*value),
+      Variant::I8(value) => Variant::I8(*value),
+      Variant::I16(value) => Variant::I16(*value),
+      Variant::I32(value) => Variant::I32(*value),
+      Variant::I64(value) => Variant::I64(*value),
+      Variant::F32(value) => Variant::F32(*value),
+      Variant::F64(value) => Variant::F64(*value),
+      Variant::String(value) => Variant::String(value.clone()),
+      Variant::StringName(value) => Variant::StringName(value.clone()),
+      Variant::Vec2(value) => Variant::Vec2(value.clone()),
+      Variant::Vec3(value) => Variant::Vec3(value.clone()),
+      Variant::Vec4(value) => Variant::Vec4(value.clone()),
+      Variant::Quat(value) => Variant::Quat(value.clone()),
+      Variant::Color(value) => Variant::Color(value.clone()),
+      Variant::Color32(value) => Variant::Color32(value.clone()),
+      Variant::UserData(value) => Variant::UserData(value.clone()),
+    }
+  }
 }
 
 impl Variant {
@@ -106,6 +172,7 @@ impl Variant {
       Variant::Quat(_) => VariantKind::Quat,
       Variant::Color(_) => VariantKind::Color,
       Variant::Color32(_) => VariantKind::Color32,
+      Variant::UserData(_) => VariantKind::UserData,
     }
   }
 
@@ -379,6 +446,21 @@ impl_variant!(Quat, Quat);
 impl_variant!(Color, Color);
 impl_variant!(Color32, Color32);
 
+impl<T: Any> ToVariant for Pointer<T> {
+  fn to_variant(&self) -> Variant {
+    Variant::UserData(self.clone())
+  }
+}
+
+impl<T: Any> FromVariant for Pointer<T> {
+  fn from_variant(variant: Variant) -> Result<Self, VariantError> {
+    match variant {
+      Variant::UserData(value) => Ok(unsafe { value.cast::<T>() }),
+      _ => Err(VariantError::InvalidConversion),
+    }
+  }
+}
+
 #[macro_export]
 macro_rules! impl_variant_enum {
   ($type:ty, u32) => {
@@ -432,5 +514,17 @@ mod tests {
     assert_eq!((a.clone() * b.clone()).unwrap(), Variant::U32(600));
     assert_eq!((a.clone() / b.clone()).unwrap(), Variant::U32(1));
     assert_eq!((a.clone() % b.clone()).unwrap(), Variant::U32(10));
+  }
+
+  #[test]
+  fn test_variant_user_data_equality() {
+    let value = Pointer::new("Hello, World!");
+
+    let a = Variant::UserData(value.clone());
+    let b = Variant::UserData(value.clone());
+
+    assert_eq!(a, b);
+
+    value.delete();
   }
 }

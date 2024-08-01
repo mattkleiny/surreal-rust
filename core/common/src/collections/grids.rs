@@ -274,6 +274,36 @@ impl<T> SparseGrid<T> {
   pub fn clear(&mut self) {
     self.entries.clear();
   }
+
+  /// Iterates over the grid.
+  pub fn iter(&self) -> impl Iterator<Item = &T> {
+    self.entries.values()
+  }
+
+  /// Mutably iterates over the grid.
+  pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
+    self.entries.values_mut()
+  }
+}
+
+impl<'a, T> IntoIterator for &'a SparseGrid<T> {
+  type Item = &'a T;
+  type IntoIter = impl Iterator<Item = Self::Item>;
+
+  #[inline]
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
+  }
+}
+
+impl<'a, T> IntoIterator for &'a mut SparseGrid<T> {
+  type Item = &'a mut T;
+  type IntoIter = impl Iterator<Item = Self::Item>;
+
+  #[inline]
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter_mut()
+  }
 }
 
 /// Gets the hash for the given position.
