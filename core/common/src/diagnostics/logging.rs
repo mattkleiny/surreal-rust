@@ -68,40 +68,40 @@ impl Display for LogLevel {
 /// Writes a trace message to the log.
 #[macro_export]
 macro_rules! trace {
-  ($message:expr, $($arg:tt)*) => {
-    println!($message, $($arg)*);
+  ($($arg:tt)*) => {
+    println!($($arg)*);
   };
 }
 
 /// Writes a debug message to the log.
 #[macro_export]
 macro_rules! debug {
-  ($message:expr, $($arg:tt)*) => {
-    println!($message, $($arg)*);
+  ($($arg:tt)*) => {
+    println!($($arg)*);
   };
 }
 
 /// Writes an info message to the log.
 #[macro_export]
 macro_rules! info {
-  ($message:expr, $($arg:tt)*) => {
-    println!($message, $($arg)*);
+  ($($arg:tt)*) => {
+    println!($($arg)*);
   };
 }
 
 /// Writes a warning message to the log.
 #[macro_export]
 macro_rules! warn {
-  ($message:expr, $($arg:tt)*) => {
-    println!($message, $($arg)*);
+  ($($arg:tt)*) => {
+    println!($($arg)*);
   };
 }
 
 /// Writes an error message to the log.
 #[macro_export]
 macro_rules! error {
-  ($message:expr, $($arg:tt)*) => {
-    println!($message, $($arg)*);
+  ($($arg:tt)*) => {
+    eprintln!($($arg)*);
   };
 }
 
