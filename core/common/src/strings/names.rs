@@ -112,6 +112,7 @@ impl StringNamePool {
     let mut entries = self.strings_by_id.write().unwrap();
 
     for (id, entry) in entries.enumerate_mut() {
+      // if we find the string already in the pool, increment the reference count
       if entry.string == value {
         entry.reference_count += 1;
         return id;

@@ -4,7 +4,10 @@
 //! and a 32-bit floating point per-channel representation for more precise
 //! rendering.
 
-use std::ops::{Div, Index, Mul};
+use std::{
+  fmt::{Display, Formatter},
+  ops::{Div, Index, Mul},
+};
 
 use super::*;
 use crate::ToVirtualPath;
@@ -100,6 +103,12 @@ impl FromRandom for Color {
   #[inline(always)]
   fn from_random(random: &mut Random) -> Self {
     Color::rgb(random.next(), random.next(), random.next())
+  }
+}
+
+impl Display for Color {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(formatter, "Color({}, {}, {}, {})", self.r, self.g, self.b, self.a)
   }
 }
 
@@ -200,6 +209,12 @@ impl Lerp for Color32 {
 impl FromRandom for Color32 {
   fn from_random(random: &mut Random) -> Self {
     Color32::rgb(random.next(), random.next(), random.next())
+  }
+}
+
+impl Display for Color32 {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(formatter, "Color({}, {}, {}, {})", self.r, self.g, self.b, self.a)
   }
 }
 
