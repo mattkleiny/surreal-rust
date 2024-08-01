@@ -2,8 +2,8 @@ use common::impl_variant_enum;
 
 /// A keyboard input device.
 pub trait KeyboardDevice {
-  fn is_key_down(&self, key: VirtualKey) -> bool;
-  fn is_key_up(&self, key: VirtualKey) -> bool;
+  /// All pending keyboard events.
+  fn events(&self) -> &[KeyboardEvent];
 }
 
 /// A keyboard event.

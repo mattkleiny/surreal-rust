@@ -2,6 +2,7 @@
 
 use std::ffi::{c_int, CString};
 
+use ::input::KeyboardEvent;
 use sdl2_sys::{
   SDL_GLattr::{
     SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_MAJOR_VERSION, SDL_GL_CONTEXT_MINOR_VERSION, SDL_GL_CONTEXT_PROFILE_MASK,
@@ -154,21 +155,28 @@ impl Window {
         type_: SDL_EventType::SDL_FIRSTEVENT as u32,
       };
 
+      self.keyboard_device.clear_events();
+      self.mouse_device.clear_events();
+
       while SDL_PollEvent(&mut event) != 0 {
         if event.type_ == SDL_EventType::SDL_QUIT as u32 {
           running = false;
         }
 
         if event.type_ == SDL_EventType::SDL_KEYDOWN as u32 {
-          if let Some(virtual_key) = input::virtualkey_from_scancode(event.key.keysym.sym) {
-            self.keyboard_device.keyboard_state.insert(virtual_key);
-          }
+          self.keyboard_device.on_key_down(event.key.keysym.sym);
         }
 
         if event.type_ == SDL_EventType::SDL_KEYUP as u32 {
-          if let Some(virtual_key) = input::virtualkey_from_scancode(event.key.keysym.sym) {
-            self.keyboard_device.keyboard_state.remove(&virtual_key);
-          }
+          self.keyboard_device.on_key_up(event.key.keysym.sym);
+        }
+
+        if event.type_ == SDL_EventType::SDL_MOUSEBUTTONDOWN as u32 {
+          self.mouse_device.on_mouse_down(event.button.button);
+        }
+
+        if event.type_ == SDL_EventType::SDL_MOUSEBUTTONUP as u32 {
+          self.mouse_device.on_mouse_up(event.button.button);
         }
       }
 
