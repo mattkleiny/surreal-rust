@@ -26,7 +26,7 @@ pub struct Pointer<T: ?Sized> {
 }
 
 impl<T> Pointer<T> {
-  /// Creates a new pointer.
+  /// Creates a new pointer from a boxed object.
   pub fn new(value: T) -> Self {
     Self::from_box(Box::new(value))
   }
@@ -48,7 +48,13 @@ impl<T: ?Sized> Pointer<T> {
 
   /// Creates a new pointer from a raw pointer.
   #[inline(always)]
-  pub fn from_raw(ptr: *mut T) -> Self {
+  pub fn from_raw(ptr: *const T) -> Self {
+    Self { ptr: ptr as *mut T }
+  }
+
+  /// Creates a new pointer from a raw pointer.
+  #[inline(always)]
+  pub fn from_raw_mut(ptr: *mut T) -> Self {
     Self { ptr }
   }
 
@@ -76,21 +82,19 @@ impl<T: ?Sized> Pointer<T> {
     unsafe { &mut *self.ptr }
   }
 
-  /// Frees the memory allocated by the pointer.
-  pub fn delete(self) {
-    unsafe {
-      drop(Box::from_raw(self.ptr));
-    }
-  }
-}
-
-impl<T: ?Sized> Pointer<T> {
   /// Allow casting of the pointer from one type to another.
   ///
   /// It's up to the caller to ensure that the types are compatible.
   #[inline(always)]
   pub unsafe fn cast_unchecked<U>(self) -> Pointer<U> {
-    Pointer::from_raw(self.into_raw() as *mut U)
+    Pointer::from_raw_mut(self.into_raw() as *mut U)
+  }
+
+  /// Frees the memory allocated by the pointer.
+  pub fn delete(self) {
+    unsafe {
+      drop(Box::from_raw(self.ptr));
+    }
   }
 }
 

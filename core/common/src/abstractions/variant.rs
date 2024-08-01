@@ -452,7 +452,7 @@ impl<T: Any> ToVariant for Pointer<T> {
   }
 }
 
-impl<T: Any> FromVariant for Pointer<T> {
+impl<T> FromVariant for Pointer<T> {
   fn from_variant(variant: Variant) -> Result<Self, VariantError> {
     match variant {
       Variant::UserData(value) => Ok(unsafe { value.cast_unchecked::<T>() }),

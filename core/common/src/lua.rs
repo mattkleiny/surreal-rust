@@ -5,7 +5,10 @@
 
 pub use mlua::prelude::*;
 
-use crate::{Callback, Color, Color32, Pointer, Quat, ToStringName, ToVirtualPath, Variant, Vec2, Vec3, Vec4};
+use crate::{
+  Callback, Color, Color32, FromVariant, Pointer, Quat, ToStringName, ToVariant, ToVirtualPath, Variant, Vec2, Vec3,
+  Vec4,
+};
 
 /// A Lua scripting engine.
 ///
@@ -133,11 +136,7 @@ impl<'lua> IntoLua<'lua> for Variant {
       Variant::Quat(value) => LuaQuat(value).into_lua(lua)?,
       Variant::Color(value) => LuaColor(value).into_lua(lua)?,
       Variant::Color32(value) => LuaColor32(value).into_lua(lua)?,
-      Variant::UserData(value) => {
-        let pointer = value.into_void();
-
-        LuaValue::LightUserData(LuaLightUserData(pointer))
-      }
+      Variant::UserData(value) => LuaValue::LightUserData(LuaLightUserData(value.into_void())),
     })
   }
 }
@@ -151,14 +150,8 @@ impl<'lua> FromLua<'lua> for Variant {
       LuaValue::Integer(value) => Variant::I64(value),
       LuaValue::Number(value) => Variant::F64(value),
       LuaValue::String(value) => Variant::String(value.to_str()?.to_string()),
-      LuaValue::Table(_) => todo!(),
-      LuaValue::Function(_) => todo!(),
-      LuaValue::Thread(_) => todo!(),
-      LuaValue::LightUserData(value) => {
-        let pointer = Pointer::from_raw(value.0);
-
-        Variant::UserData(pointer)
-      }
+      LuaValue::Table(value) => Variant::UserData(Pointer::new(value.into_owned())),
+      LuaValue::LightUserData(value) => Variant::UserData(Pointer::from_raw_mut(value.0)),
       LuaValue::UserData(value) => match () {
         _ if value.is::<LuaVec2>() => Variant::Vec2(value.borrow::<LuaVec2>()?.0),
         _ if value.is::<LuaVec3>() => Variant::Vec3(value.borrow::<LuaVec3>()?.0),
@@ -170,6 +163,28 @@ impl<'lua> FromLua<'lua> for Variant {
       },
       _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string()))?,
     })
+  }
+}
+
+/// Extension methods for [`LuaTable`] to work with [`Variant`]s.
+pub trait VariantTableExt<'lua> {
+  fn get_as<R: FromVariant>(&self, key: impl IntoLua<'lua>) -> LuaResult<R>;
+  fn set_as<R: ToVariant>(&self, key: impl IntoLua<'lua>, value: R) -> LuaResult<()>;
+}
+
+impl<'lua> VariantTableExt<'lua> for LuaTable<'lua> {
+  #[inline]
+  fn get_as<R: FromVariant>(&self, key: impl IntoLua<'lua>) -> LuaResult<R> {
+    let variant = self.get(key);
+
+    variant.and_then(|value| R::from_variant(value).map_err(|_| LuaError::UserDataTypeMismatch))
+  }
+
+  #[inline]
+  fn set_as<R: ToVariant>(&self, key: impl IntoLua<'lua>, value: R) -> LuaResult<()> {
+    let variant = value.to_variant();
+
+    self.set(key, variant)
   }
 }
 
@@ -305,5 +320,25 @@ impl LuaUserData for LuaColor32 {
 
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
     methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| Ok(format!("{}", this.0)));
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_table_coercion_through_pointer() {
+    let lua = Lua::new();
+    let table = lua.globals();
+
+    table.set("Key", "Hello, world!").unwrap();
+
+    let pointer_a = Pointer::new(table);
+    let pointer_b: Pointer<LuaTable> = unsafe { pointer_a.cast_unchecked() };
+
+    let value: String = pointer_b.get("Key").unwrap();
+
+    assert_eq!(value, "Hello, world!");
   }
 }
