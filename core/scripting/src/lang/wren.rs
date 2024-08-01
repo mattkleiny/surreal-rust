@@ -160,8 +160,14 @@ fn tokenise(code: &str) -> Vec<Token> {
         }
 
         match is_floating_point {
-          true => Token::Literal(Literal::Float(value.parse().unwrap())),
-          false => Token::Literal(Literal::Integer(value.parse().unwrap())),
+          true => value
+            .parse()
+            .map(|value| Token::Literal(Literal::Float(value)))
+            .unwrap_or(Token::Invalid(format!("Invalid number: {}", value))),
+          false => value
+            .parse()
+            .map(|value| Token::Literal(Literal::Integer(value)))
+            .unwrap_or(Token::Invalid(format!("Invalid integer: {}", value))),
         }
       }
       _ if character.is_alphabetic() => {

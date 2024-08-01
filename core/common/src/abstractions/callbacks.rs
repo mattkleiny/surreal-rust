@@ -6,6 +6,7 @@ use crate::{FromVariant, ToVariant, Variant};
 #[derive(Debug)]
 pub enum CallbackError {
   ExecutionError(String),
+  InvalidArgument,
 }
 
 /// A callback that can be called from a foreign environment.
@@ -49,7 +50,7 @@ where
       )));
     }
 
-    let arg1 = A1::from_variant(args[0].clone());
+    let arg1 = A1::from_variant(args[0].clone()).map_err(|_| CallbackError::InvalidArgument)?;
 
     let result = self(arg1);
 
@@ -72,8 +73,8 @@ where
       )));
     }
 
-    let arg1 = A1::from_variant(args[0].clone());
-    let arg2 = A2::from_variant(args[1].clone());
+    let arg1 = A1::from_variant(args[0].clone()).map_err(|_| CallbackError::InvalidArgument)?;
+    let arg2 = A2::from_variant(args[1].clone()).map_err(|_| CallbackError::InvalidArgument)?;
 
     let result = self(arg1, arg2);
 
@@ -97,9 +98,9 @@ where
       )));
     }
 
-    let arg1 = A1::from_variant(args[0].clone());
-    let arg2 = A2::from_variant(args[1].clone());
-    let arg3 = A3::from_variant(args[2].clone());
+    let arg1 = A1::from_variant(args[0].clone()).map_err(|_| CallbackError::InvalidArgument)?;
+    let arg2 = A2::from_variant(args[1].clone()).map_err(|_| CallbackError::InvalidArgument)?;
+    let arg3 = A3::from_variant(args[2].clone()).map_err(|_| CallbackError::InvalidArgument)?;
 
     let result = self(arg1, arg2, arg3);
 
@@ -124,10 +125,10 @@ where
       )));
     }
 
-    let arg1 = A1::from_variant(args[0].clone());
-    let arg2 = A2::from_variant(args[1].clone());
-    let arg3 = A3::from_variant(args[2].clone());
-    let arg4 = A4::from_variant(args[3].clone());
+    let arg1 = A1::from_variant(args[0].clone()).map_err(|_| CallbackError::InvalidArgument)?;
+    let arg2 = A2::from_variant(args[1].clone()).map_err(|_| CallbackError::InvalidArgument)?;
+    let arg3 = A3::from_variant(args[2].clone()).map_err(|_| CallbackError::InvalidArgument)?;
+    let arg4 = A4::from_variant(args[3].clone()).map_err(|_| CallbackError::InvalidArgument)?;
 
     let result = self(arg1, arg2, arg3, arg4);
 

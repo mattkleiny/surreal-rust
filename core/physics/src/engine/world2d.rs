@@ -44,7 +44,7 @@ impl PhysicsWorld for PhysicsWorld2D {
   }
 
   fn collider_create(&self) -> Result<ColliderId, ColliderError> {
-    let mut colliders = self.colliders.write().unwrap();
+    let mut colliders = self.colliders.write().expect("Failed to lock colliders");
 
     Ok(colliders.insert(Collider {
       shape: ColliderShape::Circle { radius: 1.0 },
@@ -53,14 +53,14 @@ impl PhysicsWorld for PhysicsWorld2D {
   }
 
   fn collider_get_position(&self, id: ColliderId) -> Result<Self::Vector, ColliderError> {
-    let colliders = self.colliders.read().unwrap();
+    let colliders = self.colliders.read().expect("Failed to lock colliders");
     let collider = colliders.get(id).ok_or(ColliderError::InvalidId(id))?;
 
     Ok(collider.position)
   }
 
   fn collider_set_position(&self, id: ColliderId, position: Self::Vector) -> Result<(), ColliderError> {
-    let mut colliders = self.colliders.write().unwrap();
+    let mut colliders = self.colliders.write().expect("Failed to lock colliders");
     let collider = colliders.get_mut(id).ok_or(ColliderError::InvalidId(id))?;
 
     collider.position = position;
@@ -69,7 +69,7 @@ impl PhysicsWorld for PhysicsWorld2D {
   }
 
   fn collider_delete(&self, id: ColliderId) -> Result<(), ColliderError> {
-    let mut colliders = self.colliders.write().unwrap();
+    let mut colliders = self.colliders.write().expect("Failed to lock colliders");
 
     colliders.remove(id).ok_or(ColliderError::InvalidId(id))?;
 
@@ -77,7 +77,7 @@ impl PhysicsWorld for PhysicsWorld2D {
   }
 
   fn body_create(&self) -> Result<BodyId, BodyError> {
-    let mut bodies = self.bodies.write().unwrap();
+    let mut bodies = self.bodies.write().expect("Failed to lock bodies");
 
     Ok(bodies.insert(Body {
       position: Real2::ZERO,
@@ -87,14 +87,14 @@ impl PhysicsWorld for PhysicsWorld2D {
   }
 
   fn body_get_position(&self, id: BodyId) -> Result<Self::Vector, BodyError> {
-    let bodies = self.bodies.read().unwrap();
+    let bodies = self.bodies.read().expect("Failed to lock bodies");
     let body = bodies.get(id).ok_or(BodyError::InvalidId(id))?;
 
     Ok(body.position)
   }
 
   fn body_set_position(&self, id: BodyId, position: Self::Vector) -> Result<(), BodyError> {
-    let mut bodies = self.bodies.write().unwrap();
+    let mut bodies = self.bodies.write().expect("Failed to lock bodies");
     let body = bodies.get_mut(id).ok_or(BodyError::InvalidId(id))?;
 
     body.position = position;
@@ -103,14 +103,14 @@ impl PhysicsWorld for PhysicsWorld2D {
   }
 
   fn body_get_velocity(&self, id: BodyId) -> Result<Self::Vector, BodyError> {
-    let bodies = self.bodies.read().unwrap();
+    let bodies = self.bodies.read().expect("Failed to lock bodies");
     let body = bodies.get(id).ok_or(BodyError::InvalidId(id))?;
 
     Ok(body.velocity)
   }
 
   fn body_set_velocity(&self, id: BodyId, velocity: Self::Vector) -> Result<(), BodyError> {
-    let mut bodies = self.bodies.write().unwrap();
+    let mut bodies = self.bodies.write().expect("Failed to lock bodies");
     let body = bodies.get_mut(id).ok_or(BodyError::InvalidId(id))?;
 
     body.velocity = velocity;
@@ -119,7 +119,7 @@ impl PhysicsWorld for PhysicsWorld2D {
   }
 
   fn body_delete(&self, id: BodyId) -> Result<(), BodyError> {
-    let mut bodies = self.bodies.write().unwrap();
+    let mut bodies = self.bodies.write().expect("Failed to lock bodies");
 
     bodies.remove(id).ok_or(BodyError::InvalidId(id))?;
 

@@ -282,10 +282,10 @@ mod tests {
 
   #[test]
   fn it_should_execute_simple_instructions() {
-    let mut vm = VirtualMachine::default();
+    let mut virtual_machine = VirtualMachine::default();
 
     let instructions = [
-      Opcode::Constant(vm.constants.add(Variant::from(42i64))),
+      Opcode::Constant(virtual_machine.constants.add(Variant::I64(42i64))),
       Opcode::Unary(UnaryOp::Negate),
       Opcode::Literal(Variant::I64(42)),
       Opcode::Binary(BinaryOp::Add),
@@ -293,8 +293,8 @@ mod tests {
       Opcode::Print,
     ];
 
-    let result = vm.execute(&instructions).unwrap().unwrap();
+    let result = virtual_machine.execute(&instructions).unwrap().unwrap();
 
-    assert_eq!(result, Variant::from(0i64));
+    assert_eq!(result, Variant::I64(0i64));
   }
 }

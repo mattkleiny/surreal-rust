@@ -2,6 +2,14 @@ use std::cmp::Ordering;
 
 use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 
+/// An error that can occur when working with variants.
+#[derive(Debug)]
+pub enum VariantError {
+  InvalidNegation,
+  InvalidConversion,
+  NonArithmetic,
+}
+
 /// Allows for a type to be converted to a [`Variant`].
 pub trait ToVariant {
   /// Converts the type into a [`Variant`].
@@ -9,16 +17,9 @@ pub trait ToVariant {
 }
 
 /// Allows for a type to be converted from a [`Variant`].
-pub trait FromVariant {
+pub trait FromVariant: Sized {
   /// Converts a [`Variant`] into the type.
-  fn from_variant(variant: Variant) -> Self;
-}
-
-/// An error that can occur when working with variants.
-#[derive(Debug)]
-pub enum VariantError {
-  InvalidNegation,
-  NonArithmetic,
+  fn from_variant(variant: Variant) -> Result<Self, VariantError>;
 }
 
 /// The different kinds of values that a [`Variant`] can hold.
@@ -297,74 +298,58 @@ impl PartialOrd for Variant {
   }
 }
 
-/// Allows for a type to be converted to a [`Variant`].
-impl<T: Into<Variant> + Clone> ToVariant for T {
-  #[inline]
-  fn to_variant(&self) -> Variant {
-    self.clone().into()
-  }
-}
-
-/// Allows for a type to be converted from a [`Variant`].
-impl<T: From<Variant>> FromVariant for T {
-  #[inline]
-  fn from_variant(variant: Variant) -> Self {
-    Self::from(variant)
-  }
-}
-
 /// Allows conversion to/from a `Variant` for a given type.
 macro_rules! impl_variant {
   ((), $kind:ident) => {
-    impl From<()> for Variant {
+    impl ToVariant for () {
       #[inline]
-      fn from(_: ()) -> Self {
+      fn to_variant(&self) -> Variant {
         Variant::$kind
       }
     }
 
-    impl From<Variant> for () {
+    impl FromVariant for () {
       #[inline]
-      fn from(_: Variant) -> Self {
-        // no-op
+      fn from_variant(_: Variant) -> Result<Self, VariantError> {
+        Ok(()) // no-op
       }
     }
   };
 
   ($type:ty, $kind:ident) => {
-    impl From<$type> for Variant {
+    impl ToVariant for $type {
       #[inline]
-      fn from(value: $type) -> Self {
-        Self::$kind(value)
+      fn to_variant(&self) -> Variant {
+        Variant::$kind(self.clone())
       }
     }
 
-    impl From<Variant> for $type {
+    impl FromVariant for $type {
       #[inline]
-      fn from(value: Variant) -> Self {
+      fn from_variant(value: Variant) -> Result<Self, VariantError> {
         match value {
-          Variant::$kind(value) => value,
-          _ => panic!("Variant is not convertible"),
+          Variant::$kind(value) => Ok(value),
+          _ => Err(VariantError::InvalidConversion),
         }
       }
     }
   };
 
   ($type:ty, $kind:ident, $($kinds:ident),*) => {
-    impl From<$type> for Variant {
+    impl ToVariant for $type {
       #[inline]
-      fn from(value: $type) -> Self {
-        Self::$kind(value)
+      fn to_variant(&self) -> Variant {
+        Variant::$kind(self.clone())
       }
     }
 
-    impl From<Variant> for $type {
+    impl FromVariant for $type {
       #[inline]
-      fn from(value: Variant) -> Self {
+      fn from_variant(value: Variant) -> Result<Self, VariantError> {
         match value {
-          Variant::$kind(value) => value,
-          $(Variant::$kinds(value) => value as $type,)*
-          _ => panic!("Invalid type conversion"),
+          Variant::$kind(value) => Ok(value),
+          $(Variant::$kinds(value) => Ok(value as $type),)*
+          _ => Err(VariantError::InvalidConversion),
         }
       }
     }
@@ -407,14 +392,14 @@ mod tests {
   #[test]
   fn test_variant_conversion() {
     assert_eq!(true.to_variant(), Variant::Bool(true));
-    assert_eq!(u8::from_variant(Variant::U8(10)), 10);
+    assert_eq!(u8::from_variant(Variant::U8(10)).unwrap(), 10);
   }
 
   #[test]
   fn test_variant_coercion() {
-    assert_eq!(u16::from_variant(Variant::U8(10)), 10);
-    assert_eq!(u32::from_variant(Variant::U8(10)), 10);
-    assert_eq!(f64::from_variant(Variant::U8(10)), 10.0f64);
+    assert_eq!(u16::from_variant(Variant::U8(10)).unwrap(), 10);
+    assert_eq!(u32::from_variant(Variant::U8(10)).unwrap(), 10);
+    assert_eq!(f64::from_variant(Variant::U8(10)).unwrap(), 10.0f64);
   }
 
   #[test]

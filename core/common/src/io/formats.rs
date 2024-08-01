@@ -16,6 +16,7 @@ pub enum Chunk {
 
 /// Represents a type that can be serialized.
 pub trait Serialize: Sized {
+  // TODO: make this fallible
   /// Serializes the type into a chunk.
   fn serialize(&self) -> Chunk;
 
@@ -149,7 +150,7 @@ impl<V: ToVariant> Serialize for V {
 impl<V: FromVariant> Deserialize for V {
   fn deserialize(chunk: &Chunk) -> Self {
     match chunk {
-      Chunk::Variant(value) => Self::from_variant(value.clone()),
+      Chunk::Variant(value) => Self::from_variant(value.clone()).unwrap(),
       Chunk::Sequence(_) => panic!("Unable to deserialize sequence into a single value"),
       Chunk::Map(_) => panic!("Unable to deserialize map into a single value"),
     }
