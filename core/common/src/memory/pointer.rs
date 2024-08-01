@@ -40,36 +40,38 @@ impl<T: ?Sized> Pointer<T> {
     }
   }
 
-  /// Creates a new pointer from a raw pointer.
-  pub unsafe fn from_raw(ptr: *mut T) -> Self {
-    Self { ptr }
-  }
-
   /// Consumes the pointer and returns the boxed object.
+  #[inline(always)]
   pub fn into_box(self) -> Box<T> {
     unsafe { Box::from_raw(self.ptr) }
   }
 
+  /// Creates a new pointer from a raw pointer.
+  #[inline(always)]
+  pub fn from_raw(ptr: *mut T) -> Self {
+    Self { ptr }
+  }
+
   /// Consumes the pointer and returns the raw pointer.
-  pub unsafe fn into_raw(self) -> *mut T {
-    let ptr = self.ptr;
-    std::mem::forget(self);
-    ptr
+  #[inline(always)]
+  pub const fn into_raw(self) -> *mut T {
+    self.ptr
   }
 
   /// Consumes the pointer and returns the raw pointer as a void pointer.
-  pub unsafe fn into_void(self) -> *mut std::ffi::c_void {
-    let ptr = self.ptr as *mut std::ffi::c_void;
-    std::mem::forget(self);
-    ptr
+  #[inline(always)]
+  pub const fn into_void(self) -> *mut std::ffi::c_void {
+    self.ptr as *mut std::ffi::c_void
   }
 
   /// Returns a reference to the object.
+  #[inline(always)]
   pub fn as_ref(&self) -> &T {
     unsafe { &*self.ptr }
   }
 
   /// Returns a mutable reference to the object.
+  #[inline(always)]
   pub fn as_mut(&mut self) -> &mut T {
     unsafe { &mut *self.ptr }
   }
@@ -83,24 +85,30 @@ impl<T: ?Sized> Pointer<T> {
 }
 
 impl<T: ?Sized> Pointer<T> {
+  /// Allow casting of the pointer from one type to another.
+  ///
+  /// It's up to the caller to ensure that the types are compatible.
   #[inline(always)]
-  pub unsafe fn cast<U>(self) -> Pointer<U> {
+  pub unsafe fn cast_unchecked<U>(self) -> Pointer<U> {
     Pointer::from_raw(self.into_raw() as *mut U)
   }
 }
 
+/// Allow printing of the pointer.
 impl<T: ?Sized> Debug for Pointer<T> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_tuple("Pointer").field(&self.ptr).finish()
   }
 }
 
+/// Allow cloning of the pointer.
 impl<T: ?Sized> Clone for Pointer<T> {
   fn clone(&self) -> Self {
     Self { ptr: self.ptr }
   }
 }
 
+/// Allow dereferencing of the pointer.
 impl<T: ?Sized> Deref for Pointer<T> {
   type Target = T;
 
@@ -109,6 +117,7 @@ impl<T: ?Sized> Deref for Pointer<T> {
   }
 }
 
+/// Allow mutable dereferencing of the pointer.
 impl<T: ?Sized> DerefMut for Pointer<T> {
   fn deref_mut(&mut self) -> &mut Self::Target {
     self.as_mut()
