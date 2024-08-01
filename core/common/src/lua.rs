@@ -168,7 +168,7 @@ impl<'lua> FromLua<'lua> for Variant {
         _ if value.is::<LuaColor32>() => Variant::Color32(value.borrow::<LuaColor32>()?.0),
         _ => return Err(LuaError::RuntimeError("Unrecognized user data".to_string())),
       },
-      _ => panic!("An unsupported Variant kind was provided from Lua"),
+      _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string()))?,
     })
   }
 }
