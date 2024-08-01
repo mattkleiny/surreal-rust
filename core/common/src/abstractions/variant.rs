@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::{Color, Color32, PackedEnum, Quat, StringName, Vec2, Vec3, Vec4};
+use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 
 /// An error that can occur when working with variants.
 #[derive(Debug)]
@@ -79,7 +79,6 @@ pub enum Variant {
   Quat(Quat),
   Color(Color),
   Color32(Color32),
-  Enum(PackedEnum),
 }
 
 impl Variant {
@@ -107,7 +106,6 @@ impl Variant {
       Variant::Quat(_) => VariantKind::Quat,
       Variant::Color(_) => VariantKind::Color,
       Variant::Color32(_) => VariantKind::Color32,
-      Variant::Enum(_) => VariantKind::Enum,
     }
   }
 
@@ -381,6 +379,25 @@ impl_variant!(Quat, Quat);
 impl_variant!(Color, Color);
 impl_variant!(Color32, Color32);
 
+#[macro_export]
+macro_rules! impl_variant_enum {
+  ($type:ty, u32) => {
+    /// Allow conversion of enum to/from a variant.
+    impl $crate::ToVariant for $type {
+      fn to_variant(&self) -> $crate::Variant {
+        $crate::Variant::U32(*self as u32)
+      }
+    }
+
+    /// Allow conversion of enum to/from a variant.
+    impl $crate::FromVariant for $type {
+      fn from_variant(variant: $crate::Variant) -> Result<Self, $crate::VariantError> {
+        Ok(unsafe { std::mem::transmute(u32::from_variant(variant)?) })
+      }
+    }
+  };
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -415,17 +432,5 @@ mod tests {
     assert_eq!((a.clone() * b.clone()).unwrap(), Variant::U32(600));
     assert_eq!((a.clone() / b.clone()).unwrap(), Variant::U32(1));
     assert_eq!((a.clone() % b.clone()).unwrap(), Variant::U32(10));
-  }
-
-  #[test]
-  fn test_packed_enum_conversion() {
-    let value = PackedEnum::new(16, 32);
-    let encoded = value.to_i64();
-
-    println!("{:#64b}", encoded);
-
-    let result = PackedEnum::try_from_i64(encoded).unwrap();
-
-    assert_eq!(result, value);
   }
 }

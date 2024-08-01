@@ -1,4 +1,10 @@
-use common::lua::{FromLua, IntoLua, Lua};
+use common::impl_variant_enum;
+
+/// A keyboard input device.
+pub trait KeyboardDevice {
+  fn is_key_down(&self, key: VirtualKey) -> bool;
+  fn is_key_up(&self, key: VirtualKey) -> bool;
+}
 
 /// A keyboard event.
 #[derive(Debug, Clone)]
@@ -22,16 +28,9 @@ pub enum VirtualKey {
   F7,
   F8,
   F9,
-  Digit0,
-  Digit1,
-  Digit2,
-  Digit3,
-  Digit4,
-  Digit5,
-  Digit6,
-  Digit7,
-  Digit8,
-  Digit9,
+  F10,
+  F11,
+  F12,
   ArrowUp,
   ArrowDown,
   ArrowLeft,
@@ -42,8 +41,4 @@ pub enum VirtualKey {
   Enter,
 }
 
-/// A keyboard input device.
-pub trait KeyboardDevice {
-  fn is_key_down(&self, key: VirtualKey) -> bool;
-  fn is_key_up(&self, key: VirtualKey) -> bool;
-}
+impl_variant_enum!(VirtualKey, u32);

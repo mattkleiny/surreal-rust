@@ -5,7 +5,7 @@
 
 pub use mlua::prelude::*;
 
-use crate::{Callback, Color, Color32, PackedEnum, Quat, ToStringName, ToVirtualPath, Variant, Vec2, Vec3, Vec4};
+use crate::{Callback, Color, Color32, Quat, ToStringName, ToVirtualPath, Variant, Vec2, Vec3, Vec4};
 
 /// A Lua scripting engine.
 ///
@@ -133,7 +133,6 @@ impl<'lua> IntoLua<'lua> for Variant {
       Variant::Quat(value) => LuaQuat(value).into_lua(lua)?,
       Variant::Color(value) => LuaColor(value).into_lua(lua)?,
       Variant::Color32(value) => LuaColor32(value).into_lua(lua)?,
-      Variant::Enum(value) => LuaValue::Integer(value.to_i64()),
     })
   }
 }
@@ -145,10 +144,7 @@ impl<'lua> FromLua<'lua> for Variant {
       LuaValue::Nil => Variant::Null,
       LuaValue::Boolean(value) => Variant::Bool(value),
       LuaValue::LightUserData(_) => todo!(),
-      LuaValue::Integer(value) => match () {
-        _ if let Some(value) = PackedEnum::try_from_i64(value) => Variant::Enum(value),
-        _ => Variant::I64(value),
-      },
+      LuaValue::Integer(value) => Variant::I64(value),
       LuaValue::Number(value) => Variant::F64(value),
       LuaValue::String(value) => Variant::String(value.to_str()?.to_string()),
       LuaValue::Table(_) => todo!(),
