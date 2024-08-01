@@ -1,38 +1,45 @@
-/// Possible key codes on a keyboard.
-#[derive(Debug, Clone)]
-pub enum KeyCode {
-  ScanCode(u8),
-  VirtualKey(VirtualKey),
-}
-
-/// Possible virtual keys on a keyboard.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum VirtualKey {
-  Escape,
-  F(u8),
-  Digits(u8),
-  Letters(char),
-  ArrowKey(ArrowKey),
-  Space,
-  Backspace,
-  Tab,
-  Enter,
-}
-
-/// A possible arrow key on a keyboard.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ArrowKey {
-  Up,
-  Down,
-  Left,
-  Right,
-}
+use common::lua::{FromLua, IntoLua, Lua};
 
 /// A keyboard event.
 #[derive(Debug, Clone)]
 pub enum KeyboardEvent {
-  KeyDown(KeyCode),
-  KeyUp(KeyCode),
+  KeyDown(VirtualKey),
+  KeyUp(VirtualKey),
+}
+
+/// Possible key codes on a keyboard.
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum VirtualKey {
+  Escape,
+  F0,
+  F1,
+  F2,
+  F3,
+  F4,
+  F5,
+  F6,
+  F7,
+  F8,
+  F9,
+  Digit0,
+  Digit1,
+  Digit2,
+  Digit3,
+  Digit4,
+  Digit5,
+  Digit6,
+  Digit7,
+  Digit8,
+  Digit9,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  Space,
+  Backspace,
+  Tab,
+  Enter,
 }
 
 /// A keyboard input device.

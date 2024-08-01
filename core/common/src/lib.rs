@@ -12,13 +12,13 @@
 #![feature(ptr_as_ref_unchecked)]
 #![feature(box_into_inner)]
 #![feature(allocator_api)]
+#![feature(if_let_guard)]
 
 pub use abstractions::*;
 pub use collections::*;
 pub use concurrency::*;
 pub use diagnostics::*;
 pub use io::*;
-pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};
 pub use maths::*;
 pub use memory::*;
 pub use strings::*;
@@ -29,10 +29,10 @@ mod collections;
 mod concurrency;
 mod diagnostics;
 mod io;
+pub mod lua;
 mod maths;
 mod memory;
 mod strings;
 mod utilities;
 
-#[cfg(feature = "lua")]
-pub mod lua;
+pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};

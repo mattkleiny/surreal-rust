@@ -17,8 +17,7 @@ members = ["core/*", "backends/*"]
 opt-level = 3
 
 [features]
-default = ["audio", "graphics", "input", "lua"]
-lua = ["common/lua"]
+default = ["audio", "graphics", "input"]
 
 [workspace.dependencies]
 # shared dependencies

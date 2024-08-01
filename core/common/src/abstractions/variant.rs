@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::{Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
+use crate::{Color, Color32, PackedEnum, Quat, StringName, Vec2, Vec3, Vec4};
 
 /// An error that can occur when working with variants.
 #[derive(Debug)]
@@ -47,6 +47,7 @@ pub enum VariantKind {
   Quat,
   Color,
   Color32,
+  Enum,
 }
 
 /// A type that can hold varying different values.
@@ -78,6 +79,7 @@ pub enum Variant {
   Quat(Quat),
   Color(Color),
   Color32(Color32),
+  Enum(PackedEnum),
 }
 
 impl Variant {
@@ -105,6 +107,7 @@ impl Variant {
       Variant::Quat(_) => VariantKind::Quat,
       Variant::Color(_) => VariantKind::Color,
       Variant::Color32(_) => VariantKind::Color32,
+      Variant::Enum(_) => VariantKind::Enum,
     }
   }
 
@@ -412,5 +415,17 @@ mod tests {
     assert_eq!((a.clone() * b.clone()).unwrap(), Variant::U32(600));
     assert_eq!((a.clone() / b.clone()).unwrap(), Variant::U32(1));
     assert_eq!((a.clone() % b.clone()).unwrap(), Variant::U32(10));
+  }
+
+  #[test]
+  fn test_packed_enum_conversion() {
+    let value = PackedEnum::new(16, 32);
+    let encoded = value.to_i64();
+
+    println!("{:#64b}", encoded);
+
+    let result = PackedEnum::try_from_i64(encoded).unwrap();
+
+    assert_eq!(result, value);
   }
 }

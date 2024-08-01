@@ -8,7 +8,6 @@ use sdl2_sys::{
   },
   SDL_GLcontextFlag::SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG,
   SDL_GLprofile::SDL_GL_CONTEXT_PROFILE_CORE,
-  SDL_KeyCode, SDL_Keycode,
 };
 
 mod audio;
@@ -161,13 +160,13 @@ impl Window {
         }
 
         if event.type_ == SDL_EventType::SDL_KEYDOWN as u32 {
-          if let Some(virtual_key) = from_scancode(event.key.keysym.sym) {
+          if let Some(virtual_key) = input::virtualkey_from_scancode(event.key.keysym.sym) {
             self.keyboard_device.keyboard_state.insert(virtual_key);
           }
         }
 
         if event.type_ == SDL_EventType::SDL_KEYUP as u32 {
-          if let Some(virtual_key) = from_scancode(event.key.keysym.sym) {
+          if let Some(virtual_key) = input::virtualkey_from_scancode(event.key.keysym.sym) {
             self.keyboard_device.keyboard_state.remove(&virtual_key);
           }
         }
@@ -229,18 +228,5 @@ impl Drop for Window {
 
       SDL_Quit();
     }
-  }
-}
-
-fn from_scancode(scan_code: SDL_Keycode) -> Option<input::VirtualKey> {
-  use input::VirtualKey::*;
-
-  match unsafe { std::mem::transmute::<SDL_Keycode, SDL_KeyCode>(scan_code) } {
-    SDL_KeyCode::SDLK_ESCAPE => Some(Escape),
-    SDL_KeyCode::SDLK_UP => Some(ArrowKey(input::ArrowKey::Up)),
-    SDL_KeyCode::SDLK_DOWN => Some(ArrowKey(input::ArrowKey::Down)),
-    SDL_KeyCode::SDLK_LEFT => Some(ArrowKey(input::ArrowKey::Left)),
-    SDL_KeyCode::SDLK_RIGHT => Some(ArrowKey(input::ArrowKey::Right)),
-    _ => None,
   }
 }
