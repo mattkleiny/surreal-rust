@@ -6,8 +6,7 @@
 pub use mlua::prelude::*;
 
 use crate::{
-  Callback, Color, Color32, FromVariant, Pointer, Quat, ToStringName, ToVariant, ToVirtualPath, Variant, Vec2, Vec3,
-  Vec4,
+  Callable, Callback, CallbackError, Color, Color32, FromVariant, Pointer, Quat, ToStringName, ToVariant, ToVirtualPath, Variant, Vec2, Vec3, Vec4
 };
 
 /// A Lua scripting engine.
@@ -136,6 +135,23 @@ impl<'lua> IntoLua<'lua> for Variant {
       Variant::Quat(value) => LuaQuat(value).into_lua(lua)?,
       Variant::Color(value) => LuaColor(value).into_lua(lua)?,
       Variant::Color32(value) => LuaColor32(value).into_lua(lua)?,
+      Variant::Callable(callable) => {
+        // create a Lua function that calls the callable
+        let function = lua.create_function(move |lua, args: LuaMultiValue| {
+          let args = args
+            .into_iter()
+            .map(|value| Variant::from_lua(value, lua))
+            .collect::<LuaResult<Vec<_>>>()?;
+
+          let result = callable.call(&args).map_err(|error| {
+            LuaError::RuntimeError(format!("An error occurred calling a function, {:?}", error))
+          })?;
+
+          Ok(result.into_lua(lua)?)
+        })?;
+
+        LuaValue::Function(function)
+      },
       Variant::UserData(value) => LuaValue::LightUserData(LuaLightUserData(value.into_void())),
     })
   }
@@ -151,6 +167,15 @@ impl<'lua> FromLua<'lua> for Variant {
       LuaValue::Number(value) => Variant::F64(value),
       LuaValue::String(value) => Variant::String(value.to_str()?.to_string()),
       LuaValue::Table(value) => Variant::UserData(Pointer::new(value.into_owned())),
+      LuaValue::Function(function) => {
+        // create a callable that calls the Lua function
+        let function = function.into_owned();
+        let callable = Callable::new(move |args| {
+          function.call(args).map_err(|error| CallbackError::ExecutionError(error.to_string()))
+        });
+
+        Variant::Callable(callable)
+      },
       LuaValue::LightUserData(value) => Variant::UserData(Pointer::from_raw_mut(value.0)),
       LuaValue::UserData(value) => match () {
         _ if value.is::<LuaVec2>() => Variant::Vec2(value.borrow::<LuaVec2>()?.0),

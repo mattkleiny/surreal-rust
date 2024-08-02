@@ -1,6 +1,13 @@
-use std::{marker::PhantomData, panic::RefUnwindSafe};
+use std::{
+  fmt::{Debug, Formatter},
+  marker::PhantomData,
+  panic::RefUnwindSafe,
+  sync::Arc,
+};
 
 use crate::{FromVariant, ToVariant, Variant};
+
+use super::VariantError;
 
 /// An error when calling a script callback.
 #[derive(Debug)]
@@ -9,7 +16,63 @@ pub enum CallbackError {
   InvalidArgument,
 }
 
-/// A callback that can be called from a foreign environment.
+/// A boxed callable function.
+///
+/// This is a wrapper around a boxed function that can be called with a list of
+/// [`Variant`] arguments and returns a [`Variant`] result.
+#[derive(Clone)]
+pub struct Callable(Arc<dyn Fn(&[Variant]) -> Result<Variant, CallbackError>>);
+
+impl Callable {
+  /// Creates a new boxed callable function from the given function.
+  pub fn new(function: impl Fn(&[Variant]) -> Result<Variant, CallbackError> + 'static) -> Self {
+    Self(Arc::new(function))
+  }
+
+  /// Creates a new boxed callable function from the given [`Callback`].
+  pub fn from_callback<R>(callback: impl Callback<R> + 'static) -> Self {
+    Self(Arc::new(move |args| callback.call(args)))
+  }
+
+  /// Calls the boxed callable function with the given arguments.
+  pub fn call(&self, args: &[Variant]) -> Result<Variant, CallbackError> {
+    let callable = self.0.as_ref();
+
+    callable(args)
+  }
+}
+
+impl PartialEq for Callable {
+  #[inline]
+  fn eq(&self, other: &Self) -> bool {
+    Arc::ptr_eq(&self.0, &other.0)
+  }
+}
+
+impl Debug for Callable {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(formatter, "Callable")
+  }
+}
+
+impl ToVariant for Callable {
+  #[inline]
+  fn to_variant(&self) -> Variant {
+    Variant::Callable(self.clone())
+  }
+}
+
+impl FromVariant for Callable {
+  #[inline]
+  fn from_variant(variant: Variant) -> Result<Self, VariantError> {
+    match variant {
+      Variant::Callable(callable) => Ok(callable),
+      _ => Err(VariantError::InvalidConversion),
+    }
+  }
+}
+
+/// Represents a function signature that is callable.
 pub trait Callback<R>: RefUnwindSafe {
   /// Calls the callback with the given arguments.
   fn call(&self, args: &[Variant]) -> Result<Variant, CallbackError>;
@@ -133,5 +196,18 @@ where
     let result = self(arg1, arg2, arg3, arg4);
 
     Ok(result.to_variant())
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_callable_function_creation_and_execution() {
+    let callable = Callable::from_callback(|a: u32, b: u32| a + b);
+    let result = callable.call(&[Variant::U32(1), Variant::U32(2)]).unwrap();
+
+    assert_eq!(result, Variant::U32(3));
   }
 }

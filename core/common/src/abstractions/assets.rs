@@ -23,19 +23,6 @@ pub struct AssetContext {
   dependencies: Graph<AssetId>,
 }
 
-impl AssetContext {
-  /// Builds a new asset context from a root asset ID.
-  fn from_asset_id(asset_id: AssetId) -> Self {
-    let mut dependencies = Graph::default();
-    let current_node = dependencies.add_node(asset_id);
-
-    Self {
-      current_node,
-      dependencies,
-    }
-  }
-}
-
 /// Represents an asset that can be loaded and resolved.
 pub trait Asset {
   /// Resolves the dependencies of the asset.

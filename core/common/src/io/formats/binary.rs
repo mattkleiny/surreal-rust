@@ -189,7 +189,8 @@ impl FileFormat for BinaryFileFormat {
             stream.write_u8(value.b)?;
             stream.write_u8(value.a)?;
           }
-          Variant::UserData(_) => {}
+          Variant::Callable(_) => todo!(),
+          Variant::UserData(_) => todo!(),
         }
       }
       Chunk::Sequence(sequence) => {

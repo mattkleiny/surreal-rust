@@ -1,6 +1,6 @@
-use std::{any::Any, cmp::Ordering};
+use std::{any::Any, cmp::Ordering, fmt::Debug};
 
-use crate::{Color, Color32, Pointer, Quat, StringName, Vec2, Vec3, Vec4};
+use crate::{Callable, Color, Color32, Pointer, Quat, StringName, Vec2, Vec3, Vec4};
 
 /// An error that can occur when working with variants.
 #[derive(Debug)]
@@ -47,6 +47,7 @@ pub enum VariantKind {
   Quat,
   Color,
   Color32,
+  Callable,
   UserData,
 }
 
@@ -55,7 +56,7 @@ pub enum VariantKind {
 /// This is an abstraction over the different primitive types that are often
 /// shuffled around in the engine. It allows for a more generic API that can
 /// handle any type of value.
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq)]
 pub enum Variant {
   #[default]
   Null,
@@ -79,43 +80,8 @@ pub enum Variant {
   Quat(Quat),
   Color(Color),
   Color32(Color32),
+  Callable(Callable),
   UserData(Pointer<dyn Any>),
-}
-
-impl PartialEq for Variant {
-  fn eq(&self, other: &Self) -> bool {
-    match (self, other) {
-      (Variant::Null, Variant::Null) => true,
-      (Variant::Bool(a), Variant::Bool(b)) => a == b,
-      (Variant::Char(a), Variant::Char(b)) => a == b,
-      (Variant::U8(a), Variant::U8(b)) => a == b,
-      (Variant::U16(a), Variant::U16(b)) => a == b,
-      (Variant::U32(a), Variant::U32(b)) => a == b,
-      (Variant::U64(a), Variant::U64(b)) => a == b,
-      (Variant::I8(a), Variant::I8(b)) => a == b,
-      (Variant::I16(a), Variant::I16(b)) => a == b,
-      (Variant::I32(a), Variant::I32(b)) => a == b,
-      (Variant::I64(a), Variant::I64(b)) => a == b,
-      (Variant::F32(a), Variant::F32(b)) => a == b,
-      (Variant::F64(a), Variant::F64(b)) => a == b,
-      (Variant::String(a), Variant::String(b)) => a == b,
-      (Variant::StringName(a), Variant::StringName(b)) => a == b,
-      (Variant::Vec2(a), Variant::Vec2(b)) => a == b,
-      (Variant::Vec3(a), Variant::Vec3(b)) => a == b,
-      (Variant::Vec4(a), Variant::Vec4(b)) => a == b,
-      (Variant::Quat(a), Variant::Quat(b)) => a == b,
-      (Variant::Color(a), Variant::Color(b)) => a == b,
-      (Variant::Color32(a), Variant::Color32(b)) => a == b,
-      (Variant::UserData(a), Variant::UserData(b)) => {
-        // pointer comparison
-        let ptr_a = &**a as *const dyn Any;
-        let ptr_b = &**b as *const dyn Any;
-
-        std::ptr::addr_eq(ptr_a, ptr_b)
-      }
-      _ => false,
-    }
-  }
 }
 
 impl Clone for Variant {
@@ -142,6 +108,7 @@ impl Clone for Variant {
       Variant::Quat(value) => Variant::Quat(value.clone()),
       Variant::Color(value) => Variant::Color(value.clone()),
       Variant::Color32(value) => Variant::Color32(value.clone()),
+      Variant::Callable(value) => Variant::Callable(value.clone()),
       Variant::UserData(value) => Variant::UserData(value.clone()),
     }
   }
@@ -172,6 +139,7 @@ impl Variant {
       Variant::Quat(_) => VariantKind::Quat,
       Variant::Color(_) => VariantKind::Color,
       Variant::Color32(_) => VariantKind::Color32,
+      Variant::Callable(_) => VariantKind::Callable,
       Variant::UserData(_) => VariantKind::UserData,
     }
   }

@@ -98,6 +98,13 @@ impl<T: ?Sized> Pointer<T> {
   }
 }
 
+/// Pointer value equality.
+impl<T: ?Sized> PartialEq for Pointer<T> {
+  fn eq(&self, other: &Self) -> bool {
+    std::ptr::addr_eq(self.ptr, other.ptr)
+  }
+}
+
 /// Allow printing of the pointer.
 impl<T: ?Sized> Debug for Pointer<T> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
