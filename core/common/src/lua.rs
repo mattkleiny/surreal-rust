@@ -6,7 +6,8 @@
 pub use mlua::prelude::*;
 
 use crate::{
-  Callable, Callback, CallbackError, Color, Color32, FromVariant, Pointer, Quat, ToStringName, ToVariant, ToVirtualPath, Variant, Vec2, Vec3, Vec4
+  Callable, Callback, CallbackError, Color, Color32, FromVariant, Pointer, Quat, ToStringName, ToVariant,
+  ToVirtualPath, Variant, Vec2, Vec3, Vec4,
 };
 
 /// A Lua scripting engine.
@@ -137,21 +138,22 @@ impl<'lua> IntoLua<'lua> for Variant {
       Variant::Color32(value) => LuaColor32(value).into_lua(lua)?,
       Variant::Callable(callable) => {
         // create a Lua function that calls the callable
+        // TODO: clean this up?
         let function = lua.create_function(move |lua, args: LuaMultiValue| {
           let args = args
             .into_iter()
             .map(|value| Variant::from_lua(value, lua))
             .collect::<LuaResult<Vec<_>>>()?;
 
-          let result = callable.call(&args).map_err(|error| {
-            LuaError::RuntimeError(format!("An error occurred calling a function, {:?}", error))
-          })?;
+          let result = callable
+            .call(&args)
+            .map_err(|error| LuaError::RuntimeError(format!("An error occurred calling a function, {:?}", error)))?;
 
           Ok(result.into_lua(lua)?)
         })?;
 
         LuaValue::Function(function)
-      },
+      }
       Variant::UserData(value) => LuaValue::LightUserData(LuaLightUserData(value.into_void())),
     })
   }
@@ -171,11 +173,13 @@ impl<'lua> FromLua<'lua> for Variant {
         // create a callable that calls the Lua function
         let function = function.into_owned();
         let callable = Callable::new(move |args| {
-          function.call(args).map_err(|error| CallbackError::ExecutionError(error.to_string()))
+          function
+            .call(args)
+            .map_err(|error| CallbackError::ExecutionError(error.to_string()))
         });
 
         Variant::Callable(callable)
-      },
+      }
       LuaValue::LightUserData(value) => Variant::UserData(Pointer::from_raw_mut(value.0)),
       LuaValue::UserData(value) => match () {
         _ if value.is::<LuaVec2>() => Variant::Vec2(value.borrow::<LuaVec2>()?.0),
@@ -365,5 +369,7 @@ mod tests {
     let value: String = pointer_b.get("Key").unwrap();
 
     assert_eq!(value, "Hello, world!");
+
+    pointer_b.delete();
   }
 }

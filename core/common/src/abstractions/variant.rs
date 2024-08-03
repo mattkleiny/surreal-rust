@@ -56,7 +56,7 @@ pub enum VariantKind {
 /// This is an abstraction over the different primitive types that are often
 /// shuffled around in the engine. It allows for a more generic API that can
 /// handle any type of value.
-#[derive(Default, Debug, PartialEq)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub enum Variant {
   #[default]
   Null,
@@ -82,36 +82,6 @@ pub enum Variant {
   Color32(Color32),
   Callable(Callable),
   UserData(Pointer<dyn Any>),
-}
-
-impl Clone for Variant {
-  fn clone(&self) -> Self {
-    match self {
-      Variant::Null => Variant::Null,
-      Variant::Bool(value) => Variant::Bool(*value),
-      Variant::Char(value) => Variant::Char(*value),
-      Variant::U8(value) => Variant::U8(*value),
-      Variant::U16(value) => Variant::U16(*value),
-      Variant::U32(value) => Variant::U32(*value),
-      Variant::U64(value) => Variant::U64(*value),
-      Variant::I8(value) => Variant::I8(*value),
-      Variant::I16(value) => Variant::I16(*value),
-      Variant::I32(value) => Variant::I32(*value),
-      Variant::I64(value) => Variant::I64(*value),
-      Variant::F32(value) => Variant::F32(*value),
-      Variant::F64(value) => Variant::F64(*value),
-      Variant::String(value) => Variant::String(value.clone()),
-      Variant::StringName(value) => Variant::StringName(value.clone()),
-      Variant::Vec2(value) => Variant::Vec2(value.clone()),
-      Variant::Vec3(value) => Variant::Vec3(value.clone()),
-      Variant::Vec4(value) => Variant::Vec4(value.clone()),
-      Variant::Quat(value) => Variant::Quat(value.clone()),
-      Variant::Color(value) => Variant::Color(value.clone()),
-      Variant::Color32(value) => Variant::Color32(value.clone()),
-      Variant::Callable(value) => Variant::Callable(value.clone()),
-      Variant::UserData(value) => Variant::UserData(value.clone()),
-    }
-  }
 }
 
 impl Variant {
@@ -423,7 +393,7 @@ impl<T: Any> ToVariant for Pointer<T> {
 impl<T> FromVariant for Pointer<T> {
   fn from_variant(variant: Variant) -> Result<Self, VariantError> {
     match variant {
-      Variant::UserData(value) => Ok(unsafe { value.cast_unchecked::<T>() }),
+      Variant::UserData(value) => Ok(unsafe { value.cast_unchecked() }),
       _ => Err(VariantError::InvalidConversion),
     }
   }
