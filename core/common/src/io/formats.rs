@@ -22,31 +22,31 @@ pub trait Serialize: Sized {
 
   /// Serializes the type to a binary byte array.
   fn to_binary_bytes(&self) -> Result<Vec<u8>, StreamError> {
-    Self::to_format_bytes::<BinaryFileFormat>(self)
+    Self::to_format_bytes::<BinaryFormat>(self)
   }
 
   /// Serializes the type to a binary file.
   fn to_binary_path(&self, path: impl ToVirtualPath) -> Result<(), StreamError> {
-    Self::to_format_path::<BinaryFileFormat>(self, path)
+    Self::to_format_path::<BinaryFormat>(self, path)
   }
 
   /// Serializes the type to a JSON byte array.
   fn to_json_bytes(&self) -> Result<Vec<u8>, StreamError> {
-    Self::to_format_bytes::<JsonFileFormat>(self)
+    Self::to_format_bytes::<JsonFormat>(self)
   }
 
   /// Serializes the type to a JSON string.
   fn to_json_string(&self) -> Result<String, StreamError> {
-    Self::to_format_string::<JsonFileFormat>(self)
+    Self::to_format_string::<JsonFormat>(self)
   }
 
   /// Serializes the type to a JSON file.
   fn to_json_path(&self, path: impl ToVirtualPath) -> Result<(), StreamError> {
-    Self::to_format_path::<JsonFileFormat>(self, path)
+    Self::to_format_path::<JsonFormat>(self, path)
   }
 
   /// Serializes the type to a byte array with a specific format.
-  fn to_format_bytes<F: FileFormat + Default>(&self) -> Result<Vec<u8>, StreamError> {
+  fn to_format_bytes<F: Format + Default>(&self) -> Result<Vec<u8>, StreamError> {
     let mut format = F::default();
     let mut stream = std::io::Cursor::new(Vec::new());
 
@@ -56,7 +56,7 @@ pub trait Serialize: Sized {
   }
 
   /// Serializes the type to a string with a specific format.
-  fn to_format_string<F: FileFormat + Default>(&self) -> Result<String, StreamError> {
+  fn to_format_string<F: Format + Default>(&self) -> Result<String, StreamError> {
     let mut format = F::default();
     let mut stream = std::io::Cursor::new(Vec::new());
 
@@ -66,7 +66,7 @@ pub trait Serialize: Sized {
   }
 
   /// Serializes the type to a path with a specific format.
-  fn to_format_path<F: FileFormat + Default>(&self, path: impl ToVirtualPath) -> Result<(), StreamError> {
+  fn to_format_path<F: Format + Default>(&self, path: impl ToVirtualPath) -> Result<(), StreamError> {
     let path = path.to_virtual_path();
     let mut format = F::default();
     let mut stream = path.open_output_stream()?;
@@ -82,31 +82,31 @@ pub trait Deserialize: Sized {
 
   /// Deserializes the type from a binary byte array.
   fn from_binary_bytes(data: &[u8]) -> Result<Self, StreamError> {
-    Self::from_format_bytes::<BinaryFileFormat>(data)
+    Self::from_format_bytes::<BinaryFormat>(data)
   }
 
   /// Deserializes the type from a binary path.
   fn from_binary_path(path: impl ToVirtualPath) -> Result<Self, StreamError> {
-    Self::from_format_path::<BinaryFileFormat>(path)
+    Self::from_format_path::<BinaryFormat>(path)
   }
 
   /// Deserializes the type from a JSON byte array.
   fn from_json_bytes(data: &[u8]) -> Result<Self, StreamError> {
-    Self::from_format_bytes::<JsonFileFormat>(data)
+    Self::from_format_bytes::<JsonFormat>(data)
   }
 
   /// Deserializes the type from a JSON string.
   fn from_json_string(data: &str) -> Result<Self, StreamError> {
-    Self::from_format_string::<JsonFileFormat>(data)
+    Self::from_format_string::<JsonFormat>(data)
   }
 
   /// Deserializes the type from a JSON path.
   fn from_json_path(path: impl ToVirtualPath) -> Result<Self, StreamError> {
-    Self::from_format_path::<JsonFileFormat>(path)
+    Self::from_format_path::<JsonFormat>(path)
   }
 
   /// Deserializes the type from a byte slice with a specific format.
-  fn from_format_bytes<F: FileFormat + Default>(data: &[u8]) -> Result<Self, StreamError> {
+  fn from_format_bytes<F: Format + Default>(data: &[u8]) -> Result<Self, StreamError> {
     let mut format = F::default();
     let mut stream = std::io::Cursor::new(data);
 
@@ -114,7 +114,7 @@ pub trait Deserialize: Sized {
   }
 
   /// Deserializes the type from a string with a specific format.
-  fn from_format_string<F: FileFormat + Default>(data: &str) -> Result<Self, StreamError> {
+  fn from_format_string<F: Format + Default>(data: &str) -> Result<Self, StreamError> {
     let mut format = F::default();
     let mut stream = std::io::Cursor::new(data.as_bytes());
 
@@ -122,7 +122,7 @@ pub trait Deserialize: Sized {
   }
 
   /// Deserializes the type from a path with a specific format.
-  fn from_format_path<F: FileFormat + Default>(path: impl ToVirtualPath) -> Result<Self, StreamError> {
+  fn from_format_path<F: Format + Default>(path: impl ToVirtualPath) -> Result<Self, StreamError> {
     let path = path.to_virtual_path();
     let mut format = F::default();
     let mut stream = path.open_input_stream()?;
@@ -132,7 +132,7 @@ pub trait Deserialize: Sized {
 }
 
 /// A format for reading/writing data.
-pub trait FileFormat {
+pub trait Format {
   /// Reads a chunk from the stream.
   fn read_chunk(&mut self, stream: &mut dyn InputStream) -> Result<Chunk, StreamError>;
 

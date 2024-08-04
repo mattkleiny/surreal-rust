@@ -3,11 +3,11 @@ use crate::io::formats::json::parser::JsonToken;
 
 /// A file format for working with JSON.
 #[derive(Default)]
-pub struct JsonFileFormat {
+pub struct JsonFormat {
   indent: usize,
 }
 
-impl FileFormat for JsonFileFormat {
+impl Format for JsonFormat {
   fn read_chunk(&mut self, stream: &mut dyn InputStream) -> Result<Chunk, StreamError> {
     let mut reader = parser::JsonStreamReader::new(stream);
 

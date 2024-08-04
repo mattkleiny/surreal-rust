@@ -1,11 +1,11 @@
 use super::*;
 use crate::{Color, Color32, Quat, StreamError, StringName, Vec2, Vec3, Vec4};
 
-/// The binary [`FileFormat`].
+/// The binary [`Format`].
 #[derive(Default)]
-pub struct BinaryFileFormat {}
+pub struct BinaryFormat {}
 
-impl FileFormat for BinaryFileFormat {
+impl Format for BinaryFormat {
   fn read_chunk(&mut self, stream: &mut dyn InputStream) -> Result<Chunk, StreamError> {
     let chunk_type = stream.read_u8()?;
 
