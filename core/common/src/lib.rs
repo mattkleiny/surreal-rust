@@ -23,6 +23,7 @@ pub use io::*;
 pub use maths::*;
 pub use memory::*;
 pub use strings::*;
+pub use tools::*;
 pub use utilities::*;
 
 mod abstractions;
@@ -34,6 +35,7 @@ pub mod lua;
 mod maths;
 mod memory;
 mod strings;
+mod tools;
 mod utilities;
 
 pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};

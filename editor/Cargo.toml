@@ -3,7 +3,6 @@ name = "surreal-editor"
 description = "The visual editor for the Surreal project"
 authors.workspace = true
 edition.workspace = true
-version.workspace = true
 
 [dependencies]
 # core dependencies
@@ -11,4 +10,5 @@ common = { package = "surreal-common", path = "../core/common" }
 audio = { package = "surreal-audio", path = "../core/audio" }
 graphics = { package = "surreal-graphics", path = "../core/graphics" }
 input = { package = "surreal-input", path = "../core/input" }
+scripting = { package = "surreal-scripting", path = "../core/scripting" }
 sdl = { package = "surreal-backend-sdl", path = "../backends/sdl" }

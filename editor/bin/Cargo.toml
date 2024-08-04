@@ -1,0 +1,13 @@
+[package]
+name = "surreal-editor-bin"
+description = "The main binary for the visual editor for the Surreal project"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+editor = { package = "surreal-editor", path = "../" }
+tauri = { version = "2.0.0-rc.0" }
+
+[build-dependencies]
+tauri-build = { version = "2.0.0-rc.0" }
