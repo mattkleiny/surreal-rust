@@ -1,7 +1,7 @@
 //! Networking tools for the engine.
 
-pub use ipc::*;
+pub use channels::*;
 pub use tcp::*;
 
-mod ipc;
+mod channels;
 mod tcp;
