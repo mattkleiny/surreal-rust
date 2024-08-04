@@ -1,25 +1,14 @@
 name: Build and Test
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
-concurrency:
-  group: "builds"
-  cancel-in-progress: true
+on: push
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
 
     runs-on: ${{ matrix.os }}
-
-    env:
-      HEADLESS_ENVIRONMENT: true
 
     steps:
       - uses: actions/checkout@v2
