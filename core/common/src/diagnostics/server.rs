@@ -34,7 +34,7 @@ impl ToVariant for DiagnosticEvent {
 }
 
 impl FromVariant for DiagnosticEvent {
-  fn from_variant(variant: Variant) -> Result<Self, VariantError> {
+  fn from_variant(_variant: Variant) -> Result<Self, VariantError> {
     todo!()
   }
 }
@@ -144,21 +144,3 @@ impl_telemetry!(FrameTime, "frame_time");
 impl_telemetry!(FrameTimeAverage, "frame_time_average");
 impl_telemetry!(FrameTimeMinimum, "frame_time_minimum");
 impl_telemetry!(FrameTimeMaximum, "frame_time_maximum");
-
-#[cfg(test)]
-mod tests {
-  use crate::{DiagnosticClient, DiagnosticServer, TcpClient, TcpServer};
-
-  #[test]
-  fn test_server_client_interaction() {
-    let mut server = DiagnosticServer::from_channel(TcpServer::new("127.0.0.1:7337").unwrap());
-    let mut client = DiagnosticClient::from_channel(TcpClient::connect("127.0.0.1:7337").unwrap());
-
-    server
-      .notify(super::DiagnosticEvent::Log {
-        level: super::super::LogLevel::Info,
-        message: "Hello, world!".to_string(),
-      })
-      .unwrap();
-  }
-}

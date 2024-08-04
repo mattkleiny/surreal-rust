@@ -133,10 +133,7 @@ pub trait Deserialize: Sized {
 
 /// A format for reading/writing data.
 pub trait Format {
-  /// Reads a chunk from the stream.
   fn read_chunk(&mut self, stream: &mut dyn InputStream) -> Result<Chunk, StreamError>;
-
-  /// Writes a chunk to the stream.
   fn write_chunk(&mut self, stream: &mut dyn OutputStream, chunk: &Chunk) -> Result<(), StreamError>;
 }
 

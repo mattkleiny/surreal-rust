@@ -41,7 +41,7 @@ where
   P::Command: Serialize,
   P::Event: Deserialize,
 {
-  fn send(&self, command: P::Command) -> Result<(), ChannelError> {
+  fn send(&self, _command: P::Command) -> Result<(), ChannelError> {
     todo!()
   }
 
