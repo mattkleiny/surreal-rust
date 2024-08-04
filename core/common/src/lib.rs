@@ -25,6 +25,7 @@ pub use maths::*;
 pub use memory::*;
 pub use network::*;
 pub use strings::*;
+pub use tools::*;
 pub use utilities::*;
 
 mod abstractions;
@@ -37,6 +38,7 @@ mod maths;
 mod memory;
 mod network;
 mod strings;
+mod tools;
 mod utilities;
 
 pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};
