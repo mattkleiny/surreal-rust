@@ -2,12 +2,12 @@
 
 use common::{Vec2, Vec3, Vector};
 
-mod engine;
+mod backend;
 
 common::impl_arena_index!(pub ColliderId, "Identifies a collider.");
 common::impl_arena_index!(pub BodyId, "Identifies a physics body.");
 
-common::impl_server!(PhysicsServer by PhysicsBackend default engine::RustPhysicsBackend);
+common::impl_server!(PhysicsServer by PhysicsBackend default backend::RustPhysicsBackend);
 
 // Floating point precision used by the physics engine.
 pub type Real = f32;

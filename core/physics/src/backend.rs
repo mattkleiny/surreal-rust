@@ -1,11 +1,9 @@
-//! A home baked physics engine for simple use cases.
-
 use super::*;
 
 mod world2d;
 mod world3d;
 
-/// The backend for the homebaked rust-based physics engine.
+/// The backend for our home-baked Rust-based [`PhysicsBackend`].
 ///
 /// Probably not the best implementation, but sure is fun.
 #[derive(Default)]
@@ -26,8 +24,19 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_basic_physics_world() {
+  fn test_basic_physics_world_2d() {
     let world = physics().create_world_2d().unwrap();
+    let collider_id = world.collider_create().unwrap();
+
+    world.tick(0.16);
+    world.tick(0.16);
+
+    world.collider_delete(collider_id).unwrap();
+  }
+
+  #[test]
+  fn test_basic_physics_world_3d() {
+    let world = physics().create_world_3d().unwrap();
     let collider_id = world.collider_create().unwrap();
 
     world.tick(0.16);
