@@ -1,16 +1,35 @@
 //! Tools framework for the engine
 
-pub trait ToolProtocol {
-  type Command;
-  type Event;
+use std::sync::Mutex;
+
+use crate::{EventBus, IpcChannel};
+
+/// The protocol for communication between the engine and tools.
+pub struct ToolProtocol;
+
+impl crate::IpcProtocol for ToolProtocol {
+  type Command = ToolCommand;
+  type Event = ToolEvent;
 }
 
-pub struct ToolServer<P: ToolProtocol> {
-  commands: Vec<P::Command>,
-  events: Vec<P::Event>,
+/// A command that can be received from a tool.
+pub enum ToolCommand {}
+
+/// An event that can be sent to a tool.
+pub enum ToolEvent {}
+
+/// A server for tools to communicate with the engine.
+///
+/// This server listens for commands from tools and sends events to them.
+pub struct ToolServer {
+  server: Box<dyn IpcChannel<ToolProtocol>>,
+  commands: Mutex<Vec<ToolCommand>>,
 }
 
-pub struct ToolClient<P: ToolProtocol> {
-  commands: Vec<P::Command>,
-  events: Vec<P::Event>,
+/// A client for the engine to communicate with tools.
+///
+/// This client sends commands to tools and listens for events from them.
+pub struct ToolClient {
+  client: Box<dyn IpcChannel<ToolProtocol>>,
+  events: EventBus<ToolEvent>,
 }
