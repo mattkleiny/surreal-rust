@@ -23,7 +23,7 @@ pub enum BufferUsage {
 /// A buffer implementation that can upload data of type [`T`] to the GPU.
 #[derive(Clone)]
 pub struct Buffer<T> {
-  state: GraphicsCell<BufferState>,
+  state: internal::GraphicsCell<BufferState>,
   _type: std::marker::PhantomData<T>,
 }
 
@@ -39,7 +39,7 @@ impl<T> Buffer<T> {
   /// Constructs a new empty buffer on the GPU.
   pub fn new(kind: BufferKind, usage: BufferUsage) -> Result<Self, BufferError> {
     Ok(Self {
-      state: GraphicsCell::new(BufferState {
+      state: internal::GraphicsCell::new(BufferState {
         id: graphics().buffer_create()?,
         kind,
         usage,
@@ -79,7 +79,7 @@ impl<T> Buffer<T> {
         .buffer_read_data(
           state.id,
           0, // offset
-          length * std::mem::size_of::<T>(),
+          length * size_of::<T>(),
           buffer.as_mut_ptr() as *mut u8,
         )
         .expect("Failed to read buffer data");
@@ -99,7 +99,7 @@ impl<T> Buffer<T> {
         state.id,
         state.usage,
         state.kind,
-        std::mem::size_of_val(data),
+        size_of_val(data),
         data.as_ptr() as *const u8,
       )
       .expect("Failed to write buffer data");

@@ -50,7 +50,7 @@ pub struct ShaderKernel {
 /// Represents a single compiled shader program.
 #[derive(Clone)]
 pub struct ShaderProgram {
-  state: GraphicsCell<ShaderProgramState>,
+  state: internal::GraphicsCell<ShaderProgramState>,
 }
 
 /// The internal state for a [`ShaderProgram`] .
@@ -63,7 +63,7 @@ impl ShaderProgram {
   /// Creates a new blank [`ShaderProgram`] on the GPU.
   pub fn new() -> Result<Self, ShaderError> {
     Ok(Self {
-      state: GraphicsCell::new(ShaderProgramState {
+      state: internal::GraphicsCell::new(ShaderProgramState {
         id: graphics().shader_create()?,
         location_cache: FastHashMap::default(),
       }),
@@ -231,7 +231,6 @@ macro_rules! impl_uniform {
 impl_uniform!(bool as Bool);
 impl_uniform!(u32 as U32);
 impl_uniform!(f32 as F32);
-impl_uniform!(Angle as F32);
 impl_uniform!(Vec2 as Vec2);
 impl_uniform!(Vec3 as Vec3);
 impl_uniform!(Vec4 as Vec4);
@@ -322,7 +321,7 @@ impl ShaderUniformSet {
   ///
   /// This will also re-organise any old textures back into a linear ordering.
   fn allocate_texture_slot(&mut self, texture: &Texture) -> u8 {
-    self.textures.allocate(texture).unwrap_or_else(|| {
+    self.textures.try_allocate(texture).unwrap_or_else(|| {
       panic!(
         "Failed to allocate texture slot. There's a limit of {MAX_TEXTURE_UNITS} concurrent textures per material."
       )
@@ -344,12 +343,6 @@ impl<'a> IntoIterator for &'a ShaderUniformSet {
   }
 }
 
-/// Allows a type to be converted into a [`ShaderUniform`] set.
-pub trait ToShaderUniformSet {
-  /// Applies the type to the given [`ShaderUniformSet`].
-  fn apply_to(&self, set: &mut ShaderUniformSet);
-}
-
 /// Keeps texture assignments uniquely associated with slot indices.
 ///
 /// This is useful for tracking unique texture assignments across multiple
@@ -366,7 +359,7 @@ impl TextureBindingSet {
   /// Otherwise, the first empty slot will be used.
   ///
   /// If we've allocated all texture slots, `None` will be returned.
-  pub fn allocate(&mut self, texture: &Texture) -> Option<u8> {
+  pub fn try_allocate(&mut self, texture: &Texture) -> Option<u8> {
     for (index, slot) in self.slots.iter_mut().enumerate() {
       match slot {
         Some(existing) if *existing == texture.id() => {

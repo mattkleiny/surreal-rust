@@ -121,7 +121,7 @@ impl Vertex3 {
 /// for rendering at any time, provided a valid [`Material`] is available.
 #[derive(Clone)]
 pub struct Mesh<V> {
-  state: GraphicsCell<MeshState<V>>,
+  state: internal::GraphicsCell<MeshState<V>>,
 }
 
 /// The internal state for a mesh.
@@ -145,7 +145,7 @@ impl<V: Vertex> Mesh<V> {
     let indices = Buffer::new(BufferKind::Index, usage).map_err(|_| MeshError::FailedToCreate)?;
 
     Ok(Self {
-      state: GraphicsCell::new(MeshState {
+      state: internal::GraphicsCell::new(MeshState {
         id: graphics().mesh_create(vertices.id(), indices.id(), V::DESCRIPTORS)?,
         vertices,
         indices,

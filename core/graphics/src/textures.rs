@@ -66,7 +66,7 @@ impl Default for TextureOptions {
 /// A texture is a set of pixel data that has been uploaded to the GPU.
 #[derive(Clone)]
 pub struct Texture {
-  state: GraphicsCell<TextureState>,
+  state: internal::GraphicsCell<TextureState>,
 }
 
 struct TextureState {
@@ -80,7 +80,7 @@ impl Texture {
   /// Creates a new blank texture on the GPU with default options.
   pub fn new(width: u32, height: u32, options: &TextureOptions) -> Result<Self, TextureError> {
     let texture = Self {
-      state: GraphicsCell::new(TextureState {
+      state: internal::GraphicsCell::new(TextureState {
         id: graphics().texture_create(&options.sampler)?,
         options: options.clone(),
         width,

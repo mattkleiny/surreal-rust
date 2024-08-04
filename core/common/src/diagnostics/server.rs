@@ -3,7 +3,7 @@
 //! This is primarily used for debugging and profiling, and is not intended to
 //! be used in production.
 
-use crate::{Channel, FromVariant, Protocol, TimeStamp, ToVariant, Variant, VariantError};
+use crate::{Channel, Protocol, TimeStamp};
 
 /// An event that can be sent to a diagnostic listener.
 #[derive(Debug)]
@@ -25,18 +25,6 @@ pub enum DiagnosticEvent {
     name: &'static str,
     value: f64,
   },
-}
-
-impl ToVariant for DiagnosticEvent {
-  fn to_variant(&self) -> Variant {
-    todo!()
-  }
-}
-
-impl FromVariant for DiagnosticEvent {
-  fn from_variant(_variant: Variant) -> Result<Self, VariantError> {
-    todo!()
-  }
 }
 
 /// A listener that can receive diagnostic events.

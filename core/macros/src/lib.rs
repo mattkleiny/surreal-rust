@@ -8,7 +8,6 @@ mod objects;
 mod profiling;
 mod reflect;
 mod singleton;
-mod uniforms;
 mod vertex;
 
 /// Instruments a function with profiling code.
@@ -51,12 +50,6 @@ pub fn derive_singleton(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(Trace)]
 pub fn derive_trace(input: TokenStream) -> TokenStream {
   objects::impl_trace(input)
-}
-
-/// Derives the `ToShaderUniformSet` trait for a type.
-#[proc_macro_derive(ToShaderUniformSet, attributes(uniform))]
-pub fn derive_uniform_set(input: TokenStream) -> TokenStream {
-  uniforms::impl_uniform_set_trait(input)
 }
 
 /// Derives the `Vertex` trait for a type.

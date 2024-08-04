@@ -5,9 +5,7 @@ use std::{
   sync::Arc,
 };
 
-use crate::{FromVariant, ToVariant, Variant};
-
-use super::VariantError;
+use crate::{FromVariant, ToVariant, Variant, VariantError};
 
 /// An error when calling a script callback.
 #[derive(Debug)]

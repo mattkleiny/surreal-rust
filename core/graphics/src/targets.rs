@@ -54,7 +54,7 @@ impl RenderTextureDescriptor {
 /// A render target is a collection of one or more buffers that rendered.
 #[derive(Clone)]
 pub struct RenderTarget {
-  state: GraphicsCell<RenderTargetState>,
+  state: internal::GraphicsCell<RenderTargetState>,
 }
 
 /// The inner state of a [`RenderTarget`].
@@ -84,7 +84,7 @@ impl RenderTarget {
       .and_then(|it| it.to_texture().ok());
 
     Ok(Self {
-      state: GraphicsCell::new(RenderTargetState {
+      state: internal::GraphicsCell::new(RenderTargetState {
         id: graphics().target_create(
           color_attachment.id(),
           depth_attachment.as_ref().map(|it| it.id()),

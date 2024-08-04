@@ -26,40 +26,40 @@ impl TcpServer {
   pub fn accept(&self) -> Result<TcpClient, TcpError> {
     let (stream, _) = self.listener.accept().map_err(|_| TcpError::FailedToAccept)?;
 
-    Ok(TcpClient { stream })
+    Ok(TcpClient { _stream: stream })
   }
 
   /// Send data to all clients.
   pub fn send(&self, _data: &[u8]) -> Result<(), TcpError> {
-    unimplemented!()
+    todo!()
   }
 
   /// Receive data from all clients.
   pub fn receive(&self) -> Result<Vec<u8>, TcpError> {
-    unimplemented!()
+    todo!()
   }
 }
 
 /// A client for TCP communication.
 pub struct TcpClient {
-  stream: TcpStream,
+  _stream: TcpStream,
 }
 
 impl TcpClient {
   /// Connect to a server at the given address.
   pub fn connect(address: impl ToSocketAddrs) -> Result<Self, TcpError> {
-    let client = TcpStream::connect(address).map_err(|_| TcpError::FailedToConnect)?;
+    let stream = TcpStream::connect(address).map_err(|_| TcpError::FailedToConnect)?;
 
-    Ok(Self { stream: client })
+    Ok(Self { _stream: stream })
   }
 
   /// Send data to the server.
   pub fn send(&self, _data: &[u8]) -> Result<(), TcpError> {
-    unimplemented!()
+    todo!()
   }
 
   /// Receive data from the server.
   pub fn receive(&self) -> Result<Vec<u8>, TcpError> {
-    unimplemented!()
+    todo!()
   }
 }

@@ -31,7 +31,7 @@ impl Display for Angle {
   fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
       Angle::Radians(radians) => write!(formatter, "{}rad", radians),
-      Angle::Degrees(degress) => write!(formatter, "{}°", degress),
+      Angle::Degrees(degrees) => write!(formatter, "{}°", degrees),
     }
   }
 }
@@ -44,6 +44,7 @@ impl From<Angle> for f32 {
     }
   }
 }
+
 impl From<Angle> for f64 {
   fn from(value: Angle) -> Self {
     match value {

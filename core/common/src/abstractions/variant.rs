@@ -390,7 +390,7 @@ impl<T: Any> ToVariant for Pointer<T> {
   }
 }
 
-impl<T> FromVariant for Pointer<T> {
+impl<T: Any> FromVariant for Pointer<T> {
   fn from_variant(variant: Variant) -> Result<Self, VariantError> {
     match variant {
       Variant::UserData(value) => Ok(unsafe { value.cast_unchecked() }),
@@ -421,6 +421,7 @@ macro_rules! impl_variant_enum {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::Pointer;
 
   #[test]
   fn test_variant_size_is_ok() {
