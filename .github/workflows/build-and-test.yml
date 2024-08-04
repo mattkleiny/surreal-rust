@@ -1,6 +1,14 @@
 name: Build and Test
 
-on: push
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+concurrency:
+  group: "builds"
+  cancel-in-progress: true
 
 jobs:
   build:
