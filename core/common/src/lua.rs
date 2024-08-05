@@ -31,12 +31,12 @@ impl LuaScriptEngine {
       // configure common globals
       let globals = engine.globals();
 
-      globals.set_variant_function("vec2", Vec2::new)?;
-      globals.set_variant_function("vec3", Vec3::new)?;
-      globals.set_variant_function("vec4", Vec4::new)?;
-      globals.set_variant_function("quat", Quat::from_xyzw)?;
-      globals.set_variant_function("rgb", Color::rgb)?;
-      globals.set_variant_function("rgba", Color::rgba)?;
+      globals.set_callback("vec2", Vec2::new)?;
+      globals.set_callback("vec3", Vec3::new)?;
+      globals.set_callback("vec4", Vec4::new)?;
+      globals.set_callback("quat", Quat::from_xyzw)?;
+      globals.set_callback("rgb", Color::rgb)?;
+      globals.set_callback("rgba", Color::rgba)?;
     }
 
     Ok(engine)
@@ -47,23 +47,34 @@ impl LuaScriptEngine {
     &self.lua
   }
 
-  /// Runs the given script.
-  pub fn run(&self, script: &str) -> LuaResult<()> {
-    self.lua.load(script).exec()?;
-
-    Ok(())
-  }
-
-  /// Loads the given script.
-  pub fn load(&self, path: impl ToVirtualPath) -> LuaResult<()> {
+  /// Loads the given script and executes it.
+  pub fn load_exec(&self, path: impl ToVirtualPath) -> LuaResult<()> {
     let script = path
       .to_virtual_path()
       .read_all_text()
       .map_err(|_| LuaError::RuntimeError("Unable to load script".to_string()))?;
 
-    self.run(&script)?;
+    self.exec(&script)
+  }
 
-    Ok(())
+  /// Loads the given script and evaluates it.
+  pub fn load_eval<R: for<'lua> FromLua<'lua>>(&self, path: impl ToVirtualPath) -> LuaResult<R> {
+    let script = path
+      .to_virtual_path()
+      .read_all_text()
+      .map_err(|_| LuaError::RuntimeError("Unable to load script".to_string()))?;
+
+    self.eval(&script)
+  }
+
+  /// Evaluates the given script.
+  pub fn eval<R: for<'lua> FromLua<'lua>>(&self, script: &str) -> LuaResult<R> {
+    self.lua.load(script).eval()
+  }
+
+  /// Executes the given script.
+  pub fn exec(&self, script: &str) -> LuaResult<()> {
+    self.lua.load(script).exec()
   }
 
   /// Gets the global table from the Lua state.
@@ -171,15 +182,15 @@ pub trait VariantTableExt<'lua> {
   fn get_variant<R: FromVariant>(&self, key: impl IntoLua<'lua>) -> LuaResult<R>;
   fn set_variant<R: ToVariant>(&self, key: impl IntoLua<'lua>, value: R) -> LuaResult<()>;
 
-  /// Calls a function in the table.
-  fn call_variant_function(&self, key: impl IntoLua<'lua>, args: &[Variant]) -> LuaResult<Variant> {
+  /// Calls a [`Callable`] in the table.
+  fn call_callback(&self, key: impl IntoLua<'lua>, args: &[Variant]) -> LuaResult<Variant> {
     let callable: Callable = self.get_variant(key)?;
 
     callable.call(args).map_err(|it| LuaError::RuntimeError(it.to_string()))
   }
 
-  /// Sets a function in the table.
-  fn set_variant_function<R>(&self, key: impl IntoLua<'lua>, callback: impl Callback<R> + 'static) -> LuaResult<()> {
+  /// Sets a [`Callback`] in the table by allocating a [`Callable`].
+  fn set_callback<R>(&self, key: impl IntoLua<'lua>, callback: impl Callback<R> + 'static) -> LuaResult<()> {
     let callable = Callable::from_callback(callback);
 
     self.set_variant(key, callable)
@@ -249,8 +260,8 @@ impl<'lua> FromLua<'lua> for LuaVec2 {
   fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
     match value {
       LuaValue::Table(value) => {
-        let x = value.get_variant("x")?;
-        let y = value.get_variant("y")?;
+        let x = value.get("x")?;
+        let y = value.get("y")?;
 
         Ok(LuaVec2(Vec2::new(x, y)))
       }
@@ -294,9 +305,9 @@ impl<'lua> FromLua<'lua> for LuaVec3 {
   fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
     match value {
       LuaValue::Table(value) => {
-        let x = value.get_variant("x")?;
-        let y = value.get_variant("y")?;
-        let z = value.get_variant("z")?;
+        let x = value.get("x")?;
+        let y = value.get("y")?;
+        let z = value.get("z")?;
 
         Ok(LuaVec3(Vec3::new(x, y, z)))
       }
@@ -341,10 +352,10 @@ impl<'lua> FromLua<'lua> for LuaVec4 {
   fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
     match value {
       LuaValue::Table(value) => {
-        let x = value.get_variant("x")?;
-        let y = value.get_variant("y")?;
-        let z = value.get_variant("z")?;
-        let w = value.get_variant("w")?;
+        let x = value.get("x")?;
+        let y = value.get("y")?;
+        let z = value.get("z")?;
+        let w = value.get("w")?;
 
         Ok(LuaVec4(Vec4::new(x, y, z, w)))
       }
@@ -389,10 +400,10 @@ impl<'lua> FromLua<'lua> for LuaQuat {
   fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
     match value {
       LuaValue::Table(value) => {
-        let x = value.get_variant("x")?;
-        let y = value.get_variant("y")?;
-        let z = value.get_variant("z")?;
-        let w = value.get_variant("w")?;
+        let x = value.get("x")?;
+        let y = value.get("y")?;
+        let z = value.get("z")?;
+        let w = value.get("w")?;
 
         Ok(LuaQuat(Quat::from_xyzw(x, y, z, w)))
       }
@@ -434,10 +445,10 @@ impl<'lua> FromLua<'lua> for LuaColor {
   fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
     match value {
       LuaValue::Table(value) => {
-        let r = value.get_variant("r")?;
-        let g = value.get_variant("g")?;
-        let b = value.get_variant("b")?;
-        let a = value.get_variant("a").unwrap_or(1.0);
+        let r = value.get("r")?;
+        let g = value.get("g")?;
+        let b = value.get("b")?;
+        let a = value.get("a").unwrap_or(1.0);
 
         Ok(LuaColor(Color::rgba(r, g, b, a)))
       }
@@ -477,10 +488,10 @@ impl<'lua> FromLua<'lua> for LuaColor32 {
   fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
     match value {
       LuaValue::Table(value) => {
-        let r = value.get_variant("r")?;
-        let g = value.get_variant("g")?;
-        let b = value.get_variant("b")?;
-        let a = value.get_variant("a").unwrap_or(255);
+        let r = value.get("r")?;
+        let g = value.get("g")?;
+        let b = value.get("b")?;
+        let a = value.get("a").unwrap_or(255);
 
         Ok(LuaColor32(Color32::rgba(r, g, b, a)))
       }
@@ -520,7 +531,7 @@ mod tests {
     let lua = LuaScriptEngine::new().unwrap();
     let globals = lua.globals();
 
-    globals.set_variant_function("vec2", Vec2::new).unwrap();
+    globals.set_callback("vec2", Vec2::new).unwrap();
 
     let script = r#"
       local a = vec2(1, 2)
@@ -536,7 +547,7 @@ mod tests {
       assert(d.x == 2 and d.y == 4)
     "#;
 
-    lua.run(script).unwrap();
+    lua.exec(script).unwrap();
   }
 
   #[test]
@@ -544,7 +555,7 @@ mod tests {
     let lua = LuaScriptEngine::new().unwrap();
     let globals = lua.globals();
 
-    globals.set_variant_function("vec3", Vec3::new).unwrap();
+    globals.set_callback("vec3", Vec3::new).unwrap();
 
     let script = r#"
       local a = vec3(1, 2, 3)
@@ -560,7 +571,7 @@ mod tests {
       assert(d.x == 2 and d.y == 4 and d.z == 6)
     "#;
 
-    lua.run(script).unwrap();
+    lua.exec(script).unwrap();
   }
 
   #[test]
@@ -568,7 +579,7 @@ mod tests {
     let lua = LuaScriptEngine::new().unwrap();
     let globals = lua.globals();
 
-    globals.set_variant_function("vec4", Vec4::new).unwrap();
+    globals.set_callback("vec4", Vec4::new).unwrap();
 
     let script = r#"
       local a = vec4(1, 2, 3, 4)
@@ -584,7 +595,7 @@ mod tests {
       assert(d.x == 2 and d.y == 4 and d.z == 6 and d.w == 8)
     "#;
 
-    lua.run(script).unwrap();
+    lua.exec(script).unwrap();
   }
 
   #[test]
@@ -592,7 +603,7 @@ mod tests {
     let lua = LuaScriptEngine::new().unwrap();
     let globals = lua.globals();
 
-    globals.set_variant_function("quat", Quat::from_xyzw).unwrap();
+    globals.set_callback("quat", Quat::from_xyzw).unwrap();
 
     let script = r#"
       local a = quat(1, 2, 3, 4)
@@ -608,7 +619,7 @@ mod tests {
       assert(d.x == 2 and d.y == 4 and d.z == 6 and d.w == 8)
     "#;
 
-    lua.run(script).unwrap();
+    lua.exec(script).unwrap();
   }
 
   #[test]
@@ -616,7 +627,7 @@ mod tests {
     let lua = LuaScriptEngine::new().unwrap();
     let globals = lua.globals();
 
-    globals.set_variant_function("color", Color::rgba).unwrap();
+    globals.set_callback("color", Color::rgba).unwrap();
 
     let script = r#"
       local a = color(1, 2, 3, 4)
@@ -630,7 +641,7 @@ mod tests {
       assert(d.r == 2 and d.g == 4 and d.b == 6 and d.a == 8)
     "#;
 
-    lua.run(script).unwrap();
+    lua.exec(script).unwrap();
   }
 
   #[test]
@@ -638,7 +649,7 @@ mod tests {
     let lua = LuaScriptEngine::new().unwrap();
     let globals = lua.globals();
 
-    globals.set_variant_function("color32", Color32::rgba).unwrap();
+    globals.set_callback("color32", Color32::rgba).unwrap();
 
     let script = r#"
       local a = color32(1, 2, 3, 4)
@@ -648,7 +659,7 @@ mod tests {
       assert(c.r == 6 and c.g == 8 and c.b == 10 and c.a == 12)
     "#;
 
-    lua.run(script).unwrap();
+    lua.exec(script).unwrap();
   }
 
   #[test]
@@ -656,7 +667,7 @@ mod tests {
     let lua = LuaScriptEngine::new().unwrap();
     let globals = lua.globals();
 
-    globals.set_variant_function("add", |a: i32, b: i32| a + b).unwrap();
+    globals.set_callback("add", |a: i32, b: i32| a + b).unwrap();
 
     let script = r#"
       local a = add(1, 2)
@@ -664,7 +675,7 @@ mod tests {
       assert(a == 3)
     "#;
 
-    lua.run(script).unwrap();
+    lua.exec(script).unwrap();
   }
 
   #[test]
@@ -677,12 +688,12 @@ mod tests {
       end
     "#;
 
-    lua.run(script).unwrap();
+    lua.exec(script).unwrap();
 
     let globals = lua.globals();
 
     let args = [Variant::I64(3), Variant::I64(4)];
-    let result = globals.call_variant_function("add", &args).unwrap();
+    let result = globals.call_callback("add", &args).unwrap();
 
     assert_eq!(result, Variant::I64(7));
   }

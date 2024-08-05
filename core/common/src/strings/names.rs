@@ -34,6 +34,13 @@ impl<R: AsRef<str>> From<R> for StringName {
   }
 }
 
+/// Allows a string name to be converted to a string.
+impl From<StringName> for String {
+  fn from(value: StringName) -> Self {
+    value.to_string()
+  }
+}
+
 /// Allows a string name to be compared to a string reference.
 impl<R: AsRef<str>> PartialEq<R> for StringName {
   fn eq(&self, other: &R) -> bool {

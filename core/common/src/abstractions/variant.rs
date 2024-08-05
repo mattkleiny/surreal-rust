@@ -341,7 +341,7 @@ macro_rules! impl_variant {
     }
   };
 
-  ($type:ty, $kind:ident, $($kinds:ident),*) => {
+  ($type:ty as $kind:ident, $($kinds:ident),*) => {
     impl ToVariant for $type {
       #[inline]
       fn to_variant(&self) -> Variant {
@@ -359,24 +359,44 @@ macro_rules! impl_variant {
         }
       }
     }
+  };
+
+  ($type:ty where $kind:ident, $($kinds:ident),*) => {
+    impl ToVariant for $type {
+      #[inline]
+      fn to_variant(&self) -> Variant {
+        Variant::$kind(self.clone().into())
+      }
+    }
+
+    impl FromVariant for $type {
+      #[inline]
+      fn from_variant(value: Variant) -> Result<Self, VariantError> {
+        match value {
+          Variant::$kind(value) => Ok(value),
+          $(Variant::$kinds(value) => Ok(value.into()),)*
+          _ => Err(VariantError::InvalidConversion),
+        }
+      }
+    }
   }
 }
 
 impl_variant!((), Null);
 impl_variant!(bool, Bool);
 impl_variant!(char, Char);
-impl_variant!(u8, U8, I8, U16, I16, U32, I32, U64, I64, F32, F64);
-impl_variant!(i8, I8, U8, I16, U16, U32, I32, U64, I64, F32, F64);
-impl_variant!(u16, U16, I8, U8, I16, U32, I32, U64, I64, F32, F64);
-impl_variant!(i16, I16, U8, I8, U16, U32, I32, U64, I64, F32, F64);
-impl_variant!(u32, U32, I8, I16, U8, U16, I32, I64, U64, F32, F64);
-impl_variant!(i32, I32, U8, I8, U16, I16, U32, I64, U64, F32, F64);
-impl_variant!(u64, U64, I8, I16, I32, U8, U16, U32, F32, F64);
-impl_variant!(i64, I64, U8, I8, I16, U16, U32, U64, F32, F64);
-impl_variant!(f32, F32, I8, I16, I32, I64, U8, U16, U32, U64, F64);
-impl_variant!(f64, F64, U8, U16, U32, U64, I8, I16, I32, I64, F32);
-impl_variant!(String, String);
-impl_variant!(StringName, StringName);
+impl_variant!(u8 as U8, I8, U16, I16, U32, I32, U64, I64, F32, F64);
+impl_variant!(i8 as I8, U8, I16, U16, U32, I32, U64, I64, F32, F64);
+impl_variant!(u16 as U16, I8, U8, I16, U32, I32, U64, I64, F32, F64);
+impl_variant!(i16 as I16, U8, I8, U16, U32, I32, U64, I64, F32, F64);
+impl_variant!(u32 as U32, I8, I16, U8, U16, I32, I64, U64, F32, F64);
+impl_variant!(i32 as I32, U8, I8, U16, I16, U32, I64, U64, F32, F64);
+impl_variant!(u64 as U64, I8, I16, I32, U8, U16, U32, F32, F64);
+impl_variant!(i64 as I64, U8, I8, I16, U16, U32, U64, F32, F64);
+impl_variant!(f32 as F32, I8, I16, I32, I64, U8, U16, U32, U64, F64);
+impl_variant!(f64 as F64, U8, U16, U32, U64, I8, I16, I32, I64, F32);
+impl_variant!(String where String, StringName);
+impl_variant!(StringName where StringName, String);
 impl_variant!(Vec2, Vec2);
 impl_variant!(Vec3, Vec3);
 impl_variant!(Vec4, Vec4);
@@ -395,6 +415,33 @@ impl<T: Any> FromVariant for Pointer<T> {
     match variant {
       Variant::UserData(value) => Ok(unsafe { value.cast_unchecked() }),
       _ => Err(VariantError::InvalidConversion),
+    }
+  }
+}
+
+impl ToVariant for Callable {
+  #[inline]
+  fn to_variant(&self) -> Variant {
+    Variant::Callable(self.clone())
+  }
+}
+
+impl FromVariant for Callable {
+  #[inline]
+  fn from_variant(variant: Variant) -> Result<Self, VariantError> {
+    match variant {
+      Variant::Callable(callable) => Ok(callable),
+      _ => Err(VariantError::InvalidConversion),
+    }
+  }
+}
+
+impl<V: FromVariant> FromVariant for Option<V> {
+  fn from_variant(variant: Variant) -> Result<Self, VariantError> {
+    if variant == Variant::Null {
+      Ok(None)
+    } else {
+      V::from_variant(variant).map(Some)
     }
   }
 }

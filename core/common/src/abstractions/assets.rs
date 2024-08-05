@@ -1,5 +1,3 @@
-//! Asset management for the engine
-
 use std::fmt::{Debug, Formatter};
 
 use crate::{Color, Color32, Graph, GraphNodeId, Guid, Quat, StringName, ToVirtualPath, Vec2, Vec3, Vec4, VirtualPath};

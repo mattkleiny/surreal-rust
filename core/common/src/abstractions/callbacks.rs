@@ -5,7 +5,7 @@ use std::{
   sync::Arc,
 };
 
-use crate::{FromVariant, ToVariant, Variant, VariantError};
+use crate::{FromVariant, ToVariant, Variant};
 
 /// An error when calling a script callback.
 #[derive(Debug)]
@@ -63,23 +63,6 @@ impl PartialEq for Callable {
 impl Debug for Callable {
   fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     write!(formatter, "Callable")
-  }
-}
-
-impl ToVariant for Callable {
-  #[inline]
-  fn to_variant(&self) -> Variant {
-    Variant::Callable(self.clone())
-  }
-}
-
-impl FromVariant for Callable {
-  #[inline]
-  fn from_variant(variant: Variant) -> Result<Self, VariantError> {
-    match variant {
-      Variant::Callable(callable) => Ok(callable),
-      _ => Err(VariantError::InvalidConversion),
-    }
   }
 }
 
