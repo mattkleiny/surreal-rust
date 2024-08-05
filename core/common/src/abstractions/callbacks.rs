@@ -1,5 +1,5 @@
 use std::{
-  fmt::{Debug, Formatter},
+  fmt::{Debug, Display, Formatter},
   marker::PhantomData,
   panic::RefUnwindSafe,
   sync::Arc,
@@ -12,6 +12,19 @@ use crate::{FromVariant, ToVariant, Variant, VariantError};
 pub enum CallbackError {
   ExecutionError(String),
   InvalidArgument,
+}
+
+impl Display for CallbackError {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+    match self {
+      CallbackError::ExecutionError(message) => {
+        write!(formatter, "Execution error: {}", message)
+      }
+      CallbackError::InvalidArgument => {
+        write!(formatter, "Invalid argument")
+      }
+    }
+  }
 }
 
 /// A boxed callable function.
