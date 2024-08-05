@@ -380,7 +380,7 @@ impl<P: Pixel> ColorPalette<P> {
   }
 
   /// Loads a palette from the given file path.
-  pub fn from_path(path: impl ToVirtualPath) -> Result<Self, ColorPaletteError> {
+  pub fn from_path(path: &impl ToVirtualPath) -> Result<Self, ColorPaletteError> {
     let path = path.to_virtual_path();
     let stream = path
       .open_input_stream()

@@ -15,7 +15,7 @@ pub trait FromStream: Sized {
   type Error: From<StreamError> = StreamError;
 
   /// Imports the type from a path.
-  fn from_path(path: impl ToVirtualPath) -> Result<Self, Self::Error> {
+  fn from_path(path: &impl ToVirtualPath) -> Result<Self, Self::Error> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream().map_err(|_| StreamError::GeneralFailure)?;
 
@@ -38,7 +38,7 @@ pub trait ToStream: Sized {
   type Error: From<StreamError> = StreamError;
 
   /// Exports the type to a path.
-  fn to_path(&self, path: impl ToVirtualPath) -> Result<(), Self::Error> {
+  fn to_path(&self, path: &impl ToVirtualPath) -> Result<(), Self::Error> {
     let path = path.to_virtual_path();
     let mut stream = path.open_output_stream().map_err(|_| StreamError::GeneralFailure)?;
 

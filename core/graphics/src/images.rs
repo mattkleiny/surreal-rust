@@ -25,7 +25,7 @@ impl<P: Pixel> Image<P> {
   }
 
   /// Loads an image from the given path.
-  pub fn from_path(path: impl ToVirtualPath) -> Result<Self, ImageError> {
+  pub fn from_path(path: &impl ToVirtualPath) -> Result<Self, ImageError> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream().map_err(ImageError::IoError)?;
 

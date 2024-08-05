@@ -22,6 +22,8 @@ pub trait FileSystem: Send + Sync {
   fn exists(&self, path: &VirtualPath) -> bool;
   fn is_file(&self, path: &VirtualPath) -> bool;
   fn is_directory(&self, path: &VirtualPath) -> bool;
+  fn files(&self, path: &VirtualPath) -> Vec<VirtualPath>;
+  fn directories(&self, path: &VirtualPath) -> Vec<VirtualPath>;
 
   // read and write
   fn open_read(&self, path: &VirtualPath) -> Result<Box<dyn InputStream>, FileSystemError>;
@@ -90,8 +92,13 @@ pub struct VirtualPath {
 
 impl VirtualPath {
   /// Creates a new [`VirtualPath`] from a raw string.
-  pub fn new(raw: impl AsRef<str>) -> Self {
-    raw.as_ref().to_virtual_path()
+  pub fn new(raw: &str) -> Self {
+    let (scheme, location) = raw.split_once("://").unwrap_or(("local", raw));
+
+    VirtualPath {
+      scheme: scheme.to_string_name(),
+      location: location.to_string(),
+    }
   }
 
   /// The scheme of the path.
@@ -107,6 +114,11 @@ impl VirtualPath {
   /// Returns the file extension of the path.
   pub fn extension(&self) -> &str {
     self.location.split('.').last().unwrap_or_default()
+  }
+
+  /// Determines if the path has the given extension.
+  pub fn has_extension(&self, extension: &str) -> bool {
+    self.extension() == extension
   }
 
   /// Returns a new path with a different file extension appended.
@@ -169,6 +181,15 @@ impl VirtualPath {
 
     Ok(stream.to_string()?)
   }
+
+  /// Finds all files in the given directory.
+  pub fn files(&self) -> Vec<VirtualPath> {
+    FileSystemManager::with_filesystem(self, |file_system| file_system.files(self))
+  }
+
+  pub fn directories(&self) -> Vec<VirtualPath> {
+    FileSystemManager::with_filesystem(self, |file_system| file_system.directories(self))
+  }
 }
 
 impl std::fmt::Debug for VirtualPath {
@@ -189,17 +210,19 @@ pub trait ToVirtualPath {
   fn to_virtual_path(&self) -> VirtualPath;
 }
 
+/// Allow virtual paths to be converted into themselves.
+impl ToVirtualPath for VirtualPath {
+  #[inline]
+  fn to_virtual_path(&self) -> VirtualPath {
+    self.clone()
+  }
+}
+
 /// Allow string references to be converted into [`VirtualPath`] instances.
 impl<R: AsRef<str>> ToVirtualPath for R {
   #[inline]
   fn to_virtual_path(&self) -> VirtualPath {
-    let value = self.as_ref();
-    let (scheme, location) = value.split_once("://").unwrap_or(("local", value));
-
-    VirtualPath {
-      scheme: scheme.to_string_name(),
-      location: location.to_string(),
-    }
+    VirtualPath::new(self.as_ref())
   }
 }
 

@@ -39,6 +39,14 @@ impl FileSystem for MemoryFileSystem {
     false // we don't have directories in memory
   }
 
+  fn files(&self, _path: &VirtualPath) -> Vec<VirtualPath> {
+    todo!()
+  }
+
+  fn directories(&self, _path: &VirtualPath) -> Vec<VirtualPath> {
+    todo!()
+  }
+
   fn open_read(&self, path: &VirtualPath) -> Result<Box<dyn InputStream>, FileSystemError> {
     let lock = self.files.read().unwrap();
     let file = lock.get(&path.location).ok_or(FileSystemError::NotFound)?;

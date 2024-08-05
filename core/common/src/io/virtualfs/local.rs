@@ -23,6 +23,38 @@ impl FileSystem for LocalFileSystem {
     to_path(path).is_dir()
   }
 
+  fn files(&self, path: &VirtualPath) -> Vec<VirtualPath> {
+    let path = to_path(path);
+    let mut results = Vec::new();
+
+    for entry in path.read_dir().unwrap() {
+      let entry = entry.unwrap();
+      let path = entry.path();
+
+      if path.is_file() {
+        results.push(VirtualPath::from(path.to_string_lossy().as_ref()));
+      }
+    }
+
+    results
+  }
+
+  fn directories(&self, path: &VirtualPath) -> Vec<VirtualPath> {
+    let path = to_path(path);
+    let mut results = Vec::new();
+
+    for entry in path.read_dir().unwrap() {
+      let entry = entry.unwrap();
+      let path = entry.path();
+
+      if path.is_dir() {
+        results.push(VirtualPath::from(path.to_string_lossy().as_ref()));
+      }
+    }
+
+    results
+  }
+
   fn open_read(&self, path: &VirtualPath) -> Result<Box<dyn InputStream>, FileSystemError> {
     let file = OpenOptions::new()
       .read(true)

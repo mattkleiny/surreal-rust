@@ -48,7 +48,7 @@ impl LuaScriptEngine {
   }
 
   /// Loads the given script and executes it.
-  pub fn load_exec(&self, path: impl ToVirtualPath) -> LuaResult<()> {
+  pub fn load_exec(&self, path: &impl ToVirtualPath) -> LuaResult<()> {
     let script = path
       .to_virtual_path()
       .read_all_text()
@@ -58,7 +58,7 @@ impl LuaScriptEngine {
   }
 
   /// Loads the given script and evaluates it.
-  pub fn load_eval<R: for<'lua> FromLua<'lua>>(&self, path: impl ToVirtualPath) -> LuaResult<R> {
+  pub fn load_eval<R: for<'lua> FromLua<'lua>>(&self, path: &&impl ToVirtualPath) -> LuaResult<R> {
     let script = path
       .to_virtual_path()
       .read_all_text()

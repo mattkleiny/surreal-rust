@@ -20,7 +20,7 @@ fn main() {
     &Mat4::orthographic_lh(0.0, 1024.0, 768.0, 0.0, -1.0, 1.0),
   );
 
-  let texture = Texture::from_path("assets/sprites/bunny.png").unwrap();
+  let texture = Texture::from_path(&"assets/sprites/bunny.png").unwrap();
 
   while window.update() {
     graphics().clear_color_buffer(Color::WHITE);
