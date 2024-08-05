@@ -143,7 +143,7 @@ impl<'lua> FromLua<'lua> for Variant {
       LuaValue::Function(function) => {
         // create a callable that calls the Lua function
         let function = function.into_owned();
-        let callable = Callable::new(move |args| {
+        let callable = Callable::from_function(move |args| {
           function
             .call(VariantArray(args.to_vec()))
             .map_err(|error| CallbackError::ExecutionError(error.to_string()))

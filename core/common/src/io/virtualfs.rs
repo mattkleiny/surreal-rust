@@ -4,7 +4,7 @@ pub use local::*;
 pub use memory::*;
 
 use super::{InputStream, OutputStream};
-use crate::{Singleton, StringName, ToStringName};
+use crate::{StringName, ToStringName, UnsafeSingleton};
 
 mod local;
 mod memory;
@@ -37,7 +37,7 @@ pub struct FileSystemManager {
   file_systems: Vec<Box<dyn FileSystem>>,
 }
 
-static mut FILE_SYSTEM_MANAGER: Singleton<FileSystemManager> = Singleton::default();
+static mut FILE_SYSTEM_MANAGER: UnsafeSingleton<FileSystemManager> = UnsafeSingleton::default();
 
 impl Default for FileSystemManager {
   fn default() -> Self {

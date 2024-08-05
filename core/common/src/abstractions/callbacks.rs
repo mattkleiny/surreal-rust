@@ -36,7 +36,7 @@ pub struct Callable(Arc<dyn Fn(&[Variant]) -> Result<Variant, CallbackError>>);
 
 impl Callable {
   /// Creates a new boxed callable function from the given function.
-  pub fn new(function: impl Fn(&[Variant]) -> Result<Variant, CallbackError> + 'static) -> Self {
+  pub fn from_function(function: impl Fn(&[Variant]) -> Result<Variant, CallbackError> + 'static) -> Self {
     Self(Arc::new(function))
   }
 

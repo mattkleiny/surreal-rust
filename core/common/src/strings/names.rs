@@ -3,7 +3,7 @@ use std::{
   sync::RwLock,
 };
 
-use crate::{Arena, Singleton};
+use crate::{Arena, UnsafeSingleton};
 
 crate::impl_arena_index!(StringId, "Identifies a string in a string pool.");
 
@@ -91,7 +91,7 @@ struct StringNamePool {
   strings_by_id: RwLock<Arena<StringId, StringPoolEntry>>,
 }
 
-static mut STRING_NAME_POOL: Singleton<StringNamePool> = Singleton::default();
+static mut STRING_NAME_POOL: UnsafeSingleton<StringNamePool> = UnsafeSingleton::default();
 
 /// An entry in the string pool.
 struct StringPoolEntry {

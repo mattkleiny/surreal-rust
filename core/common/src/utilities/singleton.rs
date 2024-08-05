@@ -9,24 +9,24 @@ use std::{
 ///
 /// The value is lazily initialized and can be accessed through the `Deref` and
 /// `DerefMut` traits.
-pub struct Singleton<T> {
+pub struct UnsafeSingleton<T> {
   lock: Once,
   value: UnsafeCell<MaybeUninit<T>>,
   factory: fn() -> T,
 }
 
-unsafe impl<T> Send for Singleton<T> {}
-unsafe impl<T> Sync for Singleton<T> {}
+unsafe impl<T> Send for UnsafeSingleton<T> {}
+unsafe impl<T> Sync for UnsafeSingleton<T> {}
 
-impl<T: Default> Singleton<T> {
-  /// Creates a new [`Singleton`] with the default value.
+impl<T: Default> UnsafeSingleton<T> {
+  /// Creates a new [`UnsafeSingleton`] with the default value.
   pub const fn default() -> Self {
     Self::new(T::default)
   }
 }
 
-impl<T> Singleton<T> {
-  /// Creates a new [`Singleton`] with the given value.
+impl<T> UnsafeSingleton<T> {
+  /// Creates a new [`UnsafeSingleton`] with the given value.
   pub const fn new(factory: fn() -> T) -> Self {
     Self {
       lock: Once::new(),
@@ -37,7 +37,7 @@ impl<T> Singleton<T> {
 }
 
 /// Allows dereferencing the singleton to the inner value.
-impl<T> Deref for Singleton<T> {
+impl<T> Deref for UnsafeSingleton<T> {
   type Target = T;
 
   fn deref(&self) -> &Self::Target {
@@ -55,7 +55,7 @@ impl<T> Deref for Singleton<T> {
 }
 
 /// Allows mutable dereferencing the singleton to the inner value.
-impl<T> DerefMut for Singleton<T> {
+impl<T> DerefMut for UnsafeSingleton<T> {
   fn deref_mut(&mut self) -> &mut Self::Target {
     self.lock.call_once(|| {
       let value = unsafe { &mut *self.value.get() };

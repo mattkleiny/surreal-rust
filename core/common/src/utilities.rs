@@ -60,7 +60,7 @@ macro_rules! impl_server {
       backend: core::cell::UnsafeCell<Box<dyn $backend>>,
     }
 
-    static SINGLETON: $crate::Singleton<$type> = $crate::Singleton::new(|| $type {
+    static SINGLETON: $crate::UnsafeSingleton<$type> = $crate::UnsafeSingleton::new(|| $type {
       backend: core::cell::UnsafeCell::new(Box::new(<$default>::default())),
     });
 
