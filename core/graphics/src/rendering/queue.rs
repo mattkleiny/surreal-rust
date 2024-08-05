@@ -74,11 +74,40 @@ pub enum RenderQueueError {
   TargetError(TargetError),
 }
 
-common::impl_from_error!(BufferError for RenderQueueError);
-common::impl_from_error!(TextureError for RenderQueueError);
-common::impl_from_error!(ShaderError for RenderQueueError);
-common::impl_from_error!(MeshError for RenderQueueError);
-common::impl_from_error!(TargetError for RenderQueueError);
+impl From<BufferError> for RenderQueueError {
+  #[inline]
+  fn from(value: BufferError) -> Self {
+    Self::BufferError(value)
+  }
+}
+
+impl From<TextureError> for RenderQueueError {
+  #[inline]
+  fn from(value: TextureError) -> Self {
+    Self::TextureError(value)
+  }
+}
+
+impl From<ShaderError> for RenderQueueError {
+  #[inline]
+  fn from(value: ShaderError) -> Self {
+    Self::ShaderError(value)
+  }
+}
+
+impl From<MeshError> for RenderQueueError {
+  #[inline]
+  fn from(value: MeshError) -> Self {
+    Self::MeshError(value)
+  }
+}
+
+impl From<TargetError> for RenderQueueError {
+  #[inline]
+  fn from(value: TargetError) -> Self {
+    Self::TargetError(value)
+  }
+}
 
 impl RenderQueue {
   /// Creates a new [`RenderQueue`].

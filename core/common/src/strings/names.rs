@@ -28,9 +28,7 @@ impl<R: AsRef<str>> ToStringName for R {
 /// Allows a string reference to be converted to a string name.
 impl<R: AsRef<str>> From<R> for StringName {
   fn from(value: R) -> Self {
-    let pool = StringNamePool::instance();
-
-    StringName(pool.intern(value.as_ref()))
+    unsafe { StringName(STRING_NAME_POOL.intern(value.as_ref())) }
   }
 }
 
@@ -44,12 +42,12 @@ impl From<StringName> for String {
 /// Allows a string name to be compared to a string reference.
 impl<R: AsRef<str>> PartialEq<R> for StringName {
   fn eq(&self, other: &R) -> bool {
-    let pool = StringNamePool::instance();
-
-    if let Some(value) = pool.lookup(self.0) {
-      value == *other.as_ref()
-    } else {
-      false
+    unsafe {
+      if let Some(value) = STRING_NAME_POOL.lookup(self.0) {
+        value == *other.as_ref()
+      } else {
+        false
+      }
     }
   }
 }
@@ -64,12 +62,12 @@ impl PartialEq<StringName> for &str {
 /// Pretty-prints a string name.
 impl Debug for StringName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    let pool = StringNamePool::instance();
-
-    if let Some(value) = pool.lookup(self.0) {
-      write!(f, "{:?}", value)
-    } else {
-      write!(f, "StringName({:?})", self.0)
+    unsafe {
+      if let Some(value) = STRING_NAME_POOL.lookup(self.0) {
+        write!(f, "{:?}", value)
+      } else {
+        write!(f, "StringName({:?})", self.0)
+      }
     }
   }
 }
@@ -77,21 +75,23 @@ impl Debug for StringName {
 /// Pretty-prints a string name.
 impl Display for StringName {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    let pool = StringNamePool::instance();
-
-    if let Some(value) = pool.lookup(self.0) {
-      write!(f, "{}", value)
-    } else {
-      write!(f, "")
+    unsafe {
+      if let Some(value) = STRING_NAME_POOL.lookup(self.0) {
+        write!(f, "{}", value)
+      } else {
+        write!(f, "")
+      }
     }
   }
 }
 
 /// An internal global pool of strings.
-#[derive(Default, Singleton)]
+#[derive(Default)]
 struct StringNamePool {
   strings_by_id: RwLock<Arena<StringId, StringPoolEntry>>,
 }
+
+static mut STRING_NAME_POOL: Singleton<StringNamePool> = Singleton::default();
 
 /// An entry in the string pool.
 struct StringPoolEntry {
@@ -145,14 +145,14 @@ mod tests {
 
   #[test]
   fn test_string_name_should_intern_similar_strings() {
-    let pool = StringNamePool::instance();
+    unsafe {
+      let id1 = STRING_NAME_POOL.intern("test");
+      let id2 = STRING_NAME_POOL.intern("test");
+      let id3 = STRING_NAME_POOL.intern("test2");
 
-    let id1 = pool.intern("test");
-    let id2 = pool.intern("test");
-    let id3 = pool.intern("test2");
-
-    assert_eq!(id1, id2);
-    assert_ne!(id1, id3);
+      assert_eq!(id1, id2);
+      assert_ne!(id1, id3);
+    }
   }
 
   #[test]

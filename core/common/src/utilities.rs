@@ -4,19 +4,15 @@ pub use errors::*;
 pub use events::*;
 pub use reflect::*;
 pub use settings::*;
+pub use singleton::*;
 pub use version::*;
 
 mod errors;
 mod events;
 mod reflect;
 mod settings;
+mod singleton;
 mod version;
-
-/// Represents a type that can be used as a singleton.
-pub trait Singleton {
-  /// Returns the singleton instance of this type.
-  fn instance() -> &'static Self;
-}
 
 /// Reinterprets the given reference as a reference to a different type.
 ///
@@ -60,12 +56,11 @@ pub unsafe fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
 #[macro_export]
 macro_rules! impl_server {
   ($type:ident by $backend:ident default $default:ty) => {
-    /// A wrapper for the core implementation.
     pub struct $type {
       backend: core::cell::UnsafeCell<Box<dyn $backend>>,
     }
 
-    static INSTANCE: std::sync::LazyLock<$type> = std::sync::LazyLock::new(|| $type {
+    static SINGLETON: $crate::Singleton<$type> = $crate::Singleton::new(|| $type {
       backend: core::cell::UnsafeCell::new(Box::new(<$default>::default())),
     });
 
@@ -77,39 +72,12 @@ macro_rules! impl_server {
       pub fn instance() -> &'static dyn $backend {
         use std::ops::Deref;
 
-        unsafe { INSTANCE.backend.get().as_ref().unwrap().deref() }
+        unsafe { SINGLETON.backend.get().as_ref().unwrap().deref() }
       }
 
       /// Creates a new [`$type`] for the given [`$backend`].
       pub fn install(backend: impl $backend + 'static) {
-        unsafe { INSTANCE.backend.get().replace(Box::new(backend)) };
-      }
-    }
-  };
-}
-
-/// Creates a singleton instance of the given type.
-#[macro_export]
-macro_rules! impl_singleton {
-  ($name:ty) => {
-    impl $crate::utilities::Singleton for $name {
-      fn instance() -> &'static Self {
-        static INSTANCE: std::sync::LazyLock<$name> = std::sync::LazyLock::new(|| <$name>::default());
-
-        std::ops::Deref::deref(&INSTANCE)
-      }
-    }
-  };
-}
-
-/// Implements a conversion from on error type to a nested variant in another.
-#[macro_export]
-macro_rules! impl_from_error {
-  ($error:tt for $other:tt) => {
-    impl From<$error> for $other {
-      #[inline(always)]
-      fn from(error: $error) -> Self {
-        Self::$error(error)
+        unsafe { SINGLETON.backend.get().replace(Box::new(backend)) };
       }
     }
   };

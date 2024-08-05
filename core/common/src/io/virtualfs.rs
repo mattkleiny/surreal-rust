@@ -33,19 +33,20 @@ pub trait FileSystem: Send + Sync {
 /// This is a singleton that is used to manage [`FileSystem`] implementations.
 /// File systems can be registered here, and will be used subsequently for file
 /// operations on [`VirtualPath`] instances.
-#[derive(Singleton)]
 pub struct FileSystemManager {
-  file_systems: RwLock<Vec<Box<dyn FileSystem>>>,
+  file_systems: Vec<Box<dyn FileSystem>>,
 }
+
+static mut FILE_SYSTEM_MANAGER: Singleton<FileSystemManager> = Singleton::default();
 
 impl Default for FileSystemManager {
   fn default() -> Self {
     Self {
-      #[rustfmt::skip]
-      file_systems: RwLock::new(vec![
+      file_systems: vec![
+        // Add the default file systems here.
         Box::<LocalFileSystem>::default(),
         Box::<MemoryFileSystem>::default(),
-      ]),
+      ],
     }
   }
 }
@@ -53,24 +54,22 @@ impl Default for FileSystemManager {
 impl FileSystemManager {
   /// Registers a new [`FileSystem`] with the manager.
   pub fn register(file_system: impl FileSystem + 'static) {
-    let manager = Self::instance();
-    let mut file_systems = manager.file_systems.write().unwrap();
-
-    file_systems.push(Box::new(file_system));
+    unsafe {
+      FILE_SYSTEM_MANAGER.file_systems.push(Box::new(file_system));
+    }
   }
 
   /// Finds the appropriate [`FileSystem`] for the given [`VirtualPath`].
   pub fn with_filesystem<R>(path: &VirtualPath, body: impl FnOnce(&dyn FileSystem) -> R) -> R {
-    let manager = Self::instance();
-    let file_systems = manager.file_systems.read().unwrap();
-
-    for file_system in file_systems.iter() {
-      if file_system.can_handle(path) {
-        return body(file_system.as_ref());
+    unsafe {
+      for file_system in &FILE_SYSTEM_MANAGER.file_systems {
+        if file_system.can_handle(path) {
+          return body(file_system.as_ref());
+        }
       }
-    }
 
-    panic!("No file system found for scheme {}", path.scheme());
+      panic!("No file system found for scheme {}", path.scheme());
+    }
   }
 }
 
