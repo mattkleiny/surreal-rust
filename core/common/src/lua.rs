@@ -21,11 +21,25 @@ pub struct LuaScriptEngine {
 impl LuaScriptEngine {
   /// Creates a new Lua engine.
   pub fn new() -> LuaResult<Self> {
-    let lua = Lua::new();
+    let engine = Self { lua: Lua::new() };
 
-    lua.load_from_std_lib(LuaStdLib::MATH)?;
+    // load the standard library
+    engine.lua.load_from_std_lib(LuaStdLib::MATH)?;
+    engine.lua.load_from_std_lib(LuaStdLib::STRING)?;
 
-    Ok(Self { lua })
+    {
+      // configure common globals
+      let globals = engine.globals();
+
+      globals.set_function("vec2", Vec2::new)?;
+      globals.set_function("vec3", Vec3::new)?;
+      globals.set_function("vec4", Vec4::new)?;
+      globals.set_function("quat", Quat::from_xyzw)?;
+      globals.set_function("rgb", Color::rgb)?;
+      globals.set_function("rgba", Color::rgba)?;
+    }
+
+    Ok(engine)
   }
 
   /// Gets the underlying Lua state.
@@ -247,10 +261,35 @@ impl LuaUserData for LuaVec2 {
   }
 
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+    use LuaMetaMethod::*;
+
     methods.add_method("length", |_, this, ()| Ok(this.0.length()));
     methods.add_method("length_squared", |_, this, ()| Ok(this.0.length_squared()));
 
-    methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(Add, |_, this, other: LuaVec2| Ok(LuaVec2(this.0 + other.0)));
+    methods.add_meta_method(Sub, |_, this, other: LuaVec2| Ok(LuaVec2(this.0 - other.0)));
+    methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaVec2(this.0 * other)));
+    methods.add_meta_method(Div, |_, this, other: f32| Ok(LuaVec2(this.0 / other)));
+  }
+}
+
+impl<'lua> FromLua<'lua> for LuaVec2 {
+  fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
+    match value {
+      LuaValue::Table(value) => {
+        let x = value.get_as("x")?;
+        let y = value.get_as("y")?;
+
+        Ok(LuaVec2(Vec2::new(x, y)))
+      }
+      LuaValue::UserData(value) => {
+        let value = value.borrow::<LuaVec2>()?;
+
+        Ok(*value)
+      }
+      _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string())),
+    }
   }
 }
 
@@ -267,10 +306,36 @@ impl LuaUserData for LuaVec3 {
   }
 
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+    use LuaMetaMethod::*;
+
     impl_method!(methods, length);
     impl_method!(methods, length_squared);
 
-    methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(Add, |_, this, other: LuaVec3| Ok(LuaVec3(this.0 + other.0)));
+    methods.add_meta_method(Sub, |_, this, other: LuaVec3| Ok(LuaVec3(this.0 - other.0)));
+    methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaVec3(this.0 * other)));
+    methods.add_meta_method(Div, |_, this, other: f32| Ok(LuaVec3(this.0 / other)));
+  }
+}
+
+impl<'lua> FromLua<'lua> for LuaVec3 {
+  fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
+    match value {
+      LuaValue::Table(value) => {
+        let x = value.get_as("x")?;
+        let y = value.get_as("y")?;
+        let z = value.get_as("z")?;
+
+        Ok(LuaVec3(Vec3::new(x, y, z)))
+      }
+      LuaValue::UserData(value) => {
+        let value = value.borrow::<LuaVec3>()?;
+
+        Ok(*value)
+      }
+      _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string())),
+    }
   }
 }
 
@@ -288,10 +353,37 @@ impl LuaUserData for LuaVec4 {
   }
 
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+    use LuaMetaMethod::*;
+
     impl_method!(methods, length);
     impl_method!(methods, length_squared);
 
-    methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(Add, |_, this, other: LuaVec4| Ok(LuaVec4(this.0 + other.0)));
+    methods.add_meta_method(Sub, |_, this, other: LuaVec4| Ok(LuaVec4(this.0 - other.0)));
+    methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaVec4(this.0 * other)));
+    methods.add_meta_method(Div, |_, this, other: f32| Ok(LuaVec4(this.0 / other)));
+  }
+}
+
+impl<'lua> FromLua<'lua> for LuaVec4 {
+  fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
+    match value {
+      LuaValue::Table(value) => {
+        let x = value.get_as("x")?;
+        let y = value.get_as("y")?;
+        let z = value.get_as("z")?;
+        let w = value.get_as("w")?;
+
+        Ok(LuaVec4(Vec4::new(x, y, z, w)))
+      }
+      LuaValue::UserData(value) => {
+        let value = value.borrow::<LuaVec4>()?;
+
+        Ok(*value)
+      }
+      _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string())),
+    }
   }
 }
 
@@ -309,10 +401,37 @@ impl LuaUserData for LuaQuat {
   }
 
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+    use LuaMetaMethod::*;
+
     impl_method!(methods, length);
     impl_method!(methods, length_squared);
 
-    methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(Add, |_, this, other: LuaQuat| Ok(LuaQuat(this.0 + other.0)));
+    methods.add_meta_method(Sub, |_, this, other: LuaQuat| Ok(LuaQuat(this.0 - other.0)));
+    methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaQuat(this.0 * other)));
+    methods.add_meta_method(Div, |_, this, other: f32| Ok(LuaQuat(this.0 / other)));
+  }
+}
+
+impl<'lua> FromLua<'lua> for LuaQuat {
+  fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
+    match value {
+      LuaValue::Table(value) => {
+        let x = value.get_as("x")?;
+        let y = value.get_as("y")?;
+        let z = value.get_as("z")?;
+        let w = value.get_as("w")?;
+
+        Ok(LuaQuat(Quat::from_xyzw(x, y, z, w)))
+      }
+      LuaValue::UserData(value) => {
+        let value = value.borrow::<LuaQuat>()?;
+
+        Ok(*value)
+      }
+      _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string())),
+    }
   }
 }
 
@@ -330,7 +449,34 @@ impl LuaUserData for LuaColor {
   }
 
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-    methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    use LuaMetaMethod::*;
+
+    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(Add, |_, this, other: LuaColor| Ok(LuaColor(this.0 + other.0)));
+    methods.add_meta_method(Sub, |_, this, other: LuaColor| Ok(LuaColor(this.0 - other.0)));
+    methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaColor(this.0 * other)));
+    methods.add_meta_method(Div, |_, this, other: f32| Ok(LuaColor(this.0 / other)));
+  }
+}
+
+impl<'lua> FromLua<'lua> for LuaColor {
+  fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
+    match value {
+      LuaValue::Table(value) => {
+        let r = value.get_as("r")?;
+        let g = value.get_as("g")?;
+        let b = value.get_as("b")?;
+        let a = value.get_as("a").unwrap_or(1.0);
+
+        Ok(LuaColor(Color::rgba(r, g, b, a)))
+      }
+      LuaValue::UserData(value) => {
+        let value = value.borrow::<LuaColor>()?;
+
+        Ok(*value)
+      }
+      _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string())),
+    }
   }
 }
 
@@ -348,7 +494,32 @@ impl LuaUserData for LuaColor32 {
   }
 
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-    methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    use LuaMetaMethod::*;
+
+    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    methods.add_meta_method(Add, |_, this, other: LuaColor32| Ok(LuaColor32(this.0 + other.0)));
+    methods.add_meta_method(Sub, |_, this, other: LuaColor32| Ok(LuaColor32(this.0 - other.0)));
+  }
+}
+
+impl<'lua> FromLua<'lua> for LuaColor32 {
+  fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
+    match value {
+      LuaValue::Table(value) => {
+        let r = value.get_as("r")?;
+        let g = value.get_as("g")?;
+        let b = value.get_as("b")?;
+        let a = value.get_as("a").unwrap_or(255);
+
+        Ok(LuaColor32(Color32::rgba(r, g, b, a)))
+      }
+      LuaValue::UserData(value) => {
+        let value = value.borrow::<LuaColor32>()?;
+
+        Ok(*value)
+      }
+      _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string())),
+    }
   }
 }
 
@@ -359,11 +530,11 @@ mod tests {
   #[test]
   fn test_table_coercion_through_pointer() {
     let lua = Lua::new();
-    let table = lua.globals();
+    let globals = lua.globals();
 
-    table.set("Key", "Hello, world!").unwrap();
+    globals.set("Key", "Hello, world!").unwrap();
 
-    let pointer_a = Pointer::new(table);
+    let pointer_a = Pointer::new(globals);
     let pointer_b: Pointer<LuaTable> = unsafe { pointer_a.cast_unchecked() };
 
     let value: String = pointer_b.get("Key").unwrap();
@@ -371,5 +542,141 @@ mod tests {
     assert_eq!(value, "Hello, world!");
 
     pointer_b.delete();
+  }
+
+  #[test]
+  fn test_basic_wrapper_operations_for_vec2() {
+    let lua = LuaScriptEngine::new().unwrap();
+    let globals = lua.globals();
+
+    globals.set_function("vec2", Vec2::new).unwrap();
+
+    let script = r#"
+      local a = vec2(1, 2)
+      local b = vec2(3, 4)
+      local c = a + b
+      local d = a * 2
+      local e = a / 2
+      local f = a:length()
+      local g = a:length_squared()
+      local h = tostring(a)
+      
+      assert(c.x == 4 and c.y == 6)
+      assert(d.x == 2 and d.y == 4)
+    "#;
+
+    lua.run(script).unwrap();
+  }
+
+  #[test]
+  fn test_basic_wrapper_operations_for_vec3() {
+    let lua = LuaScriptEngine::new().unwrap();
+    let globals = lua.globals();
+
+    globals.set_function("vec3", Vec3::new).unwrap();
+
+    let script = r#"
+      local a = vec3(1, 2, 3)
+      local b = vec3(4, 5, 6)
+      local c = a + b
+      local d = a * 2
+      local e = a / 2
+      local f = a:length()
+      local g = a:length_squared()
+      local h = tostring(a)
+      
+      assert(c.x == 5 and c.y == 7 and c.z == 9)
+      assert(d.x == 2 and d.y == 4 and d.z == 6)
+    "#;
+
+    lua.run(script).unwrap();
+  }
+
+  #[test]
+  fn test_basic_wrapper_operations_for_vec4() {
+    let lua = LuaScriptEngine::new().unwrap();
+    let globals = lua.globals();
+
+    globals.set_function("vec4", Vec4::new).unwrap();
+
+    let script = r#"
+      local a = vec4(1, 2, 3, 4)
+      local b = vec4(5, 6, 7, 8)
+      local c = a + b
+      local d = a * 2
+      local e = a / 2
+      local f = a:length()
+      local g = a:length_squared()
+      local h = tostring(a)
+      
+      assert(c.x == 6 and c.y == 8 and c.z == 10 and c.w == 12)
+      assert(d.x == 2 and d.y == 4 and d.z == 6 and d.w == 8)
+    "#;
+
+    lua.run(script).unwrap();
+  }
+
+  #[test]
+  fn test_basic_wrapper_operations_for_quat() {
+    let lua = LuaScriptEngine::new().unwrap();
+    let globals = lua.globals();
+
+    globals.set_function("quat", Quat::from_xyzw).unwrap();
+
+    let script = r#"
+      local a = quat(1, 2, 3, 4)
+      local b = quat(5, 6, 7, 8)
+      local c = a + b
+      local d = a * 2
+      local e = a / 2
+      local f = a:length()
+      local g = a:length_squared()
+      local h = tostring(a)
+      
+      assert(c.x == 6 and c.y == 8 and c.z == 10 and c.w == 12)
+      assert(d.x == 2 and d.y == 4 and d.z == 6 and d.w == 8)
+    "#;
+
+    lua.run(script).unwrap();
+  }
+
+  #[test]
+  fn test_basic_wrapper_operations_for_color() {
+    let lua = LuaScriptEngine::new().unwrap();
+    let globals = lua.globals();
+
+    globals.set_function("color", Color::rgba).unwrap();
+
+    let script = r#"
+      local a = color(1, 2, 3, 4)
+      local b = color(5, 6, 7, 8)
+      local c = a + b
+      local d = a * 2
+      local e = a / 2
+      local f = tostring(a)
+      
+      assert(c.r == 6 and c.g == 8 and c.b == 10 and c.a == 12)
+      assert(d.r == 2 and d.g == 4 and d.b == 6 and d.a == 8)
+    "#;
+
+    lua.run(script).unwrap();
+  }
+
+  #[test]
+  fn test_basic_wrapper_operations_for_color32() {
+    let lua = LuaScriptEngine::new().unwrap();
+    let globals = lua.globals();
+
+    globals.set_function("color32", Color32::rgba).unwrap();
+
+    let script = r#"
+      local a = color32(1, 2, 3, 4)
+      local b = color32(5, 6, 7, 8)
+      local c = a + b
+      
+      assert(c.r == 6 and c.g == 8 and c.b == 10 and c.a == 12)
+    "#;
+
+    lua.run(script).unwrap();
   }
 }
