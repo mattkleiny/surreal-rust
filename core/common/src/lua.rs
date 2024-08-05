@@ -231,6 +231,16 @@ macro_rules! impl_method {
   };
 }
 
+/// A helper for implementing common string methods.
+macro_rules! impl_string_methods {
+  ($methods:expr, $type:tt) => {
+    $methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    $methods.add_meta_function(LuaMetaMethod::Concat, |_, args: (LuaString, $type)| {
+      Ok(format!("{}{}", args.0.to_str()?, args.1 .0))
+    });
+  };
+}
+
 /// A lightweight [`LuaUserData`] wrapper for [`Vec2`].
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone)]
@@ -245,10 +255,11 @@ impl LuaUserData for LuaVec2 {
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
     use LuaMetaMethod::*;
 
+    impl_string_methods!(methods, LuaVec2);
+
     methods.add_method("length", |_, this, ()| Ok(this.0.length()));
     methods.add_method("length_squared", |_, this, ()| Ok(this.0.length_squared()));
 
-    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
     methods.add_meta_method(Add, |_, this, other: LuaVec2| Ok(LuaVec2(this.0 + other.0)));
     methods.add_meta_method(Sub, |_, this, other: LuaVec2| Ok(LuaVec2(this.0 - other.0)));
     methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaVec2(this.0 * other)));
@@ -292,8 +303,8 @@ impl LuaUserData for LuaVec3 {
 
     impl_method!(methods, length);
     impl_method!(methods, length_squared);
+    impl_string_methods!(methods, LuaVec3);
 
-    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
     methods.add_meta_method(Add, |_, this, other: LuaVec3| Ok(LuaVec3(this.0 + other.0)));
     methods.add_meta_method(Sub, |_, this, other: LuaVec3| Ok(LuaVec3(this.0 - other.0)));
     methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaVec3(this.0 * other)));
@@ -339,8 +350,8 @@ impl LuaUserData for LuaVec4 {
 
     impl_method!(methods, length);
     impl_method!(methods, length_squared);
+    impl_string_methods!(methods, LuaVec4);
 
-    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
     methods.add_meta_method(Add, |_, this, other: LuaVec4| Ok(LuaVec4(this.0 + other.0)));
     methods.add_meta_method(Sub, |_, this, other: LuaVec4| Ok(LuaVec4(this.0 - other.0)));
     methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaVec4(this.0 * other)));
@@ -387,8 +398,8 @@ impl LuaUserData for LuaQuat {
 
     impl_method!(methods, length);
     impl_method!(methods, length_squared);
+    impl_string_methods!(methods, LuaQuat);
 
-    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
     methods.add_meta_method(Add, |_, this, other: LuaQuat| Ok(LuaQuat(this.0 + other.0)));
     methods.add_meta_method(Sub, |_, this, other: LuaQuat| Ok(LuaQuat(this.0 - other.0)));
     methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaQuat(this.0 * other)));
@@ -433,7 +444,8 @@ impl LuaUserData for LuaColor {
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
     use LuaMetaMethod::*;
 
-    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    impl_string_methods!(methods, LuaColor);
+
     methods.add_meta_method(Add, |_, this, other: LuaColor| Ok(LuaColor(this.0 + other.0)));
     methods.add_meta_method(Sub, |_, this, other: LuaColor| Ok(LuaColor(this.0 - other.0)));
     methods.add_meta_method(Mul, |_, this, other: f32| Ok(LuaColor(this.0 * other)));
@@ -478,7 +490,8 @@ impl LuaUserData for LuaColor32 {
   fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
     use LuaMetaMethod::*;
 
-    methods.add_meta_method(ToString, |_, this, ()| Ok(format!("{}", this.0)));
+    impl_string_methods!(methods, LuaColor32);
+
     methods.add_meta_method(Add, |_, this, other: LuaColor32| Ok(LuaColor32(this.0 + other.0)));
     methods.add_meta_method(Sub, |_, this, other: LuaColor32| Ok(LuaColor32(this.0 - other.0)));
   }
@@ -696,5 +709,25 @@ mod tests {
     let result = globals.call_callback("add", &args).unwrap();
 
     assert_eq!(result, Variant::I64(7));
+  }
+
+  #[test]
+  fn test_wrapper_call_from_rust() {
+    let lua = LuaScriptEngine::new().unwrap();
+
+    let globals = lua.globals();
+
+    globals
+      .set_callback("test_rust_callback", |value1: u64, value2: Vec2| {
+        println!("Received ID: {:?}", value1);
+        println!("Received Vec2: {:?}", value2);
+      })
+      .unwrap();
+
+    let script = r"
+      test_rust_callback(10, vec2(16.0, 32.0))
+    ";
+
+    lua.exec(script).unwrap()
   }
 }
