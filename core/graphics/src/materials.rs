@@ -3,6 +3,8 @@
 //! Materials define all data required to perform some rendering step, from
 //! pipeline state changes through to shader programs and uniforms.
 
+use common::ToVirtualPath;
+
 use super::*;
 
 /// Blending states for materials.
@@ -66,8 +68,13 @@ pub struct Material {
 }
 
 impl Material {
+  /// Constructs a new material for the [`ShaderProgram`] at the given path.
+  pub fn from_shader_path<S: ShaderLanguage>(path: &impl ToVirtualPath) -> Result<Self, ShaderError> {
+    Ok(Self::from_shader_program(&ShaderProgram::from_path::<S>(path)?))
+  }
+
   /// Constructs a new material for the given [`ShaderProgram`].
-  pub fn from_program(shader: &ShaderProgram) -> Self {
+  pub fn from_shader_program(shader: &ShaderProgram) -> Self {
     Self {
       shader: shader.clone(),
       uniforms: ShaderUniformSet::default(),
@@ -80,17 +87,6 @@ impl Material {
   /// Gets the underlying [`ShaderProgram`] of the material.
   pub fn shader(&self) -> &ShaderProgram {
     &self.shader
-  }
-
-  /// Gets the flags of the material.
-  pub fn flags(&self) -> MaterialFlags {
-    let mut flags = MaterialFlags::empty();
-
-    if self.blend_state() != BlendState::Disabled {
-      flags.insert(MaterialFlags::ALPHA_TESTING);
-    }
-
-    flags
   }
 
   /// Gets the underlying [`ShaderUniformSet`] of the material.

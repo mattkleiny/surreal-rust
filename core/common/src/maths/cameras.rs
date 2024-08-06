@@ -10,6 +10,12 @@ pub trait Camera {
   /// Computes the view matrix for this camera.
   fn view(&self) -> Mat4;
 
+  /// Computes the projection-view matrix for this camera.
+  #[inline]
+  fn projection_view(&self) -> Mat4 {
+    self.projection() * self.view()
+  }
+
   /// Computes the frustum for this camera.
   #[inline]
   fn frustum(&self) -> Frustum {
