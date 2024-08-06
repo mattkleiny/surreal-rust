@@ -36,6 +36,7 @@ pub struct WindowSettings {
   pub width: u32,
   pub height: u32,
   pub vsync_enabled: bool,
+  pub initial_color: common::Color,
   pub icon: Option<graphics::Image>,
 }
 
@@ -46,6 +47,7 @@ impl Default for WindowSettings {
       width: 1024,
       height: 768,
       vsync_enabled: true,
+      initial_color: common::Color::BLACK,
       icon: None,
     }
   }
@@ -117,6 +119,9 @@ impl Window {
 
       audio::AudioServer::install(audio::SdlAudioBackend::new());
       graphics::GraphicsServer::install(graphics::SdlGraphicsBackend::new());
+
+      graphics::graphics().clear_color_buffer(settings.initial_color);
+      window.present();
 
       Ok(window)
     }

@@ -1,4 +1,9 @@
-use std::io::{BufRead, Seek, Write};
+use std::{
+  future::Future,
+  io::{BufRead, Seek, Write},
+  pin::Pin,
+  task::{Context, Poll},
+};
 
 use crate::{BlockableFuture, Compressor, Decompressor, FileSystemError, ToVirtualPath};
 
@@ -217,8 +222,14 @@ pub trait InputStream: Seek + BufRead {
   /// Converts the stream into a buffer.
   fn to_buffer(self) -> Result<Vec<u8>, StreamError>;
 
+  /// Converts the stream into a buffer asynchronously.
+  fn to_buffer_async(self) -> Result<StreamFuture<Vec<u8>>, StreamError>;
+
   /// Converts the stream into a string.
   fn to_string(self) -> Result<String, StreamError>;
+
+  /// Converts the stream into a buffer asynchronously.
+  fn to_string_async(self) -> Result<StreamFuture<String>, StreamError>;
 
   /// Skips the given amount of bytes in the stream.
   fn skip_bytes(&mut self, amount: usize) -> Result<(), StreamError> {
@@ -252,12 +263,20 @@ impl<T: BufRead + Seek> InputStream for T {
     Ok(buffer)
   }
 
+  fn to_buffer_async(self) -> Result<StreamFuture<Vec<u8>>, StreamError> {
+    todo!()
+  }
+
   fn to_string(mut self) -> Result<String, StreamError> {
     let mut buffer = String::new();
 
     self.read_to_string(&mut buffer)?;
 
     Ok(buffer)
+  }
+
+  fn to_string_async(self) -> Result<StreamFuture<String>, StreamError> {
+    todo!()
   }
 }
 
@@ -277,15 +296,6 @@ macro_rules! impl_write {
 
 /// A stream for writing to some [`VirtualPath`].
 pub trait OutputStream: Seek + Write {
-  /// Writes a compressed buffer to the stream.
-  fn write_compress(&mut self, data: &[u8], algorithm: &dyn Compressor) -> Result<(), StreamError> {
-    let compressed = algorithm.compress(data)?;
-
-    self.write_bytes(&compressed)?;
-
-    Ok(())
-  }
-
   impl_write!(write_u8, u8);
   impl_write!(write_u16, u16);
   impl_write!(write_u32, u32);
@@ -309,16 +319,58 @@ pub trait OutputStream: Seek + Write {
     Ok(())
   }
 
+  /// Writes a string to the stream asynchronously.
+  fn write_string_async(&mut self, value: &str) -> Result<StreamFuture<()>, StreamError> {
+    todo!()
+  }
+
   /// Writes a buffer to the stream.
   fn write_bytes(&mut self, value: &[u8]) -> Result<(), StreamError> {
     self.write_all(value)?;
 
     Ok(())
   }
+
+  /// Writes a buffer to the stream asynchronously.
+  fn write_bytes_async(&mut self, value: &[u8]) -> Result<StreamFuture<()>, StreamError> {
+    todo!()
+  }
+
+  /// Writes a compressed buffer to the stream.
+  fn write_compress(&mut self, data: &[u8], compressor: &dyn Compressor) -> Result<(), StreamError> {
+    let compressed = compressor.compress(data)?;
+
+    self.write_bytes(&compressed)?;
+
+    Ok(())
+  }
+
+  /// Writes a compressed buffer to the stream asynchronously.
+  fn write_compressed_async(
+    &mut self,
+    data: &[u8],
+    compressor: &dyn Compressor,
+  ) -> Result<StreamFuture<()>, StreamError> {
+    todo!()
+  }
 }
 
 /// Blanket implementation of [`OutputStream`].
 impl<T: Write + Seek> OutputStream for T {}
+
+/// Represents a future that can be used to read from a stream.
+pub struct StreamFuture<T> {
+  future: Pin<Box<dyn Future<Output = T>>>,
+}
+
+impl<T: Unpin> Future for StreamFuture<T> {
+  type Output = T;
+
+  #[inline]
+  fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+    self.future.as_mut().poll(cx)
+  }
+}
 
 #[cfg(test)]
 mod tests {
