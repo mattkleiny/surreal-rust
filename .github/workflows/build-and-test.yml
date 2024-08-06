@@ -27,7 +27,7 @@ jobs:
       - uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
-          packages: libgl1-mesa-dev libasound2-dev libopenal-dev
+          packages: libgl1-mesa-dev libasound2-dev libopenal-dev libsdl2-dev pkg-config
           version: 1.0
 
       - uses: Swatinem/rust-cache@v1

@@ -3,11 +3,7 @@
 use std::error::Error;
 
 use common::{Color, Rectangle, UVec2};
-use graphics::{
-  BlendState, BufferError, BufferId, BufferKind, BufferUsage, CullingMode, GraphicsBackend, MemoryBarrier, MeshError,
-  MeshId, PrimitiveTopology, ScissorMode, ShaderError, ShaderId, ShaderKernel, ShaderUniform, TargetError, TargetId,
-  TextureError, TextureFilter, TextureFormat, TextureId, TextureSampler, VertexDescriptor,
-};
+use graphics::*;
 use wgpu::{Backends, CompositeAlphaMode, InstanceDescriptor, InstanceFlags, StoreOp, SurfaceTargetUnsafe};
 
 /// A wgpu-based graphics backend.
@@ -125,7 +121,7 @@ impl GraphicsBackend for WgpuGraphicsBackend {
   }
 
   fn clear_depth_buffer(&self, depth: f32) {
-    todo!()
+    // no-op
   }
 
   fn viewport_size(&self) -> (usize, usize) {
