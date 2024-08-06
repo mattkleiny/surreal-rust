@@ -82,3 +82,16 @@ macro_rules! impl_server {
     }
   };
 }
+
+/// Implements error coercion for some root error type.
+#[macro_export]
+macro_rules! impl_error_coercion {
+  ($error:tt into $root:ty) => {
+    impl From<$error> for $root {
+      #[inline(always)]
+      fn from(error: $error) -> Self {
+        <$root>::$error(error)
+      }
+    }
+  };
+}

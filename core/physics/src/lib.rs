@@ -20,6 +20,15 @@ pub fn physics() -> &'static dyn PhysicsBackend {
   PhysicsServer::instance()
 }
 
+/// An error that can occur in the physics engine.
+#[derive(Debug)]
+pub enum PhysicsError {
+  FailedToCreate,
+  WorldError(WorldError),
+  ColliderError(ColliderError),
+  BodyError(BodyError),
+}
+
 /// A possible error when interacting with physics worlds.
 #[derive(Debug)]
 pub enum WorldError {
@@ -41,6 +50,10 @@ pub enum BodyError {
   InvalidId(BodyId),
   NullPointer,
 }
+
+common::impl_error_coercion!(WorldError into PhysicsError);
+common::impl_error_coercion!(ColliderError into PhysicsError);
+common::impl_error_coercion!(BodyError into PhysicsError);
 
 /// An abstraction on top of the underlying physics API.
 ///

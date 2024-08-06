@@ -27,6 +27,15 @@ pub fn audio() -> &'static dyn AudioBackend {
   AudioServer::instance()
 }
 
+/// An error that can occur in the audio engine.
+#[derive(Debug)]
+pub enum AudioError {
+  FailedToCreate,
+  BufferError(BufferError),
+  ClipError(ClipError),
+  SourceError(SourceError),
+}
+
 /// A possible error when interacting with buffers.
 #[derive(Debug)]
 pub enum BufferError {
@@ -48,6 +57,10 @@ pub enum SourceError {
   InvalidId(SourceId),
   FailedToCreate,
 }
+
+common::impl_error_coercion!(BufferError into AudioError);
+common::impl_error_coercion!(ClipError into AudioError);
+common::impl_error_coercion!(SourceError into AudioError);
 
 /// Represents a backend implementation for the underlying audio API.
 ///

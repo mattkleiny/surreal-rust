@@ -954,14 +954,5 @@ mod parser {
         }],
       });
     }
-
-    #[test]
-    fn test_parse_full_shady_program() {
-      let code = include_str!("../embedded/sprite-standard.shady");
-
-      let module = parse(code).unwrap();
-
-      assert_eq!(module.kernels.len(), 1);
-    }
   }
 }

@@ -2,7 +2,6 @@
 
 use std::ffi::{c_int, CString};
 
-use ::input::KeyboardEvent;
 use sdl2_sys::{
   SDL_GLattr::{
     SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_MAJOR_VERSION, SDL_GL_CONTEXT_MINOR_VERSION, SDL_GL_CONTEXT_PROFILE_MASK,

@@ -42,25 +42,25 @@ impl Default for OrthographicCamera {
       up: Vec3::Y,
       near_plane: 0.1,
       far_plane: 100.0,
-      ortho_size: 1.0,
+      ortho_size: 144.0,
     }
   }
 }
 
 impl Camera for OrthographicCamera {
   fn projection(&self) -> Mat4 {
-    Mat4::orthographic_lh(
-      self.ortho_size / 2.,
-      self.ortho_size / 2.,
-      self.ortho_size / 2.,
-      self.ortho_size / 2.,
+    Mat4::orthographic_rh_gl(
+      0.,
+      self.ortho_size,
+      self.ortho_size,
+      0.,
       self.near_plane,
       self.far_plane,
     )
   }
 
   fn view(&self) -> Mat4 {
-    Mat4::look_at_lh(self.position, self.look_at, self.up)
+    Mat4::look_at_rh(self.position, self.look_at, self.up)
   }
 }
 

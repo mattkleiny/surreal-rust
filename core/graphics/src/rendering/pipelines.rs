@@ -99,6 +99,8 @@ impl<S: RenderScene> RenderPipeline<S> for MultiPassPipeline<S> {
       pass.end_frame(scene, &mut frame);
     }
 
+    frame.queue.flush().unwrap();
+
     profile_frame_end!();
   }
 }

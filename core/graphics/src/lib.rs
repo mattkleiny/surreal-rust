@@ -49,6 +49,17 @@ pub fn graphics() -> &'static dyn GraphicsBackend {
   GraphicsServer::instance()
 }
 
+/// An error that can occur in the graphics pipeline.
+#[derive(Debug)]
+pub enum GraphicsError {
+  FailedToCreate,
+  BufferError(BufferError),
+  TextureError(TextureError),
+  ShaderError(ShaderError),
+  MeshError(MeshError),
+  TargetError(TargetError),
+}
+
 /// A possible error when interacting with buffers.
 #[derive(Debug)]
 pub enum BufferError {
@@ -94,6 +105,12 @@ pub enum TargetError {
 pub enum MemoryBarrier {
   ImageAccess,
 }
+
+common::impl_error_coercion!(BufferError into GraphicsError);
+common::impl_error_coercion!(TextureError into GraphicsError);
+common::impl_error_coercion!(ShaderError into GraphicsError);
+common::impl_error_coercion!(MeshError into GraphicsError);
+common::impl_error_coercion!(TargetError into GraphicsError);
 
 /// An abstraction on top of the underlying graphics API.
 ///
