@@ -1,4 +1,4 @@
-use common::{FastHashMap, FromStream, InputStream, StreamError};
+use common::{FastHashMap, FromStream, InputStream};
 
 /// A single glyph in an OpenType font.
 struct OpenTypeGlyph {}
@@ -9,7 +9,7 @@ pub struct OpenTypeFont {
 }
 
 impl FromStream for OpenTypeFont {
-  fn from_stream(stream: &mut dyn InputStream) -> Result<Self, StreamError> {
+  async fn from_stream_async(stream: &mut dyn InputStream) -> Result<Self, Self::Error> {
     let _a = stream.read_u16()?;
     let _b = stream.read_u16()?;
 

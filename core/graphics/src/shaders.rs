@@ -293,7 +293,7 @@ impl ShaderUniformSet {
   }
 
   /// Sets the given key as a uniform with a single texture.
-  pub fn set_texture<'a, K>(&'a mut self, key: K, texture: &Texture, sampler: Option<TextureSampler>)
+  pub fn set_texture<'a, K>(&mut self, key: K, texture: &'a Texture, sampler: Option<TextureSampler>)
   where
     K: Into<ShaderUniformKey<&'a Texture>>,
   {

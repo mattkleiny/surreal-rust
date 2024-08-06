@@ -188,7 +188,7 @@ pub enum LayerBlendMode {
 impl FromStream for AsepriteFile {
   type Error = AsepriteError;
 
-  fn from_stream(stream: &mut dyn InputStream) -> Result<Self, Self::Error> {
+  async fn from_stream_async(stream: &mut dyn InputStream) -> Result<Self, Self::Error> {
     let header = AsepriteHeader::from_stream(stream)?;
     let mut frames = Vec::with_capacity(header.frame_count as usize);
 

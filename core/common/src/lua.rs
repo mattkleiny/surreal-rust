@@ -57,11 +57,33 @@ impl LuaScriptEngine {
     self.exec(&script)
   }
 
+  /// Asynchronously loads the given script and evaluates it.
+  pub async fn load_exec_async(&self, path: &impl ToVirtualPath) -> LuaResult<()> {
+    let script = path
+      .to_virtual_path()
+      .read_all_text_async()
+      .await
+      .map_err(|_| LuaError::RuntimeError("Unable to load script".to_string()))?;
+
+    self.exec(&script)
+  }
+
   /// Loads the given script and evaluates it.
-  pub fn load_eval<R: for<'lua> FromLua<'lua>>(&self, path: &&impl ToVirtualPath) -> LuaResult<R> {
+  pub fn load_eval<R: for<'lua> FromLua<'lua>>(&self, path: &impl ToVirtualPath) -> LuaResult<R> {
     let script = path
       .to_virtual_path()
       .read_all_text()
+      .map_err(|_| LuaError::RuntimeError("Unable to load script".to_string()))?;
+
+    self.eval(&script)
+  }
+
+  /// Asynchronously loads the given script and evaluates it.
+  pub async fn load_eval_async<R: for<'lua> FromLua<'lua>>(&self, path: &impl ToVirtualPath) -> LuaResult<R> {
+    let script = path
+      .to_virtual_path()
+      .read_all_text_async()
+      .await
       .map_err(|_| LuaError::RuntimeError("Unable to load script".to_string()))?;
 
     self.eval(&script)

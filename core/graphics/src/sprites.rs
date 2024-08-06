@@ -3,14 +3,12 @@
 pub use aseprite::*;
 pub use atlas::*;
 pub use batch::*;
-pub use pyxel::*;
 
 use super::*;
 
 mod aseprite;
 mod atlas;
 mod batch;
-mod pyxel;
 
 /// Represents something that can be drawn as a sprite.
 pub trait Sprite {

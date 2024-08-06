@@ -2,6 +2,7 @@
 
 pub use errors::*;
 pub use events::*;
+pub use owned::*;
 pub use reflect::*;
 pub use settings::*;
 pub use singleton::*;
@@ -9,6 +10,7 @@ pub use version::*;
 
 mod errors;
 mod events;
+mod owned;
 mod reflect;
 mod settings;
 mod singleton;
