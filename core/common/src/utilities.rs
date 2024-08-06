@@ -1,5 +1,6 @@
 //! General utilities.
 
+pub use crashes::*;
 pub use errors::*;
 pub use events::*;
 pub use owned::*;
@@ -8,6 +9,7 @@ pub use settings::*;
 pub use singleton::*;
 pub use version::*;
 
+mod crashes;
 mod errors;
 mod events;
 mod owned;
