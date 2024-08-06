@@ -39,6 +39,7 @@ editor = { package = "surreal-editor", path = "./editor", optional = true }
 
 # backends
 sdl = { package = "surreal-backend-sdl", path = "./backends/sdl", optional = true }
+wgpu = { package = "surreal-backend-wgpu", path = "./backends/wgpu", optional = true }
 
 [[example]]
 name = "sprites"

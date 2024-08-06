@@ -1,0 +1,15 @@
+[package]
+name = "surreal-backend-wgpu"
+description = "WGPU backend for Surreal"
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+common = { package = "surreal-common", path = "../../core/common" }
+audio = { package = "surreal-audio", path = "../../core/audio" }
+graphics = { package = "surreal-graphics", path = "../../core/graphics" }
+input = { package = "surreal-input", path = "../../core/input" }
+
+# platform dependencies
+winit = { version = "0.30.4", default-features = false, features = ["rwh_06"] }
+wgpu = { version = "22.1.0", default-features = false, features = ["metal"] }

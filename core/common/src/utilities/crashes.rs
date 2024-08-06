@@ -4,7 +4,7 @@
 ///
 /// This handler will display a message to the user and invite them to report
 /// the bug to the given URL.
-pub fn configure_crash_handler(version: &str, bug_url: &str) {
+pub fn configure_crash_handler(_version: &str, _bug_url: &str) {
   // TODO: implement me
   // std::panic::set_hook(Box::new({
   //   let version = version.to_string();
