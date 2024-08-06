@@ -11,6 +11,6 @@ graphics = { package = "surreal-graphics", path = "../../core/graphics" }
 input = { package = "surreal-input", path = "../../core/input" }
 
 # platform dependencies
-sdl2-sys = { version = "0.36.0", features = ["bundled"] }
+sdl2-sys = { version = "0.37.0" }
 openal-sys = "1.16.0"
 gl = "0.14.0"
