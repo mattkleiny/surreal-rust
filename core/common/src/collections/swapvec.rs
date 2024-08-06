@@ -88,12 +88,19 @@ impl<T> SwapVec<T> {
     }
   }
 
-  /// Swaps the active [`Vec` with the inactive one.
-  pub fn swap(&mut self) {
-    self.status = match self.status {
-      Status::Red => Status::Green,
-      Status::Green => Status::Red,
-    };
+  /// Swaps the active [`Vec`] with the inactive one
+  /// returning the previously-active [`Vec`].
+  pub fn swap(&mut self) -> &mut Vec<T> {
+    match self.status {
+      Status::Red => {
+        self.status = Status::Green;
+        &mut self.red
+      }
+      Status::Green => {
+        self.status = Status::Red;
+        &mut self.green
+      }
+    }
   }
 
   /// Clears the active [`Vec`].

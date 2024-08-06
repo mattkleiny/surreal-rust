@@ -176,11 +176,10 @@ impl VirtualPath {
   }
 
   /// Attempts to read all bytes from the given path asynchronously.
-  pub fn read_all_bytes_async(&self) -> Result<Vec<u8>, FileSystemError> {
-    // TODO: make this asynchronous
+  pub async fn read_all_bytes_async(&self) -> Result<Vec<u8>, FileSystemError> {
     let stream = self.open_input_stream()?;
 
-    Ok(stream.to_buffer()?)
+    Ok(stream.to_buffer_async().await?)
   }
 
   /// Attempts to read all text from the given path.
@@ -192,10 +191,9 @@ impl VirtualPath {
 
   /// Attempts to read all text from the given path asynchronously.
   pub async fn read_all_text_async(&self) -> Result<String, FileSystemError> {
-    // TODO: make this asynchronous
     let stream = self.open_input_stream()?;
 
-    Ok(stream.to_string()?)
+    Ok(stream.to_string_async().await?)
   }
 
   /// Finds all files in the given directory.

@@ -1,11 +1,6 @@
-use std::{
-  future::Future,
-  io::{BufRead, Seek, Write},
-  pin::Pin,
-  task::{Context, Poll},
-};
+use std::io::{BufRead, Seek, Write};
 
-use crate::{BlockableFuture, Compressor, Decompressor, FileSystemError, ToVirtualPath};
+use crate::{BlockableFuture, Compressor, Decompressor, FileSystemError, Task, ToVirtualPath};
 
 /// Represents an error that occurred while working with a stream.
 #[derive(Debug)]
@@ -223,13 +218,13 @@ pub trait InputStream: Seek + BufRead {
   fn to_buffer(self) -> Result<Vec<u8>, StreamError>;
 
   /// Converts the stream into a buffer asynchronously.
-  fn to_buffer_async(self) -> Result<StreamFuture<Vec<u8>>, StreamError>;
+  fn to_buffer_async(self) -> Task<Result<Vec<u8>, StreamError>>;
 
   /// Converts the stream into a string.
   fn to_string(self) -> Result<String, StreamError>;
 
   /// Converts the stream into a buffer asynchronously.
-  fn to_string_async(self) -> Result<StreamFuture<String>, StreamError>;
+  fn to_string_async(self) -> Task<Result<String, StreamError>>;
 
   /// Skips the given amount of bytes in the stream.
   fn skip_bytes(&mut self, amount: usize) -> Result<(), StreamError> {
@@ -263,8 +258,8 @@ impl<T: BufRead + Seek> InputStream for T {
     Ok(buffer)
   }
 
-  fn to_buffer_async(self) -> Result<StreamFuture<Vec<u8>>, StreamError> {
-    todo!()
+  fn to_buffer_async(self) -> Task<Result<Vec<u8>, StreamError>> {
+    Task::from_result(self.to_buffer())
   }
 
   fn to_string(mut self) -> Result<String, StreamError> {
@@ -275,8 +270,8 @@ impl<T: BufRead + Seek> InputStream for T {
     Ok(buffer)
   }
 
-  fn to_string_async(self) -> Result<StreamFuture<String>, StreamError> {
-    todo!()
+  fn to_string_async(self) -> Task<Result<String, StreamError>> {
+    Task::from_result(self.to_string())
   }
 }
 
@@ -320,8 +315,8 @@ pub trait OutputStream: Seek + Write {
   }
 
   /// Writes a string to the stream asynchronously.
-  fn write_string_async(&mut self, value: &str) -> Result<StreamFuture<()>, StreamError> {
-    todo!()
+  fn write_string_async(&mut self, value: &str) -> Task<Result<(), StreamError>> {
+    Task::from_result(self.write_string(value))
   }
 
   /// Writes a buffer to the stream.
@@ -332,8 +327,8 @@ pub trait OutputStream: Seek + Write {
   }
 
   /// Writes a buffer to the stream asynchronously.
-  fn write_bytes_async(&mut self, value: &[u8]) -> Result<StreamFuture<()>, StreamError> {
-    todo!()
+  fn write_bytes_async(&mut self, value: &[u8]) -> Task<Result<(), StreamError>> {
+    Task::from_result(self.write_bytes(value))
   }
 
   /// Writes a compressed buffer to the stream.
@@ -346,31 +341,13 @@ pub trait OutputStream: Seek + Write {
   }
 
   /// Writes a compressed buffer to the stream asynchronously.
-  fn write_compressed_async(
-    &mut self,
-    data: &[u8],
-    compressor: &dyn Compressor,
-  ) -> Result<StreamFuture<()>, StreamError> {
-    todo!()
+  fn write_compressed_async(&mut self, data: &[u8], compressor: &dyn Compressor) -> Task<Result<(), StreamError>> {
+    Task::from_result(self.write_compress(data, compressor))
   }
 }
 
 /// Blanket implementation of [`OutputStream`].
 impl<T: Write + Seek> OutputStream for T {}
-
-/// Represents a future that can be used to read from a stream.
-pub struct StreamFuture<T> {
-  future: Pin<Box<dyn Future<Output = T>>>,
-}
-
-impl<T: Unpin> Future for StreamFuture<T> {
-  type Output = T;
-
-  #[inline]
-  fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-    self.future.as_mut().poll(cx)
-  }
-}
 
 #[cfg(test)]
 mod tests {
@@ -404,4 +381,17 @@ mod tests {
   impl_read_write_test!(it_should_read_write_f32, read_f32, write_f32, -1.0);
   impl_read_write_test!(it_should_read_write_f64, read_f64, write_f64, -1.0);
   impl_read_write_test!(it_should_read_write_string, read_string, write_string, "Hello, world!");
+
+  #[test]
+  fn test_basic_async_read_write() {
+    let buffer = vec![0x00; 4];
+    let mut cursor = std::io::Cursor::new(buffer);
+
+    cursor.write_bytes_async(&[7, 3, 3, 7]).block().unwrap();
+    cursor.set_position(0);
+
+    let result = cursor.to_buffer_async().block().unwrap();
+
+    assert_eq!(result, &[7, 3, 3, 7]);
+  }
 }
