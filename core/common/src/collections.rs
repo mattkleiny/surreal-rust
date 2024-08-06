@@ -16,6 +16,7 @@ pub use quadtree::*;
 pub use ringbuffer::*;
 pub use smallvec::{smallvec, SmallVec};
 pub use spatialhash::*;
+pub use swapvec::*;
 
 mod anymap;
 mod arena;
@@ -27,6 +28,7 @@ mod priorityqueue;
 mod quadtree;
 mod ringbuffer;
 mod spatialhash;
+mod swapvec;
 
 /// A faster hasher that is not resilient to DoS attacks.
 type FastHasher = BuildHasherDefault<rustc_hash::FxHasher>;

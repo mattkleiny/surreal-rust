@@ -16,6 +16,7 @@
 #![feature(coerce_unsized)]
 #![feature(unsize)]
 #![feature(downcast_unchecked)]
+#![feature(async_closure)]
 
 pub use abstractions::*;
 pub use collections::*;
