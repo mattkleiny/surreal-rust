@@ -1,0 +1,9 @@
+[package]
+name = "surreal-lua"
+description = "Lua engine for Surreal"
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+mlua-sys = { version = "0.6.2", features = ["vendored", "lua54"] }
+common = { package = "surreal-common", path = "../common" }
