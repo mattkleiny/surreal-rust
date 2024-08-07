@@ -3,20 +3,11 @@
 //! This crate contains common utilities, collections, diagnostics and other
 //! general purpose code for use in other systems.
 
-#![allow(incomplete_features)]
 #![allow(async_fn_in_trait)]
-#![feature(anonymous_lifetime_in_impl_trait)]
+#![feature(allocator_api)]
 #![feature(associated_type_defaults)]
 #![feature(impl_trait_in_assoc_type)]
-#![feature(type_alias_impl_trait)]
 #![feature(noop_waker)]
-#![feature(ptr_as_ref_unchecked)]
-#![feature(box_into_inner)]
-#![feature(allocator_api)]
-#![feature(coerce_unsized)]
-#![feature(unsize)]
-#![feature(downcast_unchecked)]
-#![feature(async_closure)]
 
 pub use abstractions::*;
 pub use collections::*;

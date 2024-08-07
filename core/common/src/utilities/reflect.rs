@@ -8,6 +8,22 @@ use std::any::Any;
 
 use crate::StringName;
 
+/// Description of a field in a struct.
+#[derive(Debug)]
+pub struct FieldInfo {
+  /// The name of the field.
+  pub name: &'static str,
+  /// The type of the field.
+  pub kind: &'static str,
+}
+
+/// Description of a method in a struct.
+#[derive(Debug)]
+pub struct MethodInfo {
+  /// The name of the method.
+  pub name: &'static str,
+}
+
 /// Allows reflecting over arbitrary types.
 pub trait Reflect: Any {
   /// Gets the name of this type.
@@ -33,22 +49,21 @@ pub trait StructType: Type {
   /// Gets the fields of this struct.
   fn fields() -> &'static [FieldInfo];
 
+  /// Gets the methods of this struct.
+  fn methods() -> &'static [MethodInfo];
+
   /// Gets the field with the given name.
   fn field(name: &str) -> Option<&FieldInfo> {
     Self::fields().iter().find(|field| field.name == name)
   }
 
+  /// Gets the method with the given name.
+  fn method(name: &str) -> Option<&MethodInfo> {
+    Self::methods().iter().find(|method| method.name == name)
+  }
+
   fn get_field(&self, _name: &str) -> Option<&dyn Type>;
   fn set_field(&mut self, _name: &str, _value: &dyn Type);
-}
-
-/// Description of a field in a struct.
-#[derive(Debug)]
-pub struct FieldInfo {
-  /// The name of the field.
-  pub name: &'static str,
-  /// The type of the field.
-  pub kind: &'static str,
 }
 
 /// Allows reflecting over an enum type.

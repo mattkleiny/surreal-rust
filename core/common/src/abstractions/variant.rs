@@ -1,14 +1,6 @@
-use std::{any::Any, cmp::Ordering, fmt::Debug};
+use std::{any::Any, cmp::Ordering, fmt::Debug, ptr::NonNull, sync::Arc};
 
-use crate::{Callable, Color, Color32, Pointer, Quat, StringName, Vec2, Vec3, Vec4};
-
-/// An error that can occur when working with variants.
-#[derive(Debug)]
-pub enum VariantError {
-  InvalidNegation,
-  InvalidConversion,
-  NonArithmetic,
-}
+use crate::{downcast_arc, Callable, Color, Color32, Quat, StringName, Vec2, Vec3, Vec4};
 
 /// Allows for a type to be converted to a [`Variant`].
 pub trait ToVariant {
@@ -20,6 +12,14 @@ pub trait ToVariant {
 pub trait FromVariant: Sized {
   /// Converts a [`Variant`] into the type.
   fn from_variant(variant: Variant) -> Result<Self, VariantError>;
+}
+
+/// An error that can occur when working with variants.
+#[derive(Debug)]
+pub enum VariantError {
+  InvalidNegation,
+  InvalidConversion,
+  NonArithmetic,
 }
 
 /// The different kinds of values that a [`Variant`] can hold.
@@ -48,7 +48,8 @@ pub enum VariantKind {
   Color,
   Color32,
   Callable,
-  UserData,
+  Pointer,
+  Any,
 }
 
 /// A type that can hold varying different values.
@@ -56,7 +57,7 @@ pub enum VariantKind {
 /// This is an abstraction over the different primitive types that are often
 /// shuffled around in the engine. It allows for a more generic API that can
 /// handle any type of value.
-#[derive(Default, Debug, Clone, PartialEq)]
+#[derive(Default, Debug, Clone)]
 pub enum Variant {
   #[default]
   Null,
@@ -81,7 +82,8 @@ pub enum Variant {
   Color(Color),
   Color32(Color32),
   Callable(Callable),
-  UserData(Pointer<dyn Any>),
+  Pointer(NonNull<std::ffi::c_void>),
+  Any(Arc<dyn Any>),
 }
 
 impl Variant {
@@ -110,7 +112,8 @@ impl Variant {
       Variant::Color(_) => VariantKind::Color,
       Variant::Color32(_) => VariantKind::Color32,
       Variant::Callable(_) => VariantKind::Callable,
-      Variant::UserData(_) => VariantKind::UserData,
+      Variant::Pointer(_) => VariantKind::Pointer,
+      Variant::Any(_) => VariantKind::Any,
     }
   }
 
@@ -304,6 +307,38 @@ impl PartialOrd for Variant {
   }
 }
 
+/// Specialized equality for variant types.
+impl PartialEq for Variant {
+  fn eq(&self, other: &Self) -> bool {
+    match (self, other) {
+      (Variant::Bool(a), Variant::Bool(b)) => a == b,
+      (Variant::Char(a), Variant::Char(b)) => a == b,
+      (Variant::U8(a), Variant::U8(b)) => a == b,
+      (Variant::U16(a), Variant::U16(b)) => a == b,
+      (Variant::U32(a), Variant::U32(b)) => a == b,
+      (Variant::U64(a), Variant::U64(b)) => a == b,
+      (Variant::I8(a), Variant::I8(b)) => a == b,
+      (Variant::I16(a), Variant::I16(b)) => a == b,
+      (Variant::I32(a), Variant::I32(b)) => a == b,
+      (Variant::I64(a), Variant::I64(b)) => a == b,
+      (Variant::F32(a), Variant::F32(b)) => a == b,
+      (Variant::F64(a), Variant::F64(b)) => a == b,
+      (Variant::String(a), Variant::String(b)) => a == b,
+      (Variant::StringName(a), Variant::StringName(b)) => a == b,
+      (Variant::Vec2(a), Variant::Vec2(b)) => a == b,
+      (Variant::Vec3(a), Variant::Vec3(b)) => a == b,
+      (Variant::Vec4(a), Variant::Vec4(b)) => a == b,
+      (Variant::Quat(a), Variant::Quat(b)) => a == b,
+      (Variant::Color(a), Variant::Color(b)) => a == b,
+      (Variant::Color32(a), Variant::Color32(b)) => a == b,
+      (Variant::Callable(a), Variant::Callable(b)) => a == b,
+      (Variant::Pointer(a), Variant::Pointer(b)) => a == b,
+      (Variant::Any(a), Variant::Any(b)) => Arc::ptr_eq(a, b),
+      _ => false,
+    }
+  }
+}
+
 /// Allows conversion to/from a `Variant` for a given type.
 macro_rules! impl_variant {
   ((), $kind:ident) => {
@@ -404,30 +439,30 @@ impl_variant!(Quat, Quat);
 impl_variant!(Color, Color);
 impl_variant!(Color32, Color32);
 
-impl<T: Any> ToVariant for Pointer<T> {
+/// Allow [`Arc`] of [`Any`] to be converted to/from Variant.
+impl<T: Any> ToVariant for Arc<T> {
   fn to_variant(&self) -> Variant {
-    Variant::UserData(self.clone())
+    Variant::Any(self.clone())
   }
 }
 
-impl<T: Any> FromVariant for Pointer<T> {
+impl<T: Any> FromVariant for Arc<T> {
   fn from_variant(variant: Variant) -> Result<Self, VariantError> {
     match variant {
-      Variant::UserData(value) => Ok(unsafe { value.cast_unchecked() }),
+      Variant::Any(value) => Ok(downcast_arc(value).map_err(|_| VariantError::InvalidConversion)?),
       _ => Err(VariantError::InvalidConversion),
     }
   }
 }
 
+/// Allow [`Callable`] to be converted to/from Variant.
 impl ToVariant for Callable {
-  #[inline]
   fn to_variant(&self) -> Variant {
     Variant::Callable(self.clone())
   }
 }
 
 impl FromVariant for Callable {
-  #[inline]
   fn from_variant(variant: Variant) -> Result<Self, VariantError> {
     match variant {
       Variant::Callable(callable) => Ok(callable),
@@ -436,6 +471,7 @@ impl FromVariant for Callable {
   }
 }
 
+/// Allow [`Option`]al values to be converted from a [`Variant`].
 impl<V: FromVariant> FromVariant for Option<V> {
   fn from_variant(variant: Variant) -> Result<Self, VariantError> {
     if variant == Variant::Null {
@@ -448,18 +484,20 @@ impl<V: FromVariant> FromVariant for Option<V> {
 
 #[macro_export]
 macro_rules! impl_variant_enum {
-  ($type:ty, u32) => {
+  ($type:ty as $primitive:ty) => {
     /// Allow conversion of enum to/from a variant.
     impl $crate::ToVariant for $type {
+      #[inline]
       fn to_variant(&self) -> $crate::Variant {
-        $crate::Variant::U32(*self as u32)
+        (*self as $primitive).to_variant()
       }
     }
 
     /// Allow conversion of enum to/from a variant.
     impl $crate::FromVariant for $type {
+      #[inline]
       fn from_variant(variant: $crate::Variant) -> Result<Self, $crate::VariantError> {
-        Ok(unsafe { std::mem::transmute(u32::from_variant(variant)?) })
+        Ok(unsafe { std::mem::transmute(<$primitive>::from_variant(variant)?) })
       }
     }
   };
@@ -468,7 +506,6 @@ macro_rules! impl_variant_enum {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::Pointer;
 
   #[test]
   fn test_variant_size_is_ok() {
@@ -503,14 +540,12 @@ mod tests {
   }
 
   #[test]
-  fn test_variant_user_data_equality() {
-    let value = Pointer::new("Hello, World!");
+  fn test_variant_any_equality() {
+    let value = Arc::new("Hello, World!");
 
-    let a = Variant::UserData(value.clone());
-    let b = Variant::UserData(value.clone());
+    let a = Variant::Any(value.clone());
+    let b = Variant::Any(value.clone());
 
     assert_eq!(a, b);
-
-    value.delete();
   }
 }

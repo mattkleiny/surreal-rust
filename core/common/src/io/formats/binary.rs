@@ -189,8 +189,9 @@ impl Format for BinaryFormat {
             stream.write_u8(value.b)?;
             stream.write_u8(value.a)?;
           }
+          Variant::Pointer(_) => todo!(),
           Variant::Callable(_) => todo!(),
-          Variant::UserData(_) => todo!(),
+          Variant::Any(_) => todo!(),
         }
       }
       Chunk::Sequence(sequence) => {

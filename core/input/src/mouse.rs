@@ -15,7 +15,7 @@ pub enum MouseEvent {
 }
 
 /// Possible mouse buttons.
-#[repr(u32)]
+#[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MouseButton {
   Left,
@@ -23,4 +23,4 @@ pub enum MouseButton {
   Middle,
 }
 
-impl_variant_enum!(MouseButton, u32);
+impl_variant_enum!(MouseButton as u8);

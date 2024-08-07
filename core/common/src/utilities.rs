@@ -1,5 +1,7 @@
 //! General utilities.
 
+use std::{any::Any, sync::Arc};
+
 pub use crashes::*;
 pub use errors::*;
 pub use events::*;
@@ -56,6 +58,15 @@ pub unsafe fn unsafe_mutable_alias<'a, T>(value: &T) -> &'a mut T {
   }
 }
 
+/// Downcasts an [`Arc`] of [`Any`] to a concrete type [`T`].
+pub fn downcast_arc<T: Any + 'static>(arc: Arc<dyn Any>) -> Result<Arc<T>, Arc<dyn Any>> {
+  if (*arc).is::<T>() {
+    Ok(unsafe { Arc::from_raw(Arc::into_raw(arc).cast::<T>()) })
+  } else {
+    Err(arc)
+  }
+}
+
 /// Implements a new server type for the given backend.
 #[macro_export]
 macro_rules! impl_server {
@@ -98,4 +109,17 @@ macro_rules! impl_error_coercion {
       }
     }
   };
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_downcast_arc_between_types() {
+    let initial = Arc::new("Hello, World!");
+    let result: Arc<&str> = downcast_arc(initial).unwrap();
+
+    assert_eq!(&**result, "Hello, World!");
+  }
 }

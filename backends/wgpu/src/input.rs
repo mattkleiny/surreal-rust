@@ -53,12 +53,10 @@ impl WinitMouseDevice {
       _ => return,
     };
 
-    let event = match state {
+    self.events.push(match state {
       ElementState::Pressed => MouseEvent::MouseDown(button),
       ElementState::Released => MouseEvent::MouseUp(button),
-    };
-
-    self.events.push(event);
+    });
   }
 
   pub fn clear_events(&mut self) {

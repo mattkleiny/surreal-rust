@@ -61,7 +61,8 @@ impl Format for JsonFormat {
           stream.write_string(&format!("[{}, {}, {}, {}]", value.r, value.g, value.b, value.a))?;
         }
         Variant::Callable(_) => todo!(),
-        Variant::UserData(_) => todo!(),
+        Variant::Any(_) => todo!(),
+        Variant::Pointer(_) => todo!(),
       },
       Chunk::Sequence(sequence) => {
         stream.write_string("[")?;

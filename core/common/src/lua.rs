@@ -3,11 +3,13 @@
 //! Lua is a pretty solid scripting language that is easy to embed and use, so
 //! let's make it a first class citizen.
 
+use std::{any::Any, sync::Arc};
+
 pub use mlua::prelude::*;
 
 use crate::{
-  Callable, Callback, CallbackError, Color, Color32, FromVariant, Pointer, Quat, ToVariant, ToVirtualPath, Variant,
-  Vec2, Vec3, Vec4,
+  Callable, Callback, CallbackError, Color, Color32, FromVariant, Quat, ToVariant, ToVirtualPath, Variant, Vec2, Vec3,
+  Vec4,
 };
 
 /// A Lua scripting engine.
@@ -147,7 +149,13 @@ impl<'lua> IntoLua<'lua> for Variant {
 
         LuaValue::Function(function)
       }
-      Variant::UserData(value) => LuaValue::LightUserData(LuaLightUserData(value.into_void())),
+      Variant::Pointer(value) => {
+        let value = value.as_ptr();
+        let data = LuaLightUserData(value as *mut _);
+
+        LuaValue::LightUserData(data)
+      }
+      Variant::Any(value) => LuaArc(value).into_lua(lua)?,
     })
   }
 }
@@ -161,7 +169,7 @@ impl<'lua> FromLua<'lua> for Variant {
       LuaValue::Integer(value) => Variant::I64(value),
       LuaValue::Number(value) => Variant::F64(value),
       LuaValue::String(value) => Variant::String(value.to_str()?.to_string()),
-      LuaValue::Table(value) => Variant::UserData(Pointer::new(value.into_owned())),
+      LuaValue::Table(value) => Variant::Any(Arc::new(value.into_owned())),
       LuaValue::Function(function) => {
         // create a callable that calls the Lua function
         let function = function.into_owned();
@@ -173,7 +181,6 @@ impl<'lua> FromLua<'lua> for Variant {
 
         Variant::Callable(callable)
       }
-      LuaValue::LightUserData(value) => Variant::UserData(Pointer::from_raw_mut(value.0)),
       LuaValue::UserData(value) => match () {
         _ if value.is::<LuaVec2>() => Variant::Vec2(value.borrow::<LuaVec2>()?.0),
         _ if value.is::<LuaVec3>() => Variant::Vec3(value.borrow::<LuaVec3>()?.0),
@@ -181,7 +188,8 @@ impl<'lua> FromLua<'lua> for Variant {
         _ if value.is::<LuaQuat>() => Variant::Quat(value.borrow::<LuaQuat>()?.0),
         _ if value.is::<LuaColor>() => Variant::Color(value.borrow::<LuaColor>()?.0),
         _ if value.is::<LuaColor32>() => Variant::Color32(value.borrow::<LuaColor32>()?.0),
-        _ => return Err(LuaError::RuntimeError("Unrecognized user data".to_string())),
+        _ if value.is::<LuaArc<dyn Any>>() => Variant::Any(value.borrow::<LuaArc<dyn Any>>()?.0.clone()),
+        _ => Variant::Any(Arc::new(value.into_owned())),
       },
       _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string()))?,
     })
@@ -540,26 +548,18 @@ impl<'lua> FromLua<'lua> for LuaColor32 {
   }
 }
 
+/// A lightweight [`LuaUserData`] wrapper for [`Arc`] of [`T`].
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+struct LuaArc<T: ?Sized>(Arc<T>);
+
+impl<T: ?Sized> LuaUserData for LuaArc<T> {}
+
+// TODO: think about using Reflect-able types for Lua?
+
 #[cfg(test)]
 mod tests {
   use super::*;
-
-  #[test]
-  fn test_table_coercion_through_pointer() {
-    let lua = Lua::new();
-    let globals = lua.globals();
-
-    globals.set("Key", "Hello, world!").unwrap();
-
-    let pointer_a = Pointer::new(globals);
-    let pointer_b: Pointer<LuaTable> = unsafe { pointer_a.cast_unchecked() };
-
-    let value: String = pointer_b.get("Key").unwrap();
-
-    assert_eq!(value, "Hello, world!");
-
-    pointer_b.delete();
-  }
 
   #[test]
   fn test_basic_wrapper_operations_for_vec2() {
@@ -751,5 +751,18 @@ mod tests {
     ";
 
     lua.exec(script).unwrap()
+  }
+
+  #[test]
+  fn test_lua_light_user_data_from_arc() {
+    let lua = Lua::new();
+    let value = Arc::new(10);
+
+    let globals = lua.globals();
+
+    globals.set_variant("arc", value).unwrap();
+    let result: Arc<i32> = globals.get_variant("arc").unwrap();
+
+    assert_eq!(*result, 10);
   }
 }

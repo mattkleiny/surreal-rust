@@ -36,6 +36,10 @@ pub fn impl_reflect(input: TokenStream) -> TokenStream {
             &FIELDS
           }
 
+          fn methods() -> &'static [MethodInfo] {
+            todo!()
+          }
+
           fn get_field(&self, name: &str) -> Option<&dyn Type> {
             todo!()
           }

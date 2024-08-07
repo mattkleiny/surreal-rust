@@ -454,6 +454,20 @@ macro_rules! impl_arena_index {
         Self::from(random.next_u64())
       }
     }
+
+    impl $crate::FromVariant for $name {
+      #[inline]
+      fn from_variant(variant: $crate::Variant) -> Result<Self, $crate::VariantError> {
+        Ok(Self::from(u64::from_variant(variant)?))
+      }
+    }
+
+    impl $crate::ToVariant for $name {
+      #[inline]
+      fn to_variant(&self) -> $crate::Variant {
+        $crate::Variant::U64(self.0)
+      }
+    }
   };
 }
 

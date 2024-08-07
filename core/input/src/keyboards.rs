@@ -41,4 +41,4 @@ pub enum VirtualKey {
   Enter,
 }
 
-impl_variant_enum!(VirtualKey, u32);
+impl_variant_enum!(VirtualKey as u32);
