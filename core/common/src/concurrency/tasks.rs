@@ -7,19 +7,19 @@ use std::{
   task::{Context, Poll},
 };
 
-crate::impl_arena_index!(TaskId, "An internal identifier for a task.");
-
 /// A continuation that can be executed.
 type Continuation = dyn FnOnce() -> ();
 
 /// A task that can be executed concurrently.
 pub struct Task<T> {
   status: TaskStatus<T>,
+  future: Option<Box<dyn Future<Output = T>>>,
 }
 
 /// The status of a task.
 enum TaskStatus<T> {
-  Pending(TaskId),
+  NotStarted,
+  Running,
   Completed(T),
   Finalized,
 }
@@ -28,7 +28,8 @@ impl<T> TaskStatus<T> {
   /// Attempts to take the value from the status.
   fn take(&mut self) -> Option<T> {
     match std::mem::replace(self, TaskStatus::Finalized) {
-      TaskStatus::Pending(_) => None,
+      TaskStatus::NotStarted => None,
+      TaskStatus::Running => None,
       TaskStatus::Completed(value) => Some(value),
       TaskStatus::Finalized => None,
     }
@@ -36,22 +37,26 @@ impl<T> TaskStatus<T> {
 }
 
 impl<T> Task<T> {
+  /// Spawn a new task from a future.
+  pub fn spawn(future: impl Future<Output = T> + 'static) -> Self {
+    Self {
+      status: TaskStatus::NotStarted,
+      future: Some(Box::new(future)),
+    }
+  }
+
   /// Creates a new task from a result.
   pub fn from_result(result: T) -> Self {
     Self {
       status: TaskStatus::Completed(result),
+      future: None,
     }
-  }
-
-  /// Spawn a new task from a future.
-  pub fn spawn(_future: impl Future<Output = T> + 'static) -> Self {
-    todo!()
   }
 }
 
 /// A scheduler for [`Task`]s.
 #[derive(Default)]
-pub struct TaskScheduler {
+struct TaskScheduler {
   continuations: Mutex<crate::SwapVec<Box<Continuation>>>,
 }
 
@@ -84,9 +89,37 @@ impl TaskScheduler {
 impl<T: Unpin> Future for Task<T> {
   type Output = T;
 
-  fn poll(mut self: Pin<&mut Self>, _context: &mut Context<'_>) -> Poll<Self::Output> {
+  fn poll(mut self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<Self::Output> {
     match self.status {
-      TaskStatus::Pending(_) => Poll::Pending,
+      TaskStatus::NotStarted => {
+        let waker = context.waker().clone();
+        let future = self.future.take().unwrap();
+
+        self.status = TaskStatus::Running;
+
+        // TODO: fix this up
+        let continuation = move || {
+          let mut pinned = Box::into_pin(future);
+
+          match pinned.as_mut().poll(context) {
+            Poll::Ready(value) => {
+              let mut task = self.as_mut();
+              task.status = TaskStatus::Completed(value);
+              waker.wake_by_ref();
+            }
+            Poll::Pending => {
+              let mut task = self.as_mut();
+
+              task.status = TaskStatus::Running;
+            }
+          }
+        };
+
+        // TASK_SCHEDULER.schedule(Box::new(continuation));
+
+        Poll::Pending
+      }
+      TaskStatus::Running => Poll::Pending,
       TaskStatus::Completed(_) => Poll::Ready(self.status.take().unwrap()),
       TaskStatus::Finalized => panic!("Task has already been finalized"),
     }
@@ -96,6 +129,7 @@ impl<T: Unpin> Future for Task<T> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::BlockableFuture;
 
   #[test]
   fn test_basic_task_continuations() {

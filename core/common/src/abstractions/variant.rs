@@ -471,13 +471,22 @@ impl FromVariant for Callable {
   }
 }
 
-/// Allow [`Option`]al values to be converted from a [`Variant`].
+/// Allow [`Option`]al values to be converted to/from a [`Variant`].
 impl<V: FromVariant> FromVariant for Option<V> {
   fn from_variant(variant: Variant) -> Result<Self, VariantError> {
     if variant == Variant::Null {
       Ok(None)
     } else {
       V::from_variant(variant).map(Some)
+    }
+  }
+}
+
+impl<V: ToVariant> ToVariant for Option<V> {
+  fn to_variant(&self) -> Variant {
+    match self {
+      Some(value) => value.to_variant(),
+      None => Variant::Null,
     }
   }
 }

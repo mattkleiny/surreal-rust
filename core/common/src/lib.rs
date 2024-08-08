@@ -8,6 +8,7 @@
 #![feature(associated_type_defaults)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(noop_waker)]
+#![feature(async_closure)]
 
 pub use abstractions::*;
 pub use collections::*;
