@@ -8,8 +8,8 @@ use std::{any::Any, sync::Arc};
 pub use mlua::prelude::*;
 
 use crate::{
-  Callable, Callback, CallbackError, Color, Color32, FromVariant, Quat, ToVariant, ToVirtualPath, Variant, Vec2, Vec3,
-  Vec4,
+  Callable, Callback, CallbackError, Color, Color32, FromVariant, Quat, StringName, ToVariant, ToVirtualPath, Variant,
+  Vec2, Vec3, Vec4,
 };
 
 /// A Lua scripting engine.
@@ -193,6 +193,22 @@ impl<'lua> FromLua<'lua> for Variant {
       },
       _ => Err(LuaError::RuntimeError("Unsupported Lua value".to_string()))?,
     })
+  }
+}
+
+/// Special handling for StringNames directly into IDs
+impl<'lua> IntoLua<'lua> for StringName {
+  fn into_lua(self, _lua: &'lua Lua) -> LuaResult<LuaValue<'lua>> {
+    Ok(LuaValue::Integer(self.id().into()))
+  }
+}
+
+impl<'lua> FromLua<'lua> for StringName {
+  fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
+    match value {
+      LuaValue::Integer(value) => Ok(StringName::from_id(value.into())),
+      _ => Err(LuaError::UserDataTypeMismatch),
+    }
   }
 }
 

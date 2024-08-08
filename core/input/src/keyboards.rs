@@ -7,7 +7,7 @@ pub trait KeyboardDevice {
 }
 
 /// A keyboard event.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum KeyboardEvent {
   KeyDown(VirtualKey),
   KeyUp(VirtualKey),
@@ -15,7 +15,7 @@ pub enum KeyboardEvent {
 
 /// Possible key codes on a keyboard.
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum VirtualKey {
   Escape,
   F0,

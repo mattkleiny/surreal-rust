@@ -6,7 +6,7 @@ use std::{
 
 use crate::{Arena, Singleton};
 
-crate::impl_arena_index!(StringId, "Identifies a string in a string pool.");
+crate::impl_arena_index!(pub(crate) StringId, "Identifies a string in a string pool.");
 
 /// A trait for objects that can be converted to a [`StringName`].
 pub trait ToStringName {
@@ -33,6 +33,16 @@ impl StringName {
     Self {
       id: unsafe { intern_string(value) },
     }
+  }
+
+  /// Creates a new string name from a string ID.
+  pub(crate) fn from_id(id: StringId) -> Self {
+    Self { id }
+  }
+
+  /// Returns the ID of the string.
+  pub(crate) fn id(&self) -> StringId {
+    self.id
   }
 }
 

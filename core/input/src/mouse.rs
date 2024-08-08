@@ -7,7 +7,7 @@ pub trait MouseDevice {
 }
 
 /// A mouse event.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MouseEvent {
   MouseMove { position: Vec2, delta: Vec2 },
   MouseDown(MouseButton),
