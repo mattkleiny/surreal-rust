@@ -83,6 +83,7 @@ fn convert_scancode(scan_code: SDL_Keycode) -> Option<VirtualKey> {
     SDL_KeyCode::SDLK_DOWN => Some(ArrowDown),
     SDL_KeyCode::SDLK_LEFT => Some(ArrowLeft),
     SDL_KeyCode::SDLK_RIGHT => Some(ArrowRight),
+    SDL_KeyCode::SDLK_SPACE => Some(Space),
     _ => None,
   }
 }

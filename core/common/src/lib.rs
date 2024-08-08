@@ -10,6 +10,8 @@
 #![feature(noop_waker)]
 #![feature(async_closure)]
 
+extern crate self as common;
+
 pub use abstractions::*;
 pub use collections::*;
 pub use concurrency::*;
@@ -33,4 +35,4 @@ mod network;
 mod strings;
 mod utilities;
 
-pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Trace};
+pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};

@@ -34,6 +34,12 @@ impl Display for CallbackError {
 #[derive(Clone)]
 pub struct Callable(Arc<dyn Fn(&[Variant]) -> Result<Variant, CallbackError>>);
 
+/// Represents a value that can be converted into a [`Callable`] function.
+pub trait IntoCallable {
+  /// Converts the value into a [`Callable`] function.
+  fn into_callable(self) -> Callable;
+}
+
 impl Callable {
   /// Creates a new boxed callable function from the given function.
   pub fn from_function(function: impl Fn(&[Variant]) -> Result<Variant, CallbackError> + 'static) -> Self {

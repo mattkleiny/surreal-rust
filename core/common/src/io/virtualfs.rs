@@ -4,7 +4,7 @@ pub use local::*;
 pub use memory::*;
 
 use super::{InputStream, OutputStream};
-use crate::{StringName, ToStringName, UnsafeSingleton};
+use crate::{Singleton, StringName, ToStringName};
 
 mod local;
 mod memory;
@@ -35,11 +35,10 @@ pub trait FileSystem: Send + Sync {
 /// This is a singleton that is used to manage [`FileSystem`] implementations.
 /// File systems can be registered here, and will be used subsequently for file
 /// operations on [`VirtualPath`] instances.
+#[derive(Singleton)]
 pub struct FileSystemManager {
   file_systems: Vec<Box<dyn FileSystem>>,
 }
-
-static mut FILE_SYSTEM_MANAGER: UnsafeSingleton<FileSystemManager> = UnsafeSingleton::default();
 
 impl Default for FileSystemManager {
   fn default() -> Self {
@@ -56,22 +55,18 @@ impl Default for FileSystemManager {
 impl FileSystemManager {
   /// Registers a new [`FileSystem`] with the manager.
   pub fn register(file_system: impl FileSystem + 'static) {
-    unsafe {
-      FILE_SYSTEM_MANAGER.file_systems.push(Box::new(file_system));
-    }
+    Self::instance().file_systems.push(Box::new(file_system));
   }
 
   /// Finds the appropriate [`FileSystem`] for the given [`VirtualPath`].
   pub fn with_filesystem<R>(path: &VirtualPath, body: impl FnOnce(&dyn FileSystem) -> R) -> R {
-    unsafe {
-      for file_system in &FILE_SYSTEM_MANAGER.file_systems {
-        if file_system.can_handle(path) {
-          return body(file_system.as_ref());
-        }
+    for file_system in &Self::instance().file_systems {
+      if file_system.can_handle(path) {
+        return body(file_system.as_ref());
       }
-
-      panic!("No file system found for scheme {}", path.scheme());
     }
+
+    panic!("No file system found for scheme {}", path.scheme());
   }
 }
 

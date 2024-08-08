@@ -7,6 +7,8 @@ use std::{
   task::{Context, Poll},
 };
 
+use crate::Singleton;
+
 /// A continuation that can be executed.
 type Continuation = dyn FnOnce() -> ();
 
@@ -55,20 +57,12 @@ impl<T> Task<T> {
 }
 
 /// A scheduler for [`Task`]s.
-#[derive(Default)]
+#[derive(Default, Singleton)]
 struct TaskScheduler {
   continuations: Mutex<crate::SwapVec<Box<Continuation>>>,
 }
 
-/// The global task scheduler.
-static TASK_SCHEDULER: crate::UnsafeSingleton<TaskScheduler> = crate::UnsafeSingleton::default();
-
 impl TaskScheduler {
-  /// Returns the current task scheduler.
-  pub fn current() -> &'static Self {
-    &TASK_SCHEDULER
-  }
-
   /// Schedules a [`Continuation`] to be executed.
   pub fn schedule(&self, continuation: Box<Continuation>) {
     let mut continuations = self.continuations.lock().unwrap();
@@ -129,11 +123,10 @@ impl<T: Unpin> Future for Task<T> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::BlockableFuture;
 
   #[test]
   fn test_basic_task_continuations() {
-    let scheduler = TaskScheduler::current();
+    let scheduler = TaskScheduler::instance();
 
     scheduler.schedule(Box::new(|| {
       println!("Hello, world!");

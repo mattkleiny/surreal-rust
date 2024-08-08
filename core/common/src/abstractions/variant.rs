@@ -439,6 +439,19 @@ impl_variant!(Quat, Quat);
 impl_variant!(Color, Color);
 impl_variant!(Color32, Color32);
 
+/// Allow [`Variant`] to be converted to/from itself.
+impl ToVariant for Variant {
+  fn to_variant(&self) -> Variant {
+    self.clone()
+  }
+}
+
+impl FromVariant for Variant {
+  fn from_variant(variant: Variant) -> Result<Self, VariantError> {
+    Ok(variant)
+  }
+}
+
 /// Allow [`Arc`] of [`Any`] to be converted to/from Variant.
 impl<T: Any> ToVariant for Arc<T> {
   fn to_variant(&self) -> Variant {

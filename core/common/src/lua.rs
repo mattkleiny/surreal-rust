@@ -555,8 +555,6 @@ struct LuaArc<T: ?Sized>(Arc<T>);
 
 impl<T: ?Sized> LuaUserData for LuaArc<T> {}
 
-// TODO: think about using Reflect-able types for Lua?
-
 #[cfg(test)]
 mod tests {
   use super::*;

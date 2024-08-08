@@ -1,141 +1,173 @@
 use std::{
   fmt::{Debug, Display},
+  ptr::NonNull,
   sync::RwLock,
 };
 
-use crate::{Arena, UnsafeSingleton};
+use crate::{Arena, Singleton};
 
 crate::impl_arena_index!(StringId, "Identifies a string in a string pool.");
 
-/// Represents an interned string that can be used as a name.
-#[repr(transparent)]
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
-pub struct StringName(StringId);
-
-/// A trait for objects that have a [`StringName`].
+/// A trait for objects that can be converted to a [`StringName`].
 pub trait ToStringName {
-  /// Returns the name of this object as a string.
+  /// Converts the value to a [`StringName`].
   fn to_string_name(&self) -> StringName;
 }
 
-/// Allows a string reference to be converted to a string name.
-impl<R: AsRef<str>> ToStringName for R {
-  fn to_string_name(&self) -> StringName {
-    StringName::from(self.as_ref())
+/// Represents an interned string that can be cheaply passed around the engine.
+#[repr(transparent)]
+#[derive(Copy, Clone, Eq, Hash)]
+pub struct StringName {
+  id: StringId,
+}
+
+/// An internal global pool of strings.
+#[derive(Default, Singleton)]
+struct StringNamePool {
+  strings_by_id: RwLock<Arena<StringId, NonNull<str>>>,
+}
+
+impl StringName {
+  /// Creates a new string name from a string reference.
+  pub fn new(value: &str) -> Self {
+    Self {
+      id: unsafe { intern_string(value) },
+    }
   }
 }
 
-/// Allows a string reference to be converted to a string name.
-impl<R: AsRef<str>> From<R> for StringName {
-  fn from(value: R) -> Self {
-    unsafe { StringName(STRING_NAME_POOL.intern(value.as_ref())) }
+/// Converts a string reference to a string name.
+impl From<&str> for StringName {
+  #[inline]
+  fn from(value: &str) -> Self {
+    Self::new(value)
   }
 }
 
-/// Allows a string name to be converted to a string.
+/// Converts a string to a string name.
+impl From<String> for StringName {
+  #[inline]
+  fn from(value: String) -> Self {
+    Self::new(&value)
+  }
+}
+
+/// Converts a string name to an owned string.
 impl From<StringName> for String {
+  #[inline]
   fn from(value: StringName) -> Self {
     value.to_string()
   }
 }
 
-/// Allows a string name to be compared to a string reference.
-impl<R: AsRef<str>> PartialEq<R> for StringName {
-  fn eq(&self, other: &R) -> bool {
-    unsafe {
-      if let Some(value) = STRING_NAME_POOL.lookup(self.0) {
-        value == *other.as_ref()
-      } else {
-        false
-      }
+/// Allows a string named to be interpreted as a string reference.
+impl AsRef<str> for StringName {
+  fn as_ref(&self) -> &str {
+    lookup_string(self.id).expect("String name not found in pool")
+  }
+}
+
+/// Allows a string reference to be converted to a string name.
+impl<R: AsRef<str>> ToStringName for R {
+  fn to_string_name(&self) -> StringName {
+    StringName::new(self.as_ref())
+  }
+}
+
+/// Compares two string names.
+impl PartialEq<StringName> for StringName {
+  #[inline(always)]
+  fn eq(&self, other: &StringName) -> bool {
+    self.id == other.id
+  }
+}
+
+/// Compares a string reference with a string name.
+impl PartialEq<StringName> for &str {
+  fn eq(&self, other: &StringName) -> bool {
+    if let Some(value) = lookup_string(other.id) {
+      value == *self
+    } else {
+      false
     }
   }
 }
 
-impl PartialEq<StringName> for &str {
-  #[inline]
-  fn eq(&self, other: &StringName) -> bool {
-    other == self
+/// Compares a string reference with a string name.
+impl PartialEq<&str> for StringName {
+  fn eq(&self, other: &&str) -> bool {
+    if let Some(value) = lookup_string(self.id) {
+      value == *other
+    } else {
+      false
+    }
   }
 }
 
-/// Pretty-prints a string name.
+/// Compares a string with a string name.
+impl PartialEq<String> for StringName {
+  fn eq(&self, other: &String) -> bool {
+    if let Some(value) = lookup_string(self.id) {
+      value == other
+    } else {
+      false
+    }
+  }
+}
+
 impl Debug for StringName {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    unsafe {
-      if let Some(value) = STRING_NAME_POOL.lookup(self.0) {
-        write!(f, "{:?}", value)
-      } else {
-        write!(f, "StringName({:?})", self.0)
-      }
+  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    if let Some(value) = lookup_string(self.id) {
+      write!(formatter, "{:?}", value)
+    } else {
+      write!(formatter, "StringName({:?})", self.id)
     }
   }
 }
 
 /// Pretty-prints a string name.
 impl Display for StringName {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    unsafe {
-      if let Some(value) = STRING_NAME_POOL.lookup(self.0) {
-        write!(f, "{}", value)
-      } else {
-        write!(f, "")
-      }
+  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    if let Some(value) = lookup_string(self.id) {
+      write!(formatter, "{}", value)
+    } else {
+      write!(formatter, "")
     }
   }
 }
 
-/// An internal global pool of strings.
-#[derive(Default)]
-struct StringNamePool {
-  strings_by_id: RwLock<Arena<StringId, StringPoolEntry>>,
-}
+/// Interns the given string and returns its ID.
+///
+/// If the string is already interned, its reference count is incremented.
+/// Otherwise, it is inserted into the pool.
+unsafe fn intern_string(value: &str) -> StringId {
+  let entries = StringNamePool::instance().strings_by_id.read().unwrap();
 
-static mut STRING_NAME_POOL: UnsafeSingleton<StringNamePool> = UnsafeSingleton::default();
-
-/// An entry in the string pool.
-struct StringPoolEntry {
-  string: String,
-  reference_count: usize,
-}
-
-impl StringNamePool {
-  /// Looks up the string with the given ID.
-  ///
-  /// If the string is not interned, returns `None`.
-  pub fn lookup(&self, id: StringId) -> Option<String> {
-    let entries = self.strings_by_id.read().unwrap();
-
-    entries.get(id).map(|entry| entry.string.clone())
+  for (id, entry) in entries.enumerate() {
+    if entry.as_ref() == value {
+      return id;
+    }
   }
 
-  /// Interns the given string and returns its ID.
-  ///
-  /// If the string is already interned, its reference count is incremented.
-  /// Otherwise, it is inserted into the pool.
-  pub fn intern(&self, value: &str) -> StringId {
-    // we need to manually scan the strings here because we optimize
-    // for the case where the string is already interned
-    let mut entries = self.strings_by_id.write().unwrap();
+  // we need to drop the read lock before we can write to the map
+  drop(entries);
 
-    for (id, entry) in entries.enumerate_mut() {
-      // if we find the string already in the pool, increment the reference count
-      if entry.string == value {
-        entry.reference_count += 1;
-        return id;
-      }
-    }
+  let mut entries = StringNamePool::instance().strings_by_id.write().unwrap();
+  let raw = value.to_owned().leak(); // leak the string to make it static
 
-    // we need to drop the read lock before we can write to the map
-    drop(entries);
+  entries.insert(NonNull::new(raw).unwrap())
+}
 
-    // insert the string into the map
-    let mut entries = self.strings_by_id.write().unwrap();
+/// Looks up the string with the given ID.
+///
+/// If the string is not interned, returns `None`.
+fn lookup_string(id: StringId) -> Option<&'static str> {
+  let entries = unsafe { StringNamePool::instance().strings_by_id.read().unwrap() };
 
-    entries.insert(StringPoolEntry {
-      string: value.to_owned(),
-      reference_count: 1,
-    })
+  if let Some(entry) = entries.get(id) {
+    Some(unsafe { entry.as_ref() })
+  } else {
+    None
   }
 }
 
@@ -146,9 +178,9 @@ mod tests {
   #[test]
   fn test_string_name_should_intern_similar_strings() {
     unsafe {
-      let id1 = STRING_NAME_POOL.intern("test");
-      let id2 = STRING_NAME_POOL.intern("test");
-      let id3 = STRING_NAME_POOL.intern("test2");
+      let id1 = intern_string("test");
+      let id2 = intern_string("test");
+      let id3 = intern_string("test2");
 
       assert_eq!(id1, id2);
       assert_ne!(id1, id3);
@@ -157,8 +189,8 @@ mod tests {
 
   #[test]
   fn test_string_name_should_convert_from_reference() {
-    let name1 = StringName::from("test");
-    let name2 = StringName::from("test");
+    let name1 = StringName::new("test");
+    let name2 = StringName::new("test");
 
     assert_eq!(name1, name2);
   }

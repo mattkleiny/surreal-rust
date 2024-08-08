@@ -7,6 +7,7 @@ mod formats;
 mod objects;
 mod profiling;
 mod reflect;
+mod singleton;
 mod vertex;
 
 /// Instruments a function with profiling code.
@@ -43,6 +44,12 @@ pub fn derive_deserialize(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(Trace)]
 pub fn derive_trace(input: TokenStream) -> TokenStream {
   objects::impl_trace(input)
+}
+
+/// Builds a singleton for a type.
+#[proc_macro_derive(Singleton)]
+pub fn derive_singleton(input: TokenStream) -> TokenStream {
+  singleton::impl_singleton(input)
 }
 
 /// Derives the `Vertex` trait for a type.
