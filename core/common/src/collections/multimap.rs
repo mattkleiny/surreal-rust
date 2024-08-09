@@ -97,12 +97,12 @@ where
   }
 
   /// Removes the given key-value pair from the map.
-  pub fn remove(&mut self, key: &K, value: V)
+  pub fn remove(&mut self, key: &K, value: &V)
   where
     V: PartialEq,
   {
     if let Some(entries) = self.entries.get_mut(key) {
-      entries.retain(|v| v != &value);
+      entries.retain(|v| v != value);
 
       if entries.is_empty() {
         self.entries.remove(key);
@@ -151,7 +151,7 @@ mod tests {
     map.insert(2, "Value 3");
     map.insert(3, "Value 4");
 
-    map.remove(&1, "Value 1");
+    map.remove(&1, &"Value 1");
 
     assert!(map.contains_key(&1));
     assert!(map.contains_key(&2));

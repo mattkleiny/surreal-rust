@@ -1,7 +1,6 @@
 use std::{
   fmt::{Debug, Display, Formatter},
   marker::PhantomData,
-  panic::RefUnwindSafe,
   sync::Arc,
 };
 
@@ -32,22 +31,16 @@ impl Display for CallbackError {
 /// This is a wrapper around a boxed function that can be called with a list of
 /// [`Variant`] arguments and returns a [`Variant`] result.
 #[derive(Clone)]
-pub struct Callable(Arc<dyn Fn(&[Variant]) -> Result<Variant, CallbackError>>);
+pub struct Callable<'a>(Arc<dyn Fn(&[Variant]) -> Result<Variant, CallbackError> + 'a>);
 
-/// Represents a value that can be converted into a [`Callable`] function.
-pub trait IntoCallable {
-  /// Converts the value into a [`Callable`] function.
-  fn into_callable(self) -> Callable;
-}
-
-impl Callable {
+impl<'a> Callable<'a> {
   /// Creates a new boxed callable function from the given function.
-  pub fn from_function(function: impl Fn(&[Variant]) -> Result<Variant, CallbackError> + 'static) -> Self {
+  pub fn from_function(function: impl Fn(&[Variant]) -> Result<Variant, CallbackError> + 'a) -> Self {
     Self(Arc::new(function))
   }
 
   /// Creates a new boxed callable function from the given [`Callback`].
-  pub fn from_callback<R>(callback: impl Callback<R> + 'static) -> Self {
+  pub fn from_callback<R>(callback: impl Callback<R> + 'a) -> Self {
     Self(Arc::new(move |args| callback.call(args)))
   }
 
@@ -59,21 +52,21 @@ impl Callable {
   }
 }
 
-impl PartialEq for Callable {
+impl<'a> PartialEq for Callable<'a> {
   #[inline]
   fn eq(&self, other: &Self) -> bool {
     Arc::ptr_eq(&self.0, &other.0)
   }
 }
 
-impl Debug for Callable {
+impl<'a> Debug for Callable<'a> {
   fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
     write!(formatter, "Callable")
   }
 }
 
 /// Represents a function signature that is callable.
-pub trait Callback<R>: RefUnwindSafe {
+pub trait Callback<R> {
   /// Calls the callback with the given arguments.
   fn call(&self, args: &[Variant]) -> Result<Variant, CallbackError>;
 }
@@ -90,7 +83,7 @@ pub trait Callback<R>: RefUnwindSafe {
 impl<R, F> Callback<PhantomData<()>> for F
 where
   R: ToVariant,
-  F: Fn() -> R + RefUnwindSafe,
+  F: Fn() -> R,
 {
   fn call(&self, _args: &[Variant]) -> Result<Variant, CallbackError> {
     let result = self();
@@ -103,7 +96,7 @@ impl<A1, R, F> Callback<(PhantomData<A1>, R)> for F
 where
   A1: FromVariant,
   R: ToVariant,
-  F: Fn(A1) -> R + RefUnwindSafe,
+  F: Fn(A1) -> R,
 {
   fn call(&self, args: &[Variant]) -> Result<Variant, CallbackError> {
     if args.len() != 1 {
@@ -126,7 +119,7 @@ where
   A1: FromVariant,
   A2: FromVariant,
   R: ToVariant,
-  F: Fn(A1, A2) -> R + RefUnwindSafe,
+  F: Fn(A1, A2) -> R,
 {
   fn call(&self, args: &[Variant]) -> Result<Variant, CallbackError> {
     if args.len() != 2 {
@@ -151,7 +144,7 @@ where
   A2: FromVariant,
   A3: FromVariant,
   R: ToVariant,
-  F: Fn(A1, A2, A3) -> R + RefUnwindSafe,
+  F: Fn(A1, A2, A3) -> R,
 {
   fn call(&self, args: &[Variant]) -> Result<Variant, CallbackError> {
     if args.len() != 3 {
@@ -178,7 +171,7 @@ where
   A3: FromVariant,
   A4: FromVariant,
   R: ToVariant,
-  F: Fn(A1, A2, A3, A4) -> R + RefUnwindSafe,
+  F: Fn(A1, A2, A3, A4) -> R,
 {
   fn call(&self, args: &[Variant]) -> Result<Variant, CallbackError> {
     if args.len() != 4 {

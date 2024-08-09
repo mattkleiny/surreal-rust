@@ -81,7 +81,7 @@ pub enum Variant {
   Quat(Quat),
   Color(Color),
   Color32(Color32),
-  Callable(Callable),
+  Callable(Callable<'static>),
   Pointer(NonNull<std::ffi::c_void>),
   Any(Arc<dyn Any>),
 }
@@ -469,13 +469,13 @@ impl<T: Any> FromVariant for Arc<T> {
 }
 
 /// Allow [`Callable`] to be converted to/from Variant.
-impl ToVariant for Callable {
+impl ToVariant for Callable<'static> {
   fn to_variant(&self) -> Variant {
     Variant::Callable(self.clone())
   }
 }
 
-impl FromVariant for Callable {
+impl FromVariant for Callable<'static> {
   fn from_variant(variant: Variant) -> Result<Self, VariantError> {
     match variant {
       Variant::Callable(callable) => Ok(callable),
