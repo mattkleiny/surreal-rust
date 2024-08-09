@@ -88,6 +88,20 @@ impl<T> SwapVec<T> {
     }
   }
 
+  /// Swaps the active [`Vec`] and drains the now-inactive one.
+  pub fn drain_and_swap(&mut self, range: RangeFull) -> std::vec::Drain<T> {
+    match self.status {
+      Status::Red => {
+        self.status = Status::Green;
+        self.red.drain(range)
+      }
+      Status::Green => {
+        self.status = Status::Red;
+        self.green.drain(range)
+      }
+    }
+  }
+
   /// Swaps the active [`Vec`] with the inactive one
   /// returning the previously-active [`Vec`].
   pub fn swap(&mut self) -> &mut Vec<T> {
