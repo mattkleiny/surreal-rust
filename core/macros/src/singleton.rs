@@ -9,7 +9,7 @@ pub fn impl_singleton(input: TokenStream) -> TokenStream {
   let expanded = quote! {
     impl #ident {
       pub fn instance() -> &'static mut #ident {
-        static mut INSTANCE: common::UnsafeSingleton<#ident> = common::UnsafeSingleton::default();
+        static mut INSTANCE: surreal::common::UnsafeSingleton<#ident> = surreal::common::UnsafeSingleton::default();
 
         unsafe { &mut INSTANCE }
       }

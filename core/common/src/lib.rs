@@ -10,8 +10,6 @@
 #![feature(noop_waker)]
 #![feature(async_closure)]
 
-extern crate self as common;
-
 pub use abstractions::*;
 pub use collections::*;
 pub use concurrency::*;
@@ -36,3 +34,12 @@ mod strings;
 mod utilities;
 
 pub use macros::{profiling, Asset, Deserialize, Reflect, Serialize, Singleton, Trace};
+
+// HACK: re-export to allow macros to access the crate root
+#[doc(hidden)]
+extern crate self as surreal;
+
+#[doc(hidden)]
+pub(crate) mod common {
+  pub use crate::*;
+}

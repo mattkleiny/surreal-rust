@@ -10,6 +10,18 @@ pub enum StreamError {
   GeneralFailure,
 }
 
+impl std::fmt::Display for StreamError {
+  fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+    write!(formatter, "{}", match self {
+      Self::EndOfStream => "End of stream",
+      Self::InvalidData => "Invalid data",
+      Self::GeneralFailure => "General failure",
+    })
+  }
+}
+
+impl std::error::Error for StreamError {}
+
 /// Allows a type to be imported from a VFS stream.
 pub trait FromStream: Sized {
   type Error: From<StreamError> = StreamError;

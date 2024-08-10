@@ -198,14 +198,15 @@ impl<'lua> FromLua<'lua> for Variant {
 
 /// Special handling for StringNames directly into IDs
 impl<'lua> IntoLua<'lua> for StringName {
-  fn into_lua(self, _lua: &'lua Lua) -> LuaResult<LuaValue<'lua>> {
-    Ok(LuaValue::Integer(self.id().into()))
+  fn into_lua(self, lua: &'lua Lua) -> LuaResult<LuaValue<'lua>> {
+    Ok(LuaValue::String(lua.create_string(self.to_string())?))
   }
 }
 
 impl<'lua> FromLua<'lua> for StringName {
   fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
     match value {
+      LuaValue::String(value) => Ok(StringName::new(value.to_str()?)),
       LuaValue::Integer(value) => Ok(StringName::from_id(value.into())),
       _ => Err(LuaError::UserDataTypeMismatch),
     }

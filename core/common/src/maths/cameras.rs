@@ -40,12 +40,12 @@ pub struct OrthographicCamera {
 impl Default for OrthographicCamera {
   fn default() -> Self {
     Self {
-      position: Vec3::ZERO,
-      look_at: Vec3::NEG_Z,
+      position: Vec3::new(0.0, 0.0, -1.0),
+      look_at: Vec3::ZERO,
       up: Vec3::Y,
       near_plane: 0.1,
       far_plane: 100.0,
-      ortho_size: 144.0,
+      ortho_size: 4.5,
     }
   }
 }
@@ -57,10 +57,10 @@ impl Camera for OrthographicCamera {
 
   fn projection(&self) -> Mat4 {
     Mat4::orthographic_rh_gl(
-      0.,
-      self.ortho_size,
-      self.ortho_size,
-      0.,
+      self.position.x - self.ortho_size / 2.,
+      self.position.x + self.ortho_size / 2.,
+      self.position.y + self.ortho_size / 2.,
+      self.position.y - self.ortho_size / 2.,
       self.near_plane,
       self.far_plane,
     )
