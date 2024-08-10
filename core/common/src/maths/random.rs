@@ -47,7 +47,7 @@ impl Random {
   }
 
   /// Chooses a random value from the given iterator.
-  pub fn choose<'a, T: FromRandom>(&mut self, values: impl IntoIterator<Item = &'a T>) -> Option<&'a T> {
+  pub fn choose<T>(&mut self, values: impl IntoIterator<Item = T>) -> Option<T> {
     let mut iter = values.into_iter();
 
     // if we can get the upper bound, we can choose a random index directly
