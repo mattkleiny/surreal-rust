@@ -6,11 +6,10 @@
 
 use std::{
   fmt::{Display, Formatter},
-  ops::{Div, Index, Mul},
+  ops::{Div, Mul},
 };
 
 use super::*;
-use crate::ToVirtualPath;
 
 /// Represents a type of pixel.
 pub trait Pixel: Copy + Default {
@@ -347,130 +346,6 @@ macro_rules! impl_std_ops {
 
 impl_std_ops!(Color, f32);
 impl_std_ops!(Color32, u8);
-
-/// Represents an error that can occur when parsing a color palette.
-#[derive(Debug)]
-pub enum ColorPaletteError {
-  GeneralIoError,
-  InvalidHeader,
-  InvalidColorCount,
-  InvalidColorComponent,
-}
-
-/// A palette of colors of type [`P`].
-#[derive(Default, Clone)]
-pub struct ColorPalette<P> {
-  colors: Vec<P>,
-}
-
-impl<P: Pixel> ColorPalette<P> {
-  /// Creates a new empty palette.
-  pub fn new() -> Self {
-    Self { colors: Vec::new() }
-  }
-
-  /// Creates a palette from a list of colors.
-  pub fn from_vec(colors: Vec<P>) -> Self {
-    Self { colors }
-  }
-
-  /// Creates a color palette from the given slice of pixels.
-  pub fn from_slice(slice: &[P]) -> Self {
-    Self { colors: slice.to_vec() }
-  }
-
-  /// Loads a palette from the given file path.
-  pub fn from_path(path: impl ToVirtualPath) -> Result<Self, ColorPaletteError> {
-    let path = path.to_virtual_path();
-    let stream = path
-      .open_input_stream()
-      .map_err(|_| ColorPaletteError::GeneralIoError)?;
-
-    Self::from_bytes(stream)
-  }
-
-  /// Loads a palette from the given reader.
-  pub fn from_bytes(reader: impl std::io::BufRead) -> Result<Self, ColorPaletteError> {
-    let lines: Vec<_> = reader
-      .lines()
-      .collect::<Result<_, _>>()
-      .map_err(|_| ColorPaletteError::GeneralIoError)?;
-
-    if lines[0] != "JASC-PAL" {
-      return Err(ColorPaletteError::InvalidHeader);
-    }
-
-    if lines[1] != "0100" {
-      return Err(ColorPaletteError::InvalidHeader);
-    }
-
-    // read palette size and start building palette
-    let count: usize = lines[2].parse().map_err(|_| ColorPaletteError::InvalidColorCount)?;
-    let mut colors = vec![P::default(); count];
-
-    for (index, color) in colors.iter_mut().enumerate() {
-      let index = (3 + index) % lines.len();
-      let components = lines[index].split(' ').collect::<Vec<_>>();
-
-      if components.len() != 3 {
-        return Err(ColorPaletteError::InvalidColorComponent);
-      }
-
-      *color = P::from_bytes(&[
-        components[0]
-          .parse()
-          .map_err(|_| ColorPaletteError::InvalidColorComponent)?,
-        components[1]
-          .parse()
-          .map_err(|_| ColorPaletteError::InvalidColorComponent)?,
-        components[2]
-          .parse()
-          .map_err(|_| ColorPaletteError::InvalidColorComponent)?,
-        255,
-      ]);
-    }
-
-    Ok(Self::from_vec(colors))
-  }
-
-  /// Is the palette empty?
-  pub fn is_empty(&self) -> bool {
-    self.colors.is_empty()
-  }
-
-  /// Gets the number of colors in this palette.
-  pub fn len(&self) -> usize {
-    self.colors.len()
-  }
-
-  /// Adds a color to the palette.
-  pub fn push(&mut self, color: P) {
-    self.colors.push(color);
-  }
-
-  /// Removes all colors from the palette.
-  pub fn clear(&mut self) {
-    self.colors.clear();
-  }
-
-  /// Returns the colors as a slice of pixels.
-  pub fn as_slice(&self) -> &[P] {
-    &self.colors
-  }
-
-  /// Returns the colors as a mutable slice of pixels.
-  pub fn as_slice_mut(&mut self) -> &mut [P] {
-    &mut self.colors
-  }
-}
-
-impl<P> Index<usize> for ColorPalette<P> {
-  type Output = P;
-
-  fn index(&self, index: usize) -> &Self::Output {
-    &self.colors[index]
-  }
-}
 
 #[cfg(test)]
 mod tests {
