@@ -149,6 +149,13 @@ impl Window {
     }
   }
 
+  /// Returns true if the window is focused.
+  pub fn is_focused(&self) -> bool {
+    use sdl2_sys::*;
+
+    unsafe { SDL_GetWindowFlags(self.window) & SDL_WindowFlags::SDL_WINDOW_INPUT_FOCUS as u32 != 0 }
+  }
+
   /// Runs the main window event pump.
   pub fn update(&mut self) -> bool {
     use sdl2_sys::*;
