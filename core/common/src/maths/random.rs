@@ -46,24 +46,31 @@ impl Random {
     range.start + (self.next::<T>() % (range.end - range.start))
   }
 
-  /// Chooses a random value from the given slice.
-  pub fn choose_slice<'a, T: FromRandom>(&mut self, values: &'a [T]) -> Option<&'a T> {
-    if values.is_empty() {
-      return None;
-    }
-
-    Some(&values[self.next_range(0..values.len())])
-  }
-
   /// Chooses a random value from the given iterator.
-  pub fn choose_iter<'a, T: FromRandom>(&mut self, values: &mut impl Iterator<Item = &'a T>) -> Option<&'a T> {
-    while let Some(value) = values.next() {
-      if self.next::<bool>() {
-        return Some(value);
-      }
-    }
+  pub fn choose<'a, T: FromRandom>(&mut self, values: impl IntoIterator<Item = &'a T>) -> Option<&'a T> {
+    let mut iter = values.into_iter();
 
-    None
+    // if we can get the upper bound, we can choose a random index directly
+    if let (_, Some(upper_bound)) = iter.size_hint() {
+      let index = self.next_range(0..upper_bound);
+
+      iter.nth(index)
+    } else {
+      // otherwise, we have to iterate through the iterator to get a random value
+      // we'll use a simple binary rejection on each value until we find one,
+      // but this also means we might not select one; so make sure to handle that case
+      let mut last_element = None;
+
+      while let Some(value) = iter.next() {
+        if self.next::<bool>() {
+          return Some(value);
+        }
+
+        last_element = Some(value);
+      }
+
+      last_element
+    }
   }
 
   /// Generates a random u64 number between 0 and u64::MAX, inclusive.
@@ -273,7 +280,17 @@ mod tests {
     let mut random = Random::with_seed(0);
 
     let values = [1, 2, 3, 4, 5];
-    let a = random.choose_slice(&values).unwrap();
+    let a = random.choose(&values).unwrap();
+
+    assert!(values.contains(a));
+  }
+
+  #[test]
+  fn test_choose_from_vec() {
+    let mut random = Random::with_seed(0);
+
+    let values = vec![1, 2, 3, 4, 5];
+    let a = random.choose(&values).unwrap();
 
     assert!(values.contains(a));
   }
