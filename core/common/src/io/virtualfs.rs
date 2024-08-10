@@ -219,7 +219,13 @@ pub trait ToVirtualPath {
   fn to_virtual_path(self) -> VirtualPath;
 }
 
-/// Allow virtual paths to be converted into themselves.
+impl<R: AsRef<str>> ToVirtualPath for R {
+  #[inline]
+  fn to_virtual_path(self) -> VirtualPath {
+    VirtualPath::new(self.as_ref())
+  }
+}
+
 impl ToVirtualPath for VirtualPath {
   #[inline]
   fn to_virtual_path(self) -> VirtualPath {
@@ -227,11 +233,10 @@ impl ToVirtualPath for VirtualPath {
   }
 }
 
-/// Allow string references to be converted into [`VirtualPath`] instances.
-impl<R: AsRef<str>> ToVirtualPath for R {
+impl ToVirtualPath for &VirtualPath {
   #[inline]
   fn to_virtual_path(self) -> VirtualPath {
-    VirtualPath::new(self.as_ref())
+    self.clone()
   }
 }
 

@@ -169,6 +169,11 @@ impl Texture {
       .expect("Failed to initialize texture");
   }
 
+  /// Returns a [`TextureAtlas`] that represents the entire texture.
+  pub fn to_atlas(&self, size: UVec2) -> TextureAtlas {
+    TextureAtlas::new(self.to_region(), size)
+  }
+
   /// Returns a [`TextureRegion`] that represents the entire texture.
   pub fn to_region(&self) -> TextureRegion {
     TextureRegion::new(self)
@@ -249,6 +254,30 @@ impl Texture {
 impl Drop for TextureState {
   fn drop(&mut self) {
     graphics().texture_delete(self.id).expect("Failed to delete texture");
+  }
+}
+
+/// Represents a collection of textures that can be used for rendering.
+#[derive(Clone)]
+pub struct TextureAtlas {
+  pub texture: TextureRegion,
+  pub size: UVec2,
+}
+
+impl TextureAtlas {
+  /// Creates a new texture atlas from the given texture and size.
+  pub fn new(texture: TextureRegion, size: UVec2) -> Self {
+    Self { texture, size }
+  }
+
+  /// Slices the texture atlas into a smaller region.
+  pub fn slice(&self, x: u32, y: u32) -> TextureRegion {
+    let width = self.size.x;
+    let height = self.size.y;
+    let x = x * width;
+    let y = y * height;
+
+    self.texture.slice(x, y, width, height)
   }
 }
 
