@@ -115,12 +115,10 @@ mod tests {
 
   impl PathFindingGrid for DenseGrid<bool> {
     fn get_neighbours(&self, center: IVec2, results: &mut NeighbourList<IVec2>) {
-      for neighbour in center.von_neighbours() {
-        if self.is_valid(neighbour.x, neighbour.y) {
-          unsafe {
-            if *self.get_unchecked(neighbour.x, neighbour.y) {
-              results.push(neighbour);
-            }
+      unsafe {
+        for neighbour in center.adjacent_neighbours() {
+          if self.is_valid(neighbour.x, neighbour.y) && *self.get_unchecked(neighbour.x, neighbour.y) {
+            results.push(neighbour);
           }
         }
       }

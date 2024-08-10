@@ -1,13 +1,13 @@
 use super::*;
 
-/// Provides a Von Neumann neighbourhood expansion for points in 2-space.
-pub trait VonNeumannNeighbourhood: Sized {
-  /// Computes the Von Neumann neighbourhood of a point.
-  fn von_neighbours(&self) -> [Self; 4];
+/// Provides a neighbourhood of adjacent adn diagonal points.
+pub trait Neighbourhood: Sized {
+  fn adjacent_neighbours(&self) -> [Self; 4];
+  fn diagonal_neighbours(&self) -> [Self; 8];
 }
 
-impl VonNeumannNeighbourhood for Vec2 {
-  fn von_neighbours(&self) -> [Self; 4] {
+impl Neighbourhood for Vec2 {
+  fn adjacent_neighbours(&self) -> [Self; 4] {
     [
       vec2(self.x - 1., self.y), // left
       vec2(self.x, self.y + 1.), // top
@@ -15,27 +15,8 @@ impl VonNeumannNeighbourhood for Vec2 {
       vec2(self.x, self.y - 1.), // bottom
     ]
   }
-}
 
-impl VonNeumannNeighbourhood for IVec2 {
-  fn von_neighbours(&self) -> [Self; 4] {
-    [
-      ivec2(self.x - 1, self.y), // left
-      ivec2(self.x, self.y + 1), // top
-      ivec2(self.x + 1, self.y), // right
-      ivec2(self.x, self.y - 1), // bottom
-    ]
-  }
-}
-
-/// Provides a Moore neighbourhood expansion for points in 2-space.
-pub trait MooreNeighbourhood: Sized {
-  /// Calculates the Moore neighbourhood of a point in 2-space.
-  fn moore_neighbours(&self) -> [Self; 8];
-}
-
-impl MooreNeighbourhood for Vec2 {
-  fn moore_neighbours(&self) -> [Self; 8] {
+  fn diagonal_neighbours(&self) -> [Self; 8] {
     [
       vec2(self.x - 1., self.y - 1.), // bottom left
       vec2(self.x - 1., self.y),      // left
@@ -49,8 +30,17 @@ impl MooreNeighbourhood for Vec2 {
   }
 }
 
-impl MooreNeighbourhood for IVec2 {
-  fn moore_neighbours(&self) -> [Self; 8] {
+impl Neighbourhood for IVec2 {
+  fn adjacent_neighbours(&self) -> [Self; 4] {
+    [
+      ivec2(self.x - 1, self.y), // left
+      ivec2(self.x, self.y + 1), // top
+      ivec2(self.x + 1, self.y), // right
+      ivec2(self.x, self.y - 1), // bottom
+    ]
+  }
+
+  fn diagonal_neighbours(&self) -> [Self; 8] {
     [
       ivec2(self.x - 1, self.y - 1), // bottom left
       ivec2(self.x - 1, self.y),     // left
@@ -69,10 +59,10 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_von_neumann_neighbours_for_vec2() {
+  fn test_adjacent_neighbours_for_vec2() {
     let point = vec2(0.0, 0.0);
 
-    let neighbours = point.von_neighbours();
+    let neighbours = point.adjacent_neighbours();
 
     assert_eq!(neighbours[0], vec2(-1.0, 0.0)); // left
     assert_eq!(neighbours[1], vec2(0.0, 1.0)); // top
@@ -81,10 +71,10 @@ mod tests {
   }
 
   #[test]
-  fn test_von_neumann_neighbours_for_ivec2() {
+  fn test_adjacent_neighbours_for_ivec2() {
     let point = ivec2(0, 0);
 
-    let neighbours = point.von_neighbours();
+    let neighbours = point.adjacent_neighbours();
 
     assert_eq!(neighbours[0], ivec2(-1, 0)); // left
     assert_eq!(neighbours[1], ivec2(0, 1)); // top
@@ -93,10 +83,10 @@ mod tests {
   }
 
   #[test]
-  fn test_moore_neighbours_for_vec2() {
+  fn test_diagonal_neighbours_for_vec2() {
     let point = vec2(0.0, 0.0);
 
-    let neighbours = point.moore_neighbours();
+    let neighbours = point.diagonal_neighbours();
 
     assert_eq!(neighbours[0], vec2(-1.0, -1.0)); // bottom left
     assert_eq!(neighbours[1], vec2(-1.0, 0.0)); // left
@@ -109,10 +99,10 @@ mod tests {
   }
 
   #[test]
-  fn test_moore_neighbours_for_ivec2() {
+  fn test_diagonal_neighbours_for_ivec2() {
     let point = ivec2(0, 0);
 
-    let neighbours = point.moore_neighbours();
+    let neighbours = point.diagonal_neighbours();
 
     assert_eq!(neighbours[0], ivec2(-1, -1)); // bottom left
     assert_eq!(neighbours[1], ivec2(-1, 0)); // left
