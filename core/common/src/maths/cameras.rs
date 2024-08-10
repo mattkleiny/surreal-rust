@@ -4,6 +4,9 @@ use super::*;
 
 /// Represents a camera.
 pub trait Camera {
+  /// Gets the position of this camera.
+  fn position(&self) -> Vec3;
+
   /// Computes the projection matrix for this camera.
   fn projection(&self) -> Mat4;
 
@@ -48,6 +51,10 @@ impl Default for OrthographicCamera {
 }
 
 impl Camera for OrthographicCamera {
+  fn position(&self) -> Vec3 {
+    self.position
+  }
+
   fn projection(&self) -> Mat4 {
     Mat4::orthographic_rh_gl(
       0.,
@@ -91,6 +98,10 @@ impl Default for PerspectiveCamera {
 }
 
 impl Camera for PerspectiveCamera {
+  fn position(&self) -> Vec3 {
+    self.position
+  }
+  
   fn projection(&self) -> Mat4 {
     Mat4::perspective_lh(self.fov, self.aspect_ratio, self.near_plane, self.far_plane)
   }

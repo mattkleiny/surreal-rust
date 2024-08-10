@@ -170,7 +170,7 @@ impl<T> DenseGrid<T> {
 /// A sparse grid of [`T`]s.
 #[derive(Default, Clone, Debug)]
 pub struct SparseGrid<T> {
-  entries: BTreeMap<usize, T>,
+  entries: BTreeMap<isize, T>,
 }
 
 /// A type that contains a position in 2-space.
@@ -308,8 +308,8 @@ impl<'a, T> IntoIterator for &'a mut SparseGrid<T> {
 
 /// Gets the hash for the given position.
 #[inline(always)]
-const fn xy_hash(x: i32, y: i32) -> usize {
-  x as usize + y as usize
+const fn xy_hash(x: i32, y: i32) -> isize {
+  x as isize | (y as isize) << 32
 }
 
 #[cfg(test)]

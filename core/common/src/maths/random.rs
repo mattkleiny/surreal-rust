@@ -46,6 +46,26 @@ impl Random {
     range.start + (self.next::<T>() % (range.end - range.start))
   }
 
+  /// Chooses a random value from the given slice.
+  pub fn choose_slice<'a, T: FromRandom>(&mut self, values: &'a [T]) -> Option<&'a T> {
+    if values.is_empty() {
+      return None;
+    }
+
+    Some(&values[self.next_range(0..values.len())])
+  }
+
+  /// Chooses a random value from the given iterator.
+  pub fn choose_iter<'a, T: FromRandom>(&mut self, values: &mut impl Iterator<Item = &'a T>) -> Option<&'a T> {
+    while let Some(value) = values.next() {
+      if self.next::<bool>() {
+        return Some(value);
+      }
+    }
+
+    None
+  }
+
   /// Generates a random u64 number between 0 and u64::MAX, inclusive.
   pub fn next_u64(&mut self) -> u64 {
     self.state = self.state.wrapping_add(0xA0761D6478BD642F);
@@ -246,6 +266,16 @@ mod tests {
     let b = random_b.next_u64();
 
     assert_eq!(a, b);
+  }
+
+  #[test]
+  fn test_choose_from_slice() {
+    let mut random = Random::with_seed(0);
+
+    let values = [1, 2, 3, 4, 5];
+    let a = random.choose_slice(&values).unwrap();
+
+    assert!(values.contains(a));
   }
 
   #[test]
