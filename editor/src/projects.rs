@@ -68,7 +68,7 @@ impl Project {
 
   /// The root [`VirtualPath`] for the project.
   pub fn root_path(&self) -> VirtualPath {
-    self.details.path.to_virtual_path()
+    self.details.path.clone().to_virtual_path()
   }
 
   /// Reads the [`Version`] of the project from the settings file.

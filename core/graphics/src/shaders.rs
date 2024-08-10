@@ -71,7 +71,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given [`VirtualPath`] code.
-  pub fn from_path<S: ShaderLanguage>(path: &impl ToVirtualPath) -> Result<Self, ShaderError> {
+  pub fn from_path<S: ShaderLanguage>(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream().map_err(|_| ShaderError::FailedToLoad)?;
 
@@ -139,7 +139,7 @@ impl ShaderProgram {
   }
 
   /// Reloads the [`ShaderProgram`] from a file at the given virtual path.
-  pub fn load_from_path<S: ShaderLanguage>(&self, path: &impl ToVirtualPath) -> Result<(), ShaderError> {
+  pub fn load_from_path<S: ShaderLanguage>(&self, path: impl ToVirtualPath) -> Result<(), ShaderError> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream().map_err(|_| ShaderError::FailedToLoad)?;
 

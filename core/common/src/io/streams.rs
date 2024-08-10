@@ -15,7 +15,7 @@ pub trait FromStream: Sized {
   type Error: From<StreamError> = StreamError;
 
   /// Imports the type from a path.
-  fn from_path(path: &impl ToVirtualPath) -> Result<Self, Self::Error> {
+  fn from_path(path: impl ToVirtualPath) -> Result<Self, Self::Error> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream().map_err(|_| StreamError::GeneralFailure)?;
 
@@ -23,7 +23,7 @@ pub trait FromStream: Sized {
   }
 
   /// Imports the type from a path asynchronously.
-  async fn from_path_async(path: &impl ToVirtualPath) -> Result<Self, Self::Error> {
+  async fn from_path_async(path: impl ToVirtualPath) -> Result<Self, Self::Error> {
     let path = path.to_virtual_path();
     let mut stream = path.open_input_stream().map_err(|_| StreamError::GeneralFailure)?;
 
@@ -58,7 +58,7 @@ pub trait ToStream: Sized {
   type Error: From<StreamError> = StreamError;
 
   /// Exports the type to a path.
-  fn to_path(&self, path: &impl ToVirtualPath) -> Result<(), Self::Error> {
+  fn to_path(&self, path: impl ToVirtualPath) -> Result<(), Self::Error> {
     let path = path.to_virtual_path();
     let mut stream = path.open_output_stream().map_err(|_| StreamError::GeneralFailure)?;
 
@@ -66,7 +66,7 @@ pub trait ToStream: Sized {
   }
 
   /// Exports the type to a path asynchronously.
-  async fn to_path_async(&self, path: &impl ToVirtualPath) -> Result<(), Self::Error> {
+  async fn to_path_async(&self, path: impl ToVirtualPath) -> Result<(), Self::Error> {
     let path = path.to_virtual_path();
     let mut stream = path.open_output_stream().map_err(|_| StreamError::GeneralFailure)?;
 

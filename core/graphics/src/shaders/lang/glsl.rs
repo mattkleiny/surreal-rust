@@ -12,7 +12,7 @@ impl ShaderProgram {
   }
 
   /// Loads a [`ShaderProgram`] from the given raw GLSL shader code file.
-  pub fn from_glsl_path(path: &impl ToVirtualPath) -> Result<Self, ShaderError> {
+  pub fn from_glsl_path(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
     Self::from_path::<GLSL>(path)
   }
 

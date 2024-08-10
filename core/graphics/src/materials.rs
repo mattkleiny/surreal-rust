@@ -69,7 +69,7 @@ pub struct Material {
 
 impl Material {
   /// Constructs a new material for the [`ShaderProgram`] at the given path.
-  pub fn from_shader_path<S: ShaderLanguage>(path: &impl ToVirtualPath) -> Result<Self, ShaderError> {
+  pub fn from_shader_path<S: ShaderLanguage>(path: impl ToVirtualPath) -> Result<Self, ShaderError> {
     Ok(Self::from_shader_program(&ShaderProgram::from_path::<S>(path)?))
   }
 

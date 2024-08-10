@@ -598,7 +598,7 @@ mod tests {
 
   #[test]
   fn it_should_load_a_simple_aseprite_file() {
-    let file = AsepriteFile::from_path(&"assets/test.ase").unwrap();
+    let file = AsepriteFile::from_path("assets/test.ase").unwrap();
 
     println!("{:#?}", file);
 

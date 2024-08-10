@@ -74,7 +74,7 @@ impl<T> AssetRef<T> {
 
   /// Creates an asset from a virtual path.
   #[inline]
-  pub fn from_path(path: &impl ToVirtualPath) -> Self {
+  pub fn from_path(path: impl ToVirtualPath) -> Self {
     Self {
       id: AssetId::Path(path.to_virtual_path()),
       _marker: std::marker::PhantomData,

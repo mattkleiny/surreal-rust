@@ -216,13 +216,13 @@ impl std::fmt::Display for VirtualPath {
 /// Represents a type that can be converted into a [`VirtualPath`].
 pub trait ToVirtualPath {
   /// Converts the type into a [`VirtualPath`].
-  fn to_virtual_path(&self) -> VirtualPath;
+  fn to_virtual_path(self) -> VirtualPath;
 }
 
 /// Allow virtual paths to be converted into themselves.
 impl ToVirtualPath for VirtualPath {
   #[inline]
-  fn to_virtual_path(&self) -> VirtualPath {
+  fn to_virtual_path(self) -> VirtualPath {
     self.clone()
   }
 }
@@ -230,24 +230,8 @@ impl ToVirtualPath for VirtualPath {
 /// Allow string references to be converted into [`VirtualPath`] instances.
 impl<R: AsRef<str>> ToVirtualPath for R {
   #[inline]
-  fn to_virtual_path(&self) -> VirtualPath {
+  fn to_virtual_path(self) -> VirtualPath {
     VirtualPath::new(self.as_ref())
-  }
-}
-
-/// Allow string references to be converted into [`VirtualPath`] instances.
-impl From<&str> for VirtualPath {
-  #[inline]
-  fn from(value: &str) -> Self {
-    VirtualPath::new(value)
-  }
-}
-
-/// Allow string references to be converted into [`VirtualPath`] instances.
-impl From<String> for VirtualPath {
-  #[inline]
-  fn from(value: String) -> Self {
-    VirtualPath::new(&value)
   }
 }
 

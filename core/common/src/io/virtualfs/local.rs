@@ -32,7 +32,7 @@ impl FileSystem for LocalFileSystem {
       let path = entry.path();
 
       if path.is_file() {
-        results.push(VirtualPath::from(path.to_string_lossy().as_ref()));
+        results.push(VirtualPath::new(path.to_string_lossy().as_ref()));
       }
     }
 
@@ -48,7 +48,7 @@ impl FileSystem for LocalFileSystem {
       let path = entry.path();
 
       if path.is_dir() {
-        results.push(VirtualPath::from(path.to_string_lossy().as_ref()));
+        results.push(VirtualPath::new(path.to_string_lossy().as_ref()));
       }
     }
 

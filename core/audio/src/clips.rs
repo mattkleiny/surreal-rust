@@ -19,7 +19,7 @@ impl AudioClip {
   }
 
   /// Creates a new audio clip from the given WAV file.
-  pub fn from_wav_path(path: &impl ToVirtualPath) -> Result<Self, ClipError> {
+  pub fn from_wav_path(path: impl ToVirtualPath) -> Result<Self, ClipError> {
     let path = path.to_virtual_path();
     let stream = path.open_input_stream().map_err(|_| ClipError::FailedToCreate)?;
     let bytes = stream.to_buffer().map_err(|_| ClipError::FailedToCreate)?;

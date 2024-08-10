@@ -26,7 +26,7 @@ pub trait Serialize: Sized {
   }
 
   /// Serializes the type to a binary file.
-  fn to_binary_path(&self, path: &impl ToVirtualPath) -> Result<(), StreamError> {
+  fn to_binary_path(&self, path: impl ToVirtualPath) -> Result<(), StreamError> {
     Self::to_format_path::<BinaryFormat>(self, path)
   }
 
@@ -41,7 +41,7 @@ pub trait Serialize: Sized {
   }
 
   /// Serializes the type to a JSON file.
-  fn to_json_path(&self, path: &impl ToVirtualPath) -> Result<(), StreamError> {
+  fn to_json_path(&self, path: impl ToVirtualPath) -> Result<(), StreamError> {
     Self::to_format_path::<JsonFormat>(self, path)
   }
 
@@ -66,7 +66,7 @@ pub trait Serialize: Sized {
   }
 
   /// Serializes the type to a path with a specific format.
-  fn to_format_path<F: Format + Default>(&self, path: &impl ToVirtualPath) -> Result<(), StreamError> {
+  fn to_format_path<F: Format + Default>(&self, path: impl ToVirtualPath) -> Result<(), StreamError> {
     let path = path.to_virtual_path();
     let mut format = F::default();
     let mut stream = path.open_output_stream()?;
@@ -86,7 +86,7 @@ pub trait Deserialize: Sized {
   }
 
   /// Deserializes the type from a binary path.
-  fn from_binary_path(path: &impl ToVirtualPath) -> Result<Self, StreamError> {
+  fn from_binary_path(path: impl ToVirtualPath) -> Result<Self, StreamError> {
     Self::from_format_path::<BinaryFormat>(path)
   }
 
@@ -101,7 +101,7 @@ pub trait Deserialize: Sized {
   }
 
   /// Deserializes the type from a JSON path.
-  fn from_json_path(path: &impl ToVirtualPath) -> Result<Self, StreamError> {
+  fn from_json_path(path: impl ToVirtualPath) -> Result<Self, StreamError> {
     Self::from_format_path::<JsonFormat>(path)
   }
 
@@ -122,7 +122,7 @@ pub trait Deserialize: Sized {
   }
 
   /// Deserializes the type from a path with a specific format.
-  fn from_format_path<F: Format + Default>(path: &impl ToVirtualPath) -> Result<Self, StreamError> {
+  fn from_format_path<F: Format + Default>(path: impl ToVirtualPath) -> Result<Self, StreamError> {
     let path = path.to_virtual_path();
     let mut format = F::default();
     let mut stream = path.open_input_stream()?;
