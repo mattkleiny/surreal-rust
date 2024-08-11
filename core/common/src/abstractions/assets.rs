@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Formatter};
 
-use crate::{Color, Color32, Graph, GraphNodeId, Guid, Quat, StringName, ToVirtualPath, Vec2, Vec3, Vec4, VirtualPath};
+use crate::{Graph, GraphNodeId, Guid, ToVirtualPath, VirtualPath};
 
 /// An error that can occur when loading an asset
 #[derive(Debug)]
@@ -98,60 +98,5 @@ impl<T> Asset for AssetRef<T> {
     let node = context.dependencies.add_node(self.id.clone());
 
     context.dependencies.add_edge(context.current_node, node, 1.0);
-  }
-}
-
-// TODO: remove this once derive macro is more sophisticated?
-macro_rules! impl_empty_asset {
-  ($type:ty) => {
-    impl Asset for $type {
-      #[inline(always)]
-      fn resolve_dependencies(&self, _context: &mut AssetContext) {
-        // no-op
-      }
-    }
-  };
-}
-
-impl_empty_asset!(());
-impl_empty_asset!(bool);
-impl_empty_asset!(u8);
-impl_empty_asset!(u16);
-impl_empty_asset!(u32);
-impl_empty_asset!(u64);
-impl_empty_asset!(i8);
-impl_empty_asset!(i16);
-impl_empty_asset!(i32);
-impl_empty_asset!(i64);
-impl_empty_asset!(f32);
-impl_empty_asset!(f64);
-impl_empty_asset!(Vec2);
-impl_empty_asset!(Vec3);
-impl_empty_asset!(Vec4);
-impl_empty_asset!(Quat);
-impl_empty_asset!(String);
-impl_empty_asset!(StringName);
-impl_empty_asset!(Guid);
-impl_empty_asset!(VirtualPath);
-impl_empty_asset!(Color);
-impl_empty_asset!(Color32);
-
-#[cfg(test)]
-mod tests {
-  use macros::Asset;
-
-  use super::*;
-  use crate::Color;
-
-  #[derive(Asset)]
-  pub struct Item {
-    pub id: Guid,
-    pub name: String,
-    pub effect: AssetRef<Effect>,
-  }
-
-  #[derive(Asset)]
-  pub struct Effect {
-    pub color: Color,
   }
 }

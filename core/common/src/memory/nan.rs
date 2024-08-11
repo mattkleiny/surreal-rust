@@ -93,7 +93,7 @@ impl NanValue {
 impl<V: ToNanValue> NaN<V> {
   /// Creates a new NaN box with the given value.
   #[inline]
-  pub fn new(value: V) -> Self {
+  pub fn new(_value: V) -> Self {
     todo!()
   }
 
@@ -164,7 +164,7 @@ pub trait ToNanValue: Sized {
   }
 
   /// Determines if the given value is of the current type.
-  fn matches(value: NanValue) -> bool {
+  fn matches(_value: NanValue) -> bool {
     todo!()
   }
 }

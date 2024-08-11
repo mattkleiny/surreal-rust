@@ -1,76 +1,93 @@
 //! A scene system for managing game objects and components.
 
+use std::any::Any;
+
 pub use canvas::*;
 pub use spatial::*;
 
 mod canvas;
 mod spatial;
 
-use common::Camera;
-use graphics::{RenderFrame, RenderPass, RenderQueue, RenderScene};
+use common::{impl_arena_index, Arena};
 
-pub struct AwakeEvent;
-pub struct StartEvent;
-pub struct UpdateEvent;
-pub struct DestroyEvent;
+impl_arena_index!(EntityId);
 
-pub struct DrawEvent<'a> {
-  queue: &'a mut RenderQueue,
-}
-
-pub trait Event {}
-
-impl Event for AwakeEvent {}
-impl Event for StartEvent {}
-impl Event for UpdateEvent {}
-impl Event for DestroyEvent {}
-
-impl<'a> Event for DrawEvent<'a> {}
-
-pub trait Component {
-  fn on_event(&self, event: &dyn Event);
-}
-
-pub trait System {
-  fn on_event(&self, event: &dyn Event);
-}
-
-pub trait IntoSystem {
-  fn into_system(self) -> Box<dyn System>;
-}
-
-/// A scene in the world.
-#[derive(Default)]
 pub struct Scene {
-  entities: Vec<Entity>,
-  systems: Vec<Box<dyn System>>,
-}
-
-/// An entity in a [`Scene`].
-struct Entity {
-  components: Vec<Box<dyn Component>>,
+  entities: Arena<EntityId, Entity>,
 }
 
 impl Scene {
-  /// Emits an event into the scene graph.
-  pub fn emit(&self, event: &mut dyn Event) {
-    // propagate the event to all systems
-    for system in &self.systems {
-      system.on_event(event);
+  pub fn new() -> Self {
+    Self { entities: Arena::new() }
+  }
+
+  pub fn spawn(&mut self) -> EntityId {
+    self.entities.insert(Entity { components: Vec::new() })
+  }
+
+  pub fn despawn(&mut self, id: EntityId) {
+    self.entities.remove(id);
+  }
+
+  pub fn add_component<C: Component + 'static>(&mut self, id: EntityId, component: C) {
+    if let Some(entity) = self.entities.get_mut(id) {
+      entity.components.push(Box::new(component));
     }
   }
-}
 
-pub struct SceneRenderPass {}
+  pub fn emit<E>(&mut self, event: &mut E) {
+    // ...
 
-impl RenderScene for Scene {
-  fn cameras(&self) -> Vec<&Self::Camera> {
-    vec![]
+    for entity in &mut self.entities {
+      for component in &mut entity.components {
+        // TODO: use reflection to see if implemented EventListener<E>
+      }
+    }
+  }
+
+  pub fn emit_to<E>(&mut self, _id: EntityId, _event: E) {
+    // ...
   }
 }
 
-impl RenderPass<Scene> for SceneRenderPass {
-  fn render_camera(&mut self, scene: &Scene, _camera: &dyn Camera, frame: &mut RenderFrame<'_>) {
-    scene.emit(&mut DrawEvent { queue: frame.queue });
+pub struct Entity {
+  components: Vec<Box<dyn Component>>,
+}
+
+#[allow(unused_variables)]
+pub trait Component {
+  fn on_attach(&self, node: &Entity) {}
+  fn on_detach(&self, node: &Entity) {}
+}
+
+pub trait EventListener<E> {
+  fn on_event(&self, event: &mut E);
+}
+
+pub trait IntoScene {
+  fn into_scene(self) -> Scene;
+}
+
+pub trait IntoEntity {
+  fn into_entity(self) -> Entity;
+}
+
+struct Tick;
+struct Draw;
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_basic_scene_construction() {
+    let mut scene = Scene::new();
+
+    let entity1 = scene.spawn();
+    let entity2 = scene.spawn();
+
+    scene.add_component(entity1, SpriteComponent {});
+
+    scene.emit(&mut Tick);
   }
 }

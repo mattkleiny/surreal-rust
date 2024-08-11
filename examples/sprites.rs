@@ -1,4 +1,4 @@
-use surreal::{backends::sdl::*, common::*, graphics::*};
+use surreal::{backends::desktop::*, common::*, graphics::*};
 
 fn main() {
   let mut window = Window::new(WindowSettings {

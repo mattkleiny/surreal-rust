@@ -92,7 +92,7 @@ impl<T: Unpin> Future for Task<T> {
         self.status = TaskStatus::Running;
 
         // TODO: fix this up
-        let continuation = move || {
+        let _continuation = move || {
           let mut pinned = Box::into_pin(future);
 
           match pinned.as_mut().poll(context) {

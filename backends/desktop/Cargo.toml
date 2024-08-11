@@ -1,6 +1,6 @@
 [package]
-name = "surreal-backend-sdl"
-description = "SDL backend for Surreal"
+name = "surreal-backend-desktop"
+description = "Desktop backend for Surreal"
 authors.workspace = true
 edition.workspace = true
 

@@ -32,6 +32,6 @@ pub extern crate scenes;
 pub extern crate scripting;
 
 pub mod backends {
-  #[cfg(feature = "sdl")]
-  pub extern crate sdl;
+  #[cfg(feature = "desktop")]
+  pub extern crate desktop;
 }

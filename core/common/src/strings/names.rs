@@ -39,11 +39,6 @@ impl StringName {
   pub(crate) fn from_id(id: StringId) -> Self {
     Self { id }
   }
-
-  /// Returns the ID of the string.
-  pub(crate) fn id(&self) -> StringId {
-    self.id
-  }
 }
 
 /// Converts a string reference to a string name.
@@ -172,7 +167,7 @@ unsafe fn intern_string(value: &str) -> StringId {
 ///
 /// If the string is not interned, returns `None`.
 fn lookup_string(id: StringId) -> Option<&'static str> {
-  let entries = unsafe { StringNamePool::instance().strings_by_id.read().unwrap() };
+  let entries = StringNamePool::instance().strings_by_id.read().unwrap();
 
   if let Some(entry) = entries.get(id) {
     Some(unsafe { entry.as_ref() })

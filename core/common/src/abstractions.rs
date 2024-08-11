@@ -2,12 +2,12 @@
 
 pub use assets::*;
 pub use callbacks::*;
-pub use os::*;
+pub use platform::*;
 pub use services::*;
 pub use variant::*;
 
 mod assets;
 mod callbacks;
-mod os;
+mod platform;
 mod services;
 mod variant;

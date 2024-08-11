@@ -3,3 +3,7 @@
 pub use sprites::*;
 
 mod sprites;
+
+use super::*;
+
+struct Draw {}
