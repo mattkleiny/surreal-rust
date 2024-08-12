@@ -1,12 +1,11 @@
 use std::{
   fmt::{Debug, Formatter},
-  ops::Deref,
   sync::Arc,
 };
 
 use macros::Singleton;
 
-use crate::{BlockableFuture, FastHashMap, FromStream, Guid, InputStream, OutputStream, ToVirtualPath, VirtualPath};
+use crate::{BlockableFuture, FastHashMap, FromStream, Guid, InputStream, ToVirtualPath, VirtualPath};
 
 /// An error that can occur when loading an asset
 #[derive(Debug)]
