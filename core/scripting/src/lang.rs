@@ -1,7 +1,8 @@
-//! Scripting language abstractions
+#![allow(clippy::new_without_default)]
 
 pub mod lox;
 pub mod wren;
+pub mod javascript;
 
 pub(crate) mod ast {
   //! A shared high-level abstract syntax tree for the scripting runtime
