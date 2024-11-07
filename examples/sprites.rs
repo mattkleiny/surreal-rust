@@ -23,7 +23,7 @@ fn main() {
   let texture = Texture::from_path("assets/sprites/bunny.png").unwrap();
 
   while window.update() {
-    graphics().clear_color_buffer(Color::WHITE);
+    graphics().clear_color_buffer(Color::BLACK);
 
     batch.begin(&material);
     batch.draw_sprite(&texture, &SpriteOptions {

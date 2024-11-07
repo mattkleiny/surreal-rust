@@ -11,21 +11,23 @@ use crate::runtime::machine::{VirtualMachine, VirtualMachineConfig};
 /// scripts.
 #[derive(Default)]
 pub struct Isolate {
-  /// The virtual machine for this isolate.
-  virtual_machine: VirtualMachine,
+  _virtual_machine: VirtualMachine,
 }
 
 /// Configuration for creating a new isolate.
 #[derive(Default, Debug)]
 pub struct IsolateConfig {
-  virtual_machine: VirtualMachineConfig,
+  _virtual_machine: VirtualMachineConfig,
+  _stack_size: usize,
+  _thread_count: usize,
+  _memory_limit: usize,
 }
 
 impl Isolate {
   /// Creates a new isolate.
   pub fn new(config: IsolateConfig) -> Self {
     Self {
-      virtual_machine: VirtualMachine::new(config.virtual_machine),
+      _virtual_machine: VirtualMachine::new(config._virtual_machine),
     }
   }
 }
