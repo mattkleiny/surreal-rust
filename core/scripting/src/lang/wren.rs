@@ -79,11 +79,6 @@ pub enum Keyword {
   Super,
 }
 
-/// Parses a list of tokens into an AST [`Expression`].
-pub fn parse(code: &str) -> Result<Expression, ParseError> {
-  Parser::from_code(code).parse_expression()
-}
-
 /// A parser for Wren code.
 struct Parser {
   tokens: Vec<Token>,
@@ -181,6 +176,11 @@ impl Parser {
   }
 }
 
+/// Parses a string of Wren code into an AST [`Expression`].
+pub fn parse(code: &str) -> Result<Expression, ParseError> {
+  Parser::from_code(code).parse_expression()
+}
+
 /// Tokenises a string of Wren code into a list of [`Token`]s.
 fn tokenise(code: &str) -> Vec<Token> {
   let mut tokens = Vec::new();
@@ -214,7 +214,30 @@ fn tokenise(code: &str) -> Vec<Token> {
           }
           continue;
         }
-        None => Token::Operator(Operator::Divide),
+        None => match characters.next_if_eq(&(position + 1, '*')) {
+          Some(_) => {
+            // ignore block comments
+            let mut depth = 1;
+            while depth > 0 {
+              match characters.next() {
+                Some((_, '*')) => {
+                  if let Some((_, '/')) = characters.next() {
+                    depth -= 1;
+                  }
+                }
+                Some((_, '/')) => {
+                  if let Some((_, '*')) = characters.next() {
+                    depth += 1;
+                  }
+                }
+                None => break, // Unterminated block comment
+                _ => {}
+              }
+            }
+            continue;
+          }
+          None => Token::Operator(Operator::Divide),
+        },
       },
       '<' => match characters.next_if_eq(&(position + 1, '=')) {
         Some(_) => Token::Operator(Operator::LessThanOrEqual),
@@ -458,4 +481,28 @@ mod tests {
       ))
     )
   );
+
+  macro_rules! parse_file_test {
+    ($name:ident, $path:expr) => {
+      #[test]
+      fn $name() {
+        use std::fs;
+        let contents = fs::read_to_string($path).expect("Failed to read file");
+        let result = parse(&contents);
+
+        assert!(
+          result.is_ok(),
+          "Failed to parse file {}: {:?}",
+          $path,
+          result.err()
+        );
+      }
+    };
+  }
+
+  // parse_file_test!(it_should_parse_test01,
+  // "assets/scripts/wren/test01.wren"); parse_file_test!
+  // (it_should_parse_test02, "assets/scripts/wren/test02.wren");
+  // parse_file_test!(it_should_parse_test03,
+  // "assets/scripts/wren/test03.wren");
 }
