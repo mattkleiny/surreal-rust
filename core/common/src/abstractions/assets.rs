@@ -203,22 +203,3 @@ impl<A: FromStream> AssetDecoder<A> for A {
     A::from_stream_async(stream).await.map_err(|_| AssetError::LoadFailed)
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-  use crate::FromRandom;
-
-  struct TestAsset;
-
-  impl FromStream for TestAsset {
-    async fn from_stream_async(stream: &mut dyn InputStream) -> Result<Self, Self::Error> {
-      todo!()
-    }
-  }
-
-  #[test]
-  fn test_asset_operations() {
-    let asset = TestAsset::from_guid_async(Guid::random()).block().unwrap();
-  }
-}

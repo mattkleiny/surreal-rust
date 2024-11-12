@@ -136,20 +136,34 @@ impl<T> AnimationTree<T> {
 }
 
 /// Evaluates the final value of the given keyframes by interpolation.
-fn evaluate_keyframes<T: Default + Lerp + Copy>(time: f32, keyframes: &[AnimationKeyFrame<T>]) -> T {
-  for i in 0..keyframes.len() {
-    let keyframe = &keyframes[i];
+pub fn evaluate_keyframes<T: Default + Lerp + Copy>(time: f32, keyframes: &[AnimationKeyFrame<T>]) -> T {
+  // Handle empty keyframes case
+  if keyframes.is_empty() {
+    return T::default();
+  }
 
-    if keyframe.time >= time {
-      let prev = &keyframes[i - 1];
-      let next = keyframe;
+  // If time is before first keyframe, return first value
+  if time <= keyframes[0].time {
+    return keyframes[0].value;
+  }
 
+  // If time is after last keyframe, return last value
+  if time >= keyframes[keyframes.len() - 1].time {
+    return keyframes[keyframes.len() - 1].value;
+  }
+
+  // Find the keyframes to interpolate between
+  for i in 1..keyframes.len() {
+    let prev = &keyframes[i - 1];
+    let next = &keyframes[i];
+
+    if next.time >= time {
       let t = (time - prev.time) / (next.time - prev.time);
-
       return T::lerp(prev.value, next.value, t);
     }
   }
 
+  // Fallback (should never happen given above checks)
   T::default()
 }
 
@@ -236,5 +250,30 @@ mod tests {
     });
 
     tree.update(0.5);
+  }
+
+  #[test]
+  fn it_should_evaluate_keyframes() {
+    let keyframes = vec![
+      AnimationKeyFrame {
+        time: 0.0,
+        value: 0.0f32,
+      },
+      AnimationKeyFrame { time: 1.0, value: 1.0 },
+      AnimationKeyFrame { time: 2.0, value: 0.0 },
+    ];
+
+    // Test exact keyframe times
+    assert_eq!(evaluate_keyframes(0.0, &keyframes), 0.0);
+    assert_eq!(evaluate_keyframes(1.0, &keyframes), 1.0);
+    assert_eq!(evaluate_keyframes(2.0, &keyframes), 0.0);
+
+    // Test interpolation between keyframes
+    assert_eq!(evaluate_keyframes(0.5, &keyframes), 0.5);
+    assert_eq!(evaluate_keyframes(1.5, &keyframes), 0.5);
+
+    // Test clamping before first and after last keyframe
+    assert_eq!(evaluate_keyframes(-1., &keyframes), 0.0);
+    assert_eq!(evaluate_keyframes(3.0, &keyframes), 0.0);
   }
 }
