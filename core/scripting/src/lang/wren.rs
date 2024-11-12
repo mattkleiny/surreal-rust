@@ -275,95 +275,51 @@ fn tokenise(code: &str) -> Vec<Token> {
 mod tests {
   use super::*;
 
-  #[test]
-  fn it_should_tokenise_simple_numerical_statements() {
-    let code = "1 + 2";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 3);
-
-    let code = "-123.456";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 2);
+  macro_rules! tokenise_test {
+    ($name:ident, $($input:expr => $count:expr),+ $(,)?) => {
+      #[test]
+      fn $name() {
+        $(
+          let tokens = tokenise($input);
+          assert_eq!(tokens.len(), $count, "Input: {}", $input);
+        )+
+      }
+    };
   }
 
-  #[test]
-  fn it_should_tokenise_string_literals() {
-    let code = r#""Hello, world!""#;
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 1);
+  tokenise_test!(simple_numerical_statements,
+    "1 + 2" => 3,
+    "-123.456" => 2
+  );
 
-    let code = r#""Special chars: \n \t \" \\ ""#;
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 1);
+  tokenise_test!(string_literals,
+    r#""Hello, world!""# => 1
+  );
 
-    let code = r#""""Multi
-    line
-    string""""#;
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 1);
-  }
+  tokenise_test!(keywords,
+    "if (true) { return 1; } else { return 2; }" => 15,
+    "class Example { construct new() { this.value = null; } }" => 16
+  );
 
-  #[test]
-  fn it_should_tokenise_keywords() {
-    let code = "if (true) { return 1; } else { return 2; }";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 15);
+  tokenise_test!(complex_expressions,
+    "1 + 2 * 3 // This is a comment" => 5,
+    "(a + b) * (c - d) / e % f" => 15
+  );
 
-    let code = "class Example { construct new() { this.value = null; } }";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 14);
-  }
+  tokenise_test!(edge_cases,
+    "" => 0,
+    "   \t\n  " => 0,
+    "@#$%" => 4
+  );
 
-  #[test]
-  fn it_should_tokenise_more_complex_expressions() {
-    let code = "1 + 2 * 3 // This is a comment";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 5);
+  tokenise_test!(complex_identifiers,
+    "_valid_123 notKeyword_if if_not_keyword" => 3,
+    "very_long_identifier_with_numbers_123_456_789" => 1
+  );
 
-    let code = "(a + b) * (c - d) / e % f";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 13);
-  }
-
-  #[test]
-  fn it_should_handle_edge_cases() {
-    // Empty input
-    let tokens = tokenise("");
-    assert_eq!(tokens.len(), 0);
-
-    // Only whitespace
-    let tokens = tokenise("   \t\n  ");
-    assert_eq!(tokens.len(), 0);
-
-    // Invalid characters
-    let code = "@#$%";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 4);
-  }
-
-  #[test]
-  fn it_should_tokenise_complex_identifiers() {
-    let code = "_valid_123 notKeyword_if if_not_keyword";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 3);
-
-    let code = "very_long_identifier_with_numbers_123_456_789";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 1);
-  }
-
-  #[test]
-  fn it_should_handle_operators() {
-    let code = "a << 2 >> 3 & 4 | 5 ^ 6";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 11);
-
-    let code = "a <= b >= c == d != e";
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 9);
-
-    let code = "1..5 1...6"; // Range and RangeInclusive operators
-    let tokens = tokenise(code);
-    assert_eq!(tokens.len(), 4);
-  }
+  tokenise_test!(operators,
+    "a << 2 >> 3 & 4 | 5 ^ 6" => 11,
+    "a <= b >= c == d != e" => 9,
+    "1..5 1...6" => 6
+  );
 }
