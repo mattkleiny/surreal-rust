@@ -21,7 +21,7 @@ pub(crate) mod ast {
   }
 
   /// An expression.
-  #[derive(Debug, Clone)]
+  #[derive(Debug, Clone, PartialEq)]
   pub enum Expression {
     Literal(Variant),
     Binary(Box<Expression>, BinaryOp, Box<Expression>),
