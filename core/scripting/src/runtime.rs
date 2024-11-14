@@ -1,12 +1,12 @@
 //! Runtime components for script engine.
 
-mod compiler;
-mod isolates;
-mod machine;
+pub mod compiler;
+pub mod isolates;
+pub mod machine;
 
 /// A bytecode instruction for the virtual machine.
 #[derive(Debug, PartialEq)]
-enum Opcode {
+pub enum Opcode {
   NoOp,
   Return,
   Constant(u16),

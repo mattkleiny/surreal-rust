@@ -17,7 +17,7 @@ members = ["core/*", "backends/*", "editor"]
 opt-level = 3
 
 [features]
-default = ["audio", "graphics", "input"]
+default = ["audio", "graphics", "input"∂]
 
 [workspace.dependencies]
 # shared dependencies
@@ -47,4 +47,3 @@ required-features = ["desktop"]
 [[example]]
 name = "hello-world"
 required-features = ["desktop"]
-

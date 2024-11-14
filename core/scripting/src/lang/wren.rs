@@ -500,9 +500,7 @@ mod tests {
     };
   }
 
-  // parse_file_test!(it_should_parse_test01,
-  // "assets/scripts/wren/test01.wren"); parse_file_test!
-  // (it_should_parse_test02, "assets/scripts/wren/test02.wren");
-  // parse_file_test!(it_should_parse_test03,
-  // "assets/scripts/wren/test03.wren");
+  parse_file_test!(it_should_parse_test01, "assets/scripts/wren/test01.wren");
+  parse_file_test!(it_should_parse_test02, "assets/scripts/wren/test02.wren");
+  parse_file_test!(it_should_parse_test03, "assets/scripts/wren/test03.wren");
 }
